@@ -28,3 +28,6 @@ error_log
 Thumbs.db
 desktop.ini
 .DS_Store
+
+# Įkėlimo paketai (generuojami)
+/deploy/
