@@ -217,7 +217,7 @@ require __DIR__ . '/app/bootstrap.php';
   .group-scroll{
     position:relative; z-index:2;
     width:100vw; margin-left:calc(50% - 50vw);
-    height:auto; min-height:88vh;
+    height:auto; min-height:max(560px, calc(100vh - 190px));   /* atidarius puslapį karuselė telpa ekrane, mygtukai matosi apačioje */
     display:flex;
     overflow-x:auto; overflow-y:hidden;
     scroll-snap-type:x mandatory;
@@ -226,7 +226,7 @@ require __DIR__ . '/app/bootstrap.php';
   }
   .group-scroll::-webkit-scrollbar{display:none;}
   .group-section{
-    flex:0 0 100%; width:100%; height:auto; min-height:88vh; position:relative;
+    flex:0 0 100%; width:100%; height:auto; min-height:max(560px, calc(100vh - 190px)); position:relative;
     scroll-snap-align:start;
     display:flex; align-items:stretch;
     background:#150E12;
@@ -239,7 +239,7 @@ require __DIR__ . '/app/bootstrap.php';
     background:linear-gradient(90deg, transparent 48%, #150E12 96%);
   }
   .group-text-panel{flex:1; display:flex; align-items:center; min-width:0;}
-  .group-content{position:relative; z-index:2; padding:clamp(38px,5.5vh,64px) max(4vw, 92px) clamp(38px,5.5vh,64px) 3.5vw; max-width:760px; color:#F7F4EC; width:100%;}
+  .group-content{position:relative; z-index:2; padding:calc(clamp(38px,5.5vh,64px) + 44px) max(4vw, 92px) clamp(38px,5.5vh,64px) 3.5vw; max-width:760px; color:#F7F4EC; width:100%;}
   .group-content .eyebrow{color:#F7F4EC; margin-bottom:12px;}
   .group-content .eyebrow::before{background:#F7F4EC;}
   .group-content h2{font-size:clamp(1.55rem,2.5vw,2.15rem); color:#F7F4EC; margin-bottom:14px;}
@@ -389,12 +389,12 @@ require __DIR__ . '/app/bootstrap.php';
     .group-facts{grid-template-columns:1fr; gap:18px;}
     .schedule-picker{grid-template-columns:1fr; gap:14px;}
     .picker-schedule{min-height:auto;}
-    .group-content{max-width:100%; padding-left:24px; padding-right:24px; padding-bottom:70px;}
+    .group-content{max-width:100%; padding:0 24px 70px;}
     .group-arrow{width:34px; height:34px; font-size:0.95rem; top:auto; bottom:14px; transform:none;}
     .group-arrow.prev{left:10px; right:auto;}
     .group-arrow.next{right:10px; left:auto;}
     .group-scroll{height:auto; min-height:0;}
-    .group-section{height:auto; min-height:680px; padding:40px 0; display:block; background:none;}
+    .group-section{height:auto; min-height:680px; padding:76px 0 40px; display:block; background:none;}
     .group-photo-panel{position:absolute; inset:0; width:100%; height:100%;}
     .group-photo-panel::after{background:linear-gradient(90deg, rgba(10,8,6,0.92) 0%, rgba(10,8,6,0.72) 34%, rgba(10,8,6,0.25) 68%, rgba(10,8,6,0.1) 100%);}
     .group-text-panel{position:relative; z-index:2; width:100%; display:block;}
@@ -405,23 +405,33 @@ require __DIR__ . '/app/bootstrap.php';
     *{transition:none !important; animation:none !important;}
     .reveal{opacity:1; transform:none;}
   }
-  /* GRUPIŲ PASIRINKIMAS - pačiame viršuje (buvęs pradinis puslapis) */
-  .chooser{background:#150E12; color:#F7F4EC; position:relative; z-index:2; width:100vw; margin-left:calc(50% - 50vw);}
-  .chooser-inner{max-width:980px; margin:0 auto; padding:34px 24px 26px; text-align:center;}
-  .chooser-eyebrow{font-family:'JetBrains Mono',monospace; font-size:0.74rem; letter-spacing:0.18em; text-transform:uppercase; color:#5FD3AC; font-weight:700; margin-bottom:10px;}
-  .chooser h1{font-size:clamp(1.6rem,3.2vw,2.4rem); color:#F7F4EC; margin-bottom:20px;}
-  .chooser-buttons{display:grid; grid-template-columns:repeat(3,1fr); gap:14px;}
-  .chooser-buttons button{
-    font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:1.02rem; color:#F7F4EC; cursor:pointer;
-    padding:16px 18px; border-radius:14px; background:rgba(247,244,236,0.08); border:1.5px solid rgba(247,244,236,0.22);
-    transition:background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+  /* GRUPIŲ PASIRINKIMAS - pavadinimas virš karuselės, mygtukai pačioje karuselėje */
+  .carousel-wrap{position:relative;}
+  .chooser{text-align:center; padding:30px 24px 22px; position:relative; z-index:2;}
+  .chooser-title{
+    display:inline-block; position:relative; padding-bottom:12px;
+    font-size:clamp(1.5rem,3vw,2.2rem);
+    background:linear-gradient(90deg, var(--ink) 0%, #7860A0 100%);
+    -webkit-background-clip:text; background-clip:text; color:transparent; -webkit-text-fill-color:transparent;
   }
-  .chooser-buttons button:hover{background:rgba(247,244,236,0.16); transform:translateY(-2px);}
-  .chooser-buttons button.active{background:rgba(168,92,126,0.9); border-color:rgba(217,105,140,0.95); box-shadow:0 8px 22px rgba(168,92,126,0.35);}
-  @media(max-width:720px){
-    .chooser-inner{padding:24px 16px 18px;}
-    .chooser-buttons{gap:8px;}
-    .chooser-buttons button{font-size:0.88rem; padding:13px 6px;}
+  .chooser-title::after{
+    content:""; position:absolute; left:50%; transform:translateX(-50%); bottom:0; height:4px; width:64px; border-radius:4px;
+    background:linear-gradient(90deg, #A85C7E, #5C68A0);
+  }
+  .chooser-buttons{position:absolute; top:18px; left:50%; transform:translateX(-50%); z-index:20; display:flex; gap:8px;}
+  .chooser-buttons button{
+    font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:0.82rem; color:#F7F4EC; cursor:pointer; white-space:nowrap;
+    padding:8px 16px; border-radius:20px;
+    background:rgba(20,16,12,0.28); border:1px solid rgba(247,244,236,0.35);
+    backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);
+    transition:background 0.2s ease, border-color 0.2s ease;
+  }
+  .chooser-buttons button:hover{background:rgba(247,244,236,0.16);}
+  .chooser-buttons button.active{background:rgba(168,92,126,0.75); border-color:rgba(217,105,140,0.8);}
+  @media(max-width:860px){
+    .chooser{padding:22px 16px 16px;}
+    .chooser-buttons{gap:6px;}
+    .chooser-buttons button{font-size:0.76rem; padding:7px 11px;}
   }
 </style>
 </head>
@@ -430,17 +440,8 @@ require __DIR__ . '/app/bootstrap.php';
 <?php site_header(true); ?>
 
 <section style="padding:0; position:relative;" id="grupes">
-  <div class="chooser">
-    <div class="chooser-inner">
-      <div class="chooser-eyebrow">VšĮ Karate Ateitis · Vilnius</div>
-      <h1>Kam ieškote treniruočių?</h1>
-      <div class="chooser-buttons" id="groupTabs" role="tablist">
-        <button type="button" data-i="0" class="active" role="tab">Vaikams</button>
-        <button type="button" data-i="1" role="tab">Jaunimui</button>
-        <button type="button" data-i="2" role="tab">Suaugusiems</button>
-      </div>
-    </div>
-  </div>
+  <div class="chooser"><h1 class="chooser-title">Kam ieškote treniruočių?</h1></div>
+  <div class="carousel-wrap">
   <div class="group-scroll" id="groupScroll">
 
     <div class="group-section" id="vaikams">
@@ -558,6 +559,12 @@ require __DIR__ . '/app/bootstrap.php';
 
   <button class="group-arrow prev" id="groupPrev" aria-label="Ankstesnė grupė">‹</button>
   <button class="group-arrow next" id="groupNext" aria-label="Kita grupė">›</button>
+  <div class="chooser-buttons" id="groupTabs" role="tablist">
+        <button type="button" data-i="0" class="active" role="tab">Vaikams</button>
+        <button type="button" data-i="1" role="tab">Jaunimui</button>
+        <button type="button" data-i="2" role="tab">Suaugusiems</button>
+      </div>
+  </div>
 </section>
 
 <section id="apie" style="position:relative;">
