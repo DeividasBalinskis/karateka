@@ -331,3 +331,11 @@ legend{font-family:'Space Grotesk',sans-serif; font-weight:700; padding:0 6px;}
   .note-video{grid-column:auto;}
 }
 .note-existing.just-saved{color:var(--accent); font-weight:600;}
+
+/* Paskyros pagrindinė eilutė: kortelės neišsitempia, dešinėje tvarkaraštis + renginiai vienas po kito */
+.account-main{align-items:start;}
+.account-main .stack > .card{margin-bottom:0;}
+.account-main .schedule-day{padding-right:10px;}
+.history-list{columns:2; column-gap:36px;}
+.history-list > li{break-inside:avoid;}
+@media(max-width:860px){ .history-list{columns:1;} }

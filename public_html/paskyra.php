@@ -214,17 +214,32 @@ page_start('Mano paskyra', ['noindex' => true]);
       </div>
     <?php endif; ?>
 
-    <div class="panel card">
-      <div class="kicker">Tvarkaraštis <?= $selected['group_id'] ? staff_link('admin/grupes.php?id=' . (int) $selected['group_id'], '✎ Keisti') : '' ?></div>
-      <?php if ($active && $selected['group_id']): ?>
-        <h2><?= e($selected['group_name']) ?></h2>
-        <?= render_schedule(group_schedule((int) $selected['group_id'])) ?>
-      <?php else: ?>
-        <h2><?= e($selected['first_name'] . ' ' . $selected['last_name']) ?></h2>
-        <p class="muted">
-          <?= $selected['status'] === 'inactive' ? 'Narystė neaktyvi.' : 'Laukiama trenerio patvirtinimo - po to čia matysite grupę, tvarkaraštį ir taškus.' ?>
-        </p>
-      <?php endif; ?>
+    <!-- Dešinė: tvarkaraštis (kompaktiškas - vienodo laiko dienos sujungtos) ir artėjantys renginiai -->
+    <div class="stack">
+      <div class="panel card">
+        <div class="kicker">Tvarkaraštis <?= $selected['group_id'] ? staff_link('admin/grupes.php?id=' . (int) $selected['group_id'], '✎ Keisti') : '' ?></div>
+        <?php if ($active && $selected['group_id']): ?>
+          <h2><?= e($selected['group_name']) ?></h2>
+          <?= render_schedule_lines(schedule_lines(group_schedule((int) $selected['group_id']))) ?>
+        <?php else: ?>
+          <h2><?= e($selected['first_name'] . ' ' . $selected['last_name']) ?></h2>
+          <p class="muted">
+            <?= $selected['status'] === 'inactive' ? 'Narystė neaktyvi.' : 'Laukiama trenerio patvirtinimo - po to čia matysite grupę, tvarkaraštį ir taškus.' ?>
+          </p>
+        <?php endif; ?>
+      </div>
+
+      <div class="panel card">
+        <div class="kicker">Artėjantys renginiai <?= staff_link('admin/renginiai.php', '✎ Keisti') ?></div>
+        <?php $events = $active ? upcoming_events($selected['group_id'] ? (int) $selected['group_id'] : null, 3) : []; ?>
+        <?php if (!$events): ?>
+          <p class="muted">Artėjančių renginių nėra.</p>
+        <?php else: ?>
+          <ul class="list">
+            <?php foreach ($events as $ev): ?><li><?= render_event($ev) ?></li><?php endforeach; ?>
+          </ul>
+        <?php endif; ?>
+      </div>
     </div>
   </div>
 
@@ -244,37 +259,23 @@ page_start('Mano paskyra', ['noindex' => true]);
     </div>
   <?php endif; ?>
 
-  <div class="grid-2" style="margin-top:20px;">
-    <div class="panel card">
-      <div class="kicker">Artėjantys renginiai <?= staff_link('admin/renginiai.php', '✎ Keisti') ?></div>
-      <?php $events = $active ? upcoming_events($selected['group_id'] ? (int) $selected['group_id'] : null, 8) : []; ?>
-      <?php if (!$events): ?>
-        <p class="muted">Artėjančių renginių nėra.</p>
-      <?php else: ?>
-        <ul class="list">
-          <?php foreach ($events as $ev): ?><li><?= render_event($ev) ?></li><?php endforeach; ?>
-        </ul>
-      <?php endif; ?>
-    </div>
-
-    <div class="panel card">
-      <div class="kicker">Istorija</div>
-      <?php if (!$active || !$history): ?>
-        <p class="muted">Čia matysite egzaminus, varžybas, seminarus ir kitus pasiekimus.</p>
-      <?php else: ?>
-        <ul class="list small">
-          <?php foreach (array_slice($history, 0, 20) as $h): ?>
-            <li class="row between">
-              <span>
-                <strong><?= e($h['event_title'] ?: $h['category_name']) ?></strong>
-                <div class="muted"><?= $h['event_title'] ? e($h['category_name']) . ' · ' : '' ?><?= e(fmt_date($h['awarded_on'], true)) ?><?= $h['note'] ? ' · ' . e($h['note']) : '' ?></div>
-              </span>
-              <span class="badge badge-ok">+<?= (int) $h['points'] ?></span>
-            </li>
-          <?php endforeach; ?>
-        </ul>
-      <?php endif; ?>
-    </div>
+  <div class="panel card" style="margin-top:20px;">
+    <div class="kicker">Istorija</div>
+    <?php if (!$active || !$history): ?>
+      <p class="muted">Čia matysite egzaminus, varžybas, seminarus ir kitus pasiekimus.</p>
+    <?php else: ?>
+      <ul class="list small history-list">
+        <?php foreach (array_slice($history, 0, 20) as $h): ?>
+          <li class="row between">
+            <span>
+              <strong><?= e($h['event_title'] ?: $h['category_name']) ?></strong>
+              <div class="muted"><?= $h['event_title'] ? e($h['category_name']) . ' · ' : '' ?><?= e(fmt_date($h['awarded_on'], true)) ?><?= $h['note'] ? ' · ' . e($h['note']) : '' ?></div>
+            </span>
+            <span class="badge badge-ok">+<?= (int) $h['points'] ?></span>
+          </li>
+        <?php endforeach; ?>
+      </ul>
+    <?php endif; ?>
   </div>
 
   <div class="panel card" style="margin-top:20px;">
