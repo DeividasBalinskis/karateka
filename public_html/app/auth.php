@@ -108,9 +108,6 @@ function attempt_login(string $email, string $password): array
     $valid = password_verify($password, $hash) && $a !== null;
 
     q('INSERT INTO login_attempts (email, ip, success) VALUES (?, ?, ?)', [$email, client_ip(), $valid ? 1 : 0]);
-    if (random_int(1, 50) === 1) {   // retkarčiais išvalome senus įrašus (privatumo politika: 30 d.)
-        q('DELETE FROM login_attempts WHERE attempted_at < NOW() - INTERVAL 30 DAY');
-    }
     if (!$valid) {
         return ['ok' => false, 'error' => 'invalid'];
     }
