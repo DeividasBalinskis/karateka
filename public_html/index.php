@@ -213,11 +213,16 @@ require __DIR__ . '/app/bootstrap.php';
   .about-locations p{color:var(--ink); font-size:0.95rem; margin-bottom:0;}
 
   /* GROUP CAROUSEL - full-bleed horizontal slides, photo blends into a dark overlay */
+  /* Karuselės tekstas fiksuoto dydžio (em nuo 16px), kad dideliuose ekranuose neišaugtų ir tilptų į ekraną */
+  .group-scroll{font-size:16px;}
+  .group-content .eyebrow{font-size:0.72em;}
+  .group-content .btn{font-size:0.9em;}
+  .group-content .schedule-line{font-size:0.88em;}
   /* group scroll window - one viewport-height window you scroll LEFT/RIGHT through (mouse/trackpad/touch), black photo backgrounds */
   .group-scroll{
     position:relative; z-index:2;
     width:100%; margin-left:0;
-    height:auto; min-height:max(560px, calc(100vh - 190px));   /* atidarius puslapį karuselė telpa ekrane, mygtukai matosi apačioje */
+    height:auto; min-height:0;   /* aukštis pagal turinį, kad apačioje matytųsi fonas */
     display:flex;
     overflow-x:auto; overflow-y:hidden;
     scroll-snap-type:x mandatory;
@@ -226,31 +231,36 @@ require __DIR__ . '/app/bootstrap.php';
   }
   .group-scroll::-webkit-scrollbar{display:none;}
   .group-section{
-    flex:0 0 100%; width:100%; height:auto; min-height:max(560px, calc(100vh - 190px)); position:relative;
+    flex:0 0 100%; width:100%; height:auto; min-height:0; position:relative;
     scroll-snap-align:start;
     display:flex; align-items:stretch;
     background:#150E12;
     overflow:hidden;
   }
-  .group-photo-panel{position:relative; width:50%; flex-shrink:0; align-self:stretch; overflow:hidden;}
+  .group-photo-panel{position:relative; width:40%; flex-shrink:0; align-self:stretch; overflow:hidden;}
   .group-photo-panel img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block;}
   .group-photo-panel::after{
     content:""; position:absolute; inset:0;
     background:linear-gradient(90deg, transparent 48%, #150E12 96%);
   }
   .group-text-panel{flex:1; display:flex; align-items:center; min-width:0;}
-  .group-content{position:relative; z-index:2; padding:calc(clamp(38px,5.5vh,64px) + 44px) max(4vw, 92px) clamp(38px,5.5vh,64px) 3.5vw; max-width:760px; color:#F7F4EC; width:100%;}
+  .group-content{position:relative; z-index:2; padding:68px 84px 30px 3vw; max-width:none; color:#F7F4EC; width:100%;}
   .group-content .eyebrow{color:#F7F4EC; margin-bottom:12px;}
   .group-content .eyebrow::before{background:#F7F4EC;}
-  .group-content h2{font-size:clamp(1.55rem,2.5vw,2.15rem); color:#F7F4EC; margin-bottom:14px;}
-  .group-content > p{color:#D8D2C2; font-size:0.95rem; margin-bottom:24px; max-width:480px;}
-  .group-facts{display:grid; grid-template-columns:1fr 1fr; gap:18px 26px; border-top:1px solid rgba(247,244,236,0.25); padding-top:20px;}
-  .group-cta{display:inline-block; margin-top:22px;}
+  .group-content h2{font-size:clamp(1.35em,1.9vw,1.7em); color:#F7F4EC; margin-bottom:10px;}
+  .group-content > p{color:#D8D2C2; font-size:0.95em; margin-bottom:16px; max-width:560px;}
+  .group-facts{display:grid; grid-template-columns:1fr 1fr; gap:18px 26px; border-top:1px solid rgba(247,244,236,0.25); padding-top:16px;}
+  .group-cta{display:inline-block; margin-top:16px;}
+  #vaikams .group-facts{grid-template-columns:minmax(150px,0.55fr) 2fr;}
+  #vaikams .group-facts .full{grid-column:auto;}
+  #jaunimui .group-facts, #suaugusiems .group-facts{grid-template-columns:auto 1.6fr 1fr;}
+
+  #jaunimui .group-facts .full, #suaugusiems .group-facts .full{grid-column:auto;}
   .group-facts .full{grid-column:1 / -1;}
-  .group-facts .kicker{font-family:'JetBrains Mono',monospace; font-size:0.66rem; letter-spacing:0.1em; text-transform:uppercase; color:#F7F4EC; font-weight:700; margin-bottom:10px; opacity:0.8;}
-  .group-facts p{font-size:0.88rem; color:#D8D2C2;}
+  .group-facts .kicker{font-family:'JetBrains Mono',monospace; font-size:0.66em; letter-spacing:0.1em; text-transform:uppercase; color:#F7F4EC; font-weight:700; margin-bottom:10px; opacity:0.8;}
+  .group-facts p{font-size:0.88em; color:#D8D2C2;}
   .loc-list{list-style:none; display:grid; gap:6px; margin-bottom:6px;}
-  .loc-list li{font-size:0.82rem; color:#D8D2C2; padding-left:14px; text-indent:-14px;}
+  .loc-list li{font-size:0.82em; color:#D8D2C2; padding-left:14px; text-indent:-14px;}
   .loc-list li::before{content:"● "; color:#E8749E; font-size:0.55em; vertical-align:middle;}
   .loc-group{padding:6px 0;}
   .loc-scroll{max-height:142px; overflow-y:auto; padding-right:6px;}
@@ -259,15 +269,15 @@ require __DIR__ . '/app/bootstrap.php';
   .loc-scroll::-webkit-scrollbar-thumb{background:rgba(247,244,236,0.3); border-radius:4px;}
   .loc-scroll::-webkit-scrollbar-track{background:transparent;}
   .loc-group summary{
-    cursor:pointer; font-size:0.85rem; font-weight:600; color:#F7F4EC;
+    cursor:pointer; font-size:0.85em; font-weight:600; color:#F7F4EC;
     display:flex; justify-content:space-between; align-items:center; list-style:none;
   }
   .loc-group summary::-webkit-details-marker{display:none;}
   .loc-group summary::after{content:"+"; color:#D9698C; font-weight:700;}
   .loc-group[open] summary::after{content:"–";}
   .loc-group ul{list-style:none; margin-top:6px; display:grid; gap:4px;}
-  .loc-group ul li{font-size:0.78rem; color:#D8D2C2; padding-left:14px; text-indent:-14px;}
-  .loc-time{display:block; text-indent:0; font-size:0.72rem; color:#B9B2A0; margin-top:2px; line-height:1.4;}
+  .loc-group ul li{font-size:0.78em; color:#D8D2C2; padding-left:14px; text-indent:-14px;}
+  .loc-time{display:block; text-indent:0; font-size:0.92em; color:#B9B2A0; margin-top:2px; line-height:1.4;}
 
   /* interactive schedule picker (vaikams) */
   .schedule-picker{display:grid; grid-template-columns:minmax(0,1.1fr) minmax(0,1fr); gap:16px; align-items:stretch;}
@@ -279,8 +289,8 @@ require __DIR__ . '/app/bootstrap.php';
   /* consistent day + time layout, used everywhere a schedule is shown */
   .schedule-line{display:flex; flex-wrap:wrap; justify-content:space-between; align-items:baseline; column-gap:14px; row-gap:2px; padding:8px 0; border-bottom:1px solid rgba(247,244,236,0.1);}
   .schedule-line:last-child{border-bottom:none;}
-  .schedule-day{color:#D8D2C2; font-size:0.85rem; line-height:1.4; flex:1 1 130px; min-width:0; overflow-wrap:break-word;}
-  .schedule-time{color:#F7F4EC; font-weight:700; font-size:0.8rem; font-family:'JetBrains Mono',monospace; letter-spacing:-0.02em; white-space:nowrap; flex:0 0 auto;}
+  .schedule-day{color:#D8D2C2; font-size:0.85em; line-height:1.4; flex:1 1 130px; min-width:0; overflow-wrap:break-word;}
+  .schedule-time{color:#F7F4EC; font-weight:700; font-size:0.8em; font-family:'JetBrains Mono',monospace; letter-spacing:-0.02em; white-space:nowrap; flex:0 0 auto;}
   .picker-schedule{
     background:rgba(247,244,236,0.06); border:1px solid rgba(247,244,236,0.12); border-radius:12px;
     padding:16px 16px; min-height:142px; min-width:0; overflow-wrap:break-word; display:flex; flex-direction:column; justify-content:flex-start;
@@ -288,25 +298,25 @@ require __DIR__ . '/app/bootstrap.php';
   .picker-schedule .kicker{margin-bottom:10px;}
   .picker-schedule .schedule-line{display:block; padding:7px 0;}
   .picker-schedule .schedule-day{display:block;}
-  .picker-schedule .schedule-time{display:block; margin-top:2px; font-size:0.82rem;}
+  .picker-schedule .schedule-time{display:block; margin-top:2px; font-size:0.82em;}
 
-  .picker-schedule .schedule-placeholder{font-size:0.85rem; color:#8F8874; font-style:italic;}
-  .picker-schedule .schedule-name{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:0.92rem; line-height:1.3; color:#F7F4EC; margin-bottom:8px; overflow-wrap:break-word; hyphens:auto;}
+  .picker-schedule .schedule-placeholder{font-size:0.85em; color:#8F8874; font-style:italic;}
+  .picker-schedule .schedule-name{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:0.92em; line-height:1.3; color:#F7F4EC; margin-bottom:8px; overflow-wrap:break-word; hyphens:auto;}
   .loc-group ul li::before{content:"● "; color:#E8749E; font-size:0.55em; vertical-align:middle;}
   .group-facts ul{list-style:none; display:grid; gap:6px;}
-  .group-facts ul li{font-size:0.88rem; color:#D8D2C2;}
+  .group-facts ul li{font-size:0.88em; color:#D8D2C2;}
   .group-facts ul li::before{content:"— ";}
-  .group-price{font-family:'Space Grotesk',sans-serif; font-size:1.6rem; color:#F7F4EC; display:flex; flex-direction:column; gap:0;}
+  .group-price{font-family:'Space Grotesk',sans-serif; font-size:1.6em; color:#F7F4EC; display:flex; flex-direction:column; gap:0;}
   .group-price .price-condition{display:block; text-align:left; margin-top:-2px;}
-  .group-price .price-condition{font-family:'Inter',sans-serif; font-size:0.7rem; font-weight:500; color:#F7F4EC;}
-  .group-price-alt{font-family:'Inter',sans-serif; font-size:0.78rem; color:#B9B2A0; margin-top:3px;}
+  .group-price .price-condition{font-family:'Inter',sans-serif; font-size:0.44em;   /* = 0.7 pagrindinio dydžio */ font-weight:500; color:#F7F4EC;}
+  .group-price-alt{font-family:'Inter',sans-serif; font-size:0.78em; color:#B9B2A0; margin-top:3px;}
 
   /* left/right controls + bottom dots for the horizontal scroll window */
   .group-arrow{
     position:absolute; top:50%; transform:translateY(-50%); z-index:20;
     width:48px; height:48px; border-radius:50%;
     background:rgba(20,16,12,0.45); border:1px solid rgba(247,244,236,0.4);
-    color:#F7F4EC; font-size:1.2rem; cursor:pointer;
+    color:#F7F4EC; font-size:1.2em; cursor:pointer;
     display:flex; align-items:center; justify-content:center;
     backdrop-filter:blur(8px); box-shadow:0 4px 14px rgba(0,0,0,0.25);
     transition:background 0.2s ease;
@@ -386,7 +396,8 @@ require __DIR__ . '/app/bootstrap.php';
     .instructors-intro{flex:none;}
     .instructor-grid, .instructors-row .instructor-grid{grid-template-columns:repeat(2,1fr);}
     .registration-grid{grid-template-columns:1fr;}
-    .group-facts{grid-template-columns:1fr; gap:18px;}
+    .group-facts, #vaikams .group-facts, #jaunimui .group-facts, #suaugusiems .group-facts{grid-template-columns:1fr; gap:18px;}
+    .group-facts > *{grid-row:auto !important; grid-column:auto !important;}
     .schedule-picker{grid-template-columns:1fr; gap:14px;}
     .picker-schedule{min-height:auto;}
     .group-content{max-width:100%; padding:0 24px 70px;}
@@ -409,7 +420,7 @@ require __DIR__ . '/app/bootstrap.php';
   .carousel-wrap{position:relative; max-width:1200px; margin:0 32px; border-radius:22px; overflow:hidden; box-shadow:0 24px 50px rgba(23,20,15,0.18);}
   @media(min-width:1264px){ .carousel-wrap{margin:0 auto;} }
   @media(max-width:860px){ .carousel-wrap{margin:0 12px; border-radius:16px;} }
-  .chooser{text-align:center; padding:30px 24px 22px; position:relative; z-index:2;}
+  .chooser{text-align:center; padding:18px 24px 16px; position:relative; z-index:2;}
   .chooser-title{
     display:inline-block; position:relative; padding-bottom:12px;
     font-size:clamp(1.5rem,3vw,2.2rem);

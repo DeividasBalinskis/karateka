@@ -1,6 +1,9 @@
 /* Bendra viršutinė juosta ir meniu - VISIEMS puslapiams.
    Dydžiai px (ne rem), kad meniu visur būtų vienodo dydžio, nepriklausomai nuo puslapio šrifto. */
 
+
+/* Vieta slinkties juostai visada palikta - kitaip trumpuose puslapiuose meniu pasislenka keliais px */
+html{scrollbar-gutter:stable;}
 /* Slinkimo juosta pačiame viršuje */
 .progress-wrap{position:fixed; top:0; left:0; right:0; z-index:999; height:10px; overflow:hidden; background-color:#F7F4EC;}
 .progress-bar{
