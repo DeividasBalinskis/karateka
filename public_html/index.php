@@ -54,7 +54,7 @@ require __DIR__ . '/app/bootstrap.php';
   a{color:inherit; text-decoration:none;}
   img{max-width:100%; display:block;}
   .wrap{max-width:1120px; margin:0 auto; padding:0 32px; position:relative; z-index:2;}
-  section{padding:100px 0; position:relative; z-index:2; scroll-margin-top:80px;}   /* kad sekcijos pavadinimas nelįstų po meniu */
+  section{padding:100px 0; position:relative; z-index:2; scroll-margin-top:24px;}   /* sekcijos viršus pasislepia po meniu - nesimato ankstesnės sekcijos krašto, pavadinimas lieka matomas */
   .eyebrow{
     font-family:'JetBrains Mono', monospace; font-size:0.72rem; letter-spacing:0.16em;
     text-transform:uppercase; color:var(--accent); font-weight:700;
