@@ -9,6 +9,18 @@
     });
   }
 
+  // Pagrindinio meniu grupė centre; jei siaurame ekrane užliptų ant dešiniųjų nuorodų - centruojame laisvoje vietoje
+  var header = document.querySelector('.site-header');
+  var fitMenu = function () {
+    if (!header) return;
+    header.classList.remove('center-off');
+    var on = header.querySelector('.onpage-section'), pg = header.querySelector('.page-section');
+    if (on && pg && on.getBoundingClientRect().right > pg.getBoundingClientRect().left - 12) header.classList.add('center-off');
+  };
+  fitMenu();
+  window.addEventListener('resize', fitMenu);
+  if (document.fonts) document.fonts.ready.then(fitMenu);
+
   var bar = document.getElementById('progressBar');
   if (bar) {
     var update = function () {

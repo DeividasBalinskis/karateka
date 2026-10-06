@@ -15,17 +15,19 @@ html{scrollbar-gutter:stable;}
 
 .site-header{position:sticky; top:10px; z-index:100; background:#F7F4EC; border-bottom:1px solid rgba(23,20,15,0.08); margin-top:10px; font-family:'Inter', sans-serif;}
 .site-header nav{display:flex; align-items:center; gap:14px; padding:8px 32px; max-width:1200px; margin:0 auto; position:relative;}
-.site-header .logo{margin-right:auto; flex-shrink:0;}
+.site-header .logo{flex-shrink:0;}
 .site-header .logo img{height:46px; width:auto; display:block;}
 .site-header ul{list-style:none; margin:0; padding:0;}
-.site-header ul.nav-list{display:flex; align-items:center; gap:14px;}
+.site-header ul.nav-list{display:flex; align-items:center; gap:14px; flex:1;}
+/* Pagrindinio puslapio skiltys - centre, kiti puslapiai - dešinėje */
+.site-header .onpage-section{margin:0 auto;}
 .site-header .nav-section > ul{display:flex; align-items:center; gap:6px;}
 
 /* 1 grupė: šio (pagrindinio) puslapio skiltys - bendrame „kapsulės“ fone */
 .site-header .onpage-section > ul{background:rgba(23,20,15,0.045); border-radius:14px; padding:4px;}
 .site-header a.nav-link{
   font-size:14px; font-weight:600; color:#17140F; line-height:1;
-  display:inline-block; padding:10px 14px; border-radius:10px;
+  display:inline-block; padding:10px 12px; border-radius:10px;
   border:1.5px solid transparent; background:none; cursor:pointer; white-space:nowrap; text-decoration:none;
   transition:border-color 0.15s ease, background 0.15s ease;
 }
@@ -45,7 +47,7 @@ html{scrollbar-gutter:stable;}
 .site-header .page-section{border-left:1px solid rgba(23,20,15,0.15); padding-left:14px;}
 .site-header a.nav-page{
   font-size:14px; font-weight:600; color:#17140F; line-height:1; white-space:nowrap; text-decoration:none;
-  display:inline-block; padding:10px 10px; border-radius:10px; transition:background 0.15s ease;
+  display:inline-block; padding:10px 8px; border-radius:10px; transition:background 0.15s ease;
 }
 .site-header a.nav-page::after{content:" ›"; color:#A85C7E; font-weight:700;}
 .site-header a.nav-page:hover{background:rgba(23,20,15,0.05); text-decoration:none;}
@@ -63,6 +65,8 @@ html{scrollbar-gutter:stable;}
 
 /* ☰ režimas planšetėse ir telefonuose */
 @media(max-width:1080px){
+  .site-header .logo{margin-right:auto;}
+  .site-header .onpage-section{margin:0;}
   .site-header ul.nav-list{
     display:none; position:absolute; top:100%; left:0; right:0;
     flex-direction:column; align-items:stretch; gap:10px; padding:14px; margin-top:6px;
@@ -85,3 +89,9 @@ html{scrollbar-gutter:stable;}
   .site-header .nav-cta{font-size:11px; padding:9px 12px;}
 }
 .site-header .count-badge{display:inline-flex; align-items:center; justify-content:center; min-width:18px; height:18px; padding:0 5px; border-radius:9px; background:#D9534F; color:#fff; font-size:11px; font-weight:700; line-height:1; vertical-align:2px;}
+/* Plačiame ekrane pagrindinio meniu grupė - tiksliai ekrano centre */
+@media(min-width:1260px){
+  .site-header nav{position:relative; max-width:1400px;}
+  .site-header:not(.center-off) .onpage-section{position:absolute; left:50%; transform:translateX(-50%); margin:0;}
+  .site-header .page-section{margin-left:auto;}
+}

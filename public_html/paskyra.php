@@ -229,13 +229,13 @@ page_start('Mano paskyra', ['noindex' => true]);
         <?php endif; ?>
       </div>
 
-      <div class="panel card">
+      <div class="panel card events-card">
         <div class="kicker">Artėjantys renginiai <?= staff_link('admin/renginiai.php', '✎ Keisti') ?></div>
-        <?php $events = $active ? upcoming_events($selected['group_id'] ? (int) $selected['group_id'] : null, 3) : []; ?>
+        <?php $events = $active ? upcoming_events($selected['group_id'] ? (int) $selected['group_id'] : null, 20) : []; ?>
         <?php if (!$events): ?>
           <p class="muted">Artėjančių renginių nėra.</p>
         <?php else: ?>
-          <ul class="list">
+          <ul class="list events-scroll">
             <?php foreach ($events as $ev): ?><li><?= render_event($ev) ?></li><?php endforeach; ?>
           </ul>
         <?php endif; ?>

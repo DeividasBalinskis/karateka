@@ -59,7 +59,7 @@ h1.styled::after{
 .inline-form{display:inline;}
 
 .admin-tabs{
-  display:flex; gap:6px; overflow-x:auto; padding:10px 32px; max-width:1120px; margin:0 auto; width:100%;
+  display:flex; gap:6px; overflow-x:auto; padding:22px 32px 6px; max-width:1120px; margin:0 auto; width:100%;
   scrollbar-width:none;
 }
 .admin-tabs a{flex-shrink:0; font-size:0.82rem; font-weight:600; color:var(--ink); padding:8px 14px; border-radius:20px; background:rgba(255,255,255,0.6); border:1px solid rgba(23,20,15,0.08);}
@@ -206,7 +206,7 @@ legend{font-family:'Space Grotesk',sans-serif; font-weight:700; padding:0 6px;}
 
 /* ---------- Mobilieji ---------- */
 @media(max-width:860px){
-  .admin-tabs{padding:10px 16px;}
+  .admin-tabs{padding:16px 16px 4px;}
   .page{padding:24px 16px 48px;}
   .card{padding:22px 18px;}
   .grid-2, .choice-cards, .form-row, .form-row.three{grid-template-columns:1fr;}
@@ -339,3 +339,17 @@ legend{font-family:'Space Grotesk',sans-serif; font-weight:700; padding:0 6px;}
 .history-list{columns:2; column-gap:36px;}
 .history-list > li{break-inside:avoid;}
 @media(max-width:860px){ .history-list{columns:1;} }
+
+/* Paskyra: dešinė kolona lygi su taškų kortele, renginiai slenka savo lange */
+@media(min-width:861px){
+  .account-main{align-items:stretch;}
+  .account-main > .stack{display:flex; flex-direction:column; gap:20px;}
+  .account-main > .stack > * + *{margin-top:0;}
+  .account-main .events-card{flex:1 1 0; min-height:280px; display:flex; flex-direction:column; overflow:hidden;}
+  .account-main .events-scroll{flex:1; min-height:0; overflow-y:auto; padding-right:6px; scrollbar-width:thin;}
+}
+@media(min-width:861px){
+  .events-card .list > li{padding:10px 0;}
+  .events-card .event h3{margin-bottom:2px;}
+  .events-card .event .small p{display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical; overflow:hidden;}
+}
