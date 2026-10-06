@@ -152,37 +152,43 @@ function site_header(bool $home = false): void
   <nav>
     <a class="logo" href="<?= $home ? '#' : url('index.php') ?>"><img src="<?= url('LogoColor.png') ?>" alt="Karateka logotipas"></a>
     <ul class="nav-list" id="navList">
-      <li><a class="nav-link nl-pink" href="<?= $h ?>#apie">Apie klubą</a></li>
-      <li class="dropdown">
-        <span class="dropdown-trigger nl-gray">Treniruotės</span>
-        <ul class="dropdown-menu">
-          <li><a href="<?= $h ?>#vaikams">Vaikams</a></li>
-          <li><a href="<?= $h ?>#jaunimui">Jaunimui</a></li>
-          <li><a href="<?= $h ?>#suaugusiems">Suaugusiems</a></li>
+      <!-- Pagrindinio puslapio skiltys -->
+      <li class="nav-section onpage-section">
+        <ul>
+          <li><a class="nav-link nl-pink" href="<?= $h ?>#apie">Apie klubą</a></li>
+          <li class="dropdown">
+            <span class="dropdown-trigger nl-gray">Treniruotės</span>
+            <ul class="dropdown-menu">
+              <li><a href="<?= $h ?>#vaikams">Vaikams</a></li>
+              <li><a href="<?= $h ?>#jaunimui">Jaunimui</a></li>
+              <li><a href="<?= $h ?>#suaugusiems">Suaugusiems</a></li>
+            </ul>
+          </li>
+          <li><a class="nav-link nl-blue" href="<?= $h ?>#kontaktai">Kontaktai</a></li>
+          <li class="desktop-only"><a class="nav-cta" href="<?= $h ?>#registracija">2 treniruotės nemokamai</a></li>
         </ul>
       </li>
-      <li><a class="nav-link nl-blue" href="<?= $h ?>#kontaktai">Kontaktai</a></li>
-      <li><a class="nav-link nl-green" href="<?= url('naujienos.php') ?>">Naujienos</a></li>
-      <?php if ($a && is_staff($a)): ?>
-        <li><a class="nav-link nl-green" href="<?= url('admin/') ?>">Treneriams</a></li>
-      <?php endif; ?>
-      <?php if ($a): ?>
-        <li class="mobile-only"><a class="nav-link" href="<?= url('paskyra.php') ?>">Mano paskyra</a></li>
-        <li class="mobile-only">
-          <form method="post" action="<?= url('atsijungti.php') ?>" class="inline-form"><?= csrf_field() ?>
-            <button type="submit" class="nav-link nl-plain">Atsijungti</button>
-          </form>
-        </li>
-      <?php else: ?>
-        <li class="mobile-only"><a class="nav-link" href="<?= url('prisijungti.php') ?>">Prisijungti</a></li>
-      <?php endif; ?>
+      <!-- Kiti puslapiai -->
+      <li class="nav-section page-section">
+        <ul>
+          <li><a class="nav-page" href="<?= url('naujienos.php') ?>">Naujienos</a></li>
+          <?php if ($a && is_staff($a)): ?>
+            <li><a class="nav-page" href="<?= url('admin/') ?>">Treneriams</a></li>
+          <?php endif; ?>
+          <?php if ($a): ?>
+            <li><a class="nav-login" href="<?= url('paskyra.php') ?>">Mano paskyra</a></li>
+            <li class="mobile-only">
+              <form method="post" action="<?= url('atsijungti.php') ?>" class="inline-form"><?= csrf_field() ?>
+                <button type="submit" class="logout-btn">Atsijungti</button>
+              </form>
+            </li>
+          <?php else: ?>
+            <li><a class="nav-login" href="<?= url('prisijungti.php') ?>">Prisijungti</a></li>
+          <?php endif; ?>
+        </ul>
+      </li>
     </ul>
-    <?php if ($a): ?>
-      <a href="<?= url('paskyra.php') ?>" class="nav-login">Mano paskyra</a>
-    <?php else: ?>
-      <a href="<?= url('prisijungti.php') ?>" class="nav-login">Prisijungti</a>
-    <?php endif; ?>
-    <a href="<?= $h ?>#registracija" class="nav-cta">2 treniruotės nemokamai</a>
+    <a class="nav-cta mobile-only" href="<?= $h ?>#registracija">2 treniruotės nemokamai</a>
     <button class="burger" id="burgerBtn" type="button" aria-label="Meniu"><span></span><span></span><span></span></button>
   </nav>
 </header>

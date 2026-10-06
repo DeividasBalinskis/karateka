@@ -216,7 +216,7 @@ require __DIR__ . '/app/bootstrap.php';
   /* group scroll window - one viewport-height window you scroll LEFT/RIGHT through (mouse/trackpad/touch), black photo backgrounds */
   .group-scroll{
     position:relative; z-index:2;
-    width:100vw; margin-left:calc(50% - 50vw);
+    width:100%; margin-left:0;
     height:auto; min-height:max(560px, calc(100vh - 190px));   /* atidarius puslapį karuselė telpa ekrane, mygtukai matosi apačioje */
     display:flex;
     overflow-x:auto; overflow-y:hidden;
@@ -406,7 +406,9 @@ require __DIR__ . '/app/bootstrap.php';
     .reveal{opacity:1; transform:none;}
   }
   /* GRUPIŲ PASIRINKIMAS - pavadinimas virš karuselės, mygtukai pačioje karuselėje */
-  .carousel-wrap{position:relative;}
+  .carousel-wrap{position:relative; max-width:1200px; margin:0 32px; border-radius:22px; overflow:hidden; box-shadow:0 24px 50px rgba(23,20,15,0.18);}
+  @media(min-width:1264px){ .carousel-wrap{margin:0 auto;} }
+  @media(max-width:860px){ .carousel-wrap{margin:0 12px; border-radius:16px;} }
   .chooser{text-align:center; padding:30px 24px 22px; position:relative; z-index:2;}
   .chooser-title{
     display:inline-block; position:relative; padding-bottom:12px;

@@ -1,4 +1,5 @@
-/* Bendra viršutinė juosta ir meniu - VISIEMS puslapiams (pagrindiniam ir narių sistemai) */
+/* Bendra viršutinė juosta ir meniu - VISIEMS puslapiams.
+   Dydžiai px (ne rem), kad meniu visur būtų vienodo dydžio, nepriklausomai nuo puslapio šrifto. */
 
 /* Slinkimo juosta pačiame viršuje */
 .progress-wrap{position:fixed; top:0; left:0; right:0; z-index:999; height:10px; overflow:hidden; background-color:#F7F4EC;}
@@ -9,55 +10,63 @@
   transition:width 0.1s linear;
 }
 
-.site-header{position:sticky; top:10px; z-index:100; background:#F7F4EC; border-bottom:1px solid rgba(23,20,15,0.08); margin-top:10px;}
-.site-header nav{display:flex; align-items:center; justify-content:flex-end; gap:18px; padding:8px 32px; max-width:1120px; margin:0 auto; position:relative;}
+.site-header{position:sticky; top:10px; z-index:100; background:#F7F4EC; border-bottom:1px solid rgba(23,20,15,0.08); margin-top:10px; font-family:'Inter', sans-serif;}
+.site-header nav{display:flex; align-items:center; gap:14px; padding:8px 32px; max-width:1200px; margin:0 auto; position:relative;}
 .site-header .logo{margin-right:auto; flex-shrink:0;}
 .site-header .logo img{height:46px; width:auto; display:block;}
-.site-header ul.nav-list{list-style:none; display:flex; align-items:center; gap:12px; margin:0; padding:0;}
+.site-header ul{list-style:none; margin:0; padding:0;}
+.site-header ul.nav-list{display:flex; align-items:center; gap:14px;}
+.site-header .nav-section > ul{display:flex; align-items:center; gap:6px;}
 
-.site-header a.nav-link, .site-header button.nav-link, .site-header .dropdown-trigger{
-  font-family:'Inter', sans-serif; font-size:0.86rem; font-weight:600; color:#17140F;
-  display:inline-block; line-height:1; padding:10px 16px; border-radius:20px;
+/* 1 grupė: šio (pagrindinio) puslapio skiltys - bendrame „kapsulės“ fone */
+.site-header .onpage-section > ul{background:rgba(23,20,15,0.045); border-radius:14px; padding:4px;}
+.site-header a.nav-link, .site-header .dropdown-trigger{
+  font-size:14px; font-weight:600; color:#17140F; line-height:1;
+  display:inline-block; padding:10px 14px; border-radius:10px;
   border:1.5px solid transparent; background:none; cursor:pointer; white-space:nowrap; text-decoration:none;
   transition:border-color 0.15s ease, background 0.15s ease;
 }
-.site-header .nl-pink  {border-color:rgba(168,92,126,0.35) !important;}
-.site-header .nl-pink:hover  {background:rgba(168,92,126,0.08) !important; border-color:#A85C7E !important;}
-.site-header .nl-gray  {border-color:rgba(90,100,90,0.35) !important;}
-.site-header .nl-gray:hover  {background:rgba(90,100,90,0.08) !important; border-color:#5A645A !important;}
-.site-header .nl-blue  {border-color:rgba(74,92,156,0.35) !important;}
-.site-header .nl-blue:hover  {background:rgba(74,92,156,0.08) !important; border-color:#4A5C9C !important;}
-.site-header .nl-green {border-color:rgba(47,107,90,0.35) !important;}
-.site-header .nl-green:hover {background:rgba(47,107,90,0.08) !important; border-color:#2F6B5A !important;}
-.site-header .nl-plain:hover {background:rgba(23,20,15,0.05) !important;}
-
-.site-header .nav-login{
-  color:#17140F !important; padding:10px 18px; font-size:0.82rem; font-weight:700; border-radius:10px;
-  border:1.5px solid #17140F; white-space:nowrap; text-decoration:none; transition:background 0.15s ease, color 0.15s ease;
-}
-.site-header .nav-login:hover{background:#17140F; color:#F7F4EC !important;}
+.site-header a.nav-link:hover, .site-header .dropdown-trigger:hover{background:rgba(255,255,255,0.85); text-decoration:none;}
+.site-header .nl-pink:hover{border-color:rgba(168,92,126,0.45);}
+.site-header .nl-gray:hover{border-color:rgba(90,100,90,0.45);}
+.site-header .nl-blue:hover{border-color:rgba(74,92,156,0.45);}
 .site-header .nav-cta{
-  background:linear-gradient(90deg, #2E7FB0 0%, #A85C7E 55%, #D9698C 100%); background-size:200% 100%;
-  color:#fff !important; padding:11px 20px; font-size:0.82rem; font-weight:700; border-radius:10px; white-space:nowrap;
-  text-decoration:none; text-shadow:0 1px 2px rgba(0,0,0,0.25); box-shadow:0 6px 16px rgba(168,92,126,0.35);
+  display:inline-block; background:linear-gradient(90deg, #2E7FB0 0%, #A85C7E 55%, #D9698C 100%); background-size:200% 100%;
+  color:#fff !important; padding:11px 18px; font-size:13px; font-weight:700; line-height:1.1; border-radius:10px; white-space:nowrap;
+  text-decoration:none; text-shadow:0 1px 2px rgba(0,0,0,0.25); box-shadow:0 6px 16px rgba(168,92,126,0.3);
   transition:transform 0.15s ease, background-position 0.3s ease;
 }
-.site-header .nav-cta:hover{background-position:100% 0; filter:brightness(1.08); transform:translateY(-1px);}
+.site-header .nav-cta:hover{background-position:100% 0; filter:brightness(1.08); text-decoration:none;}
+
+/* 2 grupė: kiti puslapiai - atskirti brūkšniu, paprastos nuorodos su rodykle */
+.site-header .page-section{border-left:1px solid rgba(23,20,15,0.15); padding-left:14px;}
+.site-header a.nav-page{
+  font-size:14px; font-weight:600; color:#17140F; line-height:1; white-space:nowrap; text-decoration:none;
+  display:inline-block; padding:10px 10px; border-radius:10px; transition:background 0.15s ease;
+}
+.site-header a.nav-page::after{content:" ›"; color:#A85C7E; font-weight:700;}
+.site-header a.nav-page:hover{background:rgba(23,20,15,0.05); text-decoration:none;}
+.site-header .nav-login{
+  display:inline-block; color:#F7F4EC !important; background:#17140F; padding:11px 16px; font-size:13px; font-weight:700; line-height:1.1;
+  border-radius:10px; white-space:nowrap; text-decoration:none; transition:background 0.15s ease;
+}
+.site-header .nav-login:hover{background:#2F6B5A; text-decoration:none;}
+.site-header .logout-btn{font-family:inherit; font-size:14px; font-weight:600; color:#4A453A; background:none; border:none; cursor:pointer; padding:10px; line-height:1;}
 .site-header .mobile-only{display:none;}
 .site-header .inline-form{display:inline; margin:0;}
 
 /* „Treniruotės“ išskleidžiamas meniu */
 .site-header .dropdown{position:relative;}
 .site-header .dropdown-menu{
-  position:absolute; top:calc(100% + 14px); left:50%;
-  min-width:180px; padding:10px; margin:0; list-style:none;
-  background:rgba(255,255,255,0.92); backdrop-filter:blur(14px);
+  position:absolute; top:calc(100% + 12px); left:50%;
+  min-width:180px; padding:10px;
+  background:rgba(255,255,255,0.95); backdrop-filter:blur(14px);
   border:1px solid rgba(23,20,15,0.1); border-radius:12px; box-shadow:0 16px 32px rgba(23,20,15,0.14);
   opacity:0; visibility:hidden; transform:translateX(-50%) translateY(4px);
   transition:opacity 0.15s ease, transform 0.15s ease, visibility 0.15s;
 }
 .site-header .dropdown:hover .dropdown-menu, .site-header .dropdown.open .dropdown-menu{opacity:1; visibility:visible; transform:translateX(-50%) translateY(0);}
-.site-header .dropdown-menu li a{display:block; padding:10px 14px; border-radius:8px; font-size:0.86rem; font-weight:600; color:#17140F; text-decoration:none;}
+.site-header .dropdown-menu li a{display:block; padding:10px 14px; border-radius:8px; font-size:14px; font-weight:600; color:#17140F; text-decoration:none;}
 .site-header .dropdown-menu li a:hover{background:rgba(47,107,90,0.08); color:#2F6B5A;}
 
 .site-header .burger{display:none; flex-direction:column; gap:5px; background:none; border:none; cursor:pointer; padding:6px;}
@@ -67,21 +76,24 @@
 @media(max-width:1080px){
   .site-header ul.nav-list{
     display:none; position:absolute; top:100%; left:0; right:0;
-    flex-direction:column; align-items:stretch; gap:6px; padding:14px; margin-top:6px;
-    background:rgba(251,249,244,0.98); border-bottom:1px solid rgba(23,20,15,0.08);
+    flex-direction:column; align-items:stretch; gap:10px; padding:14px; margin-top:6px;
+    background:#FBF9F4; border-bottom:1px solid rgba(23,20,15,0.08); box-shadow:0 16px 28px rgba(23,20,15,0.1);
   }
   .site-header ul.nav-list.nav-open{display:flex;}
-  .site-header ul.nav-list > li{width:100%;}
-  .site-header a.nav-link, .site-header button.nav-link, .site-header .dropdown-trigger{display:block; width:100%; text-align:left; padding:12px 10px;}
+  .site-header .nav-section > ul{flex-direction:column; align-items:stretch; gap:2px;}
+  .site-header .nav-section > ul > li{width:100%;}
+  .site-header .page-section{border-left:none; padding-left:0; border-top:1px solid rgba(23,20,15,0.12); padding-top:10px;}
+  .site-header a.nav-link, .site-header .dropdown-trigger, .site-header a.nav-page{display:block; width:100%; text-align:left; padding:12px 10px;}
+  .site-header .nav-login{display:block; text-align:center; margin-top:4px;}
   .site-header .dropdown-menu{position:static; transform:none; box-shadow:none; border:none; background:rgba(23,20,15,0.03); margin-top:4px; opacity:1; visibility:visible; display:none;}
   .site-header .dropdown.open .dropdown-menu{display:block; transform:none;}
   .site-header .burger{display:flex;}
-  .site-header .nav-login{display:none;}
+  .site-header .desktop-only{display:none;}
   .site-header .mobile-only{display:block;}
-  .site-header .mobile-only a.nav-link{border-color:#17140F; font-weight:700;}
+  .site-header .nav-cta.mobile-only{display:inline-block;}
 }
 @media(max-width:860px){
   .site-header nav{padding:8px 16px; gap:10px;}
   .site-header .logo img{height:30px;}
-  .site-header .nav-cta{font-size:0.7rem; padding:9px 14px;}
+  .site-header .nav-cta{font-size:11px; padding:9px 12px;}
 }

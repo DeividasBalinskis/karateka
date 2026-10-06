@@ -97,7 +97,10 @@ page_start('Mano paskyra', ['noindex' => true]);
 ?>
 <div class="page-head">
   <div class="eyebrow">Mano paskyra</div>
-  <h1 class="styled">Sveiki, <?= e($a['first_name']) ?>!</h1>
+  <div class="row between" style="align-items:flex-end;">
+    <h1 class="styled" style="margin-bottom:0;">Sveiki, <?= e($a['first_name']) ?>!</h1>
+    <form method="post" action="<?= url('atsijungti.php') ?>" class="inline-form"><?= csrf_field() ?><button type="submit" class="btn btn-ghost btn-sm">Atsijungti</button></form>
+  </div>
 </div>
 
 <?php if ($a['status'] === 'pending_approval'): ?>
