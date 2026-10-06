@@ -65,11 +65,10 @@ page_start('Prisijungti', ['narrow' => true, 'noindex' => true]);
     </label>
     <button class="btn btn-primary btn-block" type="submit">Prisijungti</button>
   </form>
+  <p class="small" style="margin-top:12px; text-align:center;"><a href="<?= url('slaptazodis.php') ?>">Pamiršote slaptažodį?</a></p>
   <hr class="divider">
-  <div class="row between small">
-    <a href="<?= url('slaptazodis.php') ?>">Pamiršote slaptažodį?</a>
-    <a href="<?= url('registracija.php') ?>">Neturite paskyros? Registruokitės</a>
-  </div>
+  <p class="muted small" style="text-align:center; margin-bottom:10px;">Neturite paskyros?</p>
+  <a class="btn btn-ghost btn-block" href="<?= url('registracija.php') ?>">Sukurti paskyrą</a>
 </div>
 <?php
 page_end();

@@ -143,6 +143,15 @@
   .nav-cta{background:linear-gradient(90deg, #2E7FB0 0%, #A85C7E 55%, #D9698C 100%); background-size:200% 100%; color:#fff !important; padding:11px 20px; font-size:0.82rem; font-weight:700; border-radius:10px; text-shadow:0 1px 2px rgba(0,0,0,0.25); box-shadow:0 6px 16px rgba(168,92,126,0.35); transition:transform 0.15s ease, background-position 0.3s ease;}
   .nav-cta:hover{background-position:100% 0;}
   .nav-cta:hover{filter:brightness(1.08); transform:translateY(-1px);}
+  .nav-login{color:var(--ink) !important; padding:10px 18px; font-size:0.82rem; font-weight:700; border-radius:10px; border:1.5px solid var(--ink); white-space:nowrap; transition:background 0.15s ease, color 0.15s ease;}
+  .nav-login:hover{background:var(--ink); color:var(--cream) !important;}
+  .mobile-only{display:none;}
+  nav li:nth-child(4) a.nav-link{border-color:rgba(47,107,90,0.35);}
+  nav li:nth-child(4) a.nav-link:hover{background:rgba(47,107,90,0.08); border-color:#2F6B5A;}
+  nav li.mobile-only a.nav-link{border-color:var(--ink); font-weight:700;}
+  nav{gap:18px;}
+  nav ul{gap:12px;}
+  nav a.nav-link, .dropdown-trigger, .nav-cta{white-space:nowrap;}
 
   /* dropdown menu - looks like a plain nav link, opens on hover (desktop) or tap (mobile via JS) */
   .dropdown{position:relative;}
@@ -441,6 +450,23 @@
   @media(max-width:1080px){
     .roots-row{grid-template-columns:1fr; gap:28px;}
   }
+  /* Meniu: ☰ režimas planšetėse ir telefonuose (prisijungimo mygtukas netelpa vienoje eilutėje) */
+  @media(max-width:1080px){
+    nav ul{
+      display:none; position:absolute; top:100%; left:0; right:0;
+      flex-direction:column; gap:0; padding:14px; margin-top:6px;
+      background:rgba(251,249,244,0.98); border-bottom:1px solid rgba(23,20,15,0.08);
+    }
+    nav ul.nav-open{display:flex;}
+    nav ul li{width:100%;}
+    nav a.nav-link{display:block; padding:12px 6px;}
+    .dropdown-trigger{padding:12px 6px; display:block;}
+    .dropdown-menu{position:static; transform:none; box-shadow:none; border:none; background:rgba(23,20,15,0.03); margin-top:4px; opacity:1; visibility:visible; display:none;}
+    .dropdown.open .dropdown-menu{display:block; transform:none;}
+    .burger{display:flex;}
+    .nav-login{display:none;}
+    nav ul li.mobile-only{display:block;}
+  }
   @media(max-width:860px){
     .roots-values{grid-template-columns:repeat(2,1fr);}
     .roots-history{padding:28px 24px;}
@@ -479,6 +505,8 @@
     nav{padding:8px 16px; gap:10px;}
     .logo img{height:30px;}
     .nav-cta{white-space:nowrap; font-size:0.7rem; padding:9px 14px;}
+    .nav-login{display:none;}
+    nav ul li.mobile-only{display:block;}
     .about-panel, .contact-panel, .registration-panel{padding:30px 24px;}
   }
   @media (prefers-reduced-motion: reduce){
@@ -506,7 +534,10 @@
         </ul>
       </li>
       <li><a class="nav-link" href="#kontaktai">Kontaktai</a></li>
+      <li><a class="nav-link" href="naujienos.php">Naujienos</a></li>
+      <li class="mobile-only"><a class="nav-link" href="prisijungti.php">Prisijungti</a></li>
     </ul>
+    <a href="prisijungti.php" class="nav-login">Prisijungti</a>
     <a href="#registracija" class="nav-cta">2 treniruotės nemokamai</a>
     <button class="burger" id="burgerBtn" aria-label="Meniu"><span></span><span></span><span></span></button>
   </nav>

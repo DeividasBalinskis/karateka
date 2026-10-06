@@ -70,6 +70,17 @@
   }
   .choice .label{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:1.05rem; color:#F7F4EC !important; text-decoration:none;}
 
+  .login-btn{
+    position:absolute; top:44px; right:40px; z-index:3;
+    padding:11px 22px; border-radius:10px;
+    background:rgba(247,244,236,0.08); border:1.5px solid rgba(247,244,236,0.35);
+    backdrop-filter:blur(10px);
+    font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:0.9rem;
+    color:#F7F4EC; text-decoration:none;
+    transition:background 0.2s ease, border-color 0.2s ease;
+  }
+  .login-btn:hover{background:rgba(168,92,126,0.85); border-color:rgba(168,92,126,0.9);}
+
   .scroll-hint{
     position:relative; z-index:2; padding-bottom:20px; text-align:center;
     font-family:'JetBrains Mono',monospace; font-size:0.7rem; letter-spacing:0.12em;
@@ -80,6 +91,9 @@
     .choices{grid-template-columns:1fr; gap:14px; margin-top:clamp(28px,4.5vh,44px);}
     .stage{height:auto; min-height:100vh; padding:112px 0 40px;}
     body{overflow:auto;}
+    .login-btn{top:16px; right:16px; padding:8px 14px; font-size:0.8rem;}
+    .top{top:56px;}
+    .stage{padding-top:136px;}
   }
 </style>
 </head>
@@ -87,6 +101,8 @@
 
 <div class="stage">
   <div class="bg"><img src="Page1HeroBg.jpg" alt="Karate treniruotė"></div>
+
+  <a class="login-btn" href="prisijungti.php">Prisijungti</a>
 
   <div class="top">
     <img src="LogoWhite.png" alt="Karateka logotipas">
