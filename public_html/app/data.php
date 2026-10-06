@@ -107,3 +107,45 @@ function member_unread_notes(int $memberId): int
 {
     return (int) q_value('SELECT COUNT(*) FROM coach_notes WHERE member_id = ? AND read_at IS NULL', [$memberId]);
 }
+
+// ---------- Pamokos ----------
+
+/** Ar paskyra gali matyti pamokas (aktyvus narys arba treneris) */
+function can_see_lessons(?array $a = null): bool
+{
+    return is_active_account($a ?? current_account());
+}
+
+/**
+ * Pamokos, matomos šiai paskyrai: skirtos visiems arba bent vieno jos nario grupei.
+ * Treneriai mato visas (ir nepaskelbtas).
+ */
+function visible_lessons(array $a, ?string $topic = null): array
+{
+    $params = [];
+    $sql = 'SELECT l.* FROM lessons l WHERE 1';
+    if (!is_staff($a)) {
+        $sql .= ' AND l.is_published = 1 AND (
+                    NOT EXISTS (SELECT 1 FROM lesson_groups lg WHERE lg.lesson_id = l.id)
+                    OR EXISTS (SELECT 1 FROM lesson_groups lg
+                                 JOIN members m ON m.group_id = lg.group_id AND m.status = "active"
+                                 JOIN account_members am ON am.member_id = m.id
+                                WHERE lg.lesson_id = l.id AND am.account_id = ?))';
+        $params[] = $a['id'];
+    }
+    if ($topic !== null) {
+        $sql .= ' AND l.topic <=> ?';
+        $params[] = $topic === '' ? null : $topic;
+    }
+    return q_all($sql . ' ORDER BY l.topic IS NULL, l.topic, l.created_at DESC', $params);
+}
+
+function lesson_videos(array $lesson): array
+{
+    return array_values(array_filter(explode(',', (string) $lesson['videos'])));
+}
+
+function lesson_topics(): array
+{
+    return q('SELECT DISTINCT topic FROM lessons WHERE topic IS NOT NULL AND topic <> "" ORDER BY topic')->fetchAll(PDO::FETCH_COLUMN);
+}

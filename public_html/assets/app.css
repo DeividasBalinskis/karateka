@@ -359,3 +359,15 @@ legend{font-family:'Space Grotesk',sans-serif; font-weight:700; padding:0 6px;}
   .events-card .event .badge{float:right; margin:2px 0 0 8px;}
   .events-card .event h3{margin-top:0 !important;}
 }
+
+/* Pamokos */
+.lessons-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(250px,1fr)); gap:18px;}
+.lesson-card{display:block; overflow:hidden; color:var(--ink); transition:transform .15s;}
+.lesson-card:hover{text-decoration:none; transform:translateY(-3px);}
+.lesson-card .thumb{position:relative; aspect-ratio:16/9; background:linear-gradient(135deg, #2F2533, #150E12); display:flex; align-items:center; justify-content:center;}
+.lesson-card .thumb img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover;}
+.lesson-card .play{position:relative; width:50px; height:50px; border-radius:50%; background:rgba(20,16,12,0.65); color:#fff; display:flex; align-items:center; justify-content:center; font-size:1.1rem; border:1px solid rgba(255,255,255,0.4);}
+.lesson-card .text-icon{font-family:'Space Grotesk',sans-serif; font-size:2.4rem; font-weight:700; color:rgba(247,244,236,0.5);}
+.lesson-card .body{padding:14px 16px 16px;}
+.lesson-card h3{margin:6px 0 4px;}
+.lesson .video{max-width:860px;}

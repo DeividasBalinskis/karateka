@@ -38,6 +38,7 @@ function page_start(string $title, array $opt = []): void
   <a href="<?= url('admin/renginiai.php') ?>">Renginiai</a>
   <a href="<?= url('admin/taskai.php') ?>">Taškai</a>
   <a href="<?= url('admin/naujienos.php') ?>">Naujienos</a>
+  <a href="<?= url('admin/pamokos.php') ?>">Pamokos</a>
   <?php if (is_admin()): ?><a href="<?= url('admin/paskyros.php') ?>">Paskyros</a><?php endif; ?>
   <a href="<?= url('admin/patvirtinimai.php') ?>" class="tab-last">Patvirtinimai<?php if ($pendingCount): ?> <span class="count-badge"><?= $pendingCount ?></span><?php endif; ?></a>
 </nav>
@@ -167,6 +168,9 @@ function site_header(bool $home = false): void
       <li class="nav-section page-section">
         <ul>
           <li><a class="nav-page" href="<?= url('naujienos.php') ?>">Naujienos</a></li>
+          <?php if ($a && can_see_lessons($a)): ?>
+            <li><a class="nav-page" href="<?= url('pamokos.php') ?>">Pamokos</a></li>
+          <?php endif; ?>
           <?php if ($a && is_staff($a)): ?>
             <li><a class="nav-page" href="<?= url('admin/') ?>">Treneriams<?php if ($n = pending_approvals_count()): ?> <span class="count-badge" title="Laukia patvirtinimo"><?= $n ?></span><?php endif; ?></a></li>
           <?php endif; ?>

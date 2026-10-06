@@ -35,3 +35,4 @@ Buvęs pradinis puslapis `index.html` sujungtas į `index.php`. Serveryje **išt
 - `004_change_email.sql` - el. pašto keitimas paskyroje.
 - `005_public_site.sql` - kainos ir tvarkaraštis pagrindiniame puslapyje iš DB.
 - `006_coach_notes.sql` - trenerio pastabos nariams.
+- `007_lessons.sql` - pamokos nariams.
