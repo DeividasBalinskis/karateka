@@ -1,6 +1,6 @@
 # Įkėlimas į test.karateka.lt
 
-Reikia: PHP 8.0+ su `pdo_mysql` ir `gd` (DirectAdmin → PHP nustatymai), MySQL / MariaDB.
+Reikia: PHP 7.3+ (rekomenduojama 8.2) su `pdo_mysql` ir `gd`, MySQL / MariaDB.
 
 ## 1. Duomenų bazė (vieną kartą)
 1. DirectAdmin → MySQL Management → sukurkite test DB ir vartotoją.
