@@ -42,7 +42,7 @@ if (is_post()) {
     if (!$errors) {
         db()->beginTransaction();
         if ($id) {
-            q('UPDATE events SET type = ?, title = ?, starts_on = ?, ends_on = ?, start_time = ?, location = ?, description = ? WHERE id = ?', [...array_values($ev), $id]);
+            q('UPDATE events SET type = ?, title = ?, starts_on = ?, ends_on = ?, start_time = ?, location = ?, description = ? WHERE id = ?', array_merge(array_values($ev), [$id]));
             q('DELETE FROM event_groups WHERE event_id = ?', [$id]);
         } else {
             q('INSERT INTO events (type, title, starts_on, ends_on, start_time, location, description) VALUES (?, ?, ?, ?, ?, ?, ?)', array_values($ev));

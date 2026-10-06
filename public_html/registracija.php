@@ -62,7 +62,7 @@ if (is_post() && in_array($type, ['tevai', 'pats'], true)) {
         }
         $kids = [];
         foreach (array_slice((array) ($_POST['kids'] ?? []), 0, MAX_KIDS) as $i => $k) {
-            $k = array_map(fn($x) => is_string($x) ? trim($x) : '', (array) $k);
+            $k = array_map(function ($x) { return is_string($x) ? trim($x) : ''; }, (array) $k);
             if (($k['first_name'] ?? '') === '' && ($k['last_name'] ?? '') === '' && ($k['birth_date'] ?? '') === '') {
                 continue;   // tuščias blokas
             }
@@ -245,7 +245,7 @@ $kidsInput = array_values((array) ($v['kids'] ?? [[]])) ?: [[]];
       <?php endif; ?>
       <hr class="divider">
       <label class="check"><input type="checkbox" name="data_consent" value="1" required <?= !empty($v['data_consent']) ? 'checked' : '' ?>>
-        <span>Sutinku, kad VšĮ Karate Ateitis tvarkytų pateiktus duomenis narystės administravimo tikslais. Duomenys neperduodami tretiesiems asmenims.</span></label>
+        <span>Sutinku, kad VšĮ Karate Ateitis tvarkytų pateiktus duomenis narystės administravimo tikslais. Duomenys neperduodami tretiesiems asmenims. <a href="<?= url('privatumas.php') ?>" target="_blank">Privatumo politika</a></span></label>
       <button class="btn btn-primary btn-block" type="submit" style="margin-top:18px;">Registruotis</button>
       <p class="hint" style="margin-top:10px;">Paskyrą patvirtins treneris ir priskirs grupę.</p>
     </div>

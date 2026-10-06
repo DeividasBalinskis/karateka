@@ -245,3 +245,12 @@ legend{font-family:'Space Grotesk',sans-serif; font-weight:700; padding:0 6px;}
 @media(max-width:860px){
   .form.filters, .form.inline-fields{grid-template-columns:1fr;}
 }
+
+/* Teisiniai tekstai */
+.legal{max-width:820px;}
+.legal h2{margin-top:28px;}
+.legal h3{margin-top:16px;}
+.legal p, .legal ul{margin-top:8px;}
+.legal ul{padding-left:20px;}
+.legal li + li{margin-top:4px;}
+.todo{background:#FFE58A; padding:0 4px; border-radius:4px;}

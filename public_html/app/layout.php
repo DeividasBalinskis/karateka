@@ -72,7 +72,7 @@ function page_end(): void
 </main>
 <footer class="site-footer">
   <div class="footer-bottom">
-    <span>© <?= date('Y') ?> VšĮ Karate Ateitis</span>
+    <span>© <?= date('Y') ?> VšĮ Karate Ateitis · <a href="<?= url('privatumas.php') ?>">Privatumo politika</a></span>
     <span>Nuo balto iki juodo diržo.</span>
   </div>
 </footer>

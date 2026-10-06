@@ -39,7 +39,7 @@ if (is_post()) {
     if ($action === 'update' && $id) {
         $g = group_from_post($errors);
         if (!$errors) {
-            q('UPDATE training_groups SET name = ?, category = ?, location = ?, sort_order = ?, is_active = ? WHERE id = ?', [...array_values($g), $id]);
+            q('UPDATE training_groups SET name = ?, category = ?, location = ?, sort_order = ?, is_active = ? WHERE id = ?', array_merge(array_values($g), [$id]));
             flash('ok', 'Išsaugota.');
             redirect('admin/grupes.php?id=' . $id);
         }

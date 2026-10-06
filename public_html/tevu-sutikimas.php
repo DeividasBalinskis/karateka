@@ -87,7 +87,7 @@ page_start('Tėvų sutikimas', ['narrow' => true, 'noindex' => true]);
     <?= csrf_field() ?>
     <input type="hidden" name="t" value="<?= e($t) ?>">
     <label class="check"><input type="checkbox" name="consent" value="1" required>
-      <span>Esu vaiko tėvas / mama / globėjas ir sutinku, kad vaikas turėtų paskyrą, o klubas tvarkytų jo duomenis narystės administravimo tikslais.</span></label>
+      <span>Esu vaiko tėvas / mama / globėjas ir sutinku, kad vaikas turėtų paskyrą, o klubas tvarkytų jo duomenis narystės administravimo tikslais (<a href="<?= url('privatumas.php') ?>" target="_blank">privatumo politika</a>).</span></label>
     <label class="check"><input type="checkbox" name="photo_consent" value="1" <?= !empty($v['photo_consent']) ? 'checked' : '' ?>>
       <span>Sutinku, kad klubas skelbtų vaiko nuotraukas ir vaizdo įrašus iš treniruočių ir renginių.</span></label>
 

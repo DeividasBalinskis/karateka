@@ -20,7 +20,7 @@ function save_uploaded_image(array $file, string $dir): string
     if (!$info || !isset($types[$info[2]])) {
         throw new RuntimeException('Netinkamas formatas: tinka JPG, PNG arba WEBP.');
     }
-    if ($info[0] * $info[1] > 50_000_000) {
+    if ($info[0] * $info[1] > 50000000) {
         throw new RuntimeException('Nuotraukos raiška per didelė.');
     }
     $src = @$types[$info[2]]($file['tmp_name']);

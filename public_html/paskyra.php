@@ -91,7 +91,7 @@ foreach ($members as $m) {
     }
 }
 $selected = $selected ?? ($members[0] ?? null);
-$isParent = (bool) array_filter($members, fn($m) => $m['relation'] === 'parent') || !array_filter($members, fn($m) => $m['relation'] === 'self');
+$isParent = (bool) array_filter($members, function ($m) { return $m['relation'] === 'parent'; }) || !array_filter($members, function ($m) { return $m['relation'] === 'self'; });
 
 page_start('Mano paskyra', ['noindex' => true]);
 ?>

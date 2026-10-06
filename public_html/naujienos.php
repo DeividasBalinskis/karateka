@@ -19,7 +19,7 @@ if ($id) {
       <div class="news-meta"><?= e(fmt_date($n['published_at'], true)) ?></div>
       <h1><?= e($n['title']) ?></h1>
       <div class="news-body"><?= text_to_html($n['body']) ?></div>
-      <?php $images = array_filter($media, fn($m) => $m['type'] === 'image'); ?>
+      <?php $images = array_filter($media, function ($m) { return $m['type'] === 'image'; }); ?>
       <?php if ($images): ?>
         <div class="gallery">
           <?php foreach ($images as $m): ?>

@@ -2,7 +2,7 @@
 // Reakcija į naujieną: viena žmogui, tą pačią paspaudus dar kartą - nuimama
 require __DIR__ . '/app/bootstrap.php';
 
-$json = str_contains($_SERVER['HTTP_ACCEPT'] ?? '', 'application/json');
+$json = strpos($_SERVER['HTTP_ACCEPT'] ?? '', 'application/json') !== false;
 $newsId = (int) post('news_id');
 $back = 'naujienos.php?id=' . $newsId;
 
