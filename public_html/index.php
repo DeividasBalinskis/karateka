@@ -54,7 +54,7 @@ require __DIR__ . '/app/bootstrap.php';
   a{color:inherit; text-decoration:none;}
   img{max-width:100%; display:block;}
   .wrap{max-width:1120px; margin:0 auto; padding:0 32px; position:relative; z-index:2;}
-  section{padding:100px 0; position:relative; z-index:2;}
+  section{padding:100px 0; position:relative; z-index:2; scroll-margin-top:80px;}   /* kad sekcijos pavadinimas nelįstų po meniu */
   .eyebrow{
     font-family:'JetBrains Mono', monospace; font-size:0.72rem; letter-spacing:0.16em;
     text-transform:uppercase; color:var(--accent); font-weight:700;
@@ -797,17 +797,29 @@ require __DIR__ . '/app/bootstrap.php';
   }, {passive:true});
 
   // open directly on the right group if the URL has #vaikams / #jaunimui / #suaugusiems
-  function openGroupFromHash(){
-    const id = window.location.hash.replace('#','');
+  // Atidaro grupę pagal #vaikams / #jaunimui / #suaugusiems. Grupių sekcija yra pačiame viršuje,
+  // todėl slenkame į puslapio pradžią - kad matytųsi ir pavadinimas „Kam ieškote treniruočių?“.
+  function openGroup(id, smooth){
     const idx = groupSlideIds.indexOf(id);
-    if(idx > -1){
-      document.getElementById('grupes').scrollIntoView({behavior:'instant'});
-      groupScroll.scrollLeft = idx * groupScroll.clientWidth;
-      groupDots.forEach((d, i) => d.classList.toggle('active', i === idx));
-    }
+    if(idx < 0) return false;
+    // Karuselę perjungiame iškart, o puslapį į viršų slenkame atskirai (du lygiagretūs „smooth“ slinkimai vienas kitą nutraukia)
+    groupScroll.style.scrollBehavior = 'auto';
+    groupScroll.scrollLeft = idx * groupScroll.clientWidth;
+    groupScroll.style.scrollBehavior = '';
+    window.scrollTo({top:0, behavior: smooth ? 'smooth' : 'instant'});
+    groupDots.forEach((d, i) => d.classList.toggle('active', i === idx));
+    return true;
   }
+  function openGroupFromHash(){ openGroup(window.location.hash.replace('#',''), false); }
   window.addEventListener('load', openGroupFromHash);
   window.addEventListener('hashchange', openGroupFromHash);
+  // Meniu nuorodos į grupes veikia ir tada, kai adreso #... nesikeičia (pvz. du kartus iš eilės ta pati grupė)
+  document.querySelectorAll('a[href="#vaikams"], a[href="#jaunimui"], a[href="#suaugusiems"]').forEach(a => {
+    a.addEventListener('click', (e) => {
+      const id = a.getAttribute('href').slice(1);
+      if(openGroup(id, true)){ e.preventDefault(); history.replaceState(null, '', '#' + id); }
+    });
+  });
 
   // location accordions - opening one closes its siblings, keeps the card height predictable
   document.querySelectorAll('.loc-accordion').forEach(group => {
