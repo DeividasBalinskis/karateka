@@ -117,8 +117,10 @@ function can_see_lessons(?array $a = null): bool
 }
 
 /**
- * Pamokos, matomos šiai paskyrai: skirtos visiems arba bent vieno jos nario grupei.
- * Treneriai mato visas (ir nepaskelbtas).
+ * Pamokos, matomos šiai paskyrai. Pamoka matoma, jei bent vienas paskyros narys (pats ar vaikas):
+ *  - yra pamokos grupėje (arba pamoka skirta visoms grupėms), IR
+ *  - turi tą diržą arba vienu žemesnį (baltas mato ir geltono pamokas), arba pamoka skirta visiems diržams.
+ * Diržo nenurodžius laikoma, kad narys baltas (9 kyu). Treneriai mato viską (ir nepaskelbtas).
  */
 function visible_lessons(array $a, ?string $topic = null): array
 {
@@ -126,18 +128,19 @@ function visible_lessons(array $a, ?string $topic = null): array
     $sql = 'SELECT l.* FROM lessons l WHERE 1';
     if (!is_staff($a)) {
         $sql .= ' AND l.is_published = 1 AND (
-                    NOT EXISTS (SELECT 1 FROM lesson_groups lg WHERE lg.lesson_id = l.id)
-                    OR EXISTS (SELECT 1 FROM lesson_groups lg
-                                 JOIN members m ON m.group_id = lg.group_id AND m.status = "active"
-                                 JOIN account_members am ON am.member_id = m.id
-                                WHERE lg.lesson_id = l.id AND am.account_id = ?))';
+                    (l.belt_level IS NULL AND NOT EXISTS (SELECT 1 FROM lesson_groups lg WHERE lg.lesson_id = l.id))
+                    OR EXISTS (SELECT 1 FROM members m JOIN account_members am ON am.member_id = m.id
+                                WHERE am.account_id = ? AND m.status = "active"
+                                  AND (NOT EXISTS (SELECT 1 FROM lesson_groups lg WHERE lg.lesson_id = l.id)
+                                       OR EXISTS (SELECT 1 FROM lesson_groups lg WHERE lg.lesson_id = l.id AND lg.group_id = m.group_id))
+                                  AND (l.belt_level IS NULL OR l.belt_level BETWEEN COALESCE(m.belt_level, 1) AND COALESCE(m.belt_level, 1) + 1)))';
         $params[] = $a['id'];
     }
     if ($topic !== null) {
         $sql .= ' AND l.topic <=> ?';
         $params[] = $topic === '' ? null : $topic;
     }
-    return q_all($sql . ' ORDER BY l.topic IS NULL, l.topic, l.created_at DESC', $params);
+    return q_all($sql . ' ORDER BY l.belt_level IS NOT NULL, l.belt_level, l.topic, l.created_at DESC', $params);
 }
 
 function lesson_videos(array $lesson): array

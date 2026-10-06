@@ -42,12 +42,12 @@ if ($id) {
         } elseif ($status === 'active' && !$group) {
             $errors[] = 'Aktyviam nariui reikia grupės.';
         } else {
-            q('UPDATE members SET first_name = ?, last_name = ?, birth_date = ?, group_id = ?, status = ?, photo_consent = ? WHERE id = ?',
-                [$first, $last, $birth, $group, $status, !empty($_POST['photo_consent']) ? 1 : 0, $id]);
+            q('UPDATE members SET first_name = ?, last_name = ?, birth_date = ?, group_id = ?, status = ?, photo_consent = ?, belt_level = ? WHERE id = ?',
+                [$first, $last, $birth, $group, $status, !empty($_POST['photo_consent']) ? 1 : 0, belt_from_post('belt_level'), $id]);
             flash('ok', 'Išsaugota.');
             redirect('admin/nariai.php?id=' . $id);
         }
-        $m = array_merge($m, ['first_name' => $first, 'last_name' => $last, 'birth_date' => $birth, 'status' => $status, 'group_id' => $group]);
+        $m = array_merge($m, ['first_name' => $first, 'last_name' => $last, 'birth_date' => $birth, 'status' => $status, 'group_id' => $group, 'belt_level' => belt_from_post('belt_level')]);
     }
     $accounts = q_all('SELECT a.*, am.relation FROM account_members am JOIN accounts a ON a.id = am.account_id WHERE am.member_id = ?', [$id]);
 
@@ -67,6 +67,7 @@ if ($id) {
         <label>Gimimo data <span class="hint"><?= age_on($m['birth_date']) ?> m.</span>
           <?= date_parts_field('birth_date', $m['birth_date']) ?></label>
         <label>Grupė <select name="group_id"><?= group_options($m['group_id'] ? (int) $m['group_id'] : null) ?></select></label>
+        <label>Diržas <select name="belt_level"><?= belt_options($m['belt_level'] !== null ? (int) $m['belt_level'] : null) ?></select></label>
         <label>Būsena
           <select name="status">
             <?php foreach (['active' => 'Aktyvus', 'pending' => 'Laukia patvirtinimo', 'inactive' => 'Neaktyvus'] as $k => $label): ?>
@@ -182,13 +183,14 @@ page_start('Nariai', ['admin' => true]);
 <div class="panel card">
   <p class="muted small" style="margin-bottom:8px;">Rasta: <?= count($rows) ?></p>
   <table class="table cards">
-    <thead><tr><th>Vardas, pavardė</th><th>Amžius</th><th>Grupė</th><th>Nuotraukos</th></tr></thead>
+    <thead><tr><th>Vardas, pavardė</th><th>Amžius</th><th>Grupė</th><th>Diržas</th><th>Nuotraukos</th></tr></thead>
     <tbody>
       <?php foreach ($rows as $r): ?>
         <tr>
           <td><a href="?id=<?= (int) $r['id'] ?>"><strong><?= e($r['first_name'] . ' ' . $r['last_name']) ?></strong></a></td>
           <td><?= age_on($r['birth_date']) ?> m.</td>
           <td><?= e($r['group_name'] ?: '—') ?></td>
+          <td><?= belt_chip($r['belt_level'] !== null ? (int) $r['belt_level'] : null) ?></td>
           <td><?= $r['photo_consent'] ? '<span class="badge badge-ok">sutinka</span>' : '<span class="badge">ne</span>' ?></td>
         </tr>
       <?php endforeach; ?>

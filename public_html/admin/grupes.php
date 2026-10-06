@@ -214,7 +214,7 @@ if ($id) {
                 <?php foreach ($members as $m): ?>
                   <li class="row" style="gap:10px;">
                     <input type="checkbox" class="pick" name="members[]" value="<?= (int) $m['id'] ?>" style="width:18px; height:18px; accent-color:var(--accent);">
-                    <span><a href="<?= url('admin/nariai.php?id=' . (int) $m['id']) ?>"><?= e($m['first_name'] . ' ' . $m['last_name']) ?></a> <span class="muted">· <?= age_on($m['birth_date']) ?> m.</span></span>
+                    <span><a href="<?= url('admin/nariai.php?id=' . (int) $m['id']) ?>"><?= e($m['first_name'] . ' ' . $m['last_name']) ?></a> <span class="muted">· <?= age_on($m['birth_date']) ?> m.</span> <?= belt_chip($m['belt_level'] !== null ? (int) $m['belt_level'] : null) ?></span>
                   </li>
                 <?php endforeach; ?>
               </ul>

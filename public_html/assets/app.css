@@ -377,3 +377,10 @@ legend{font-family:'Space Grotesk',sans-serif; font-weight:700; padding:0 6px;}
 @media(max-width:860px){ .account-main.no-points > .stack{grid-template-columns:1fr;} }
 .date-parts{display:grid; grid-template-columns:1.1fr 1.4fr 0.9fr; gap:8px;}
 .badge-members{background:rgba(23,20,15,0.85); color:#F7F4EC; font-family:'Inter',sans-serif; letter-spacing:0; text-transform:none;}
+
+/* Diržai */
+.belt-chip{display:inline-flex; align-items:center; gap:7px; font-size:0.78rem; font-weight:600; padding:4px 10px 4px 6px; border-radius:20px; background:rgba(255,255,255,0.75); border:1px solid rgba(23,20,15,0.12); white-space:nowrap; vertical-align:middle;}
+.belt-swatch{width:22px; height:8px; border-radius:3px; border:1px solid rgba(23,20,15,0.25);}
+.belt-none{color:var(--muted); padding-left:10px;}
+.belt-heading{display:flex; align-items:center; gap:12px; margin:26px 0 12px;}
+.belt-heading h2{margin:0;}

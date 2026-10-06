@@ -29,6 +29,7 @@ if ($id) {
     ?>
     <a class="small" href="<?= url('pamokos.php' . ($lesson['topic'] ? '?tema=' . rawurlencode($lesson['topic']) : '')) ?>">← Visos pamokos</a>
     <article class="panel card lesson" style="margin-top:12px;">
+      <?= $lesson['belt_level'] !== null ? belt_chip((int) $lesson['belt_level']) : '' ?>
       <?php if ($lesson['topic']): ?><span class="badge badge-pink"><?= e($lesson['topic']) ?></span><?php endif; ?>
       <?= staff_link('admin/pamokos.php?edit=' . (int) $lesson['id']) ?>
       <h1 style="margin-top:10px;"><?= e($lesson['title']) ?></h1>
@@ -66,8 +67,21 @@ page_start('Pamokos', ['noindex' => true]);
   <div class="panel card"><p class="muted">Pamokų dar nėra.</p></div>
 <?php endif; ?>
 
+<?php
+// Pamokos sugrupuotos pagal diržą: pirma „visiems“, tada nuo balto iki juodo
+$byBelt = [];
+foreach ($lessons as $l) {
+    $byBelt[$l['belt_level'] === null ? 0 : (int) $l['belt_level']][] = $l;
+}
+ksort($byBelt);
+?>
+<?php foreach ($byBelt as $beltLvl => $beltLessons): ?>
+  <div class="belt-heading">
+    <h2><?= $beltLvl ? e(BELTS[$beltLvl][0]) : 'Visiems' ?></h2>
+    <?= $beltLvl ? belt_chip($beltLvl) : '' ?>
+  </div>
 <div class="lessons-grid">
-  <?php foreach ($lessons as $l): $videos = lesson_videos($l); $link = url('pamokos.php?id=' . (int) $l['id']); ?>
+  <?php foreach ($beltLessons as $l): $videos = lesson_videos($l); $link = url('pamokos.php?id=' . (int) $l['id']); ?>
     <a class="panel lesson-card" href="<?= $link ?>">
       <div class="thumb">
         <?php if ($videos): ?>
@@ -86,5 +100,6 @@ page_start('Pamokos', ['noindex' => true]);
     </a>
   <?php endforeach; ?>
 </div>
+<?php endforeach; ?>
 <?php
 page_end();

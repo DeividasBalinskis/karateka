@@ -18,6 +18,7 @@ if (is_post()) {
 
     $title = post('title');
     $topic = post('topic') ?: null;
+    $belt = belt_from_post('belt_level');
     $body = post('body') ?: null;
     $published = !empty($_POST['is_published']) ? 1 : 0;
     $groupIds = array_map('intval', (array) ($_POST['groups'] ?? []));
@@ -45,12 +46,12 @@ if (is_post()) {
         db()->beginTransaction();
         $videoStr = $videos ? implode(',', array_unique($videos)) : null;
         if ($id) {
-            q('UPDATE lessons SET title = ?, topic = ?, body = ?, videos = ?, is_published = ?, updated_at = NOW() WHERE id = ?',
-                [$title, $topic, $body, $videoStr, $published, $id]);
+            q('UPDATE lessons SET title = ?, topic = ?, belt_level = ?, body = ?, videos = ?, is_published = ?, updated_at = NOW() WHERE id = ?',
+                [$title, $topic, $belt, $body, $videoStr, $published, $id]);
             q('DELETE FROM lesson_groups WHERE lesson_id = ?', [$id]);
         } else {
-            q('INSERT INTO lessons (title, topic, body, videos, is_published, author_id) VALUES (?, ?, ?, ?, ?, ?)',
-                [$title, $topic, $body, $videoStr, $published, $me['id']]);
+            q('INSERT INTO lessons (title, topic, belt_level, body, videos, is_published, author_id) VALUES (?, ?, ?, ?, ?, ?, ?)',
+                [$title, $topic, $belt, $body, $videoStr, $published, $me['id']]);
             $id = (int) db()->lastInsertId();
         }
         foreach ($groupIds as $gid) {
@@ -64,7 +65,7 @@ if (is_post()) {
 
 if ($edit !== '') {
     $l = $edit === 'new'
-        ? ['id' => 0, 'title' => '', 'topic' => '', 'body' => '', 'videos' => '', 'is_published' => 1]
+        ? ['id' => 0, 'title' => '', 'topic' => '', 'belt_level' => null, 'body' => '', 'videos' => '', 'is_published' => 1]
         : q_one('SELECT * FROM lessons WHERE id = ?', [(int) $edit]);
     if (!$l) {
         not_found();
@@ -72,7 +73,7 @@ if ($edit !== '') {
     $selectedGroups = $l['id'] ? array_map('strval', q('SELECT group_id FROM lesson_groups WHERE lesson_id = ?', [$l['id']])->fetchAll(PDO::FETCH_COLUMN)) : [];
     $videoLinks = implode("\n", array_map(function ($v) { return 'https://youtu.be/' . $v; }, lesson_videos($l)));
     if ($errors) {
-        $l = array_merge($l, ['title' => post('title'), 'topic' => post('topic'), 'body' => post('body'), 'is_published' => !empty($_POST['is_published'])]);
+        $l = array_merge($l, ['title' => post('title'), 'topic' => post('topic'), 'belt_level' => belt_from_post('belt_level'), 'body' => post('body'), 'is_published' => !empty($_POST['is_published'])]);
         $videoLinks = post('videos');
         $selectedGroups = array_map('strval', (array) ($_POST['groups'] ?? []));
     }
@@ -96,6 +97,8 @@ if ($edit !== '') {
               <?php foreach (array_unique(array_merge(['Kata', 'Kihon', 'Kumite', 'Fizinis pasiruošimas'], lesson_topics())) as $t): ?><option value="<?= e($t) ?>"><?php endforeach; ?>
             </datalist>
           </label>
+          <label>Diržas <span class="hint">kuriam diržui skirta; vaikai mato savo ir kito diržo pamokas</span>
+            <select name="belt_level"><?= belt_options($l['belt_level'] !== null ? (int) $l['belt_level'] : null, 'Visiems diržams') ?></select></label>
           <label>YouTube nuorodos <span class="hint">po vieną eilutėje; video įkelkite į YouTube kaip „Unlisted“</span>
             <textarea name="videos" rows="3" style="min-height:80px;" placeholder="https://youtu.be/..."><?= e($videoLinks) ?></textarea></label>
           <label>Tekstas <span class="hint">nebūtina, jei yra video; tuščia eilutė - nauja pastraipa</span>
@@ -124,7 +127,7 @@ if ($edit !== '') {
 }
 
 $lessons = q_all('SELECT l.*, (SELECT GROUP_CONCAT(g.name SEPARATOR ", ") FROM lesson_groups lg JOIN training_groups g ON g.id = lg.group_id WHERE lg.lesson_id = l.id) AS group_names
-                    FROM lessons l ORDER BY l.topic IS NULL, l.topic, l.created_at DESC');
+                    FROM lessons l ORDER BY l.belt_level IS NOT NULL, l.belt_level, l.topic, l.created_at DESC');
 
 page_start('Pamokos', ['admin' => true]);
 ?>
@@ -141,6 +144,7 @@ page_start('Pamokos', ['admin' => true]);
     <?php foreach ($lessons as $l): $v = count(lesson_videos($l)); ?>
       <li class="row between">
         <span>
+          <?= $l['belt_level'] !== null ? belt_chip((int) $l['belt_level']) : '' ?>
           <?php if ($l['topic']): ?><span class="badge badge-pink"><?= e($l['topic']) ?></span><?php endif; ?>
           <a href="?edit=<?= (int) $l['id'] ?>"><strong><?= e($l['title']) ?></strong></a>
           <?php if (!$l['is_published']): ?><span class="badge badge-warn">nepaskelbta</span><?php endif; ?>

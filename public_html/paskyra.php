@@ -220,6 +220,7 @@ page_start('Mano paskyra', ['noindex' => true]);
         <div class="kicker">Tvarkaraštis <?= $selected['group_id'] ? staff_link('admin/grupes.php?id=' . (int) $selected['group_id'], '✎ Keisti') : '' ?></div>
         <?php if ($active && $selected['group_id']): ?>
           <h2><?= e($selected['group_name']) ?></h2>
+          <div style="margin:-4px 0 10px;"><?= belt_chip($selected['belt_level'] !== null ? (int) $selected['belt_level'] : null) ?></div>
           <?= render_schedule_lines(schedule_lines(group_schedule((int) $selected['group_id']))) ?>
         <?php else: ?>
           <h2><?= e($selected['first_name'] . ' ' . $selected['last_name']) ?></h2>
