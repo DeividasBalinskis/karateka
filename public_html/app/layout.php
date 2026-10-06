@@ -109,3 +109,12 @@ function group_options(?int $selected, bool $withEmpty = true): string
     }
     return $html . ($current !== null ? '</optgroup>' : '');
 }
+
+/** Mygtukas „Redaguoti“ viešuose puslapiuose - matomas tik treneriams */
+function staff_link(string $path, string $label = '✎ Redaguoti'): string
+{
+    if (!is_staff()) {
+        return '';
+    }
+    return '<a class="staff-link" href="' . e(url($path)) . '">' . e($label) . '</a>';
+}

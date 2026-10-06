@@ -34,13 +34,13 @@ function mem(string $first, string $last, string $birth, ?int $group, string $st
     return $id;
 }
 
-// Treneris (administratorius)
-$coach = acc('treneris@karateka.test', 'Denis', 'Balinskis', 'admin');
+// Brolio (vyr. trenerio) administratoriaus paskyra
+$coach = acc('info@karateka.lt', 'Denis', 'Balinskis', 'admin');
 link_member($coach, mem('Denis', 'Balinskis', '1985-04-12', 13), 'self');
 
-// Davido testinė administratoriaus paskyra (slaptažodis "admin1" - tik lokaliai)
+// Davido testinė paskyra: mato viską kaip tėvai (slaptažodis "admin1" - tik lokaliai)
 $admin1 = create_account('admin1@karateka.test', 'admin1', 'Admin', 'Testas', null, 'active');
-q('UPDATE accounts SET role = "admin", email_verified_at = NOW(), approved_at = NOW() WHERE id = ?', [$admin1]);
+q('UPDATE accounts SET email_verified_at = NOW(), approved_at = NOW() WHERE id = ?', [$admin1]);
 
 // Tėvai su dviem vaikais
 $parent = acc('tevai@karateka.test', 'Rasa', 'Petrauskienė');
@@ -48,6 +48,8 @@ $kid1 = mem('Jonas', 'Petrauskas', '2017-06-03', 1);
 $kid2 = mem('Austėja', 'Petrauskaitė', '2011-09-15', 12);
 link_member($parent, $kid1, 'parent');
 link_member($parent, $kid2, 'parent');
+link_member($admin1, $kid1, 'parent');
+link_member($admin1, $kid2, 'parent');
 
 // Jaunuolis, prisijungiantis pats
 $teen = acc('jaunuolis@karateka.test', 'Austėja', 'Petrauskaitė');
@@ -127,8 +129,8 @@ foreach ($news as [$title, $body, $when, $images, $videos]) {
 }
 
 echo "Paruošta. Paskyros (slaptažodis " . PW . "):\n"
-    . "  admin1@karateka.test     - administratorius (slaptažodis admin1)\n"
-    . "  treneris@karateka.test   - administratorius\n"
+    . "  admin1@karateka.test     - testinė tėvų paskyra (slaptažodis admin1)\n"
+    . "  info@karateka.lt         - administratorius (brolis)\n"
     . "  tevai@karateka.test      - tėvai su 2 vaikais\n"
     . "  jaunuolis@karateka.test  - jaunuolis\n"
     . "  narys@karateka.test      - suaugęs narys\n"

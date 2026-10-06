@@ -119,7 +119,7 @@ page_start('Mano paskyra', ['noindex' => true]);
   <?php $active = $selected['status'] === 'active' && $a['status'] === 'active'; ?>
   <div class="grid-2">
     <div class="panel card">
-      <div class="kicker">Grupė</div>
+      <div class="kicker">Grupė <?= $selected['group_id'] ? staff_link('admin/grupes.php?id=' . (int) $selected['group_id'], '✎ Tvarkaraštis') : '' ?></div>
       <?php if ($active && $selected['group_id']): ?>
         <h2><?= e($selected['group_name']) ?></h2>
         <?= render_schedule(group_schedule((int) $selected['group_id'])) ?>
@@ -132,7 +132,7 @@ page_start('Mano paskyra', ['noindex' => true]);
     </div>
 
     <div class="panel card">
-      <div class="kicker">Artėjantys renginiai</div>
+      <div class="kicker">Artėjantys renginiai <?= staff_link('admin/renginiai.php', '✎ Renginiai') ?></div>
       <?php $events = $active ? upcoming_events($selected['group_id'] ? (int) $selected['group_id'] : null, 8) : []; ?>
       <?php if (!$events): ?>
         <p class="muted">Artėjančių renginių nėra.</p>

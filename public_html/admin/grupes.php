@@ -44,6 +44,15 @@ if (is_post()) {
             redirect('admin/grupes.php?id=' . $id);
         }
     }
+    if ($action === 'delete_group' && $id) {
+        if (q_value('SELECT 1 FROM members WHERE group_id = ? AND status <> "inactive" LIMIT 1', [$id])) {
+            flash('err', 'Grupėje yra narių - pirmiausia perkelkite juos į kitą grupę.');
+            redirect('admin/grupes.php?id=' . $id);
+        }
+        q('DELETE FROM training_groups WHERE id = ?', [$id]);
+        flash('ok', 'Grupė ištrinta.');
+        redirect('admin/grupes.php');
+    }
     if ($action === 'add_slot' && $id) {
         $wd = (int) post('weekday');
         $start = post('start_time') ?: null;
@@ -140,7 +149,14 @@ if ($id) {
           <input type="hidden" name="id" value="<?= $id ?>">
           <h2>Grupės duomenys</h2>
           <?php group_form($g, 'update'); ?>
-          <div><button class="btn btn-ghost" type="submit">Išsaugoti</button></div>
+          <div class="row">
+            <button class="btn btn-ghost" type="submit">Išsaugoti</button>
+            <?php if (!$members): ?>
+              <button class="btn btn-danger" type="submit" name="action" value="delete_group" formnovalidate onclick="return confirm('Ištrinti grupę kartu su jos tvarkaraščiu?')">Ištrinti grupę</button>
+            <?php else: ?>
+              <span class="hint">Grupės su nariais ištrinti negalima - perkelkite narius arba išjunkite grupę.</span>
+            <?php endif; ?>
+          </div>
         </form>
         <div class="panel card">
           <h2>Nariai (<?= count($members) ?>)</h2>

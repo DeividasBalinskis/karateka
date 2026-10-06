@@ -282,3 +282,7 @@ legend{font-family:'Space Grotesk',sans-serif; font-weight:700; padding:0 6px;}
 .sticky-save .btn{box-shadow:0 10px 24px rgba(23,20,15,0.2);}
 .list > li.row{flex-wrap:nowrap; align-items:flex-start;}
 .list > li.row > span:first-child{flex:1; min-width:0;}
+
+/* Trenerio greiti mygtukai viešuose puslapiuose */
+.staff-link{display:inline-block; font-size:0.75rem; font-weight:700; padding:4px 10px; border-radius:20px; background:rgba(47,107,90,0.12); color:var(--accent-dark); margin-left:8px; vertical-align:middle; white-space:nowrap;}
+.staff-link:hover{text-decoration:none; background:var(--accent); color:#fff;}

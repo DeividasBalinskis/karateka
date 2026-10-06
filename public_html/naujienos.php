@@ -14,7 +14,7 @@ if ($id) {
     $media = news_media($id);
     page_start($n['title'], ['description' => mb_substr(preg_replace('/\s+/', ' ', $n['body']), 0, 160)]);
     ?>
-    <a class="small" href="<?= url('naujienos.php') ?>">← Visos naujienos</a>
+    <a class="small" href="<?= url('naujienos.php') ?>">← Visos naujienos</a> <?= staff_link('admin/naujienos.php?edit=' . (int) $n['id']) ?>
     <article class="panel card" style="margin-top:12px;">
       <div class="news-meta"><?= e(fmt_date($n['published_at'], true)) ?></div>
       <h1><?= e($n['title']) ?></h1>
@@ -46,7 +46,7 @@ page_start('Naujienos', ['description' => 'VšĮ Karate Ateitis klubo naujienos:
 ?>
 <div class="page-head">
   <div class="eyebrow">Klubo gyvenimas</div>
-  <h1 class="styled">Naujienos</h1>
+  <h1 class="styled">Naujienos</h1> <?= staff_link('admin/naujienos.php?edit=new', '+ Nauja naujiena') ?>
 </div>
 
 <?php if (!$items): ?>
@@ -67,7 +67,7 @@ page_start('Naujienos', ['description' => 'VšĮ Karate Ateitis klubo naujienos:
     <article class="panel news-card<?= $cover ? '' : ' no-cover' ?>">
       <?php if ($cover): ?><a class="cover" href="<?= $link ?>" style="display:block;"><img src="<?= e($cover) ?>" alt="" loading="lazy"></a><?php endif; ?>
       <div class="body">
-        <div class="news-meta"><?= e(fmt_date($n['published_at'], true)) ?></div>
+        <div class="news-meta"><?= e(fmt_date($n['published_at'], true)) ?><?= staff_link('admin/naujienos.php?edit=' . (int) $n['id']) ?></div>
         <h2><a href="<?= $link ?>"><?= e($n['title']) ?></a></h2>
         <div class="news-body muted"><?= text_to_html($excerpt) ?></div>
         <a href="<?= $link ?>" class="small">Skaityti daugiau →</a>
