@@ -3,6 +3,16 @@
 require dirname(__DIR__) . '/app/bootstrap.php';
 $me = require_staff();
 
+/** El. laiškas vaikui / tėvams apie naują pastabą */
+function notify_note(array $m, string $text, string $date, array $me): void
+{
+    foreach (q_all('SELECT a.* FROM accounts a JOIN account_members am ON am.account_id = a.id WHERE am.member_id = ? AND a.status = "active"', [$m['id']]) as $acc) {
+        send_mail($acc['email'], "Trenerio pastaba: {$m['first_name']}",
+            "Sveiki,\n\ntreneris {$me['first_name']} paliko pastabą ({$m['first_name']}, " . fmt_date($date, true) . "):\n\n$text\n\n"
+            . 'Visas pastabas matysite paskyroje: ' . abs_url('paskyra.php?m=' . $m['id']));
+    }
+}
+
 // Paskutinė pasirinkta grupė įsimenama, kad salėje nereikėtų rinktis kiekvieną kartą
 $groupId = (int) (get('g') ?: post('g') ?: ($_SESSION['notes_group'] ?? 0));
 $date = get('d') ?: post('d') ?: date('Y-m-d');
@@ -21,6 +31,27 @@ if (is_post()) {
         q('DELETE FROM coach_notes WHERE id = ?', [(int) post('note_id')]);
         flash('ok', 'Pastaba ištrinta.');
         redirect('admin/pastabos.php?g=' . $groupId . '&d=' . $date);
+    }
+
+    // Viena pastaba (paspaudus Enter) - atsakymas JSON, puslapis neperkraunamas
+    if (post('action') === 'save_one' && $group) {
+        header('Content-Type: application/json; charset=utf-8');
+        $text = post('text');
+        $link = post('video');
+        $yt = $link !== '' ? youtube_id($link) : null;
+        $m = q_one('SELECT * FROM members WHERE id = ? AND status = "active"', [(int) post('member_id')]);
+        if ($link !== '' && !$yt) {
+            exit(json_encode(['ok' => false, 'error' => 'Neatpažinta YouTube nuoroda']));
+        }
+        if (!$m || ($text === '' && !$yt)) {
+            exit(json_encode(['ok' => false, 'error' => 'Tuščia pastaba']));
+        }
+        q('INSERT INTO coach_notes (member_id, author_id, note_date, body, youtube_id) VALUES (?, ?, ?, ?, ?)',
+            [$m['id'], $me['id'], $date, $text !== '' ? $text : 'Pažiūrėk video.', $yt]);
+        if (!empty($_POST['notify'])) {
+            notify_note($m, $text, $date, $me);
+        }
+        exit(json_encode(['ok' => true, 'preview' => mb_strimwidth($text, 0, 120, '…') . ($yt ? ' ▶' : '')], JSON_UNESCAPED_UNICODE));
     }
 
     if (post('action') === 'save' && $group) {
@@ -49,11 +80,7 @@ if (is_post()) {
             $saved++;
 
             if ($notify) {
-                foreach (q_all('SELECT a.* FROM accounts a JOIN account_members am ON am.account_id = a.id WHERE am.member_id = ? AND a.status = "active"', [$m['id']]) as $acc) {
-                    send_mail($acc['email'], "Trenerio pastaba: {$m['first_name']}",
-                        "Sveiki,\n\ntreneris {$me['first_name']} paliko pastabą ({$m['first_name']}, " . fmt_date($date, true) . "):\n\n$text\n\n"
-                        . 'Visas pastabas matysite paskyroje: ' . abs_url('paskyra.php?m=' . $m['id']));
-                }
+                notify_note($m, $text, $date, $me);
             }
         }
         if ($badLinks) {
@@ -99,11 +126,11 @@ page_start('Pastabos', ['admin' => true]);
     <input type="hidden" name="g" value="<?= (int) $groupId ?>">
     <input type="hidden" name="d" value="<?= e($date) ?>">
     <h2><?= e($group['name']) ?> · <?= e(fmt_date($date, true)) ?></h2>
-    <p class="hint" style="margin-bottom:10px;">Užpildykite tik tiems, kam norite parašyti. Tušti laukai praleidžiami.</p>
+    <p class="hint" style="margin-bottom:10px;">Parašykite pastabą ir spauskite <strong>Enter</strong> - ji iškart išsaugoma. Nauja eilutė: Shift+Enter.</p>
 
     <?php foreach ($members as $m): ?>
       <div class="note-row">
-        <div class="note-who">
+        <div class="note-who" id="who<?= (int) $m['id'] ?>">
           <strong><?= e($m['first_name'] . ' ' . $m['last_name']) ?></strong>
           <?php foreach ($todayNotes[$m['id']] ?? [] as $n): ?>
             <div class="note-existing">
@@ -112,7 +139,7 @@ page_start('Pastabos', ['admin' => true]);
             </div>
           <?php endforeach; ?>
         </div>
-        <textarea name="note[<?= (int) $m['id'] ?>]" rows="2" placeholder="Pastaba, pvz. „Gerai dirbo, namuose pakartok kata Heian Shodan“"></textarea>
+        <textarea name="note[<?= (int) $m['id'] ?>]" data-member="<?= (int) $m['id'] ?>" rows="2" enterkeyhint="send" placeholder="Parašykite ir spauskite Enter"></textarea>
         <details class="note-video">
           <summary>+ YouTube nuoroda</summary>
           <input type="url" name="video[<?= (int) $m['id'] ?>]" placeholder="https://youtu.be/...">
@@ -155,5 +182,48 @@ page_start('Pastabos', ['admin' => true]);
     </ul>
   </div>
 <?php endif; ?>
+<script>
+// Enter - iškart išsaugo to vaiko pastabą; Shift+Enter - nauja eilutė
+(function () {
+  var form = document.querySelector('.notes-form');
+  if (!form) return;
+  form.querySelectorAll('textarea[data-member]').forEach(function (ta) {
+    ta.addEventListener('keydown', function (e) {
+      if (e.key !== 'Enter' || e.shiftKey || e.isComposing) return;
+      e.preventDefault();
+      var mid = ta.dataset.member, text = ta.value.trim();
+      var video = form.querySelector('[name="video[' + mid + ']"]');
+      if (!text && !(video && video.value.trim())) return;
+      var data = new FormData();
+      data.append('_csrf', form.querySelector('[name=_csrf]').value);
+      data.append('action', 'save_one');
+      data.append('g', form.querySelector('[name=g]').value);
+      data.append('d', form.querySelector('[name=d]').value);
+      data.append('member_id', mid);
+      data.append('text', text);
+      data.append('video', video ? video.value.trim() : '');
+      if (form.querySelector('[name=notify]').checked) data.append('notify', '1');
+      ta.disabled = true;
+      fetch(location.pathname, { method: 'POST', body: data, credentials: 'same-origin' })
+        .then(function (r) { return r.json(); })
+        .then(function (res) {
+          ta.disabled = false;
+          if (!res.ok) { alert(res.error || 'Nepavyko išsaugoti'); ta.focus(); return; }
+          var line = document.createElement('div');
+          line.className = 'note-existing just-saved';
+          line.textContent = '✓ ' + res.preview + ' — išsaugota';
+          document.getElementById('who' + mid).appendChild(line);
+          ta.value = '';
+          if (video) { video.value = ''; video.closest('details').open = false; }
+          // pereiname prie kito vaiko laukelio
+          var all = Array.prototype.slice.call(form.querySelectorAll('textarea[data-member]'));
+          var next = all[all.indexOf(ta) + 1];
+          if (next) next.focus();
+        })
+        .catch(function () { ta.disabled = false; alert('Nepavyko išsaugoti - patikrinkite internetą.'); });
+    });
+  });
+})();
+</script>
 <?php
 page_end();

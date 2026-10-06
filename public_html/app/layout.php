@@ -157,8 +157,8 @@ function site_header(bool $home = false): void
       <!-- Pagrindinio puslapio skiltys -->
       <li class="nav-section onpage-section">
         <ul>
-          <li><a class="nav-link nl-pink" href="<?= $h ?>#apie">Apie klubą</a></li>
           <li><a class="nav-link nl-gray" href="<?= $h ?>#grupes">Treniruotės</a></li>
+          <li><a class="nav-link nl-pink" href="<?= $h ?>#apie">Apie klubą</a></li>
           <li><a class="nav-link nl-blue" href="<?= $h ?>#kontaktai">Kontaktai</a></li>
           <li class="desktop-only"><a class="nav-cta" href="<?= $h ?>#registracija">2 treniruotės nemokamai</a></li>
         </ul>
