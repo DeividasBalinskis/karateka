@@ -117,15 +117,30 @@ $isParent = (bool) array_filter($members, function ($m) { return $m['relation'] 
 $active = $selected && $selected['status'] === 'active' && $a['status'] === 'active';
 if ($active) {
     [$from, $to, $seasonLabel] = season_bounds();
-    $partition = ranking_partition($selected);
-    $rows = $partition ? ranking($partition, $from, $to) : [];
+    $seasonPoints = member_points_total((int) $selected['id'], $from, $to);
+    $history = member_history((int) $selected['id']);
+
+    // Kurį reitingą rodyti: savo (numatytasis), kitos amžiaus kategorijos arba viso klubo
+    $ownPartition = ranking_partition($selected);
+    $topChoices = [];
+    if ($ownPartition) {
+        $topChoices['mano'] = $ownPartition;
+    }
+    foreach (GROUP_CATEGORIES as $key => $label) {
+        if (!$ownPartition || $ownPartition[0] !== 'category' || $ownPartition[1] !== $key) {
+            $topChoices[$key] = ['category', $key, $label];
+        }
+    }
+    $topChoices['klubas'] = ['club', null, 'Visas klubas'];
+    $topKey = isset($topChoices[get('top')]) ? get('top') : array_key_first($topChoices);
+    $partition = $topChoices[$topKey];
+    $rows = ranking($partition, $from, $to);
     $mine = null;
     foreach ($rows as $r) {
         if ((int) $r['member_id'] === (int) $selected['id']) {
             $mine = $r;
         }
     }
-    $history = member_history((int) $selected['id']);
 }
 $openSetting = in_array(post('action'), ['email', 'password', 'profile'], true) ? post('action') : '';
 
@@ -153,50 +168,61 @@ page_start('Mano paskyra', ['noindex' => true]);
 <?php endif; ?>
 <?= form_errors($errors) ?>
 
-<?php if ($selected && $active): ?>
-  <!-- Svarbiausia iškart: taškai, vieta, grupė -->
-  <div class="stats">
-    <div class="stat stat-main">
-      <div class="kicker"><?= count($members) > 1 ? e($selected['first_name']) . ' · ' : '' ?>taškai šį sezoną</div>
-      <div class="big-number"><?= $mine ? (int) $mine['total'] : 0 ?></div>
-      <div class="muted small"><?= e($seasonLabel) ?></div>
-    </div>
-    <div class="stat">
-      <div class="kicker">Vieta reitinge</div>
-      <?php if ($mine): ?>
-        <div class="stat-value"><?= (int) $mine['rank'] ?> <span class="muted">iš <?= count($rows) ?></span></div>
-        <div class="muted small"><?= e($partition[2]) ?></div>
-      <?php else: ?>
-        <div class="stat-value muted">—</div>
-        <div class="muted small">dar nėra taškų</div>
-      <?php endif; ?>
-    </div>
-    <div class="stat">
-      <div class="kicker">Iš viso taškų</div>
-      <div class="stat-value"><?= member_points_total((int) $selected['id']) ?></div>
-      <div class="muted small">per visą laiką</div>
-    </div>
-    <div class="stat">
-      <div class="kicker">Grupė</div>
-      <div class="stat-value stat-text"><?= e($selected['group_name'] ?: '—') ?></div>
-    </div>
-  </div>
-<?php endif; ?>
-
 <?php if ($selected): ?>
-  <div class="grid-2">
+  <div class="grid-2 account-main">
+    <?php if ($active): ?>
+      <!-- Taškai ir Top 5 - svarbiausia, todėl pirma -->
+      <div class="panel card points-card">
+        <div class="points-head">
+          <div>
+            <div class="kicker"><?= count($members) > 1 ? e($selected['first_name']) . ' · ' : 'Mano ' ?>taškai · <?= e($seasonLabel) ?></div>
+            <div class="row" style="align-items:baseline; gap:8px;">
+              <span class="big-number"><?= $seasonPoints ?></span><span class="muted">tšk.</span>
+            </div>
+          </div>
+          <div class="muted small" style="text-align:right;">iš viso per visą laiką<br><strong><?= member_points_total((int) $selected['id']) ?> tšk.</strong></div>
+        </div>
+
+        <div class="top-tabs">
+          <?php foreach ($topChoices as $key => $p): ?>
+            <a href="?m=<?= (int) $selected['id'] ?>&amp;top=<?= e($key) ?>" class="<?= $key === $topKey ? 'active' : '' ?>"><?= e($key === 'mano' ? $p[2] . ' (mano)' : $p[2]) ?></a>
+          <?php endforeach; ?>
+        </div>
+
+        <div class="kicker" style="margin-top:4px;">Top 5 · <?= e($partition[2]) ?></div>
+        <?php if (!$rows): ?>
+          <p class="muted">Šį sezoną taškų dar niekas neturi.</p>
+        <?php else: ?>
+          <ol class="ranking">
+            <?php foreach (array_filter($rows, function ($r) { return $r['rank'] <= 5; }) as $r): ?>
+              <li class="<?= $mine && $r['member_id'] === $mine['member_id'] ? 'me' : '' ?>">
+                <span class="pos r<?= (int) $r['rank'] ?>"><?= (int) $r['rank'] ?></span><?= e(short_name($r)) ?><span class="pts"><?= (int) $r['total'] ?></span>
+              </li>
+            <?php endforeach; ?>
+            <?php if ($mine && $mine['rank'] > 5): ?>
+              <li class="gap">···</li>
+              <li class="me"><span class="pos"><?= (int) $mine['rank'] ?></span><?= e(short_name($mine)) ?><span class="pts"><?= (int) $mine['total'] ?></span></li>
+            <?php endif; ?>
+          </ol>
+        <?php endif; ?>
+      </div>
+    <?php endif; ?>
+
     <div class="panel card">
       <div class="kicker">Tvarkaraštis <?= $selected['group_id'] ? staff_link('admin/grupes.php?id=' . (int) $selected['group_id'], '✎ Keisti') : '' ?></div>
       <?php if ($active && $selected['group_id']): ?>
+        <h2><?= e($selected['group_name']) ?></h2>
         <?= render_schedule(group_schedule((int) $selected['group_id'])) ?>
       <?php else: ?>
         <h2><?= e($selected['first_name'] . ' ' . $selected['last_name']) ?></h2>
         <p class="muted">
-          <?= $selected['status'] === 'inactive' ? 'Narystė neaktyvi.' : 'Laukiama trenerio patvirtinimo - po to čia matysite grupę ir tvarkaraštį.' ?>
+          <?= $selected['status'] === 'inactive' ? 'Narystė neaktyvi.' : 'Laukiama trenerio patvirtinimo - po to čia matysite grupę, tvarkaraštį ir taškus.' ?>
         </p>
       <?php endif; ?>
     </div>
+  </div>
 
+  <div class="grid-2" style="margin-top:20px;">
     <div class="panel card">
       <div class="kicker">Artėjantys renginiai <?= staff_link('admin/renginiai.php', '✎ Keisti') ?></div>
       <?php $events = $active ? upcoming_events($selected['group_id'] ? (int) $selected['group_id'] : null, 8) : []; ?>
@@ -208,44 +234,26 @@ page_start('Mano paskyra', ['noindex' => true]);
         </ul>
       <?php endif; ?>
     </div>
-  </div>
 
-  <?php if ($active): ?>
-    <div class="grid-2" style="margin-top:20px;">
-      <div class="panel card">
-        <div class="kicker">Istorija</div>
-        <?php if (!$history): ?>
-          <p class="muted">Čia matysite egzaminus, varžybas, seminarus ir kitus pasiekimus.</p>
-        <?php else: ?>
-          <ul class="list small">
-            <?php foreach (array_slice($history, 0, 20) as $h): ?>
-              <li class="row between">
-                <span>
-                  <strong><?= e($h['event_title'] ?: $h['category_name']) ?></strong>
-                  <div class="muted"><?= $h['event_title'] ? e($h['category_name']) . ' · ' : '' ?><?= e(fmt_date($h['awarded_on'], true)) ?><?= $h['note'] ? ' · ' . e($h['note']) : '' ?></div>
-                </span>
-                <span class="badge badge-ok">+<?= (int) $h['points'] ?></span>
-              </li>
-            <?php endforeach; ?>
-          </ul>
-        <?php endif; ?>
-      </div>
-      <div class="panel card">
-        <div class="kicker">Top 5<?= $partition ? ' · ' . e($partition[2]) : '' ?></div>
-        <?php if (!$rows): ?>
-          <p class="muted">Šį sezoną taškų dar niekas neturi.</p>
-        <?php else: ?>
-          <ol class="ranking">
-            <?php foreach (array_filter($rows, function ($r) { return $r['rank'] <= 5; }) as $r): ?>
-              <li class="<?= $mine && $r['member_id'] === $mine['member_id'] ? 'me' : '' ?>">
-                <span class="pos r<?= (int) $r['rank'] ?>"><?= (int) $r['rank'] ?></span><?= e(short_name($r)) ?><span class="pts"><?= (int) $r['total'] ?></span>
-              </li>
-            <?php endforeach; ?>
-          </ol>
-        <?php endif; ?>
-      </div>
+    <div class="panel card">
+      <div class="kicker">Istorija</div>
+      <?php if (!$active || !$history): ?>
+        <p class="muted">Čia matysite egzaminus, varžybas, seminarus ir kitus pasiekimus.</p>
+      <?php else: ?>
+        <ul class="list small">
+          <?php foreach (array_slice($history, 0, 20) as $h): ?>
+            <li class="row between">
+              <span>
+                <strong><?= e($h['event_title'] ?: $h['category_name']) ?></strong>
+                <div class="muted"><?= $h['event_title'] ? e($h['category_name']) . ' · ' : '' ?><?= e(fmt_date($h['awarded_on'], true)) ?><?= $h['note'] ? ' · ' . e($h['note']) : '' ?></div>
+              </span>
+              <span class="badge badge-ok">+<?= (int) $h['points'] ?></span>
+            </li>
+          <?php endforeach; ?>
+        </ul>
+      <?php endif; ?>
     </div>
-  <?php endif; ?>
+  </div>
 
   <div class="panel card" style="margin-top:20px;">
     <div class="kicker">Nario duomenys</div>
