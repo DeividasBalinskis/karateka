@@ -23,13 +23,13 @@ html{scrollbar-gutter:stable;}
 
 /* 1 grupė: šio (pagrindinio) puslapio skiltys - bendrame „kapsulės“ fone */
 .site-header .onpage-section > ul{background:rgba(23,20,15,0.045); border-radius:14px; padding:4px;}
-.site-header a.nav-link, .site-header .dropdown-trigger{
+.site-header a.nav-link{
   font-size:14px; font-weight:600; color:#17140F; line-height:1;
   display:inline-block; padding:10px 14px; border-radius:10px;
   border:1.5px solid transparent; background:none; cursor:pointer; white-space:nowrap; text-decoration:none;
   transition:border-color 0.15s ease, background 0.15s ease;
 }
-.site-header a.nav-link:hover, .site-header .dropdown-trigger:hover{background:rgba(255,255,255,0.85); text-decoration:none;}
+.site-header a.nav-link:hover:hover{background:rgba(255,255,255,0.85); text-decoration:none;}
 .site-header .nl-pink:hover{border-color:rgba(168,92,126,0.45);}
 .site-header .nl-gray:hover{border-color:rgba(90,100,90,0.45);}
 .site-header .nl-blue:hover{border-color:rgba(74,92,156,0.45);}
@@ -58,20 +58,6 @@ html{scrollbar-gutter:stable;}
 .site-header .mobile-only{display:none;}
 .site-header .inline-form{display:inline; margin:0;}
 
-/* „Treniruotės“ išskleidžiamas meniu */
-.site-header .dropdown{position:relative;}
-.site-header .dropdown-menu{
-  position:absolute; top:calc(100% + 12px); left:50%;
-  min-width:180px; padding:10px;
-  background:rgba(255,255,255,0.95); backdrop-filter:blur(14px);
-  border:1px solid rgba(23,20,15,0.1); border-radius:12px; box-shadow:0 16px 32px rgba(23,20,15,0.14);
-  opacity:0; visibility:hidden; transform:translateX(-50%) translateY(4px);
-  transition:opacity 0.15s ease, transform 0.15s ease, visibility 0.15s;
-}
-.site-header .dropdown:hover .dropdown-menu, .site-header .dropdown.open .dropdown-menu{opacity:1; visibility:visible; transform:translateX(-50%) translateY(0);}
-.site-header .dropdown-menu li a{display:block; padding:10px 14px; border-radius:8px; font-size:14px; font-weight:600; color:#17140F; text-decoration:none;}
-.site-header .dropdown-menu li a:hover{background:rgba(47,107,90,0.08); color:#2F6B5A;}
-
 .site-header .burger{display:none; flex-direction:column; gap:5px; background:none; border:none; cursor:pointer; padding:6px;}
 .site-header .burger span{width:22px; height:2px; background:#17140F; display:block;}
 
@@ -86,10 +72,8 @@ html{scrollbar-gutter:stable;}
   .site-header .nav-section > ul{flex-direction:column; align-items:stretch; gap:2px;}
   .site-header .nav-section > ul > li{width:100%;}
   .site-header .page-section{border-left:none; padding-left:0; border-top:1px solid rgba(23,20,15,0.12); padding-top:10px;}
-  .site-header a.nav-link, .site-header .dropdown-trigger, .site-header a.nav-page{display:block; width:100%; text-align:left; padding:12px 10px;}
+  .site-header a.nav-link, .site-header a.nav-page{display:block; width:100%; text-align:left; padding:12px 10px;}
   .site-header .nav-login{display:block; text-align:center; margin-top:4px;}
-  .site-header .dropdown-menu{position:static; transform:none; box-shadow:none; border:none; background:rgba(23,20,15,0.03); margin-top:4px; opacity:1; visibility:visible; display:none;}
-  .site-header .dropdown.open .dropdown-menu{display:block; transform:none;}
   .site-header .burger{display:flex;}
   .site-header .desktop-only{display:none;}
   .site-header .mobile-only{display:block;}

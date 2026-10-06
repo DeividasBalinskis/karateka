@@ -156,14 +156,7 @@ function site_header(bool $home = false): void
       <li class="nav-section onpage-section">
         <ul>
           <li><a class="nav-link nl-pink" href="<?= $h ?>#apie">Apie klubą</a></li>
-          <li class="dropdown">
-            <span class="dropdown-trigger nl-gray">Treniruotės</span>
-            <ul class="dropdown-menu">
-              <li><a href="<?= $h ?>#vaikams">Vaikams</a></li>
-              <li><a href="<?= $h ?>#jaunimui">Jaunimui</a></li>
-              <li><a href="<?= $h ?>#suaugusiems">Suaugusiems</a></li>
-            </ul>
-          </li>
+          <li><a class="nav-link nl-gray" href="<?= $h ?>#grupes">Treniruotės</a></li>
           <li><a class="nav-link nl-blue" href="<?= $h ?>#kontaktai">Kontaktai</a></li>
           <li class="desktop-only"><a class="nav-cta" href="<?= $h ?>#registracija">2 treniruotės nemokamai</a></li>
         </ul>

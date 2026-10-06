@@ -810,7 +810,17 @@ require __DIR__ . '/app/bootstrap.php';
     groupDots.forEach((d, i) => d.classList.toggle('active', i === idx));
     return true;
   }
-  function openGroupFromHash(){ openGroup(window.location.hash.replace('#',''), false); }
+  function openGroupFromHash(){
+    const id = window.location.hash.replace('#','');
+    if(id === 'grupes'){ window.scrollTo({top:0, behavior:'instant'}); return; }
+    openGroup(id, false);
+  }
+  // Meniu „Treniruotės“ - į puslapio viršų, kur „Kam ieškote treniruočių?“
+  document.querySelectorAll('a[href="#grupes"]').forEach(a => a.addEventListener('click', (e) => {
+    e.preventDefault();
+    history.replaceState(null, '', '#grupes');
+    window.scrollTo({top:0, behavior:'smooth'});
+  }));
   window.addEventListener('load', openGroupFromHash);
   window.addEventListener('hashchange', openGroupFromHash);
   // Meniu nuorodos į grupes veikia ir tada, kai adreso #... nesikeičia (pvz. du kartus iš eilės ta pati grupė)
