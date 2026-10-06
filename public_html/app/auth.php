@@ -260,3 +260,15 @@ function notify_coach_pending(array $account): void
         . "{$account['first_name']} {$account['last_name']} ({$account['email']})\n\n"
         . abs_url('admin/patvirtinimai.php'));
 }
+
+/** Kiek paskyrų / naujai pridėtų vaikų laukia trenerio patvirtinimo */
+function pending_approvals_count(): int
+{
+    static $count = null;
+    if ($count === null) {
+        $count = (int) q_value('SELECT COUNT(*) FROM accounts WHERE status = "pending_approval"')
+            + (int) q_value('SELECT COUNT(DISTINCT m.id) FROM members m JOIN account_members am ON am.member_id = m.id JOIN accounts a ON a.id = am.account_id
+                             WHERE m.status = "pending" AND a.status = "active"');
+    }
+    return $count;
+}

@@ -257,20 +257,6 @@ $groups = q_all('SELECT g.*, (SELECT COUNT(*) FROM members m WHERE m.group_id = 
 page_start('Grupės', ['admin' => true]);
 ?>
 <div class="page-head"><h1 class="styled">Grupės ir tvarkaraštis</h1></div>
-<form method="post" class="panel card form">
-  <?= csrf_field() ?>
-  <input type="hidden" name="action" value="save_prices">
-  <h2>Kainos pagrindiniame puslapyje</h2>
-  <p class="hint">Tvarkaraštis pagrindiniame puslapyje imamas iš grupių žemiau - pakeitus laiką grupėje, jis pasikeičia ir svetainėje.</p>
-  <?php foreach (GROUP_CATEGORIES as $cat => $catLabel): $p = category_price($cat); ?>
-    <div class="form-row three">
-      <label><?= e($catLabel) ?>: kaina <input type="text" name="price[<?= $cat ?>][main]" value="<?= e($p['price_main']) ?>" placeholder="60€/mėn" required></label>
-      <label>Sąlyga <input type="text" name="price[<?= $cat ?>][note]" value="<?= e($p['price_note']) ?>" placeholder="(pasirašius metinę sutartį)"></label>
-      <label>Kita kaina <input type="text" name="price[<?= $cat ?>][alt]" value="<?= e($p['price_alt']) ?>" placeholder="90€/mėn be sutarties"></label>
-    </div>
-  <?php endforeach; ?>
-  <div class="row"><button class="btn btn-primary" type="submit">Išsaugoti kainas</button> <a class="small" href="<?= url('index.php') ?>" target="_blank">Peržiūrėti pagrindinį puslapį ↗</a></div>
-</form>
 <?= form_errors($errors) ?>
 <div class="grid-2">
   <div class="panel card">
@@ -294,5 +280,19 @@ page_start('Grupės', ['admin' => true]);
     <div><button class="btn btn-primary" type="submit">Sukurti</button></div>
   </form>
 </div>
+<form method="post" class="panel card form" style="margin-top:20px;">
+  <?= csrf_field() ?>
+  <input type="hidden" name="action" value="save_prices">
+  <h2>Kainos pagrindiniame puslapyje</h2>
+  <p class="hint">Tvarkaraštis pagrindiniame puslapyje imamas iš grupių žemiau - pakeitus laiką grupėje, jis pasikeičia ir svetainėje.</p>
+  <?php foreach (GROUP_CATEGORIES as $cat => $catLabel): $p = category_price($cat); ?>
+    <div class="form-row three">
+      <label><?= e($catLabel) ?>: kaina <input type="text" name="price[<?= $cat ?>][main]" value="<?= e($p['price_main']) ?>" placeholder="60€/mėn" required></label>
+      <label>Sąlyga <input type="text" name="price[<?= $cat ?>][note]" value="<?= e($p['price_note']) ?>" placeholder="(pasirašius metinę sutartį)"></label>
+      <label>Kita kaina <input type="text" name="price[<?= $cat ?>][alt]" value="<?= e($p['price_alt']) ?>" placeholder="90€/mėn be sutarties"></label>
+    </div>
+  <?php endforeach; ?>
+  <div class="row"><button class="btn btn-primary" type="submit">Išsaugoti kainas</button> <a class="small" href="<?= url('index.php') ?>" target="_blank">Peržiūrėti pagrindinį puslapį ↗</a></div>
+</form>
 <?php
 page_end();

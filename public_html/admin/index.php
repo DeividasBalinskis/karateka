@@ -2,9 +2,7 @@
 require dirname(__DIR__) . '/app/bootstrap.php';
 $me = require_staff();
 
-$pending = (int) q_value('SELECT COUNT(*) FROM accounts WHERE status = "pending_approval"')
-    + (int) q_value('SELECT COUNT(DISTINCT m.id) FROM members m JOIN account_members am ON am.member_id = m.id JOIN accounts a ON a.id = am.account_id
-                     WHERE m.status = "pending" AND a.status = "active"');
+$pending = pending_approvals_count();
 $members = (int) q_value('SELECT COUNT(*) FROM members WHERE status = "active"');
 $events = count(upcoming_events(null, 100));
 $news = (int) q_value('SELECT COUNT(*) FROM news');
@@ -18,6 +16,9 @@ page_start('Treneriams', ['admin' => true]);
 </div>
 
 <div class="tiles">
+  <a class="tile" href="<?= url('admin/pastabos.php') ?>">
+    <div class="num">✎</div><div class="label">Pastabos po treniruotės</div>
+  </a>
   <a class="tile <?= $pending ? 'alert' : '' ?>" href="<?= url('admin/patvirtinimai.php') ?>">
     <div class="num"><?= $pending ?></div><div class="label">Laukia patvirtinimo</div>
   </a>

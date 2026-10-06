@@ -29,15 +29,17 @@ function page_start(string $title, array $opt = []): void
 <body class="<?= $admin ? 'is-admin' : '' ?>">
 <?php site_header(); ?>
 <?php if ($admin): ?>
+<?php $pendingCount = pending_approvals_count(); ?>
 <nav class="admin-tabs">
   <a href="<?= url('admin/') ?>">Pradžia</a>
-  <a href="<?= url('admin/patvirtinimai.php') ?>">Patvirtinimai</a>
+  <a href="<?= url('admin/pastabos.php') ?>">Pastabos</a>
   <a href="<?= url('admin/nariai.php') ?>">Nariai</a>
   <a href="<?= url('admin/grupes.php') ?>">Grupės</a>
   <a href="<?= url('admin/renginiai.php') ?>">Renginiai</a>
   <a href="<?= url('admin/taskai.php') ?>">Taškai</a>
   <a href="<?= url('admin/naujienos.php') ?>">Naujienos</a>
   <?php if (is_admin()): ?><a href="<?= url('admin/paskyros.php') ?>">Paskyros</a><?php endif; ?>
+  <a href="<?= url('admin/patvirtinimai.php') ?>" class="tab-last">Patvirtinimai<?php if ($pendingCount): ?> <span class="count-badge"><?= $pendingCount ?></span><?php endif; ?></a>
 </nav>
 <?php endif; ?>
 <main class="page <?= !empty($opt['narrow']) ? 'narrow' : '' ?>">
@@ -166,7 +168,7 @@ function site_header(bool $home = false): void
         <ul>
           <li><a class="nav-page" href="<?= url('naujienos.php') ?>">Naujienos</a></li>
           <?php if ($a && is_staff($a)): ?>
-            <li><a class="nav-page" href="<?= url('admin/') ?>">Treneriams</a></li>
+            <li><a class="nav-page" href="<?= url('admin/') ?>">Treneriams<?php if ($n = pending_approvals_count()): ?> <span class="count-badge" title="Laukia patvirtinimo"><?= $n ?></span><?php endif; ?></a></li>
           <?php endif; ?>
           <?php if ($a): ?>
             <li><a class="nav-login" href="<?= url('paskyra.php') ?>">Mano paskyra</a></li>

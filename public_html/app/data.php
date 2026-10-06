@@ -95,3 +95,15 @@ function news_image_url(string $file, bool $thumb = false): string
 {
     return url('uploads/news/' . ($thumb ? 'thumb_' : '') . $file);
 }
+
+/** Trenerio pastabos nariui (naujausios viršuje) */
+function member_notes(int $memberId, int $limit = 10): array
+{
+    return q_all('SELECT cn.*, a.first_name AS author FROM coach_notes cn LEFT JOIN accounts a ON a.id = cn.author_id
+                   WHERE cn.member_id = ? ORDER BY cn.note_date DESC, cn.id DESC LIMIT ' . (int) $limit, [$memberId]);
+}
+
+function member_unread_notes(int $memberId): int
+{
+    return (int) q_value('SELECT COUNT(*) FROM coach_notes WHERE member_id = ? AND read_at IS NULL', [$memberId]);
+}

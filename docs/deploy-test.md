@@ -34,3 +34,4 @@ Buvęs pradinis puslapis `index.html` sujungtas į `index.php`. Serveryje **išt
 `page1.html` palikite - jis tik nukreipia senas nuorodas į naują puslapį.
 - `004_change_email.sql` - el. pašto keitimas paskyroje.
 - `005_public_site.sql` - kainos ir tvarkaraštis pagrindiniame puslapyje iš DB.
+- `006_coach_notes.sql` - trenerio pastabos nariams.

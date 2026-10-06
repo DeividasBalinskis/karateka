@@ -299,3 +299,34 @@ legend{font-family:'Space Grotesk',sans-serif; font-weight:700; padding:0 6px;}
   .account-top .logout{margin-left:0;}
   .setting-label{width:80px;}
 }
+
+/* Patvirtinimų skaičiukas */
+.admin-tabs .tab-last{margin-left:auto;}
+.count-badge{display:inline-flex; align-items:center; justify-content:center; min-width:20px; height:20px; padding:0 6px; border-radius:10px; background:#D9534F; color:#fff; font-size:0.72rem; font-weight:700; line-height:1; margin-left:4px;}
+
+/* Trenerio pastabos (telefonui salėje) */
+.form.notes-filter{grid-template-columns:2fr 1fr auto; align-items:end;}
+.note-row{display:grid; grid-template-columns:220px 1fr; gap:6px 16px; padding:14px 0; border-bottom:1px solid rgba(23,20,15,0.08); align-items:start;}
+.note-row textarea{background:rgba(255,255,255,0.75); border:1px solid rgba(23,20,15,0.14); border-radius:8px; padding:10px 12px; font-family:inherit; font-size:16px; width:100%; resize:vertical; min-height:48px;}
+.note-row textarea:focus, .note-video input:focus{outline:2px solid var(--accent); outline-offset:1px;}
+.note-video{grid-column:2;}
+.note-video summary{cursor:pointer; font-size:0.8rem; color:var(--accent); font-weight:600;}
+.note-video input{margin-top:6px; width:100%; background:rgba(255,255,255,0.75); border:1px solid rgba(23,20,15,0.14); border-radius:8px; padding:9px 12px; font-size:16px; font-family:inherit;}
+.note-existing{font-size:0.8rem; color:var(--accent-dark); margin-top:4px; display:flex; gap:8px; flex-wrap:wrap;}
+.danger-link{color:var(--danger); border:none; font-size:0.78rem; text-decoration:underline; padding:0;}
+.notes-form .notify{display:flex; gap:10px; align-items:flex-start; margin:16px 0 4px; font-weight:500;}
+.notes-form .notify input{width:18px; height:18px; accent-color:var(--accent); flex-shrink:0;}
+
+/* Pastabos nario paskyroje */
+.coach-note{padding:14px 0; border-bottom:1px solid rgba(23,20,15,0.08);}
+.coach-note:last-child{border-bottom:none;}
+.coach-note .meta{font-size:0.78rem; color:var(--muted); margin-bottom:4px;}
+.coach-note.unread{background:rgba(168,92,126,0.07); border-radius:10px; padding:14px; margin:6px 0; border-bottom:none;}
+.coach-note .video{margin:10px 0 0; max-width:560px;}
+.badge-new{background:var(--pink); color:#fff;}
+
+@media(max-width:860px){
+  .form.notes-filter{grid-template-columns:1fr;}
+  .note-row{grid-template-columns:1fr;}
+  .note-video{grid-column:auto;}
+}

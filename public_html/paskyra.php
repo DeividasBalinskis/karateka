@@ -119,6 +119,12 @@ if ($active) {
     [$from, $to, $seasonLabel] = season_bounds();
     $seasonPoints = member_points_total((int) $selected['id'], $from, $to);
     $history = member_history((int) $selected['id']);
+    $notes = member_notes((int) $selected['id']);
+    $unreadIds = array_map('intval', array_column(array_filter($notes, function ($n) { return $n['read_at'] === null; }), 'id'));
+    // Pažymime perskaitytomis (rodoma kaip „Nauja“ tik šį kartą). Treneriui peržiūrint - nežymime.
+    if ($unreadIds && !is_staff($a)) {
+        q('UPDATE coach_notes SET read_at = NOW() WHERE member_id = ? AND read_at IS NULL', [$selected['id']]);
+    }
 
     // Kurį reitingą rodyti: savo (numatytasis), kitos amžiaus kategorijos arba viso klubo
     $ownPartition = ranking_partition($selected);
@@ -155,7 +161,7 @@ page_start('Mano paskyra', ['noindex' => true]);
     <div class="member-tabs">
       <?php foreach ($members as $m): ?>
         <a href="?m=<?= (int) $m['id'] ?>" class="<?= $selected && $m['id'] === $selected['id'] ? 'active' : '' ?>">
-          <?= e($m['first_name']) ?><?= $m['relation'] === 'self' ? ' (aš)' : '' ?>
+          <?= e($m['first_name']) ?><?= $m['relation'] === 'self' ? ' (aš)' : '' ?><?php if ($u = member_unread_notes((int) $m['id'])): ?> <span class="count-badge" title="Naujos trenerio pastabos"><?= $u ?></span><?php endif; ?>
         </a>
       <?php endforeach; ?>
     </div>
@@ -221,6 +227,22 @@ page_start('Mano paskyra', ['noindex' => true]);
       <?php endif; ?>
     </div>
   </div>
+
+  <?php if ($active && $notes): ?>
+    <div class="panel card" id="pastabos" style="margin-top:20px;">
+      <div class="kicker">Trenerio pastabos<?= $unreadIds ? ' <span class="badge badge-new">' . count($unreadIds) . ' nauj.</span>' : '' ?></div>
+      <?php foreach ($notes as $n): ?>
+        <div class="coach-note <?= in_array((int) $n['id'], $unreadIds, true) ? 'unread' : '' ?>">
+          <div class="meta">
+            <?= e(fmt_date($n['note_date'], true)) ?><?= $n['author'] ? ' · treneris ' . e($n['author']) : '' ?>
+            <?= in_array((int) $n['id'], $unreadIds, true) ? ' <span class="badge badge-new">Nauja</span>' : '' ?>
+          </div>
+          <div><?= text_to_html($n['body']) ?></div>
+          <?php if ($n['youtube_id']): ?><?= youtube_embed($n['youtube_id']) ?><?php endif; ?>
+        </div>
+      <?php endforeach; ?>
+    </div>
+  <?php endif; ?>
 
   <div class="grid-2" style="margin-top:20px;">
     <div class="panel card">
