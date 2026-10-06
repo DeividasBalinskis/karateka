@@ -1,6 +1,5 @@
-# Įkeltuose failuose niekada nevykdomas kodas
+# Įkeltuose failuose niekada nevykdomas kodas (įkeltos nuotraukos visada pervadinamos į atsitiktinį .jpg).
+# Tik „Require“ - hostingas neleidžia „Options“ / „RemoveHandler“ (dėl jų buvo klaida 500).
 <FilesMatch "\.(php|phtml|phar|php\d|pht|cgi|pl|py|sh)$">
   Require all denied
 </FilesMatch>
-Options -Indexes -ExecCGI
-RemoveHandler .php .phtml .phar
