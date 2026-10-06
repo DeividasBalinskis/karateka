@@ -62,7 +62,9 @@ if (is_post() && in_array($type, ['tevai', 'pats'], true)) {
         }
         $kids = [];
         foreach (array_slice((array) ($_POST['kids'] ?? []), 0, MAX_KIDS) as $i => $k) {
+            $bd = date_from_input(((array) $k)['birth_date'] ?? '');
             $k = array_map(function ($x) { return is_string($x) ? trim($x) : ''; }, (array) $k);
+            $k['birth_date'] = $bd;
             if (($k['first_name'] ?? '') === '' && ($k['last_name'] ?? '') === '' && ($k['birth_date'] ?? '') === '') {
                 continue;   // tuščias blokas
             }
@@ -77,7 +79,7 @@ if (is_post() && in_array($type, ['tevai', 'pats'], true)) {
             $errors[] = 'Pridėkite bent vieną vaiką.';
         }
     } else {
-        $birth = post('birth_date');
+        $birth = date_from_input($_POST['birth_date'] ?? '');
         $parentEmail = normalize_email(post('parent_email'));
         $under14 = valid_birth_date($birth) && age_on($birth) < CONSENT_AGE;
         if (!valid_birth_date($birth)) {
@@ -190,7 +192,7 @@ $kidsInput = array_values((array) ($v['kids'] ?? [[]])) ?: [[]];
         </div>
         <?php if ($type === 'pats'): ?>
           <label>Gimimo data
-            <input type="date" name="birth_date" id="birthDate" value="<?= e($v['birth_date'] ?? '') ?>" max="<?= date('Y-m-d') ?>" required>
+            <?= date_parts_field('birth_date', $v['birth_date'] ?? null) ?>
           </label>
         <?php endif; ?>
         <label>El. paštas <span class="hint">juo prisijungsite</span>
@@ -221,7 +223,7 @@ $kidsInput = array_values((array) ($v['kids'] ?? [[]])) ?: [[]];
                 <label>Vardas <input type="text" name="kids[<?= $i ?>][first_name]" value="<?= e($k['first_name'] ?? '') ?>"></label>
                 <label>Pavardė <input type="text" name="kids[<?= $i ?>][last_name]" value="<?= e($k['last_name'] ?? '') ?>"></label>
               </div>
-              <label>Gimimo data <input type="date" name="kids[<?= $i ?>][birth_date]" value="<?= e($k['birth_date'] ?? '') ?>" max="<?= date('Y-m-d') ?>"></label>
+              <label>Gimimo data <?= date_parts_field("kids[$i][birth_date]", $k['birth_date'] ?? null, false) ?></label>
               <label class="check"><input type="checkbox" name="kids[<?= $i ?>][photo_consent]" value="1" <?= !empty($k['photo_consent']) ? 'checked' : '' ?>>
                 <span>Sutinku, kad klubas skelbtų vaiko nuotraukas ir vaizdo įrašus iš treniruočių ir renginių (svetainėje, socialiniuose tinkluose).</span></label>
             </fieldset>
@@ -260,7 +262,7 @@ $kidsInput = array_values((array) ($v['kids'] ?? [[]])) ?: [[]];
     var all = kids.querySelectorAll('.kid');
     if (all.length >= max) return;
     var copy = all[all.length - 1].cloneNode(true), idx = all.length;
-    copy.querySelectorAll('input').forEach(function (inp) {
+    copy.querySelectorAll('input, select').forEach(function (inp) {
       inp.name = inp.name.replace(/kids\[\d+\]/, 'kids[' + idx + ']');
       if (inp.type === 'checkbox') inp.checked = false; else inp.value = '';
     });
@@ -270,11 +272,11 @@ $kidsInput = array_values((array) ($v['kids'] ?? [[]])) ?: [[]];
 })();
 <?php else: ?>
 (function () {
-  var bd = document.getElementById('birthDate');
+  var by = document.querySelector('[name="birth_date[y]"]'), bm = document.querySelector('[name="birth_date[m]"]'), bdd = document.querySelector('[name="birth_date[d]"]');
   function update() {
     var under = false;
-    if (bd.value) {
-      var b = new Date(bd.value), t = new Date();
+    if (by.value && bm.value && bdd.value) {
+      var b = new Date(+by.value, +bm.value - 1, +bdd.value), t = new Date();
       var age = t.getFullYear() - b.getFullYear() - ((t.getMonth() < b.getMonth() || (t.getMonth() === b.getMonth() && t.getDate() < b.getDate())) ? 1 : 0);
       under = age < <?= CONSENT_AGE ?>;
     }
@@ -283,7 +285,7 @@ $kidsInput = array_values((array) ($v['kids'] ?? [[]])) ?: [[]];
     document.getElementById('photoWrap').style.display = under ? 'none' : '';
     document.querySelector('[name=parent_email]').required = under;
   }
-  bd.addEventListener('change', update); bd.addEventListener('input', update); update();
+  [by, bm, bdd].forEach(function (s) { s.addEventListener('change', update); }); update();
 })();
 <?php endif; ?>
 </script>

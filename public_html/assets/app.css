@@ -97,7 +97,7 @@ h1.styled::after{
 .btn-block{width:100%;}
 
 /* ---------- Formos (kaip pagrindinio puslapio registracijos forma) ---------- */
-.form{display:grid; gap:14px;}
+.form{display:grid; gap:14px; align-content:start;}   /* laukai neišsitempia, kai kortelė aukštesnė už formą */
 .form label{display:grid; gap:6px; font-size:0.86rem; font-weight:600;}
 .form label.check{display:flex; gap:10px; align-items:flex-start; font-weight:500;}
 .form label.check input{width:18px; height:18px; margin-top:2px; flex-shrink:0; accent-color:var(--accent);}
@@ -345,8 +345,8 @@ legend{font-family:'Space Grotesk',sans-serif; font-weight:700; padding:0 6px;}
   .account-main{align-items:stretch;}
   .account-main > .stack{display:flex; flex-direction:column; gap:20px;}
   .account-main > .stack > * + *{margin-top:0;}
-  .account-main .events-card{flex:1 1 0; min-height:280px; display:flex; flex-direction:column; overflow:hidden;}
-  .account-main .events-scroll{flex:1; min-height:0; overflow-y:auto; padding-right:6px; scrollbar-width:thin;}
+  .account-main.has-points .events-card{flex:1 1 0; min-height:280px; display:flex; flex-direction:column; overflow:hidden;}
+  .account-main.has-points .events-scroll{flex:1; min-height:0; overflow-y:auto; padding-right:6px; scrollbar-width:thin;}
 }
 @media(min-width:861px){
   .events-card .list > li{padding:10px 0;}
@@ -371,3 +371,8 @@ legend{font-family:'Space Grotesk',sans-serif; font-weight:700; padding:0 6px;}
 .lesson-card .body{padding:14px 16px 16px;}
 .lesson-card h3{margin:6px 0 4px;}
 .lesson .video{max-width:860px;}
+/* Kol narys nepatvirtintas (nėra taškų kortelės) - tvarkaraštis ir renginiai šalia vienas kito per visą plotį */
+.account-main.no-points > .stack{grid-column:1 / -1; display:grid; grid-template-columns:1fr 1fr; gap:20px;}
+.account-main.no-points > .stack > * + *{margin-top:0;}
+@media(max-width:860px){ .account-main.no-points > .stack{grid-template-columns:1fr;} }
+.date-parts{display:grid; grid-template-columns:1.1fr 1.4fr 0.9fr; gap:8px;}

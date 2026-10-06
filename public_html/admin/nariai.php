@@ -32,7 +32,7 @@ if ($id) {
         csrf_check();
         $first = post('first_name');
         $last = post('last_name');
-        $birth = post('birth_date');
+        $birth = date_from_input($_POST['birth_date'] ?? '');
         $status = post('status');
         $group = (int) post('group_id') ?: null;
         if ($first === '' || $last === '' || !valid_birth_date($birth)) {
@@ -65,7 +65,7 @@ if ($id) {
           <label>Pavardė <input type="text" name="last_name" value="<?= e($m['last_name']) ?>" required></label>
         </div>
         <label>Gimimo data <span class="hint"><?= age_on($m['birth_date']) ?> m.</span>
-          <input type="date" name="birth_date" value="<?= e($m['birth_date']) ?>" required></label>
+          <?= date_parts_field('birth_date', $m['birth_date']) ?></label>
         <label>Grupė <select name="group_id"><?= group_options($m['group_id'] ? (int) $m['group_id'] : null) ?></select></label>
         <label>Būsena
           <select name="status">

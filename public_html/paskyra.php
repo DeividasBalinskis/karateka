@@ -13,7 +13,7 @@ if (is_post()) {
     if ($action === 'add_kid') {
         $first = post('first_name');
         $last = post('last_name');
-        $birth = post('birth_date');
+        $birth = date_from_input($_POST['birth_date'] ?? '');
         if ($first === '' || $last === '' || !valid_birth_date($birth)) {
             $errors[] = 'Įveskite vaiko vardą, pavardę ir gimimo datą.';
         } else {
@@ -175,7 +175,7 @@ page_start('Mano paskyra', ['noindex' => true]);
 <?= form_errors($errors) ?>
 
 <?php if ($selected): ?>
-  <div class="grid-2 account-main">
+  <div class="grid-2 account-main <?= $active ? 'has-points' : 'no-points' ?>">
     <?php if ($active): ?>
       <!-- Taškai ir Top 5 - svarbiausia, todėl pirma -->
       <div class="panel card points-card">
@@ -338,7 +338,7 @@ page_start('Mano paskyra', ['noindex' => true]);
       <div class="form-row three">
         <label>Vardas <input type="text" name="first_name" required></label>
         <label>Pavardė <input type="text" name="last_name" required></label>
-        <label>Gimimo data <input type="date" name="birth_date" max="<?= date('Y-m-d') ?>" required></label>
+        <label>Gimimo data <?= date_parts_field('birth_date', null) ?></label>
       </div>
       <label class="check"><input type="checkbox" name="photo_consent" value="1">
         <span>Sutinku, kad klubas skelbtų vaiko nuotraukas ir vaizdo įrašus</span></label>

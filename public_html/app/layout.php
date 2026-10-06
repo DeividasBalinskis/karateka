@@ -193,3 +193,46 @@ function site_header(bool $home = false): void
 </header>
 <?php
 }
+
+const LT_MONTHS = [1 => 'sausis', 'vasaris', 'kovas', 'balandis', 'gegužė', 'birželis', 'liepa', 'rugpjūtis', 'rugsėjis', 'spalis', 'lapkritis', 'gruodis'];
+
+/**
+ * Gimimo data trimis sąrašais (metai / mėnuo / diena) - patogiau nei kalendorius, kuriame reikia slinkti metus.
+ * Formoje siunčiama kaip name[y], name[m], name[d]; nuskaitoma su date_from_input().
+ */
+function date_parts_field(string $name, $value, bool $required = true): string
+{
+    if (is_array($value)) {
+        [$y, $m, $d] = [(int) ($value['y'] ?? 0), (int) ($value['m'] ?? 0), (int) ($value['d'] ?? 0)];
+    } elseif (is_string($value) && preg_match('/^(\d{4})-(\d{2})-(\d{2})$/', $value, $p)) {
+        [$y, $m, $d] = [(int) $p[1], (int) $p[2], (int) $p[3]];
+    } else {
+        [$y, $m, $d] = [0, 0, 0];
+    }
+    $req = $required ? ' required' : '';
+    $html = '<div class="date-parts"><select name="' . e($name) . '[y]" aria-label="Metai"' . $req . '><option value="">Metai</option>';
+    for ($i = (int) date('Y'); $i >= 1930; $i--) {
+        $html .= '<option value="' . $i . '"' . ($i === $y ? ' selected' : '') . '>' . $i . '</option>';
+    }
+    $html .= '</select><select name="' . e($name) . '[m]" aria-label="Mėnuo"' . $req . '><option value="">Mėnuo</option>';
+    foreach (LT_MONTHS as $i => $label) {
+        $html .= '<option value="' . $i . '"' . ($i === $m ? ' selected' : '') . '>' . $label . '</option>';
+    }
+    $html .= '</select><select name="' . e($name) . '[d]" aria-label="Diena"' . $req . '><option value="">Diena</option>';
+    for ($i = 1; $i <= 31; $i++) {
+        $html .= '<option value="' . $i . '"' . ($i === $d ? ' selected' : '') . '>' . $i . '</option>';
+    }
+    return $html . '</select></div>';
+}
+
+/** „YYYY-MM-DD“ iš date_parts_field() (arba paprasto teksto); netinkama data - '' */
+function date_from_input($v): string
+{
+    if (is_array($v)) {
+        $y = (int) ($v['y'] ?? 0);
+        $m = (int) ($v['m'] ?? 0);
+        $d = (int) ($v['d'] ?? 0);
+        return $y && $m && $d && checkdate($m, $d, $y) ? sprintf('%04d-%02d-%02d', $y, $m, $d) : '';
+    }
+    return is_string($v) ? trim($v) : '';
+}
