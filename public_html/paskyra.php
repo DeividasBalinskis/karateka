@@ -68,6 +68,27 @@ if (is_post()) {
         redirect('paskyra.php#nustatymai');
     }
 
+    if ($action === 'email') {
+        $email = normalize_email(post('email'));
+        if (!password_verify((string) ($_POST['current'] ?? ''), $a['password_hash'])) {
+            $errors[] = 'Neteisingas slaptažodis.';
+        } elseif (!valid_email($email)) {
+            $errors[] = 'Įveskite teisingą el. paštą.';
+        } elseif ($email === $a['email']) {
+            $errors[] = 'Tai jūsų dabartinis el. paštas.';
+        } elseif (q_value('SELECT 1 FROM accounts WHERE email = ?', [$email])) {
+            $errors[] = 'Šis el. paštas jau naudojamas kitos paskyros.';
+        } else {
+            // Pakeičiama tik paspaudus nuorodą naujame pašte - taip įsitikiname, kad adresas tikrai jūsų
+            $token = token_create('change_email', $email, $aid);
+            send_mail($email, 'Patvirtinkite naują el. paštą — Karateka',
+                "Sveiki, {$a['first_name']},\n\nnorėdami pakeisti savo karateka.lt paskyros el. paštą į šį adresą, paspauskite nuorodą:\n\n"
+                . abs_url('el-pastas.php?t=' . $token) . "\n\nNuoroda galioja 1 dieną. Jei el. pašto nekeitėte, šį laišką ignoruokite.");
+            flash('ok', "Išsiuntėme patvirtinimo nuorodą į $email. El. paštas pasikeis, kai ją paspausite.");
+            redirect('paskyra.php#nustatymai');
+        }
+    }
+
     if ($action === 'password') {
         $pw = (string) ($_POST['password'] ?? '');
         if (!password_verify((string) ($_POST['current'] ?? ''), $a['password_hash'])) {
@@ -93,38 +114,80 @@ foreach ($members as $m) {
 $selected = $selected ?? ($members[0] ?? null);
 $isParent = (bool) array_filter($members, function ($m) { return $m['relation'] === 'parent'; }) || !array_filter($members, function ($m) { return $m['relation'] === 'self'; });
 
+$active = $selected && $selected['status'] === 'active' && $a['status'] === 'active';
+if ($active) {
+    [$from, $to, $seasonLabel] = season_bounds();
+    $partition = ranking_partition($selected);
+    $rows = $partition ? ranking($partition, $from, $to) : [];
+    $mine = null;
+    foreach ($rows as $r) {
+        if ((int) $r['member_id'] === (int) $selected['id']) {
+            $mine = $r;
+        }
+    }
+    $history = member_history((int) $selected['id']);
+}
+$openSetting = in_array(post('action'), ['email', 'password', 'profile'], true) ? post('action') : '';
+
 page_start('Mano paskyra', ['noindex' => true]);
 ?>
-<div class="page-head">
-  <div class="eyebrow">Mano paskyra</div>
-  <div class="row between" style="align-items:flex-end;">
-    <h1 class="styled" style="margin-bottom:0;">Sveiki, <?= e($a['first_name']) ?>!</h1>
-    <form method="post" action="<?= url('atsijungti.php') ?>" class="inline-form"><?= csrf_field() ?><button type="submit" class="btn btn-ghost btn-sm">Atsijungti</button></form>
+<div class="account-top">
+  <div>
+    <div class="eyebrow">Mano paskyra</div>
+    <div class="hello">Sveiki, <?= e($a['first_name']) ?>!</div>
   </div>
+  <?php if (count($members) > 1): ?>
+    <div class="member-tabs">
+      <?php foreach ($members as $m): ?>
+        <a href="?m=<?= (int) $m['id'] ?>" class="<?= $selected && $m['id'] === $selected['id'] ? 'active' : '' ?>">
+          <?= e($m['first_name']) ?><?= $m['relation'] === 'self' ? ' (aš)' : '' ?>
+        </a>
+      <?php endforeach; ?>
+    </div>
+  <?php endif; ?>
+  <form method="post" action="<?= url('atsijungti.php') ?>" class="inline-form logout"><?= csrf_field() ?><button type="submit" class="btn btn-ghost btn-sm">Atsijungti</button></form>
 </div>
 
 <?php if ($a['status'] === 'pending_approval'): ?>
-  <div class="flash flash-info">Paskyra laukia trenerio patvirtinimo. Kai treneris patvirtins ir priskirs grupę, čia matysite tvarkaraštį ir renginius.</div>
+  <div class="flash flash-info">Paskyra laukia trenerio patvirtinimo. Kai treneris patvirtins ir priskirs grupę, čia matysite tvarkaraštį, renginius ir taškus.</div>
 <?php endif; ?>
 <?= form_errors($errors) ?>
 
-<?php if (count($members) > 1): ?>
-  <div class="member-tabs">
-    <?php foreach ($members as $m): ?>
-      <a href="?m=<?= (int) $m['id'] ?>" class="<?= $selected && $m['id'] === $selected['id'] ? 'active' : '' ?>">
-        <?= e($m['first_name']) ?><?= $m['relation'] === 'self' ? ' (aš)' : '' ?>
-      </a>
-    <?php endforeach; ?>
+<?php if ($selected && $active): ?>
+  <!-- Svarbiausia iškart: taškai, vieta, grupė -->
+  <div class="stats">
+    <div class="stat stat-main">
+      <div class="kicker"><?= count($members) > 1 ? e($selected['first_name']) . ' · ' : '' ?>taškai šį sezoną</div>
+      <div class="big-number"><?= $mine ? (int) $mine['total'] : 0 ?></div>
+      <div class="muted small"><?= e($seasonLabel) ?></div>
+    </div>
+    <div class="stat">
+      <div class="kicker">Vieta reitinge</div>
+      <?php if ($mine): ?>
+        <div class="stat-value"><?= (int) $mine['rank'] ?> <span class="muted">iš <?= count($rows) ?></span></div>
+        <div class="muted small"><?= e($partition[2]) ?></div>
+      <?php else: ?>
+        <div class="stat-value muted">—</div>
+        <div class="muted small">dar nėra taškų</div>
+      <?php endif; ?>
+    </div>
+    <div class="stat">
+      <div class="kicker">Iš viso taškų</div>
+      <div class="stat-value"><?= member_points_total((int) $selected['id']) ?></div>
+      <div class="muted small">per visą laiką</div>
+    </div>
+    <div class="stat">
+      <div class="kicker">Grupė</div>
+      <div class="stat-value stat-text"><?= e($selected['group_name'] ?: '—') ?></div>
+    </div>
   </div>
 <?php endif; ?>
 
 <?php if ($selected): ?>
-  <?php $active = $selected['status'] === 'active' && $a['status'] === 'active'; ?>
   <div class="grid-2">
     <div class="panel card">
-      <div class="kicker">Grupė <?= $selected['group_id'] ? staff_link('admin/grupes.php?id=' . (int) $selected['group_id'], '✎ Tvarkaraštis') : '' ?></div>
+      <div class="kicker">Tvarkaraštis <?= $selected['group_id'] ? staff_link('admin/grupes.php?id=' . (int) $selected['group_id'], '✎ Keisti') : '' ?></div>
       <?php if ($active && $selected['group_id']): ?>
-        <h2><?= e($selected['group_name']) ?></h2>
         <?= render_schedule(group_schedule((int) $selected['group_id'])) ?>
       <?php else: ?>
         <h2><?= e($selected['first_name'] . ' ' . $selected['last_name']) ?></h2>
@@ -135,7 +198,7 @@ page_start('Mano paskyra', ['noindex' => true]);
     </div>
 
     <div class="panel card">
-      <div class="kicker">Artėjantys renginiai <?= staff_link('admin/renginiai.php', '✎ Renginiai') ?></div>
+      <div class="kicker">Artėjantys renginiai <?= staff_link('admin/renginiai.php', '✎ Keisti') ?></div>
       <?php $events = $active ? upcoming_events($selected['group_id'] ? (int) $selected['group_id'] : null, 8) : []; ?>
       <?php if (!$events): ?>
         <p class="muted">Artėjančių renginių nėra.</p>
@@ -148,49 +211,7 @@ page_start('Mano paskyra', ['noindex' => true]);
   </div>
 
   <?php if ($active): ?>
-    <?php
-      [$from, $to, $seasonLabel] = season_bounds();
-      $partition = ranking_partition($selected);
-      $rows = $partition ? ranking($partition, $from, $to) : [];
-      $mine = null;
-      foreach ($rows as $r) {
-          if ((int) $r['member_id'] === (int) $selected['id']) {
-              $mine = $r;
-          }
-      }
-      $history = member_history((int) $selected['id']);
-    ?>
     <div class="grid-2" style="margin-top:20px;">
-      <div class="panel card">
-        <div class="kicker">Taškai · <?= e($seasonLabel) ?></div>
-        <div class="row" style="align-items:baseline; gap:10px;">
-          <span class="big-number"><?= $mine ? (int) $mine['total'] : 0 ?></span>
-          <span class="muted">tšk.</span>
-        </div>
-        <p class="muted small" style="margin-top:6px;">
-          <?php if ($mine): ?>
-            <strong><?= (int) $mine['rank'] ?> vieta</strong> iš <?= count($rows) ?> · <?= e($partition[2]) ?>
-          <?php else: ?>
-            Šį sezoną taškų dar nėra.
-          <?php endif; ?>
-          · iš viso per visą laiką: <?= member_points_total((int) $selected['id']) ?>
-        </p>
-        <?php if ($rows): ?>
-          <hr class="divider">
-          <div class="kicker">Top 5 · <?= e($partition[2]) ?></div>
-          <ol class="ranking">
-            <?php foreach (array_filter($rows, function ($r) { return $r['rank'] <= 5; }) as $r): ?>
-              <li class="<?= $mine && $r['member_id'] === $mine['member_id'] ? 'me' : '' ?>">
-                <span class="pos r<?= (int) $r['rank'] ?>"><?= (int) $r['rank'] ?></span><?= e(short_name($r)) ?><span class="pts"><?= (int) $r['total'] ?></span>
-              </li>
-            <?php endforeach; ?>
-            <?php if ($mine && $mine['rank'] > 5): ?>
-              <li class="gap">···</li>
-              <li class="me"><span class="pos r<?= (int) $mine['rank'] ?>"><?= (int) $mine['rank'] ?></span><?= e(short_name($mine)) ?><span class="pts"><?= (int) $mine['total'] ?></span></li>
-            <?php endif; ?>
-          </ol>
-        <?php endif; ?>
-      </div>
       <div class="panel card">
         <div class="kicker">Istorija</div>
         <?php if (!$history): ?>
@@ -207,6 +228,20 @@ page_start('Mano paskyra', ['noindex' => true]);
               </li>
             <?php endforeach; ?>
           </ul>
+        <?php endif; ?>
+      </div>
+      <div class="panel card">
+        <div class="kicker">Top 5<?= $partition ? ' · ' . e($partition[2]) : '' ?></div>
+        <?php if (!$rows): ?>
+          <p class="muted">Šį sezoną taškų dar niekas neturi.</p>
+        <?php else: ?>
+          <ol class="ranking">
+            <?php foreach (array_filter($rows, function ($r) { return $r['rank'] <= 5; }) as $r): ?>
+              <li class="<?= $mine && $r['member_id'] === $mine['member_id'] ? 'me' : '' ?>">
+                <span class="pos r<?= (int) $r['rank'] ?>"><?= (int) $r['rank'] ?></span><?= e(short_name($r)) ?><span class="pts"><?= (int) $r['total'] ?></span>
+              </li>
+            <?php endforeach; ?>
+          </ol>
         <?php endif; ?>
       </div>
     </div>
@@ -241,17 +276,23 @@ page_start('Mano paskyra', ['noindex' => true]);
     <?php if ($selected['relation'] === 'parent'): ?>
       <hr class="divider">
       <?php if ($selected['own_login_email']): ?>
-        <p class="small">Turi savo prisijungimą: <strong><?= e($selected['own_login_email']) ?></strong></p>
+        <p class="small"><?= e($selected['first_name']) ?> turi savo prisijungimą: <strong><?= e($selected['own_login_email']) ?></strong></p>
       <?php else: ?>
-        <h3>Pakviesti <?= e($selected['first_name']) ?> prisijungti</h3>
-        <p class="small muted" style="margin-bottom:10px;">Vaikas susikurs savo prisijungimą prie to paties nario - matys savo tvarkaraštį ir renginius.</p>
-        <form method="post" class="form inline-fields">
-          <?= csrf_field() ?>
-          <input type="hidden" name="action" value="invite">
-          <input type="hidden" name="member_id" value="<?= (int) $selected['id'] ?>">
-          <label>Vaiko el. paštas <input type="email" name="email" required></label>
-          <button class="btn btn-ghost" type="submit">Siųsti kvietimą</button>
-        </form>
+        <details <?= $errors && post('action') === 'invite' ? 'open' : '' ?>>
+          <summary class="summary-link">Ar <?= e($selected['first_name']) ?> nori jungtis pats (-i)? Sukurkite atskirą prisijungimą</summary>
+          <p class="small muted" style="margin:10px 0;">
+            Jei vaikas turi savo el. paštą, jis gali turėti <strong>atskirą prisijungimą</strong> ir pats matyti savo tvarkaraštį, renginius ir taškus.
+            Įveskite vaiko el. paštą - jis gaus laišką su nuoroda slaptažodžiui susikurti.
+            Jūs ir toliau viską matysite savo paskyroje. Tai neprivaloma.
+          </p>
+          <form method="post" class="form inline-fields">
+            <?= csrf_field() ?>
+            <input type="hidden" name="action" value="invite">
+            <input type="hidden" name="member_id" value="<?= (int) $selected['id'] ?>">
+            <label>Vaiko el. paštas <input type="email" name="email" required></label>
+            <button class="btn btn-ghost" type="submit">Siųsti kvietimą</button>
+          </form>
+        </details>
       <?php endif; ?>
     <?php endif; ?>
   </div>
@@ -277,22 +318,44 @@ page_start('Mano paskyra', ['noindex' => true]);
 
 <div class="panel card" id="nustatymai" style="margin-top:20px;">
   <h2>Paskyros nustatymai</h2>
-  <p class="muted small" style="margin-bottom:16px;"><?= e($a['first_name'] . ' ' . $a['last_name']) ?> · <?= e($a['email']) ?></p>
-  <div class="grid-2">
-    <form method="post" class="form">
+  <p class="muted small"><?= e($a['first_name'] . ' ' . $a['last_name']) ?></p>
+
+  <details class="setting" <?= $openSetting === 'email' ? 'open' : '' ?>>
+    <summary><span class="setting-label">El. paštas</span><span class="setting-value"><?= e($a['email']) ?></span><span class="setting-btn">Keisti</span></summary>
+    <form method="post" class="form setting-form">
+      <?= csrf_field() ?>
+      <input type="hidden" name="action" value="email">
+      <div class="form-row">
+        <label>Naujas el. paštas <input type="email" name="email" value="<?= $openSetting === 'email' ? e(post('email')) : '' ?>" autocomplete="email" required></label>
+        <label>Slaptažodis <span class="hint">patvirtinimui</span><input type="password" name="current" autocomplete="current-password" required></label>
+      </div>
+      <p class="hint">Į naują adresą atsiųsime nuorodą. El. paštas pasikeis tik ją paspaudus.</p>
+      <div><button class="btn btn-primary btn-sm" type="submit">Keisti el. paštą</button></div>
+    </form>
+  </details>
+
+  <details class="setting" <?= $openSetting === 'profile' ? 'open' : '' ?>>
+    <summary><span class="setting-label">Telefonas</span><span class="setting-value"><?= $a['phone'] ? e($a['phone']) : '<span class="muted">nenurodytas</span>' ?></span><span class="setting-btn">Keisti</span></summary>
+    <form method="post" class="form setting-form">
       <?= csrf_field() ?>
       <input type="hidden" name="action" value="profile">
       <label>Telefonas <input type="tel" name="phone" value="<?= e($a['phone']) ?>" autocomplete="tel"></label>
-      <div><button class="btn btn-ghost" type="submit">Išsaugoti</button></div>
+      <div><button class="btn btn-primary btn-sm" type="submit">Išsaugoti</button></div>
     </form>
-    <form method="post" class="form">
+  </details>
+
+  <details class="setting" <?= $openSetting === 'password' ? 'open' : '' ?>>
+    <summary><span class="setting-label">Slaptažodis</span><span class="setting-value">••••••••</span><span class="setting-btn">Keisti</span></summary>
+    <form method="post" class="form setting-form">
       <?= csrf_field() ?>
       <input type="hidden" name="action" value="password">
-      <label>Dabartinis slaptažodis <input type="password" name="current" autocomplete="current-password" required></label>
-      <label>Naujas slaptažodis <input type="password" name="password" autocomplete="new-password" minlength="<?= MIN_PASSWORD ?>" required></label>
-      <div><button class="btn btn-ghost" type="submit">Keisti slaptažodį</button></div>
+      <div class="form-row">
+        <label>Dabartinis slaptažodis <input type="password" name="current" autocomplete="current-password" required></label>
+        <label>Naujas slaptažodis <span class="hint">bent <?= MIN_PASSWORD ?> simboliai</span><input type="password" name="password" autocomplete="new-password" minlength="<?= MIN_PASSWORD ?>" required></label>
+      </div>
+      <div><button class="btn btn-primary btn-sm" type="submit">Keisti slaptažodį</button></div>
     </form>
-  </div>
+  </details>
 </div>
 <?php
 page_end();

@@ -6,6 +6,7 @@ const TOKEN_TTL = [
     'parent_consent' => '+14 days',
     'password_reset' => '+1 hour',
     'invite'         => '+14 days',
+    'change_email'   => '+1 day',
 ];
 
 /** Sukuria žetoną ir grąžina jo reikšmę (dedama į nuorodą) */
