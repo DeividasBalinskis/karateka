@@ -11,7 +11,7 @@ function group_from_post(array &$errors): array
     $g = [
         'name'       => post('name'),
         'category'   => post('category'),
-        'location'   => post('location') ?: null,
+        'location'   => location_from_post('location') ?: null,
         'sort_order' => (int) post('sort_order'),
         'is_active'  => !empty($_POST['is_active']) ? 1 : 0,
     ];
@@ -21,6 +21,7 @@ function group_from_post(array &$errors): array
     if (!isset(GROUP_CATEGORIES[$g['category']])) {
         $errors[] = 'Pasirinkite kategoriją.';
     }
+    $_POST['location'] = $g['location'];   // kad klaidos atveju forma išlaikytų pasirinkimą
     return $g;
 }
 
@@ -43,6 +44,24 @@ if (is_post()) {
             flash('ok', 'Išsaugota.');
             redirect('admin/grupes.php?id=' . $id);
         }
+    }
+    if ($action === 'move_members' && $id) {
+        $target = (int) post('target');
+        $ids = array_map('intval', (array) ($_POST['members'] ?? []));
+        if (!$ids || !q_value('SELECT 1 FROM training_groups WHERE id = ?', [$target])) {
+            flash('err', 'Pažymėkite narius ir pasirinkite grupę.');
+        } else {
+            foreach ($ids as $mid) {
+                q('UPDATE members SET group_id = ? WHERE id = ? AND group_id = ?', [$target, $mid, $id]);
+            }
+            flash('ok', 'Perkelta narių: ' . count($ids));
+        }
+        redirect('admin/grupes.php?id=' . $id);
+    }
+    if ($action === 'add_member' && $id) {
+        q('UPDATE members SET group_id = ? WHERE id = ? AND status = "active"', [$id, (int) post('member_id')]);
+        flash('ok', 'Narys pridėtas į grupę.');
+        redirect('admin/grupes.php?id=' . $id);
     }
     if ($action === 'delete_group' && $id) {
         if (q_value('SELECT 1 FROM members WHERE group_id = ? AND status <> "inactive" LIMIT 1', [$id])) {
@@ -88,7 +107,7 @@ function group_form(array $g, string $action): void
       </label>
       <label>Eiliškumas <span class="hint">mažesnis - aukščiau</span><input type="number" name="sort_order" value="<?= (int) ($g['sort_order'] ?? 0) ?>"></label>
     </div>
-    <label>Vieta <input type="text" name="location" value="<?= e($g['location'] ?? '') ?>"></label>
+    <?= location_field('location', $g['location'] ?? null) ?>
     <label class="check"><input type="checkbox" name="is_active" value="1" <?= ($g['is_active'] ?? 1) ? 'checked' : '' ?>><span>Aktyvi grupė</span></label>
 <?php }
 
@@ -161,11 +180,45 @@ if ($id) {
         <div class="panel card">
           <h2>Nariai (<?= count($members) ?>)</h2>
           <?php if (!$members): ?><p class="muted small">Aktyvių narių nėra.</p><?php endif; ?>
-          <ul class="list small">
-            <?php foreach ($members as $m): ?>
-              <li><a href="<?= url('admin/nariai.php?id=' . (int) $m['id']) ?>"><?= e($m['first_name'] . ' ' . $m['last_name']) ?></a> <span class="muted">· <?= age_on($m['birth_date']) ?> m.</span></li>
-            <?php endforeach; ?>
-          </ul>
+          <?php if ($members): ?>
+            <form method="post" class="form" id="moveForm">
+              <?= csrf_field() ?>
+              <input type="hidden" name="id" value="<?= $id ?>">
+              <input type="hidden" name="action" value="move_members">
+              <label class="check small" style="font-weight:600;"><input type="checkbox" onclick="document.querySelectorAll('#moveForm .pick').forEach(function(c){c.checked=this.checked}.bind(this))"><span>Pažymėti visus</span></label>
+              <ul class="list small">
+                <?php foreach ($members as $m): ?>
+                  <li class="row" style="gap:10px;">
+                    <input type="checkbox" class="pick" name="members[]" value="<?= (int) $m['id'] ?>" style="width:18px; height:18px; accent-color:var(--accent);">
+                    <span><a href="<?= url('admin/nariai.php?id=' . (int) $m['id']) ?>"><?= e($m['first_name'] . ' ' . $m['last_name']) ?></a> <span class="muted">· <?= age_on($m['birth_date']) ?> m.</span></span>
+                  </li>
+                <?php endforeach; ?>
+              </ul>
+              <label>Perkelti pažymėtus į
+                <select name="target" required><?= group_options(null) ?></select>
+              </label>
+              <div><button class="btn btn-primary" type="submit">Perkelti</button></div>
+            </form>
+          <?php endif; ?>
+          <?php $others = q_all('SELECT m.id, m.first_name, m.last_name, g.name AS group_name FROM members m LEFT JOIN training_groups g ON g.id = m.group_id
+                                  WHERE m.status = "active" AND (m.group_id IS NULL OR m.group_id <> ?) ORDER BY m.last_name, m.first_name', [$id]); ?>
+          <?php if ($others): ?>
+            <hr class="divider">
+            <form method="post" class="form">
+              <?= csrf_field() ?>
+              <input type="hidden" name="id" value="<?= $id ?>">
+              <input type="hidden" name="action" value="add_member">
+              <label>Pridėti narį į šią grupę
+                <select name="member_id" required>
+                  <option value="">— pasirinkite narį —</option>
+                  <?php foreach ($others as $o): ?>
+                    <option value="<?= (int) $o['id'] ?>"><?= e($o['last_name'] . ' ' . $o['first_name']) ?> (<?= e($o['group_name'] ?: 'be grupės') ?>)</option>
+                  <?php endforeach; ?>
+                </select>
+              </label>
+              <div><button class="btn btn-ghost" type="submit">Pridėti</button></div>
+            </form>
+          <?php endif; ?>
         </div>
       </div>
     </div>

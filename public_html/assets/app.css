@@ -1,4 +1,4 @@
-/* Narių sistemos stiliai. Spalvos, šriftai ir komponentai perimti iš page1.html. */
+/* Narių sistemos stiliai. Spalvos, šriftai ir komponentai perimti iš pagrindinio puslapio (index.php). */
 :root{
   --ink:#17140F;
   --ink-deep:#120E0A;
@@ -38,7 +38,7 @@ p + p{margin-top:10px;}
 .small{font-size:0.85rem;}
 
 h1.styled{
-  display:inline-block; position:relative; padding-bottom:14px;
+  display:table; position:relative; padding-bottom:14px;
   background:linear-gradient(90deg, var(--ink) 0%, #7860A0 100%);
   -webkit-background-clip:text; background-clip:text; color:transparent; -webkit-text-fill-color:transparent;
 }
@@ -55,20 +55,8 @@ h1.styled::after{
 .kicker{font-family:'JetBrains Mono',monospace; font-size:0.68rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--accent); font-weight:700; margin-bottom:6px;}
 
 /* ---------- Antraštė ---------- */
-.site-header{position:sticky; top:0; z-index:100; background:var(--cream); border-bottom:1px solid rgba(23,20,15,0.08);}
-.site-nav{display:flex; align-items:center; gap:24px; padding:8px 32px; max-width:1120px; margin:0 auto;}
-.site-nav .logo{margin-right:auto;}
-.site-nav .logo img{height:46px; width:auto;}
-.nav-list{list-style:none; display:flex; align-items:center; gap:10px;}
-.nav-link{font-size:0.86rem; font-weight:600; color:var(--ink); display:inline-block; line-height:1; padding:10px 14px; border-radius:20px; border:1.5px solid transparent; transition:border-color .15s, background .15s;}
-.nav-link:hover{text-decoration:none; background:rgba(168,92,126,0.08); border-color:rgba(168,92,126,0.35);}
-.nav-admin{border-color:rgba(47,107,90,0.35);}
-.nav-cta{background:linear-gradient(90deg, #2E7FB0 0%, #A85C7E 55%, #D9698C 100%); background-size:200% 100%; color:#fff !important; padding:11px 20px; font-size:0.82rem; font-weight:700; border-radius:10px; box-shadow:0 6px 16px rgba(168,92,126,0.35); display:inline-block;}
-.nav-cta:hover{text-decoration:none; background-position:100% 0;}
 .linklike{background:none; cursor:pointer; font-family:inherit;}
 .inline-form{display:inline;}
-.burger{display:none; flex-direction:column; gap:5px; background:none; border:none; cursor:pointer; padding:8px;}
-.burger span{width:22px; height:2px; background:var(--ink);}
 
 .admin-tabs{
   display:flex; gap:6px; overflow-x:auto; padding:10px 32px; max-width:1120px; margin:0 auto; width:100%;
@@ -108,7 +96,7 @@ h1.styled::after{
 .btn-sm{padding:8px 14px; font-size:0.82rem;}
 .btn-block{width:100%;}
 
-/* ---------- Formos (kaip page1.html registracijos forma) ---------- */
+/* ---------- Formos (kaip pagrindinio puslapio registracijos forma) ---------- */
 .form{display:grid; gap:14px;}
 .form label{display:grid; gap:6px; font-size:0.86rem; font-weight:600;}
 .form label.check{display:flex; gap:10px; align-items:flex-start; font-weight:500;}
@@ -218,12 +206,6 @@ legend{font-family:'Space Grotesk',sans-serif; font-weight:700; padding:0 6px;}
 
 /* ---------- Mobilieji ---------- */
 @media(max-width:860px){
-  .site-nav{padding:8px 16px; flex-wrap:wrap;}
-  .site-nav .logo img{height:40px;}
-  .burger{display:flex;}
-  .nav-list{display:none; width:100%; flex-direction:column; align-items:stretch; gap:4px; padding:8px 0 12px;}
-  .nav-open .nav-list{display:flex;}
-  .nav-list .nav-link, .nav-list .nav-cta{display:block; width:100%; text-align:left; padding:12px 14px;}
   .admin-tabs{padding:10px 16px;}
   .page{padding:24px 16px 48px;}
   .card{padding:22px 18px;}

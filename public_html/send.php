@@ -1,6 +1,6 @@
 <?php
 // send.php — priima registracijos formos duomenis ir siunčia juos el. paštu per SMTP.
-// Įkelkite šį failą TAME PAČIAME aplanke kaip ir page1.html.
+// Įkelkite šį failą TAME PAČIAME aplanke kaip ir index.php.
 
 header('Content-Type: application/json; charset=utf-8');
 

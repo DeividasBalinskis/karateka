@@ -23,31 +23,11 @@ function page_start(string $title, array $opt = []): void
 <meta name="theme-color" content="#811517">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="<?= e(asset_url('assets/header.css')) ?>">
 <link rel="stylesheet" href="<?= e($css) ?>">
 </head>
 <body class="<?= $admin ? 'is-admin' : '' ?>">
-<header class="site-header">
-  <nav class="site-nav">
-    <a class="logo" href="<?= url('index.html') ?>"><img src="<?= url('LogoColor.png') ?>" alt="Karateka"></a>
-    <button class="burger" type="button" aria-label="Meniu" onclick="document.body.classList.toggle('nav-open')"><span></span><span></span><span></span></button>
-    <ul class="nav-list">
-      <li><a class="nav-link" href="<?= url('page1.html') ?>">Treniruotės</a></li>
-      <li><a class="nav-link" href="<?= url('naujienos.php') ?>">Naujienos</a></li>
-      <?php if ($a): ?>
-        <li><a class="nav-link" href="<?= url('paskyra.php') ?>">Mano paskyra</a></li>
-        <?php if (is_staff($a)): ?><li><a class="nav-link nav-admin" href="<?= url('admin/') ?>">Treneriams</a></li><?php endif; ?>
-        <li>
-          <form method="post" action="<?= url('atsijungti.php') ?>" class="inline-form"><?= csrf_field() ?>
-            <button type="submit" class="nav-link linklike">Atsijungti</button>
-          </form>
-        </li>
-      <?php else: ?>
-        <li><a class="nav-link" href="<?= url('prisijungti.php') ?>">Prisijungti</a></li>
-        <li><a class="nav-cta" href="<?= url('registracija.php') ?>">Registruotis</a></li>
-      <?php endif; ?>
-    </ul>
-  </nav>
-</header>
+<?php site_header(); ?>
 <?php if ($admin): ?>
 <nav class="admin-tabs">
   <a href="<?= url('admin/') ?>">Pradžia</a>
@@ -77,6 +57,7 @@ function page_end(): void
     <span>Nuo balto iki juodo diržo.</span>
   </div>
 </footer>
+<script src="<?= e(asset_url('assets/header.js')) ?>"></script>
 </body>
 </html>
 <?php
@@ -117,4 +98,93 @@ function staff_link(string $path, string $label = '✎ Redaguoti'): string
         return '';
     }
     return '<a class="staff-link" href="' . e(url($path)) . '">' . e($label) . '</a>';
+}
+
+/** Visos treniruočių vietos (iš grupių) - pasirinkimui iš sąrašo */
+function training_locations(): array
+{
+    return q('SELECT DISTINCT location FROM training_groups WHERE location IS NOT NULL AND location <> "" ORDER BY location')
+        ->fetchAll(PDO::FETCH_COLUMN);
+}
+
+/** Vietos laukas: sąrašas iš treniruočių vietų + „Kita vieta…“ su įrašymu ranka */
+function location_field(string $name, ?string $value, bool $required = false): string
+{
+    $locations = training_locations();
+    $isOther = $value !== null && $value !== '' && !in_array($value, $locations, true);
+    $id = 'loc_' . $name;
+    $html = '<label>Vieta <select name="' . e($name) . '_pick" id="' . $id . '" ' . ($required ? 'required' : '') . '>'
+        . '<option value="">— pasirinkite vietą —</option>';
+    foreach ($locations as $loc) {
+        $html .= '<option value="' . e($loc) . '"' . ($loc === $value ? ' selected' : '') . '>' . e($loc) . '</option>';
+    }
+    $html .= '<option value="__other"' . ($isOther ? ' selected' : '') . '>Kita vieta…</option></select></label>'
+        . '<label id="' . $id . '_other" ' . ($isOther ? '' : 'style="display:none;"') . '>Kita vieta <input type="text" name="' . e($name) . '_other" value="' . ($isOther ? e($value) : '') . '" placeholder="pvz. Kaunas, Žalgirio arena"></label>'
+        . '<script>(function(){var s=document.getElementById("' . $id . '"),o=document.getElementById("' . $id . '_other");'
+        . 's.addEventListener("change",function(){o.style.display=s.value==="__other"?"":"none";if(s.value==="__other")o.querySelector("input").focus();});})();</script>';
+    return $html;
+}
+
+/** Vietos reikšmė iš formos (žr. location_field) */
+function location_from_post(string $name): string
+{
+    $pick = post($name . '_pick');
+    return $pick === '__other' ? post($name . '_other') : $pick;
+}
+
+/** Statinio failo adresas su versija (kad naršyklė paimtų naują po pakeitimo) */
+function asset_url(string $path): string
+{
+    return url($path) . '?v=' . @filemtime(PUBLIC_DIR . '/' . $path);
+}
+
+/**
+ * Bendra viršutinė juosta visiems puslapiams.
+ * $home = true pagrindiniame puslapyje (nuorodos į skiltis be perkrovimo).
+ */
+function site_header(bool $home = false): void
+{
+    $a = current_account();
+    $h = $home ? '' : url('index.php');
+    ?>
+<div class="progress-wrap"><div class="progress-bar" id="progressBar"></div></div>
+<header class="site-header">
+  <nav>
+    <a class="logo" href="<?= $home ? '#' : url('index.php') ?>"><img src="<?= url('LogoColor.png') ?>" alt="Karateka logotipas"></a>
+    <ul class="nav-list" id="navList">
+      <li><a class="nav-link nl-pink" href="<?= $h ?>#apie">Apie klubą</a></li>
+      <li class="dropdown">
+        <span class="dropdown-trigger nl-gray">Treniruotės</span>
+        <ul class="dropdown-menu">
+          <li><a href="<?= $h ?>#vaikams">Vaikams</a></li>
+          <li><a href="<?= $h ?>#jaunimui">Jaunimui</a></li>
+          <li><a href="<?= $h ?>#suaugusiems">Suaugusiems</a></li>
+        </ul>
+      </li>
+      <li><a class="nav-link nl-blue" href="<?= $h ?>#kontaktai">Kontaktai</a></li>
+      <li><a class="nav-link nl-green" href="<?= url('naujienos.php') ?>">Naujienos</a></li>
+      <?php if ($a && is_staff($a)): ?>
+        <li><a class="nav-link nl-green" href="<?= url('admin/') ?>">Treneriams</a></li>
+      <?php endif; ?>
+      <?php if ($a): ?>
+        <li class="mobile-only"><a class="nav-link" href="<?= url('paskyra.php') ?>">Mano paskyra</a></li>
+        <li class="mobile-only">
+          <form method="post" action="<?= url('atsijungti.php') ?>" class="inline-form"><?= csrf_field() ?>
+            <button type="submit" class="nav-link nl-plain">Atsijungti</button>
+          </form>
+        </li>
+      <?php else: ?>
+        <li class="mobile-only"><a class="nav-link" href="<?= url('prisijungti.php') ?>">Prisijungti</a></li>
+      <?php endif; ?>
+    </ul>
+    <?php if ($a): ?>
+      <a href="<?= url('paskyra.php') ?>" class="nav-login">Mano paskyra</a>
+    <?php else: ?>
+      <a href="<?= url('prisijungti.php') ?>" class="nav-login">Prisijungti</a>
+    <?php endif; ?>
+    <a href="<?= $h ?>#registracija" class="nav-cta">2 treniruotės nemokamai</a>
+    <button class="burger" id="burgerBtn" type="button" aria-label="Meniu"><span></span><span></span><span></span></button>
+  </nav>
+</header>
+<?php
 }

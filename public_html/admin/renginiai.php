@@ -22,11 +22,12 @@ if (is_post()) {
         'starts_on'   => post('starts_on'),
         'ends_on'     => post('ends_on') ?: null,
         'start_time'  => post('start_time') ?: null,
-        'location'    => post('location') ?: null,
+        'location'    => location_from_post('location') ?: null,
         'is_abroad'   => !empty($_POST['is_abroad']) ? 1 : 0,
         'description' => post('description') ?: null,
     ];
     $groupIds = array_map('intval', (array) ($_POST['groups'] ?? []));
+    $_POST['location'] = $ev['location'];   // kad klaidos atveju forma išlaikytų pasirinkimą
 
     if (!isset(EVENT_TYPES[$ev['type']])) {
         $errors[] = 'Pasirinkite renginio tipą.';
@@ -95,7 +96,7 @@ if ($edit !== '') {
             <label>Iki <span class="hint">nebūtina</span><input type="date" name="ends_on" value="<?= e($ev['ends_on']) ?>"></label>
             <label>Laikas <input type="time" name="start_time" value="<?= e(fmt_time($ev['start_time'])) ?>"></label>
           </div>
-          <label>Vieta <input type="text" name="location" value="<?= e($ev['location']) ?>"></label>
+          <?= location_field('location', $ev['location']) ?>
           <label class="check"><input type="checkbox" name="is_abroad" value="1" <?= !empty($ev['is_abroad']) ? 'checked' : '' ?>><span>Vyksta užsienyje (varžyboms skiriama daugiau taškų)</span></label>
           <label>Aprašymas <textarea name="description" rows="5"><?= e($ev['description']) ?></textarea></label>
         </div>
