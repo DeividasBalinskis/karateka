@@ -110,11 +110,11 @@ require __DIR__ . '/app/bootstrap.php';
 
 
   /* ABOUT CLUB */
-  .about-grid{display:flex; align-items:flex-start; gap:48px;}
+  .about-grid{display:flex; align-items:stretch; gap:48px;}   /* nuotrauka tokio pat aukščio kaip tekstas - be tuščių vietų */
   .about-grid > *{flex:1; min-width:0;}
   .about-left{display:flex; flex-direction:column; flex:0.85;}
   .about-left .panel{display:flex; flex-direction:column; justify-content:center;}
-  .about-photo{border-radius:var(--radius); overflow:hidden; box-shadow:0 20px 44px rgba(23,20,15,0.15); position:relative; flex:1.15; aspect-ratio:16/10;}
+  .about-photo{border-radius:var(--radius); overflow:hidden; box-shadow:0 20px 44px rgba(23,20,15,0.15); position:relative; flex:1.15; min-height:340px;}
   .about-photo .slide{position:absolute; inset:0; opacity:0; transition:opacity 1.2s ease;}
   .about-photo .slide.active{opacity:1;}
   .about-photo img{width:100%; height:100%; object-fit:cover;}
