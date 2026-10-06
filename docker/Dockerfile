@@ -4,7 +4,7 @@ FROM php:8.2-apache
 RUN apt-get update \
  && apt-get install -y --no-install-recommends libjpeg62-turbo-dev libpng-dev libwebp-dev libfreetype6-dev \
  && docker-php-ext-configure gd --with-jpeg --with-webp --with-freetype \
- && docker-php-ext-install pdo_mysql mysqli gd \
+ && docker-php-ext-install pdo_mysql mysqli gd exif \
  && a2enmod rewrite headers \
  && rm -rf /var/lib/apt/lists/*
 

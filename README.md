@@ -11,7 +11,9 @@ Website of **VšĮ Karate Ateitis**, a traditional karate-do club in Vilnius led
   - `page1.html`: main page with info about the club, instructors, groups, schedule, contacts and registration
   - `send.php`: sends the registration form by email
 - `docker/`, `docker-compose.yml`: local PHP and MariaDB environment
-- `db/`: database schema (no member data)
+- `public_html/app/`: shared PHP code for the member system (blocked from the web)
+- `public_html/admin/`: coach panel (mobile-first)
+- `db/`: database schema and initial groups (no member data)
 - `docs/`: plans and notes
 
 ## In progress: member system
@@ -33,6 +35,22 @@ docker compose up -d
 | http://localhost:8088 | Website |
 | http://localhost:8081 | phpMyAdmin |
 | http://localhost:8025 | Mailpit, which catches outgoing emails |
+
+To fill the local database with sample accounts, events and news:
+
+```bash
+docker compose exec web php app/cli/dev_seed.php
+```
+
+It prints the local test accounts. All of them use the password from `app/cli/dev_seed.php`; they exist only on your PC.
+
+To reset the local database (deletes all local data):
+
+```bash
+docker compose down -v && docker compose up -d
+```
+
+Deploying to the test site: [docs/deploy-test.md](docs/deploy-test.md).
 
 ## Secrets and data
 

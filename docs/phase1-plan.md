@@ -1,6 +1,6 @@
 # Phase 1 plan: accounts, groups, schedule, events, news
 
-Status: **draft, nothing built yet.** Waiting for David's OK.
+Status: **built locally (October 2026)**, waiting for review and upload to test.karateka.lt.
 
 ## 1. Code layout (plain PHP, no framework)
 

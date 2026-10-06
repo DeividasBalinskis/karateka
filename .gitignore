@@ -4,8 +4,9 @@ config.php
 *.local.php
 
 # Įkelti failai (nuotraukos, dokumentai)
-public_html/uploads/
-uploads/
+public_html/uploads/*
+!public_html/uploads/.htaccess
+/uploads/
 
 # Narių duomenys, DB kopijos ir eksportai
 *.sql
