@@ -11,6 +11,23 @@ if ($id) {
         not_found();
     }
     $errors = [];
+    if (is_post() && in_array(post('action'), ['add_award', 'delete_award'], true)) {
+        csrf_check();
+        if (post('action') === 'add_award') {
+            $cat = q_one('SELECT * FROM point_categories WHERE id = ? AND is_active = 1', [(int) post('category_id')]);
+            $date = post('awarded_on');
+            if ($cat && DateTime::createFromFormat('!Y-m-d', $date)) {
+                award_points($id, $cat, $date, null, post('note'), (int) $me['id']);
+                flash('ok', "Skirta +{$cat['points']} tšk.: {$cat['name']}");
+            } else {
+                flash('err', 'Pasirinkite kategoriją ir datą.');
+            }
+        } else {
+            q('DELETE FROM point_awards WHERE id = ? AND member_id = ?', [(int) post('award_id'), $id]);
+            flash('ok', 'Taškai pašalinti.');
+        }
+        redirect('admin/nariai.php?id=' . $id . '#taskai');
+    }
     if (is_post()) {
         csrf_check();
         $first = post('first_name');
@@ -74,6 +91,48 @@ if ($id) {
           <?php endforeach; ?>
         </ul>
         <?php if ($m['parent_consent_at']): ?><p class="small muted" style="margin-top:10px;">Tėvų sutikimas: <?= e($m['parent_consent_at']) ?></p><?php endif; ?>
+      </div>
+    </div>
+
+    <?php [$from, $to, $seasonLabel] = season_bounds(); $history = member_history($id); ?>
+    <div class="grid-2" id="taskai" style="margin-top:20px;">
+      <form method="post" class="panel card form">
+        <?= csrf_field() ?>
+        <input type="hidden" name="id" value="<?= $id ?>">
+        <input type="hidden" name="action" value="add_award">
+        <h2>Skirti taškų</h2>
+        <p class="hint">Egzaminų ir varžybų taškus patogiau skirti per Renginiai → Rezultatai.</p>
+        <label>Už ką
+          <select name="category_id" required>
+            <option value="">— pasirinkite —</option>
+            <?php foreach (q_all('SELECT * FROM point_categories WHERE is_active = 1 ORDER BY sort_order, id') as $c): ?>
+              <option value="<?= (int) $c['id'] ?>"><?= e($c['name']) ?> (+<?= (int) $c['points'] ?>)</option>
+            <?php endforeach; ?>
+          </select>
+        </label>
+        <div class="form-row">
+          <label>Data <input type="date" name="awarded_on" value="<?= date('Y-m-d') ?>" required></label>
+          <label>Pastaba <span class="hint">nebūtina</span><input type="text" name="note" maxlength="190" placeholder="pvz. vedė antradienio treniruotę"></label>
+        </div>
+        <div><button class="btn btn-primary" type="submit">Skirti</button></div>
+      </form>
+      <div class="panel card">
+        <h2>Taškai</h2>
+        <p class="small muted"><?= e($seasonLabel) ?>: <strong><?= member_points_total($id, $from, $to) ?></strong> · iš viso: <strong><?= member_points_total($id) ?></strong></p>
+        <?php if (!$history): ?><p class="muted small" style="margin-top:8px;">Taškų dar nėra.</p><?php endif; ?>
+        <ul class="list small">
+          <?php foreach ($history as $h): ?>
+            <li class="row between">
+              <span>+<?= (int) $h['points'] ?> · <?= e($h['category_name']) ?>
+                <div class="muted"><?= e(fmt_date($h['awarded_on'], true)) ?><?= $h['event_title'] ? ' · ' . e($h['event_title']) : '' ?><?= $h['note'] ? ' · ' . e($h['note']) : '' ?></div>
+              </span>
+              <form method="post" class="inline-form" onsubmit="return confirm('Pašalinti šiuos taškus?')">
+                <?= csrf_field() ?><input type="hidden" name="id" value="<?= $id ?>"><input type="hidden" name="action" value="delete_award"><input type="hidden" name="award_id" value="<?= (int) $h['id'] ?>">
+                <button class="btn btn-danger btn-sm" type="submit" aria-label="Pašalinti">✕</button>
+              </form>
+            </li>
+          <?php endforeach; ?>
+        </ul>
       </div>
     </div>
     <?php

@@ -23,6 +23,7 @@ if (is_post()) {
         'ends_on'     => post('ends_on') ?: null,
         'start_time'  => post('start_time') ?: null,
         'location'    => post('location') ?: null,
+        'is_abroad'   => !empty($_POST['is_abroad']) ? 1 : 0,
         'description' => post('description') ?: null,
     ];
     $groupIds = array_map('intval', (array) ($_POST['groups'] ?? []));
@@ -42,10 +43,10 @@ if (is_post()) {
     if (!$errors) {
         db()->beginTransaction();
         if ($id) {
-            q('UPDATE events SET type = ?, title = ?, starts_on = ?, ends_on = ?, start_time = ?, location = ?, description = ? WHERE id = ?', array_merge(array_values($ev), [$id]));
+            q('UPDATE events SET type = ?, title = ?, starts_on = ?, ends_on = ?, start_time = ?, location = ?, is_abroad = ?, description = ? WHERE id = ?', array_merge(array_values($ev), [$id]));
             q('DELETE FROM event_groups WHERE event_id = ?', [$id]);
         } else {
-            q('INSERT INTO events (type, title, starts_on, ends_on, start_time, location, description) VALUES (?, ?, ?, ?, ?, ?, ?)', array_values($ev));
+            q('INSERT INTO events (type, title, starts_on, ends_on, start_time, location, is_abroad, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', array_values($ev));
             $id = (int) db()->lastInsertId();
         }
         foreach ($groupIds as $gid) {
@@ -58,7 +59,7 @@ if (is_post()) {
 }
 
 if ($edit !== '') {
-    $ev = $edit === 'new' ? ['id' => 0, 'type' => 'exam', 'title' => '', 'starts_on' => '', 'ends_on' => '', 'start_time' => '', 'location' => '', 'description' => '']
+    $ev = $edit === 'new' ? ['id' => 0, 'type' => 'exam', 'title' => '', 'starts_on' => '', 'ends_on' => '', 'start_time' => '', 'location' => '', 'is_abroad' => 0, 'description' => '']
         : q_one('SELECT * FROM events WHERE id = ?', [(int) $edit]);
     if (!$ev) {
         not_found();
@@ -95,6 +96,7 @@ if ($edit !== '') {
             <label>Laikas <input type="time" name="start_time" value="<?= e(fmt_time($ev['start_time'])) ?>"></label>
           </div>
           <label>Vieta <input type="text" name="location" value="<?= e($ev['location']) ?>"></label>
+          <label class="check"><input type="checkbox" name="is_abroad" value="1" <?= !empty($ev['is_abroad']) ? 'checked' : '' ?>><span>Vyksta užsienyje (varžyboms skiriama daugiau taškų)</span></label>
           <label>Aprašymas <textarea name="description" rows="5"><?= e($ev['description']) ?></textarea></label>
         </div>
         <div class="panel card form">
@@ -130,7 +132,10 @@ function event_row(array $ev): void
         <a href="?edit=<?= (int) $ev['id'] ?>"><strong><?= e($ev['title']) ?></strong></a>
         <div class="muted small"><?= e(fmt_date($ev['starts_on'], true)) ?><?= $ev['location'] ? ' · ' . e($ev['location']) : '' ?> · <?= $groups ? e(implode(', ', $groups)) : 'visiems' ?></div>
       </span>
-      <a class="btn btn-ghost btn-sm" href="?edit=<?= (int) $ev['id'] ?>">Keisti</a>
+      <span class="row" style="gap:6px;">
+        <?php if (isset(EVENT_RESULTS[$ev['type']]) && $ev['starts_on'] <= date('Y-m-d')): ?><a class="btn btn-primary btn-sm" href="<?= url('admin/renginio-rezultatai.php?id=' . (int) $ev['id']) ?>">Rezultatai</a><?php endif; ?>
+        <a class="btn btn-ghost btn-sm" href="?edit=<?= (int) $ev['id'] ?>">Keisti</a>
+      </span>
     </li>
 <?php }
 

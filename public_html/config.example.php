@@ -10,6 +10,7 @@ return [
     'notify_email'=> 'info@karateka.lt',
     'setup_key'   => 'CHANGE_ME_LONG_RANDOM',      // ištrinkite/pakeiskite sukūrę pirmą administratorių
     'retention'   => ['unfinished_days' => 30],    // nebaigtos registracijos ištrinamos po N dienų
+    'ranking'     => ['scope' => 'category'],     // reitingas: category (vaikai/jaunimas/suaugę) | group | club
 
     // Registracijos formai (send.php)
     'smtp' => [

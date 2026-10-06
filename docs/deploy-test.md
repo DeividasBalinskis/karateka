@@ -4,7 +4,7 @@ Reikia: PHP 8.0+ su `pdo_mysql` ir `gd` (DirectAdmin → PHP nustatymai), MySQL 
 
 ## 1. Duomenų bazė (vieną kartą)
 1. DirectAdmin → MySQL Management → sukurkite test DB ir vartotoją.
-2. phpMyAdmin → pasirinkite tą DB → Import → `db/001_schema.sql`, tada `db/002_groups.sql`.
+2. phpMyAdmin → pasirinkite tą DB → Import → `db/001_schema.sql`, tada `db/002_groups.sql`, tada `db/003_points.sql`.
 
 ## 2. Failai
 1. Įkelkite **viską iš `public_html/`** į serverio `public_html/test/`, **išskyrus** `config.php` ir `uploads/news/`.
@@ -24,3 +24,7 @@ Kitus trenerius: jie užsiregistruoja kaip įprasta, jūs patvirtinate, tada **T
 ## Atnaujinant
 Įkelkite pakeistus failus. `config.php` ir `uploads/` niekada neperrašykite.
 Jei pasikeitė `db/` schema - bus nurodyta, kokią SQL komandą paleisti.
+
+## DB pakeitimai (migracijos)
+SQL failai `db/` aplanke numeruoti. Jei DB jau sukurta, importuokite tik naujus failus, kurių dar nebuvo:
+- `003_points.sql` - 2 etapas: taškai ir reitingas.

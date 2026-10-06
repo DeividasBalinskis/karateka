@@ -38,6 +38,10 @@ function mem(string $first, string $last, string $birth, ?int $group, string $st
 $coach = acc('treneris@karateka.test', 'Denis', 'Balinskis', 'admin');
 link_member($coach, mem('Denis', 'Balinskis', '1985-04-12', 13), 'self');
 
+// Davido testinė administratoriaus paskyra (slaptažodis "admin1" - tik lokaliai)
+$admin1 = create_account('admin1@karateka.test', 'admin1', 'Admin', 'Testas', null, 'active');
+q('UPDATE accounts SET role = "admin", email_verified_at = NOW(), approved_at = NOW() WHERE id = ?', [$admin1]);
+
 // Tėvai su dviem vaikais
 $parent = acc('tevai@karateka.test', 'Rasa', 'Petrauskienė');
 $kid1 = mem('Jonas', 'Petrauskas', '2017-06-03', 1);
@@ -73,6 +77,32 @@ foreach ($events as [$type, $title, $start, $end, $time, $loc, $desc, $groups]) 
     }
 }
 
+// Praėję renginiai su rezultatais ir taškais (2 etapas)
+foreach ([['Rudenėlio taurė', 'Vilnius', 0], ['Sakura Cup', 'Ryga', 1]] as $i => [$title, $loc, $abroad]) {
+    q('INSERT INTO events (type, title, starts_on, location, is_abroad) VALUES ("competition", ?, ?, ?, ?)',
+        [$title, date('Y-m-d', strtotime('-' . (20 + $i * 7) . ' days')), $loc, $abroad]);
+    $eid = (int) db()->lastInsertId();
+    q('INSERT INTO event_groups (event_id, group_id) VALUES (?, 12), (?, 13)', [$eid, $eid]);
+}
+q('INSERT INTO events (type, title, starts_on, location) VALUES ("exam", "Pavasario kyu egzaminas", ?, "Viršuliškės")', [date('Y-m-d', strtotime('-30 days'))]);
+$examId = (int) db()->lastInsertId();
+
+// Daugiau jaunimo narių, kad reitingas turėtų ką rodyti
+$youth = [$kid2];
+foreach ([['Lukas', 'Vaitkus'], ['Gabija', 'Stankevičiūtė'], ['Matas', 'Žukauskas'], ['Emilija', 'Paulauskaitė'], ['Dovydas', 'Urbonas'], ['Kamilė', 'Rimkutė']] as $i => [$f, $l]) {
+    $youth[] = mem($f, $l, (2009 + $i % 4) . '-0' . (1 + $i) . '-1' . $i, 12);
+}
+$comp = q_all('SELECT * FROM events WHERE type = "competition" AND starts_on < CURDATE() ORDER BY starts_on');
+$results = [
+    [$youth[0] => '2', $youth[1] => '1', $youth[2] => 'part', $youth[3] => '3', $youth[4] => 'part', $youth[5] => 'part'],
+    [$youth[0] => 'part', $youth[1] => '3', $youth[3] => 'part', $youth[6] => '1'],
+];
+foreach ($comp as $i => $ev) {
+    save_event_results($ev, $results[$i], $coach);
+}
+save_event_results(q_one('SELECT * FROM events WHERE id = ?', [$examId]), array_fill_keys(array_merge($youth, [$kid1]), 'yes'), $coach);
+award_points($youth[2], category_by_code('lead_training'), date('Y-m-d', strtotime('-5 days')), null, 'Vedė vaikų treniruotę', $coach);
+
 // Naujienos su esamomis svetainės nuotraukomis
 $news = [
     ['Rudens sezonas prasidėjo!', "Sveiki sugrįžę į salę! Treniruotės vyksta pagal įprastą tvarkaraštį.\n\nNaujokams pirmos dvi treniruotės nemokamos - kvieskite draugus.", '-10 days', ['Page2ApieSlide1.jpg', 'Page2ApieSlide2.jpg', 'Page2ApieSlide3.jpg'], []],
@@ -97,6 +127,7 @@ foreach ($news as [$title, $body, $when, $images, $videos]) {
 }
 
 echo "Paruošta. Paskyros (slaptažodis " . PW . "):\n"
+    . "  admin1@karateka.test     - administratorius (slaptažodis admin1)\n"
     . "  treneris@karateka.test   - administratorius\n"
     . "  tevai@karateka.test      - tėvai su 2 vaikais\n"
     . "  jaunuolis@karateka.test  - jaunuolis\n"

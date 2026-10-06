@@ -1,6 +1,6 @@
 # Phase 2 plan: points, ranking, personal history
 
-Status: **draft, nothing built yet.** Several decisions are needed from your brother (section 5).
+Status: **built locally (October 2026) with the suggested defaults from section 4.** The decisions in section 5 can still change it: point values are edited in the coach panel, and the ranking split is one setting in `config.php` (`ranking.scope`). Not built yet: attendance points, belt tracking, old data import.
 
 ## 1. New tables
 

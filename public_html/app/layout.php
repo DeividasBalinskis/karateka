@@ -55,6 +55,7 @@ function page_start(string $title, array $opt = []): void
   <a href="<?= url('admin/nariai.php') ?>">Nariai</a>
   <a href="<?= url('admin/grupes.php') ?>">Grupės</a>
   <a href="<?= url('admin/renginiai.php') ?>">Renginiai</a>
+  <a href="<?= url('admin/taskai.php') ?>">Taškai</a>
   <a href="<?= url('admin/naujienos.php') ?>">Naujienos</a>
   <?php if (is_admin()): ?><a href="<?= url('admin/paskyros.php') ?>">Paskyros</a><?php endif; ?>
 </nav>

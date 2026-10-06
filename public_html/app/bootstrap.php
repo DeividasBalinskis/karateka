@@ -24,6 +24,7 @@ require APP_DIR . '/mail.php';
 require APP_DIR . '/tokens.php';
 require APP_DIR . '/auth.php';
 require APP_DIR . '/data.php';
+require APP_DIR . '/points.php';
 require APP_DIR . '/cleanup.php';
 require APP_DIR . '/layout.php';
 

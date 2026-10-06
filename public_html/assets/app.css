@@ -254,3 +254,31 @@ legend{font-family:'Space Grotesk',sans-serif; font-weight:700; padding:0 6px;}
 .legal ul{padding-left:20px;}
 .legal li + li{margin-top:4px;}
 .todo{background:#FFE58A; padding:0 4px; border-radius:4px;}
+
+/* Reitingas */
+.ranking{list-style:none;}
+.ranking li{display:flex; align-items:center; gap:12px; padding:9px 0; border-bottom:1px solid rgba(23,20,15,0.07);}
+.ranking li:last-child{border-bottom:none;}
+.ranking .pos{width:30px; height:30px; flex-shrink:0; border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:0.9rem; background:rgba(23,20,15,0.07);}
+.ranking .pos.r1{background:#F0CB4E;}
+.ranking .pos.r2{background:#D5D5D5;}
+.ranking .pos.r3{background:#E3A774;}
+.ranking .pts{margin-left:auto; font-family:'JetBrains Mono',monospace; font-weight:600;}
+.ranking li.me{background:rgba(168,92,126,0.1); border-radius:8px; padding-left:8px; padding-right:8px;}
+.ranking li.gap{justify-content:center; color:var(--muted); border-bottom:none; padding:2px 0;}
+.big-number{font-family:'Space Grotesk',sans-serif; font-size:2.6rem; font-weight:700; line-height:1;}
+
+/* Rezultatų žymėjimas (didelius mygtukus patogu spausti telefone) */
+.result-row{display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px 0; border-bottom:1px solid rgba(23,20,15,0.07); flex-wrap:wrap;}
+.result-row:last-child{border-bottom:none;}
+.result-row .who{font-weight:600;}
+.seg{display:flex; flex-wrap:wrap; gap:6px;}
+.seg label{cursor:pointer;}
+.seg input{position:absolute; opacity:0; pointer-events:none;}
+.seg span{display:inline-block; padding:8px 13px; border-radius:20px; border:1.5px solid rgba(23,20,15,0.14); background:rgba(255,255,255,0.7); font-size:0.85rem; font-weight:600;}
+.seg input:checked + span{background:var(--accent); border-color:var(--accent); color:#fff;}
+.seg input:focus-visible + span{outline:2px solid var(--accent); outline-offset:2px;}
+.sticky-save{position:sticky; bottom:12px; z-index:5; margin-top:10px;}
+.sticky-save .btn{box-shadow:0 10px 24px rgba(23,20,15,0.2);}
+.list > li.row{flex-wrap:nowrap; align-items:flex-start;}
+.list > li.row > span:first-child{flex:1; min-width:0;}
