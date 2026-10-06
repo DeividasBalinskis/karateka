@@ -28,3 +28,7 @@ Jei pasikeitė `db/` schema - bus nurodyta, kokią SQL komandą paleisti.
 ## DB pakeitimai (migracijos)
 SQL failai `db/` aplanke numeruoti. Jei DB jau sukurta, importuokite tik naujus failus, kurių dar nebuvo:
 - `003_points.sql` - 2 etapas: taškai ir reitingas.
+
+## Svarbu: pagrindinis puslapis dabar `index.php`
+Buvęs pradinis puslapis `index.html` sujungtas į `index.php`. Serveryje **ištrinkite `index.html`**, kitaip jis bus rodomas vietoj naujo puslapio.
+`page1.html` palikite - jis tik nukreipia senas nuorodas į naują puslapį.

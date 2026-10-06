@@ -7,8 +7,9 @@ Website of **VšĮ Karate Ateitis**, a traditional karate-do club in Vilnius led
 ## What's here
 
 - `public_html/`: the website (static HTML, CSS inline, plus PHP for forms)
-  - `index.html`: landing page with group choice (Vaikams / Jaunimui / Suaugusiems)
-  - `page1.html`: main page with info about the club, instructors, groups, schedule, contacts and registration
+  - `index.php`: main page. Group choice (Vaikams / Jaunimui / Suaugusiems) at the top, then about the club, instructors, contacts and the trial registration form
+  - `page1.html`: old address, now only redirects to `index.php` (keeps `#vaikams` etc.)
+  - `assets/header.css`, `assets/header.js`: the shared top menu used by every page
   - `send.php`: sends the registration form by email
 - `docker/`, `docker-compose.yml`: local PHP and MariaDB environment
 - `public_html/app/`: shared PHP code for the member system (blocked from the web)
