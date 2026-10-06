@@ -36,3 +36,12 @@ Buvęs pradinis puslapis `index.html` sujungtas į `index.php`. Serveryje **išt
 - `005_public_site.sql` - kainos ir tvarkaraštis pagrindiniame puslapyje iš DB.
 - `006_coach_notes.sql` - trenerio pastabos nariams.
 - `007_lessons.sql` - pamokos nariams.
+
+## Demo duomenys (laikini)
+Kad svetainė neatrodytų tuščia testuojant:
+1. File Manager → test `public_html` → įkelkite `deploy/demo-uploads.zip` → Extract (naujienų nuotraukos į `uploads/news/`).
+2. phpMyAdmin → test DB → Import → `deploy/demo-data.sql`. (Pirma sukurkite administratorių - demo naujienos ir pastabos priskiriamos jam.)
+3. Demo paskyros: `vardas.pavarde@demo.karateka.lt`, slaptažodis nurodytas `demo-data.sql` pirmoje eilutėje.
+
+Ištrinti viską demo: phpMyAdmin → Import → `deploy/demo-remove.sql`. Jūsų sukurti duomenys lieka.
+Demo duomenys generuojami iš naujo: `docker compose exec -T web php` ... arba `tools/demo_data.php` (žr. failo viršų).
