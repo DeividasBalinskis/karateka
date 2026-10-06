@@ -154,10 +154,11 @@ function create_account(string $email, string $password, string $first, string $
     return (int) db()->lastInsertId();
 }
 
-function create_member(string $first, string $last, string $birthDate, bool $photoConsent): int
+/** $belt - diržas, kurį narys / tėvai nurodo registruodamiesi (treneris vėliau gali pataisyti) */
+function create_member(string $first, string $last, string $birthDate, bool $photoConsent, ?int $belt = null): int
 {
-    q('INSERT INTO members (first_name, last_name, birth_date, photo_consent) VALUES (?, ?, ?, ?)',
-        [$first, $last, $birthDate, $photoConsent ? 1 : 0]);
+    q('INSERT INTO members (first_name, last_name, birth_date, photo_consent, belt_level) VALUES (?, ?, ?, ?, ?)',
+        [$first, $last, $birthDate, $photoConsent ? 1 : 0, $belt !== null && isset(BELTS[$belt]) ? $belt : null]);
     return (int) db()->lastInsertId();
 }
 

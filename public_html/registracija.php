@@ -101,14 +101,14 @@ if (is_post() && in_array($type, ['tevai', 'pats'], true)) {
 
             if ($type === 'tevai') {
                 foreach ($kids as $k) {
-                    $mid = create_member($k['first_name'], $k['last_name'], $k['birth_date'], !empty($k['photo_consent']));
+                    $mid = create_member($k['first_name'], $k['last_name'], $k['birth_date'], !empty($k['photo_consent']), (int) ($k['belt_level'] ?? 0) ?: null);
                     // Tėvai patys registruoja vaiką - tai ir yra tėvų sutikimas
                     q('UPDATE members SET parent_consent_at = NOW() WHERE id = ?', [$mid]);
                     link_member($accountId, $mid, 'parent');
                 }
             } else {
                 // Jaunesniems nei 14 m. sutikimą dėl nuotraukų duoda tėvai
-                $mid = create_member($first, $last, $birth, !$under14 && !empty($_POST['photo_consent']));
+                $mid = create_member($first, $last, $birth, !$under14 && !empty($_POST['photo_consent']), belt_from_post('belt_level'));
                 link_member($accountId, $mid, 'self');
             }
             db()->commit();
@@ -194,6 +194,9 @@ $kidsInput = array_values((array) ($v['kids'] ?? [[]])) ?: [[]];
           <label>Gimimo data
             <?= date_parts_field('birth_date', $v['birth_date'] ?? null) ?>
           </label>
+          <label>Diržas <span class="hint">nežinai ar dar neturi - palik tuščią, treneris nurodys</span>
+            <select name="belt_level"><?= belt_options(!empty($v['belt_level']) ? (int) $v['belt_level'] : null, '— nežinau / dar neturiu —') ?></select>
+          </label>
         <?php endif; ?>
         <label>El. paštas <span class="hint">juo prisijungsite</span>
           <input type="email" name="email" value="<?= e($v['email'] ?? '') ?>" autocomplete="email" required>
@@ -224,6 +227,7 @@ $kidsInput = array_values((array) ($v['kids'] ?? [[]])) ?: [[]];
                 <label>Pavardė <input type="text" name="kids[<?= $i ?>][last_name]" value="<?= e($k['last_name'] ?? '') ?>"></label>
               </div>
               <label>Gimimo data <?= date_parts_field("kids[$i][birth_date]", $k['birth_date'] ?? null, false) ?></label>
+              <label>Diržas <span class="hint">nežinote - palikite tuščią</span><select name="kids[<?= $i ?>][belt_level]"><?= belt_options(!empty($k['belt_level']) ? (int) $k['belt_level'] : null, '— nežinau / dar neturi —') ?></select></label>
               <label class="check"><input type="checkbox" name="kids[<?= $i ?>][photo_consent]" value="1" <?= !empty($k['photo_consent']) ? 'checked' : '' ?>>
                 <span>Sutinku, kad klubas skelbtų vaiko nuotraukas ir vaizdo įrašus iš treniruočių ir renginių (svetainėje, socialiniuose tinkluose).</span></label>
             </fieldset>

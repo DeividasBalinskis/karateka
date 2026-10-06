@@ -17,7 +17,7 @@ if (is_post()) {
         if ($first === '' || $last === '' || !valid_birth_date($birth)) {
             $errors[] = 'Įveskite vaiko vardą, pavardę ir gimimo datą.';
         } else {
-            $mid = create_member($first, $last, $birth, !empty($_POST['photo_consent']));
+            $mid = create_member($first, $last, $birth, !empty($_POST['photo_consent']), belt_from_post('belt_level'));
             q('UPDATE members SET parent_consent_at = NOW() WHERE id = ?', [$mid]);
             link_member($aid, $mid, 'parent');
             if ($a['status'] === 'active') {
@@ -367,10 +367,13 @@ page_start('Mano paskyra', ['noindex' => true]);
     <form method="post" class="form" style="margin-top:16px;">
       <?= csrf_field() ?>
       <input type="hidden" name="action" value="add_kid">
-      <div class="form-row three">
+      <div class="form-row">
         <label>Vardas <input type="text" name="first_name" required></label>
         <label>Pavardė <input type="text" name="last_name" required></label>
+      </div>
+      <div class="form-row">
         <label>Gimimo data <?= date_parts_field('birth_date', null) ?></label>
+        <label>Diržas <span class="hint">nežinote - palikite tuščią</span><select name="belt_level"><?= belt_options(null, '— nežinau / dar neturi —') ?></select></label>
       </div>
       <label class="check"><input type="checkbox" name="photo_consent" value="1">
         <span>Sutinku, kad klubas skelbtų vaiko nuotraukas ir vaizdo įrašus</span></label>

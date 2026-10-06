@@ -16,14 +16,16 @@ if (is_post()) {
     $groups = (array) ($_POST['group'] ?? []);
 
     // Priskiria grupes ir aktyvuoja nurodytus narius
-    $activate = function (array $memberIds) use ($groups): bool {
+    $belts = (array) ($_POST['belt'] ?? []);
+    $activate = function (array $memberIds) use ($groups, $belts): bool {
         foreach ($memberIds as $mid) {
             if (empty($groups[$mid])) {
                 return false;
             }
         }
         foreach ($memberIds as $mid) {
-            q('UPDATE members SET group_id = ?, status = "active" WHERE id = ?', [(int) $groups[$mid], (int) $mid]);
+            $belt = (int) ($belts[$mid] ?? 0);
+            q('UPDATE members SET group_id = ?, belt_level = ?, status = "active" WHERE id = ?', [(int) $groups[$mid], isset(BELTS[$belt]) ? $belt : null, (int) $mid]);
         }
         return true;
     };
@@ -120,9 +122,14 @@ page_start('Patvirtinimai', ['admin' => true]);
           <?php if ($m['parent_consent_at'] && $m['relation'] === 'self'): ?><span class="badge badge-ok">tėvų sutikimas gautas</span><?php endif; ?>
         </div>
         <?php if ($m['status'] === 'pending'): ?>
-          <label style="margin-top:8px;">Grupė
-            <select name="group[<?= (int) $m['id'] ?>]" required><?= group_options($m['group_id'] ? (int) $m['group_id'] : null) ?></select>
-          </label>
+          <div class="form-row" style="margin-top:8px;">
+            <label>Grupė
+              <select name="group[<?= (int) $m['id'] ?>]" required><?= group_options($m['group_id'] ? (int) $m['group_id'] : null) ?></select>
+            </label>
+            <label>Diržas <span class="hint">nurodė registruojantis</span>
+              <select name="belt[<?= (int) $m['id'] ?>]"><?= belt_options($m['belt_level'] !== null ? (int) $m['belt_level'] : null) ?></select>
+            </label>
+          </div>
         <?php else: ?>
           <div class="small muted">Jau grupėje: <?= e($m['group_name'] ?: '—') ?></div>
         <?php endif; ?>
@@ -145,7 +152,10 @@ page_start('Patvirtinimai', ['admin' => true]);
         <strong><?= e($m['first_name'] . ' ' . $m['last_name']) ?></strong>
         <div class="muted small"><?= age_on($m['birth_date']) ?> m. · tėvai: <?= e($m['parent_first'] . ' ' . $m['parent_last']) ?> (<?= e($m['parent_email']) ?>) · nuotraukos: <?= $m['photo_consent'] ? 'taip' : 'ne' ?></div>
       </div>
+      <div class="form-row">
       <label>Grupė <select name="group[<?= (int) $m['id'] ?>]" required><?= group_options(null) ?></select></label>
+        <label>Diržas <select name="belt[<?= (int) $m['id'] ?>]"><?= belt_options($m['belt_level'] !== null ? (int) $m['belt_level'] : null) ?></select></label>
+      </div>
       <div class="row">
         <button class="btn btn-primary" name="action" value="approve_member">Patvirtinti</button>
         <button class="btn btn-danger" name="action" value="reject_member" formnovalidate onclick="return confirm('Atmesti?')">Atmesti</button>
