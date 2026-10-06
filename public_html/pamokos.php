@@ -22,6 +22,10 @@ if ($id) {
             $lesson = $l;
         }
     }
+    // Treneris galėjo prisegti pamoką prie pastabos - tada ją matyti galima, net jei ji kito diržo
+    if (!$lesson && q_value('SELECT 1 FROM coach_notes cn JOIN account_members am ON am.member_id = cn.member_id WHERE cn.lesson_id = ? AND am.account_id = ?', [$id, $a['id']])) {
+        $lesson = q_one('SELECT * FROM lessons WHERE id = ? AND is_published = 1', [$id]);
+    }
     if (!$lesson) {
         not_found();
     }

@@ -76,9 +76,11 @@ $addAccount = function (string $first, string $last, string $status = 'active') 
 };
 $addMember = function (string $first, string $last, int $ageYears, ?int $group, string $status = 'active') use (&$out, &$memberVar) {
     $var = '@m' . (++$memberVar);
-    $out[] = 'INSERT INTO members (first_name, last_name, birth_date, group_id, photo_consent, parent_consent_at, status) VALUES ('
+    // Diržas pagal amžių: vaikai baltas-žalias, jaunimas iki rudo, suaugusieji iki 2 dan
+    $belt = $status !== 'active' ? 'NULL' : ($ageYears < 9 ? mt_rand(1, 2) : ($ageYears < 13 ? mt_rand(1, 4) : ($ageYears < 18 ? mt_rand(3, 8) : mt_rand(5, 11))));
+    $out[] = 'INSERT INTO members (first_name, last_name, birth_date, group_id, belt_level, photo_consent, parent_consent_at, status) VALUES ('
         . s($first) . ', ' . s($last) . ', DATE_SUB(CURDATE(), INTERVAL ' . days_ago_age($ageYears) . ' DAY), '
-        . ($group ?? 'NULL') . ', ' . (mt_rand(0, 4) ? 1 : 0) . ', NOW(), ' . s($status) . ');';
+        . ($group ?? 'NULL') . ', ' . $belt . ', ' . (mt_rand(0, 4) ? 1 : 0) . ', NOW(), ' . s($status) . ');';
     $out[] = "SET $var = LAST_INSERT_ID();";
     return $var;
 };
@@ -238,45 +240,57 @@ foreach ($news as $i => [$title, $body, $daysAgo, $images, $videos]) {
     }
 }
 
-// ===== Pamokos =====
+// ===== Pamokos (pagal diržą: 1 = 9 kyu baltas ... 10 = 1 dan) =====
 $out[] = '';
 $out[] = '-- ===== Pamokos =====';
 $lessons = [
-    ['Heian Shodan - žingsnis po žingsnio', 'Kata', "Pirmoji kata. Žiūrėkite video ir kartokite po 10 minučių kasdien.\n\nAtkreipkite dėmesį į stovėsenas ir kvėpavimą.", 'dQw4w9WgXcQ', []],
-    ['Kihon: pagrindiniai smūgiai', 'Kihon', "1. Oi-zuki - smūgis į priekį žengiant.\n2. Gyaku-zuki - priešinga ranka.\n3. Age-uke - blokas aukštyn.\n\nKiekvieną pratimą kartokite po 20 kartų.", null, []],
-    ['Kumite pagrindai jaunimui', 'Kumite', "Distancija, judėjimas ir pirmieji deriniai.", 'dQw4w9WgXcQ', [12]],
-    ['Tempimo pratimai vaikams', 'Fizinis pasiruošimas', "1. Atsisėskite, kojos tiesios - lėtai lenkitės į priekį.\n2. Drugelis - padai kartu, keliai žemyn.\n3. Šoninis tempimas stovint.\n\nKiekvieną padėtį laikykite 20 sekundžių.", null, [1, 2, 3, 4, 5, 6, 11]],
-    ['Kyu egzamino reikalavimai', null, "Baltas → geltonas diržas: Heian Shodan, kihon (oi-zuki, gyaku-zuki, age-uke, gedan-barai), gohon kumite.\n\nGeltonas → oranžinis: Heian Nidan ir aukščiau išvardinti pagrindai.", null, []],
+    // [pavadinimas, tema, diržas, tekstas, video, grupės]
+    ['Heian Shodan - žingsnis po žingsnio', 'Kata', 1, "Pirmoji kata. Žiūrėkite video ir kartokite po 10 minučių kasdien.\n\nAtkreipkite dėmesį į stovėsenas ir kvėpavimą.", 'dQw4w9WgXcQ', []],
+    ['Heian Nidan', 'Kata', 2, "Antroji kata geltonam diržui. Svarbiausia - šoniniai blokai ir posūkiai.", 'dQw4w9WgXcQ', []],
+    ['Heian Sandan', 'Kata', 3, "Oranžinio diržo kata: alkūnių smūgiai ir kiba-dachi stovėsena.", 'dQw4w9WgXcQ', []],
+    ['Kumite pagrindai', 'Kumite', 4, "Distancija, judėjimas ir pirmieji deriniai.", 'dQw4w9WgXcQ', []],
+    ['Bassai Dai', 'Kata', 7, "Ruduoju diržu besiruošiantiems - jėga ir ritmas.", 'dQw4w9WgXcQ', []],
+    ['Kihon: pagrindiniai smūgiai', 'Kihon', null, "1. Oi-zuki - smūgis į priekį žengiant.\n2. Gyaku-zuki - priešinga ranka.\n3. Age-uke - blokas aukštyn.\n\nKiekvieną pratimą kartokite po 20 kartų.", null, []],
+    ['Tempimo pratimai vaikams', 'Fizinis pasiruošimas', null, "1. Atsisėskite, kojos tiesios - lėtai lenkitės į priekį.\n2. Drugelis - padai kartu, keliai žemyn.\n3. Šoninis tempimas stovint.\n\nKiekvieną padėtį laikykite 20 sekundžių.", null, [1, 2, 3, 4, 5, 6, 11]],
+    ['Kyu egzamino reikalavimai', null, null, "Baltas → geltonas diržas: Heian Shodan, kihon (oi-zuki, gyaku-zuki, age-uke, gedan-barai), gohon kumite.\n\nGeltonas → oranžinis: Heian Nidan ir aukščiau išvardinti pagrindai.", null, []],
 ];
-foreach ($lessons as $i => [$title, $topic, $body, $video, $groups]) {
+foreach ($lessons as $i => [$title, $topic, $belt, $body, $video, $groups]) {
     $var = '@l' . ($i + 1);
-    $out[] = 'INSERT INTO lessons (title, topic, body, videos, is_published, author_id, created_at) VALUES ('
-        . s($title) . ', ' . s($topic) . ', ' . s($body) . ', ' . s($video) . ", 1, @admin, '" . SENTINEL . "');";
+    $out[] = 'INSERT INTO lessons (title, topic, belt_level, body, videos, is_published, author_id, created_at) VALUES ('
+        . s($title) . ', ' . s($topic) . ', ' . ($belt ?? 'NULL') . ', ' . s($body) . ', ' . s($video) . ", 1, @admin, '" . SENTINEL . "');";
     $out[] = "SET $var = LAST_INSERT_ID();";
     foreach ($groups as $g) {
         $out[] = "INSERT INTO lesson_groups (lesson_id, group_id) VALUES ($var, $g);";
     }
 }
 
-// ===== Trenerio pastabos =====
+// ===== Trenerio pastabos ir užduotys =====
 $out[] = '';
-$out[] = '-- ===== Trenerio pastabos =====';
+$out[] = '-- ===== Trenerio pastabos ir užduotys =====';
 $notes = [
-    'Šaunuolis! Šiandien labai gerai sekėsi kata.',
-    'Namuose pakartok Heian Shodan bent 5 kartus.',
-    'Daugiau dėmesio stovėsenoms - kelis žemiau.',
-    'Puiki koncentracija treniruotėje, taip ir toliau!',
-    'Prieš egzaminą pakartok kihon derinius.',
-    'Dirbk su kvėpavimu - per anksti pavargsti.',
+    // [tekstas, užduotis?, prisegta pamoka]
+    ['Šaunuolis! Šiandien labai gerai sekėsi kata.', false, null],
+    ['Namuose pakartok Heian Shodan bent 5 kartus.', true, '@l1'],
+    ['Daugiau dėmesio stovėsenoms - kelis žemiau.', false, null],
+    ['Puiki koncentracija treniruotėje, taip ir toliau!', false, null],
+    ['Prieš egzaminą pakartok kihon derinius ir pažymėk, kai padarysi.', true, '@l6'],
+    ['Išmok Heian Nidan pradžią iki kito antradienio.', true, '@l2'],
+    ['Dirbk su kvėpavimu - per anksti pavargsti.', false, null],
+    ['Kas vakarą 10 min. tempimo pratimų.', true, '@l7'],
 ];
 $all = array_merge($members['vaikai'], $members['jaunimas']);
-for ($i = 0; $i < 12 && $i < count($all); $i++) {
+for ($i = 0; $i < 14 && $i < count($all); $i++) {
     [$m] = $all[$i * 2 % count($all)];
+    [$text, $isTask, $lesson] = $notes[$i % count($notes)];
     $read = $i % 3 === 0 ? 'NULL' : 'NOW()';
-    $video = $i % 4 === 1 ? "'dQw4w9WgXcQ'" : 'NULL';
-    $out[] = 'INSERT INTO coach_notes (member_id, author_id, note_date, body, youtube_id, read_at) VALUES ('
-        . "$m, @admin, " . fn_date(-mt_rand(1, 14)) . ', ' . s(pick($notes)) . ", $video, $read);";
+    $done = $isTask && $i % 2 === 0 ? 'NOW()' : 'NULL';     // dalis užduočių jau atlikta
+    $out[] = 'INSERT INTO coach_notes (member_id, author_id, note_date, body, youtube_id, lesson_id, is_task, read_at, done_at) VALUES ('
+        . "$m, @admin, " . fn_date(-mt_rand(1, 14)) . ', ' . s($text) . ', NULL, ' . ($lesson ?? 'NULL') . ', ' . ($isTask ? 1 : 0) . ", $read, $done);";
 }
+
+// Vienas renginys ir viena naujiena - tik nariams
+$out[] = "UPDATE events SET members_only = 1 WHERE id = @e1;";
+$out[] = "UPDATE news SET members_only = 1 WHERE id = @n2;";
 
 echo implode("\n", $out) . "\n";
 fwrite(STDERR, sprintf("Paskyros: %d, nariai: %d\n", $accountVar, $memberVar));

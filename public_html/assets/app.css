@@ -384,3 +384,12 @@ legend{font-family:'Space Grotesk',sans-serif; font-weight:700; padding:0 6px;}
 .belt-none{color:var(--muted); padding-left:10px;}
 .belt-heading{display:flex; align-items:center; gap:12px; margin:26px 0 12px;}
 .belt-heading h2{margin:0;}
+.note-extras{grid-column:2; display:flex; flex-wrap:wrap; gap:8px 14px; align-items:center;}
+.note-extras select{max-width:280px; font-size:14px; padding:7px 30px 7px 10px; border-radius:8px; border:1px solid rgba(23,20,15,0.14); background:rgba(255,255,255,0.75); font-family:inherit;}
+.note-task{display:flex; align-items:center; gap:6px; font-size:0.82rem; font-weight:600; cursor:pointer;}
+.note-task input{width:16px; height:16px; accent-color:var(--accent);}
+.note-extras .note-video{grid-column:auto;}
+@media(max-width:860px){ .note-extras{grid-column:auto;} .note-extras select{max-width:100%; width:100%;} }
+.note-lesson{display:inline-block; margin-top:8px; font-weight:600;}
+.flash-attention{display:block; background:rgba(217,83,79,0.1); color:#9B2C28; border:1px solid rgba(217,83,79,0.35); font-weight:600;}
+.flash-attention:hover{text-decoration:none; background:rgba(217,83,79,0.16);}

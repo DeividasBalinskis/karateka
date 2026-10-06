@@ -99,8 +99,10 @@ function news_image_url(string $file, bool $thumb = false): string
 /** Trenerio pastabos nariui (naujausios viršuje) */
 function member_notes(int $memberId, int $limit = 10): array
 {
-    return q_all('SELECT cn.*, a.first_name AS author FROM coach_notes cn LEFT JOIN accounts a ON a.id = cn.author_id
-                   WHERE cn.member_id = ? ORDER BY cn.note_date DESC, cn.id DESC LIMIT ' . (int) $limit, [$memberId]);
+    // Neatliktos užduotys - viršuje
+    return q_all('SELECT cn.*, a.first_name AS author, l.title AS lesson_title FROM coach_notes cn
+                    LEFT JOIN accounts a ON a.id = cn.author_id LEFT JOIN lessons l ON l.id = cn.lesson_id
+                   WHERE cn.member_id = ? ORDER BY (cn.is_task = 1 AND cn.done_at IS NULL) DESC, cn.note_date DESC, cn.id DESC LIMIT ' . (int) $limit, [$memberId]);
 }
 
 function member_unread_notes(int $memberId): int
@@ -177,4 +179,23 @@ function public_upcoming_events(int $limit = 4): array
 function members_only_badge(array $row): string
 {
     return !empty($row['members_only']) ? ' <span class="badge badge-members">Tik nariams</span>' : '';
+}
+
+// ---------- Pranešimai apie pastabas ir užduotis ----------
+
+/** Kiek nario pastabų reikia dėmesio: neperskaitytos + neatliktos užduotys */
+function member_attention_count(int $memberId): int
+{
+    return (int) q_value('SELECT COUNT(*) FROM coach_notes WHERE member_id = ? AND (read_at IS NULL OR (is_task = 1 AND done_at IS NULL))', [$memberId]);
+}
+
+/** Tas pats visiems paskyros nariams (pats + vaikai) - ženkliukas prie „Mano paskyra“ */
+function account_attention_count(int $accountId): int
+{
+    static $cache = [];
+    if (!isset($cache[$accountId])) {
+        $cache[$accountId] = (int) q_value('SELECT COUNT(*) FROM coach_notes cn JOIN account_members am ON am.member_id = cn.member_id
+                                             WHERE am.account_id = ? AND (cn.read_at IS NULL OR (cn.is_task = 1 AND cn.done_at IS NULL))', [$accountId]);
+    }
+    return $cache[$accountId];
 }

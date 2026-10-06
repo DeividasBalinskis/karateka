@@ -68,6 +68,17 @@ if (is_post()) {
         redirect('paskyra.php#nustatymai');
     }
 
+    // Užduotis atlikta / grąžinti į neatliktas (gali pažymėti pats narys arba tėvai)
+    if ($action === 'task_done' || $action === 'task_undo') {
+        $note = q_one('SELECT cn.* FROM coach_notes cn JOIN account_members am ON am.member_id = cn.member_id WHERE cn.id = ? AND am.account_id = ? AND cn.is_task = 1',
+            [(int) post('note_id'), $aid]);
+        if ($note) {
+            q('UPDATE coach_notes SET done_at = ' . ($action === 'task_done' ? 'NOW()' : 'NULL') . ', read_at = COALESCE(read_at, NOW()) WHERE id = ?', [$note['id']]);
+            flash('ok', $action === 'task_done' ? 'Puiku! Užduotis pažymėta kaip atlikta.' : 'Užduotis grąžinta į neatliktas.');
+        }
+        redirect('paskyra.php?m=' . (int) ($note['member_id'] ?? 0) . '#pastabos');
+    }
+
     if ($action === 'email') {
         $email = normalize_email(post('email'));
         if (!password_verify((string) ($_POST['current'] ?? ''), $a['password_hash'])) {
@@ -161,7 +172,7 @@ page_start('Mano paskyra', ['noindex' => true]);
     <div class="member-tabs">
       <?php foreach ($members as $m): ?>
         <a href="?m=<?= (int) $m['id'] ?>" class="<?= $selected && $m['id'] === $selected['id'] ? 'active' : '' ?>">
-          <?= e($m['first_name']) ?><?= $m['relation'] === 'self' ? ' (aš)' : '' ?><?php if ($u = member_unread_notes((int) $m['id'])): ?> <span class="count-badge" title="Naujos trenerio pastabos"><?= $u ?></span><?php endif; ?>
+          <?= e($m['first_name']) ?><?= $m['relation'] === 'self' ? ' (aš)' : '' ?><?php if ($u = member_attention_count((int) $m['id'])): ?> <span class="count-badge" title="Naujos pastabos ar neatliktos užduotys"><?= $u ?></span><?php endif; ?>
         </a>
       <?php endforeach; ?>
     </div>
@@ -173,6 +184,9 @@ page_start('Mano paskyra', ['noindex' => true]);
   <div class="flash flash-info">Paskyra laukia trenerio patvirtinimo. Kai treneris patvirtins ir priskirs grupę, čia matysite tvarkaraštį, renginius ir taškus.</div>
 <?php endif; ?>
 <?= form_errors($errors) ?>
+<?php if ($active && ($att = count($unreadIds) + count(array_filter($notes, function ($n) { return $n['is_task'] && !$n['done_at']; })))): ?>
+  <a class="flash flash-attention" href="#pastabos">❗ <?= count($members) > 1 ? e($selected['first_name']) . ': ' : '' ?>yra naujų trenerio pastabų ar neatliktų užduočių (<?= $att ?>) - žiūrėti ↓</a>
+<?php endif; ?>
 
 <?php if ($selected): ?>
   <div class="grid-2 account-main <?= $active ? 'has-points' : 'no-points' ?>">
@@ -248,13 +262,30 @@ page_start('Mano paskyra', ['noindex' => true]);
     <div class="panel card" id="pastabos" style="margin-top:20px;">
       <div class="kicker">Trenerio pastabos<?= $unreadIds ? ' <span class="badge badge-new">' . count($unreadIds) . ' nauj.</span>' : '' ?></div>
       <?php foreach ($notes as $n): ?>
-        <div class="coach-note <?= in_array((int) $n['id'], $unreadIds, true) ? 'unread' : '' ?>">
+        <?php $openTask = $n['is_task'] && !$n['done_at']; ?>
+        <div class="coach-note <?= in_array((int) $n['id'], $unreadIds, true) || $openTask ? 'unread' : '' ?>">
           <div class="meta">
             <?= e(fmt_date($n['note_date'], true)) ?><?= $n['author'] ? ' · treneris ' . e($n['author']) : '' ?>
             <?= in_array((int) $n['id'], $unreadIds, true) ? ' <span class="badge badge-new">Nauja</span>' : '' ?>
+            <?php if ($n['is_task']): ?>
+              <?= $n['done_at'] ? ' <span class="badge badge-ok">✓ Atlikta ' . e(fmt_date(substr($n['done_at'], 0, 10))) . '</span>' : ' <span class="badge badge-warn">Užduotis</span>' ?>
+            <?php endif; ?>
           </div>
           <div><?= text_to_html($n['body']) ?></div>
+          <?php if ($n['lesson_id'] && $n['lesson_title']): ?>
+            <a class="note-lesson" href="<?= url('pamokos.php?id=' . (int) $n['lesson_id']) ?>">📘 Pamoka: <?= e($n['lesson_title']) ?> →</a>
+          <?php endif; ?>
           <?php if ($n['youtube_id']): ?><?= youtube_embed($n['youtube_id']) ?><?php endif; ?>
+          <?php if ($n['is_task'] && $selected['relation']): ?>
+            <form method="post" class="inline-form">
+              <?= csrf_field() ?><input type="hidden" name="note_id" value="<?= (int) $n['id'] ?>">
+              <?php if (!$n['done_at']): ?>
+                <button class="btn btn-primary btn-sm" name="action" value="task_done" style="margin-top:10px;">✓ Atlikau</button>
+              <?php else: ?>
+                <button class="linklike small muted" name="action" value="task_undo" style="margin-top:6px; border:none; padding:0; text-decoration:underline;">grąžinti į neatliktas</button>
+              <?php endif; ?>
+            </form>
+          <?php endif; ?>
         </div>
       <?php endforeach; ?>
     </div>

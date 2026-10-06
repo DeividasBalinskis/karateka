@@ -13,6 +13,22 @@ function notify_note(array $m, string $text, string $date, array $me): void
     }
 }
 
+/** Prisegtos pamokos ID (tik jei tokia pamoka yra) */
+function note_lesson_id($raw): ?int
+{
+    $id = (int) $raw;
+    return $id && q_value('SELECT 1 FROM lessons WHERE id = ?', [$id]) ? $id : null;
+}
+
+function save_coach_note(array $m, array $me, string $date, string $text, ?string $yt, ?int $lessonId, bool $isTask): void
+{
+    if ($text === '') {
+        $text = $lessonId ? 'Pažiūrėk prisegtą pamoką.' : 'Pažiūrėk video.';
+    }
+    q('INSERT INTO coach_notes (member_id, author_id, note_date, body, youtube_id, lesson_id, is_task) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        [$m['id'], $me['id'], $date, $text, $yt, $lessonId, $isTask ? 1 : 0]);
+}
+
 // Paskutinė pasirinkta grupė įsimenama, kad salėje nereikėtų rinktis kiekvieną kartą
 $groupId = (int) (get('g') ?: post('g') ?: ($_SESSION['notes_group'] ?? 0));
 $date = get('d') ?: post('d') ?: date('Y-m-d');
@@ -39,19 +55,20 @@ if (is_post()) {
         $text = post('text');
         $link = post('video');
         $yt = $link !== '' ? youtube_id($link) : null;
+        $lessonId = note_lesson_id(post('lesson_id'));
+        $isTask = !empty($_POST['is_task']);
         $m = q_one('SELECT * FROM members WHERE id = ? AND status = "active"', [(int) post('member_id')]);
         if ($link !== '' && !$yt) {
             exit(json_encode(['ok' => false, 'error' => 'Neatpažinta YouTube nuoroda']));
         }
-        if (!$m || ($text === '' && !$yt)) {
+        if (!$m || ($text === '' && !$yt && !$lessonId)) {
             exit(json_encode(['ok' => false, 'error' => 'Tuščia pastaba']));
         }
-        q('INSERT INTO coach_notes (member_id, author_id, note_date, body, youtube_id) VALUES (?, ?, ?, ?, ?)',
-            [$m['id'], $me['id'], $date, $text !== '' ? $text : 'Pažiūrėk video.', $yt]);
+        save_coach_note($m, $me, $date, $text, $yt, $lessonId, $isTask);
         if (!empty($_POST['notify'])) {
             notify_note($m, $text, $date, $me);
         }
-        exit(json_encode(['ok' => true, 'preview' => mb_strimwidth($text, 0, 120, '…') . ($yt ? ' ▶' : '')], JSON_UNESCAPED_UNICODE));
+        exit(json_encode(['ok' => true, 'preview' => mb_strimwidth($text, 0, 120, '…') . ($yt ? ' ▶' : '') . ($lessonId ? ' · pamoka' : '') . ($isTask ? ' · užduotis' : '')], JSON_UNESCAPED_UNICODE));
     }
 
     if (post('action') === 'save' && $group) {
@@ -61,7 +78,9 @@ if (is_post()) {
         foreach ((array) ($_POST['note'] ?? []) as $mid => $text) {
             $text = is_string($text) ? trim($text) : '';
             $link = trim((string) ($_POST['video'][$mid] ?? ''));
-            if ($text === '' && $link === '') {
+            $lessonId = note_lesson_id($_POST['lesson'][$mid] ?? '');
+            $isTask = !empty($_POST['task'][$mid]);
+            if ($text === '' && $link === '' && !$lessonId) {
                 continue;
             }
             $yt = null;
@@ -75,8 +94,7 @@ if (is_post()) {
             if (!$m) {
                 continue;
             }
-            q('INSERT INTO coach_notes (member_id, author_id, note_date, body, youtube_id) VALUES (?, ?, ?, ?, ?)',
-                [$m['id'], $me['id'], $date, $text !== '' ? $text : 'Pažiūrėk video.', $yt]);
+            save_coach_note($m, $me, $date, $text, $yt, $lessonId, $isTask);
             $saved++;
 
             if ($notify) {
@@ -92,6 +110,11 @@ if (is_post()) {
 }
 
 $members = $group ? q_all('SELECT * FROM members WHERE group_id = ? AND status = "active" ORDER BY last_name, first_name', [$groupId]) : [];
+// Pamokos prisegimui (pagal diržą)
+$lessonOptions = '<option value="">+ Prisegti pamoką</option>';
+foreach (q_all('SELECT id, title, belt_level FROM lessons ORDER BY belt_level IS NOT NULL, belt_level, title') as $ls) {
+    $lessonOptions .= '<option value="' . (int) $ls['id'] . '">' . e(($ls['belt_level'] ? BELTS[(int) $ls['belt_level']][0] . ' · ' : '') . $ls['title']) . '</option>';
+}
 $todayNotes = [];
 if ($group) {
     foreach (q_all('SELECT cn.*, a.first_name AS author FROM coach_notes cn JOIN members m ON m.id = cn.member_id LEFT JOIN accounts a ON a.id = cn.author_id
@@ -134,16 +157,20 @@ page_start('Pastabos', ['admin' => true]);
           <strong><?= e($m['first_name'] . ' ' . $m['last_name']) ?></strong>
           <?php foreach ($todayNotes[$m['id']] ?? [] as $n): ?>
             <div class="note-existing">
-              <span>✓ <?= e(mb_strimwidth($n['body'], 0, 120, '…')) ?><?= $n['youtube_id'] ? ' ▶' : '' ?></span>
+              <span>✓ <?= e(mb_strimwidth($n['body'], 0, 120, '…')) ?><?= $n['youtube_id'] ? ' ▶' : '' ?><?= $n['lesson_id'] ? ' · pamoka' : '' ?><?= $n['is_task'] ? ($n['done_at'] ? ' · užduotis ✓' : ' · užduotis') : '' ?></span>
               <button class="linklike danger-link" type="submit" form="del<?= (int) $n['id'] ?>" onclick="return confirm('Ištrinti šią pastabą?')">ištrinti</button>
             </div>
           <?php endforeach; ?>
         </div>
         <textarea name="note[<?= (int) $m['id'] ?>]" data-member="<?= (int) $m['id'] ?>" rows="2" enterkeyhint="send" placeholder="Parašykite ir spauskite Enter"></textarea>
-        <details class="note-video">
-          <summary>+ YouTube nuoroda</summary>
-          <input type="url" name="video[<?= (int) $m['id'] ?>]" placeholder="https://youtu.be/...">
-        </details>
+        <div class="note-extras">
+          <select name="lesson[<?= (int) $m['id'] ?>]" aria-label="Prisegti pamoką"><?= $lessonOptions ?></select>
+          <label class="note-task"><input type="checkbox" name="task[<?= (int) $m['id'] ?>]" value="1"> Užduotis (pažymės „Atlikta“)</label>
+          <details class="note-video">
+            <summary>+ YouTube nuoroda</summary>
+            <input type="url" name="video[<?= (int) $m['id'] ?>]" placeholder="https://youtu.be/...">
+          </details>
+        </div>
       </div>
     <?php endforeach; ?>
 
@@ -170,6 +197,7 @@ page_start('Pastabos', ['admin' => true]);
           <span>
             <strong><?= e($n['first_name'] . ' ' . $n['last_name']) ?></strong> · <?= e(fmt_date($n['note_date'], true)) ?>
             <?= $n['read_at'] ? '<span class="badge badge-ok">perskaityta</span>' : '<span class="badge">neperskaityta</span>' ?>
+            <?php if ($n['is_task']): ?><?= $n['done_at'] ? '<span class="badge badge-ok">✓ atlikta</span>' : '<span class="badge badge-warn">užduotis neatlikta</span>' ?><?php endif; ?>
             <div class="muted"><?= e($n['body']) ?><?= $n['youtube_id'] ? ' ▶ video' : '' ?></div>
           </span>
           <form method="post" class="inline-form" onsubmit="return confirm('Ištrinti šią pastabą?')">
@@ -193,7 +221,8 @@ page_start('Pastabos', ['admin' => true]);
       e.preventDefault();
       var mid = ta.dataset.member, text = ta.value.trim();
       var video = form.querySelector('[name="video[' + mid + ']"]');
-      if (!text && !(video && video.value.trim())) return;
+      var lsel = form.querySelector('[name="lesson[' + mid + ']"]');
+      if (!text && !(video && video.value.trim()) && !(lsel && lsel.value)) return;
       var data = new FormData();
       data.append('_csrf', form.querySelector('[name=_csrf]').value);
       data.append('action', 'save_one');
@@ -202,6 +231,9 @@ page_start('Pastabos', ['admin' => true]);
       data.append('member_id', mid);
       data.append('text', text);
       data.append('video', video ? video.value.trim() : '');
+      var lesson = form.querySelector('[name="lesson[' + mid + ']"]'), task = form.querySelector('[name="task[' + mid + ']"]');
+      if (lesson && lesson.value) data.append('lesson_id', lesson.value);
+      if (task && task.checked) data.append('is_task', '1');
       if (form.querySelector('[name=notify]').checked) data.append('notify', '1');
       ta.disabled = true;
       fetch(location.pathname, { method: 'POST', body: data, credentials: 'same-origin' })
@@ -215,6 +247,7 @@ page_start('Pastabos', ['admin' => true]);
           document.getElementById('who' + mid).appendChild(line);
           ta.value = '';
           if (video) { video.value = ''; video.closest('details').open = false; }
+          if (lesson) lesson.value = ''; if (task) task.checked = false;
           // pereiname prie kito vaiko laukelio
           var all = Array.prototype.slice.call(form.querySelectorAll('textarea[data-member]'));
           var next = all[all.indexOf(ta) + 1];
