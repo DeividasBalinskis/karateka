@@ -7,7 +7,7 @@ const PER_PAGE = 10;
 $id = (int) get('id');
 
 if ($id) {
-    $n = q_one('SELECT * FROM news WHERE id = ? AND is_published = 1 AND published_at <= NOW()', [$id]);
+    $n = q_one('SELECT * FROM news WHERE id = ? AND is_published = 1 AND published_at <= NOW() AND ' . visibility_sql(), [$id]);
     if (!$n) {
         not_found();
     }
@@ -16,7 +16,7 @@ if ($id) {
     ?>
     <a class="small" href="<?= url('naujienos.php') ?>">← Visos naujienos</a> <?= staff_link('admin/naujienos.php?edit=' . (int) $n['id']) ?>
     <article class="panel card" style="margin-top:12px;">
-      <div class="news-meta"><?= e(fmt_date($n['published_at'], true)) ?></div>
+      <div class="news-meta"><?= e(fmt_date($n['published_at'], true)) ?><?= members_only_badge($n) ?></div>
       <h1><?= e($n['title']) ?></h1>
       <div class="news-body"><?= text_to_html($n['body']) ?></div>
       <?php $images = array_filter($media, function ($m) { return $m['type'] === 'image'; }); ?>
@@ -39,8 +39,8 @@ if ($id) {
 }
 
 $page = max(1, (int) get('p'));
-$total = (int) q_value('SELECT COUNT(*) FROM news WHERE is_published = 1 AND published_at <= NOW()');
-$items = q_all('SELECT * FROM news WHERE is_published = 1 AND published_at <= NOW() ORDER BY published_at DESC LIMIT ' . PER_PAGE . ' OFFSET ' . (($page - 1) * PER_PAGE));
+$total = (int) q_value('SELECT COUNT(*) FROM news WHERE is_published = 1 AND published_at <= NOW() AND ' . visibility_sql());
+$items = q_all('SELECT * FROM news WHERE is_published = 1 AND published_at <= NOW() AND ' . visibility_sql() . ' ORDER BY published_at DESC LIMIT ' . PER_PAGE . ' OFFSET ' . (($page - 1) * PER_PAGE));
 
 page_start('Naujienos', ['description' => 'VšĮ Karate Ateitis klubo naujienos: varžybos, egzaminai, renginiai.']);
 ?>
@@ -67,7 +67,7 @@ page_start('Naujienos', ['description' => 'VšĮ Karate Ateitis klubo naujienos:
     <article class="panel news-card<?= $cover ? '' : ' no-cover' ?>">
       <?php if ($cover): ?><a class="cover" href="<?= $link ?>" style="display:block;"><img src="<?= e($cover) ?>" alt="" loading="lazy"></a><?php endif; ?>
       <div class="body">
-        <div class="news-meta"><?= e(fmt_date($n['published_at'], true)) ?><?= staff_link('admin/naujienos.php?edit=' . (int) $n['id']) ?></div>
+        <div class="news-meta"><?= e(fmt_date($n['published_at'], true)) ?><?= members_only_badge($n) ?><?= staff_link('admin/naujienos.php?edit=' . (int) $n['id']) ?></div>
         <h2><a href="<?= $link ?>"><?= e($n['title']) ?></a></h2>
         <div class="news-body muted"><?= text_to_html($excerpt) ?></div>
         <a href="<?= $link ?>" class="small">Skaityti daugiau →</a>

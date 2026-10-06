@@ -149,3 +149,29 @@ function lesson_topics(): array
 {
     return q('SELECT DISTINCT topic FROM lessons WHERE topic IS NOT NULL AND topic <> "" ORDER BY topic')->fetchAll(PDO::FETCH_COLUMN);
 }
+
+// ---------- Matomumas: „tik nariams“ ----------
+
+/** Ar žiūrintysis yra patvirtintas narys (mato „tik nariams“ renginius ir naujienas) */
+function viewer_is_member(): bool
+{
+    return is_active_account(current_account());
+}
+
+/** SQL sąlyga naujienoms/renginiams pagal žiūrintįjį (stulpelis members_only) */
+function visibility_sql(string $alias = ''): string
+{
+    return viewer_is_member() ? '1' : ($alias ? "$alias." : '') . 'members_only = 0';
+}
+
+/** Artėjantys renginiai viešam pagrindiniam puslapiui */
+function public_upcoming_events(int $limit = 4): array
+{
+    return q_all('SELECT e.* FROM events e WHERE COALESCE(e.ends_on, e.starts_on) >= CURDATE() AND ' . visibility_sql('e')
+        . ' ORDER BY e.starts_on, e.start_time LIMIT ' . (int) $limit);
+}
+
+function members_only_badge(array $row): string
+{
+    return !empty($row['members_only']) ? ' <span class="badge badge-members">Tik nariams</span>' : '';
+}

@@ -25,6 +25,7 @@ if (is_post()) {
         'location'    => location_from_post('location') ?: null,
         'is_abroad'   => !empty($_POST['is_abroad']) ? 1 : 0,
         'description' => post('description') ?: null,
+        'members_only' => !empty($_POST['members_only']) ? 1 : 0,
     ];
     $groupIds = array_map('intval', (array) ($_POST['groups'] ?? []));
     $_POST['location'] = $ev['location'];   // kad klaidos atveju forma išlaikytų pasirinkimą
@@ -44,10 +45,10 @@ if (is_post()) {
     if (!$errors) {
         db()->beginTransaction();
         if ($id) {
-            q('UPDATE events SET type = ?, title = ?, starts_on = ?, ends_on = ?, start_time = ?, location = ?, is_abroad = ?, description = ? WHERE id = ?', array_merge(array_values($ev), [$id]));
+            q('UPDATE events SET type = ?, title = ?, starts_on = ?, ends_on = ?, start_time = ?, location = ?, is_abroad = ?, description = ?, members_only = ? WHERE id = ?', array_merge(array_values($ev), [$id]));
             q('DELETE FROM event_groups WHERE event_id = ?', [$id]);
         } else {
-            q('INSERT INTO events (type, title, starts_on, ends_on, start_time, location, is_abroad, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', array_values($ev));
+            q('INSERT INTO events (type, title, starts_on, ends_on, start_time, location, is_abroad, description, members_only) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', array_values($ev));
             $id = (int) db()->lastInsertId();
         }
         foreach ($groupIds as $gid) {
@@ -60,7 +61,7 @@ if (is_post()) {
 }
 
 if ($edit !== '') {
-    $ev = $edit === 'new' ? ['id' => 0, 'type' => 'exam', 'title' => '', 'starts_on' => '', 'ends_on' => '', 'start_time' => '', 'location' => '', 'is_abroad' => 0, 'description' => '']
+    $ev = $edit === 'new' ? ['id' => 0, 'type' => 'exam', 'title' => '', 'starts_on' => '', 'ends_on' => '', 'start_time' => '', 'location' => '', 'is_abroad' => 0, 'description' => '', 'members_only' => 0]
         : q_one('SELECT * FROM events WHERE id = ?', [(int) $edit]);
     if (!$ev) {
         not_found();
@@ -98,6 +99,7 @@ if ($edit !== '') {
           </div>
           <?= location_field('location', $ev['location']) ?>
           <label class="check"><input type="checkbox" name="is_abroad" value="1" <?= !empty($ev['is_abroad']) ? 'checked' : '' ?>><span>Vyksta užsienyje (varžyboms skiriama daugiau taškų)</span></label>
+          <label class="check"><input type="checkbox" name="members_only" value="1" <?= !empty($ev['members_only']) ? 'checked' : '' ?>><span>Tik nariams (nerodomas pagrindiniame puslapyje neprisijungusiems)</span></label>
           <label>Aprašymas <textarea name="description" rows="5"><?= e($ev['description']) ?></textarea></label>
         </div>
         <div class="panel card form">
@@ -129,7 +131,7 @@ function event_row(array $ev): void
     $groups = event_group_names((int) $ev['id']); ?>
     <li class="row between">
       <span>
-        <span class="badge badge-pink"><?= e(EVENT_TYPES[$ev['type']]) ?></span>
+        <span class="badge badge-pink"><?= e(EVENT_TYPES[$ev['type']]) ?></span><?= members_only_badge($ev) ?>
         <a href="?edit=<?= (int) $ev['id'] ?>"><strong><?= e($ev['title']) ?></strong></a>
         <div class="muted small"><?= e(fmt_date($ev['starts_on'], true)) ?><?= $ev['location'] ? ' · ' . e($ev['location']) : '' ?> · <?= $groups ? e(implode(', ', $groups)) : 'visiems' ?></div>
       </span>

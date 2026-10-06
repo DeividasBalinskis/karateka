@@ -47,6 +47,7 @@ if (is_post()) {
     $title = post('title');
     $body = post('body');
     $published = !empty($_POST['is_published']) ? 1 : 0;
+    $membersOnly = !empty($_POST['members_only']) ? 1 : 0;
     $date = post('published_at');
     $publishedAt = $date && strtotime($date) ? date('Y-m-d H:i:s', strtotime($date)) : date('Y-m-d H:i:s');
 
@@ -71,9 +72,9 @@ if (is_post()) {
 
     if (!$errors) {
         if ($id) {
-            q('UPDATE news SET title = ?, body = ?, is_published = ?, published_at = ?, updated_at = NOW() WHERE id = ?', [$title, $body, $published, $publishedAt, $id]);
+            q('UPDATE news SET title = ?, body = ?, is_published = ?, members_only = ?, published_at = ?, updated_at = NOW() WHERE id = ?', [$title, $body, $published, $membersOnly, $publishedAt, $id]);
         } else {
-            q('INSERT INTO news (title, body, author_id, is_published, published_at) VALUES (?, ?, ?, ?, ?)', [$title, $body, $me['id'], $published, $publishedAt]);
+            q('INSERT INTO news (title, body, author_id, is_published, members_only, published_at) VALUES (?, ?, ?, ?, ?, ?)', [$title, $body, $me['id'], $published, $membersOnly, $publishedAt]);
             $id = (int) db()->lastInsertId();
         }
         $sort = (int) q_value('SELECT COALESCE(MAX(sort_order), 0) FROM news_media WHERE news_id = ?', [$id]);
@@ -100,13 +101,13 @@ if (is_post()) {
 
 if ($edit !== '') {
     $n = $edit === 'new'
-        ? ['id' => 0, 'title' => '', 'body' => '', 'is_published' => 1, 'published_at' => date('Y-m-d H:i:s')]
+        ? ['id' => 0, 'title' => '', 'body' => '', 'is_published' => 1, 'members_only' => 0, 'published_at' => date('Y-m-d H:i:s')]
         : q_one('SELECT * FROM news WHERE id = ?', [(int) $edit]);
     if (!$n) {
         not_found();
     }
     if ($errors) {
-        $n = array_merge($n, ['title' => post('title'), 'body' => post('body')]);
+        $n = array_merge($n, ['title' => post('title'), 'body' => post('body'), 'members_only' => !empty($_POST['members_only'])]);
     }
     $media = $n['id'] ? news_media((int) $n['id']) : [];
 
@@ -129,7 +130,8 @@ if ($edit !== '') {
           <textarea name="youtube" rows="2" placeholder="https://www.youtube.com/watch?v=..." style="min-height:70px;"><?= e(post('youtube')) ?></textarea></label>
         <div class="form-row">
           <label>Paskelbimo data <input type="datetime-local" name="published_at" value="<?= e(date('Y-m-d\TH:i', strtotime($n['published_at']))) ?>"></label>
-          <label class="check" style="align-self:end; padding-bottom:12px;"><input type="checkbox" name="is_published" value="1" <?= $n['is_published'] ? 'checked' : '' ?>><span>Paskelbta (matoma visiems)</span></label>
+          <label class="check" style="align-self:end; padding-bottom:12px;"><input type="checkbox" name="is_published" value="1" <?= $n['is_published'] ? 'checked' : '' ?>><span>Paskelbta</span></label>
+          <label class="check"><input type="checkbox" name="members_only" value="1" <?= !empty($n['members_only']) ? 'checked' : '' ?>><span>Tik nariams (matys tik prisijungę nariai)</span></label>
         </div>
         <div class="row">
           <button class="btn btn-primary" type="submit" id="saveBtn">Išsaugoti</button>
@@ -190,7 +192,7 @@ page_start('Naujienos', ['admin' => true]);
       <li class="row between">
         <span>
           <a href="?edit=<?= (int) $n['id'] ?>"><strong><?= e($n['title']) ?></strong></a>
-          <?php if (!$n['is_published']): ?><span class="badge badge-warn">juodraštis</span><?php elseif ($n['published_at'] > date('Y-m-d H:i:s')): ?><span class="badge">suplanuota</span><?php endif; ?>
+          <?= members_only_badge($n) ?><?php if (!$n['is_published']): ?><span class="badge badge-warn">juodraštis</span><?php elseif ($n['published_at'] > date('Y-m-d H:i:s')): ?><span class="badge">suplanuota</span><?php endif; ?>
           <div class="muted small"><?= e(fmt_date($n['published_at'], true)) ?> · reakcijų: <?= (int) $n['reactions'] ?></div>
         </span>
         <a class="btn btn-ghost btn-sm" href="?edit=<?= (int) $n['id'] ?>">Keisti</a>

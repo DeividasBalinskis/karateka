@@ -34,7 +34,7 @@ if (!is_active_account($a)) {
 }
 
 $emoji = post('emoji');
-if (!in_array($emoji, REACTIONS, true) || !q_value('SELECT 1 FROM news WHERE id = ? AND is_published = 1', [$newsId])) {
+if (!in_array($emoji, REACTIONS, true) || !q_value('SELECT 1 FROM news WHERE id = ? AND is_published = 1 AND ' . visibility_sql() . '', [$newsId])) {
     respond($json, ['error' => 'Netinkama reakcija.'], $back);
 }
 

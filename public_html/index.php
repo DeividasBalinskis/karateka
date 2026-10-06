@@ -446,6 +446,16 @@ require __DIR__ . '/app/bootstrap.php';
     .chooser-buttons{gap:6px;}
     .chooser-buttons button{font-size:0.76rem; padding:7px 11px;}
   }
+  /* ARTĖJANTYS RENGINIAI */
+  .home-events-section{padding:70px 0 0;}
+  .home-events{display:grid; grid-template-columns:repeat(auto-fit, minmax(230px, 1fr)); gap:18px;}
+  .home-event{display:flex; gap:14px; padding:18px; align-items:flex-start;}
+  .he-date{flex-shrink:0; width:56px; text-align:center; border-radius:10px; background:var(--ink); color:var(--cream); padding:8px 4px; line-height:1.1;}
+  .he-date .d{display:block; font-family:'Space Grotesk',sans-serif; font-size:1.4rem; font-weight:700;}
+  .he-date .m{font-family:'JetBrains Mono',monospace; font-size:0.62rem; text-transform:uppercase; letter-spacing:0.08em;}
+  .he-type{display:inline-block; font-size:0.7rem; font-weight:700; padding:3px 9px; border-radius:20px; background:rgba(168,92,126,0.14); color:#7A3558;}
+  .home-event h3{font-size:1.02rem; margin:6px 0 4px;}
+  .he-meta{font-size:0.82rem; color:var(--muted); line-height:1.45;}
 </style>
 </head>
 <body>
@@ -544,6 +554,31 @@ require __DIR__ . '/app/bootstrap.php';
       </div>
   </div>
 </section>
+
+<?php $homeEvents = public_upcoming_events(4); if ($homeEvents): ?>
+<section id="renginiai" class="home-events-section">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <h2 class="styled">Artėjantys renginiai</h2>
+    </div>
+    <div class="home-events reveal">
+      <?php foreach ($homeEvents as $ev): $ts = strtotime($ev['starts_on']); ?>
+        <div class="panel home-event">
+          <div class="he-date"><span class="d"><?= date('j', $ts) ?></span><span class="m"><?= e(mb_substr(LT_MONTHS_GEN[(int) date('n', $ts)], 0, 3)) ?></span></div>
+          <div class="he-body">
+            <span class="he-type"><?= e(EVENT_TYPES[$ev['type']]) ?></span>
+            <h3><?= e($ev['title']) ?></h3>
+            <div class="he-meta">
+              <?= e(fmt_date($ev['starts_on'])) ?><?= $ev['ends_on'] && $ev['ends_on'] !== $ev['starts_on'] ? ' – ' . e(fmt_date($ev['ends_on'])) : '' ?><?= $ev['start_time'] ? ', ' . e(fmt_time($ev['start_time'])) : '' ?>
+              <?= $ev['location'] ? '<br>' . e($ev['location']) : '' ?>
+            </div>
+          </div>
+        </div>
+      <?php endforeach; ?>
+    </div>
+  </div>
+</section>
+<?php endif; ?>
 
 <section id="apie" style="position:relative;">
   <div class="wrap">

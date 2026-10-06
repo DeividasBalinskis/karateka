@@ -45,3 +45,4 @@ Kad svetainė neatrodytų tuščia testuojant:
 
 Ištrinti viską demo: phpMyAdmin → Import → `deploy/demo-remove.sql`. Jūsų sukurti duomenys lieka.
 Demo duomenys generuojami iš naujo: `docker compose exec -T web php` ... arba `tools/demo_data.php` (žr. failo viršų).
+- `008_belts_tasks_visibility.sql` - diržai, užduotys pastabose, renginiai/naujienos tik nariams.

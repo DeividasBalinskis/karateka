@@ -376,3 +376,4 @@ legend{font-family:'Space Grotesk',sans-serif; font-weight:700; padding:0 6px;}
 .account-main.no-points > .stack > * + *{margin-top:0;}
 @media(max-width:860px){ .account-main.no-points > .stack{grid-template-columns:1fr;} }
 .date-parts{display:grid; grid-template-columns:1.1fr 1.4fr 0.9fr; gap:8px;}
+.badge-members{background:rgba(23,20,15,0.85); color:#F7F4EC; font-family:'Inter',sans-serif; letter-spacing:0; text-transform:none;}
