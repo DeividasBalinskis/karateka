@@ -14,6 +14,8 @@ function group_from_post(array &$errors): array
         'location'   => location_from_post('location') ?: null,
         'sort_order' => (int) post('sort_order'),
         'is_active'  => !empty($_POST['is_active']) ? 1 : 0,
+        'place_type' => isset(PLACE_TYPES[post('place_type')]) ? post('place_type') : 'kita',
+        'label'      => post('label') ?: null,
     ];
     if ($g['name'] === '') {
         $errors[] = 'Įveskite grupės pavadinimą.';
@@ -29,10 +31,24 @@ if (is_post()) {
     csrf_check();
     $action = post('action');
 
+    if ($action === 'save_prices') {
+        foreach (GROUP_CATEGORIES as $cat => $_) {
+            $p = (array) ($_POST['price'][$cat] ?? []);
+            $main = trim((string) ($p['main'] ?? ''));
+            if ($main === '') {
+                continue;
+            }
+            q('INSERT INTO category_prices (category, price_main, price_note, price_alt) VALUES (?, ?, ?, ?)
+               ON DUPLICATE KEY UPDATE price_main = VALUES(price_main), price_note = VALUES(price_note), price_alt = VALUES(price_alt)',
+                [$cat, $main, trim((string) ($p['note'] ?? '')) ?: null, trim((string) ($p['alt'] ?? '')) ?: null]);
+        }
+        flash('ok', 'Kainos išsaugotos - jau matomos pagrindiniame puslapyje.');
+        redirect('admin/grupes.php');
+    }
     if ($action === 'create') {
         $g = group_from_post($errors);
         if (!$errors) {
-            q('INSERT INTO training_groups (name, category, location, sort_order, is_active) VALUES (?, ?, ?, ?, ?)', array_values($g));
+            q('INSERT INTO training_groups (name, category, location, sort_order, is_active, place_type, label) VALUES (?, ?, ?, ?, ?, ?, ?)', array_values($g));
             flash('ok', 'Grupė sukurta. Pridėkite tvarkaraštį.');
             redirect('admin/grupes.php?id=' . db()->lastInsertId());
         }
@@ -40,7 +56,7 @@ if (is_post()) {
     if ($action === 'update' && $id) {
         $g = group_from_post($errors);
         if (!$errors) {
-            q('UPDATE training_groups SET name = ?, category = ?, location = ?, sort_order = ?, is_active = ? WHERE id = ?', array_merge(array_values($g), [$id]));
+            q('UPDATE training_groups SET name = ?, category = ?, location = ?, sort_order = ?, is_active = ?, place_type = ?, label = ? WHERE id = ?', array_merge(array_values($g), [$id]));
             flash('ok', 'Išsaugota.');
             redirect('admin/grupes.php?id=' . $id);
         }
@@ -108,6 +124,14 @@ function group_form(array $g, string $action): void
       <label>Eiliškumas <span class="hint">mažesnis - aukščiau</span><input type="number" name="sort_order" value="<?= (int) ($g['sort_order'] ?? 0) ?>"></label>
     </div>
     <?= location_field('location', $g['location'] ?? null) ?>
+    <div class="form-row">
+      <label>Vietos tipas <span class="hint">pagrindinio puslapio sąrašui</span>
+        <select name="place_type">
+          <?php foreach (PLACE_TYPES as $k => $pl): ?><option value="<?= $k ?>" <?= ($g['place_type'] ?? 'kita') === $k ? 'selected' : '' ?>><?= $pl ?></option><?php endforeach; ?>
+        </select>
+      </label>
+      <label>Žymė svetainėje <span class="hint">nebūtina, pvz. „pažengę“</span><input type="text" name="label" value="<?= e($g['label'] ?? '') ?>" maxlength="60"></label>
+    </div>
     <label class="check"><input type="checkbox" name="is_active" value="1" <?= ($g['is_active'] ?? 1) ? 'checked' : '' ?>><span>Aktyvi grupė</span></label>
 <?php }
 
@@ -233,6 +257,20 @@ $groups = q_all('SELECT g.*, (SELECT COUNT(*) FROM members m WHERE m.group_id = 
 page_start('Grupės', ['admin' => true]);
 ?>
 <div class="page-head"><h1 class="styled">Grupės ir tvarkaraštis</h1></div>
+<form method="post" class="panel card form">
+  <?= csrf_field() ?>
+  <input type="hidden" name="action" value="save_prices">
+  <h2>Kainos pagrindiniame puslapyje</h2>
+  <p class="hint">Tvarkaraštis pagrindiniame puslapyje imamas iš grupių žemiau - pakeitus laiką grupėje, jis pasikeičia ir svetainėje.</p>
+  <?php foreach (GROUP_CATEGORIES as $cat => $catLabel): $p = category_price($cat); ?>
+    <div class="form-row three">
+      <label><?= e($catLabel) ?>: kaina <input type="text" name="price[<?= $cat ?>][main]" value="<?= e($p['price_main']) ?>" placeholder="60€/mėn" required></label>
+      <label>Sąlyga <input type="text" name="price[<?= $cat ?>][note]" value="<?= e($p['price_note']) ?>" placeholder="(pasirašius metinę sutartį)"></label>
+      <label>Kita kaina <input type="text" name="price[<?= $cat ?>][alt]" value="<?= e($p['price_alt']) ?>" placeholder="90€/mėn be sutarties"></label>
+    </div>
+  <?php endforeach; ?>
+  <div class="row"><button class="btn btn-primary" type="submit">Išsaugoti kainas</button> <a class="small" href="<?= url('index.php') ?>" target="_blank">Peržiūrėti pagrindinį puslapį ↗</a></div>
+</form>
 <?= form_errors($errors) ?>
 <div class="grid-2">
   <div class="panel card">

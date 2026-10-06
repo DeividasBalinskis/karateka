@@ -33,3 +33,4 @@ SQL failai `db/` aplanke numeruoti. Jei DB jau sukurta, importuokite tik naujus 
 Buvęs pradinis puslapis `index.html` sujungtas į `index.php`. Serveryje **ištrinkite `index.html`**, kitaip jis bus rodomas vietoj naujo puslapio.
 `page1.html` palikite - jis tik nukreipia senas nuorodas į naują puslapį.
 - `004_change_email.sql` - el. pašto keitimas paskyroje.
+- `005_public_site.sql` - kainos ir tvarkaraštis pagrindiniame puslapyje iš DB.

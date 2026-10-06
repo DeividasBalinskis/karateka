@@ -466,38 +466,13 @@ require __DIR__ . '/app/bootstrap.php';
         <div class="group-facts">
           <div>
             <div class="kicker">Kainos</div>
-            <div class="group-price"><span class="price-main">60€/mėn</span><span class="price-condition">(pasirašius metinę sutartį)</span></div>
-            <div class="group-price-alt">90€/mėn be sutarties</div>
+            <?= render_price('vaikai') ?>
           </div>
           <div class="full">
             <div class="kicker">Kur treniruojamės</div>
             <div class="schedule-picker">
               <div class="picker-locations loc-scroll loc-accordion">
-                <details class="loc-group" open>
-                  <summary>Sporto centras</summary>
-                  <ul>
-                    <li data-name="Sporto centras Viršuliškės (Laisvės pr. 58)" data-schedule='<div class="schedule-line"><span class="schedule-day">Pirmadieniais, trečiadieniais — pažengę</span><span class="schedule-time">17:30–18:30</span></div><div class="schedule-line"><span class="schedule-day">Antradieniais, ketvirtadieniais — naujokai</span><span class="schedule-time">17:30–18:15</span></div>'>Viršuliškės (Laisvės pr. 58)</li>
-                  </ul>
-                </details>
-                <details class="loc-group">
-                  <summary>Mokyklos</summary>
-                  <ul>
-                    <li data-name="Avižienių gimnazija (Avižieniai)" data-schedule='<div class="schedule-line"><span class="schedule-day">Antradieniais, ketvirtadieniais</span><span class="schedule-time">16:00–16:45</span></div>'>Avižienių gimnazija (Avižieniai)</li>
-                    <li data-name="Šv. Juozapo mokykla (Jeruzalė)" data-schedule='<div class="schedule-line"><span class="schedule-day">Pirmadieniais, trečiadieniais</span><span class="schedule-time">16:15–17:00</span></div>'>Šv. Juozapo mokykla (Jeruzalė)</li>
-                    <li data-name="Šv. Juozapo mokykla (Pašilaičiai)" data-schedule='<div class="schedule-line"><span class="schedule-day">Penktadieniais</span><span class="schedule-time">16:15–17:00</span></div>'>Šv. Juozapo mokykla (Pašilaičiai)</li>
-                    <li data-name="Sofijos Kovalevskajos progimnazija (Šeškinė)" data-schedule='<div class="schedule-line"><span class="schedule-day">Pirmadieniais</span><span class="schedule-time">17:00–18:00</span></div><div class="schedule-line"><span class="schedule-day">Antradieniais</span><span class="schedule-time">19:00–20:00</span></div><div class="schedule-line"><span class="schedule-day">Ketvirtadieniais</span><span class="schedule-time">18:00–19:00</span></div>'>Sofijos Kovalevskajos progimnazija (Šeškinė)</li>
-                    <li data-name="VDU licėjus „Sokratus“ (Žvėrynas)" data-schedule='<div class="schedule-line"><span class="schedule-day">Trečiadieniais, penktadieniais</span><span class="schedule-time">tikslinama</span></div>'>VDU licėjus „Sokratus" (Žvėrynas)</li>
-                  </ul>
-                </details>
-                <details class="loc-group">
-                  <summary>Darželiai</summary>
-                  <ul>
-                    <li data-name="Avižienių darželis (Avižieniai)" data-schedule='<p class="schedule-placeholder" style="font-style:normal;">Tvarkaraštis tikslinamas.</p>'>Avižienių darželis (Avižieniai)</li>
-                    <li data-name="Lopšelis-darželis „Žiedas“ (Pašilaičiai)" data-schedule='<div class="schedule-line"><span class="schedule-day">Antradieniais, ketvirtadieniais</span><span class="schedule-time">tikslinama</span></div>'>Lopšelis-darželis „Žiedas" (Pašilaičiai)</li>
-                    <li data-name="Šv. Juozapo darželis (Pašilaičiai)" data-schedule='<p class="schedule-placeholder" style="font-style:normal;">Tvarkaraštis tikslinamas.</p>'>Šv. Juozapo darželis (Pašilaičiai)</li>
-                    <li data-name="Lopšelis-darželis „Sveikuolis“ (Šeškinė)" data-schedule='<div class="schedule-line"><span class="schedule-day">Pirmadieniais, trečiadieniais</span><span class="schedule-time">15:00–16:00</span></div>'>Lopšelis-darželis „Sveikuolis" (Šeškinė)</li>
-                  </ul>
-                </details>
+                <?= render_kids_locations() ?>
               </div>
               <div class="picker-schedule" id="vaikamsSchedulePanel">
                 <div class="kicker">Tvarkaraštis</div>
@@ -519,20 +494,15 @@ require __DIR__ . '/app/bootstrap.php';
         <div class="group-facts">
           <div>
             <div class="kicker">Kainos</div>
-            <div class="group-price"><span class="price-main">70€/mėn</span><span class="price-condition">(pasirašius metinę sutartį)</span></div>
-            <div class="group-price-alt">100€/mėn be sutarties</div>
+            <?= render_price('jaunimas') ?>
           </div>
           <div>
             <div class="kicker">Tvarkaraštis</div>
-            <div class="schedule-line"><span class="schedule-day">Pirmadieniais, trečiadieniais</span><span class="schedule-time">18:30–20:00</span></div>
-            <div class="schedule-line"><span class="schedule-day">Antradieniais, ketvirtadieniais, penktadieniais</span><span class="schedule-time">18:00–19:45</span></div>
-            <div class="schedule-line"><span class="schedule-day">Sekmadieniais</span><span class="schedule-time">10:00–11:30</span></div>
+            <?= render_category_schedule('jaunimas') ?>
           </div>
           <div class="full">
             <div class="kicker">Kur treniruojamės</div>
-            <ul class="loc-list">
-              <li>Sporto centras Viršuliškės (Laisvės pr. 58)</li>
-            </ul>
+            <?= render_category_locations('jaunimas') ?>
           </div>
         </div>
         <a href="#registracija" class="btn btn-primary group-cta">Registruotis</a>
@@ -548,20 +518,15 @@ require __DIR__ . '/app/bootstrap.php';
         <div class="group-facts">
           <div>
             <div class="kicker">Kainos</div>
-            <div class="group-price"><span class="price-main">75€/mėn</span><span class="price-condition">(pasirašius metinę sutartį)</span></div>
-            <div class="group-price-alt">100€/mėn be sutarties</div>
+            <?= render_price('suauge') ?>
           </div>
           <div>
             <div class="kicker">Tvarkaraštis</div>
-            <div class="schedule-line"><span class="schedule-day">Pirmadieniais, trečiadieniais</span><span class="schedule-time">18:00–19:15</span></div>
-            <div class="schedule-line"><span class="schedule-day">Penktadieniais</span><span class="schedule-time">17:00–18:00</span></div>
-            <div class="schedule-line"><span class="schedule-day">Sekmadieniais</span><span class="schedule-time">10:00–11:30</span></div>
+            <?= render_category_schedule('suauge') ?>
           </div>
           <div class="full">
             <div class="kicker">Kur treniruojamės</div>
-            <ul class="loc-list">
-              <li>Sporto centras Viršuliškės (Laisvės pr. 58)</li>
-            </ul>
+            <?= render_category_locations('suauge') ?>
           </div>
         </div>
         <a href="#registracija" class="btn btn-primary group-cta">Registruotis</a>
@@ -708,24 +673,7 @@ require __DIR__ . '/app/bootstrap.php';
           <input type="tel" name="telefonas" placeholder="Telefono numeris" required>
           <select name="lokacija" required>
             <option value="" disabled selected>Pasirinkite lokaciją</option>
-            <optgroup label="Vaikams">
-              <option value="Avižienių darželis (Avižieniai)">Avižienių darželis (Avižieniai)</option>
-              <option value="Lopšelis-darželis „Žiedas“ (Pašilaičiai)">Lopšelis-darželis „Žiedas“ (Pašilaičiai)</option>
-              <option value="Šv. Juozapo darželis (Pašilaičiai)">Šv. Juozapo darželis (Pašilaičiai)</option>
-              <option value="Lopšelis-darželis „Sveikuolis“ (Šeškinė)">Lopšelis-darželis „Sveikuolis“ (Šeškinė)</option>
-              <option value="Avižienių gimnazija (Avižieniai)">Avižienių gimnazija (Avižieniai)</option>
-              <option value="Šv. Juozapo mokykla (Jeruzalė)">Šv. Juozapo mokykla (Jeruzalė)</option>
-              <option value="Šv. Juozapo mokykla (Pašilaičiai)">Šv. Juozapo mokykla (Pašilaičiai)</option>
-              <option value="Sofijos Kovalevskajos progimnazija (Šeškinė)">Sofijos Kovalevskajos progimnazija (Šeškinė)</option>
-              <option value="VDU licėjus „Sokratus“ (Žvėrynas)">VDU licėjus „Sokratus“ (Žvėrynas)</option>
-              <option value="Sporto centras, Laisvės pr. 58, Viršuliškės">Sporto centras, Laisvės pr. 58 (Viršuliškės)</option>
-            </optgroup>
-            <optgroup label="Jaunimui">
-              <option value="Sporto centras, Laisvės pr. 58, Viršuliškės — Jaunimui">Sporto centras, Laisvės pr. 58 (Viršuliškės)</option>
-            </optgroup>
-            <optgroup label="Suaugusiems">
-              <option value="Sporto centras, Laisvės pr. 58, Viršuliškės — Suaugusiems">Sporto centras, Laisvės pr. 58 (Viršuliškės)</option>
-            </optgroup>
+            <?= render_trial_location_options() ?>
           </select>
           <select name="gimimo_metai" id="gimimoMetai" class="is-empty">
             <option value="" disabled selected>Gimimo metai</option>
