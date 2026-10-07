@@ -393,3 +393,12 @@ legend{font-family:'Space Grotesk',sans-serif; font-weight:700; padding:0 6px;}
 .note-lesson{display:inline-block; margin-top:8px; font-weight:600;}
 .flash-attention{display:block; background:rgba(217,83,79,0.1); color:#9B2C28; border:1px solid rgba(217,83,79,0.35); font-weight:600;}
 .flash-attention:hover{text-decoration:none; background:rgba(217,83,79,0.16);}
+
+/* Lankomumas (Treneriams → Treniruotė) */
+.att-bar{display:flex; flex-wrap:wrap; align-items:center; gap:10px 16px; padding:12px 14px; border-radius:12px; background:rgba(47,107,90,0.07); margin:10px 0 8px;}
+.att{display:flex; gap:6px; margin:6px 0 2px;}
+.att-btn{font-family:inherit; font-size:0.82rem; font-weight:700; padding:8px 12px; border-radius:20px; border:1.5px solid rgba(23,20,15,0.15); background:rgba(255,255,255,0.8); color:var(--muted); cursor:pointer; min-width:84px;}
+.att-btn.yes.on{background:var(--accent); border-color:var(--accent); color:#fff;}
+.att-btn.no.on{background:#D9534F; border-color:#D9534F; color:#fff;}
+.att-btn:hover{border-color:var(--accent);}
+.att-summary{display:flex; flex-wrap:wrap; justify-content:space-between; gap:6px 14px; font-size:0.92rem;}

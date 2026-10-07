@@ -208,3 +208,26 @@ function account_attention_member(int $accountId): ?int
                     ORDER BY cn.note_date DESC LIMIT 1', [$accountId]);
     return $id === false ? null : (int) $id;
 }
+
+/** Lankomumas laikotarpyje: ['buvo' => n, 'nebuvo' => n] */
+function member_attendance(int $memberId, string $from, string $to): array
+{
+    $r = q_one('SELECT COALESCE(SUM(present = 1), 0) AS buvo, COALESCE(SUM(present = 0), 0) AS nebuvo FROM attendance
+                 WHERE member_id = ? AND training_date BETWEEN ? AND ?', [$memberId, $from, $to]);
+    return ['buvo' => (int) $r['buvo'], 'nebuvo' => (int) $r['nebuvo']];
+}
+
+function render_attendance(int $memberId): string
+{
+    [$sFrom, $sTo] = season_bounds();
+    $m = member_attendance($memberId, date('Y-m-01'), date('Y-m-t'));
+    $s = member_attendance($memberId, $sFrom, $sTo);
+    if (!$s['buvo'] && !$s['nebuvo']) {
+        return '<p class="muted small">Lankomumas dar nežymėtas.</p>';
+    }
+    $n = $m['buvo'] % 100;
+    $word = ($n % 10 === 0 || ($n > 10 && $n < 20)) ? 'treniruočių' : ($n % 10 === 1 ? 'treniruotė' : 'treniruotės');
+    return '<div class="att-summary"><span><strong>' . $m['buvo'] . '</strong> ' . $word . ' šį mėnesį'
+        . ($m['nebuvo'] ? ' <span class="muted">(praleista ' . $m['nebuvo'] . ')</span>' : '') . '</span>'
+        . '<span class="muted">Sezone: ' . $s['buvo'] . ' iš ' . ($s['buvo'] + $s['nebuvo']) . '</span></div>';
+}

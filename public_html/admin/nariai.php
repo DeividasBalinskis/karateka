@@ -118,6 +118,9 @@ if ($id) {
         <div><button class="btn btn-primary" type="submit">Skirti</button></div>
       </form>
       <div class="panel card">
+        <h2>Lankomumas</h2>
+        <?= render_attendance($id) ?>
+        <hr class="divider">
         <h2>Taškai</h2>
         <p class="small muted"><?= e($seasonLabel) ?>: <strong><?= member_points_total($id, $from, $to) ?></strong> · iš viso: <strong><?= member_points_total($id) ?></strong></p>
         <?php if (!$history): ?><p class="muted small" style="margin-top:8px;">Taškų dar nėra.</p><?php endif; ?>

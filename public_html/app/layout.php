@@ -32,7 +32,7 @@ function page_start(string $title, array $opt = []): void
 <?php $pendingCount = pending_approvals_count(); ?>
 <nav class="admin-tabs">
   <a href="<?= url('admin/') ?>">Pradžia</a>
-  <a href="<?= url('admin/pastabos.php') ?>">Pastabos</a>
+  <a href="<?= url('admin/treniruote.php') ?>">Treniruotė</a>
   <a href="<?= url('admin/nariai.php') ?>">Nariai</a>
   <a href="<?= url('admin/grupes.php') ?>">Grupės</a>
   <a href="<?= url('admin/renginiai.php') ?>">Renginiai</a>

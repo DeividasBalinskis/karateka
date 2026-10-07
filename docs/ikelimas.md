@@ -20,7 +20,7 @@ Kodėl 1 žingsnis: išskleidžiant ZIP ant senų failų, failų tvarkyklė gali
 
 ## Duomenų bazės pakeitimai (db/)
 Numeruoti failai. Nauja DB → `ikelimui/duomenu-baze.sql` (visi kartu). Esama DB → importuokite tik tuos, kurių dar nebuvo.
-`aus15792_test` jau turi: 001-007. Trūksta: **008**.
+`aus15792_test` jau turi: 001-007. Trūksta: **008** ir **009** (lankomumas).
 
 ## Demo duomenys (nebūtina)
 1. `demo/demo-nuotraukos.zip` → išskleisti serverio `public_html` (naujienų nuotraukos).

@@ -46,7 +46,36 @@ if (is_post()) {
     if (post('action') === 'delete') {
         q('DELETE FROM coach_notes WHERE id = ?', [(int) post('note_id')]);
         flash('ok', 'Pastaba ištrinta.');
-        redirect('admin/pastabos.php?g=' . $groupId . '&d=' . $date);
+        redirect('admin/treniruote.php?g=' . $groupId . '&d=' . $date);
+    }
+
+    // Lankomumas: vienas narys (buvo / nebuvo / nuimti žymą) arba visi nepažymėti - „buvo“. Atsakymas JSON.
+    if (in_array(post('action'), ['attendance', 'attendance_all'], true) && $group) {
+        header('Content-Type: application/json; charset=utf-8');
+        $mark = function (int $mid, int $present) use ($date, $groupId, $me) {
+            q('INSERT INTO attendance (member_id, training_date, group_id, present, marked_by) VALUES (?, ?, ?, ?, ?)
+               ON DUPLICATE KEY UPDATE present = VALUES(present), group_id = VALUES(group_id), marked_by = VALUES(marked_by)',
+                [$mid, $date, $groupId, $present, $me['id']]);
+        };
+        $ids = q('SELECT id FROM members WHERE group_id = ? AND status = "active"', [$groupId])->fetchAll(PDO::FETCH_COLUMN);
+        if (post('action') === 'attendance') {
+            $mid = (int) post('member_id');
+            if (in_array((string) $mid, array_map('strval', $ids), true)) {
+                if (post('present') === '') {
+                    q('DELETE FROM attendance WHERE member_id = ? AND training_date = ?', [$mid, $date]);
+                } else {
+                    $mark($mid, post('present') === '1' ? 1 : 0);
+                }
+            }
+        } else {
+            foreach ($ids as $mid) {
+                q('INSERT IGNORE INTO attendance (member_id, training_date, group_id, present, marked_by) VALUES (?, ?, ?, 1, ?)',
+                    [$mid, $date, $groupId, $me['id']]);
+            }
+        }
+        $rows = q('SELECT member_id, present FROM attendance WHERE training_date = ? AND member_id IN (SELECT id FROM members WHERE group_id = ? AND status = "active")',
+            [$date, $groupId])->fetchAll(PDO::FETCH_KEY_PAIR);
+        exit(json_encode(['ok' => true, 'marks' => $rows, 'present' => count(array_filter($rows)), 'total' => count($ids)]));
     }
 
     // Viena pastaba (paspaudus Enter) - atsakymas JSON, puslapis neperkraunamas
@@ -105,7 +134,7 @@ if (is_post()) {
             flash('err', 'Neatpažintos YouTube nuorodos (pastabos išsaugotos be video): ' . implode(', ', $badLinks));
         }
         flash('ok', $saved ? "Išsaugota pastabų: $saved" : 'Nieko neįrašyta.');
-        redirect('admin/pastabos.php?g=' . $groupId . '&d=' . $date);
+        redirect('admin/treniruote.php?g=' . $groupId . '&d=' . $date);
     }
 }
 
@@ -115,6 +144,10 @@ $lessonOptions = '<option value="">+ Prisegti pamoką</option>';
 foreach (q_all('SELECT id, title, belt_level FROM lessons ORDER BY belt_level IS NOT NULL, belt_level, title') as $ls) {
     $lessonOptions .= '<option value="' . (int) $ls['id'] . '">' . e(($ls['belt_level'] ? BELTS[(int) $ls['belt_level']][0] . ' · ' : '') . $ls['title']) . '</option>';
 }
+// Šios treniruotės lankomumo žymos: [member_id => 1 buvo / 0 nebuvo]
+$att = $group ? q('SELECT member_id, present FROM attendance WHERE training_date = ? AND group_id = ?', [$date, $groupId])->fetchAll(PDO::FETCH_KEY_PAIR) : [];
+// Ar šią dieną grupė turi treniruotę pagal tvarkaraštį
+$hasTraining = $group ? (bool) q_value('SELECT 1 FROM schedule WHERE group_id = ? AND weekday = ?', [$groupId, (int) date('N', strtotime($date))]) : false;
 $todayNotes = [];
 if ($group) {
     foreach (q_all('SELECT cn.*, a.first_name AS author FROM coach_notes cn JOIN members m ON m.id = cn.member_id LEFT JOIN accounts a ON a.id = cn.author_id
@@ -125,11 +158,11 @@ if ($group) {
 $recent = $group ? q_all('SELECT cn.*, m.first_name, m.last_name, a.first_name AS author FROM coach_notes cn JOIN members m ON m.id = cn.member_id LEFT JOIN accounts a ON a.id = cn.author_id
                            WHERE m.group_id = ? AND cn.note_date <> ? ORDER BY cn.note_date DESC, cn.id DESC LIMIT 20', [$groupId, $date]) : [];
 
-page_start('Pastabos', ['admin' => true]);
+page_start('Treniruotė', ['admin' => true]);
 ?>
 <div class="page-head">
-  <h1 class="styled">Pastabos po treniruotės</h1>
-  <p>Parašykite pastabą vaikui - ją matys jis pats ir tėvai savo paskyroje.</p>
+  <h1 class="styled">Treniruotė</h1>
+  <p>Pažymėkite, kas buvo treniruotėje, ir, jei reikia, parašykite pastabą vaikui.</p>
 </div>
 
 <form method="get" class="panel card form notes-filter">
@@ -149,12 +182,22 @@ page_start('Pastabos', ['admin' => true]);
     <input type="hidden" name="g" value="<?= (int) $groupId ?>">
     <input type="hidden" name="d" value="<?= e($date) ?>">
     <h2><?= e($group['name']) ?> · <?= e(fmt_date($date, true)) ?></h2>
-    <p class="hint" style="margin-bottom:10px;">Parašykite pastabą ir spauskite <strong>Enter</strong> - ji iškart išsaugoma. Nauja eilutė: Shift+Enter.</p>
+    <div class="att-bar">
+      <span>Buvo: <strong id="attPresent"><?= count(array_filter($att)) ?></strong> iš <?= count($members) ?></span>
+      <button type="button" class="btn btn-primary btn-sm" id="attAll">✓ Visi buvo</button>
+      <?php if (!$hasTraining): ?><span class="hint">Pagal tvarkaraštį šią dieną šios grupės treniruotės nėra - patikrinkite datą.</span><?php endif; ?>
+    </div>
+    <p class="hint" style="margin-bottom:10px;">Lankomumas išsaugomas iškart paspaudus „Buvo“ / „Nebuvo“ (paspaudus dar kartą - žyma nuimama). Pastaba: parašykite ir spauskite <strong>Enter</strong>.</p>
 
     <?php foreach ($members as $m): ?>
       <div class="note-row">
         <div class="note-who" id="who<?= (int) $m['id'] ?>">
           <strong><?= e($m['first_name'] . ' ' . $m['last_name']) ?></strong>
+          <?php $a1 = $att[$m['id']] ?? null; ?>
+          <div class="att" data-member="<?= (int) $m['id'] ?>">
+            <button type="button" class="att-btn yes<?= $a1 === 1 || $a1 === '1' ? ' on' : '' ?>" data-v="1">✓ Buvo</button>
+            <button type="button" class="att-btn no<?= $a1 === 0 || $a1 === '0' ? ' on' : '' ?>" data-v="0">✗ Nebuvo</button>
+          </div>
           <?php foreach ($todayNotes[$m['id']] ?? [] as $n): ?>
             <div class="note-existing">
               <span>✓ <?= e(mb_strimwidth($n['body'], 0, 120, '…')) ?><?= $n['youtube_id'] ? ' ▶' : '' ?><?= $n['lesson_id'] ? ' · pamoka' : '' ?><?= $n['is_task'] ? ($n['done_at'] ? ' · užduotis ✓' : ' · užduotis') : '' ?></span>
@@ -256,6 +299,40 @@ page_start('Pastabos', ['admin' => true]);
         .catch(function () { ta.disabled = false; alert('Nepavyko išsaugoti - patikrinkite internetą.'); });
     });
   });
+})();
+</script>
+<script>
+// Lankomumas: „Buvo“ / „Nebuvo“ išsaugoma iškart; tas pats mygtukas dar kartą - žyma nuimama
+(function () {
+  var form = document.querySelector('.notes-form');
+  if (!form) return;
+  function send(params) {
+    var data = new FormData();
+    data.append('_csrf', form.querySelector('[name=_csrf]').value);
+    data.append('g', form.querySelector('[name=g]').value);
+    data.append('d', form.querySelector('[name=d]').value);
+    Object.keys(params).forEach(function (k) { data.append(k, params[k]); });
+    return fetch(location.pathname, { method: 'POST', body: data, credentials: 'same-origin' })
+      .then(function (r) { return r.json(); })
+      .then(function (res) {
+        if (!res.ok) throw new Error();
+        document.querySelectorAll('.att').forEach(function (box) {
+          var v = res.marks[box.dataset.member];
+          box.querySelector('.yes').classList.toggle('on', String(v) === '1');
+          box.querySelector('.no').classList.toggle('on', String(v) === '0');
+        });
+        document.getElementById('attPresent').textContent = res.present;
+      })
+      .catch(function () { alert('Nepavyko išsaugoti lankomumo - patikrinkite internetą.'); });
+  }
+  document.querySelectorAll('.att-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var box = btn.closest('.att');
+      send({ action: 'attendance', member_id: box.dataset.member, present: btn.classList.contains('on') ? '' : btn.dataset.v });
+    });
+  });
+  var all = document.getElementById('attAll');
+  if (all) all.addEventListener('click', function () { send({ action: 'attendance_all' }); });
 })();
 </script>
 <?php

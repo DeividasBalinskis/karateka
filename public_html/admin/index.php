@@ -16,8 +16,8 @@ page_start('Treneriams', ['admin' => true]);
 </div>
 
 <div class="tiles">
-  <a class="tile" href="<?= url('admin/pastabos.php') ?>">
-    <div class="num">✎</div><div class="label">Pastabos po treniruotės</div>
+  <a class="tile" href="<?= url('admin/treniruote.php') ?>">
+    <div class="num">✓</div><div class="label">Treniruotė: lankomumas ir pastabos</div>
   </a>
   <a class="tile <?= $pending ? 'alert' : '' ?>" href="<?= url('admin/patvirtinimai.php') ?>">
     <div class="num"><?= $pending ?></div><div class="label">Laukia patvirtinimo</div>

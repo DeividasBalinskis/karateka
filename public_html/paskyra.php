@@ -246,6 +246,8 @@ page_start('Mano paskyra', ['noindex' => true]);
           <h2><?= e($selected['group_name']) ?></h2>
           <div style="margin:-4px 0 10px;"><?= belt_chip($selected['belt_level'] !== null ? (int) $selected['belt_level'] : null) ?></div>
           <?= render_schedule_lines(schedule_lines(group_schedule((int) $selected['group_id']))) ?>
+          <div class="kicker" style="margin-top:14px;">Lankomumas</div>
+          <?= render_attendance((int) $selected['id']) ?>
         <?php else: ?>
           <h2><?= e($selected['first_name'] . ' ' . $selected['last_name']) ?></h2>
           <p class="muted">

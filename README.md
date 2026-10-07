@@ -19,7 +19,7 @@ Website of **VšĮ Karate Ateitis**, a traditional karate-do club in Vilnius led
 
 ## In progress: member system
 
-A members area is being built in phases. It covers parent and kid accounts with coach approval, groups, schedule, events, news with reactions, then points and ranking, then coach notes and video lessons. Built so far: accounts and approvals, groups and schedule, events, news, points and ranking, belts, coach notes and tasks, lessons. Next: invoices and payments ([docs/saskaitu-planas.md](docs/saskaitu-planas.md)).
+A members area is being built in phases. It covers parent and kid accounts with coach approval, groups, schedule, events, news with reactions, then points and ranking, then coach notes and video lessons. Built so far: accounts and approvals, groups and schedule, events, news, points and ranking, belts, coach notes and tasks, attendance, lessons. Next: invoices and payments ([docs/saskaitu-planas.md](docs/saskaitu-planas.md)).
 
 ## Running locally
 

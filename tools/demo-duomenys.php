@@ -288,6 +288,19 @@ for ($i = 0; $i < 14 && $i < count($all); $i++) {
         . "$m, @admin, " . fn_date(-mt_rand(1, 14)) . ', ' . s($text) . ', NULL, ' . ($lesson ?? 'NULL') . ', ' . ($isTask ? 1 : 0) . ", $read, $done);";
 }
 
+// Lankomumas: paskutinės 5 savaitės pagal grupių tvarkaraštį, ~85% buvo
+$out[] = '';
+$out[] = '-- ===== Lankomumas =====';
+$days = [];
+for ($i = 1; $i <= 35; $i++) {
+    $days[] = "SELECT $i AS n";
+}
+$out[] = 'INSERT IGNORE INTO attendance (member_id, training_date, group_id, present, marked_by) '
+    . 'SELECT m.id, d.dt, m.group_id, IF(RAND() < 0.85, 1, 0), @admin FROM members m '
+    . 'JOIN schedule s ON s.group_id = m.group_id '
+    . 'JOIN (SELECT CURDATE() - INTERVAL n DAY AS dt FROM (' . implode(' UNION ALL ', $days) . ') x) d ON WEEKDAY(d.dt) + 1 = s.weekday '
+    . "WHERE m.status = 'active' AND m.id BETWEEN @m1 AND @m$memberVar;";
+
 // Vienas renginys ir viena naujiena - tik nariams
 $out[] = "UPDATE events SET members_only = 1 WHERE id = @e1;";
 $out[] = "UPDATE news SET members_only = 1 WHERE id = @n2;";
