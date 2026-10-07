@@ -23,3 +23,13 @@ Kol kas visur naudojamos numatytosios reikšmės - viską galima pakeisti vėlia
 ## 3 etapas (trenerio pastabos, video)
 - [ ] Ar tėvai mato pastabas vaikams iki 14 m.? Ar vaikai gali pažymėti namų darbus kaip atliktus?
 - [ ] Ar tinka „unlisted“ YouTube video pamokoms?
+
+## Sąskaitos ir mokėjimai (vietoj Edufi) - žr. docs/saskaitu-planas.md
+- [ ] Ar VšĮ yra PVM mokėtoja?
+- [ ] Kas veda buhalteriją, kokia programa, kokio eksporto reikia?
+- [ ] **Ar per Edufi gaunamas NVŠ krepšelis?** Jei taip - kaip jį administruoti be Edufi (svarbu prieš atsisakant)
+- [ ] Nuolaidos (broliams/seserims ir kt.)?
+- [ ] Mokėjimas prisijungus mėnesio viduryje? Vasarą?
+- [ ] Apmokėjimo terminas (pvz. iki mėnesio 10 d.)?
+- [ ] Dabartinės sutarties tekstas
+- [ ] Paysera verslo paskyra (ar yra / ar sutinka atsidaryti)
