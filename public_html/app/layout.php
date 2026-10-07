@@ -188,9 +188,15 @@ function site_header(bool $home = false): void
       </li>
     </ul>
     <a class="nav-cta mobile-only" href="<?= $h ?>#registracija">2 treniruotės nemokamai</a>
-    <button class="burger" id="burgerBtn" type="button" aria-label="Meniu"><span></span><span></span><span></span></button>
+    <button class="burger" id="burgerBtn" type="button" aria-label="Meniu"><span></span><span></span><span></span><?php if ($a && account_attention_count((int) $a['id'])): ?><i class="burger-dot"></i><?php endif; ?></button>
   </nav>
 </header>
+<?php
+    // Kol yra neperskaitytų trenerio pastabų ar neatliktų užduočių - juosta po meniu visuose puslapiuose
+    if ($a && ($att = account_attention_count((int) $a['id'])) && basename($_SERVER['SCRIPT_NAME'] ?? '') !== 'paskyra.php'):
+        $attMember = account_attention_member((int) $a['id']); ?>
+<a class="attention-bar" href="<?= url('paskyra.php' . ($attMember ? '?m=' . $attMember : '')) ?>#pastabos">❗ Turite <?= $att ?> <?= $att === 1 ? 'trenerio pastabą ar užduotį' : 'trenerio pastabų ar užduočių' ?>, kurios dar nepažymėtos - <strong>peržiūrėti →</strong></a>
+<?php endif; ?>
 <?php
 }
 

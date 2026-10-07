@@ -199,3 +199,12 @@ function account_attention_count(int $accountId): int
     }
     return $cache[$accountId];
 }
+
+/** Pirmas paskyros narys, kuriam yra neperskaitytų pastabų / neatliktų užduočių (nuorodai į jo paskyrą) */
+function account_attention_member(int $accountId): ?int
+{
+    $id = q_value('SELECT cn.member_id FROM coach_notes cn JOIN account_members am ON am.member_id = cn.member_id
+                    WHERE am.account_id = ? AND ((cn.is_task = 0 AND cn.read_at IS NULL) OR (cn.is_task = 1 AND cn.done_at IS NULL))
+                    ORDER BY cn.note_date DESC LIMIT 1', [$accountId]);
+    return $id === false ? null : (int) $id;
+}

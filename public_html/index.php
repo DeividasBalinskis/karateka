@@ -448,9 +448,22 @@ require __DIR__ . '/app/bootstrap.php';
   }
   /* ARTĖJANTYS RENGINIAI */
   .home-events-section{padding:34px 0 0;}
-  .home-events-section .section-head{margin-bottom:18px;}
+  .home-events-section h2{margin:0;}
   .home-events-section .section-head h2{font-size:clamp(1.4rem,2.4vw,1.9rem);}
-  .home-events{display:grid; grid-template-columns:repeat(auto-fit, minmax(230px, 1fr)); gap:18px;}
+  .events-layout{display:grid; grid-template-columns:230px minmax(0,1fr); gap:28px; align-items:center;}
+  .events-title .section-head, .events-title h2{margin:0;}
+  .events-nav{display:flex; gap:8px; margin-top:18px;}
+  .events-arrow{width:40px; height:40px; border-radius:50%; border:1px solid rgba(23,20,15,0.18); background:rgba(255,255,255,0.75); font-size:1.1rem; cursor:pointer; color:var(--ink); transition:background .15s, border-color .15s;}
+  .events-arrow:hover{background:#fff; border-color:var(--accent);}
+  .events-scroller{display:flex; gap:16px; overflow-x:auto; padding:6px 4px 18px; scroll-behavior:smooth; scrollbar-width:thin;
+    -webkit-mask-image:linear-gradient(90deg, #000 92%, transparent); mask-image:linear-gradient(90deg, #000 92%, transparent);}
+  .events-scroller .home-event{flex:0 0 255px;}
+  .events-scroller.at-end{-webkit-mask-image:none; mask-image:none;}
+  @media(max-width:860px){
+    .events-layout{grid-template-columns:1fr; gap:14px;}
+    .events-nav{display:none;}
+    .events-scroller .home-event{flex-basis:80%;}
+  }
   .home-event{display:flex; gap:14px; padding:18px; align-items:flex-start;}
   .he-date{flex-shrink:0; width:56px; text-align:center; border-radius:10px; background:var(--ink); color:var(--cream); padding:8px 4px; line-height:1.1;}
   .he-date .d{display:block; font-family:'Space Grotesk',sans-serif; font-size:1.4rem; font-weight:700;}
@@ -557,13 +570,19 @@ require __DIR__ . '/app/bootstrap.php';
   </div>
 </section>
 
-<?php $homeEvents = public_upcoming_events(4); if ($homeEvents): ?>
+<?php $homeEvents = public_upcoming_events(12); if ($homeEvents): ?>
 <section id="renginiai" class="home-events-section">
-  <div class="wrap">
-    <div class="section-head reveal">
+  <div class="wrap events-layout">
+    <div class="events-title reveal">
       <h2 class="styled">Artėjantys renginiai</h2>
+      <?php if (count($homeEvents) > 1): ?>
+        <div class="events-nav">
+          <button type="button" class="events-arrow" data-dir="-1" aria-label="Ankstesni renginiai">‹</button>
+          <button type="button" class="events-arrow" data-dir="1" aria-label="Kiti renginiai">›</button>
+        </div>
+      <?php endif; ?>
     </div>
-    <div class="home-events reveal">
+    <div class="events-scroller reveal" id="eventsScroller">
       <?php foreach ($homeEvents as $ev): $ts = strtotime($ev['starts_on']); ?>
         <div class="panel home-event">
           <div class="he-date"><span class="d"><?= date('j', $ts) ?></span><span class="m"><?= e(mb_substr(LT_MONTHS_GEN[(int) date('n', $ts)], 0, 3)) ?></span></div>
@@ -891,6 +910,28 @@ require __DIR__ . '/app/bootstrap.php';
     }
   });
 
+
+  // Artėjantys renginiai: juosta slenka į šonus pelės ratuku (kai pelė virš jos), rodyklėmis ir pirštu.
+  // Pasiekus juostos galą - ratukas vėl slenka puslapį žemyn / aukštyn.
+  const evScroller = document.getElementById('eventsScroller');
+  if (evScroller) {
+    const updateEnd = () => evScroller.classList.toggle('at-end', evScroller.scrollLeft >= evScroller.scrollWidth - evScroller.clientWidth - 4);
+    evScroller.addEventListener('wheel', (e) => {
+      if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;           // horizontalus slinkimas (touchpad) - naršyklė tvarko pati
+      const max = evScroller.scrollWidth - evScroller.clientWidth;
+      if (max <= 0) return;
+      if ((e.deltaY < 0 && evScroller.scrollLeft <= 0) || (e.deltaY > 0 && evScroller.scrollLeft >= max - 1)) return;
+      e.preventDefault();
+      evScroller.style.scrollBehavior = 'auto';
+      evScroller.scrollLeft += e.deltaY;
+      evScroller.style.scrollBehavior = '';
+    }, { passive: false });
+    document.querySelectorAll('.events-arrow').forEach(btn => btn.addEventListener('click', () => {
+      evScroller.scrollBy({ left: Number(btn.dataset.dir) * (evScroller.clientWidth * 0.8), behavior: 'smooth' });
+    }));
+    evScroller.addEventListener('scroll', updateEnd, { passive: true });
+    updateEnd();
+  }
 </script>
 <script src="<?= e(asset_url('assets/header.js')) ?>"></script>
 
