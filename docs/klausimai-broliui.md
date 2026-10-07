@@ -4,7 +4,7 @@ Kol kas visur naudojamos numatytosios reikšmės - viską galima pakeisti vėlia
 
 ## Taškai ir reitingas
 - [ ] **Taškų vertės.** Dabar pavyzdinės (egzaminas 10, varžybos LT 5, 1 vieta LT +15 ir t. t.). Keičiama: Treneriams → Taškai.
-- [ ] **Ar lankomumas duoda taškų?** Dabar - ne. Jei taip, reikės treniruočių žymėjimo funkcijos.
+- [ ] **Ar lankomumas duoda taškų ir kiek?** Dabar: pažymėjus „Buvo“ automatiškai +1 tšk. (keičiama arba išjungiama: Treneriams → Taškai → „Treniruotės lankymas“). Ar 1 taškas tinka, palyginus su egzaminu (10) ir varžybomis (5–30)?
 - [ ] **Reitingas:** dabar pagal amžiaus kategoriją (Vaikai / Jaunimas / Suaugusieji), narys gali pasižiūrėti ir viso klubo Top 5.
 - [ ] **Sezonas:** dabar rugsėjo 1 - rugpjūčio 31.
 - [ ] **Ar sekti diržus (kyu / dan)?**

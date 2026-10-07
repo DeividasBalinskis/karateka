@@ -5,12 +5,91 @@ $me = require_staff();
 
 $id = (int) (get('id') ?: post('id'));
 
+/** Paskyra pagal el. paštą susiejimui su nariu (null - tokios nėra) */
+function account_by_email(string $email): ?array
+{
+    $acc = q_one('SELECT * FROM accounts WHERE email = ?', [normalize_email($email)]);
+    return $acc ?: null;
+}
+
+// ---------- Naujas narys (treneris prideda pats, iškart aktyvus su grupe) ----------
+if (get('new') !== '' || post('action') === 'create') {
+    $errors = [];
+    if (is_post()) {
+        csrf_check();
+        $first = post('first_name');
+        $last = post('last_name');
+        $birth = date_from_input($_POST['birth_date'] ?? '');
+        $group = (int) post('group_id');
+        $email = post('link_email');
+        $acc = $email !== '' ? account_by_email($email) : null;
+        if ($first === '' || $last === '' || !valid_birth_date($birth)) {
+            $errors[] = 'Įveskite vardą, pavardę ir gimimo datą.';
+        } elseif (!$group) {
+            $errors[] = 'Pasirinkite grupę.';
+        } elseif ($email !== '' && !$acc) {
+            $errors[] = 'Paskyros su tokiu el. paštu nėra. Palikite tuščią - susieti galėsite vėliau nario puslapyje.';
+        } else {
+            $mid = create_member($first, $last, $birth, !empty($_POST['photo_consent']), belt_from_post('belt_level'));
+            q('UPDATE members SET group_id = ?, status = "active" WHERE id = ?', [$group, $mid]);
+            if ($acc) {
+                link_member((int) $acc['id'], $mid, post('relation') === 'self' ? 'self' : 'parent');
+            }
+            flash('ok', "Pridėtas (-a): $first $last");
+            redirect('admin/nariai.php?id=' . $mid);
+        }
+    }
+    page_start('Naujas narys', ['admin' => true]);
+    ?>
+    <a class="small" href="<?= url('admin/nariai.php') ?>">← Visi nariai</a>
+    <h1 class="styled" style="margin-top:8px;">Naujas narys</h1>
+    <?= form_errors($errors) ?>
+    <form method="post" class="panel card form" style="max-width:720px;">
+      <?= csrf_field() ?>
+      <input type="hidden" name="action" value="create">
+      <div class="form-row">
+        <label>Vardas <input type="text" name="first_name" value="<?= e(post('first_name')) ?>" required></label>
+        <label>Pavardė <input type="text" name="last_name" value="<?= e(post('last_name')) ?>" required></label>
+      </div>
+      <label>Gimimo data <?= date_parts_field('birth_date', $_POST['birth_date'] ?? null) ?></label>
+      <div class="form-row">
+        <label>Grupė <select name="group_id" required><?= group_options((int) post('group_id') ?: null) ?></select></label>
+        <label>Diržas <select name="belt_level"><?= belt_options(belt_from_post('belt_level'), '— nežinau / dar neturi —') ?></select></label>
+      </div>
+      <label class="check"><input type="checkbox" name="photo_consent" value="1" <?= !empty($_POST['photo_consent']) ? 'checked' : '' ?>>
+        <span>Tėvai (ar pats narys) sutiko, kad klubas skelbtų nuotraukas</span></label>
+      <hr class="divider">
+      <div class="form-row">
+        <label>Susieti su paskyra <span class="hint">nebūtina - tėvų ar paties nario el. paštas, jei jau užsiregistravę</span>
+          <input type="email" name="link_email" value="<?= e(post('link_email')) ?>"></label>
+        <label>Kas tai <select name="relation"><option value="parent">tėvų paskyra</option><option value="self" <?= post('relation') === 'self' ? 'selected' : '' ?>>paties nario paskyra</option></select></label>
+      </div>
+      <p class="hint">Jei tėvai dar neturi paskyros - palikite tuščią. Kai užsiregistruos, susiekite nario puslapyje, kad tas pats vaikas nebūtų sukurtas du kartus.</p>
+      <div><button class="btn btn-primary" type="submit">Pridėti narį</button></div>
+    </form>
+    <?php
+    page_end();
+    exit;
+}
+
 if ($id) {
     $m = q_one('SELECT * FROM members WHERE id = ?', [$id]);
     if (!$m) {
         not_found();
     }
     $errors = [];
+    // Susieti esamą narį su tėvų / paties nario paskyra
+    if (is_post() && post('action') === 'link_account') {
+        csrf_check();
+        $acc = account_by_email(post('link_email'));
+        if ($acc) {
+            link_member((int) $acc['id'], $id, post('relation') === 'self' ? 'self' : 'parent');
+            flash('ok', "Susieta su paskyra: {$acc['email']}");
+        } else {
+            flash('err', 'Paskyros su tokiu el. paštu nėra.');
+        }
+        redirect('admin/nariai.php?id=' . $id);
+    }
     if (is_post() && in_array(post('action'), ['add_award', 'delete_award'], true)) {
         csrf_check();
         if (post('action') === 'add_award') {
@@ -92,6 +171,17 @@ if ($id) {
           <?php endforeach; ?>
         </ul>
         <?php if ($m['parent_consent_at']): ?><p class="small muted" style="margin-top:10px;">Tėvų sutikimas: <?= e($m['parent_consent_at']) ?></p><?php endif; ?>
+        <details style="margin-top:12px;">
+          <summary class="summary-link">+ Susieti su paskyra</summary>
+          <form method="post" class="form" style="margin-top:10px;">
+            <?= csrf_field() ?>
+            <input type="hidden" name="id" value="<?= $id ?>">
+            <input type="hidden" name="action" value="link_account">
+            <label>Tėvų ar paties nario el. paštas <input type="email" name="link_email" required></label>
+            <label>Kas tai <select name="relation"><option value="parent">tėvų paskyra</option><option value="self">paties nario paskyra</option></select></label>
+            <div><button class="btn btn-ghost btn-sm" type="submit">Susieti</button></div>
+          </form>
+        </details>
       </div>
     </div>
 
@@ -167,8 +257,9 @@ $rows = q_all($sql . ' ORDER BY g.sort_order, m.last_name, m.first_name LIMIT 50
 
 page_start('Nariai', ['admin' => true]);
 ?>
-<div class="page-head">
+<div class="page-head row between">
   <h1 class="styled">Nariai</h1>
+  <a class="btn btn-primary" href="?new=1">+ Naujas narys</a>
 </div>
 <form method="get" class="panel card form filters">
   <label>Paieška <input type="search" name="q" value="<?= e($search) ?>" placeholder="Vardas ar pavardė"></label>

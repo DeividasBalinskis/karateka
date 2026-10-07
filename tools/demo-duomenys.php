@@ -280,12 +280,12 @@ $notes = [
 ];
 $all = array_merge($members['vaikai'], $members['jaunimas']);
 for ($i = 0; $i < 14 && $i < count($all); $i++) {
-    [$m] = $all[$i * 2 % count($all)];
+    [$m, $g] = $all[$i * 2 % count($all)];
     [$text, $isTask, $lesson] = $notes[$i % count($notes)];
     $read = $i % 3 === 0 ? 'NULL' : 'NOW()';
     $done = $isTask && $i % 2 === 0 ? 'NOW()' : 'NULL';     // dalis užduočių jau atlikta
-    $out[] = 'INSERT INTO coach_notes (member_id, author_id, note_date, body, youtube_id, lesson_id, is_task, read_at, done_at) VALUES ('
-        . "$m, @admin, " . fn_date(-mt_rand(1, 14)) . ', ' . s($text) . ', NULL, ' . ($lesson ?? 'NULL') . ', ' . ($isTask ? 1 : 0) . ", $read, $done);";
+    $out[] = 'INSERT INTO coach_notes (member_id, author_id, group_id, note_date, body, youtube_id, lesson_id, is_task, read_at, done_at) VALUES ('
+        . "$m, @admin, $g, " . fn_date(-mt_rand(1, 14)) . ', ' . s($text) . ', NULL, ' . ($lesson ?? 'NULL') . ', ' . ($isTask ? 1 : 0) . ", $read, $done);";
 }
 
 // Lankomumas: paskutinės 5 savaitės pagal grupių tvarkaraštį, ~85% buvo
@@ -300,6 +300,10 @@ $out[] = 'INSERT IGNORE INTO attendance (member_id, training_date, group_id, pre
     . 'JOIN schedule s ON s.group_id = m.group_id '
     . 'JOIN (SELECT CURDATE() - INTERVAL n DAY AS dt FROM (' . implode(' UNION ALL ', $days) . ') x) d ON WEEKDAY(d.dt) + 1 = s.weekday '
     . "WHERE m.status = 'active' AND m.id BETWEEN @m1 AND @m$memberVar;";
+// Taškai už tas treniruotes - kaip ir žymint lankomumą svetainėje
+$out[] = 'INSERT INTO point_awards (member_id, category_id, points, awarded_on, awarded_by) '
+    . "SELECT a.member_id, pc.id, pc.points, a.training_date, @admin FROM attendance a JOIN point_categories pc ON pc.code = 'attendance' AND pc.is_active = 1 AND pc.points > 0 "
+    . "WHERE a.present = 1 AND a.member_id BETWEEN @m1 AND @m$memberVar;";
 
 // Vienas renginys ir viena naujiena - tik nariams
 $out[] = "UPDATE events SET members_only = 1 WHERE id = @e1;";

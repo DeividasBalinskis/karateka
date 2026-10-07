@@ -88,15 +88,33 @@ function member_points_total(int $memberId, ?string $from = null, ?string $to = 
     return (int) q_value('SELECT COALESCE(SUM(points), 0) FROM point_awards WHERE member_id = ?', [$memberId]);
 }
 
-/** Nario istorija: visi taškų skyrimai, naujausi viršuje */
+/** Nario istorija: visi taškų skyrimai, naujausi viršuje (lankomumas rodomas atskirai - nesugrūda sąrašo) */
 function member_history(int $memberId): array
 {
     return q_all('SELECT pa.*, pc.name AS category_name, pc.code, e.title AS event_title, e.type AS event_type
                     FROM point_awards pa
                     JOIN point_categories pc ON pc.id = pa.category_id
                     LEFT JOIN events e ON e.id = pa.event_id
-                   WHERE pa.member_id = ?
+                   WHERE pa.member_id = ? AND (pc.code IS NULL OR pc.code <> "attendance")
                    ORDER BY pa.awarded_on DESC, pa.id DESC', [$memberId]);
+}
+
+/**
+ * Taškai už lankomumą: pažymėjus „buvo“ - skiriami (jei kategorija įjungta ir verta > 0),
+ * „nebuvo“ ar nuėmus žymą - nuimami. Vienas skyrimas nariui per dieną.
+ */
+function sync_attendance_points(int $memberId, string $date, bool $present, int $by): void
+{
+    $cat = q_one('SELECT * FROM point_categories WHERE code = "attendance"');
+    if (!$cat) {
+        return;
+    }
+    $has = q_value('SELECT 1 FROM point_awards WHERE member_id = ? AND category_id = ? AND awarded_on = ?', [$memberId, $cat['id'], $date]);
+    if ($present && !$has && $cat['is_active'] && (int) $cat['points'] > 0) {
+        award_points($memberId, $cat, $date, null, null, $by);
+    } elseif (!$present && $has) {
+        q('DELETE FROM point_awards WHERE member_id = ? AND category_id = ? AND awarded_on = ?', [$memberId, $cat['id'], $date]);
+    }
 }
 
 function category_by_code(string $code): array

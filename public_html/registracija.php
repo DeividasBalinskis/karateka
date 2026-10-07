@@ -73,6 +73,9 @@ if (is_post() && in_array($type, ['tevai', 'pats'], true)) {
             if (!valid_birth_date($k['birth_date'] ?? '')) {
                 $errors[] = "Vaikas nr. $n: įveskite gimimo datą.";
             }
+            if (!in_array($k['photo_consent'] ?? '', ['0', '1'], true)) {
+                $errors[] = "Vaikas nr. $n: pasirinkite, ar sutinkate dėl nuotraukų.";
+            }
             $kids[] = $k;
         }
         if (!$kids) {
@@ -90,6 +93,8 @@ if (is_post() && in_array($type, ['tevai', 'pats'], true)) {
             } elseif ($parentEmail === $email) {
                 $errors[] = 'Tėvų el. paštas turi skirtis nuo tavo el. pašto.';
             }
+        } elseif (!in_array(post('photo_consent'), ['0', '1'], true)) {
+            $errors[] = 'Pasirink, ar sutinki dėl nuotraukų.';
         }
     }
 
@@ -228,8 +233,7 @@ $kidsInput = array_values((array) ($v['kids'] ?? [[]])) ?: [[]];
               </div>
               <label>Gimimo data <?= date_parts_field("kids[$i][birth_date]", $k['birth_date'] ?? null, false) ?></label>
               <label>Diržas <span class="hint">nežinote - palikite tuščią</span><select name="kids[<?= $i ?>][belt_level]"><?= belt_options(!empty($k['belt_level']) ? (int) $k['belt_level'] : null, '— nežinau / dar neturi —') ?></select></label>
-              <label class="check"><input type="checkbox" name="kids[<?= $i ?>][photo_consent]" value="1" <?= !empty($k['photo_consent']) ? 'checked' : '' ?>>
-                <span>Sutinku, kad klubas skelbtų vaiko nuotraukas ir vaizdo įrašus iš treniruočių ir renginių (svetainėje, socialiniuose tinkluose).</span></label>
+              <?= photo_consent_choice("kids[$i][photo_consent]", $k['photo_consent'] ?? null, 'Ar sutinkate, kad klubas skelbtų vaiko nuotraukas ir vaizdo įrašus iš treniruočių ir renginių (svetainėje, socialiniuose tinkluose)?') ?>
             </fieldset>
           <?php endforeach; ?>
         </div>
@@ -244,8 +248,7 @@ $kidsInput = array_values((array) ($v['kids'] ?? [[]])) ?: [[]];
           <label id="parentEmailWrap" style="display:none;">Tėvų / globėjų el. paštas
             <input type="email" name="parent_email" value="<?= e($v['parent_email'] ?? '') ?>">
           </label>
-          <label class="check" id="photoWrap"><input type="checkbox" name="photo_consent" value="1" <?= !empty($v['photo_consent']) ? 'checked' : '' ?>>
-            <span>Sutinku, kad klubas skelbtų mano nuotraukas ir vaizdo įrašus iš treniruočių ir renginių.</span></label>
+          <div id="photoWrap"><?= photo_consent_choice('photo_consent', $v['photo_consent'] ?? null, 'Ar sutinki, kad klubas skelbtų tavo nuotraukas ir vaizdo įrašus iš treniruočių ir renginių?') ?></div>
           <p class="hint">Neturi savo el. pašto? Tegul tėvai tave užregistruoja per <a href="?tipas=tevai">tėvų registraciją</a> - vėliau jie galės pakviesti tave prisijungti.</p>
         </div>
       <?php endif; ?>
@@ -268,7 +271,7 @@ $kidsInput = array_values((array) ($v['kids'] ?? [[]])) ?: [[]];
     var copy = all[all.length - 1].cloneNode(true), idx = all.length;
     copy.querySelectorAll('input, select').forEach(function (inp) {
       inp.name = inp.name.replace(/kids\[\d+\]/, 'kids[' + idx + ']');
-      if (inp.type === 'checkbox') inp.checked = false; else inp.value = '';
+      if (inp.type === 'checkbox' || inp.type === 'radio') inp.checked = false; else inp.value = '';
     });
     kids.appendChild(copy);
     if (idx + 1 >= max) this.style.display = 'none';
@@ -287,6 +290,7 @@ $kidsInput = array_values((array) ($v['kids'] ?? [[]])) ?: [[]];
     document.getElementById('under14').style.display = under ? '' : 'none';
     document.getElementById('parentEmailWrap').style.display = under ? '' : 'none';
     document.getElementById('photoWrap').style.display = under ? 'none' : '';
+    document.querySelectorAll('#photoWrap input').forEach(function (i) { i.disabled = under; });   // paslėpto pasirinkimo nereikalaujame
     document.querySelector('[name=parent_email]').required = under;
   }
   [by, bm, bdd].forEach(function (s) { s.addEventListener('change', update); }); update();

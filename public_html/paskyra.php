@@ -10,12 +10,14 @@ if (is_post()) {
     csrf_check();
     $action = post('action');
 
-    if ($action === 'add_kid') {
+    if ($action === 'add_kid' && !is_staff($a)) {
         $first = post('first_name');
         $last = post('last_name');
         $birth = date_from_input($_POST['birth_date'] ?? '');
         if ($first === '' || $last === '' || !valid_birth_date($birth)) {
             $errors[] = 'Įveskite vaiko vardą, pavardę ir gimimo datą.';
+        } elseif (!in_array(post('photo_consent'), ['0', '1'], true)) {
+            $errors[] = 'Pasirinkite, ar sutinkate dėl nuotraukų.';
         } else {
             $mid = create_member($first, $last, $birth, !empty($_POST['photo_consent']), belt_from_post('belt_level'));
             q('UPDATE members SET parent_consent_at = NOW() WHERE id = ?', [$mid]);
@@ -36,6 +38,16 @@ if (is_post()) {
         if ($m && ($rel === 'parent' || ($rel === 'self' && age_on($m['birth_date']) >= CONSENT_AGE))) {
             q('UPDATE members SET photo_consent = ? WHERE id = ?', [!empty($_POST['photo_consent']) ? 1 : 0, $mid]);
             flash('ok', 'Sutikimas dėl nuotraukų atnaujintas.');
+        }
+        redirect('paskyra.php?m=' . $mid);
+    }
+
+    // Diržą gali pasikeisti patys (tėvai arba narys); treneris prireikus pataiso
+    if ($action === 'belt') {
+        $mid = (int) post('member_id');
+        if (account_relation($aid, $mid)) {
+            q('UPDATE members SET belt_level = ? WHERE id = ?', [belt_from_post('belt_level'), $mid]);
+            flash('ok', 'Diržas atnaujintas.');
         }
         redirect('paskyra.php?m=' . $mid);
     }
@@ -128,7 +140,12 @@ if (is_post()) {
     }
 }
 
+$isStaff = is_staff($a);
 $members = account_members($aid);
+// Treneriui grupės ir patvirtinimo nereikia: rodomi tik aktyvūs nariai (pvz. savo vaikai, jei treniruojasi)
+if ($isStaff) {
+    $members = array_values(array_filter($members, function ($m) { return $m['status'] === 'active'; }));
+}
 $selected = null;
 foreach ($members as $m) {
     if ((int) $m['id'] === (int) get('m')) {
@@ -136,7 +153,20 @@ foreach ($members as $m) {
     }
 }
 $selected = $selected ?? ($members[0] ?? null);
-$isParent = (bool) array_filter($members, function ($m) { return $m['relation'] === 'parent'; }) || !array_filter($members, function ($m) { return $m['relation'] === 'self'; });
+// Vaikus prideda tėvai; treneriai - per Treneriams -> Nariai
+$isParent = !$isStaff && ((bool) array_filter($members, function ($m) { return $m['relation'] === 'parent'; }) || !array_filter($members, function ($m) { return $m['relation'] === 'self'; }));
+
+// Treneriui - visas reitingas (pats nedalyvauja): Top 5 ir visi kiti su paieška
+if ($isStaff) {
+    [$sFrom, $sTo, $sLabel] = season_bounds();
+    $staffChoices = [];
+    foreach (GROUP_CATEGORIES as $key => $label) {
+        $staffChoices[$key] = ['category', $key, $label];
+    }
+    $staffChoices['klubas'] = ['club', null, 'Visas klubas'];
+    $staffKey = isset($staffChoices[get('rt')]) ? get('rt') : array_key_first($staffChoices);
+    $staffRows = ranking($staffChoices[$staffKey], $sFrom, $sTo);
+}
 
 $active = $selected && $selected['status'] === 'active' && $a['status'] === 'active';
 if ($active) {
@@ -196,6 +226,64 @@ page_start('Mano paskyra', ['noindex' => true]);
 <?= form_errors($errors) ?>
 <?php if ($active && ($att = count($unreadIds) + count(array_filter($notes, function ($n) { return $n['is_task'] && !$n['done_at']; })))): ?>
   <a class="flash flash-attention" href="#pastabos">❗ <?= count($members) > 1 ? e($selected['first_name']) . ': ' : '' ?>yra naujų trenerio pastabų ar neatliktų užduočių (<?= $att ?>) - žiūrėti ↓</a>
+<?php endif; ?>
+
+<?php if ($isStaff): ?>
+  <!-- Trenerio paskyra: visas reitingas ir visi artėjantys renginiai -->
+  <div class="grid-2 account-main has-points">
+    <div class="panel card points-card">
+      <div class="kicker">Reitingas · <?= e($sLabel) ?></div>
+      <div class="top-tabs">
+        <?php foreach ($staffChoices as $key => $p): ?>
+          <a href="?rt=<?= e($key) ?>" class="<?= $key === $staffKey ? 'active' : '' ?>"><?= e($p[2]) ?></a>
+        <?php endforeach; ?>
+      </div>
+      <?php if (!$staffRows): ?>
+        <p class="muted">Šį sezoną taškų dar niekas neturi.</p>
+      <?php else: ?>
+        <input type="search" class="rank-search" id="rankSearch" placeholder="Ieškoti pagal vardą ar pavardę" aria-label="Ieškoti reitinge">
+        <ol class="ranking ranking-all" id="rankAll">
+          <?php foreach ($staffRows as $r): ?>
+            <li data-name="<?= e(mb_strtolower($r['first_name'] . ' ' . $r['last_name'])) ?>" class="<?= $r['rank'] <= 5 ? 'top5' : '' ?>">
+              <span class="pos r<?= (int) $r['rank'] ?>"><?= (int) $r['rank'] ?></span><a href="<?= url('admin/nariai.php?id=' . (int) $r['member_id']) ?>"><?= e($r['first_name'] . ' ' . $r['last_name']) ?></a><span class="pts"><?= (int) $r['total'] ?></span>
+            </li>
+          <?php endforeach; ?>
+        </ol>
+        <p class="hint" id="rankEmpty" style="display:none;">Nieko nerasta.</p>
+        <p class="hint" style="margin-top:8px;">Iš viso su taškais: <?= count($staffRows) ?>. Jūs, kaip treneris, reitinge nedalyvaujate. Paspaudę vardą atidarysite nario puslapį.</p>
+      <?php endif; ?>
+    </div>
+    <div class="panel card events-card">
+      <div class="kicker">Artėjantys renginiai <?= staff_link('admin/renginiai.php', '✎ Keisti') ?></div>
+      <?php $staffEvents = upcoming_events(null, 20); ?>
+      <?php if (!$staffEvents): ?>
+        <p class="muted">Artėjančių renginių nėra.</p>
+      <?php else: ?>
+        <ul class="list events-scroll">
+          <?php foreach ($staffEvents as $ev): ?><li><?= render_event($ev) ?></li><?php endforeach; ?>
+        </ul>
+      <?php endif; ?>
+    </div>
+  </div>
+  <script>
+  (function () {
+    var input = document.getElementById('rankSearch');
+    if (!input) return;
+    // Paieška be lietuviškų raidžių skirtumo: „austeja“ randa „Austėja“
+    var plain = function (s) { return s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase(); };
+    var items = document.querySelectorAll('#rankAll li');
+    input.addEventListener('input', function () {
+      var q = plain(input.value.trim()), shown = 0;
+      items.forEach(function (li) {
+        var ok = !q || plain(li.dataset.name).indexOf(q) !== -1;
+        li.style.display = ok ? '' : 'none';
+        if (ok) shown++;
+      });
+      document.getElementById('rankEmpty').style.display = shown ? 'none' : '';
+    });
+  })();
+  </script>
+  <?php if ($members): ?><h2 style="margin:28px 0 12px;">Nariai mano paskyroje</h2><?php endif; ?>
 <?php endif; ?>
 
 <?php if ($selected): ?>
@@ -286,7 +374,7 @@ page_start('Mano paskyra', ['noindex' => true]);
         <?php $openTask = $n['is_task'] && !$n['done_at']; ?>
         <div class="coach-note <?= in_array((int) $n['id'], $unreadIds, true) || $openTask ? 'unread' : '' ?>">
           <div class="meta">
-            <?= e(fmt_date($n['note_date'], true)) ?><?= $n['author'] ? ' · treneris ' . e($n['author']) : '' ?>
+            <?= note_source($n) ?><?= $n['author'] ? ' · treneris ' . e($n['author']) : '' ?>
             <?= !$n['is_task'] && $n['read_at'] === null ? ' <span class="badge badge-new">Nauja</span>' : '' ?>
             <?php if ($n['is_task']): ?>
               <?= $n['done_at'] ? ' <span class="badge badge-ok">✓ Atlikta ' . e(fmt_date(substr($n['done_at'], 0, 10))) . '</span>' : ' <span class="badge badge-warn">Užduotis</span>' ?>
@@ -349,13 +437,31 @@ page_start('Mano paskyra', ['noindex' => true]);
       </span>
     </div>
 
+    <form method="post" class="form belt-form" style="margin-top:16px;">
+      <?= csrf_field() ?>
+      <input type="hidden" name="action" value="belt">
+      <input type="hidden" name="member_id" value="<?= (int) $selected['id'] ?>">
+      <label>Diržas <span class="hint">pasikeitus po egzamino - pakeiskite čia</span>
+        <select name="belt_level" onchange="this.form.submit()"><?= belt_options($selected['belt_level'] !== null ? (int) $selected['belt_level'] : null, '— nežinau / dar neturi —') ?></select></label>
+      <noscript><button class="btn btn-ghost btn-sm" type="submit">Išsaugoti</button></noscript>
+    </form>
+
     <?php $canPhoto = $selected['relation'] === 'parent' || age_on($selected['birth_date']) >= CONSENT_AGE; ?>
-    <?php if ($canPhoto): ?>
+    <?php if ($canPhoto && $selected['photo_consent']): ?>
+      <!-- Sutikimas duotas - langelio nebereikia, bet atšaukti galima visada (BDAR) -->
+      <form method="post" class="consent-line" onsubmit="return confirm('Atšaukti sutikimą skelbti nuotraukas ir vaizdo įrašus?')">
+        <?= csrf_field() ?>
+        <input type="hidden" name="action" value="photo_consent">
+        <input type="hidden" name="member_id" value="<?= (int) $selected['id'] ?>">
+        <span class="small muted">✓ Sutikimas skelbti nuotraukas ir vaizdo įrašus duotas</span>
+        <button class="linklike small muted" type="submit" style="border:none; padding:0; text-decoration:underline;">atšaukti</button>
+      </form>
+    <?php elseif ($canPhoto): ?>
       <form method="post" class="form" style="margin-top:16px;">
         <?= csrf_field() ?>
         <input type="hidden" name="action" value="photo_consent">
         <input type="hidden" name="member_id" value="<?= (int) $selected['id'] ?>">
-        <label class="check"><input type="checkbox" name="photo_consent" value="1" <?= $selected['photo_consent'] ? 'checked' : '' ?> onchange="this.form.submit()">
+        <label class="check"><input type="checkbox" name="photo_consent" value="1" onchange="this.form.submit()">
           <span>Sutinku, kad klubas skelbtų <?= $selected['relation'] === 'parent' ? 'vaiko' : 'mano' ?> nuotraukas ir vaizdo įrašus</span></label>
         <noscript><button class="btn btn-ghost btn-sm" type="submit">Išsaugoti</button></noscript>
       </form>
@@ -402,8 +508,7 @@ page_start('Mano paskyra', ['noindex' => true]);
         <label>Gimimo data <?= date_parts_field('birth_date', null) ?></label>
         <label>Diržas <span class="hint">nežinote - palikite tuščią</span><select name="belt_level"><?= belt_options(null, '— nežinau / dar neturi —') ?></select></label>
       </div>
-      <label class="check"><input type="checkbox" name="photo_consent" value="1">
-        <span>Sutinku, kad klubas skelbtų vaiko nuotraukas ir vaizdo įrašus</span></label>
+      <?= photo_consent_choice('photo_consent', post('action') === 'add_kid' ? post('photo_consent') : null, 'Ar sutinkate, kad klubas skelbtų vaiko nuotraukas ir vaizdo įrašus?') ?>
       <div><button class="btn btn-primary" type="submit">Pridėti</button></div>
     </form>
   </details>

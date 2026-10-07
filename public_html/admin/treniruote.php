@@ -20,13 +20,13 @@ function note_lesson_id($raw): ?int
     return $id && q_value('SELECT 1 FROM lessons WHERE id = ?', [$id]) ? $id : null;
 }
 
-function save_coach_note(array $m, array $me, string $date, string $text, ?string $yt, ?int $lessonId, bool $isTask): void
+function save_coach_note(array $m, array $me, string $date, string $text, ?string $yt, ?int $lessonId, bool $isTask, ?int $groupId = null, ?int $eventId = null): void
 {
     if ($text === '') {
         $text = $lessonId ? 'Pažiūrėk prisegtą pamoką.' : 'Pažiūrėk video.';
     }
-    q('INSERT INTO coach_notes (member_id, author_id, note_date, body, youtube_id, lesson_id, is_task) VALUES (?, ?, ?, ?, ?, ?, ?)',
-        [$m['id'], $me['id'], $date, $text, $yt, $lessonId, $isTask ? 1 : 0]);
+    q('INSERT INTO coach_notes (member_id, author_id, group_id, event_id, note_date, body, youtube_id, lesson_id, is_task) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        [$m['id'], $me['id'], $groupId, $eventId, $date, $text, $yt, $lessonId, $isTask ? 1 : 0]);
 }
 
 // Paskutinė pasirinkta grupė įsimenama, kad salėje nereikėtų rinktis kiekvieną kartą
@@ -58,6 +58,7 @@ if (is_post()) {
                 [$mid, $date, $groupId, $present, $me['id']]);
         };
         $ids = q('SELECT id FROM members WHERE group_id = ? AND status = "active"', [$groupId])->fetchAll(PDO::FETCH_COLUMN);
+        // Kartu skiriami / nuimami taškai už lankomumą (Treneriams -> Taškai: „Treniruotės lankymas“)
         if (post('action') === 'attendance') {
             $mid = (int) post('member_id');
             if (in_array((string) $mid, array_map('strval', $ids), true)) {
@@ -66,11 +67,15 @@ if (is_post()) {
                 } else {
                     $mark($mid, post('present') === '1' ? 1 : 0);
                 }
+                sync_attendance_points($mid, $date, post('present') === '1', (int) $me['id']);
             }
         } else {
             foreach ($ids as $mid) {
                 q('INSERT IGNORE INTO attendance (member_id, training_date, group_id, present, marked_by) VALUES (?, ?, ?, 1, ?)',
                     [$mid, $date, $groupId, $me['id']]);
+            }
+            foreach (q('SELECT member_id FROM attendance WHERE training_date = ? AND group_id = ? AND present = 1', [$date, $groupId])->fetchAll(PDO::FETCH_COLUMN) as $mid) {
+                sync_attendance_points((int) $mid, $date, true, (int) $me['id']);
             }
         }
         $rows = q('SELECT member_id, present FROM attendance WHERE training_date = ? AND member_id IN (SELECT id FROM members WHERE group_id = ? AND status = "active")',
@@ -93,7 +98,7 @@ if (is_post()) {
         if (!$m || ($text === '' && !$yt && !$lessonId)) {
             exit(json_encode(['ok' => false, 'error' => 'Tuščia pastaba']));
         }
-        save_coach_note($m, $me, $date, $text, $yt, $lessonId, $isTask);
+        save_coach_note($m, $me, $date, $text, $yt, $lessonId, $isTask, $groupId);
         if (!empty($_POST['notify'])) {
             notify_note($m, $text, $date, $me);
         }
@@ -123,7 +128,7 @@ if (is_post()) {
             if (!$m) {
                 continue;
             }
-            save_coach_note($m, $me, $date, $text, $yt, $lessonId, $isTask);
+            save_coach_note($m, $me, $date, $text, $yt, $lessonId, $isTask, $groupId);
             $saved++;
 
             if ($notify) {
@@ -208,7 +213,7 @@ page_start('Treniruotė', ['admin' => true]);
         <textarea name="note[<?= (int) $m['id'] ?>]" data-member="<?= (int) $m['id'] ?>" rows="2" enterkeyhint="send" placeholder="Parašykite ir spauskite Enter"></textarea>
         <div class="note-extras">
           <select name="lesson[<?= (int) $m['id'] ?>]" aria-label="Prisegti pamoką"><?= $lessonOptions ?></select>
-          <label class="note-task"><input type="checkbox" name="task[<?= (int) $m['id'] ?>]" value="1"> Užduotis (pažymės „Atlikta“)</label>
+          <label class="note-task" title="Narys paskyroje matys mygtuką „Atlikau“"><input type="checkbox" name="task[<?= (int) $m['id'] ?>]" value="1"> Tai užduotis – vaikas pažymės, kai atliks</label>
           <details class="note-video">
             <summary>+ YouTube nuoroda</summary>
             <input type="url" name="video[<?= (int) $m['id'] ?>]" placeholder="https://youtu.be/...">

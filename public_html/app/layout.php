@@ -204,6 +204,19 @@ function site_header(bool $home = false): void
 const LT_MONTHS = [1 => 'sausis', 'vasaris', 'kovas', 'balandis', 'gegužė', 'birželis', 'liepa', 'rugpjūtis', 'rugsėjis', 'spalis', 'lapkritis', 'gruodis'];
 
 /**
+ * Sutikimas dėl nuotraukų: aiškus pasirinkimas „Taip / Ne“ (privaloma pasirinkti).
+ * Iš anksto pažymėtas langelis pagal BDAR nelaikomas sutikimu, todėl numatytosios reikšmės nėra.
+ */
+function photo_consent_choice(string $name, $current, string $label): string
+{
+    $html = '<div class="consent-choice"><span class="consent-label">' . e($label) . '</span><div class="seg">';
+    foreach (['1' => 'Taip, sutinku', '0' => 'Ne'] as $v => $text) {
+        $html .= '<label><input type="radio" name="' . e($name) . '" value="' . $v . '"' . ((string) $current === (string) $v ? ' checked' : '') . ' required><span>' . $text . '</span></label>';
+    }
+    return $html . '</div></div>';
+}
+
+/**
  * Gimimo data trimis sąrašais (metai / mėnuo / diena) - patogiau nei kalendorius, kuriame reikia slinkti metus.
  * Formoje siunčiama kaip name[y], name[m], name[d]; nuskaitoma su date_from_input().
  */

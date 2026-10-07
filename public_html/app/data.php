@@ -99,10 +99,24 @@ function news_image_url(string $file, bool $thumb = false): string
 /** Trenerio pastabos nariui (naujausios viršuje) */
 function member_notes(int $memberId, int $limit = 10): array
 {
-    // Neatliktos užduotys - viršuje
-    return q_all('SELECT cn.*, a.first_name AS author, l.title AS lesson_title FROM coach_notes cn
+    // Neatliktos užduotys - viršuje. Kartu: iš kur pastaba (treniruotės grupė ar renginys)
+    return q_all('SELECT cn.*, a.first_name AS author, l.title AS lesson_title, g.name AS source_group, e.title AS source_event FROM coach_notes cn
                     LEFT JOIN accounts a ON a.id = cn.author_id LEFT JOIN lessons l ON l.id = cn.lesson_id
+                    LEFT JOIN training_groups g ON g.id = cn.group_id LEFT JOIN events e ON e.id = cn.event_id
                    WHERE cn.member_id = ? ORDER BY (cn.is_task = 1 AND cn.done_at IS NULL) DESC, cn.note_date DESC, cn.id DESC LIMIT ' . (int) $limit, [$memberId]);
+}
+
+/** Iš kur pastaba: „Renginys: …“, „Treniruotė (grupė)“ arba tik data (senos pastabos) */
+function note_source(array $n): string
+{
+    $date = fmt_date($n['note_date'], true);
+    if (!empty($n['source_event'])) {
+        return 'Renginys: ' . e($n['source_event']) . ' · ' . e($date);
+    }
+    if (!empty($n['source_group'])) {
+        return 'Treniruotė ' . e($date) . ' · ' . e($n['source_group']);
+    }
+    return e($date);
 }
 
 function member_unread_notes(int $memberId): int
