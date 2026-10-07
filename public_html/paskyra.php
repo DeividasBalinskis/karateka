@@ -69,6 +69,19 @@ if (is_post()) {
     }
 
     // Užduotis atlikta / grąžinti į neatliktas (gali pažymėti pats narys arba tėvai)
+    // Pastaba perskaityta (viena arba visos to nario) - kol nepažymėta, rodomas pranešimas ir skaičiukas
+    if ($action === 'note_read') {
+        $mid = (int) post('member_id');
+        if (account_relation($aid, $mid)) {
+            if (post('note_id') === 'all') {
+                q('UPDATE coach_notes SET read_at = NOW() WHERE member_id = ? AND read_at IS NULL AND is_task = 0', [$mid]);
+            } else {
+                q('UPDATE coach_notes SET read_at = NOW() WHERE id = ? AND member_id = ? AND read_at IS NULL', [(int) post('note_id'), $mid]);
+            }
+        }
+        redirect('paskyra.php?m=' . $mid . '#pastabos');
+    }
+
     if ($action === 'task_done' || $action === 'task_undo') {
         $note = q_one('SELECT cn.* FROM coach_notes cn JOIN account_members am ON am.member_id = cn.member_id WHERE cn.id = ? AND am.account_id = ? AND cn.is_task = 1',
             [(int) post('note_id'), $aid]);
@@ -131,11 +144,8 @@ if ($active) {
     $seasonPoints = member_points_total((int) $selected['id'], $from, $to);
     $history = member_history((int) $selected['id']);
     $notes = member_notes((int) $selected['id']);
-    $unreadIds = array_map('intval', array_column(array_filter($notes, function ($n) { return $n['read_at'] === null; }), 'id'));
-    // Pažymime perskaitytomis (rodoma kaip „Nauja“ tik šį kartą). Treneriui peržiūrint - nežymime.
-    if ($unreadIds && !is_staff($a)) {
-        q('UPDATE coach_notes SET read_at = NOW() WHERE member_id = ? AND read_at IS NULL', [$selected['id']]);
-    }
+    // Neperskaitytos (ne užduotys) pastabos; užduotys skaičiuojamos atskirai, kol neatliktos
+    $unreadIds = array_map('intval', array_column(array_filter($notes, function ($n) { return !$n['is_task'] && $n['read_at'] === null; }), 'id'));
 
     // Kurį reitingą rodyti: savo (numatytasis), kitos amžiaus kategorijos arba viso klubo
     $ownPartition = ranking_partition($selected);
@@ -260,13 +270,22 @@ page_start('Mano paskyra', ['noindex' => true]);
 
   <?php if ($active && $notes): ?>
     <div class="panel card" id="pastabos" style="margin-top:20px;">
-      <div class="kicker">Trenerio pastabos<?= $unreadIds ? ' <span class="badge badge-new">' . count($unreadIds) . ' nauj.</span>' : '' ?></div>
+      <?php $unreadInfo = array_filter($notes, function ($n) { return !$n['is_task'] && $n['read_at'] === null; }); ?>
+      <div class="row between" style="margin-bottom:4px;">
+        <div class="kicker" style="margin:0;">Trenerio pastabos<?= $unreadIds ? ' <span class="badge badge-new">' . count($unreadIds) . ' nauj.</span>' : '' ?></div>
+        <?php if (count($unreadInfo) > 1): ?>
+          <form method="post" class="inline-form">
+            <?= csrf_field() ?><input type="hidden" name="action" value="note_read"><input type="hidden" name="member_id" value="<?= (int) $selected['id'] ?>"><input type="hidden" name="note_id" value="all">
+            <button class="btn btn-ghost btn-sm" type="submit">✓ Visas perskaičiau</button>
+          </form>
+        <?php endif; ?>
+      </div>
       <?php foreach ($notes as $n): ?>
         <?php $openTask = $n['is_task'] && !$n['done_at']; ?>
         <div class="coach-note <?= in_array((int) $n['id'], $unreadIds, true) || $openTask ? 'unread' : '' ?>">
           <div class="meta">
             <?= e(fmt_date($n['note_date'], true)) ?><?= $n['author'] ? ' · treneris ' . e($n['author']) : '' ?>
-            <?= in_array((int) $n['id'], $unreadIds, true) ? ' <span class="badge badge-new">Nauja</span>' : '' ?>
+            <?= !$n['is_task'] && $n['read_at'] === null ? ' <span class="badge badge-new">Nauja</span>' : '' ?>
             <?php if ($n['is_task']): ?>
               <?= $n['done_at'] ? ' <span class="badge badge-ok">✓ Atlikta ' . e(fmt_date(substr($n['done_at'], 0, 10))) . '</span>' : ' <span class="badge badge-warn">Užduotis</span>' ?>
             <?php endif; ?>
@@ -284,6 +303,12 @@ page_start('Mano paskyra', ['noindex' => true]);
               <?php else: ?>
                 <button class="linklike small muted" name="action" value="task_undo" style="margin-top:6px; border:none; padding:0; text-decoration:underline;">grąžinti į neatliktas</button>
               <?php endif; ?>
+            </form>
+          <?php endif; ?>
+          <?php if (!$n['is_task'] && $n['read_at'] === null): ?>
+            <form method="post" class="inline-form">
+              <?= csrf_field() ?><input type="hidden" name="action" value="note_read"><input type="hidden" name="member_id" value="<?= (int) $selected['id'] ?>"><input type="hidden" name="note_id" value="<?= (int) $n['id'] ?>">
+              <button class="btn btn-primary btn-sm" type="submit" style="margin-top:10px;">✓ Perskaičiau</button>
             </form>
           <?php endif; ?>
         </div>

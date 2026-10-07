@@ -447,7 +447,9 @@ require __DIR__ . '/app/bootstrap.php';
     .chooser-buttons button{font-size:0.76rem; padding:7px 11px;}
   }
   /* ARTĖJANTYS RENGINIAI */
-  .home-events-section{padding:70px 0 0;}
+  .home-events-section{padding:34px 0 0;}
+  .home-events-section .section-head{margin-bottom:18px;}
+  .home-events-section .section-head h2{font-size:clamp(1.4rem,2.4vw,1.9rem);}
   .home-events{display:grid; grid-template-columns:repeat(auto-fit, minmax(230px, 1fr)); gap:18px;}
   .home-event{display:flex; gap:14px; padding:18px; align-items:flex-start;}
   .he-date{flex-shrink:0; width:56px; text-align:center; border-radius:10px; background:var(--ink); color:var(--cream); padding:8px 4px; line-height:1.1;}
