@@ -33,3 +33,8 @@ Kol kas visur naudojamos numatytosios reikšmės - viską galima pakeisti vėlia
 - [ ] Apmokėjimo terminas (pvz. iki mėnesio 10 d.)?
 - [ ] Dabartinės sutarties tekstas
 - [ ] Paysera verslo paskyra (ar yra / ar sutinka atsidaryti)
+
+## Renginių dalyviai ir turnyrai
+- [ ] Ar tėvai patys gali užregistruoti vaiką į renginį (pvz. varžybas, egzaminą), ar dalyvius įrašo tik treneris?
+- [ ] Išlaikius egzaminą - ar diržas turi pasikeisti automatiškai (vienu aukščiau)?
+- [ ] Ar klubas pats organizuoja turnyrus? Kiek kartų per metus, kiek dalyvių? Ką naudoja federacija varžybų lentelėms (pvz. Sportdata)?
