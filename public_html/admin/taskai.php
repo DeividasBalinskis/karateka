@@ -33,29 +33,14 @@ if (is_post()) {
 
 [$from, $to, $seasonLabel] = season_bounds();
 $categories = q_all('SELECT * FROM point_categories ORDER BY sort_order, id');
+// Lankomumo taškų būna labai daug - jų čia nerodome
 $recent = q_all('SELECT pa.*, pc.name AS category_name, m.first_name, m.last_name, e.title AS event_title
                    FROM point_awards pa
                    JOIN point_categories pc ON pc.id = pa.category_id
                    JOIN members m ON m.id = pa.member_id
                    LEFT JOIN events e ON e.id = pa.event_id
+                  WHERE pc.code IS NULL OR pc.code <> "attendance"
                   ORDER BY pa.created_at DESC, pa.id DESC LIMIT 30');
-
-// Reitingai pagal pasirinktą padalijimą
-$partitions = [];
-switch (ranking_scope()) {
-    case 'club':
-        $partitions[] = ['club', null, 'Visas klubas'];
-        break;
-    case 'group':
-        foreach (q_all('SELECT * FROM training_groups WHERE is_active = 1 ORDER BY sort_order') as $g) {
-            $partitions[] = ['group', (int) $g['id'], $g['name']];
-        }
-        break;
-    default:
-        foreach (GROUP_CATEGORIES as $k => $label) {
-            $partitions[] = ['category', $k, $label];
-        }
-}
 
 page_start('Taškai', ['admin' => true]);
 ?>
@@ -65,23 +50,7 @@ page_start('Taškai', ['admin' => true]);
 </div>
 
 <div class="grid-2">
-  <div class="stack">
-    <?php foreach ($partitions as $p): $rows = ranking($p, $from, $to); if (!$rows && ranking_scope() === 'group') continue; ?>
-      <div class="panel card">
-        <h2><?= e($p[2]) ?></h2>
-        <?php if (!$rows): ?><p class="muted small">Šį sezoną taškų dar nėra.</p><?php endif; ?>
-        <ol class="ranking">
-          <?php foreach ($rows as $r): ?>
-            <li>
-              <span class="pos r<?= (int) $r['rank'] ?>"><?= (int) $r['rank'] ?></span>
-              <a href="<?= url('admin/nariai.php?id=' . (int) $r['member_id']) ?>"><?= e($r['first_name'] . ' ' . $r['last_name']) ?></a>
-              <span class="pts"><?= (int) $r['total'] ?></span>
-            </li>
-          <?php endforeach; ?>
-        </ol>
-      </div>
-    <?php endforeach; ?>
-  </div>
+  <div class="stack"><?= render_staff_ranking() ?></div>
 
   <div class="stack">
     <form method="post" class="panel card form">

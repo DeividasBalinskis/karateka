@@ -173,10 +173,12 @@ function site_header(bool $home = false): void
             <li><a class="nav-page" href="<?= url('pamokos.php') ?>">Pamokos</a></li>
           <?php endif; ?>
           <?php if ($a && is_staff($a)): ?>
-            <li><a class="nav-page" href="<?= url('admin/') ?>">Treneriams<?php if ($n = pending_approvals_count()): ?> <span class="count-badge" title="Laukia patvirtinimo"><?= $n ?></span><?php endif; ?></a></li>
+            <!-- Treneriui vienas mygtukas: „Mano paskyra“ (nustatymai) pasiekiama iš Treneriams pradžios -->
+            <li><a class="nav-login" href="<?= url('admin/') ?>">Treneriams<?php if ($n = pending_approvals_count()): ?> <span class="count-badge" title="Laukia patvirtinimo"><?= $n ?></span><?php endif; ?></a></li>
+          <?php elseif ($a): ?>
+            <li><a class="nav-login" href="<?= url('paskyra.php') ?>">Mano paskyra<?php if ($att = account_attention_count((int) $a['id'])): ?> <span class="count-badge" title="Naujos pastabos ar neatliktos užduotys"><?= $att ?></span><?php endif; ?></a></li>
           <?php endif; ?>
           <?php if ($a): ?>
-            <li><a class="nav-login" href="<?= url('paskyra.php') ?>">Mano paskyra<?php if ($att = account_attention_count((int) $a['id'])): ?> <span class="count-badge" title="Naujos pastabos ar neatliktos užduotys"><?= $att ?></span><?php endif; ?></a></li>
             <li class="mobile-only">
               <form method="post" action="<?= url('atsijungti.php') ?>" class="inline-form"><?= csrf_field() ?>
                 <button type="submit" class="logout-btn">Atsijungti</button>

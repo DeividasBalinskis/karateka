@@ -260,7 +260,7 @@ require __DIR__ . '/app/bootstrap.php';
   .loc-group{padding:6px 0;}
   .loc-scroll{max-height:142px; overflow-y:auto; padding-right:6px;}
   /* Vietų sąrašas fiksuoto aukščio: išskleidus slenkama viduje, o visas langas nedidėja */
-  .schedule-picker{height:clamp(150px,18vh,200px);}
+  .schedule-picker{height:clamp(180px,24vh,250px);}
   .schedule-picker > *{min-height:0; overflow-y:auto;}
   .schedule-picker .picker-locations{max-height:none;}
   .loc-scroll::-webkit-scrollbar{width:4px;}
@@ -448,6 +448,11 @@ require __DIR__ . '/app/bootstrap.php';
     .chooser-buttons{gap:6px;}
     .chooser-buttons button{font-size:0.76rem; padding:7px 11px;}
   }
+  .first-screen{min-height:calc(100vh - 73px); min-height:calc(100svh - 73px); padding-bottom:24px;}   /* 73px - viršutinė juosta */
+  #apie{padding-bottom:40px;}
+  #kontaktai{padding:40px 0;}
+  #kontaktai .section-head{margin-bottom:24px;}
+  #registracija{padding-top:40px;}
   /* ARTĖJANTYS RENGINIAI */
   /* Tokio pat pločio kaip grupių langas; antraštė ir „Visi renginiai“ vienoje eilutėje virš kortelių */
   .home-events-section{padding:20px 0 0;}
@@ -485,6 +490,8 @@ require __DIR__ . '/app/bootstrap.php';
 
 <?php site_header(true); ?>
 
+<!-- Pirmas ekranas: grupės + renginiai. Užpildo visą ekraną, kad apačioje nesimatytų kitos dalies kraštelio -->
+<div class="first-screen">
 <section style="padding:0; position:relative;" id="grupes">
   <div class="chooser"><h1 class="chooser-title">Kam ieškote treniruočių?</h1></div>
   <div class="carousel-wrap">
@@ -600,6 +607,7 @@ require __DIR__ . '/app/bootstrap.php';
   </div>
 </section>
 <?php endif; ?>
+</div>
 
 <section id="apie" style="position:relative;">
   <div class="wrap">

@@ -156,17 +156,6 @@ $selected = $selected ?? ($members[0] ?? null);
 // Vaikus prideda tėvai; treneriai - per Treneriams -> Nariai
 $isParent = !$isStaff && ((bool) array_filter($members, function ($m) { return $m['relation'] === 'parent'; }) || !array_filter($members, function ($m) { return $m['relation'] === 'self'; }));
 
-// Treneriui - visas reitingas (pats nedalyvauja): Top 5 ir visi kiti su paieška
-if ($isStaff) {
-    [$sFrom, $sTo, $sLabel] = season_bounds();
-    $staffChoices = [];
-    foreach (GROUP_CATEGORIES as $key => $label) {
-        $staffChoices[$key] = ['category', $key, $label];
-    }
-    $staffChoices['klubas'] = ['club', null, 'Visas klubas'];
-    $staffKey = isset($staffChoices[get('rt')]) ? get('rt') : array_key_first($staffChoices);
-    $staffRows = ranking($staffChoices[$staffKey], $sFrom, $sTo);
-}
 
 $active = $selected && $selected['status'] === 'active' && $a['status'] === 'active';
 if ($active) {
@@ -229,60 +218,11 @@ page_start('Mano paskyra', ['noindex' => true]);
 <?php endif; ?>
 
 <?php if ($isStaff): ?>
-  <!-- Trenerio paskyra: visas reitingas ir visi artėjantys renginiai -->
-  <div class="grid-2 account-main has-points">
-    <div class="panel card points-card">
-      <div class="kicker">Reitingas · <?= e($sLabel) ?></div>
-      <div class="top-tabs">
-        <?php foreach ($staffChoices as $key => $p): ?>
-          <a href="?rt=<?= e($key) ?>" class="<?= $key === $staffKey ? 'active' : '' ?>"><?= e($p[2]) ?></a>
-        <?php endforeach; ?>
-      </div>
-      <?php if (!$staffRows): ?>
-        <p class="muted">Šį sezoną taškų dar niekas neturi.</p>
-      <?php else: ?>
-        <input type="search" class="rank-search" id="rankSearch" placeholder="Ieškoti pagal vardą ar pavardę" aria-label="Ieškoti reitinge">
-        <ol class="ranking ranking-all" id="rankAll">
-          <?php foreach ($staffRows as $r): ?>
-            <li data-name="<?= e(mb_strtolower($r['first_name'] . ' ' . $r['last_name'])) ?>" class="<?= $r['rank'] <= 5 ? 'top5' : '' ?>">
-              <span class="pos r<?= (int) $r['rank'] ?>"><?= (int) $r['rank'] ?></span><a href="<?= url('admin/nariai.php?id=' . (int) $r['member_id']) ?>"><?= e($r['first_name'] . ' ' . $r['last_name']) ?></a><span class="pts"><?= (int) $r['total'] ?></span>
-            </li>
-          <?php endforeach; ?>
-        </ol>
-        <p class="hint" id="rankEmpty" style="display:none;">Nieko nerasta.</p>
-        <p class="hint" style="margin-top:8px;">Iš viso su taškais: <?= count($staffRows) ?>. Jūs, kaip treneris, reitinge nedalyvaujate. Paspaudę vardą atidarysite nario puslapį.</p>
-      <?php endif; ?>
-    </div>
-    <div class="panel card events-card">
-      <div class="kicker">Artėjantys renginiai <?= staff_link('admin/renginiai.php', '✎ Keisti') ?></div>
-      <?php $staffEvents = upcoming_events(null, 20); ?>
-      <?php if (!$staffEvents): ?>
-        <p class="muted">Artėjančių renginių nėra.</p>
-      <?php else: ?>
-        <ul class="list events-scroll">
-          <?php foreach ($staffEvents as $ev): ?><li><?= render_event($ev) ?></li><?php endforeach; ?>
-        </ul>
-      <?php endif; ?>
-    </div>
+  <!-- Trenerio paskyra: reitingas, renginiai, lankomumas - skiltyje Treneriams; čia tik savo šeima (jei treniruojasi) ir nustatymai -->
+  <div class="panel card row between" style="gap:14px; flex-wrap:wrap;">
+    <p class="muted" style="margin:0;">Tai trenerio paskyra. Reitingas, lankomumas, renginiai ir nariai - skiltyje <strong>Treneriams</strong>.</p>
+    <a class="btn btn-primary" href="<?= url('admin/') ?>">Į Treneriams →</a>
   </div>
-  <script>
-  (function () {
-    var input = document.getElementById('rankSearch');
-    if (!input) return;
-    // Paieška be lietuviškų raidžių skirtumo: „austeja“ randa „Austėja“
-    var plain = function (s) { return s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase(); };
-    var items = document.querySelectorAll('#rankAll li');
-    input.addEventListener('input', function () {
-      var q = plain(input.value.trim()), shown = 0;
-      items.forEach(function (li) {
-        var ok = !q || plain(li.dataset.name).indexOf(q) !== -1;
-        li.style.display = ok ? '' : 'none';
-        if (ok) shown++;
-      });
-      document.getElementById('rankEmpty').style.display = shown ? 'none' : '';
-    });
-  })();
-  </script>
   <?php if ($members): ?><h2 style="margin:28px 0 12px;">Nariai mano paskyroje</h2><?php endif; ?>
 <?php endif; ?>
 

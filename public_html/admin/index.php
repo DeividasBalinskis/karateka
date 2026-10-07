@@ -10,9 +10,16 @@ $waiting = (int) q_value('SELECT COUNT(*) FROM accounts WHERE status IN ("pendin
 
 page_start('Treneriams', ['admin' => true]);
 ?>
-<div class="page-head">
-  <div class="eyebrow">Trenerio panelė</div>
-  <h1 class="styled">Labas, <?= e($me['first_name']) ?></h1>
+<div class="page-head row between" style="align-items:flex-end; flex-wrap:wrap; gap:12px;">
+  <div>
+    <div class="eyebrow">Trenerio panelė</div>
+    <h1 class="styled">Labas, <?= e($me['first_name']) ?></h1>
+  </div>
+  <!-- Treneriui „Mano paskyra“ - tik el. pašto / slaptažodžio nustatymai (ir savo vaikai, jei treniruojasi) -->
+  <div class="row" style="gap:8px;">
+    <a class="btn btn-ghost btn-sm" href="<?= url('paskyra.php') ?>">⚙ Mano paskyra</a>
+    <form method="post" action="<?= url('atsijungti.php') ?>" class="inline-form"><?= csrf_field() ?><button type="submit" class="btn btn-ghost btn-sm">Atsijungti</button></form>
+  </div>
 </div>
 
 <div class="tiles">

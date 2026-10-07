@@ -203,3 +203,67 @@ function save_event_results(array $event, array $results, int $by): int
     }
     return $changes;
 }
+
+/**
+ * Treneriams: visas sezono reitingas vienoje kortelėje - skirtukai (amžiaus grupės / visas klubas),
+ * Top 5 ryškiau, kiti slenkami, paieška pagal vardą, vardas veda į nario puslapį.
+ */
+function render_staff_ranking(): string
+{
+    [$from, $to, $label] = season_bounds();
+    $choices = [];
+    if (ranking_scope() === 'group') {
+        foreach (q_all('SELECT * FROM training_groups WHERE is_active = 1 ORDER BY sort_order') as $g) {
+            $choices['g' . $g['id']] = ['group', (int) $g['id'], $g['name']];
+        }
+    } elseif (ranking_scope() === 'category') {
+        foreach (GROUP_CATEGORIES as $key => $name) {
+            $choices[$key] = ['category', $key, $name];
+        }
+    }
+    $choices['klubas'] = ['club', null, 'Visas klubas'];
+    $current = isset($choices[get('rt')]) ? get('rt') : array_key_first($choices);
+    $rows = ranking($choices[$current], $from, $to);
+    ob_start();
+    ?>
+<div class="panel card points-card">
+  <div class="kicker">Reitingas · <?= e($label) ?></div>
+  <div class="top-tabs">
+    <?php foreach ($choices as $key => $p): ?>
+      <a href="?rt=<?= e($key) ?>" class="<?= $key === $current ? 'active' : '' ?>"><?= e($p[2]) ?></a>
+    <?php endforeach; ?>
+  </div>
+  <?php if (!$rows): ?>
+    <p class="muted">Šį sezoną taškų dar niekas neturi.</p>
+  <?php else: ?>
+    <input type="search" class="rank-search" id="rankSearch" placeholder="Ieškoti pagal vardą ar pavardę" aria-label="Ieškoti reitinge">
+    <ol class="ranking ranking-all" id="rankAll">
+      <?php foreach ($rows as $r): ?>
+        <li data-name="<?= e(mb_strtolower($r['first_name'] . ' ' . $r['last_name'])) ?>" class="<?= $r['rank'] <= 5 ? 'top5' : '' ?>">
+          <span class="pos r<?= (int) $r['rank'] ?>"><?= (int) $r['rank'] ?></span><a href="<?= url('admin/nariai.php?id=' . (int) $r['member_id']) ?>"><?= e($r['first_name'] . ' ' . $r['last_name']) ?></a><span class="pts"><?= (int) $r['total'] ?></span>
+        </li>
+      <?php endforeach; ?>
+    </ol>
+    <p class="hint" id="rankEmpty" style="display:none;">Nieko nerasta.</p>
+    <p class="hint" style="margin-top:8px;">Su taškais: <?= count($rows) ?>. Paspaudę vardą atidarysite nario puslapį.</p>
+    <script>
+    (function () {
+      // Paieška be lietuviškų raidžių skirtumo: „austeja“ randa „Austėja“
+      var input = document.getElementById('rankSearch'), items = document.querySelectorAll('#rankAll li');
+      var plain = function (s) { return s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase(); };
+      input.addEventListener('input', function () {
+        var q = plain(input.value.trim()), shown = 0;
+        items.forEach(function (li) {
+          var ok = !q || plain(li.dataset.name).indexOf(q) !== -1;
+          li.style.display = ok ? '' : 'none';
+          if (ok) shown++;
+        });
+        document.getElementById('rankEmpty').style.display = shown ? 'none' : '';
+      });
+    })();
+    </script>
+  <?php endif; ?>
+</div>
+    <?php
+    return ob_get_clean();
+}
