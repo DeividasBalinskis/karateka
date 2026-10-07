@@ -46,3 +46,18 @@ Kad svetainė neatrodytų tuščia testuojant:
 Ištrinti viską demo: phpMyAdmin → Import → `deploy/demo-remove.sql`. Jūsų sukurti duomenys lieka.
 Demo duomenys generuojami iš naujo: `docker compose exec -T web php` ... arba `tools/demo_data.php` (žr. failo viršų).
 - `008_belts_tasks_visibility.sql` - diržai, užduotys pastabose, renginiai/naujienos tik nariams.
+
+## Įkėlimas su WinSCP (rekomenduojama vietoj ZIP)
+Įkelia tik pasikeitusius failus, seni perrašomi (dublikatų nebūna). `config.php` ir `uploads/news/` niekada neliečiami.
+
+**Vienkartinis paruošimas**
+1. DirectAdmin → **FTP Management** → **Create FTP Account**: vartotojas pvz. `testdeploy`, slaptažodis, kelias **Custom** → `/home/aus15792/domains/test.karateka.lt/public_html`. (Taip šis vartotojas negali paliesti gyvos svetainės.)
+2. Įdiekite **WinSCP** (https://winscp.net).
+3. WinSCP → **New Site**: protokolas **FTP**, šifravimas **TLS/SSL Explicit**, Host - `karateka.lt` (arba serverio vardas, kurį rodo DirectAdmin FTP puslapis), vartotojas `testdeploy@karateka.lt` (tikslų vardą rodo DirectAdmin), slaptažodis → **Save** → pavadinimas **`karateka-test`**, pažymėkite „Save password“.
+4. Prisijunkite vieną kartą ranka, kad patvirtintumėte sertifikatą.
+
+**Kiekvieną kartą**
+- Dešiniu pelės klavišu ant `tools\deploy-test.ps1` → **Run with PowerShell** → parodo, kas bus įkelta → `t` → Enter.
+- Jei pasikeitė DB - importuokite naują `db\0xx_*.sql` per phpMyAdmin.
+
+Pastaba: skriptas failų serveryje netrina. Jei kada failą ištrinsime iš projekto - serveryje jį reikės ištrinti ranka.
