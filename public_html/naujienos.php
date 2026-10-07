@@ -54,7 +54,7 @@ page_start('Naujienos', ['description' => 'VšĮ Karate Ateitis klubo naujienos:
 <?php endif; ?>
 
 <div class="news-list">
-  <?php foreach ($items as $n):
+  <?php foreach ($items as $i => $n):
       $media = news_media((int) $n['id']);
       $cover = null;
       foreach ($media as $m) {
@@ -64,7 +64,7 @@ page_start('Naujienos', ['description' => 'VšĮ Karate Ateitis klubo naujienos:
       $link = url('naujienos.php?id=' . (int) $n['id']);
       $excerpt = mb_strlen($n['body']) > 280 ? mb_substr($n['body'], 0, 280) . '…' : $n['body'];
   ?>
-    <article class="panel news-card<?= $cover ? '' : ' no-cover' ?>">
+    <article class="panel news-card<?= $cover ? '' : ' no-cover' ?>" style="--i:<?= min($i, 8) ?>;">
       <?php if ($cover): ?><a class="cover" href="<?= $link ?>" style="display:block;"><img src="<?= e($cover) ?>" alt="" loading="lazy"></a><?php endif; ?>
       <div class="body">
         <div class="news-meta"><?= e(fmt_date($n['published_at'], true)) ?><?= members_only_badge($n) ?><?= staff_link('admin/naujienos.php?edit=' . (int) $n['id']) ?></div>

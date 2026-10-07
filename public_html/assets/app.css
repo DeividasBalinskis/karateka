@@ -161,6 +161,10 @@ legend{font-family:'Space Grotesk',sans-serif; font-weight:700; padding:0 6px;}
 
 /* ---------- Naujienos ---------- */
 .news-list{display:grid; gap:22px;}
+/* Naujienos atsiranda viena po kitos - greiti laipteliai */
+@keyframes rise-in{from{opacity:0; transform:translateY(22px);} to{opacity:1; transform:none;}}
+.news-list > .news-card{animation:rise-in 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) both; animation-delay:calc(var(--i, 0) * 70ms);}
+@media (prefers-reduced-motion: reduce){ .news-list > .news-card{animation:none;} }
 .news-card{overflow:hidden; display:grid; grid-template-columns:400px 1fr;}
 .news-card.no-cover{grid-template-columns:1fr;}
 .news-card .cover{position:relative; min-height:260px; overflow:hidden; background:rgba(23,20,15,0.06);}

@@ -16,6 +16,7 @@ require __DIR__ . '/app/bootstrap.php';
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="<?= e(asset_url('assets/header.css')) ?>">
+<script>document.documentElement.classList.add('js');</script>
 <style>
   :root{
     --ink:#17140F;
@@ -105,8 +106,10 @@ require __DIR__ . '/app/bootstrap.php';
   .wave-divider{width:100%; line-height:0; position:relative; z-index:2; margin-top:-1px;}
   .wave-divider svg{width:100%; height:60px; display:block;}
 
-  .reveal{opacity:0; transform:translateY(28px); transition:opacity 0.7s ease, transform 0.7s ease;}
-  .reveal.in-view{opacity:1; transform:none;}
+  /* Atsiradimas slenkant: elementas išnyra iš apačios; --i = eilės numeris grupėje (laipteliai).
+     .js - kad be JavaScript turinys liktų matomas. */
+  .js .reveal{opacity:0; transform:translateY(26px); transition:opacity 0.6s cubic-bezier(0.2,0.7,0.2,1), transform 0.6s cubic-bezier(0.2,0.7,0.2,1); transition-delay:calc(var(--i, 0) * 80ms);}
+  .js .reveal.in-view{opacity:1; transform:none;}
 
 
   /* ABOUT CLUB */
@@ -129,7 +132,6 @@ require __DIR__ . '/app/bootstrap.php';
   .about-sub{margin-top:56px;}
   .about-sub-row{display:flex; gap:48px; align-items:flex-start;}
   .about-sub-col{flex:1; min-width:0;}
-  .about-sub-col .value-grid{grid-template-columns:repeat(2,1fr);}
   @media(min-width:1500px){
     #apie .wrap{max-width:1520px;}
   }
@@ -150,31 +152,29 @@ require __DIR__ . '/app/bootstrap.php';
   .history-panel p:last-child{margin-bottom:0;}
   .history-panel strong{color:var(--ink);}
 
-  .value-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:14px;}
-  .value-chip{
-    padding:30px 22px; display:flex; flex-direction:column; align-items:center; gap:10px;
-    text-align:center; font-size:0.9rem; font-weight:600; color:var(--ink); line-height:1.35;
-    transition:transform 0.2s ease, box-shadow 0.2s ease;
-    background:rgba(255,255,255,0.4); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
-    border:1px solid rgba(255,255,255,0.6);
-    border-radius:44% 56% 52% 48% / 48% 44% 56% 52%;
-    box-shadow:0 14px 30px rgba(23,20,15,0.08);
+  /* ŠAKNYS IR VERTYBĖS - istorija viduryje, po 3 vertybes iš šonų (kairės pusės - veidrodiškai, ženklas arčiau vidurio) */
+  .roots-row{
+    display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.75fr) minmax(0,1fr); gap:14px 22px; align-items:stretch;
+    grid-template-areas:"v1 h v4" "v2 h v5" "v3 h v6";
   }
-  .value-chip:hover{transform:translateY(-5px) scale(1.03); box-shadow:0 18px 36px rgba(23,20,15,0.14);}
-  .value-translation{font-family:'JetBrains Mono',monospace; font-size:0.68rem; font-style:italic; color:var(--muted); font-weight:500; margin-top:-4px;}
+  .value-item{
+    display:flex; align-items:center; gap:14px; padding:14px 18px; border-radius:14px;
+    background:rgba(255,255,255,0.45); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
+    border:1px solid rgba(255,255,255,0.6); box-shadow:0 10px 24px rgba(23,20,15,0.06);
+  }
+  .value-item.l{flex-direction:row-reverse; text-align:right;}
+  .value-item strong{display:block; font-size:0.92rem; font-weight:600; line-height:1.3; color:var(--ink);}
+  .value-translation{display:block; font-family:'JetBrains Mono',monospace; font-size:0.62rem; font-style:italic; color:var(--muted); font-weight:500; margin-bottom:2px;}
   .value-icon{
-    width:46px; height:46px; border-radius:50%; flex-shrink:0;
+    width:48px; height:48px; border-radius:13px; flex-shrink:0;
     display:flex; align-items:center; justify-content:center;
-    font-size:1.35rem; color:#fff; font-weight:700;
-    box-shadow:0 6px 14px rgba(23,20,15,0.18);
+    font-size:1.25rem; color:#fff; font-weight:700;
+    box-shadow:0 6px 14px rgba(23,20,15,0.16);
   }
-  .value-chip:nth-child(3n+1) .value-icon{background:linear-gradient(135deg,#A85C7E,#8C4468);}
-  .value-chip:nth-child(3n+2) .value-icon{background:linear-gradient(135deg,#5C68A0,#3A4A88);}
-  .value-chip:nth-child(3n+3) .value-icon{background:linear-gradient(135deg,var(--accent),var(--accent-dark));}
-
-  /* ŠAKNYS IR VERTYBĖS - istorija kairėje, kompaktiškos vertybių burbuliukai dešinėje */
-  .roots-row{display:grid; grid-template-columns:1.05fr 1fr; gap:44px; align-items:center;}
-  .roots-history{padding:34px 36px;}
+  .value-icon.rose{background:linear-gradient(135deg,#A85C7E,#8C4468);}
+  .value-icon.indigo{background:linear-gradient(135deg,#5C68A0,#3A4A88);}
+  .value-icon.green{background:linear-gradient(135deg,var(--accent),var(--accent-dark));}
+  .roots-history{grid-area:h; padding:34px 36px; display:flex; flex-direction:column; justify-content:center;}
   .roots-history .kicker{
     font-family:'JetBrains Mono',monospace; font-size:0.68rem; letter-spacing:0.12em;
     text-transform:uppercase; color:var(--accent); font-weight:700; margin-bottom:14px;
@@ -182,10 +182,6 @@ require __DIR__ . '/app/bootstrap.php';
   .roots-history p{color:var(--muted); font-size:0.96rem; margin-bottom:12px;}
   .roots-history p:last-child{margin-bottom:0;}
   .roots-history strong{color:var(--ink);}
-  .roots-values{display:grid; grid-template-columns:repeat(3,1fr); gap:12px;}
-  .roots-values .value-chip{padding:18px 12px; gap:6px; font-size:0.76rem; line-height:1.3;}
-  .roots-values .value-icon{width:36px; height:36px; font-size:1.05rem; box-shadow:0 5px 12px rgba(23,20,15,0.16);}
-  .roots-values .value-translation{font-size:0.6rem; margin-top:-2px;}
 
   .instructor-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:14px;}
   .instructors-row{display:flex; gap:32px; align-items:stretch;}
@@ -243,14 +239,14 @@ require __DIR__ . '/app/bootstrap.php';
     content:""; position:absolute; inset:0;
     background:linear-gradient(90deg, transparent 48%, #150E12 96%);
   }
-  .group-text-panel{flex:1; display:flex; align-items:center; min-width:0;}
-  .group-content{position:relative; z-index:2; padding:68px 84px 30px 3vw; max-width:none; color:#F7F4EC; width:100%;}
+  .group-text-panel{flex:1; display:flex; align-items:stretch; min-width:0;}   /* turinys nuo viršaus - „VAIKAMS / JAUNIMUI / SUAUGUSIEMS“ visose skaidrėse tame pačiame aukštyje */
+  .group-content{position:relative; z-index:2; padding:68px 84px 30px 3vw; max-width:none; color:#F7F4EC; width:100%; display:flex; flex-direction:column;}
   .group-content .eyebrow{color:#F7F4EC; margin-bottom:12px;}
   .group-content .eyebrow::before{background:#F7F4EC;}
   .group-content h2{font-size:clamp(1.35em,1.9vw,1.7em); color:#F7F4EC; margin-bottom:10px;}
   .group-content > p{color:#D8D2C2; font-size:0.95em; margin-bottom:16px; max-width:560px;}
-  .group-facts{display:grid; grid-template-columns:1fr 1fr; gap:18px 26px; border-top:1px solid rgba(247,244,236,0.25); padding-top:16px;}
-  .group-cta{display:inline-block; margin-top:16px;}
+  .group-facts{display:grid; grid-template-columns:1fr 1fr; gap:18px 26px; border-top:1px solid rgba(247,244,236,0.25); padding-top:16px; margin-bottom:16px;}
+  .group-cta{align-self:flex-start; margin-top:auto;}   /* mygtukas visose skaidrėse apačioje, tame pačiame aukštyje */
   #vaikams .group-facts{grid-template-columns:minmax(150px,0.55fr) 2fr;}
   #vaikams .group-facts .full{grid-column:auto;}
   #jaunimui .group-facts, #suaugusiems .group-facts{grid-template-columns:auto 1.6fr 1fr;}
@@ -264,7 +260,10 @@ require __DIR__ . '/app/bootstrap.php';
   .loc-list li::before{content:"● "; color:#E8749E; font-size:0.55em; vertical-align:middle;}
   .loc-group{padding:6px 0;}
   .loc-scroll{max-height:142px; overflow-y:auto; padding-right:6px;}
-  .schedule-picker .picker-locations{max-height:clamp(160px,28vh,330px);}
+  /* Vietų sąrašas fiksuoto aukščio: išskleidus slenkama viduje, o visas langas nedidėja */
+  .schedule-picker{height:clamp(190px,24vh,240px);}
+  .schedule-picker > *{min-height:0; overflow-y:auto;}
+  .schedule-picker .picker-locations{max-height:none;}
   .loc-scroll::-webkit-scrollbar{width:4px;}
   .loc-scroll::-webkit-scrollbar-thumb{background:rgba(247,244,236,0.3); border-radius:4px;}
   .loc-scroll::-webkit-scrollbar-track{background:transparent;}
@@ -383,22 +382,26 @@ require __DIR__ . '/app/bootstrap.php';
   .footer-bottom{border-top:1px solid rgba(247,244,236,0.15); padding-top:18px; display:flex; justify-content:space-between; font-size:0.78rem; color:#9C9484; flex-wrap:wrap; gap:10px;}
 
   @media(max-width:1080px){
-    .roots-row{grid-template-columns:1fr; gap:28px;}
+    .roots-row{grid-template-columns:1fr 1fr; grid-template-areas:"h h" "v1 v4" "v2 v5" "v3 v6";}
+    .value-item.l{flex-direction:row; text-align:left;}
+  }
+  @media(max-width:560px){
+    .roots-row{grid-template-columns:1fr; grid-template-areas:"h" "v1" "v2" "v3" "v4" "v5" "v6"; gap:10px;}
   }
   @media(max-width:860px){
-    .roots-values{grid-template-columns:repeat(2,1fr);}
     .roots-history{padding:28px 24px;}
     .about-grid{flex-direction:column;}
     .about-sub-row{flex-direction:column; gap:0;}
     .about-photo{min-height:360px; aspect-ratio:auto; flex:none; width:100%;}
-    .value-grid{grid-template-columns:1fr 1fr;}
     .instructors-row{flex-direction:column; gap:20px;}
     .instructors-intro{flex:none;}
     .instructor-grid, .instructors-row .instructor-grid{grid-template-columns:repeat(2,1fr);}
     .registration-grid{grid-template-columns:1fr;}
     .group-facts, #vaikams .group-facts, #jaunimui .group-facts, #suaugusiems .group-facts{grid-template-columns:1fr; gap:18px;}
     .group-facts > *{grid-row:auto !important; grid-column:auto !important;}
-    .schedule-picker{grid-template-columns:1fr; gap:14px;}
+    .schedule-picker{grid-template-columns:1fr; gap:14px; height:auto;}
+    .schedule-picker .picker-locations{height:220px;}
+    .schedule-picker > .picker-schedule{overflow:visible;}
     .picker-schedule{min-height:auto;}
     .group-content{max-width:100%; padding:0 24px 70px;}
     .group-arrow{width:34px; height:34px; font-size:0.95rem; top:auto; bottom:14px; transform:none;}
@@ -414,7 +417,7 @@ require __DIR__ . '/app/bootstrap.php';
   @media (prefers-reduced-motion: reduce){
     html{scroll-behavior:auto;}
     *{transition:none !important; animation:none !important;}
-    .reveal{opacity:1; transform:none;}
+    .js .reveal{opacity:1; transform:none;}
   }
   /* GRUPIŲ PASIRINKIMAS - pavadinimas virš karuselės, mygtukai pačioje karuselėje */
   .carousel-wrap{position:relative; max-width:1200px; margin:0 32px; border-radius:22px; overflow:hidden; box-shadow:0 24px 50px rgba(23,20,15,0.18);}
@@ -565,12 +568,12 @@ require __DIR__ . '/app/bootstrap.php';
 <?php $homeEvents = public_upcoming_events(3); if ($homeEvents): ?>
 <section id="renginiai" class="home-events-section">
   <div class="wrap events-layout">
-    <div class="events-title reveal">
+    <div class="events-title">
       <h2 class="styled">Artėjantys renginiai</h2>
     </div>
-    <div class="events-grid reveal">
-      <?php foreach ($homeEvents as $ev): $ts = strtotime($ev['starts_on']); ?>
-        <div class="panel home-event">
+    <div class="events-grid">
+      <?php foreach ($homeEvents as $k => $ev): $ts = strtotime($ev['starts_on']); ?>
+        <div class="panel home-event reveal" style="--i:<?= $k ?>;">
           <div class="he-date"><span class="d"><?= date('j', $ts) ?></span><span class="m"><?= e(mb_substr(LT_MONTHS_GEN[(int) date('n', $ts)], 0, 3)) ?></span></div>
           <div class="he-body">
             <span class="he-type"><?= e(EVENT_TYPES[$ev['type']]) ?></span>
@@ -590,7 +593,7 @@ require __DIR__ . '/app/bootstrap.php';
 <section id="apie" style="position:relative;">
   <div class="wrap">
     <div class="about-grid">
-      <div class="about-left">
+      <div class="about-left reveal">
         <div class="section-head" style="margin-bottom:20px;">
           <h2 class="styled">Klubas, statantis charakterį</h2>
         </div>
@@ -600,7 +603,7 @@ require __DIR__ . '/app/bootstrap.php';
           <div class="about-quote">„Tikras karate meistriškumas prasideda nuo darbo su savimi — kūno, proto ir dvasios darnos."</div>
         </div>
       </div>
-      <div class="about-photo" id="aboutSlider">
+      <div class="about-photo reveal" id="aboutSlider" style="--i:1;">
         <div class="slide active"><img src="img/apie-1.jpg" alt="Karateka komanda su medaliais"></div>
         <div class="slide"><img src="img/apie-2.jpg" alt="Sportininkės išeina į varžybų tatamį"></div>
         <div class="slide"><img src="img/apie-3.jpg" alt="Apkabinimas po kovos"></div>
@@ -613,54 +616,51 @@ require __DIR__ . '/app/bootstrap.php';
       <div class="about-sub-head about-sub-head-center"><h3>Šaknys ir vertybės</h3></div>
 
       <div class="roots-row">
-        <div class="panel roots-history">
+        <div class="panel roots-history reveal">
           <div class="kicker">Mūsų istorija</div>
           <p>Klubo šaknys siekia <strong>2013 metus</strong>, kai treniravomės Tradicinio karate-do klubo „Sanrei" komandoje. Įgiję patirties ir subrendę savo idėjai, <strong>2017 metais</strong> įkūrėme savarankišką klubą „Karateka", kuriam vadovauja Denis Balinskis.</p>
           <p>Denis savo karate kelią pradėjo būdamas vos 5 metų — ir šią vaikystės svajonę įgyvendino, sukurdamas bendruomenę, kurioje šiandien sportuoja žmonės nuo 2 iki 54 metų.</p>
         </div>
-
-        <div class="roots-values">
-          <div class="value-chip"><div class="value-icon">道</div><div class="value-translation">kelias</div>Saviugda</div>
-          <div class="value-chip"><div class="value-icon">力</div><div class="value-translation">jėga</div>Charakterio ir valios stiprinimas</div>
-          <div class="value-chip"><div class="value-icon">忍</div><div class="value-translation">kantrybė</div>Savidisciplina</div>
-          <div class="value-chip"><div class="value-icon">礼</div><div class="value-translation">pagarba</div>Pagarba tradicijoms ir dojo etiketui</div>
-          <div class="value-chip"><div class="value-icon">守</div><div class="value-translation">apsauga</div>Savigynos įgūdžiai</div>
-          <div class="value-chip"><div class="value-icon">和</div><div class="value-translation">harmonija</div>Vidinė pusiausvyra</div>
-        </div>
+        <div class="value-item l reveal" style="grid-area:v1; --i:1;"><span class="value-icon rose">道</span><span><span class="value-translation">kelias</span><strong>Saviugda</strong></span></div>
+        <div class="value-item l reveal" style="grid-area:v2; --i:2;"><span class="value-icon indigo">力</span><span><span class="value-translation">jėga</span><strong>Charakterio ir valios stiprinimas</strong></span></div>
+        <div class="value-item l reveal" style="grid-area:v3; --i:3;"><span class="value-icon green">忍</span><span><span class="value-translation">kantrybė</span><strong>Savidisciplina</strong></span></div>
+        <div class="value-item reveal" style="grid-area:v4; --i:1;"><span class="value-icon rose">礼</span><span><span class="value-translation">pagarba</span><strong>Pagarba tradicijoms ir dojo etiketui</strong></span></div>
+        <div class="value-item reveal" style="grid-area:v5; --i:2;"><span class="value-icon indigo">守</span><span><span class="value-translation">apsauga</span><strong>Savigynos įgūdžiai</strong></span></div>
+        <div class="value-item reveal" style="grid-area:v6; --i:3;"><span class="value-icon green">和</span><span><span class="value-translation">harmonija</span><strong>Vidinė pusiausvyra</strong></span></div>
       </div>
     </div>
 
     <div class="about-sub">
       <div class="about-sub-head about-sub-head-center"><h3>Mūsų instruktoriai</h3></div>
       <div class="instructors-row">
-        <div class="panel instructors-intro"><p>Klubo instruktoriai nuolat gilina žinias, dalyvaudami stažuotėse Lietuvoje ir užsienyje — karate, fizioterapijos, psichologijos, sporto, medicinos, masažų, biomechanikos, sporto mitybos, kinesiologijos ir sporto pedagogikos srityse. Tai leidžia mums treniruotes kurti remiantis ne tik karate tradicijomis, bet ir šiuolaikiniais mokslo pasiekimais.</p></div>
+        <div class="panel instructors-intro reveal"><p>Klubo instruktoriai nuolat gilina žinias, dalyvaudami stažuotėse Lietuvoje ir užsienyje — karate, fizioterapijos, psichologijos, sporto, medicinos, masažų, biomechanikos, sporto mitybos, kinesiologijos ir sporto pedagogikos srityse. Tai leidžia mums treniruotes kurti remiantis ne tik karate tradicijomis, bet ir šiuolaikiniais mokslo pasiekimais.</p></div>
         <div class="instructor-grid">
-          <div class="panel instructor-card lead">
+          <div class="panel instructor-card lead reveal" style="--i:1;">
             <div class="avatar">DB</div>
             <div class="name">Denis Balinskis</div>
             <div class="rank">3 Dan · klubo vadovas</div>
           </div>
-          <div class="panel instructor-card">
+          <div class="panel instructor-card reveal" style="--i:2;">
             <div class="avatar">LČ</div>
             <div class="name">Lukas Čiulkinas</div>
             <div class="rank">1 Dan</div>
           </div>
-          <div class="panel instructor-card">
+          <div class="panel instructor-card reveal" style="--i:3;">
             <div class="avatar">JK</div>
             <div class="name">Joris Kėrys</div>
             <div class="rank">1 Dan</div>
           </div>
-          <div class="panel instructor-card">
+          <div class="panel instructor-card reveal" style="--i:1;">
             <div class="avatar">EČ</div>
             <div class="name">Esmilė Česevičiūtė</div>
             <div class="rank">1 Dan</div>
           </div>
-          <div class="panel instructor-card">
+          <div class="panel instructor-card reveal" style="--i:2;">
             <div class="avatar">KK</div>
             <div class="name">Karolis Kiela</div>
             <div class="rank">1 Dan</div>
           </div>
-          <div class="panel instructor-card">
+          <div class="panel instructor-card reveal" style="--i:3;">
             <div class="avatar">GL</div>
             <div class="name">Giedrius Li Tang</div>
             <div class="rank">1 Dan</div>
@@ -670,7 +670,7 @@ require __DIR__ . '/app/bootstrap.php';
     </div>
 
     <div class="about-sub">
-      <div class="panel community-banner">
+      <div class="panel community-banner reveal">
         „Karateka" — tai klubas, kuriame karate tampa <span>visos šeimos veikla</span>. Treniruotėse kartu sportuoja tėvai su vaikais — amžiaus riba mums nėra kliūtis, svarbiausia noras augti ir tobulėti.
       </div>
     </div>
@@ -751,11 +751,14 @@ require __DIR__ . '/app/bootstrap.php';
     }, 4000);
   }
 
+  // Slenkant žemyn elementai išnyra; slenkant atgal į viršų - pasislepia tie, kurie nuėjo žemiau ekrano,
+  // ir vėl išnyra slenkant žemyn. Virš ekrano esantys lieka matomi (grįžtant nebūna tuščių vietų).
   const io = new IntersectionObserver((entries)=>{
     entries.forEach(e=>{
-      e.target.classList.toggle('in-view', e.isIntersecting);
+      if (e.isIntersecting) e.target.classList.add('in-view');
+      else if (e.boundingClientRect.top > 0) e.target.classList.remove('in-view');
     });
-  }, {threshold:0.15});
+  }, {threshold:0.12});
   document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
 
   // group horizontal scroll window - native left/right scroll (trackpad/touch/wheel), plus buttons + dots as a convenience
