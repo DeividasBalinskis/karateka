@@ -107,8 +107,8 @@ award_points($youth[2], category_by_code('lead_training'), date('Y-m-d', strtoti
 
 // Naujienos su esamomis svetainės nuotraukomis
 $news = [
-    ['Rudens sezonas prasidėjo!', "Sveiki sugrįžę į salę! Treniruotės vyksta pagal įprastą tvarkaraštį.\n\nNaujokams pirmos dvi treniruotės nemokamos - kvieskite draugus.", '-10 days', ['Page2ApieSlide1.jpg', 'Page2ApieSlide2.jpg', 'Page2ApieSlide3.jpg'], []],
-    ['Puikūs rezultatai varžybose', "Mūsų sportininkai parvežė 3 aukso ir 2 sidabro medalius. Sveikiname!\n\nVaizdo įrašas iš varžybų žemiau.", '-3 days', ['Page2SuaugusiemsSectionBg.jpg'], ['dQw4w9WgXcQ']],
+    ['Rudens sezonas prasidėjo!', "Sveiki sugrįžę į salę! Treniruotės vyksta pagal įprastą tvarkaraštį.\n\nNaujokams pirmos dvi treniruotės nemokamos - kvieskite draugus.", '-10 days', ['img/apie-1.jpg', 'img/apie-2.jpg', 'img/apie-3.jpg'], []],
+    ['Puikūs rezultatai varžybose', "Mūsų sportininkai parvežė 3 aukso ir 2 sidabro medalius. Sveikiname!\n\nVaizdo įrašas iš varžybų žemiau.", '-3 days', ['img/suaugusieji.jpg'], ['dQw4w9WgXcQ']],
 ];
 foreach ($news as [$title, $body, $when, $images, $videos]) {
     q('INSERT INTO news (title, body, author_id, published_at) VALUES (?, ?, ?, ?)', [$title, $body, $coach, date('Y-m-d H:i:s', strtotime($when))]);

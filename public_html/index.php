@@ -468,7 +468,7 @@ require __DIR__ . '/app/bootstrap.php';
   <div class="group-scroll" id="groupScroll">
 
     <div class="group-section" id="vaikams">
-      <div class="group-photo-panel"><img src="Page2VaikaiSectionBg.jpg" alt="Vaikų treniruotė" style="object-position:50% 25%;"></div>
+      <div class="group-photo-panel"><img src="img/vaikai.jpg" alt="Vaikų treniruotė" style="object-position:50% 25%;"></div>
       <div class="group-text-panel"><div class="group-content">
         <div class="eyebrow">VAIKAMS</div>
         <h2>Žaismingas įvadas į discipliną ir pagarbą</h2>
@@ -496,7 +496,7 @@ require __DIR__ . '/app/bootstrap.php';
     </div>
 
     <div class="group-section" id="jaunimui">
-      <div class="group-photo-panel"><img src="Page2JaunimuiSectionBg.jpg" alt="Jaunimo treniruotė" style="object-position:62% 20%;"></div>
+      <div class="group-photo-panel"><img src="img/jaunimas.jpg" alt="Jaunimo treniruotė" style="object-position:62% 20%;"></div>
       <div class="group-text-panel"><div class="group-content">
         <div class="eyebrow">JAUNIMUI</div>
         <h2>Tempas, technika ir pasiruošimas varžyboms</h2>
@@ -520,7 +520,7 @@ require __DIR__ . '/app/bootstrap.php';
     </div>
 
     <div class="group-section" id="suaugusiems">
-      <div class="group-photo-panel"><img src="Page2SuaugusiemsSectionBg.jpg?v=3" alt="Karatistas ant varžybų tatamio" style="object-position:24% 30%;"></div>
+      <div class="group-photo-panel"><img src="img/suaugusieji.jpg" alt="Karatistas ant varžybų tatamio" style="object-position:24% 30%;"></div>
       <div class="group-text-panel"><div class="group-content">
         <div class="eyebrow">SUAUGUSIEMS</div>
         <h2>Jėga, forma ir aiški galva po darbo dienos</h2>
@@ -594,11 +594,11 @@ require __DIR__ . '/app/bootstrap.php';
         </div>
       </div>
       <div class="about-photo" id="aboutSlider">
-        <div class="slide active"><img src="Page2ApieSlide1.jpg" alt="Karateka komanda su medaliais"></div>
-        <div class="slide"><img src="Page2ApieSlide2.jpg?v=2" alt="Sportininkės išeina į varžybų tatamį"></div>
-        <div class="slide"><img src="Page2ApieSlide3.jpg" alt="Apkabinimas po kovos"></div>
-        <div class="slide"><img src="Page2ApieSlide4.jpg" alt="Vaikų komanda su trofėjais"></div>
-        <div class="slide"><img src="Page2ApieSlide5.jpg" alt="Kata varžybose"></div>
+        <div class="slide active"><img src="img/apie-1.jpg" alt="Karateka komanda su medaliais"></div>
+        <div class="slide"><img src="img/apie-2.jpg" alt="Sportininkės išeina į varžybų tatamį"></div>
+        <div class="slide"><img src="img/apie-3.jpg" alt="Apkabinimas po kovos"></div>
+        <div class="slide"><img src="img/apie-4.jpg" alt="Vaikų komanda su trofėjais"></div>
+        <div class="slide"><img src="img/apie-5.jpg" alt="Kata varžybose"></div>
       </div>
     </div>
 
@@ -858,7 +858,7 @@ require __DIR__ . '/app/bootstrap.php';
     });
   }
 
-  // registration form -> sends to send.php (see accompanying file), falls back to a clear error if it can't reach it
+  // registration form -> sends to uzklausa.php (see accompanying file), falls back to a clear error if it can't reach it
   const regForm = document.getElementById('registrationForm');
   const formStatus = document.getElementById('formStatus');
   regForm.addEventListener('submit', async (e)=>{
@@ -868,7 +868,7 @@ require __DIR__ . '/app/bootstrap.php';
     const submitBtn = regForm.querySelector('button[type="submit"]');
     submitBtn.disabled = true;
     try{
-      const res = await fetch('send.php', {
+      const res = await fetch('uzklausa.php', {
         method:'POST',
         body:new FormData(regForm)
       });

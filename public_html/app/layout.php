@@ -153,7 +153,7 @@ function site_header(bool $home = false): void
 <div class="progress-wrap"><div class="progress-bar" id="progressBar"></div></div>
 <header class="site-header">
   <nav>
-    <a class="logo" href="<?= $home ? '#' : url('index.php') ?>"><img src="<?= url('LogoColor.png') ?>" alt="Karateka logotipas"></a>
+    <a class="logo" href="<?= $home ? '#' : url('index.php') ?>"><img src="<?= url('img/logo.png') ?>" alt="Karateka logotipas"></a>
     <ul class="nav-list" id="navList">
       <!-- Pagrindinio puslapio skiltys -->
       <li class="nav-section onpage-section">

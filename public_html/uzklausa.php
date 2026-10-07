@@ -1,6 +1,6 @@
 <?php
-// send.php — priima registracijos formos duomenis ir siunčia juos el. paštu per SMTP.
-// Įkelkite šį failą TAME PAČIAME aplanke kaip ir index.php.
+// uzklausa.php — „2 treniruotės nemokamai“ formos duomenis siunčia el. paštu į info@karateka.lt per SMTP.
+// Tame pačiame aplanke kaip index.php.
 
 header('Content-Type: application/json; charset=utf-8');
 

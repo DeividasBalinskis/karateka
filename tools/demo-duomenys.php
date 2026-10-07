@@ -1,10 +1,10 @@
 <?php
-// Demonstraciniai duomenys test svetainei. Sugeneruoja SQL, kurį importuojate per phpMyAdmin.
-//   docker compose exec -T web php /tools/demo_data.php > deploy/demo-data.sql
+// Demo duomenys test svetainei. Sugeneruoja ikelimui/demo/demo-duomenys.sql (importuojama per phpMyAdmin):
+//   docker run --rm -v "<projektas>/tools:/tools" php:7.3-cli php /tools/demo-duomenys.php > ikelimui/demo/demo-duomenys.sql
 //
-// Visų demo paskyrų el. paštai baigiasi @demo.karateka.lt, slaptažodis - žr. DEMO_PASSWORD.
-// Demo renginiai / pamokos turi created_at = 2000-01-01 00:00:00, naujienos - updated_at = 2000-01-01 00:00:00,
-// todėl juos visus vienu kartu ištrina demo-remove.sql (jūsų pačių sukurti duomenys lieka).
+// Demo paskyrų el. paštai baigiasi @demo.karateka.lt, slaptažodis - DEMO_PASSWORD žemiau.
+// Viską demo ištrina ikelimui/demo/demo-istrinti.sql (jūsų pačių sukurti duomenys lieka):
+// demo renginiai / pamokos turi created_at = 2000-01-01, naujienos - updated_at = 2000-01-01.
 // Datos skaičiuojamos nuo importo dienos (CURDATE), todėl renginiai visada „artėjantys“.
 
 const DEMO_PASSWORD = 'demo12345';
@@ -32,7 +32,7 @@ function pick(array $a)
 $hash = password_hash(DEMO_PASSWORD, PASSWORD_BCRYPT);
 $out = [];
 $out[] = '-- Demo duomenys karateka.lt test svetainei. Prisijungimas: <vardas>.<pavarde>@demo.karateka.lt, slaptažodis: ' . DEMO_PASSWORD;
-$out[] = '-- Ištrinti: importuokite demo-remove.sql';
+$out[] = '-- Ištrinti: importuokite demo-istrinti.sql';
 $out[] = 'SET NAMES utf8mb4;';
 $out[] = "SET @admin = (SELECT id FROM accounts WHERE role = 'admin' ORDER BY id LIMIT 1);";
 
@@ -211,7 +211,7 @@ $award($members['jaunimas'][0][0], 'organize', -6, null, 'Padėjo organizuoti va
 
 // ===== Naujienos =====
 $out[] = '';
-$out[] = '-- ===== Naujienos (nuotraukos: demo-uploads.zip) =====';
+$out[] = '-- ===== Naujienos (nuotraukos: demo-nuotraukos.zip) =====';
 $news = [
     ['Puikūs rezultatai Lietuvos karate taurėje', "Mūsų sportininkai parvežė 3 aukso, 4 sidabro ir 5 bronzos medalius!\n\nAčiū visiems, kurie atvyko palaikyti. Ypatingas ačiū tėvams už pagalbą kelionėje.", 2, ['demo_news_1.jpg', 'demo_news_2.jpg'], ['dQw4w9WgXcQ']],
     ['Rudens kyu egzaminas jau netrukus', "Egzaminas vyks Viršuliškėse. Prašome iki penktadienio patvirtinti dalyvavimą treneriui.\n\nReikalavimai kiekvienam diržui - pamokų skiltyje.", 6, ['demo_news_3.jpg'], []],

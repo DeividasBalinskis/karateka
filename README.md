@@ -6,20 +6,20 @@ Website of **VšĮ Karate Ateitis**, a traditional karate-do club in Vilnius led
 
 ## What's here
 
-- `public_html/`: the website (static HTML, CSS inline, plus PHP for forms)
-  - `index.php`: main page. Group choice (Vaikams / Jaunimui / Suaugusiems) at the top, then about the club, instructors, contacts and the trial registration form
-  - `page1.html`: old address, now only redirects to `index.php` (keeps `#vaikams` etc.)
-  - `assets/header.css`, `assets/header.js`: the shared top menu used by every page
-  - `send.php`: sends the registration form by email
-- `docker/`, `docker-compose.yml`: local PHP and MariaDB environment
-- `public_html/app/`: shared PHP code for the member system (blocked from the web)
-- `public_html/admin/`: coach panel (mobile-first)
-- `db/`: database schema and initial groups (no member data)
-- `docs/`: plans and notes
+- `public_html/`: the website - upload its contents to the server
+  - `index.php`: main page (groups and prices, events, about the club, contacts, trial registration form)
+  - `uzklausa.php`: sends the "2 free trainings" form to info@karateka.lt
+  - `page1.html`: old address, redirects to `index.php`
+  - `img/`: photos and logo; `assets/`: styles; `admin/`: coach panel; `app/`: shared PHP code (blocked from the web)
+- `config.example.php`: template for `public_html/config.php` (passwords, never in Git)
+- `db/`: database schema, numbered `001`, `002`, ... (no member data)
+- `docs/`: `ikelimas.md` (how to upload), `klausimai-broliui.md` (open questions), `saskaitu-planas.md` (billing plan)
+- `tools/`: `paruosti-ikelimui.ps1` (builds the `ikelimui/` upload folder), `demo-duomenys.php` (demo data)
+- `docker/`, `docker-compose.yml`: local PHP + MariaDB
 
 ## In progress: member system
 
-A members area is being built in phases. It covers parent and kid accounts with coach approval, groups, schedule, events, news with reactions, then points and ranking, then coach notes and video lessons. See [docs/phase1-plan.md](docs/phase1-plan.md).
+A members area is being built in phases. It covers parent and kid accounts with coach approval, groups, schedule, events, news with reactions, then points and ranking, then coach notes and video lessons. Built so far: accounts and approvals, groups and schedule, events, news, points and ranking, belts, coach notes and tasks, lessons. Next: invoices and payments ([docs/saskaitu-planas.md](docs/saskaitu-planas.md)).
 
 ## Running locally
 
@@ -27,7 +27,7 @@ Requires [Docker Desktop](https://www.docker.com/products/docker-desktop/).
 
 ```bash
 cp .env.example .env                                # set local DB passwords
-cp public_html/config.example.php public_html/config.php
+cp config.example.php public_html/config.php
 docker compose up -d
 ```
 
@@ -51,7 +51,7 @@ To reset the local database (deletes all local data):
 docker compose down -v && docker compose up -d
 ```
 
-Deploying to the test site: [docs/deploy-test.md](docs/deploy-test.md).
+Uploading to the test site: [docs/ikelimas.md](docs/ikelimas.md).
 
 ## Secrets and data
 

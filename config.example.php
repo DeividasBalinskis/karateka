@@ -12,7 +12,7 @@ return [
     'retention'   => ['unfinished_days' => 30],    // nebaigtos registracijos ištrinamos po N dienų
     'ranking'     => ['scope' => 'category'],     // reitingas: category (vaikai/jaunimas/suaugę) | group | club
 
-    // Registracijos formai (send.php)
+    // „2 treniruotės nemokamai“ formai (uzklausa.php)
     'smtp' => [
         'host' => 'smtp.example.com',
         'port' => 465,
