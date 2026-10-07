@@ -273,3 +273,53 @@ function pending_approvals_count(): int
     }
     return $count;
 }
+
+/**
+ * Paskyros nustatymai (el. paštas, telefonas, slaptažodis) - tėvų paskyroje ir trenerio „Paskyra“ puslapyje.
+ * Sėkmės atveju nukreipia į $back; klaidos įrašomos į $errors.
+ */
+function handle_account_settings(array $a, string $back, array &$errors): void
+{
+    $aid = (int) $a['id'];
+    $action = post('action');
+    if ($action === 'profile') {
+        q('UPDATE accounts SET phone = ? WHERE id = ?', [post('phone') ?: null, $aid]);
+        flash('ok', 'Duomenys išsaugoti.');
+        redirect($back);
+    }
+
+    if ($action === 'email') {
+        $email = normalize_email(post('email'));
+        if (!password_verify((string) ($_POST['current'] ?? ''), $a['password_hash'])) {
+            $errors[] = 'Neteisingas slaptažodis.';
+        } elseif (!valid_email($email)) {
+            $errors[] = 'Įveskite teisingą el. paštą.';
+        } elseif ($email === $a['email']) {
+            $errors[] = 'Tai jūsų dabartinis el. paštas.';
+        } elseif (q_value('SELECT 1 FROM accounts WHERE email = ?', [$email])) {
+            $errors[] = 'Šis el. paštas jau naudojamas kitos paskyros.';
+        } else {
+            // Pakeičiama tik paspaudus nuorodą naujame pašte - taip įsitikiname, kad adresas tikrai jūsų
+            $token = token_create('change_email', $email, $aid);
+            send_mail($email, 'Patvirtinkite naują el. paštą — Karateka',
+                "Sveiki, {$a['first_name']},\n\nnorėdami pakeisti savo karateka.lt paskyros el. paštą į šį adresą, paspauskite nuorodą:\n\n"
+                . abs_url('el-pastas.php?t=' . $token) . "\n\nNuoroda galioja 1 dieną. Jei el. pašto nekeitėte, šį laišką ignoruokite.");
+            flash('ok', "Išsiuntėme patvirtinimo nuorodą į $email. El. paštas pasikeis, kai ją paspausite.");
+            redirect($back);
+        }
+    }
+
+    if ($action === 'password') {
+        $pw = (string) ($_POST['password'] ?? '');
+        if (!password_verify((string) ($_POST['current'] ?? ''), $a['password_hash'])) {
+            $errors[] = 'Neteisingas dabartinis slaptažodis.';
+        } elseif (mb_strlen($pw) < MIN_PASSWORD) {
+            $errors[] = 'Naujas slaptažodis turi būti bent ' . MIN_PASSWORD . ' simbolių.';
+        } else {
+            q('UPDATE accounts SET password_hash = ? WHERE id = ?', [password_hash($pw, PASSWORD_DEFAULT), $aid]);
+            session_regenerate_id(true);
+            flash('ok', 'Slaptažodis pakeistas.');
+            redirect($back);
+        }
+    }
+}

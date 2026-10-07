@@ -74,11 +74,6 @@ if (is_post()) {
         }
     }
 
-    if ($action === 'profile') {
-        q('UPDATE accounts SET phone = ? WHERE id = ?', [post('phone') ?: null, $aid]);
-        flash('ok', 'Duomenys išsaugoti.');
-        redirect('paskyra.php#nustatymai');
-    }
 
     // Užduotis atlikta / grąžinti į neatliktas (gali pažymėti pats narys arba tėvai)
     // Pastaba perskaityta (viena arba visos to nario) - kol nepažymėta, rodomas pranešimas ir skaičiukas
@@ -104,40 +99,7 @@ if (is_post()) {
         redirect('paskyra.php?m=' . (int) ($note['member_id'] ?? 0) . '#pastabos');
     }
 
-    if ($action === 'email') {
-        $email = normalize_email(post('email'));
-        if (!password_verify((string) ($_POST['current'] ?? ''), $a['password_hash'])) {
-            $errors[] = 'Neteisingas slaptažodis.';
-        } elseif (!valid_email($email)) {
-            $errors[] = 'Įveskite teisingą el. paštą.';
-        } elseif ($email === $a['email']) {
-            $errors[] = 'Tai jūsų dabartinis el. paštas.';
-        } elseif (q_value('SELECT 1 FROM accounts WHERE email = ?', [$email])) {
-            $errors[] = 'Šis el. paštas jau naudojamas kitos paskyros.';
-        } else {
-            // Pakeičiama tik paspaudus nuorodą naujame pašte - taip įsitikiname, kad adresas tikrai jūsų
-            $token = token_create('change_email', $email, $aid);
-            send_mail($email, 'Patvirtinkite naują el. paštą — Karateka',
-                "Sveiki, {$a['first_name']},\n\nnorėdami pakeisti savo karateka.lt paskyros el. paštą į šį adresą, paspauskite nuorodą:\n\n"
-                . abs_url('el-pastas.php?t=' . $token) . "\n\nNuoroda galioja 1 dieną. Jei el. pašto nekeitėte, šį laišką ignoruokite.");
-            flash('ok', "Išsiuntėme patvirtinimo nuorodą į $email. El. paštas pasikeis, kai ją paspausite.");
-            redirect('paskyra.php#nustatymai');
-        }
-    }
-
-    if ($action === 'password') {
-        $pw = (string) ($_POST['password'] ?? '');
-        if (!password_verify((string) ($_POST['current'] ?? ''), $a['password_hash'])) {
-            $errors[] = 'Neteisingas dabartinis slaptažodis.';
-        } elseif (mb_strlen($pw) < MIN_PASSWORD) {
-            $errors[] = 'Naujas slaptažodis turi būti bent ' . MIN_PASSWORD . ' simbolių.';
-        } else {
-            q('UPDATE accounts SET password_hash = ? WHERE id = ?', [password_hash($pw, PASSWORD_DEFAULT), $aid]);
-            session_regenerate_id(true);
-            flash('ok', 'Slaptažodis pakeistas.');
-            redirect('paskyra.php#nustatymai');
-        }
-    }
+    handle_account_settings($a, 'paskyra.php#nustatymai', $errors);
 }
 
 $isStaff = is_staff($a);
@@ -145,6 +107,9 @@ $members = account_members($aid);
 // Treneriui grupės ir patvirtinimo nereikia: rodomi tik aktyvūs nariai (pvz. savo vaikai, jei treniruojasi)
 if ($isStaff) {
     $members = array_values(array_filter($members, function ($m) { return $m['status'] === 'active'; }));
+    if (!$members) {
+        redirect('admin/');   // treneriui be savo treniruojamų narių viskas (ir nustatymai) - „Paskyra“ puslapyje
+    }
 }
 $selected = null;
 foreach ($members as $m) {
@@ -188,7 +153,6 @@ if ($active) {
         }
     }
 }
-$openSetting = in_array(post('action'), ['email', 'password', 'profile'], true) ? post('action') : '';
 
 page_start('Mano paskyra', ['noindex' => true]);
 ?>
@@ -220,8 +184,8 @@ page_start('Mano paskyra', ['noindex' => true]);
 <?php if ($isStaff): ?>
   <!-- Trenerio paskyra: reitingas, renginiai, lankomumas - skiltyje Treneriams; čia tik savo šeima (jei treniruojasi) ir nustatymai -->
   <div class="panel card row between" style="gap:14px; flex-wrap:wrap;">
-    <p class="muted" style="margin:0;">Tai trenerio paskyra. Reitingas, lankomumas, renginiai ir nariai - skiltyje <strong>Treneriams</strong>.</p>
-    <a class="btn btn-primary" href="<?= url('admin/') ?>">Į Treneriams →</a>
+    <p class="muted" style="margin:0;">Tai trenerio paskyra. Reitingas, lankomumas, renginiai, nariai ir paskyros nustatymai - skiltyje <strong>Paskyra</strong>.</p>
+    <a class="btn btn-primary" href="<?= url('admin/') ?>">Į Paskyrą →</a>
   </div>
   <?php if ($members): ?><h2 style="margin:28px 0 12px;">Nariai mano paskyroje</h2><?php endif; ?>
 <?php endif; ?>
@@ -454,46 +418,6 @@ page_start('Mano paskyra', ['noindex' => true]);
   </details>
 <?php endif; ?>
 
-<div class="panel card" id="nustatymai" style="margin-top:20px;">
-  <h2>Paskyros nustatymai</h2>
-  <p class="muted small"><?= e($a['first_name'] . ' ' . $a['last_name']) ?></p>
-
-  <details class="setting" <?= $openSetting === 'email' ? 'open' : '' ?>>
-    <summary><span class="setting-label">El. paštas</span><span class="setting-value"><?= e($a['email']) ?></span><span class="setting-btn">Keisti</span></summary>
-    <form method="post" class="form setting-form">
-      <?= csrf_field() ?>
-      <input type="hidden" name="action" value="email">
-      <div class="form-row">
-        <label>Naujas el. paštas <input type="email" name="email" value="<?= $openSetting === 'email' ? e(post('email')) : '' ?>" autocomplete="email" required></label>
-        <label>Slaptažodis <span class="hint">patvirtinimui</span><input type="password" name="current" autocomplete="current-password" required></label>
-      </div>
-      <p class="hint">Į naują adresą atsiųsime nuorodą. El. paštas pasikeis tik ją paspaudus.</p>
-      <div><button class="btn btn-primary btn-sm" type="submit">Keisti el. paštą</button></div>
-    </form>
-  </details>
-
-  <details class="setting" <?= $openSetting === 'profile' ? 'open' : '' ?>>
-    <summary><span class="setting-label">Telefonas</span><span class="setting-value"><?= $a['phone'] ? e($a['phone']) : '<span class="muted">nenurodytas</span>' ?></span><span class="setting-btn">Keisti</span></summary>
-    <form method="post" class="form setting-form">
-      <?= csrf_field() ?>
-      <input type="hidden" name="action" value="profile">
-      <label>Telefonas <input type="tel" name="phone" value="<?= e($a['phone']) ?>" autocomplete="tel"></label>
-      <div><button class="btn btn-primary btn-sm" type="submit">Išsaugoti</button></div>
-    </form>
-  </details>
-
-  <details class="setting" <?= $openSetting === 'password' ? 'open' : '' ?>>
-    <summary><span class="setting-label">Slaptažodis</span><span class="setting-value">••••••••</span><span class="setting-btn">Keisti</span></summary>
-    <form method="post" class="form setting-form">
-      <?= csrf_field() ?>
-      <input type="hidden" name="action" value="password">
-      <div class="form-row">
-        <label>Dabartinis slaptažodis <input type="password" name="current" autocomplete="current-password" required></label>
-        <label>Naujas slaptažodis <span class="hint">bent <?= MIN_PASSWORD ?> simboliai</span><input type="password" name="password" autocomplete="new-password" minlength="<?= MIN_PASSWORD ?>" required></label>
-      </div>
-      <div><button class="btn btn-primary btn-sm" type="submit">Keisti slaptažodį</button></div>
-    </form>
-  </details>
-</div>
+<?= render_account_settings($a) ?>
 <?php
 page_end();

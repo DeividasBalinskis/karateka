@@ -88,7 +88,7 @@ html{scrollbar-gutter:stable;}
   .site-header .logo img{height:30px;}
   .site-header .nav-cta{font-size:11px; padding:9px 12px;}
 }
-.site-header .count-badge{display:inline-flex; align-items:center; justify-content:center; min-width:18px; height:18px; padding:0 5px; border-radius:9px; background:#D9534F; color:#fff; font-size:11px; font-weight:700; line-height:1; vertical-align:2px;}
+.site-header .count-badge{display:inline-flex; align-items:center; justify-content:center; min-width:18px; height:18px; padding:0 5px; margin-left:4px; border-radius:9px; background:#D9534F; color:#fff; font-size:11px; font-weight:700; line-height:1; vertical-align:2px;}   /* margin nustatytas čia - kad mygtukas visuose puslapiuose būtų vienodo pločio */
 /* Kompiuteryje: trys stulpeliai - logotipas | pagrindinis meniu | kiti puslapiai.
    Šoniniai stulpeliai vienodo pločio, todėl meniu visada ekrano centre (jei tik telpa - kitaip tiesiog nepersidengia). */
 @media(min-width:1201px){
@@ -98,6 +98,7 @@ html{scrollbar-gutter:stable;}
   .site-header .onpage-section{justify-self:center; margin:0;}
   .site-header .page-section{justify-self:end;}
   .site-header .logo img{max-width:none;}
+  .site-header .nav-login{margin-left:10px;}   /* atitraukta nuo paskutinės nuorodos */
 }
 /* Siauresniuose kompiuterių ekranuose (treneriui daug nuorodų) - glaudžiau, kad tilptų viena eilute */
 @media(min-width:1201px) and (max-width:1380px){

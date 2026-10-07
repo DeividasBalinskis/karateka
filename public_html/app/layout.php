@@ -173,8 +173,8 @@ function site_header(bool $home = false): void
             <li><a class="nav-page" href="<?= url('pamokos.php') ?>">Pamokos</a></li>
           <?php endif; ?>
           <?php if ($a && is_staff($a)): ?>
-            <!-- Treneriui vienas mygtukas: „Mano paskyra“ (nustatymai) pasiekiama iš Treneriams pradžios -->
-            <li><a class="nav-login" href="<?= url('admin/') ?>">Treneriams<?php if ($n = pending_approvals_count()): ?> <span class="count-badge" title="Laukia patvirtinimo"><?= $n ?></span><?php endif; ?></a></li>
+            <!-- Treneriui vienas mygtukas „Paskyra“: trenerio panelė su paskyros nustatymais -->
+            <li><a class="nav-login" href="<?= url('admin/') ?>">Paskyra<?php if ($n = pending_approvals_count()): ?> <span class="count-badge" title="Laukia patvirtinimo"><?= $n ?></span><?php endif; ?></a></li>
           <?php elseif ($a): ?>
             <li><a class="nav-login" href="<?= url('paskyra.php') ?>">Mano paskyra<?php if ($att = account_attention_count((int) $a['id'])): ?> <span class="count-badge" title="Naujos pastabos ar neatliktos užduotys"><?= $att ?></span><?php endif; ?></a></li>
           <?php endif; ?>
@@ -257,4 +257,55 @@ function date_from_input($v): string
         return $y && $m && $d && checkdate($m, $d, $y) ? sprintf('%04d-%02d-%02d', $y, $m, $d) : '';
     }
     return is_string($v) ? trim($v) : '';
+}
+
+/** Paskyros nustatymų kortelė (atidaroma ta dalis, kurioje buvo klaida) */
+function render_account_settings(array $a): string
+{
+    $openSetting = in_array(post('action'), ['email', 'password', 'profile'], true) ? post('action') : '';
+    ob_start();
+    ?>
+<div class="panel card" id="nustatymai" style="margin-top:20px;">
+  <h2>Paskyros nustatymai</h2>
+  <p class="muted small"><?= e($a['first_name'] . ' ' . $a['last_name']) ?></p>
+
+  <details class="setting" <?= $openSetting === 'email' ? 'open' : '' ?>>
+    <summary><span class="setting-label">El. paštas</span><span class="setting-value"><?= e($a['email']) ?></span><span class="setting-btn">Keisti</span></summary>
+    <form method="post" class="form setting-form">
+      <?= csrf_field() ?>
+      <input type="hidden" name="action" value="email">
+      <div class="form-row">
+        <label>Naujas el. paštas <input type="email" name="email" value="<?= $openSetting === 'email' ? e(post('email')) : '' ?>" autocomplete="email" required></label>
+        <label>Slaptažodis <span class="hint">patvirtinimui</span><input type="password" name="current" autocomplete="current-password" required></label>
+      </div>
+      <p class="hint">Į naują adresą atsiųsime nuorodą. El. paštas pasikeis tik ją paspaudus.</p>
+      <div><button class="btn btn-primary btn-sm" type="submit">Keisti el. paštą</button></div>
+    </form>
+  </details>
+
+  <details class="setting" <?= $openSetting === 'profile' ? 'open' : '' ?>>
+    <summary><span class="setting-label">Telefonas</span><span class="setting-value"><?= $a['phone'] ? e($a['phone']) : '<span class="muted">nenurodytas</span>' ?></span><span class="setting-btn">Keisti</span></summary>
+    <form method="post" class="form setting-form">
+      <?= csrf_field() ?>
+      <input type="hidden" name="action" value="profile">
+      <label>Telefonas <input type="tel" name="phone" value="<?= e($a['phone']) ?>" autocomplete="tel"></label>
+      <div><button class="btn btn-primary btn-sm" type="submit">Išsaugoti</button></div>
+    </form>
+  </details>
+
+  <details class="setting" <?= $openSetting === 'password' ? 'open' : '' ?>>
+    <summary><span class="setting-label">Slaptažodis</span><span class="setting-value">••••••••</span><span class="setting-btn">Keisti</span></summary>
+    <form method="post" class="form setting-form">
+      <?= csrf_field() ?>
+      <input type="hidden" name="action" value="password">
+      <div class="form-row">
+        <label>Dabartinis slaptažodis <input type="password" name="current" autocomplete="current-password" required></label>
+        <label>Naujas slaptažodis <span class="hint">bent <?= MIN_PASSWORD ?> simboliai</span><input type="password" name="password" autocomplete="new-password" minlength="<?= MIN_PASSWORD ?>" required></label>
+      </div>
+      <div><button class="btn btn-primary btn-sm" type="submit">Keisti slaptažodį</button></div>
+    </form>
+  </details>
+</div>
+    <?php
+    return ob_get_clean();
 }
