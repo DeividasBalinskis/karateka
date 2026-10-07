@@ -167,6 +167,7 @@ function site_header(bool $home = false): void
       <!-- Kiti puslapiai -->
       <li class="nav-section page-section">
         <ul>
+          <li><a class="nav-page" href="<?= url('renginiai.php') ?>">Renginiai</a></li>
           <li><a class="nav-page" href="<?= url('naujienos.php') ?>">Naujienos</a></li>
           <?php if ($a && can_see_lessons($a)): ?>
             <li><a class="nav-page" href="<?= url('pamokos.php') ?>">Pamokos</a></li>

@@ -78,15 +78,16 @@ foreach ($lessons as $l) {
     $byBelt[$l['belt_level'] === null ? 0 : (int) $l['belt_level']][] = $l;
 }
 ksort($byBelt);
+$n = 0;   // eilės nr. animacijai (laipteliai)
 ?>
 <?php foreach ($byBelt as $beltLvl => $beltLessons): ?>
-  <div class="belt-heading">
+  <div class="belt-heading rise" style="--i:<?= min($n++, 8) ?>;">
     <h2><?= $beltLvl ? e(BELTS[$beltLvl][0]) : 'Visiems' ?></h2>
     <?= $beltLvl ? belt_chip($beltLvl) : '' ?>
   </div>
 <div class="lessons-grid">
   <?php foreach ($beltLessons as $l): $videos = lesson_videos($l); $link = url('pamokos.php?id=' . (int) $l['id']); ?>
-    <a class="panel lesson-card" href="<?= $link ?>">
+    <a class="panel lesson-card rise" href="<?= $link ?>" style="--i:<?= min($n++, 8) ?>;">
       <div class="thumb">
         <?php if ($videos): ?>
           <img src="https://i.ytimg.com/vi/<?= e($videos[0]) ?>/hqdefault.jpg" alt="" loading="lazy">

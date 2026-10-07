@@ -159,12 +159,22 @@ legend{font-family:'Space Grotesk',sans-serif; font-weight:700; padding:0 6px;}
 .table th{text-align:left; font-size:0.72rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--muted); padding:8px 10px; border-bottom:1px solid rgba(23,20,15,0.12);}
 .table td{padding:12px 10px; border-bottom:1px solid rgba(23,20,15,0.07); vertical-align:middle;}
 
+/* ---------- Renginiai ---------- */
+.events-month{font-size:1.25rem; margin:28px 0 12px;}
+.page-head + .events-month{margin-top:0;}
+.events-list{display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:16px;}
+.events-for{margin:10px 0 0 74px;}
+.events-list.past .event{opacity:0.7;}
+.events-list .card{scroll-margin-top:110px;}
+.events-list .card:target{box-shadow:0 0 0 2px #A85C7E, 0 20px 44px rgba(23,20,15,0.12);}
+@media(max-width:760px){ .events-list{grid-template-columns:1fr;} .events-for{margin-left:0;} }
+
 /* ---------- Naujienos ---------- */
 .news-list{display:grid; gap:22px;}
-/* Naujienos atsiranda viena po kitos - greiti laipteliai */
+/* Kortelės atsiranda viena po kitos - greiti laipteliai (naujienos, pamokos, renginiai). --i = eilės nr. */
 @keyframes rise-in{from{opacity:0; transform:translateY(22px);} to{opacity:1; transform:none;}}
-.news-list > .news-card{animation:rise-in 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) both; animation-delay:calc(var(--i, 0) * 70ms);}
-@media (prefers-reduced-motion: reduce){ .news-list > .news-card{animation:none;} }
+.rise{animation:rise-in 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) backwards; animation-delay:calc(var(--i, 0) * 70ms);}
+@media (prefers-reduced-motion: reduce){ .rise{animation:none;} }
 .news-card{overflow:hidden; display:grid; grid-template-columns:400px 1fr;}
 .news-card.no-cover{grid-template-columns:1fr;}
 .news-card .cover{position:relative; min-height:260px; overflow:hidden; background:rgba(23,20,15,0.06);}

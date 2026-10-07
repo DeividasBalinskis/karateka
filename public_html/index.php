@@ -106,9 +106,8 @@ require __DIR__ . '/app/bootstrap.php';
   .wave-divider{width:100%; line-height:0; position:relative; z-index:2; margin-top:-1px;}
   .wave-divider svg{width:100%; height:60px; display:block;}
 
-  /* Atsiradimas slenkant: elementas išnyra iš apačios; --i = eilės numeris grupėje (laipteliai).
-     .js - kad be JavaScript turinys liktų matomas. */
-  .js .reveal{opacity:0; transform:translateY(26px); transition:opacity 0.6s cubic-bezier(0.2,0.7,0.2,1), transform 0.6s cubic-bezier(0.2,0.7,0.2,1); transition-delay:calc(var(--i, 0) * 80ms);}
+  /* Atsiradimas slenkant: elementas tolygiai išnyra ir lieka. .js - kad be JavaScript turinys liktų matomas. */
+  .js .reveal{opacity:0; transform:translateY(18px); transition:opacity 0.9s ease, transform 0.9s cubic-bezier(0.2,0.7,0.2,1);}
   .js .reveal.in-view{opacity:1; transform:none;}
 
 
@@ -157,11 +156,11 @@ require __DIR__ . '/app/bootstrap.php';
     display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.75fr) minmax(0,1fr); gap:14px 22px; align-items:stretch;
     grid-template-areas:"v1 h v4" "v2 h v5" "v3 h v6";
   }
-  .value-item{
-    display:flex; align-items:center; gap:14px; padding:14px 18px; border-radius:14px;
-    background:rgba(255,255,255,0.45); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
-    border:1px solid rgba(255,255,255,0.6); box-shadow:0 10px 24px rgba(23,20,15,0.06);
-  }
+  /* Vertybės be dėžučių: ženklas + tekstas, tarp jų plona linija, išnykstanti į kraštą */
+  .value-item{display:flex; align-items:center; gap:16px; padding:6px 4px; position:relative;}
+  .value-item::after{content:""; position:absolute; left:0; right:0; bottom:-7px; height:1px; background:linear-gradient(90deg, rgba(23,20,15,0.14), transparent);}
+  .value-item.l::after{background:linear-gradient(270deg, rgba(23,20,15,0.14), transparent);}
+  .value-item:nth-child(4)::after, .value-item:nth-child(7)::after{display:none;}   /* paskutinės stulpelyje (v3, v6) */
   .value-item.l{flex-direction:row-reverse; text-align:right;}
   .value-item strong{display:block; font-size:0.92rem; font-weight:600; line-height:1.3; color:var(--ink);}
   .value-translation{display:block; font-family:'JetBrains Mono',monospace; font-size:0.62rem; font-style:italic; color:var(--muted); font-weight:500; margin-bottom:2px;}
@@ -212,7 +211,7 @@ require __DIR__ . '/app/bootstrap.php';
   /* Karuselės tekstas fiksuoto dydžio (em nuo 16px), kad dideliuose ekranuose neišaugtų ir tilptų į ekraną */
   .group-scroll{font-size:16px;}
   .group-content .eyebrow{font-size:0.72em;}
-  .group-content .btn{font-size:0.9em;}
+  .group-content .btn{font-size:0.9em; padding:12px 24px;}
   .group-content .schedule-line{font-size:0.88em;}
   /* group scroll window - one viewport-height window you scroll LEFT/RIGHT through (mouse/trackpad/touch), black photo backgrounds */
   .group-scroll{
@@ -240,11 +239,11 @@ require __DIR__ . '/app/bootstrap.php';
     background:linear-gradient(90deg, transparent 48%, #150E12 96%);
   }
   .group-text-panel{flex:1; display:flex; align-items:stretch; min-width:0;}   /* turinys nuo viršaus - „VAIKAMS / JAUNIMUI / SUAUGUSIEMS“ visose skaidrėse tame pačiame aukštyje */
-  .group-content{position:relative; z-index:2; padding:68px 84px 30px 3vw; max-width:none; color:#F7F4EC; width:100%; display:flex; flex-direction:column;}
+  .group-content{position:relative; z-index:2; padding:62px 84px 24px 3vw; max-width:none; color:#F7F4EC; width:100%; display:flex; flex-direction:column;}
   .group-content .eyebrow{color:#F7F4EC; margin-bottom:12px;}
   .group-content .eyebrow::before{background:#F7F4EC;}
   .group-content h2{font-size:clamp(1.35em,1.9vw,1.7em); color:#F7F4EC; margin-bottom:10px;}
-  .group-content > p{color:#D8D2C2; font-size:0.95em; margin-bottom:16px; max-width:560px;}
+  .group-content > p{color:#D8D2C2; font-size:0.95em; margin-bottom:14px; max-width:560px;}
   .group-facts{display:grid; grid-template-columns:1fr 1fr; gap:18px 26px; border-top:1px solid rgba(247,244,236,0.25); padding-top:16px; margin-bottom:16px;}
   .group-cta{align-self:flex-start; margin-top:auto;}   /* mygtukas visose skaidrėse apačioje, tame pačiame aukštyje */
   #vaikams .group-facts{grid-template-columns:minmax(150px,0.55fr) 2fr;}
@@ -261,7 +260,7 @@ require __DIR__ . '/app/bootstrap.php';
   .loc-group{padding:6px 0;}
   .loc-scroll{max-height:142px; overflow-y:auto; padding-right:6px;}
   /* Vietų sąrašas fiksuoto aukščio: išskleidus slenkama viduje, o visas langas nedidėja */
-  .schedule-picker{height:clamp(190px,24vh,240px);}
+  .schedule-picker{height:clamp(150px,18vh,200px);}
   .schedule-picker > *{min-height:0; overflow-y:auto;}
   .schedule-picker .picker-locations{max-height:none;}
   .loc-scroll::-webkit-scrollbar{width:4px;}
@@ -423,7 +422,7 @@ require __DIR__ . '/app/bootstrap.php';
   .carousel-wrap{position:relative; max-width:1200px; margin:0 32px; border-radius:22px; overflow:hidden; box-shadow:0 24px 50px rgba(23,20,15,0.18);}
   @media(min-width:1264px){ .carousel-wrap{margin:0 auto;} }
   @media(max-width:860px){ .carousel-wrap{margin:0 12px; border-radius:16px;} }
-  .chooser{text-align:center; padding:18px 24px 16px; position:relative; z-index:2;}
+  .chooser{text-align:center; padding:12px 24px 14px; position:relative; z-index:2;}
   .chooser-title{
     display:inline-block; position:relative; padding-bottom:12px;
     font-size:clamp(1.5rem,3vw,2.2rem);
@@ -450,22 +449,36 @@ require __DIR__ . '/app/bootstrap.php';
     .chooser-buttons button{font-size:0.76rem; padding:7px 11px;}
   }
   /* ARTĖJANTYS RENGINIAI */
-  .home-events-section{padding:34px 0 0;}
-  .home-events-section h2{margin:0;}
-  .events-layout{display:grid; grid-template-columns:230px minmax(0,1fr); gap:28px; align-items:center;}
-  .events-title h2{margin:0; font-size:clamp(1.4rem,2.4vw,1.9rem);}
+  /* Tokio pat pločio kaip grupių langas; antraštė ir „Visi renginiai“ vienoje eilutėje virš kortelių */
+  .home-events-section{padding:20px 0 0;}
+  .events-wrap{max-width:1200px; margin:0 32px; position:relative; z-index:2;}
+  @media(min-width:1264px){ .events-wrap{margin:0 auto;} }
+  .events-head{display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:12px;}
+  .events-head h2{
+    margin:0; font-size:1.3rem;
+    background:linear-gradient(90deg, var(--ink) 0%, #7860A0 100%);
+    -webkit-background-clip:text; background-clip:text; color:transparent; -webkit-text-fill-color:transparent;
+  }
+  .events-all{
+    font-size:0.8rem; font-weight:700; white-space:nowrap; padding:8px 16px; border-radius:20px;
+    background:rgba(255,255,255,0.62); border:1px solid rgba(255,255,255,0.7); box-shadow:0 6px 16px rgba(23,20,15,0.08);
+    transition:background 0.15s ease;
+  }
+  .events-all:hover{background:#fff;}
   .events-grid{display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:16px;}
   @media(max-width:860px){
-    .events-layout{grid-template-columns:1fr; gap:14px;}
-    .events-grid{grid-template-columns:1fr;}
+    .events-wrap{margin:0 12px;}
+    .events-grid{grid-template-columns:1fr; gap:10px;}
   }
-  .home-event{display:flex; gap:14px; padding:18px; align-items:flex-start;}
-  .he-date{flex-shrink:0; width:56px; text-align:center; border-radius:10px; background:var(--ink); color:var(--cream); padding:8px 4px; line-height:1.1;}
-  .he-date .d{display:block; font-family:'Space Grotesk',sans-serif; font-size:1.4rem; font-weight:700;}
-  .he-date .m{font-family:'JetBrains Mono',monospace; font-size:0.62rem; text-transform:uppercase; letter-spacing:0.08em;}
-  .he-type{display:inline-block; font-size:0.7rem; font-weight:700; padding:3px 9px; border-radius:20px; background:rgba(168,92,126,0.14); color:#7A3558;}
-  .home-event h3{font-size:1.02rem; margin:6px 0 4px;}
-  .he-meta{font-size:0.82rem; color:var(--muted); line-height:1.45;}
+  .home-event{display:flex; gap:14px; padding:14px 16px; align-items:center; color:var(--ink); transition:box-shadow 0.15s ease;}
+  .home-event:hover{box-shadow:0 20px 44px rgba(23,20,15,0.16);}
+  .he-date{flex-shrink:0; width:54px; text-align:center; border-radius:10px; background:var(--ink); color:var(--cream); padding:7px 4px; line-height:1.1;}
+  .he-date .d{display:block; font-family:'Space Grotesk',sans-serif; font-size:1.3rem; font-weight:700;}
+  .he-date .m{font-family:'JetBrains Mono',monospace; font-size:0.6rem; text-transform:uppercase; letter-spacing:0.08em;}
+  .he-body{flex:1; min-width:0;}
+  .he-type{display:inline-block; font-size:0.66rem; font-weight:700; padding:2px 9px; border-radius:20px; background:rgba(168,92,126,0.14); color:#7A3558;}
+  .home-event h3{font-size:0.95rem; line-height:1.25; margin:4px 0 2px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;}
+  .he-meta{font-size:0.76rem; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
 </style>
 </head>
 <body>
@@ -567,23 +580,21 @@ require __DIR__ . '/app/bootstrap.php';
 
 <?php $homeEvents = public_upcoming_events(3); if ($homeEvents): ?>
 <section id="renginiai" class="home-events-section">
-  <div class="wrap events-layout">
-    <div class="events-title">
-      <h2 class="styled">Artėjantys renginiai</h2>
+  <div class="events-wrap">
+    <div class="events-head">
+      <h2>Artėjantys renginiai</h2>
+      <a class="events-all" href="renginiai.php">Visi renginiai →</a>
     </div>
     <div class="events-grid">
-      <?php foreach ($homeEvents as $k => $ev): $ts = strtotime($ev['starts_on']); ?>
-        <div class="panel home-event reveal" style="--i:<?= $k ?>;">
+      <?php foreach ($homeEvents as $ev): $ts = strtotime($ev['starts_on']); ?>
+        <a class="panel home-event reveal" href="renginiai.php#e<?= (int) $ev['id'] ?>">
           <div class="he-date"><span class="d"><?= date('j', $ts) ?></span><span class="m"><?= e(mb_substr(LT_MONTHS_GEN[(int) date('n', $ts)], 0, 3)) ?></span></div>
           <div class="he-body">
             <span class="he-type"><?= e(EVENT_TYPES[$ev['type']]) ?></span>
             <h3><?= e($ev['title']) ?></h3>
-            <div class="he-meta">
-              <?= e(fmt_date($ev['starts_on'])) ?><?= $ev['ends_on'] && $ev['ends_on'] !== $ev['starts_on'] ? ' – ' . e(fmt_date($ev['ends_on'])) : '' ?><?= $ev['start_time'] ? ', ' . e(fmt_time($ev['start_time'])) : '' ?>
-              <?= $ev['location'] ? '<br>' . e($ev['location']) : '' ?>
-            </div>
+            <div class="he-meta"><?= e(fmt_date($ev['starts_on'])) ?><?= $ev['ends_on'] && $ev['ends_on'] !== $ev['starts_on'] ? ' – ' . e(fmt_date($ev['ends_on'])) : '' ?><?= $ev['start_time'] ? ', ' . e(fmt_time($ev['start_time'])) : '' ?><?= $ev['location'] ? ' · ' . e($ev['location']) : '' ?></div>
           </div>
-        </div>
+        </a>
       <?php endforeach; ?>
     </div>
   </div>
@@ -603,7 +614,7 @@ require __DIR__ . '/app/bootstrap.php';
           <div class="about-quote">„Tikras karate meistriškumas prasideda nuo darbo su savimi — kūno, proto ir dvasios darnos."</div>
         </div>
       </div>
-      <div class="about-photo reveal" id="aboutSlider" style="--i:1;">
+      <div class="about-photo reveal" id="aboutSlider">
         <div class="slide active"><img src="img/apie-1.jpg" alt="Karateka komanda su medaliais"></div>
         <div class="slide"><img src="img/apie-2.jpg" alt="Sportininkės išeina į varžybų tatamį"></div>
         <div class="slide"><img src="img/apie-3.jpg" alt="Apkabinimas po kovos"></div>
@@ -621,12 +632,12 @@ require __DIR__ . '/app/bootstrap.php';
           <p>Klubo šaknys siekia <strong>2013 metus</strong>, kai treniravomės Tradicinio karate-do klubo „Sanrei" komandoje. Įgiję patirties ir subrendę savo idėjai, <strong>2017 metais</strong> įkūrėme savarankišką klubą „Karateka", kuriam vadovauja Denis Balinskis.</p>
           <p>Denis savo karate kelią pradėjo būdamas vos 5 metų — ir šią vaikystės svajonę įgyvendino, sukurdamas bendruomenę, kurioje šiandien sportuoja žmonės nuo 2 iki 54 metų.</p>
         </div>
-        <div class="value-item l reveal" style="grid-area:v1; --i:1;"><span class="value-icon rose">道</span><span><span class="value-translation">kelias</span><strong>Saviugda</strong></span></div>
-        <div class="value-item l reveal" style="grid-area:v2; --i:2;"><span class="value-icon indigo">力</span><span><span class="value-translation">jėga</span><strong>Charakterio ir valios stiprinimas</strong></span></div>
-        <div class="value-item l reveal" style="grid-area:v3; --i:3;"><span class="value-icon green">忍</span><span><span class="value-translation">kantrybė</span><strong>Savidisciplina</strong></span></div>
-        <div class="value-item reveal" style="grid-area:v4; --i:1;"><span class="value-icon rose">礼</span><span><span class="value-translation">pagarba</span><strong>Pagarba tradicijoms ir dojo etiketui</strong></span></div>
-        <div class="value-item reveal" style="grid-area:v5; --i:2;"><span class="value-icon indigo">守</span><span><span class="value-translation">apsauga</span><strong>Savigynos įgūdžiai</strong></span></div>
-        <div class="value-item reveal" style="grid-area:v6; --i:3;"><span class="value-icon green">和</span><span><span class="value-translation">harmonija</span><strong>Vidinė pusiausvyra</strong></span></div>
+        <div class="value-item l reveal" style="grid-area:v1;"><span class="value-icon rose">道</span><span><span class="value-translation">kelias</span><strong>Saviugda</strong></span></div>
+        <div class="value-item l reveal" style="grid-area:v2;"><span class="value-icon indigo">力</span><span><span class="value-translation">jėga</span><strong>Charakterio ir valios stiprinimas</strong></span></div>
+        <div class="value-item l reveal" style="grid-area:v3;"><span class="value-icon green">忍</span><span><span class="value-translation">kantrybė</span><strong>Savidisciplina</strong></span></div>
+        <div class="value-item reveal" style="grid-area:v4;"><span class="value-icon rose">礼</span><span><span class="value-translation">pagarba</span><strong>Pagarba tradicijoms ir dojo etiketui</strong></span></div>
+        <div class="value-item reveal" style="grid-area:v5;"><span class="value-icon indigo">守</span><span><span class="value-translation">apsauga</span><strong>Savigynos įgūdžiai</strong></span></div>
+        <div class="value-item reveal" style="grid-area:v6;"><span class="value-icon green">和</span><span><span class="value-translation">harmonija</span><strong>Vidinė pusiausvyra</strong></span></div>
       </div>
     </div>
 
@@ -635,32 +646,32 @@ require __DIR__ . '/app/bootstrap.php';
       <div class="instructors-row">
         <div class="panel instructors-intro reveal"><p>Klubo instruktoriai nuolat gilina žinias, dalyvaudami stažuotėse Lietuvoje ir užsienyje — karate, fizioterapijos, psichologijos, sporto, medicinos, masažų, biomechanikos, sporto mitybos, kinesiologijos ir sporto pedagogikos srityse. Tai leidžia mums treniruotes kurti remiantis ne tik karate tradicijomis, bet ir šiuolaikiniais mokslo pasiekimais.</p></div>
         <div class="instructor-grid">
-          <div class="panel instructor-card lead reveal" style="--i:1;">
+          <div class="panel instructor-card lead reveal">
             <div class="avatar">DB</div>
             <div class="name">Denis Balinskis</div>
             <div class="rank">3 Dan · klubo vadovas</div>
           </div>
-          <div class="panel instructor-card reveal" style="--i:2;">
+          <div class="panel instructor-card reveal">
             <div class="avatar">LČ</div>
             <div class="name">Lukas Čiulkinas</div>
             <div class="rank">1 Dan</div>
           </div>
-          <div class="panel instructor-card reveal" style="--i:3;">
+          <div class="panel instructor-card reveal">
             <div class="avatar">JK</div>
             <div class="name">Joris Kėrys</div>
             <div class="rank">1 Dan</div>
           </div>
-          <div class="panel instructor-card reveal" style="--i:1;">
+          <div class="panel instructor-card reveal">
             <div class="avatar">EČ</div>
             <div class="name">Esmilė Česevičiūtė</div>
             <div class="rank">1 Dan</div>
           </div>
-          <div class="panel instructor-card reveal" style="--i:2;">
+          <div class="panel instructor-card reveal">
             <div class="avatar">KK</div>
             <div class="name">Karolis Kiela</div>
             <div class="rank">1 Dan</div>
           </div>
-          <div class="panel instructor-card reveal" style="--i:3;">
+          <div class="panel instructor-card reveal">
             <div class="avatar">GL</div>
             <div class="name">Giedrius Li Tang</div>
             <div class="rank">1 Dan</div>
@@ -751,12 +762,10 @@ require __DIR__ . '/app/bootstrap.php';
     }, 4000);
   }
 
-  // Slenkant žemyn elementai išnyra; slenkant atgal į viršų - pasislepia tie, kurie nuėjo žemiau ekrano,
-  // ir vėl išnyra slenkant žemyn. Virš ekrano esantys lieka matomi (grįžtant nebūna tuščių vietų).
+  // Elementas tolygiai atsiranda, kai pasiekiamas slenkant, ir toliau lieka matomas
   const io = new IntersectionObserver((entries)=>{
     entries.forEach(e=>{
-      if (e.isIntersecting) e.target.classList.add('in-view');
-      else if (e.boundingClientRect.top > 0) e.target.classList.remove('in-view');
+      if (e.isIntersecting) { e.target.classList.add('in-view'); io.unobserve(e.target); }
     });
   }, {threshold:0.12});
   document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
