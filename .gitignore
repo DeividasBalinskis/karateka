@@ -1,0 +1,32 @@
+# Slaptažodžiai ir aplinkos nustatymai
+config.php
+.env
+*.local.php
+
+# Įkelti failai (nuotraukos, dokumentai)
+public_html/uploads/*
+!public_html/uploads/.htaccess
+/uploads/
+
+# Narių duomenys, DB kopijos ir eksportai
+*.sql
+!db/[0-9][0-9][0-9]_*.sql
+*.sql.gz
+*.csv
+*.xlsx
+backups/
+data/
+
+# Logai
+*.log
+error_log
+
+# Įrankiai / OS
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# Įkėlimo paketai (generuojami)
+/ikelimui/
