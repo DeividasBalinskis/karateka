@@ -32,6 +32,16 @@ function abs_url(string $path = ''): string
     return rtrim((string) config('site_url'), '/') . url($path);
 }
 
+/** Svetainės versija (app/VERSION). Didinama kiekvienam įkėlimui į test serverį - žr. docs/pakeitimai.md */
+function site_version(): string
+{
+    static $v = null;
+    if ($v === null) {
+        $v = trim((string) @file_get_contents(APP_DIR . '/VERSION')) ?: '?';
+    }
+    return $v;
+}
+
 function is_https(): bool
 {
     return (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
@@ -181,6 +191,15 @@ const EVENT_TYPES = [
     'other'       => 'Kita',
 ];
 
+// Renginių filtras: adresas renginiai.php?tipas=egzaminai ir mygtuko tekstas
+const EVENT_TYPE_FILTERS = [
+    'egzaminai' => ['exam', 'Egzaminai'],
+    'varzybos'  => ['competition', 'Varžybos'],
+    'seminarai' => ['seminar', 'Seminarai'],
+    'stovyklos' => ['camp', 'Stovyklos'],
+    'kita'      => ['other', 'Kita'],
+];
+
 const GROUP_CATEGORIES = [
     'vaikai'   => 'Vaikai',
     'jaunimas' => 'Jaunimas',
@@ -188,4 +207,14 @@ const GROUP_CATEGORIES = [
 ];
 
 /** Fiksuotas reakcijų rinkinys */
+// Numatytieji reakcijų emoji (jei DB dar nėra nustatymo - žr. db/011)
 const REACTIONS = ['👍', '❤️', '🔥', '👏', '🥋'];
+
+// Iš ko adminas renkasi reakcijų emoji (Treneriams -> Naujienos)
+const REACTION_CHOICES = [
+    'Sportas ir karate' => ['🥋', '🥇', '🥈', '🥉', '🏅', '🏆', '🎖️', '🎯', '💪', '👊', '🤜', '🤛', '🦵', '🤸', '🧘', '⛩️', '🎌', '🇯🇵', '🇱🇹', '🐉', '🐯', '🌸'],
+    'Rankos'            => ['👍', '👏', '🙌', '🙏', '🤝', '👌', '✌️', '✊', '🫡', '👋', '🤙', '🫶'],
+    'Širdys'            => ['❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍', '💖', '💯'],
+    'Šventė'            => ['🎉', '🥳', '🎊', '✨', '⭐', '🌟', '🔥', '⚡', '💥', '🚀', '🎂', '🎁'],
+    'Veidai'            => ['😀', '😄', '😁', '😂', '🤣', '😊', '😍', '🥰', '😎', '🤩', '🥹', '😮', '😲', '🤯', '🤔', '😅', '😢', '😭', '👀'],
+];

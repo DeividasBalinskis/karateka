@@ -53,36 +53,138 @@ function render_event(array $ev): string
     }
     return '<div class="event">'
         . '<div class="event-date"><span class="d">' . date('j', $ts) . '</span><span class="m">' . e(mb_substr(LT_MONTHS_GEN[(int) date('n', $ts)], 0, 3)) . '</span></div>'
-        . '<div><span class="badge badge-pink">' . e(EVENT_TYPES[$ev['type']]) . '</span>'
+        . '<div><span class="badge type-badge t-' . e($ev['type']) . '">' . e(EVENT_TYPES[$ev['type']]) . '</span>'
         . '<h3 style="margin-top:6px;">' . e($ev['title']) . '</h3>'
         . '<div class="muted small">' . e($when) . ($ev['location'] ? ' · ' . e($ev['location']) : '') . '</div>'
         . ($ev['description'] ? '<div class="small" style="margin-top:6px;">' . text_to_html($ev['description']) . '</div>' : '')
         . '</div></div>';
 }
 
-/** Reakcijų skaičiai: [emoji => count] */
+/**
+ * "Redaguoti" renginiui viešuose puslapiuose (matomas tik treneriams).
+ * $back - kur grįžti išsaugojus: 'renginiai' arba 'index'.
+ */
+function event_edit_link(int $id, string $back): string
+{
+    return staff_link('admin/renginiai.php?edit=' . $id . '&back=' . $back);
+}
+
+// ---------- Svetainės nustatymai (db/011) ----------
+
+/** Nustatymas iš site_settings; jei lentelės dar nėra (neimportuotas 011) - $default */
+function site_setting(string $name, ?string $default = null): ?string
+{
+    static $cache = [];
+    if (!array_key_exists($name, $cache)) {
+        try {
+            $v = q_value('SELECT value FROM site_settings WHERE name = ?', [$name]);
+            $cache[$name] = $v === false || $v === null ? $default : (string) $v;
+        } catch (PDOException $ex) {
+            $cache[$name] = $default;
+        }
+    }
+    return $cache[$name];
+}
+
+function set_site_setting(string $name, string $value): void
+{
+    q('INSERT INTO site_settings (name, value) VALUES (?, ?) ON DUPLICATE KEY UPDATE value = VALUES(value)', [$name, $value]);
+}
+
+// ---------- Reakcijos į naujienas ----------
+
+/** Emoji, kuriuos nariai gali pasirinkti (nustato adminas) */
+function allowed_reactions(): array
+{
+    $list = array_values(array_filter(explode(' ', (string) site_setting('reactions', implode(' ', REACTIONS)))));
+    return $list ?: REACTIONS;
+}
+
+/** Panaudoti emoji su skaičiais: [emoji => count], daugiausiai paspaustas pirmas. Rodomi ir vėliau išjungti emoji. */
 function news_reaction_counts(int $newsId): array
 {
-    $counts = array_fill_keys(REACTIONS, 0);
-    foreach (q_all('SELECT emoji, COUNT(*) c FROM reactions WHERE news_id = ? GROUP BY emoji', [$newsId]) as $r) {
-        if (isset($counts[$r['emoji']])) {
-            $counts[$r['emoji']] = (int) $r['c'];
-        }
+    $order = array_flip(allowed_reactions());
+    $rows = q_all('SELECT emoji, COUNT(*) c FROM reactions WHERE news_id = ? GROUP BY emoji', [$newsId]);
+    usort($rows, function ($x, $y) use ($order) {
+        return [(int) $y['c'], $order[$x['emoji']] ?? 99] <=> [(int) $x['c'], $order[$y['emoji']] ?? 99];
+    });
+    $counts = [];
+    foreach ($rows as $r) {
+        $counts[$r['emoji']] = (int) $r['c'];
     }
     return $counts;
 }
 
+/** Jau panaudotų emoji mygtukai. Paspaudus - prisijungęs narys prideda / nuima savo reakciją. */
+function render_reaction_chips(int $newsId, ?string $mine): string
+{
+    $allowed = allowed_reactions();
+    $html = '';
+    foreach (news_reaction_counts($newsId) as $emoji => $count) {
+        $label = e($emoji) . '<span class="count">' . $count . '</span>';
+        if (in_array($emoji, $allowed, true) || $mine === $emoji) {
+            $html .= '<button type="submit" name="emoji" value="' . e($emoji) . '" class="reaction' . ($mine === $emoji ? ' mine' : '') . '"'
+                . ' aria-label="' . e($emoji) . ' ' . $count . ($mine === $emoji ? ' (jūsų - paspaudus nuimama)' : '') . '">' . $label . '</button>';
+        } else {
+            // Adminas šį emoji išjungė: reakcijos lieka matomos, bet naujų pridėti nebegalima
+            $html .= '<span class="reaction off" title="Šis emoji nebenaudojamas">' . $label . '</span>';
+        }
+    }
+    return $html;
+}
+
+/** Reakcijų juosta: panaudoti emoji su skaičiais ir mygtukas leidžiamų emoji sąrašui atidaryti */
 function render_reactions(int $newsId): string
 {
     $a = current_account();
     $mine = $a ? q_value('SELECT emoji FROM reactions WHERE news_id = ? AND account_id = ?', [$newsId, $a['id']]) : false;
-    $html = '<form class="reactions" method="post" action="' . url('reakcija.php') . '" data-news="' . $newsId . '">'
-        . csrf_field() . '<input type="hidden" name="news_id" value="' . $newsId . '">';
-    foreach (news_reaction_counts($newsId) as $emoji => $count) {
-        $html .= '<button type="submit" name="emoji" value="' . e($emoji) . '" class="reaction' . ($mine === $emoji ? ' mine' : '') . '"'
-            . ' aria-label="Reaguoti ' . e($emoji) . '">' . $emoji . '<span class="count">' . ($count ?: '') . '</span></button>';
+    $mine = $mine === false || $mine === null ? null : (string) $mine;
+    $picker = '';
+    foreach (allowed_reactions() as $emoji) {
+        $picker .= '<button type="submit" name="emoji" value="' . e($emoji) . '" class="pick' . ($mine === $emoji ? ' mine' : '') . '" role="menuitem" aria-label="Reaguoti ' . e($emoji) . '">' . e($emoji) . '</button>';
     }
-    return $html . '</form>';
+    return '<form class="reactions" method="post" action="' . url('reakcija.php') . '" data-news="' . $newsId . '">'
+        . csrf_field() . '<input type="hidden" name="news_id" value="' . $newsId . '">'
+        . '<span class="r-used">' . render_reaction_chips($newsId, $mine) . '</span>'
+        . '<span class="r-add">'
+        . '<button type="button" class="reaction-add" aria-haspopup="true" aria-expanded="false" aria-label="Pridėti reakciją" title="Pridėti reakciją">'
+        . '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/>'
+        . '<circle cx="9" cy="10" r="1.2" fill="currentColor"/><circle cx="15" cy="10" r="1.2" fill="currentColor"/>'
+        . '<path d="M8.5 14.5c1 1.2 2.1 1.8 3.5 1.8s2.5-.6 3.5-1.8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>'
+        . '<span class="plus" aria-hidden="true">+</span></button>'
+        . '<span class="r-picker" role="menu">' . $picker . '</span>'
+        . '</span></form>';
+}
+
+/**
+ * "Dalintis": kompiuteryje atidaro Facebook dalinimosi langą, telefone - telefono dalinimosi meniu (Messenger, Viber, Facebook...).
+ * Tik viešoms naujienoms (naujienų "tik nariams" Facebook nemato).
+ */
+function share_button(array $n): string
+{
+    if (!empty($n['members_only'])) {
+        return '';
+    }
+    $link = abs_url('naujienos.php?id=' . (int) $n['id']);
+    return '<a class="share-btn" href="https://www.facebook.com/sharer/sharer.php?u=' . rawurlencode($link) . '" target="_blank" rel="noopener"'
+        . ' data-share-url="' . e($link) . '" data-share-title="' . e($n['title']) . '" title="Dalintis Facebook\'e ar kitur">'
+        . '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M12 3v12M7.5 7.5 12 3l4.5 4.5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+        . 'Dalintis</a>';
+}
+
+/** Naujienos viršelis: pirma nuotrauka arba YouTube paveikslėlis ($absolute - pilnas adresas Facebook'ui) */
+function news_cover(int $newsId, bool $absolute = false): ?string
+{
+    $cover = null;
+    foreach (news_media($newsId) as $m) {
+        if ($m['type'] === 'image') {
+            return $absolute ? abs_url('uploads/news/' . $m['file']) : news_image_url($m['file'], true);
+        }
+        if (!$cover && $m['type'] === 'youtube') {
+            $cover = 'https://i.ytimg.com/vi/' . $m['youtube_id'] . '/hqdefault.jpg';
+        }
+    }
+    return $cover;
 }
 
 /** Naujienos medija */

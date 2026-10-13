@@ -74,6 +74,40 @@ function ranking(array $partition, string $from, string $to): array
     return $rows;
 }
 
+/** Ar narys priklauso šiai reitingo "lygai" (savo kategorija / grupė / visas klubas) */
+function member_in_partition(array $member, array $partition): bool
+{
+    if (!$member['group_id']) {
+        return false;
+    }
+    [$type, $key] = $partition;
+    if ($type === 'club') {
+        return true;
+    }
+    if ($type === 'group') {
+        return (int) $member['group_id'] === (int) $key;
+    }
+    return q_value('SELECT category FROM training_groups WHERE id = ?', [$member['group_id']]) === $key;
+}
+
+/**
+ * Nario eilutė reitinge. Jei taškų dar neturi - vis tiek grąžinama: 0 tšk.,
+ * vieta po visų, kurie taškų turi (visi su 0 tšk. dalijasi ta pačia vieta).
+ */
+function member_rank_row(array $rows, array $member, array $partition): ?array
+{
+    foreach ($rows as $r) {
+        if ((int) $r['member_id'] === (int) $member['id']) {
+            return $r;
+        }
+    }
+    if (!member_in_partition($member, $partition)) {
+        return null;
+    }
+    return ['member_id' => (int) $member['id'], 'first_name' => $member['first_name'], 'last_name' => $member['last_name'],
+            'total' => 0, 'rank' => count($rows) + 1];
+}
+
 /** Trumpas vardas viešam sąrašui: "Jonas P." */
 function short_name(array $r): string
 {

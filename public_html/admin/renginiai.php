@@ -5,6 +5,20 @@ $me = require_staff();
 
 $edit = get('edit') ?: post('edit');
 $errors = [];
+// Iš kur atėjo redaguoti (viešas renginių puslapis ar pagrindinis) - ten ir grąžinama
+$back = get('back') ?: post('back');
+$backPages = ['renginiai' => 'renginiai.php', 'index' => 'index.php#renginiai'];
+$back = isset($backPages[$back]) ? $back : '';
+function back_after_save(string $back, array $backPages, int $id = 0): void
+{
+    if ($back === 'index') {
+        take_flashes();   // pagrindinis puslapis pranešimų nerodo - kad neiššoktų vėliau kitame puslapyje
+    }
+    if ($back === 'renginiai') {
+        redirect('renginiai.php' . ($id ? '#e' . $id : ''));
+    }
+    redirect($backPages[$back] ?? 'admin/renginiai.php');
+}
 
 if (is_post()) {
     csrf_check();
@@ -13,7 +27,7 @@ if (is_post()) {
     if (post('action') === 'delete' && $id) {
         q('DELETE FROM events WHERE id = ?', [$id]);
         flash('ok', 'Renginys ištrintas.');
-        redirect('admin/renginiai.php');
+        back_after_save($back, $backPages);
     }
 
     $ev = [
@@ -27,7 +41,7 @@ if (is_post()) {
         'description' => post('description') ?: null,
         'members_only' => !empty($_POST['members_only']) ? 1 : 0,
     ];
-    $groupIds = array_map('intval', (array) ($_POST['groups'] ?? []));
+    $groupIds = audience_from_post();   // visos pažymėtos = visiems
     $_POST['location'] = $ev['location'];   // kad klaidos atveju forma išlaikytų pasirinkimą
 
     if (!isset(EVENT_TYPES[$ev['type']])) {
@@ -56,7 +70,7 @@ if (is_post()) {
         }
         db()->commit();
         flash('ok', 'Renginys išsaugotas.');
-        redirect('admin/renginiai.php');
+        back_after_save($back, $backPages, $id);
     }
 }
 
@@ -75,13 +89,14 @@ if ($edit !== '') {
 
     page_start($ev['id'] ? 'Redaguoti renginį' : 'Naujas renginys', ['admin' => true]);
     ?>
-    <a class="small" href="<?= url('admin/renginiai.php') ?>">← Visi renginiai</a>
+    <a class="small" href="<?= url($backPages[$back] ?? 'admin/renginiai.php') ?>">← <?= $back === 'index' ? 'Atgal į pagrindinį puslapį' : ($back ? 'Atgal į renginius' : 'Visi renginiai') ?></a>
     <h1 class="styled" style="margin-top:8px;"><?= $ev['id'] ? 'Redaguoti renginį' : 'Naujas renginys' ?></h1>
     <?= form_errors($errors) ?>
     <form method="post" class="form">
       <?= csrf_field() ?>
       <input type="hidden" name="id" value="<?= (int) $ev['id'] ?>">
       <input type="hidden" name="edit" value="<?= e($edit) ?>">
+      <input type="hidden" name="back" value="<?= e($back) ?>">
       <div class="grid-2">
         <div class="panel card form">
           <label>Tipas
@@ -104,11 +119,7 @@ if ($edit !== '') {
         </div>
         <div class="panel card form">
           <h2>Kam skirta?</h2>
-          <p class="hint">Nieko nepažymėjus - visoms grupėms.</p>
-          <?php foreach ($allGroups as $g): ?>
-            <label class="check"><input type="checkbox" name="groups[]" value="<?= (int) $g['id'] ?>" <?= in_array((string) $g['id'], array_map('strval', $selectedGroups), true) ? 'checked' : '' ?>>
-              <span><?= e($g['name']) ?></span></label>
-          <?php endforeach; ?>
+          <?= audience_field(array_map('intval', (array) $selectedGroups)) ?>
         </div>
       </div>
       <div class="row" style="margin-top:20px;">
@@ -131,7 +142,7 @@ function event_row(array $ev): void
     $groups = event_group_names((int) $ev['id']); ?>
     <li class="row between">
       <span>
-        <span class="badge badge-pink"><?= e(EVENT_TYPES[$ev['type']]) ?></span><?= members_only_badge($ev) ?>
+        <span class="badge type-badge t-<?= e($ev['type']) ?>"><?= e(EVENT_TYPES[$ev['type']]) ?></span><?= members_only_badge($ev) ?>
         <a href="?edit=<?= (int) $ev['id'] ?>"><strong><?= e($ev['title']) ?></strong></a>
         <div class="muted small"><?= e(fmt_date($ev['starts_on'], true)) ?><?= $ev['location'] ? ' · ' . e($ev['location']) : '' ?> · <?= $groups ? e(implode(', ', $groups)) : 'visiems' ?></div>
       </span>

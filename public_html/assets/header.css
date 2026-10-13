@@ -113,3 +113,8 @@ html{scrollbar-gutter:stable;}
 .attention-bar:hover{background:#F8DCDA; text-decoration:none;}
 .site-header .burger{position:relative;}
 .site-header .burger-dot{position:absolute; top:2px; right:0; width:10px; height:10px; border-radius:50%; background:#D9534F; border:2px solid #F7F4EC;}
+/* Versijos numeris prie logotipo - tik test ir lokaliai (live nerodomas) */
+.site-header .logo{position:relative; text-decoration:none;}
+.site-header .ver-tag{position:absolute; left:calc(100% + 6px); bottom:1px; font-family:'JetBrains Mono',monospace; font-size:10px; font-weight:600; line-height:1; letter-spacing:0.02em;
+  color:#2F6B5A; background:rgba(47,107,90,0.10); border:1px solid rgba(47,107,90,0.25); border-radius:6px; padding:3px 5px; white-space:nowrap;}
+@media(max-width:860px){ .site-header .ver-tag{font-size:9px; padding:2px 4px; left:calc(100% + 4px);} }

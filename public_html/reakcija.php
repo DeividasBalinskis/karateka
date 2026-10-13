@@ -34,11 +34,13 @@ if (!is_active_account($a)) {
 }
 
 $emoji = post('emoji');
-if (!in_array($emoji, REACTIONS, true) || !q_value('SELECT 1 FROM news WHERE id = ? AND is_published = 1 AND ' . visibility_sql() . '', [$newsId])) {
+$current = q_value('SELECT emoji FROM reactions WHERE news_id = ? AND account_id = ?', [$newsId, $a['id']]);
+// Leidžiami tik adminui pažymėti emoji; savo seną (jau išjungtą) reakciją nuimti galima
+$ok = in_array($emoji, allowed_reactions(), true) || ($current !== false && $current === $emoji);
+if (!$ok || !q_value('SELECT 1 FROM news WHERE id = ? AND is_published = 1 AND ' . visibility_sql() . '', [$newsId])) {
     respond($json, ['error' => 'Netinkama reakcija.'], $back);
 }
 
-$current = q_value('SELECT emoji FROM reactions WHERE news_id = ? AND account_id = ?', [$newsId, $a['id']]);
 if ($current === $emoji) {
     q('DELETE FROM reactions WHERE news_id = ? AND account_id = ?', [$newsId, $a['id']]);
     $mine = null;
@@ -48,4 +50,4 @@ if ($current === $emoji) {
     $mine = $emoji;
 }
 
-respond($json, ['counts' => news_reaction_counts($newsId), 'mine' => $mine], $back);
+respond($json, ['chips' => render_reaction_chips($newsId, $mine), 'mine' => $mine], $back);

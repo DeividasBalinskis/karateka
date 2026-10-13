@@ -21,7 +21,7 @@ if (is_post()) {
     $belt = belt_from_post('belt_level');
     $body = post('body') ?: null;
     $published = !empty($_POST['is_published']) ? 1 : 0;
-    $groupIds = array_map('intval', (array) ($_POST['groups'] ?? []));
+    $groupIds = audience_from_post();   // visos pažymėtos = visiems
 
     $videos = [];
     foreach (preg_split('/\s+/', post('videos')) as $link) {
@@ -107,10 +107,7 @@ if ($edit !== '') {
         </div>
         <div class="panel card form">
           <h2>Kam skirta?</h2>
-          <p class="hint">Nieko nepažymėjus - visiems nariams.</p>
-          <?php foreach ($allGroups as $g): ?>
-            <label class="check"><input type="checkbox" name="groups[]" value="<?= (int) $g['id'] ?>" <?= in_array((string) $g['id'], $selectedGroups, true) ? 'checked' : '' ?>><span><?= e($g['name']) ?></span></label>
-          <?php endforeach; ?>
+          <?= audience_field(array_map('intval', (array) $selectedGroups)) ?>
         </div>
       </div>
       <div class="row" style="margin-top:20px;">
