@@ -1,0 +1,44 @@
+# Lokali testavimo aplinka: docker compose up -d
+#   Svetainė:    http://localhost:8088
+#   phpMyAdmin:  http://localhost:8081
+#   Mailpit:     http://localhost:8025  (pagauna visus išsiųstus laiškus)
+services:
+  web:
+    build: ./docker
+    ports:
+      - "8088:80"
+    volumes:
+      - ./public_html:/var/www/html
+    depends_on:
+      - db
+
+  db:
+    image: mariadb:10.11
+    environment:
+      MARIADB_DATABASE: karateka
+      MARIADB_USER: karateka
+      MARIADB_PASSWORD: ${DB_PASSWORD}
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - dbdata:/var/lib/mysql
+      - ./db:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "3307:3306"
+
+  phpmyadmin:
+    image: phpmyadmin:5
+    environment:
+      PMA_HOST: db
+    ports:
+      - "8081:80"
+    depends_on:
+      - db
+
+  mailpit:
+    image: axllent/mailpit
+    ports:
+      - "8025:8025"
+
+volumes:
+  dbdata:
