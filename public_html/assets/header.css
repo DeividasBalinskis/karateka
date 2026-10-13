@@ -1,0 +1,115 @@
+/* Bendra viršutinė juosta ir meniu - VISIEMS puslapiams.
+   Dydžiai px (ne rem), kad meniu visur būtų vienodo dydžio, nepriklausomai nuo puslapio šrifto. */
+
+
+/* Vieta slinkties juostai visada palikta - kitaip trumpuose puslapiuose meniu pasislenka keliais px */
+html{scrollbar-gutter:stable;}
+/* Slinkimo juosta pačiame viršuje */
+.progress-wrap{position:fixed; top:0; left:0; right:0; z-index:999; height:10px; overflow:hidden; background-color:#F7F4EC;}
+.progress-bar{
+  position:relative; height:100%; width:0%;
+  background:linear-gradient(90deg, #F7F4EC, #F0CB4E, #E6842B, #4C8353, #2E6FA8, #6B4A34, #15110D);
+  background-size:100vw 100%; background-repeat:no-repeat;
+  transition:width 0.1s linear;
+}
+
+.site-header{position:sticky; top:10px; z-index:100; background:#F7F4EC; border-bottom:1px solid rgba(23,20,15,0.08); margin-top:10px; font-family:'Inter', sans-serif;}
+.site-header nav{display:flex; align-items:center; gap:14px; padding:8px 32px; max-width:1200px; margin:0 auto; position:relative;}
+.site-header .logo{flex-shrink:0;}
+.site-header .logo img{height:46px; width:auto; display:block;}
+.site-header ul{list-style:none; margin:0; padding:0;}
+.site-header ul.nav-list{display:flex; align-items:center; gap:14px; flex:1;}
+/* Pagrindinio puslapio skiltys - centre, kiti puslapiai - dešinėje */
+.site-header .onpage-section{margin:0 auto;}
+.site-header .nav-section > ul{display:flex; align-items:center; gap:6px;}
+
+/* 1 grupė: šio (pagrindinio) puslapio skiltys - bendrame "kapsulės" fone */
+.site-header .onpage-section > ul{background:rgba(23,20,15,0.045); border-radius:14px; padding:4px;}
+.site-header a.nav-link{
+  font-size:14px; font-weight:600; color:#17140F; line-height:1;
+  display:inline-block; padding:10px 12px; border-radius:10px;
+  border:1.5px solid transparent; background:none; cursor:pointer; white-space:nowrap; text-decoration:none;
+  transition:border-color 0.15s ease, background 0.15s ease;
+}
+.site-header a.nav-link:hover:hover{background:rgba(255,255,255,0.85); text-decoration:none;}
+.site-header .nl-pink:hover{border-color:rgba(168,92,126,0.45);}
+.site-header .nl-gray:hover{border-color:rgba(90,100,90,0.45);}
+.site-header .nl-blue:hover{border-color:rgba(74,92,156,0.45);}
+.site-header .nav-cta{
+  display:inline-block; background:linear-gradient(90deg, #2E7FB0 0%, #A85C7E 55%, #D9698C 100%); background-size:200% 100%;
+  color:#fff !important; padding:11px 18px; font-size:13px; font-weight:700; line-height:1.1; border-radius:10px; white-space:nowrap;
+  text-decoration:none; text-shadow:0 1px 2px rgba(0,0,0,0.25); box-shadow:0 6px 16px rgba(168,92,126,0.3);
+  transition:transform 0.15s ease, background-position 0.3s ease;
+}
+.site-header .nav-cta:hover{background-position:100% 0; filter:brightness(1.08); text-decoration:none;}
+
+/* 2 grupė: kiti puslapiai - atskirti brūkšniu, paprastos nuorodos su rodykle */
+.site-header .page-section{border-left:1px solid rgba(23,20,15,0.15); padding-left:14px;}
+.site-header a.nav-page{
+  font-size:14px; font-weight:600; color:#17140F; line-height:1; white-space:nowrap; text-decoration:none;
+  display:inline-block; padding:10px 8px; border-radius:10px; transition:background 0.15s ease;
+}
+.site-header a.nav-page::after{content:" ›"; color:#A85C7E; font-weight:700;}
+.site-header a.nav-page:hover{background:rgba(23,20,15,0.05); text-decoration:none;}
+.site-header .nav-login{
+  display:inline-block; color:#F7F4EC !important; background:#17140F; padding:11px 16px; font-size:13px; font-weight:700; line-height:1.1;
+  border-radius:10px; white-space:nowrap; text-decoration:none; transition:background 0.15s ease;
+}
+.site-header .nav-login:hover{background:#2F6B5A; text-decoration:none;}
+.site-header .logout-btn{font-family:inherit; font-size:14px; font-weight:600; color:#4A453A; background:none; border:none; cursor:pointer; padding:10px; line-height:1;}
+.site-header .mobile-only{display:none;}
+.site-header .inline-form{display:inline; margin:0;}
+
+.site-header .burger{display:none; flex-direction:column; gap:5px; background:none; border:none; cursor:pointer; padding:6px;}
+.site-header .burger span{width:22px; height:2px; background:#17140F; display:block;}
+
+/* Burger režimas planšetėse ir telefonuose */
+@media(max-width:1200px){
+  .site-header .logo{margin-right:auto;}
+  .site-header .onpage-section{margin:0;}
+  .site-header ul.nav-list{
+    display:none; position:absolute; top:100%; left:0; right:0;
+    flex-direction:column; align-items:stretch; gap:10px; padding:14px; margin-top:6px;
+    background:#FBF9F4; border-bottom:1px solid rgba(23,20,15,0.08); box-shadow:0 16px 28px rgba(23,20,15,0.1);
+  }
+  .site-header ul.nav-list.nav-open{display:flex;}
+  .site-header .nav-section > ul{flex-direction:column; align-items:stretch; gap:2px;}
+  .site-header .nav-section > ul > li{width:100%;}
+  .site-header .page-section{border-left:none; padding-left:0; border-top:1px solid rgba(23,20,15,0.12); padding-top:10px;}
+  .site-header a.nav-link, .site-header a.nav-page{display:block; width:100%; text-align:left; padding:12px 10px;}
+  .site-header .nav-login{display:block; text-align:center; margin-top:4px;}
+  .site-header .burger{display:flex;}
+  .site-header .desktop-only{display:none;}
+  .site-header .mobile-only{display:block;}
+  .site-header .nav-cta.mobile-only{display:inline-block;}
+}
+@media(max-width:860px){
+  .site-header nav{padding:8px 16px; gap:10px;}
+  .site-header .logo img{height:30px;}
+  .site-header .nav-cta{font-size:11px; padding:9px 12px;}
+}
+.site-header .count-badge{display:inline-flex; align-items:center; justify-content:center; min-width:18px; height:18px; padding:0 5px; margin-left:4px; border-radius:9px; background:#D9534F; color:#fff; font-size:11px; font-weight:700; line-height:1; vertical-align:2px;}   /* margin nustatytas čia - kad mygtukas visuose puslapiuose būtų vienodo pločio */
+/* Kompiuteryje: trys stulpeliai - logotipas | pagrindinis meniu | kiti puslapiai.
+   Šoniniai stulpeliai vienodo pločio, todėl meniu visada ekrano centre (jei tik telpa - kitaip tiesiog nepersidengia). */
+@media(min-width:1201px){
+  .site-header nav{display:grid; grid-template-columns:1fr auto 1fr; max-width:1400px;}
+  .site-header ul.nav-list{display:contents;}
+  .site-header .logo{justify-self:start;}
+  .site-header .onpage-section{justify-self:center; margin:0;}
+  .site-header .page-section{justify-self:end;}
+  .site-header .logo img{max-width:none;}
+  .site-header .nav-login{margin-left:10px;}   /* atitraukta nuo paskutinės nuorodos */
+}
+/* Siauresniuose kompiuterių ekranuose (treneriui daug nuorodų) - glaudžiau, kad tilptų viena eilute */
+@media(min-width:1201px) and (max-width:1380px){
+  .site-header nav{padding:8px 18px; gap:10px;}
+  .site-header .nav-section > ul{gap:3px;}
+  .site-header a.nav-link{padding:10px 9px;}
+  .site-header a.nav-page{padding:10px 6px;}
+  .site-header .page-section{padding-left:10px;}
+}
+/* Pranešimas apie trenerio pastabas / užduotis - visuose puslapiuose, kol nepažymėta */
+.attention-bar{display:block; position:relative; z-index:90; text-align:center; padding:9px 16px; font-family:'Inter',sans-serif; font-size:14px; color:#9B2C28; background:#FBE9E8; border-bottom:1px solid rgba(217,83,79,0.35); text-decoration:none;}
+.attention-bar:hover{background:#F8DCDA; text-decoration:none;}
+.site-header .burger{position:relative;}
+.site-header .burger-dot{position:absolute; top:2px; right:0; width:10px; height:10px; border-radius:50%; background:#D9534F; border:2px solid #F7F4EC;}
