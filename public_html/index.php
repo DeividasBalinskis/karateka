@@ -482,8 +482,39 @@ require __DIR__ . '/app/bootstrap.php';
   .he-date .m{font-family:'JetBrains Mono',monospace; font-size:0.6rem; text-transform:uppercase; letter-spacing:0.08em;}
   .he-body{flex:1; min-width:0;}
   .he-type{display:inline-block; font-size:0.66rem; font-weight:700; padding:2px 9px; border-radius:20px; background:rgba(168,92,126,0.14); color:#7A3558;}
+  .he-type.t-exam{background:rgba(47,107,90,0.14); color:#2F6B5A;}
+  .he-type.t-seminar{background:rgba(46,111,168,0.14); color:#1F527F;}
+  .he-type.t-camp{background:rgba(230,132,43,0.17); color:#8A4A0E;}
+  .he-type.t-other{background:rgba(23,20,15,0.08); color:#4A453A;}
+  /* Redagavimo nuoroda treneriui - atskirai nuo kortelės nuorodos */
+  .he-wrap{position:relative; display:flex; min-width:0;}
+  .he-wrap > .home-event{flex:1; min-width:0;}
+  .he-wrap > .staff-link{position:absolute; top:8px; right:8px; z-index:3; font-size:0.7rem; font-weight:700; padding:3px 9px; border-radius:20px; white-space:nowrap;
+    background:#E3EDE9; color:#2F6B5A; text-decoration:none;}
+  .he-wrap > .staff-link:hover{background:#2F6B5A; color:#fff;}
   .home-event h3{font-size:0.95rem; line-height:1.25; margin:4px 0 2px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;}
   .he-meta{font-size:0.76rem; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  /* NAUJAUSIOS NAUJIENOS - po pirmu ekranu, toks pat plotis kaip renginių */
+  .home-news-section{padding:8px 0 0;}
+  .news-grid{display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:16px;}
+  .home-news{display:grid; grid-template-rows:auto 1fr; overflow:hidden; color:var(--ink); padding:0; transition:box-shadow 0.15s ease;}
+  .home-news:hover{box-shadow:0 20px 44px rgba(23,20,15,0.16); text-decoration:none;}
+  .hn-cover{height:170px; overflow:hidden; background:rgba(23,20,15,0.06);}
+  .hn-cover img{width:100%; height:100%; object-fit:cover; display:block; transition:transform 0.4s ease;}
+  .home-news:hover .hn-cover img{transform:scale(1.03);}
+  .hn-cover.empty{display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg, rgba(120,96,160,0.16), rgba(168,92,126,0.14));}
+  .hn-cover .hn-logo{width:auto; height:56px; object-fit:contain; opacity:0.55;}
+  .hn-body{padding:14px 16px 16px;}
+  .hn-date{font-family:'JetBrains Mono',monospace; font-size:0.66rem; letter-spacing:0.06em; text-transform:uppercase; color:var(--muted);}
+  .home-news h3{font-size:1rem; line-height:1.3; margin:6px 0 6px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;}
+  .home-news p{font-size:0.84rem; line-height:1.45; color:var(--muted); margin:0; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;}
+  @media(max-width:860px){
+    .news-grid{grid-template-columns:1fr; gap:10px;}
+    .home-news{grid-template-rows:none; grid-template-columns:110px 1fr;}
+    .hn-cover{height:auto; min-height:100px;}
+    .hn-body{padding:10px 12px;}
+    .home-news p{display:none;}
+  }
 </style>
 </head>
 <body>
@@ -594,12 +625,40 @@ require __DIR__ . '/app/bootstrap.php';
     </div>
     <div class="events-grid">
       <?php foreach ($homeEvents as $ev): $ts = strtotime($ev['starts_on']); ?>
-        <a class="panel home-event reveal" href="renginiai.php#e<?= (int) $ev['id'] ?>">
+        <div class="he-wrap reveal">
+        <a class="panel home-event" href="renginiai.php#e<?= (int) $ev['id'] ?>">
           <div class="he-date"><span class="d"><?= date('j', $ts) ?></span><span class="m"><?= e(mb_substr(LT_MONTHS_GEN[(int) date('n', $ts)], 0, 3)) ?></span></div>
           <div class="he-body">
-            <span class="he-type"><?= e(EVENT_TYPES[$ev['type']]) ?></span>
+            <span class="he-type t-<?= e($ev['type']) ?>"><?= e(EVENT_TYPES[$ev['type']]) ?></span>
             <h3><?= e($ev['title']) ?></h3>
             <div class="he-meta"><?= e(fmt_date($ev['starts_on'])) ?><?= $ev['ends_on'] && $ev['ends_on'] !== $ev['starts_on'] ? ' – ' . e(fmt_date($ev['ends_on'])) : '' ?><?= $ev['start_time'] ? ', ' . e(fmt_time($ev['start_time'])) : '' ?><?= $ev['location'] ? ' · ' . e($ev['location']) : '' ?></div>
+          </div>
+        </a>
+        <?= event_edit_link((int) $ev['id'], 'index') ?>
+        </div>
+      <?php endforeach; ?>
+    </div>
+  </div>
+</section>
+<?php endif; ?>
+</div>
+
+<?php $homeNews = q_all('SELECT * FROM news WHERE is_published = 1 AND published_at <= NOW() AND ' . visibility_sql() . ' ORDER BY published_at DESC LIMIT 3'); if ($homeNews): ?>
+<!-- Naujausios naujienos (po pirmu ekranu) + nuoroda į visas -->
+<section id="naujienos" class="home-news-section">
+  <div class="events-wrap">
+    <div class="events-head">
+      <h2>Naujausios naujienos</h2>
+      <a class="events-all" href="naujienos.php">Visos naujienos →</a>
+    </div>
+    <div class="news-grid">
+      <?php foreach ($homeNews as $n): $cover = news_cover((int) $n['id']); $body = trim(preg_replace('/\s+/', ' ', $n['body'])); ?>
+        <a class="panel home-news reveal" href="naujienos.php?id=<?= (int) $n['id'] ?>">
+          <div class="hn-cover<?= $cover ? '' : ' empty' ?>"><?php if ($cover): ?><img src="<?= e($cover) ?>" alt="" loading="lazy"><?php else: ?><img class="hn-logo" src="img/logo.png" alt=""><?php endif; ?></div>
+          <div class="hn-body">
+            <div class="hn-date"><?= e(fmt_date($n['published_at'])) ?></div>
+            <h3><?= e($n['title']) ?></h3>
+            <p><?= e(mb_strlen($body) > 160 ? mb_substr($body, 0, 160) . '…' : $body) ?></p>
           </div>
         </a>
       <?php endforeach; ?>
@@ -607,7 +666,6 @@ require __DIR__ . '/app/bootstrap.php';
   </div>
 </section>
 <?php endif; ?>
-</div>
 
 <section id="apie" style="position:relative;">
   <div class="wrap">

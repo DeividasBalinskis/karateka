@@ -146,12 +146,12 @@ if ($active) {
     $topKey = isset($topChoices[get('top')]) ? get('top') : array_key_first($topChoices);
     $partition = $topChoices[$topKey];
     $rows = ranking($partition, $from, $to);
-    $mine = null;
-    foreach ($rows as $r) {
-        if ((int) $r['member_id'] === (int) $selected['id']) {
-            $mine = $r;
-        }
-    }
+    // Sava eilutė visada (ir su 0 tšk.), jei narys priklauso rodomam reitingui
+    $mine = member_rank_row($rows, $selected, $partition);
+    $topRows = array_filter($rows, function ($r) { return $r['rank'] <= 5; });
+    $mineInTop = $mine && in_array((int) $mine['member_id'], array_map('intval', array_column($topRows, 'member_id')), true);
+    // "tu" - tik kai žiūri pats narys (tėvams, žiūrintiems vaiko, užtenka paryškintos eilutės)
+    $meTag = ($selected['relation'] ?? '') === 'self' ? '<span class="me-tag">tu</span>' : '';
 }
 
 page_start('Mano paskyra', ['noindex' => true]);
@@ -214,16 +214,17 @@ page_start('Mano paskyra', ['noindex' => true]);
         <div class="kicker" style="margin-top:4px;">Top 5 · <?= e($partition[2]) ?></div>
         <?php if (!$rows): ?>
           <p class="muted">Šį sezoną taškų dar niekas neturi.</p>
-        <?php else: ?>
+        <?php endif; ?>
+        <?php if ($rows || $mine): ?>
           <ol class="ranking">
-            <?php foreach (array_filter($rows, function ($r) { return $r['rank'] <= 5; }) as $r): ?>
-              <li class="<?= $mine && $r['member_id'] === $mine['member_id'] ? 'me' : '' ?>">
-                <span class="pos r<?= (int) $r['rank'] ?>"><?= (int) $r['rank'] ?></span><?= e(short_name($r)) ?><span class="pts"><?= (int) $r['total'] ?></span>
+            <?php foreach ($topRows as $r): ?>
+              <li class="<?= $mine && (int) $r['member_id'] === (int) $mine['member_id'] ? 'me' : '' ?>">
+                <span class="pos r<?= (int) $r['rank'] ?>"><?= (int) $r['rank'] ?></span><?= e(short_name($r)) ?><?= $mine && (int) $r['member_id'] === (int) $mine['member_id'] ? $meTag : '' ?><span class="pts"><?= (int) $r['total'] ?></span>
               </li>
             <?php endforeach; ?>
-            <?php if ($mine && $mine['rank'] > 5): ?>
-              <li class="gap">···</li>
-              <li class="me"><span class="pos"><?= (int) $mine['rank'] ?></span><?= e(short_name($mine)) ?><span class="pts"><?= (int) $mine['total'] ?></span></li>
+            <?php if ($mine && !$mineInTop): ?>
+              <?php if (count($topRows) < $mine['rank'] - 1): ?><li class="gap">···</li><?php endif; ?>
+              <li class="me"><span class="pos"><?= (int) $mine['rank'] ?></span><?= e(short_name($mine)) ?><?= $meTag ?><span class="pts"><?= (int) $mine['total'] ?></span></li>
             <?php endif; ?>
           </ol>
         <?php endif; ?>

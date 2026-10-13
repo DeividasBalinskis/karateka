@@ -16,6 +16,12 @@ function page_start(string $title, array $opt = []): void
 <title><?= e($title) ?> — Karateka</title>
 <?php if (!empty($opt['description'])): ?><meta name="description" content="<?= e($opt['description']) ?>">
 <?php endif; ?>
+<?php if (!empty($opt['og'])): /* Facebook / Messenger nuorodos peržiūra */ ?>
+<meta property="og:site_name" content="Karate Ateitis">
+<meta property="og:locale" content="lt_LT">
+<?php foreach ($opt['og'] as $k => $v): if ($v): ?><meta property="og:<?= e($k) ?>" content="<?= e($v) ?>">
+<?php endif; endforeach; ?>
+<?php endif; ?>
 <?php if ($admin || !empty($opt['noindex'])): ?><meta name="robots" content="noindex">
 <?php endif; ?>
 <link rel="icon" type="image/png" sizes="32x32" href="<?= url('favicon-32.png?v=2') ?>">
@@ -37,7 +43,7 @@ function page_start(string $title, array $opt = []): void
   <a href="<?= url('admin/grupes.php') ?>">Grupės</a>
   <a href="<?= url('admin/renginiai.php') ?>">Renginiai</a>
   <a href="<?= url('admin/taskai.php') ?>">Taškai</a>
-  <a href="<?= url('admin/naujienos.php') ?>">Naujienos</a>
+  <a href="<?= url('admin/naujienos.php') ?>">Naujienos 🙂</a>
   <a href="<?= url('admin/pamokos.php') ?>">Pamokos</a>
   <?php if (is_admin()): ?><a href="<?= url('admin/paskyros.php') ?>">Paskyros</a><?php endif; ?>
   <a href="<?= url('admin/patvirtinimai.php') ?>" class="tab-last">Patvirtinimai<?php if ($pendingCount): ?> <span class="count-badge"><?= $pendingCount ?></span><?php endif; ?></a>
@@ -103,6 +109,83 @@ function staff_link(string $path, string $label = '✎ Redaguoti'): string
     return '<a class="staff-link" href="' . e(url($path)) . '">' . e($label) . '</a>';
 }
 
+/**
+ * "Kam skirta?" varnelės: "Visos grupės", kiekviena kategorija (Vaikai / Jaunimas / Suaugusieji) ir jos grupės.
+ * $selected tuščias = visoms grupėms (tada pažymėta viskas).
+ */
+function audience_field(array $selected, string $allLabel = 'Visos grupės'): string
+{
+    $groups = q_all('SELECT * FROM training_groups WHERE is_active = 1 ORDER BY sort_order, name');
+    $sel = array_map('intval', $selected);
+    $all = !$sel;
+    $byCat = [];
+    foreach ($groups as $g) {
+        $byCat[$g['category']][] = $g;
+    }
+    $box = function (array $g, string $label, string $cls) use ($sel, $all): string {
+        $on = $all || in_array((int) $g['id'], $sel, true);
+        return '<label class="check ' . $cls . '"><input type="checkbox" name="groups[]" value="' . (int) $g['id'] . '" data-cat="' . e($g['category']) . '"'
+            . ($on ? ' checked' : '') . '><span>' . e($label) . '</span></label>';
+    };
+    $html = '<div class="audience">'
+        . '<label class="check aud-all"><input type="checkbox" data-aud="all"' . ($all ? ' checked' : '') . '><span>' . e($allLabel) . '</span></label>';
+    foreach (GROUP_CATEGORIES as $cat => $catLabel) {
+        if (empty($byCat[$cat])) {
+            continue;
+        }
+        $list = $byCat[$cat];
+        if (count($list) === 1) {
+            // Kategorija su viena grupe (pvz. Jaunimas) - viena varnelė
+            $html .= $box($list[0], $catLabel, 'aud-cat');
+            continue;
+        }
+        $html .= '<label class="check aud-cat"><input type="checkbox" data-aud="cat" data-cat="' . e($cat) . '"><span>' . e($catLabel)
+            . ' <span class="muted">(visos ' . count($list) . ')</span></span></label><div class="aud-sub">';
+        foreach ($list as $g) {
+            // "Vaikai: Viršuliškės" -> "Viršuliškės" (kategorija jau parašyta virš sąrašo)
+            $label = preg_replace('/^' . preg_quote($catLabel, '/') . ':\s*/u', '', $g['name']);
+            $html .= $box($g, $label, 'aud-group');
+        }
+        $html .= '</div>';
+    }
+    $html .= '<p class="hint" style="margin-top:6px;">Nieko nepažymėjus - visiems.</p></div>';
+    static $js = false;
+    if (!$js) {
+        $js = true;
+        $html .= <<<'JS'
+<script>
+document.querySelectorAll('.audience').forEach(function (box) {
+  var all = box.querySelector('[data-aud="all"]');
+  var groups = [].slice.call(box.querySelectorAll('input[name="groups[]"]'));
+  var cats = [].slice.call(box.querySelectorAll('[data-aud="cat"]'));
+  function inCat(c) { return groups.filter(function (g) { return g.dataset.cat === c.dataset.cat; }); }
+  function sync() {
+    cats.forEach(function (c) {
+      var n = inCat(c).filter(function (g) { return g.checked; }).length;
+      c.checked = n === inCat(c).length; c.indeterminate = n > 0 && !c.checked;
+    });
+    var n = groups.filter(function (g) { return g.checked; }).length;
+    all.checked = n === groups.length; all.indeterminate = n > 0 && !all.checked;
+  }
+  all.addEventListener('change', function () { groups.forEach(function (g) { g.checked = all.checked; }); sync(); });
+  cats.forEach(function (c) { c.addEventListener('change', function () { inCat(c).forEach(function (g) { g.checked = c.checked; }); sync(); }); });
+  groups.forEach(function (g) { g.addEventListener('change', sync); });
+  sync();
+});
+</script>
+JS;
+    }
+    return $html;
+}
+
+/** Pažymėtos grupės iš "Kam skirta?". Pažymėtos visos (arba nė viena) = [] (visiems, taip pat ir vėliau sukurtoms grupėms) */
+function audience_from_post(): array
+{
+    $ids = array_values(array_unique(array_map('intval', (array) ($_POST['groups'] ?? []))));
+    $active = array_map('intval', q('SELECT id FROM training_groups WHERE is_active = 1')->fetchAll(PDO::FETCH_COLUMN));
+    return array_diff($active, $ids) ? $ids : [];
+}
+
 /** Visos treniruočių vietos (iš grupių) - pasirinkimui iš sąrašo */
 function training_locations(): array
 {
@@ -153,7 +236,7 @@ function site_header(bool $home = false): void
 <div class="progress-wrap"><div class="progress-bar" id="progressBar"></div></div>
 <header class="site-header">
   <nav>
-    <a class="logo" href="<?= $home ? '#' : url('index.php') ?>"><img src="<?= url('img/logo.png') ?>" alt="Karateka logotipas"></a>
+    <a class="logo" href="<?= $home ? '#' : url('index.php') ?>"><img src="<?= url('img/logo.png') ?>" alt="Karateka logotipas"><?php if (config('env') !== 'live'): ?><span class="ver-tag" title="Svetainės versija (rodoma tik testuojant)">v<?= e(site_version()) ?><?= config('env') === 'local' ? ' · local' : '' ?></span><?php endif; ?></a>
     <ul class="nav-list" id="navList">
       <!-- Pagrindinio puslapio skiltys -->
       <li class="nav-section onpage-section">

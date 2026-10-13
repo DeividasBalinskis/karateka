@@ -20,6 +20,25 @@ if (is_post()) {
     $id = (int) post('id');
     $action = post('action');
 
+    // Kuriuos emoji nariai gali naudoti reakcijoms
+    if ($action === 'save_reactions') {
+        $choices = array_merge(...array_values(REACTION_CHOICES));
+        $picked = array_values(array_intersect($choices, (array) ($_POST['reactions'] ?? [])));   // tvarka - kaip sąraše
+        if (!$picked) {
+            flash('err', 'Pažymėkite bent vieną emoji.');
+        } elseif (count($picked) > 16) {
+            flash('err', 'Daugiausia 16 emoji - kitaip sąrašas bus per didelis.');
+        } else {
+            try {
+                set_site_setting('reactions', implode(' ', $picked));
+                flash('ok', 'Reakcijų emoji išsaugoti (' . count($picked) . ').');
+            } catch (PDOException $ex) {
+                flash('err', 'Trūksta duomenų bazės lentelės - importuokite db/011_site_settings.sql.');
+            }
+        }
+        redirect('admin/naujienos.php#emoji');
+    }
+
     if ($action === 'delete' && $id) {
         foreach (news_media($id) as $m) {
             if ($m['file']) {
@@ -178,6 +197,7 @@ if ($edit !== '') {
 }
 
 $items = q_all('SELECT n.*, (SELECT COUNT(*) FROM reactions r WHERE r.news_id = n.id) AS reactions FROM news n ORDER BY n.published_at DESC LIMIT 100');
+$allowed = allowed_reactions();
 
 page_start('Naujienos', ['admin' => true]);
 ?>
@@ -185,6 +205,43 @@ page_start('Naujienos', ['admin' => true]);
   <h1 class="styled">Naujienos</h1>
   <a class="btn btn-primary" href="?edit=new">+ Nauja naujiena</a>
 </div>
+
+<!-- Reakcijų emoji: adminas pažymi, kuriuos nariai gali naudoti po naujienomis -->
+<details class="panel card emoji-settings" id="emoji">
+  <summary>
+    <span><strong>🙂 Reakcijų emoji</strong> <span class="muted small">· nariai gali naudoti <?= count($allowed) ?></span></span>
+    <span class="emoji-now" aria-hidden="true"><?= e(implode(' ', $allowed)) ?></span>
+    <span class="btn btn-ghost btn-sm">Keisti</span>
+  </summary>
+  <form method="post" class="emoji-form">
+    <?= csrf_field() ?>
+    <input type="hidden" name="action" value="save_reactions">
+    <p class="hint">Paspauskite emoji, kad jį įjungtumėte ar išjungtumėte. Įjungti emoji atsiras po kiekviena naujiena, mygtuke 🙂+. Jei emoji išjungsite, jau paliktos reakcijos išliks.</p>
+    <?php foreach (REACTION_CHOICES as $groupName => $list): ?>
+      <div class="emoji-group">
+        <div class="kicker"><?= e($groupName) ?></div>
+        <div class="emoji-grid">
+          <?php foreach ($list as $emoji): ?>
+            <label class="emoji-opt" title="<?= e($emoji) ?>"><input type="checkbox" name="reactions[]" value="<?= e($emoji) ?>" <?= in_array($emoji, $allowed, true) ? 'checked' : '' ?>><span><?= e($emoji) ?></span></label>
+          <?php endforeach; ?>
+        </div>
+      </div>
+    <?php endforeach; ?>
+    <div class="row" style="margin-top:14px; gap:12px; align-items:center;">
+      <button class="btn btn-primary" type="submit">Išsaugoti</button>
+      <span class="muted small" id="emojiCount"></span>
+    </div>
+  </form>
+  <script>
+    (function () {
+      var f = document.querySelector('.emoji-form'), out = document.getElementById('emojiCount');
+      function upd() { var n = f.querySelectorAll('input:checked').length; out.textContent = 'Pažymėta: ' + n + (n > 16 ? ' (daugiausia 16)' : ''); }
+      f.addEventListener('change', upd); upd();
+      if (location.hash === '#emoji') document.getElementById('emoji').open = true;
+    })();
+  </script>
+</details>
+
 <div class="panel card">
   <?php if (!$items): ?><p class="muted">Naujienų dar nėra.</p><?php endif; ?>
   <ul class="list">
