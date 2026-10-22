@@ -14,6 +14,7 @@ Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar
 - Po atsakymo ir rezultatuose rodoma vieta taisyklėse (pvz. „Šaltinis: WTKU taisyklės, II dalis, 1 str., p. 12 (Kumite)“).
 - Teste pažymėti atsakymai nedingsta netyčia perkrovus puslapį.
 - Įrankis `tools/atnaujinti-is-github.ps1`: vienu paspaudimu atsisiunčia naujausią versiją iš GitHub, paruošia zip ir parašo, kurį db failą importuoti.
+- `tools/paruosti-ikelimui.ps1` langas nebeužsidaro iškart: parodo paruoštą zip (ar klaidą) ir laukia Enter.
 
 ## v1.5 - 2026-10-21 (privatumo politika, skirtukas „Varžybos“)
 **Duomenų bazė:** nekeičiama.
