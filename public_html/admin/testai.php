@@ -43,11 +43,12 @@ function save_question(int $quizId, int $qid, array &$errors): ?int
     if ($errors) {
         return null;
     }
+    $topic = mb_substr(post('topic'), 0, 190) ?: null;
     if ($qid) {
-        q('UPDATE quiz_questions SET body = ?, explanation = ?, youtube_id = ? WHERE id = ? AND quiz_id = ?', [$body, post('explanation') ?: null, $yt, $qid, $quizId]);
+        q('UPDATE quiz_questions SET body = ?, topic = ?, explanation = ?, youtube_id = ? WHERE id = ? AND quiz_id = ?', [$body, $topic, post('explanation') ?: null, $yt, $qid, $quizId]);
     } else {
         $next = (int) q_value('SELECT COALESCE(MAX(sort_order), 0) + 1 FROM quiz_questions WHERE quiz_id = ?', [$quizId]);
-        q('INSERT INTO quiz_questions (quiz_id, body, explanation, youtube_id, sort_order) VALUES (?, ?, ?, ?, ?)', [$quizId, $body, post('explanation') ?: null, $yt, $next]);
+        q('INSERT INTO quiz_questions (quiz_id, topic, body, explanation, youtube_id, sort_order) VALUES (?, ?, ?, ?, ?, ?)', [$quizId, $topic, $body, post('explanation') ?: null, $yt, $next]);
         $qid = (int) db()->lastInsertId();
     }
     if ($image || !empty($_POST['remove_image'])) {
@@ -92,6 +93,8 @@ function question_form(int $quizId, ?array $q): string
     $html .= '</div><div class="form-row">'
         . '<label>Paaiškinimas <span class="hint">nebūtina, rodomas po atsakymo</span><input type="text" name="explanation" value="' . e($q['explanation'] ?? '') . '"></label>'
         . '<label>YouTube <span class="hint">nebūtina</span><input type="text" name="youtube" value="' . (!empty($q['youtube_id']) ? 'https://youtu.be/' . e($q['youtube_id']) : '') . '"></label></div>'
+        . '<label>Tema <span class="hint">nebūtina; to paties klausimo kitos formuluotės turi tą pačią temą - teste būna tik viena iš jų</span>'
+        . '<input type="text" name="topic" value="' . e($q['topic'] ?? '') . '" maxlength="190" list="quizTopics"></label>'
         . '<div class="form-row"><label>Paveikslėlis <span class="hint">nebūtina, pvz. stovėsena ar smūgis</span><input type="file" name="image" accept="image/jpeg,image/png,image/webp"></label>';
     if (!empty($q['image'])) {
         $html .= '<label class="check" style="align-self:end;"><input type="checkbox" name="remove_image" value="1"><span>Pašalinti esamą <img src="' . e(quiz_image_url($q['image'])) . '" alt="" class="q-thumb"></span></label>';
@@ -111,6 +114,7 @@ if (is_post()) {
             'description' => post('description') ?: null,
             'question_count' => max(1, min(100, (int) post('question_count'))),
             'pass_percent' => max(1, min(100, (int) post('pass_percent'))),
+            'time_limit' => max(0, min(180, (int) post('time_limit'))),
             'kids_mode' => !empty($_POST['kids_mode']) ? 1 : 0,
             'is_published' => !empty($_POST['is_published']) ? 1 : 0,
         ];
@@ -121,10 +125,10 @@ if (is_post()) {
             $errors[] = 'Įveskite pavadinimą.';
         } else {
             if ($id) {
-                q('UPDATE quizzes SET title = ?, audience = ?, belt_level = ?, description = ?, question_count = ?, pass_percent = ?, kids_mode = ?, is_published = ?, updated_at = NOW() WHERE id = ?',
+                q('UPDATE quizzes SET title = ?, audience = ?, belt_level = ?, description = ?, question_count = ?, pass_percent = ?, time_limit = ?, kids_mode = ?, is_published = ?, updated_at = NOW() WHERE id = ?',
                     array_merge(array_values($data), [$id]));
             } else {
-                q('INSERT INTO quizzes (title, audience, belt_level, description, question_count, pass_percent, kids_mode, is_published) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', array_values($data));
+                q('INSERT INTO quizzes (title, audience, belt_level, description, question_count, pass_percent, time_limit, kids_mode, is_published) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', array_values($data));
                 $id = (int) db()->lastInsertId();
             }
             flash('ok', 'Testas išsaugotas.');
@@ -162,7 +166,7 @@ if ($id || get('id') === 'new' || get('new')) {
     if ($id && !$quiz) {
         not_found();
     }
-    $quiz = $quiz ?? ['id' => 0, 'title' => '', 'audience' => 'karateka', 'belt_level' => null, 'description' => '', 'question_count' => 10, 'pass_percent' => 83, 'kids_mode' => 0, 'is_published' => 1];
+    $quiz = $quiz ?? ['id' => 0, 'title' => '', 'audience' => 'karateka', 'belt_level' => null, 'description' => '', 'question_count' => 10, 'pass_percent' => 83, 'time_limit' => 0, 'kids_mode' => 0, 'is_published' => 1];
     $all = [];
     if ($id) {
         foreach (q_all('SELECT * FROM quiz_questions WHERE quiz_id = ? ORDER BY sort_order, id', [$id]) as $row) {
@@ -170,6 +174,7 @@ if ($id || get('id') === 'new' || get('new')) {
             $all[] = $row;
         }
     }
+    $distinct = quiz_distinct_count($all);   // skirtingų klausimų (to paties klausimo formuluotės - vienas)
     page_start($id ? 'Testas: ' . $quiz['title'] : 'Naujas testas', ['admin' => true]);
     ?>
     <a class="small" href="<?= url('admin/testai.php') ?>">← Visi testai</a>
@@ -187,12 +192,15 @@ if ($id || get('id') === 'new' || get('new')) {
           <?php foreach (QUIZ_AUDIENCE as $k => $label): ?><option value="<?= $k ?>" <?= $quiz['audience'] === $k ? 'selected' : '' ?>><?= e($label) ?></option><?php endforeach; ?>
         </select></label>
         <label id="qBelt">Kuriam diržui <span class="hint">kurį gaus išlaikęs</span><select name="belt_level"><?= belt_options($quiz['belt_level'] !== null ? (int) $quiz['belt_level'] : null, 'Visiems diržams') ?></select></label>
-        <label>Klausimų teste <span class="hint">atsitiktinai iš banko</span><input type="number" name="question_count" min="1" max="100" value="<?= (int) $quiz['question_count'] ?>"></label>
+        <label>Klausimų teste <span class="hint">atsitiktinai iš banko<?= $id ? ' (skirtingų: ' . $distinct . ')' : '' ?></span><input type="number" name="question_count" id="qCount" min="1" max="100" value="<?= (int) $quiz['question_count'] ?>"></label>
       </div>
       <div class="form-row three">
-        <label>Reikia surinkti, % <input type="number" name="pass_percent" min="1" max="100" value="<?= (int) $quiz['pass_percent'] ?>"></label>
-        <label class="check" style="align-self:end;"><input type="checkbox" name="kids_mode" value="1" <?= $quiz['kids_mode'] ? 'checked' : '' ?>><span>Vaikams (didesni mygtukai, linksmesni pranešimai)</span></label>
-        <label class="check" style="align-self:end;"><input type="checkbox" name="is_published" value="1" <?= $quiz['is_published'] ? 'checked' : '' ?>><span>Paskelbtas (mato nariai)</span></label>
+        <label>Reikia surinkti, % <span class="hint" id="qNeed"></span><input type="number" name="pass_percent" id="qPercent" min="1" max="100" value="<?= (int) $quiz['pass_percent'] ?>"></label>
+        <label>Laikas, min. <span class="hint">0 - neribota; pasibaigus testas išsiunčiamas</span><input type="number" name="time_limit" min="0" max="180" value="<?= (int) ($quiz['time_limit'] ?? 0) ?>"></label>
+        <div class="stack" style="align-self:end;">
+          <label class="check"><input type="checkbox" name="kids_mode" value="1" <?= $quiz['kids_mode'] ? 'checked' : '' ?>><span>Vaikams (didesni mygtukai, linksmesni pranešimai)</span></label>
+          <label class="check"><input type="checkbox" name="is_published" value="1" <?= $quiz['is_published'] ? 'checked' : '' ?>><span>Paskelbtas (mato nariai)</span></label>
+        </div>
       </div>
       <label>Aprašymas <span class="hint">nebūtina</span><input type="text" name="description" value="<?= e($quiz['description']) ?>"></label>
       <div class="row">
@@ -203,19 +211,25 @@ if ($id || get('id') === 'new' || get('new')) {
     <script>
       (function () { var s = document.getElementById('qAudience'), b = document.getElementById('qBelt');
         function u() { b.style.display = s.value === 'karateka' ? '' : 'none'; } s.addEventListener('change', u); u(); })();
+      // "= 40 iš 50": kiek teisingų atsakymų reikia
+      (function () { var c = document.getElementById('qCount'), p = document.getElementById('qPercent'), max = <?= $id ? $distinct : 100 ?>;
+        function u() { var n = Math.min(parseInt(c.value, 10) || 0, max || 0), pct = parseInt(p.value, 10) || 0;
+          document.getElementById('qNeed').textContent = n && pct ? '= ' + Math.ceil(n * pct / 100) + ' teisingų iš ' + n : ''; }
+        c.addEventListener('input', u); p.addEventListener('input', u); u(); })();
     </script>
 
     <?php if ($id): ?>
       <h2 id="klausimai" style="margin:28px 0 12px;">Klausimai (<?= count($all) ?>)</h2>
-      <?php if (count($all) < (int) $quiz['question_count']): ?>
-        <p class="small muted">Banke klausimų mažiau nei teste (<?= (int) $quiz['question_count'] ?>) - kol kas bus užduodami visi esami.</p>
+      <?php if ($distinct < (int) $quiz['question_count']): ?>
+        <p class="small muted">Banke skirtingų klausimų (<?= $distinct ?>) mažiau nei teste (<?= (int) $quiz['question_count'] ?>) - kol kas bus užduodami visi esami.</p>
       <?php endif; ?>
+      <datalist id="quizTopics"><?php foreach (array_unique(array_filter(array_column($all, 'topic'))) as $t): ?><option value="<?= e($t) ?>"><?php endforeach; ?></datalist>
       <?php foreach ($all as $i => $qq): $correct = array_values(array_filter($qq['answers'], function ($an) { return $an['is_correct']; })); ?>
         <details class="panel card q-item" id="q<?= (int) $qq['id'] ?>">
           <summary>
             <span class="q-num"><?= $i + 1 ?></span>
             <span class="q-sum"><strong><?= e(mb_strimwidth($qq['body'], 0, 120, '…')) ?></strong>
-              <span class="small muted">✓ <?= e($correct ? $correct[0]['body'] : 'nepažymėtas teisingas atsakymas!') ?> · <?= count($qq['answers']) ?> ats.<?= $qq['image'] ? ' · paveikslėlis' : '' ?><?= $qq['youtube_id'] ? ' · video' : '' ?></span></span>
+              <span class="small muted">✓ <?= e($correct ? $correct[0]['body'] : 'nepažymėtas teisingas atsakymas!') ?> · <?= count($qq['answers']) ?> ats.<?= !empty($qq['topic']) ? ' · tema: ' . e($qq['topic']) : '' ?><?= $qq['image'] ? ' · paveikslėlis' : '' ?><?= $qq['youtube_id'] ? ' · video' : '' ?></span></span>
           </summary>
           <?= question_form($id, $qq) ?>
           <form method="post" class="inline-form" onsubmit="return confirm('Ištrinti klausimą?')">
@@ -264,7 +278,7 @@ page_start('Testai', ['admin' => true]);
           <?= $qz['belt_level'] ? belt_chip((int) $qz['belt_level']) : '' ?>
           <?php if (!$qz['is_published']): ?><span class="badge badge-warn">nepaskelbtas</span><?php endif; ?>
           <a href="?id=<?= (int) $qz['id'] ?>"><strong><?= e($qz['title']) ?></strong></a>
-          <div class="muted small"><?= (int) $qz['qcount'] ?> klaus. banke · teste <?= (int) $qz['question_count'] ?> · reikia <?= (int) $qz['pass_percent'] ?> % · laikė <?= (int) $qz['attempts'] ?>, išlaikė <?= (int) $qz['passes'] ?></div>
+          <div class="muted small"><?= (int) $qz['qcount'] ?> klaus. banke · teste <?= (int) $qz['question_count'] ?> · reikia <?= (int) $qz['pass_percent'] ?> %<?= !empty($qz['time_limit']) ? ' · ' . (int) $qz['time_limit'] . ' min.' : '' ?> · laikė <?= (int) $qz['attempts'] ?>, išlaikė <?= (int) $qz['passes'] ?></div>
         </span>
         <a class="btn btn-ghost btn-sm" href="?id=<?= (int) $qz['id'] ?>">Keisti</a>
       </li>

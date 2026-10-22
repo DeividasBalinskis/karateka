@@ -5,6 +5,8 @@ const REQ_SECTIONS = ['kihon' => 'Kihon', 'kata' => 'Kata', 'kumite' => 'Kumite'
 const QUIZ_AUDIENCE = ['karateka' => 'Karatekams', 'teisejas' => 'Teisėjams', 'egzaminatorius' => 'Egzaminatoriams'];
 // Išlaikytas testas galioja tiek mėnesių (egzamino ir teisėjo / egzaminatoriaus statusui)
 const QUIZ_VALID_MONTHS = 12;
+// Kiek sekundžių po laiko pabaigos dar priimami atsakymai (lėtas internetas telefone)
+const QUIZ_GRACE = 60;
 
 /** Dabartinis diržas (nenurodytas = baltas) ir kitas diržas */
 function current_belt(?int $belt): int
@@ -83,6 +85,51 @@ function quiz_questions_full(int $quizId, ?array $onlyIds = null): array
     });
 }
 
+/**
+ * Sumaišyti klausimai, iš kiekvienos temos - tik vienas (tema = to paties klausimo kitos formuluotės, db/019).
+ * Klausimai be temos visi skirtingi.
+ */
+function quiz_pick_questions(array $qs): array
+{
+    $qs = array_values($qs);
+    shuffle($qs);
+    $out = $seen = [];
+    foreach ($qs as $q) {
+        $topic = (string) ($q['topic'] ?? '');
+        if ($topic !== '') {
+            if (isset($seen[$topic])) {
+                continue;
+            }
+            $seen[$topic] = true;
+        }
+        $out[(int) $q['id']] = $q;
+    }
+    return $out;
+}
+
+/** Kiek skirtingų klausimų banke (tiek daugiausia gali būti viename teste) */
+function quiz_distinct_count(array $qs): int
+{
+    $topics = $plain = 0;
+    $seen = [];
+    foreach ($qs as $q) {
+        $topic = (string) ($q['topic'] ?? '');
+        if ($topic === '') {
+            $plain++;
+        } elseif (!isset($seen[$topic])) {
+            $seen[$topic] = true;
+            $topics++;
+        }
+    }
+    return $topics + $plain;
+}
+
+/** Ar baigėsi laikas (su QUIZ_GRACE atsarga) */
+function quiz_time_is_up(array $attempt): bool
+{
+    return !empty($attempt['deadline_at']) && time() > strtotime($attempt['deadline_at']) + QUIZ_GRACE;
+}
+
 /** Geriausias baigtas bandymas (null - nelaikė) */
 function quiz_best_attempt(int $memberId, int $quizId): ?array
 {
@@ -126,14 +173,19 @@ function tag_qualification(int $memberId, string $tag): ?array
                    ORDER BY qa.finished_at DESC LIMIT 1', [$memberId, $tag]);
 }
 
-/** Naujas bandymas: atsitiktiniai klausimai iš banko */
+/** Naujas bandymas: atsitiktiniai klausimai iš banko (iš temos - vienas). Su laiko limitu įrašoma, iki kada baigti. */
 function start_quiz_attempt(array $quiz, int $memberId, int $accountId): int
 {
-    $ids = array_keys(quiz_questions_full((int) $quiz['id']));
-    shuffle($ids);
+    $ids = array_keys(quiz_pick_questions(quiz_questions_full((int) $quiz['id'])));
     $ids = array_slice($ids, 0, max(1, (int) $quiz['question_count']));
-    q('INSERT INTO quiz_attempts (quiz_id, member_id, account_id, question_ids, total) VALUES (?, ?, ?, ?, ?)',
-        [(int) $quiz['id'], $memberId, $accountId, implode(',', $ids), count($ids)]);
+    $params = [(int) $quiz['id'], $memberId, $accountId, implode(',', $ids), count($ids)];
+    $minutes = (int) ($quiz['time_limit'] ?? 0);
+    if ($minutes > 0) {
+        q('INSERT INTO quiz_attempts (quiz_id, member_id, account_id, question_ids, total, deadline_at) VALUES (?, ?, ?, ?, ?, ?)',
+            array_merge($params, [date('Y-m-d H:i:s', time() + 60 * $minutes)]));
+    } else {
+        q('INSERT INTO quiz_attempts (quiz_id, member_id, account_id, question_ids, total) VALUES (?, ?, ?, ?, ?)', $params);
+    }
     return (int) db()->lastInsertId();
 }
 
