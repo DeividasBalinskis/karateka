@@ -35,8 +35,9 @@ Remove-Item -Recurse -Force -ErrorAction SilentlyContinue (Join-Path $stage 'upl
 $version = (Get-Content -Raw (Join-Path $root 'public_html\app\VERSION')).Trim()
 
 # tar.exe rašo ZIP su "/" - serveris teisingai sukuria aplankus
-Get-ChildItem $out -Filter 'svetaine*.zip' | Remove-Item -Force    # seni paketai
+# Senesnių versijų zip lieka (atsarginė kopija); perrašomas tik tos pačios versijos
 $zip = Join-Path $out "svetaine-v$version.zip"
+Remove-Item -Force -ErrorAction SilentlyContinue $zip
 Push-Location $stage
 & "$env:WINDIR\System32\tar.exe" -a -c -f $zip *
 Pop-Location
