@@ -17,16 +17,40 @@ if (is_post()) {
         $r = is_string($r) ? $r : '';
         $results[(int) $mid] = isset($options[$r]) ? $r : '';
     }
+    $before = event_results($event);
     $changes = save_event_results($event, $results, (int) $me['id']);
+    // Egzaminas: naujai išlaikiusiems - diržas vienu aukščiau (jei pažymėta)
+    if ($event['type'] === 'exam' && !empty($_POST['raise_belt'])) {
+        $raised = 0;
+        foreach ($results as $mid => $r) {
+            if ($r === 'yes' && ($before[$mid] ?? '') !== 'yes') {
+                $m = q_one('SELECT belt_level FROM members WHERE id = ?', [$mid]);
+                $nb = next_belt($m && $m['belt_level'] !== null ? (int) $m['belt_level'] : null);
+                if ($nb) {
+                    q('UPDATE members SET belt_level = ? WHERE id = ?', [$nb, $mid]);
+                    $raised++;
+                }
+            }
+        }
+        if ($raised) {
+            flash('ok', "Diržas pakeltas: $raised nar.");
+        }
+    }
     flash('ok', $changes ? 'Rezultatai išsaugoti, taškai atnaujinti.' : 'Pakeitimų nebuvo.');
     redirect('admin/renginio-rezultatai.php?id=' . $id);
 }
 
-// Nariai iš renginio grupių (jei renginys visiems - visi aktyvūs) + visi, kurie jau turi rezultatą
+// Nariai iš renginio grupių (jei renginys visiems - visi aktyvūs) + visi, kurie jau turi rezultatą.
+// Jei renginyje yra užsiregistravusių dalyvių - rodomi tik jie (ir jau turintys rezultatą), nebent pasirinkta „rodyti visus“.
 $groupIds = q('SELECT group_id FROM event_groups WHERE event_id = ?', [$id])->fetchAll(PDO::FETCH_COLUMN);
 $current = event_results($event);
+$going = array_map('intval', q('SELECT member_id FROM event_participants WHERE event_id = ? AND status = "going"', [$id])->fetchAll(PDO::FETCH_COLUMN));
+$onlyGoing = $going && !get('visi');
+$where = $onlyGoing
+    ? 'm.id IN (' . implode(',', $going) . ')'
+    : '(m.status = "active"' . ($groupIds ? ' AND m.group_id IN (' . implode(',', array_map('intval', $groupIds)) . ')' : '') . ')';
 $sql = 'SELECT m.*, g.name AS group_name, g.sort_order FROM members m LEFT JOIN training_groups g ON g.id = m.group_id
-         WHERE (m.status = "active"' . ($groupIds ? ' AND m.group_id IN (' . implode(',', array_map('intval', $groupIds)) . ')' : '') . ')'
+         WHERE ' . $where
      . ($current ? ' OR m.id IN (' . implode(',', array_map('intval', array_keys($current))) . ')' : '')
      . ' ORDER BY g.sort_order, m.last_name, m.first_name';
 $members = q_all($sql);
@@ -36,9 +60,9 @@ foreach ($members as $m) {
     $byGroup[$m['group_name'] ?? 'Be grupės'][] = $m;
 }
 
-page_start('Rezultatai: ' . $event['title'], ['admin' => true]);
+page_start('Rezultatai: ' . $event['title'], ['admin' => true, 'section' => 'renginiai']);
 ?>
-<a class="small" href="<?= url('admin/renginiai.php') ?>">← Renginiai</a>
+<a class="small" href="<?= url('renginiai.php#e' . $id) ?>">← Renginiai</a> · <a class="small" href="<?= url('admin/renginio-dalyviai.php?id=' . $id) ?>">Dalyviai</a>
 <div class="page-head" style="margin-top:8px;">
   <div><span class="badge badge-pink"><?= e(EVENT_TYPES[$event['type']]) ?><?= $event['type'] === 'competition' ? ($event['is_abroad'] ? ' · užsienyje' : ' · Lietuvoje') : '' ?></span></div>
   <h1 class="styled" style="margin-top:8px;"><?= e($event['title']) ?></h1>
@@ -56,6 +80,20 @@ page_start('Rezultatai: ' . $event['title'], ['admin' => true]);
   <?php endforeach; ?>
   <?php if ($event['type'] === 'competition'): ?><div class="hint" style="margin-top:6px;">Prizinė vieta = dalyvavimo + vietos taškai.</div><?php endif; ?>
 </div>
+
+<?php if ($event['type'] === 'competition' && varzybos_enabled()): ?>
+  <div class="panel card small row between" style="padding:16px 20px; gap:10px;">
+    <span>Varžybos vyko varžybų sistemoje? Vietas galima įkelti automatiškai.</span>
+    <a class="btn btn-primary btn-sm" href="<?= url('admin/varzybu-rezultatai.php?id=' . $id) ?>">Įkelti iš varžybų sistemos →</a>
+  </div>
+<?php endif; ?>
+
+<?php if ($going): ?>
+  <p class="small no-print" style="margin:-6px 0 16px;">
+    <?= $onlyGoing ? 'Rodomi tik užsiregistravę dalyviai (' . count($going) . '). <a href="?id=' . $id . '&amp;visi=1">Rodyti visus grupių narius</a>'
+        : 'Rodomi visi grupių nariai. <a href="?id=' . $id . '">Rodyti tik dalyvius</a>' ?>
+  </p>
+<?php endif; ?>
 
 <?php if (!$members): ?>
   <div class="panel card"><p class="muted">Šiai grupei aktyvių narių nėra.</p></div>
@@ -79,7 +117,12 @@ page_start('Rezultatai: ' . $event['title'], ['admin' => true]);
       <?php endforeach; ?>
     </div>
   <?php endforeach; ?>
-  <div class="sticky-save"><button class="btn btn-primary btn-block" type="submit">Išsaugoti rezultatus</button></div>
+  <?php if ($event['type'] === 'exam'): ?>
+    <label class="raise-belt"><input type="checkbox" name="raise_belt" value="1"><span>Naujai išlaikiusiems pakelti diržą vienu lygiu <span class="small muted">(pvz. 9 kyu → 8 kyu; nariams be diržo - geltonas)</span></span></label>
+  <?php endif; ?>
+  <div class="sticky-save">
+    <button class="btn btn-primary btn-block" type="submit">Išsaugoti rezultatus</button>
+  </div>
 </form>
 <?php endif; ?>
 <?php

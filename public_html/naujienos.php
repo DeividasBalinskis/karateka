@@ -7,13 +7,16 @@ const PER_PAGE = 10;
 $id = (int) get('id');
 
 if ($id) {
-    $n = q_one('SELECT * FROM news WHERE id = ? AND is_published = 1 AND published_at <= NOW() AND ' . visibility_sql(), [$id]);
+    // Treneris mato ir juodraščius bei suplanuotas (peržiūrai)
+    $n = is_staff() ? q_one('SELECT * FROM news WHERE id = ?', [$id])
+        : q_one('SELECT * FROM news WHERE id = ? AND is_published = 1 AND published_at <= NOW() AND ' . visibility_sql(), [$id]);
     if (!$n) {
         not_found();
     }
     $media = news_media($id);
     $summary = mb_substr(trim(preg_replace('/\s+/', ' ', $n['body'])), 0, 160);
     page_start($n['title'], [
+        'section' => 'naujienos',
         'description' => $summary,
         // Facebook / Messenger peržiūra: pavadinimas, tekstas, nuotrauka
         'og' => $n['members_only'] ? null : [
@@ -23,6 +26,7 @@ if ($id) {
     ]);
     ?>
     <a class="small" href="<?= url('naujienos.php') ?>">← Visos naujienos</a> <?= staff_link('admin/naujienos.php?edit=' . (int) $n['id']) ?>
+    <?php if (!$n['is_published']): ?> <span class="badge badge-warn">juodraštis - nariai nemato</span><?php elseif ($n['published_at'] > date('Y-m-d H:i:s')): ?> <span class="badge">suplanuota</span><?php endif; ?>
     <article class="panel card" style="margin-top:12px;">
       <div class="news-meta"><?= e(fmt_date($n['published_at'], true)) ?><?= members_only_badge($n) ?></div>
       <h1><?= e($n['title']) ?></h1>
@@ -50,12 +54,28 @@ $page = max(1, (int) get('p'));
 $total = (int) q_value('SELECT COUNT(*) FROM news WHERE is_published = 1 AND published_at <= NOW() AND ' . visibility_sql());
 $items = q_all('SELECT * FROM news WHERE is_published = 1 AND published_at <= NOW() AND ' . visibility_sql() . ' ORDER BY published_at DESC LIMIT ' . PER_PAGE . ' OFFSET ' . (($page - 1) * PER_PAGE));
 
-page_start('Naujienos', ['description' => 'VšĮ Karate Ateitis klubo naujienos: varžybos, egzaminai, renginiai.']);
+// Treneriui - ir juodraščiai bei suplanuotos (nariai jų nemato)
+$drafts = is_staff() ? q_all('SELECT * FROM news WHERE is_published = 0 OR published_at > NOW() ORDER BY published_at DESC') : [];
+
+page_start('Naujienos', ['description' => 'VšĮ Karate Ateitis klubo naujienos: varžybos, egzaminai, renginiai.', 'section' => 'naujienos']);
 ?>
 <div class="page-head">
   <div class="eyebrow">Klubo gyvenimas</div>
-  <h1 class="styled">Naujienos</h1> <?= staff_link('admin/naujienos.php?edit=new', '+ Nauja naujiena') ?>
+  <h1 class="styled">Naujienos</h1>
 </div>
+<?= staff_bar([['+ Nauja naujiena', 'admin/naujienos.php?edit=new', true], ['🙂 Reakcijų emoji', 'admin/naujienos.php?emoji=1']]) ?>
+<?php if ($drafts): ?>
+  <div class="panel card drafts-box">
+    <div class="kicker">Juodraščiai ir suplanuotos - mato tik treneriai</div>
+    <ul class="list">
+      <?php foreach ($drafts as $d): ?>
+        <li class="row between"><span><a href="<?= url('admin/naujienos.php?edit=' . (int) $d['id']) ?>"><strong><?= e($d['title']) ?></strong></a>
+          <?= !$d['is_published'] ? '<span class="badge badge-warn">juodraštis</span>' : '<span class="badge">suplanuota ' . e(fmt_date($d['published_at'], true)) . '</span>' ?></span>
+          <a class="btn btn-ghost btn-sm" href="<?= url('admin/naujienos.php?edit=' . (int) $d['id']) ?>">Keisti</a></li>
+      <?php endforeach; ?>
+    </ul>
+  </div>
+<?php endif; ?>
 
 <?php if (!$items): ?>
   <div class="panel card"><p class="muted">Naujienų dar nėra.</p></div>

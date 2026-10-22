@@ -17,7 +17,7 @@ function back_after_save(string $back, array $backPages, int $id = 0): void
     if ($back === 'renginiai') {
         redirect('renginiai.php' . ($id ? '#e' . $id : ''));
     }
-    redirect($backPages[$back] ?? 'admin/renginiai.php');
+    redirect($backPages[$back] ?? 'renginiai.php' . ($id ? '#e' . $id : ''));
 }
 
 if (is_post()) {
@@ -40,8 +40,11 @@ if (is_post()) {
         'is_abroad'   => !empty($_POST['is_abroad']) ? 1 : 0,
         'description' => post('description') ?: null,
         'members_only' => !empty($_POST['members_only']) ? 1 : 0,
+        'registration' => !empty($_POST['registration']) ? 1 : 0,
+        'registration_until' => post('registration_until') ?: null,
     ];
     $groupIds = audience_from_post();   // visos pažymėtos = visiems
+    $picked = member_tree_from_post();  // atskirai pažymėti žmonės (ne visa grupė) - pakviečiami
     $_POST['location'] = $ev['location'];   // kad klaidos atveju forma išlaikytų pasirinkimą
 
     if (!isset(EVENT_TYPES[$ev['type']])) {
@@ -55,41 +58,52 @@ if (is_post()) {
     } elseif ($ev['ends_on'] && $ev['ends_on'] < $ev['starts_on']) {
         $errors[] = 'Pabaigos data negali būti ankstesnė už pradžią.';
     }
+    if ($ev['registration_until'] && !DateTime::createFromFormat('!Y-m-d', $ev['registration_until'])) {
+        $errors[] = 'Netinkama registracijos pabaigos data.';
+    }
 
     if (!$errors) {
+        // Nepažymėta jokia grupė, bet pažymėti žmonės - renginys tik pakviestiems
+        $wasInvitedOnly = $id && (int) q_value('SELECT invited_only FROM events WHERE id = ?', [$id]) && q_value('SELECT 1 FROM event_participants WHERE event_id = ? LIMIT 1', [$id]);
+        $ev['invited_only'] = !$picked['groups'] && ($picked['members'] || $wasInvitedOnly) ? 1 : 0;
         db()->beginTransaction();
         if ($id) {
-            q('UPDATE events SET type = ?, title = ?, starts_on = ?, ends_on = ?, start_time = ?, location = ?, is_abroad = ?, description = ?, members_only = ? WHERE id = ?', array_merge(array_values($ev), [$id]));
+            q('UPDATE events SET type = ?, title = ?, starts_on = ?, ends_on = ?, start_time = ?, location = ?, is_abroad = ?, description = ?, members_only = ?, registration = ?, registration_until = ?, invited_only = ? WHERE id = ?', array_merge(array_values($ev), [$id]));
             q('DELETE FROM event_groups WHERE event_id = ?', [$id]);
         } else {
-            q('INSERT INTO events (type, title, starts_on, ends_on, start_time, location, is_abroad, description, members_only) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', array_values($ev));
+            q('INSERT INTO events (type, title, starts_on, ends_on, start_time, location, is_abroad, description, members_only, registration, registration_until, invited_only) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', array_values($ev));
             $id = (int) db()->lastInsertId();
         }
         foreach ($groupIds as $gid) {
             q('INSERT IGNORE INTO event_groups (event_id, group_id) VALUES (?, ?)', [$id, $gid]);
         }
         db()->commit();
-        flash('ok', 'Renginys išsaugotas.');
+        $invited = $picked['members'] ? invite_members(q_one('SELECT * FROM events WHERE id = ?', [$id]), $picked['members'], (int) $me['id'], !empty($_POST['invite_email'])) : 0;
+        flash('ok', 'Renginys išsaugotas.' . ($invited ? " Pakviesta: $invited" . (!empty($_POST['invite_email']) ? ' (išsiųsti laiškai).' : '.') : ''));
         back_after_save($back, $backPages, $id);
     }
 }
 
 if ($edit !== '') {
-    $ev = $edit === 'new' ? ['id' => 0, 'type' => 'exam', 'title' => '', 'starts_on' => '', 'ends_on' => '', 'start_time' => '', 'location' => '', 'is_abroad' => 0, 'description' => '', 'members_only' => 0]
+    $ev = $edit === 'new' ? ['id' => 0, 'type' => 'exam', 'title' => '', 'starts_on' => '', 'ends_on' => '', 'start_time' => '', 'location' => '', 'is_abroad' => 0, 'description' => '', 'members_only' => 0, 'registration' => 1, 'registration_until' => '']
         : q_one('SELECT * FROM events WHERE id = ?', [(int) $edit]);
     if (!$ev) {
         not_found();
     }
     $selectedGroups = $ev['id'] ? q('SELECT group_id FROM event_groups WHERE event_id = ?', [$ev['id']])->fetchAll(PDO::FETCH_COLUMN) : [];
+    // Jau dalyvių sąraše esantys (pakviesti, užsiregistravę) - rodomi pažymėti; keičiami puslapyje „Dalyviai“
+    $participantIds = $ev['id'] ? array_map('intval', q('SELECT member_id FROM event_participants WHERE event_id = ?', [$ev['id']])->fetchAll(PDO::FETCH_COLUMN)) : [];
+    $selectedMembers = [];
     if ($errors) {
         $ev = array_merge($ev, $_POST);
         $selectedGroups = (array) ($_POST['groups'] ?? []);
+        $selectedMembers = (array) ($_POST['members'] ?? []);
     }
     $allGroups = q_all('SELECT * FROM training_groups WHERE is_active = 1 ORDER BY sort_order, name');
 
-    page_start($ev['id'] ? 'Redaguoti renginį' : 'Naujas renginys', ['admin' => true]);
+    page_start($ev['id'] ? 'Redaguoti renginį' : 'Naujas renginys', ['admin' => true, 'section' => 'renginiai']);
     ?>
-    <a class="small" href="<?= url($backPages[$back] ?? 'admin/renginiai.php') ?>">← <?= $back === 'index' ? 'Atgal į pagrindinį puslapį' : ($back ? 'Atgal į renginius' : 'Visi renginiai') ?></a>
+    <a class="small" href="<?= url($backPages[$back] ?? 'renginiai.php') ?>">← <?= $back === 'index' ? 'Atgal į pagrindinį puslapį' : ($back ? 'Atgal į renginius' : 'Visi renginiai') ?></a>
     <h1 class="styled" style="margin-top:8px;"><?= $ev['id'] ? 'Redaguoti renginį' : 'Naujas renginys' ?></h1>
     <?= form_errors($errors) ?>
     <form method="post" class="form">
@@ -116,10 +130,18 @@ if ($edit !== '') {
           <label class="check"><input type="checkbox" name="is_abroad" value="1" <?= !empty($ev['is_abroad']) ? 'checked' : '' ?>><span>Vyksta užsienyje (varžyboms skiriama daugiau taškų)</span></label>
           <label class="check"><input type="checkbox" name="members_only" value="1" <?= !empty($ev['members_only']) ? 'checked' : '' ?>><span>Tik nariams (nerodomas pagrindiniame puslapyje neprisijungusiems)</span></label>
           <label>Aprašymas <textarea name="description" rows="5"><?= e($ev['description']) ?></textarea></label>
+          <div class="form-row">
+            <label class="check" style="align-self:end;"><input type="checkbox" name="registration" value="1" <?= !empty($ev['registration']) ? 'checked' : '' ?>><span>Nariai gali registruotis patys („Dalyvausiu“)</span></label>
+            <label>Registracija iki <span class="hint">nebūtina</span><input type="date" name="registration_until" value="<?= e($ev['registration_until'] ?? '') ?>"></label>
+          </div>
         </div>
         <div class="panel card form">
           <h2>Kam skirta?</h2>
-          <?= audience_field(array_map('intval', (array) $selectedGroups)) ?>
+          <?= member_tree_field(array_map('intval', (array) $selectedGroups), $selectedMembers, [
+              'locked' => $participantIds, 'locked_title' => 'jau sąraše',
+              'hint' => 'Nieko nepažymėjus - visiems. Pažymėjus visą grupę - renginys tai grupei. Išskleiskite grupę ▸ ir pažymėkite tik kelis vaikus - jie bus pakviesti.']) ?>
+          <label class="check" style="margin-top:10px;"><input type="checkbox" name="invite_email" value="1" <?= !$errors || !empty($_POST['invite_email']) ? 'checked' : '' ?>><span>Pakviestiems išsiųsti el. laišką</span></label>
+          <?php if ($ev['id']): ?><p class="hint"><a href="<?= url('admin/renginio-dalyviai.php?id=' . (int) $ev['id']) ?>">Dalyvių sąrašas →</a></p><?php endif; ?>
         </div>
       </div>
       <div class="row" style="margin-top:20px;">
@@ -134,41 +156,5 @@ if ($edit !== '') {
     exit;
 }
 
-$upcoming = upcoming_events(null, 100);
-$past = q_all('SELECT * FROM events WHERE COALESCE(ends_on, starts_on) < CURDATE() ORDER BY starts_on DESC LIMIT 20');
-
-function event_row(array $ev): void
-{
-    $groups = event_group_names((int) $ev['id']); ?>
-    <li class="row between">
-      <span>
-        <span class="badge type-badge t-<?= e($ev['type']) ?>"><?= e(EVENT_TYPES[$ev['type']]) ?></span><?= members_only_badge($ev) ?>
-        <a href="?edit=<?= (int) $ev['id'] ?>"><strong><?= e($ev['title']) ?></strong></a>
-        <div class="muted small"><?= e(fmt_date($ev['starts_on'], true)) ?><?= $ev['location'] ? ' · ' . e($ev['location']) : '' ?> · <?= $groups ? e(implode(', ', $groups)) : 'visiems' ?></div>
-      </span>
-      <span class="row" style="gap:6px;">
-        <?php if (isset(EVENT_RESULTS[$ev['type']]) && $ev['starts_on'] <= date('Y-m-d')): ?><a class="btn btn-primary btn-sm" href="<?= url('admin/renginio-rezultatai.php?id=' . (int) $ev['id']) ?>">Rezultatai</a><?php endif; ?>
-        <a class="btn btn-ghost btn-sm" href="?edit=<?= (int) $ev['id'] ?>">Keisti</a>
-      </span>
-    </li>
-<?php }
-
-page_start('Renginiai', ['admin' => true]);
-?>
-<div class="page-head row between">
-  <h1 class="styled">Renginiai</h1>
-  <a class="btn btn-primary" href="?edit=new">+ Naujas renginys</a>
-</div>
-<div class="panel card">
-  <h2>Artėjantys</h2>
-  <?php if (!$upcoming): ?><p class="muted">Artėjančių renginių nėra.</p><?php endif; ?>
-  <ul class="list"><?php foreach ($upcoming as $ev) event_row($ev); ?></ul>
-</div>
-<?php if ($past): ?>
-  <div class="panel card">
-    <h2>Praėję</h2>
-    <ul class="list"><?php foreach ($past as $ev) event_row($ev); ?></ul>
-  </div>
-<?php endif; ?>
-<?php
-page_end();
+// Renginių sąrašas - pačiuose Renginiuose (renginiai.php), su trenerio mygtukais
+redirect('renginiai.php');

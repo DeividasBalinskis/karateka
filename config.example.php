@@ -29,6 +29,22 @@ return [
         'from'      => 'info@karateka.lt',
         'from_name' => 'Karateka',
     ],
+    // SMS (tik adminui: Treneriams -> SMS). provider: log - bandomasis režimas (niekas nesiunčiama), twilio - tikras siuntimas
+    'sms' => [
+        'provider'     => 'log',
+        'from'         => 'Karateka',   // siuntėjo vardas (iki 11 raidžių) arba numeris
+        'price_eur'    => 0.05,         // vienos SMS dalies kaina - kainai skaičiuoti
+        'twilio_sid'   => '',
+        'twilio_token' => '',
+    ],
+    // Varžybų sistema (varzybos.karateka.lt ar ltkf.lt). Be šio bloko serveryje varžybų mygtukai nerodomi.
+    // 'key' - tas pats raktas kaip varžybų sistemos config.php -> api_keys -> karateka.
+    // 'varzybos' => [
+    //     'url'       => 'https://varzybos.karateka.lt',
+    //     'key'       => 'ILGAS-ATSITIKTINIS-RAKTAS',
+    //     'club_name' => 'Karate Ateitis',
+    //     'club_city' => 'Vilnius',
+    // ],
     'db' => [
         'host' => 'localhost',
         'name' => 'database_name',

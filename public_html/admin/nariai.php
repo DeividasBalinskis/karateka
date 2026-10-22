@@ -121,8 +121,10 @@ if ($id) {
         } elseif ($status === 'active' && !$group) {
             $errors[] = 'Aktyviam nariui reikia grupės.';
         } else {
-            q('UPDATE members SET first_name = ?, last_name = ?, birth_date = ?, group_id = ?, status = ?, photo_consent = ?, belt_level = ? WHERE id = ?',
-                [$first, $last, $birth, $group, $status, !empty($_POST['photo_consent']) ? 1 : 0, belt_from_post('belt_level'), $id]);
+            $gender = in_array(post('gender'), ['M', 'F'], true) ? post('gender') : null;
+            q('UPDATE members SET first_name = ?, last_name = ?, birth_date = ?, gender = ?, group_id = ?, status = ?, photo_consent = ?, belt_level = ? WHERE id = ?',
+                [$first, $last, $birth, $gender, $group, $status, !empty($_POST['photo_consent']) ? 1 : 0, belt_from_post('belt_level'), $id]);
+            set_member_tags($id, (array) ($_POST['tags'] ?? []));
             flash('ok', 'Išsaugota.');
             redirect('admin/nariai.php?id=' . $id);
         }
@@ -146,7 +148,15 @@ if ($id) {
         <label>Gimimo data <span class="hint"><?= age_on($m['birth_date']) ?> m.</span>
           <?= date_parts_field('birth_date', $m['birth_date']) ?></label>
         <label>Grupė <select name="group_id"><?= group_options($m['group_id'] ? (int) $m['group_id'] : null) ?></select></label>
-        <label>Diržas <select name="belt_level"><?= belt_options($m['belt_level'] !== null ? (int) $m['belt_level'] : null) ?></select></label>
+        <div class="form-row">
+          <label>Diržas <select name="belt_level"><?= belt_options($m['belt_level'] !== null ? (int) $m['belt_level'] : null) ?></select></label>
+          <label>Lytis <span class="hint">varžybų kategorijoms</span>
+            <select name="gender">
+              <?php foreach (['' => '— nenurodyta —', 'M' => 'Vyras / berniukas', 'F' => 'Moteris / mergaitė'] as $k => $label): ?>
+                <option value="<?= $k ?>" <?= ($m['gender'] ?? '') === $k ? 'selected' : '' ?>><?= $label ?></option>
+              <?php endforeach; ?>
+            </select></label>
+        </div>
         <label>Būsena
           <select name="status">
             <?php foreach (['active' => 'Aktyvus', 'pending' => 'Laukia patvirtinimo', 'inactive' => 'Neaktyvus'] as $k => $label): ?>
@@ -156,6 +166,14 @@ if ($id) {
         </label>
         <label class="check"><input type="checkbox" name="photo_consent" value="1" <?= $m['photo_consent'] ? 'checked' : '' ?>>
           <span>Sutikimas skelbti nuotraukas</span></label>
+        <fieldset class="tags-field">
+          <legend>Žymos <span class="hint">Karateka - visi nariai; žymos atveria papildomą medžiagą ir testus</span></legend>
+          <?php $mTags = member_tags($id); foreach (MEMBER_TAGS as $k => $label): ?>
+            <?php $qt = in_array($k, $mTags, true) ? tag_qualification_text($id, $k) : ''; ?>
+            <label class="check"><input type="checkbox" name="tags[]" value="<?= $k ?>" <?= in_array($k, $mTags, true) ? 'checked' : '' ?>><span><?= e($label) ?><?= $qt ? ' <span class="small ' . (strpos($qt, '✓') === 0 ? 'test-ok' : 'muted') . '">' . e($qt) . '</span>' : '' ?></span></label>
+          <?php endforeach; ?>
+          <p class="hint">Treneris - tai paskyros rolė: Treneriams → Paskyros.</p>
+        </fieldset>
         <div><button class="btn btn-primary" type="submit">Išsaugoti</button></div>
       </form>
       <div class="panel card">
@@ -254,6 +272,10 @@ if ($search !== '') {
     $params[] = '%' . $search . '%';
 }
 $rows = q_all($sql . ' ORDER BY g.sort_order, m.last_name, m.first_name LIMIT 500', $params);
+$allTags = [];
+foreach (q_all('SELECT * FROM member_tags') as $t) {
+    $allTags[(int) $t['member_id']][] = $t['tag'];
+}
 
 page_start('Nariai', ['admin' => true]);
 ?>
@@ -281,7 +303,7 @@ page_start('Nariai', ['admin' => true]);
     <tbody>
       <?php foreach ($rows as $r): ?>
         <tr>
-          <td><a href="?id=<?= (int) $r['id'] ?>"><strong><?= e($r['first_name'] . ' ' . $r['last_name']) ?></strong></a></td>
+          <td><a href="?id=<?= (int) $r['id'] ?>"><strong><?= e($r['first_name'] . ' ' . $r['last_name']) ?></strong></a><?= tag_badges($allTags[(int) $r['id']] ?? [], (int) $r['id']) ?></td>
           <td><?= age_on($r['birth_date']) ?> m.</td>
           <td><?= e($r['group_name'] ?: '—') ?></td>
           <td><?= belt_chip($r['belt_level'] !== null ? (int) $r['belt_level'] : null) ?></td>

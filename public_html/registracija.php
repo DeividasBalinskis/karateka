@@ -53,7 +53,7 @@ if (is_post() && in_array($type, ['tevai', 'pats'], true)) {
     }
     $password = check_password($errors);
     if (empty($_POST['data_consent'])) {
-        $errors[] = 'Reikia sutikimo dėl asmens duomenų tvarkymo.';
+        $errors[] = 'Pažymėkite, kad susipažinote su privatumo politika.';
     }
 
     if ($type === 'tevai') {
@@ -254,7 +254,7 @@ $kidsInput = array_values((array) ($v['kids'] ?? [[]])) ?: [[]];
       <?php endif; ?>
       <hr class="divider">
       <label class="check"><input type="checkbox" name="data_consent" value="1" required <?= !empty($v['data_consent']) ? 'checked' : '' ?>>
-        <span>Sutinku, kad VšĮ Karate Ateitis tvarkytų pateiktus duomenis narystės administravimo tikslais. Duomenys neperduodami tretiesiems asmenims. <a href="<?= url('privatumas.php') ?>" target="_blank">Privatumo politika</a></span></label>
+        <span>Susipažinau su <a href="<?= url('privatumas.php') ?>" target="_blank">privatumo politika</a> - kaip klubas tvarko pateiktus duomenis.</span></label>
       <button class="btn btn-primary btn-block" type="submit" style="margin-top:18px;">Registruotis</button>
       <p class="hint" style="margin-top:10px;">Paskyrą patvirtins treneris ir priskirs grupę.</p>
     </div>

@@ -18,6 +18,8 @@ Copy-Item -Recurse (Join-Path $root 'public_html') $stage
 Remove-Item -Force -ErrorAction SilentlyContinue (Join-Path $stage 'config.php')                 # serveryje savas
 Remove-Item -Recurse -Force -ErrorAction SilentlyContinue (Join-Path $stage 'app\cli')         # tik kompiuteriui
 Remove-Item -Recurse -Force -ErrorAction SilentlyContinue (Join-Path $stage 'uploads\news')    # įkeltos nuotraukos lieka serveryje
+Remove-Item -Recurse -Force -ErrorAction SilentlyContinue (Join-Path $stage 'uploads\quiz')    # testų klausimų paveikslėliai - irgi
+Remove-Item -Recurse -Force -ErrorAction SilentlyContinue (Join-Path $stage 'uploads\lessons') # pamokų nuotraukos - irgi
 
 # Versija (rodoma prie logotipo test svetainėje) - ir ZIP pavadinime
 $version = (Get-Content -Raw (Join-Path $root 'public_html\app\VERSION')).Trim()

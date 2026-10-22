@@ -118,3 +118,28 @@ html{scrollbar-gutter:stable;}
 .site-header .ver-tag{position:absolute; left:calc(100% + 6px); bottom:1px; font-family:'JetBrains Mono',monospace; font-size:10px; font-weight:600; line-height:1; letter-spacing:0.02em;
   color:#2F6B5A; background:rgba(47,107,90,0.10); border:1px solid rgba(47,107,90,0.25); border-radius:6px; padding:3px 5px; white-space:nowrap;}
 @media(max-width:860px){ .site-header .ver-tag{font-size:9px; padding:2px 4px; left:calc(100% + 4px);} }
+/* Skirtukai po viršutine juosta: Treneriams / Mano paskyra (juostos dalis, kartu prilimpa viršuje) */
+.site-header .nav-login{position:relative;}
+.site-header .nav-login.is-current{background:#2F6B5A;}
+@media(min-width:1201px){
+  .site-header .nav-login.is-current::after{content:""; position:absolute; left:50%; bottom:-14px; transform:translateX(-50%);
+    border:7px solid transparent; border-bottom-color:#EFEBE1;}
+}
+.sub-nav{background:#EFEBE1; border-top:1px solid rgba(23,20,15,0.06);}
+.sub-nav .sub-inner{display:flex; align-items:stretch; gap:2px; max-width:1120px; margin:0 auto; padding:0 32px; overflow-x:auto; scrollbar-width:none;}
+.sub-nav .sub-inner::-webkit-scrollbar{display:none;}
+.sub-nav .sub-label{flex-shrink:0; align-self:center; margin-right:10px; font-family:'JetBrains Mono',monospace; font-size:10.5px; font-weight:600;
+  letter-spacing:0.1em; text-transform:uppercase; color:#2F6B5A;}
+.sub-nav a{flex-shrink:0; display:inline-flex; align-items:center; gap:2px; padding:11px 11px 10px; font-size:13.5px; font-weight:600; line-height:1;
+  color:rgba(23,20,15,0.66); text-decoration:none; white-space:nowrap; border-bottom:2.5px solid transparent; transition:color 0.15s ease, border-color 0.15s ease;}
+.sub-nav a:hover{color:#17140F; text-decoration:none; border-bottom-color:rgba(47,107,90,0.35);}
+.sub-nav a.active{color:#17140F; border-bottom-color:#2F6B5A;}
+.sub-nav a.sub-last{margin-left:auto;}
+@media(max-width:860px){
+  .sub-nav .sub-inner{padding:0 12px;}
+  .sub-nav .sub-label{display:none;}
+  .sub-nav a{padding:11px 10px 10px; font-size:13px;}
+  .sub-nav a.sub-last{margin-left:0;}
+}
+.site-header a.nav-page.is-current{background:rgba(47,107,90,0.1); color:var(--accent-dark, #204B3F);}
+.site-header a.nav-page .count-badge{margin-left:2px;}
