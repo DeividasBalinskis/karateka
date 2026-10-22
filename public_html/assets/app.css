@@ -644,6 +644,9 @@ label.q-answer:has(input:checked){border-color:var(--accent); background:rgba(47
 .review-answers li.correct{background:#DDF0E6; color:var(--accent-dark); font-weight:600;}
 .review-answers li.correct::before{content:"✓ ";}
 .review-answers li.mine:not(.correct){background:rgba(217,83,79,0.12); text-decoration:line-through;}
+/* Testo laikmatis (kai testas su laiko limitu) - visada matomas apačioje dešinėje */
+.quiz-timer{position:fixed; right:16px; bottom:16px; z-index:50; font-family:'JetBrains Mono',monospace; font-weight:600; font-size:1rem; padding:10px 14px; border-radius:12px; background:var(--ink); color:var(--cream); box-shadow:0 10px 24px rgba(23,20,15,0.25);}
+.quiz-timer.low{background:#D9534F; color:#fff;}
 
 /* Treneriams -> Testai, Egzaminų programa */
 .q-item summary{list-style:none; display:flex; gap:12px; align-items:flex-start; cursor:pointer;}

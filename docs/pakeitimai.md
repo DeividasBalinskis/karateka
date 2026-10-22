@@ -4,6 +4,17 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.6 - 2026-10-22 (WTKU teisėjų testas, laiko limitas testams)
+**Duomenų bazė:** importuoti `db/019_wtku_teiseju_testas.sql`. Failą galima importuoti ir antrą kartą - nieko nepridės dvigubai.
+
+- Treneriams → Testai: naujas testas „WTKU teisėjų testas“ (Kam: Teisėjams) - 300 klausimų iš brolio failo (WTKU Traditional Karate Competition Rules). Mato tik nariai su žyma „Teisėjas“.
+- Numatyta: 50 klausimų, reikia 80 % (= 40 teisingų), 60 min. Viską galima keisti testo nustatymuose; prie „Reikia surinkti, %“ rodoma, kiek tai teisingų atsakymų.
+- Visiems testams naujas nustatymas „Laikas, min.“ (0 - neribota): teste rodomas laikmatis, pasibaigus laikui testas išsiunčiamas automatiškai; vėliau atsiųsti atsakymai neįskaitomi.
+- Klausimo „Tema“: to paties klausimo kitos formuluotės. Viename teste (ir treniruotėje) iš temos būna tik vienas klausimas - WTKU faile kiekvienas klausimas parašytas 3 būdais, todėl teste daugiausia 100 skirtingų.
+- Po atsakymo ir rezultatuose rodoma vieta taisyklėse (pvz. „Šaltinis: WTKU taisyklės, II dalis, 1 str., p. 12 (Kumite)“).
+- Teste pažymėti atsakymai nedingsta netyčia perkrovus puslapį.
+- Įrankis `tools/atnaujinti-is-github.ps1`: vienu paspaudimu atsisiunčia naujausią versiją iš GitHub, paruošia zip ir parašo, kurį db failą importuoti.
+
 ## v1.5 - 2026-10-21 (privatumo politika, skirtukas „Varžybos“)
 **Duomenų bazė:** nekeičiama.
 
