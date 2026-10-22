@@ -79,8 +79,7 @@ $kid = (bool) $quiz['kids_mode'];
 
 // ---------- Treniruotės režimas: po vieną klausimą, iš karto rodomas teisingas atsakymas ----------
 if ($practice) {
-    $qs = array_values(quiz_questions_full((int) $quiz['id']));
-    shuffle($qs);
+    $qs = array_values(quiz_pick_questions(quiz_questions_full((int) $quiz['id'])));
     $data = array_map(function ($q) {
         return [
             'body' => $q['body'], 'explanation' => $q['explanation'],
@@ -166,8 +165,12 @@ if (is_post()) {
         redirect('egzaminas.php?m=' . $mid);
     }
     $answers = [];
-    foreach ((array) ($_POST['a'] ?? []) as $qid => $aid) {
-        $answers[(int) $qid] = (int) $aid;
+    if (quiz_time_is_up($att)) {
+        flash('err', 'Laikas baigėsi - atsakymai pateikti per vėlai ir neįskaityti.');
+    } else {
+        foreach ((array) ($_POST['a'] ?? []) as $qid => $aid) {
+            $answers[(int) $qid] = (int) $aid;
+        }
     }
     $res = grade_quiz_attempt($att, $quiz, $answers);
     redirect('testas.php?rezultatas=' . (int) $res['id']);
@@ -176,6 +179,12 @@ if (is_post()) {
 // Nebaigtas (paskutinių 3 val.) bandymas tęsiamas, kitaip - naujas su atsitiktiniais klausimais
 $att = q_one('SELECT * FROM quiz_attempts WHERE member_id = ? AND quiz_id = ? AND finished_at IS NULL AND started_at >= DATE_SUB(NOW(), INTERVAL 3 HOUR) ORDER BY id DESC LIMIT 1',
     [$mid, (int) $quiz['id']]);
+if ($att && quiz_time_is_up($att)) {
+    // Pradėtas, bet nebaigtas laiku - įvertinamas be atsakymų
+    $res = grade_quiz_attempt($att, $quiz, []);
+    flash('err', 'Ankstesnio testo laikas baigėsi - jis įvertintas be atsakymų. Galite laikyti iš naujo.');
+    redirect('testas.php?rezultatas=' . (int) $res['id']);
+}
 if (!$att) {
     if (!quiz_questions_full((int) $quiz['id'])) {
         flash('err', 'Šiame teste dar nėra klausimų.');
@@ -185,14 +194,17 @@ if (!$att) {
 }
 $ids = array_map('intval', array_filter(explode(',', $att['question_ids'])));
 $qs = quiz_questions_full((int) $quiz['id'], $ids);
+$left = !empty($att['deadline_at']) ? max(0, strtotime($att['deadline_at']) - time()) : null;
 
 page_start('Testas: ' . $quiz['title'], ['noindex' => true, 'narrow' => true, 'account' => 'egzaminas']);
 ?>
 <div class="page-head">
   <div class="eyebrow">Testas · <?= e($member['first_name']) ?></div>
   <h1 class="styled"><?= e($quiz['title']) ?></h1>
-  <p class="muted"><?= count($ids) ?> klausimų. Kad išlaikytum, reikia bent <?= (int) $quiz['pass_percent'] ?> % teisingų atsakymų. Atsakymus pamatysi pabaigoje.</p>
+  <p class="muted"><?= count($ids) ?> klausimų. Kad išlaikytum, reikia bent <?= (int) $quiz['pass_percent'] ?> % teisingų atsakymų. Atsakymus pamatysi pabaigoje.<?php if ($left !== null): ?>
+    Laikas: <?= (int) round((strtotime($att['deadline_at']) - strtotime($att['started_at'])) / 60) ?> min. - pasibaigus testas išsiunčiamas automatiškai.<?php endif; ?></p>
 </div>
+<?php if ($left !== null): ?><div class="quiz-timer" id="quizTimer" data-left="<?= $left ?>" title="Liko laiko">⏱ <?= sprintf('%d:%02d', intdiv($left, 60), $left % 60) ?></div><?php endif; ?>
 <form method="post" class="quiz-form <?= $kid ? 'kid' : '' ?>" id="quizForm">
   <?= csrf_field() ?>
   <input type="hidden" name="q" value="<?= (int) $quiz['id'] ?>"><input type="hidden" name="m" value="<?= $mid ?>"><input type="hidden" name="attempt" value="<?= (int) $att['id'] ?>">
@@ -216,13 +228,35 @@ page_start('Testas: ' . $quiz['title'], ['noindex' => true, 'narrow' => true, 'a
 </form>
 <script>
 (function () {
-  var f = document.getElementById('quizForm'), total = <?= count($ids) ?>;
+  var f = document.getElementById('quizForm'), total = <?= count($ids) ?>, key = 'quiz-attempt-<?= (int) $att['id'] ?>';
   function upd() { document.getElementById('answered').textContent = 'Atsakyta ' + f.querySelectorAll('input[type=radio]:checked').length + ' iš ' + total; }
-  f.addEventListener('change', upd); upd();
+  // Pažymėti atsakymai saugomi naršyklėje - netyčia perkrovus puslapį jie nedingsta
+  try {
+    var saved = JSON.parse(localStorage.getItem(key) || '{}');
+    Object.keys(saved).forEach(function (n) { var el = f.querySelector('input[name="' + n + '"][value="' + saved[n] + '"]'); if (el) { el.checked = true; } });
+  } catch (err) {}
+  f.addEventListener('change', function (e) {
+    upd();
+    try { var s = JSON.parse(localStorage.getItem(key) || '{}'); s[e.target.name] = e.target.value; localStorage.setItem(key, JSON.stringify(s)); } catch (err) {}
+  });
+  upd();
   f.addEventListener('submit', function (e) {
     var left = total - f.querySelectorAll('input[type=radio]:checked').length;
-    if (left > 0 && !confirm('Neatsakyta į ' + left + ' klaus. Vis tiek baigti?')) e.preventDefault();
+    if (left > 0 && !confirm('Neatsakyta į ' + left + ' klaus. Vis tiek baigti?')) { e.preventDefault(); return; }
+    try { localStorage.removeItem(key); } catch (err) {}
   });
+  // Laikmatis: baigus laiką testas išsiunčiamas automatiškai (be klausimo)
+  var timer = document.getElementById('quizTimer');
+  if (timer) {
+    var endAt = Date.now() + parseInt(timer.dataset.left, 10) * 1000;
+    (function tick() {
+      var s = Math.max(0, Math.round((endAt - Date.now()) / 1000));
+      timer.textContent = '⏱ ' + Math.floor(s / 60) + ':' + ('0' + s % 60).slice(-2);
+      timer.classList.toggle('low', s <= 300);
+      if (s === 0) { try { localStorage.removeItem(key); } catch (err) {} f.submit(); return; }
+      setTimeout(tick, 1000);
+    })();
+  }
 })();
 </script>
 <?php
