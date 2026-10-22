@@ -36,7 +36,7 @@ if (is_post()) {
                 flash('err', 'Trūksta duomenų bazės lentelės - importuokite db/011_site_settings.sql.');
             }
         }
-        redirect('admin/naujienos.php#emoji');
+        redirect('admin/naujienos.php?emoji=1');
     }
 
     if ($action === 'delete' && $id) {
@@ -47,7 +47,7 @@ if (is_post()) {
         }
         q('DELETE FROM news WHERE id = ?', [$id]);
         flash('ok', 'Naujiena ištrinta.');
-        redirect('admin/naujienos.php');
+        redirect('naujienos.php');
     }
 
     if ($action === 'delete_media' && $id) {
@@ -130,9 +130,9 @@ if ($edit !== '') {
     }
     $media = $n['id'] ? news_media((int) $n['id']) : [];
 
-    page_start($n['id'] ? 'Redaguoti naujieną' : 'Nauja naujiena', ['admin' => true]);
+    page_start($n['id'] ? 'Redaguoti naujieną' : 'Nauja naujiena', ['admin' => true, 'section' => 'naujienos']);
     ?>
-    <a class="small" href="<?= url('admin/naujienos.php') ?>">← Visos naujienos</a>
+    <a class="small" href="<?= url('naujienos.php') ?>">← Visos naujienos</a><?php if ($n['id'] && $n['is_published']): ?> · <a class="small" href="<?= url('naujienos.php?id=' . (int) $n['id']) ?>">👁 Peržiūrėti</a><?php endif; ?>
     <h1 class="styled" style="margin-top:8px;"><?= $n['id'] ? 'Redaguoti naujieną' : 'Nauja naujiena' ?></h1>
     <?= form_errors($errors) ?>
     <form method="post" enctype="multipart/form-data" class="form" id="newsForm">
@@ -196,18 +196,19 @@ if ($edit !== '') {
     exit;
 }
 
-$items = q_all('SELECT n.*, (SELECT COUNT(*) FROM reactions r WHERE r.news_id = n.id) AS reactions FROM news n ORDER BY n.published_at DESC LIMIT 100');
+// Naujienų sąrašas - pačiose Naujienose (naujienos.php); čia lieka tik reakcijų emoji nustatymai
+if (!get('emoji')) {
+    redirect('naujienos.php');
+}
 $allowed = allowed_reactions();
 
-page_start('Naujienos', ['admin' => true]);
+page_start('Reakcijų emoji', ['admin' => true, 'section' => 'naujienos']);
 ?>
-<div class="page-head row between">
-  <h1 class="styled">Naujienos</h1>
-  <a class="btn btn-primary" href="?edit=new">+ Nauja naujiena</a>
-</div>
+<a class="small" href="<?= url('naujienos.php') ?>">← Naujienos</a>
+<h1 class="styled" style="margin-top:8px;">Reakcijų emoji</h1>
 
 <!-- Reakcijų emoji: adminas pažymi, kuriuos nariai gali naudoti po naujienomis -->
-<details class="panel card emoji-settings" id="emoji">
+<details class="panel card emoji-settings" id="emoji" open>
   <summary>
     <span><strong>🙂 Reakcijų emoji</strong> <span class="muted small">· nariai gali naudoti <?= count($allowed) ?></span></span>
     <span class="emoji-now" aria-hidden="true"><?= e(implode(' ', $allowed)) ?></span>
@@ -242,20 +243,5 @@ page_start('Naujienos', ['admin' => true]);
   </script>
 </details>
 
-<div class="panel card">
-  <?php if (!$items): ?><p class="muted">Naujienų dar nėra.</p><?php endif; ?>
-  <ul class="list">
-    <?php foreach ($items as $n): ?>
-      <li class="row between">
-        <span>
-          <a href="?edit=<?= (int) $n['id'] ?>"><strong><?= e($n['title']) ?></strong></a>
-          <?= members_only_badge($n) ?><?php if (!$n['is_published']): ?><span class="badge badge-warn">juodraštis</span><?php elseif ($n['published_at'] > date('Y-m-d H:i:s')): ?><span class="badge">suplanuota</span><?php endif; ?>
-          <div class="muted small"><?= e(fmt_date($n['published_at'], true)) ?> · reakcijų: <?= (int) $n['reactions'] ?></div>
-        </span>
-        <a class="btn btn-ghost btn-sm" href="?edit=<?= (int) $n['id'] ?>">Keisti</a>
-      </li>
-    <?php endforeach; ?>
-  </ul>
-</div>
 <?php
 page_end();

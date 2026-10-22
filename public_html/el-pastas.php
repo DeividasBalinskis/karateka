@@ -28,4 +28,4 @@ if (q_value('SELECT 1 FROM accounts WHERE email = ? AND id <> ?', [$token['email
         . "Nuo šiol prisijunkite nauju adresu.\n\nJei to nedarėte, nedelsdami parašykite info@karateka.lt.");
     flash('ok', 'El. paštas pakeistas. Nuo šiol prisijunkite: ' . $token['email']);
 }
-redirect(current_account() ? 'paskyra.php#nustatymai' : 'prisijungti.php');
+redirect(current_account() ? 'paskyra.php?skiltis=nustatymai' : 'prisijungti.php');

@@ -26,6 +26,13 @@ function event_group_names(int $eventId): array
         ->fetchAll(PDO::FETCH_COLUMN);
 }
 
+/** Kam skirtas renginys: grupių vardai, „pakviestiems“ arba „visiems“ */
+function event_audience_label(array $ev): string
+{
+    $groups = event_group_names((int) $ev['id']);
+    return $groups ? implode(', ', $groups) : (!empty($ev['invited_only']) ? 'pakviestiems' : 'visiems');
+}
+
 function render_schedule(array $rows): string
 {
     if (!$rows) {
@@ -67,6 +74,26 @@ function render_event(array $ev): string
 function event_edit_link(int $id, string $back): string
 {
     return staff_link('admin/renginiai.php?edit=' . $id . '&back=' . $back);
+}
+
+/** Treneriui prie renginio: redaguoti, dalyviai (dalyvaus / visi), rezultatai (prasidėjusiam) */
+function event_staff_actions(array $ev, string $back): string
+{
+    if (!is_staff()) {
+        return '';
+    }
+    $id = (int) $ev['id'];
+    $pc = event_participant_counts($id);
+    $html = '<div class="event-staff no-print"><a class="btn btn-ghost btn-sm" href="' . e(url('admin/renginiai.php?edit=' . $id . '&back=' . $back)) . '">✎ Redaguoti</a>'
+        . '<a class="btn btn-ghost btn-sm" href="' . e(url('admin/renginio-dalyviai.php?id=' . $id)) . '">Dalyviai' . ($pc['going'] || $pc['invited'] ? ' ' . $pc['going'] . '/' . ($pc['going'] + $pc['invited']) : '') . '</a>';
+    if ($ev['type'] === 'competition' && varzybos_enabled()) {
+        $html .= '<a class="btn btn-ghost btn-sm" href="' . e(url(!empty($ev['tournament_id']) ? 'admin/varzybu-dalyviai.php?id=' . $id : 'admin/varzybu-rezultatai.php?id=' . $id)) . '">'
+            . (!empty($ev['tournament_id']) ? '🥋 Varžybų sistema' : '🔗 Susieti su varžybomis') . '</a>';
+    }
+    if (isset(EVENT_RESULTS[$ev['type']]) && $ev['starts_on'] <= date('Y-m-d')) {
+        $html .= '<a class="btn btn-primary btn-sm" href="' . e(url('admin/renginio-rezultatai.php?id=' . $id)) . '">Rezultatai</a>';
+    }
+    return $html . '</div>';
 }
 
 // ---------- Svetainės nustatymai (db/011) ----------
@@ -245,20 +272,36 @@ function visible_lessons(array $a, ?string $topic = null): array
     $params = [];
     $sql = 'SELECT l.* FROM lessons l WHERE 1';
     if (!is_staff($a)) {
-        $sql .= ' AND l.is_published = 1 AND (
+        // Teisėjų / egzaminatorių pamokas mato tik turintys tą žymą (nepriklausomai nuo diržo ir grupės)
+        $tags = [];
+        foreach (account_member_tags((int) $a['id']) as $memberTags) {
+            $tags = array_merge($tags, $memberTags);
+        }
+        $tags = array_values(array_intersect(array_keys(MEMBER_TAGS), $tags));
+        $sql .= ' AND l.is_published = 1 AND ((l.audience = "karateka" AND (
                     (l.belt_level IS NULL AND NOT EXISTS (SELECT 1 FROM lesson_groups lg WHERE lg.lesson_id = l.id))
                     OR EXISTS (SELECT 1 FROM members m JOIN account_members am ON am.member_id = m.id
                                 WHERE am.account_id = ? AND m.status = "active"
                                   AND (NOT EXISTS (SELECT 1 FROM lesson_groups lg WHERE lg.lesson_id = l.id)
                                        OR EXISTS (SELECT 1 FROM lesson_groups lg WHERE lg.lesson_id = l.id AND lg.group_id = m.group_id))
-                                  AND (l.belt_level IS NULL OR l.belt_level BETWEEN COALESCE(m.belt_level, 1) AND COALESCE(m.belt_level, 1) + 1)))';
+                                  AND (l.belt_level IS NULL OR l.belt_level <= COALESCE(m.belt_level, 1) + 1))))'
+            . ($tags ? ' OR l.audience IN ("' . implode('","', $tags) . '")' : '') . ')';
         $params[] = $a['id'];
     }
     if ($topic !== null) {
         $sql .= ' AND l.topic <=> ?';
         $params[] = $topic === '' ? null : $topic;
     }
-    return q_all($sql . ' ORDER BY l.belt_level IS NOT NULL, l.belt_level, l.topic, l.created_at DESC', $params);
+    $rows = q_all($sql . ' ORDER BY l.sort_order, l.id', $params);
+    if (is_staff($a)) {
+        return $rows;
+    }
+    // Aplankas (ar aukštesnis aplankas) nepaskelbtas ar skirtas kitai žymai - jo pamokų nematyti
+    $folders = lesson_folders();
+    $tags = account_tag_list($a);
+    return array_values(array_filter($rows, function ($l) use ($folders, $tags) {
+        return $l['folder_id'] === null || folder_allowed($folders, (int) $l['folder_id'], $tags);
+    }));
 }
 
 function lesson_videos(array $lesson): array
@@ -302,7 +345,8 @@ function members_only_badge(array $row): string
 /** Kiek nario pastabų reikia dėmesio: neperskaitytos + neatliktos užduotys */
 function member_attention_count(int $memberId): int
 {
-    return (int) q_value('SELECT COUNT(*) FROM coach_notes WHERE member_id = ? AND (read_at IS NULL OR (is_task = 1 AND done_at IS NULL))', [$memberId]);
+    return (int) q_value('SELECT COUNT(*) FROM coach_notes WHERE member_id = ? AND (read_at IS NULL OR (is_task = 1 AND done_at IS NULL))', [$memberId])
+        + member_unread_replies($memberId);   // ir nauji trenerio atsakymai
 }
 
 /** Tas pats visiems paskyros nariams (pats + vaikai) - ženkliukas prie "Mano paskyra" */
@@ -311,7 +355,8 @@ function account_attention_count(int $accountId): int
     static $cache = [];
     if (!isset($cache[$accountId])) {
         $cache[$accountId] = (int) q_value('SELECT COUNT(*) FROM coach_notes cn JOIN account_members am ON am.member_id = cn.member_id
-                                             WHERE am.account_id = ? AND (cn.read_at IS NULL OR (cn.is_task = 1 AND cn.done_at IS NULL))', [$accountId]);
+                                             WHERE am.account_id = ? AND (cn.read_at IS NULL OR (cn.is_task = 1 AND cn.done_at IS NULL))', [$accountId])
+            + account_unread_replies($accountId);
     }
     return $cache[$accountId];
 }
@@ -322,6 +367,14 @@ function account_attention_member(int $accountId): ?int
     $id = q_value('SELECT cn.member_id FROM coach_notes cn JOIN account_members am ON am.member_id = cn.member_id
                     WHERE am.account_id = ? AND ((cn.is_task = 0 AND cn.read_at IS NULL) OR (cn.is_task = 1 AND cn.done_at IS NULL))
                     ORDER BY cn.note_date DESC LIMIT 1', [$accountId]);
+    if ($id === false) {
+        try {
+            $id = q_value('SELECT mm.member_id FROM member_messages mm JOIN account_members am ON am.member_id = mm.member_id
+                            WHERE am.account_id = ? AND mm.from_staff = 1 AND mm.read_at IS NULL ORDER BY mm.created_at DESC LIMIT 1', [$accountId]);
+        } catch (PDOException $ex) {
+            $id = false;
+        }
+    }
     return $id === false ? null : (int) $id;
 }
 
@@ -347,3 +400,40 @@ function render_attendance(int $memberId): string
         . ($m['nebuvo'] ? ' <span class="muted">(praleista ' . $m['nebuvo'] . ')</span>' : '') . '</span>'
         . '<span class="muted">Sezone: ' . $s['buvo'] . ' iš ' . ($s['buvo'] + $s['nebuvo']) . '</span></div>';
 }
+
+// ---------- Trenerio „Šiandien“ ----------
+
+/** Papildomi „Reikia padaryti“ punktai iš kitų dalių: [[tekstas, kelias, mygtukas], ...] */
+function admin_today_extra_todo(): array
+{
+    $todo = [];
+    if ($n = staff_unread_messages()) {
+        $todo[] = ['Naujos narių žinutės: ' . $n, 'admin/zinutes.php', 'Atsakyti'];
+    }
+    // Nauji testų rezultatai per savaitę
+    $r = q_one('SELECT COUNT(*) c, COALESCE(SUM(passed), 0) p FROM quiz_attempts WHERE finished_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)');
+    if ($r && (int) $r['c']) {
+        $todo[] = ['Nauji testų rezultatai per savaitę: ' . (int) $r['c'] . ' (išlaikė ' . (int) $r['p'] . ')', 'admin/testai.php', 'Peržiūrėti'];
+    }
+    return $todo;
+}
+
+/** Renginio eilutė trenerio sąraše: vieta, laikas, kam skirta */
+function admin_event_summary(array $ev): string
+{
+    $parts = array_filter([fmt_time($ev['start_time']), $ev['location'], event_audience_label($ev)]);
+    return e(implode(' · ', $parts));
+}
+
+function admin_event_link(array $ev): string
+{
+    return 'admin/renginio-dalyviai.php?id=' . (int) $ev['id'];
+}
+
+/** „Dalyviai 5/12“: dalyvaus / visi pakviesti ir užsiregistravę */
+function admin_event_link_label(array $ev): string
+{
+    $c = event_participant_counts((int) $ev['id']);
+    return 'Dalyviai' . ($c['going'] || $c['invited'] ? ' ' . $c['going'] . '/' . ($c['going'] + $c['invited']) : '');
+}
+

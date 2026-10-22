@@ -175,7 +175,7 @@ function youtube_embed(string $id): string
 function text_to_html(string $text): string
 {
     $html = '';
-    foreach (preg_split("/\R{2,}/", trim($text)) as $para) {
+    foreach (preg_split("/\R{2,}/u", trim($text)) as $para) {
         $p = e($para);
         $p = preg_replace('~(https?://[^\s<]+)~', '<a href="$1" rel="noopener" target="_blank">$1</a>', $p);
         $html .= '<p>' . nl2br($p, false) . '</p>';

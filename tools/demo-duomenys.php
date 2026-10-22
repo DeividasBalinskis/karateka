@@ -264,6 +264,56 @@ foreach ($lessons as $i => [$title, $topic, $belt, $body, $video, $groups]) {
     }
 }
 
+// Pamokų aplankai (reikia db/016): Kata -> Heian katos / Pažengusiems ir kt.
+$out[] = '';
+$out[] = '-- ===== Pamokų aplankai ir turinys =====';
+$folderDefs = [
+    // [kintamasis, tėvas, pavadinimas, ženkliukas, aprašymas, kam]
+    ['@f1', null, 'Kata', '🥋', 'Katos nuo balto iki juodo diržo. Pradėkite nuo savo diržo katos.', 'karateka'],
+    ['@f2', '@f1', 'Heian katos', '⭐', null, 'karateka'],
+    ['@f3', '@f1', 'Pažengusiems', '🏆', null, 'karateka'],
+    ['@f4', null, 'Kihon', '🥊', 'Pagrindinė technika: stovėsenos, smūgiai, blokai.', 'karateka'],
+    ['@f5', null, 'Kumite', '🦶', null, 'karateka'],
+    ['@f6', null, 'Fizinis pasiruošimas', '💪', null, 'karateka'],
+    ['@f7', null, 'Egzaminai', '📜', null, 'karateka'],
+    ['@f8', null, 'Teisėjams', '⚖️', 'Medžiaga teisėjams - mato tik turintys žymą „Teisėjas“.', 'teisejas'],
+    ['@f9', null, 'Egzaminatoriams', '📝', null, 'egzaminatorius'],
+];
+foreach ($folderDefs as $i => [$var, $parent, $title, $icon, $desc, $aud]) {
+    $out[] = 'INSERT INTO lesson_folders (parent_id, title, icon, description, audience, sort_order, created_at) VALUES ('
+        . ($parent ?? 'NULL') . ', ' . s($title) . ', ' . s($icon) . ', ' . s($desc) . ', ' . s($aud) . ', ' . ($i + 1) . ", '" . SENTINEL . "');";
+    $out[] = "SET $var = LAST_INSERT_ID();";
+}
+// Pamokos į aplankus (eilės tvarka aplanke)
+foreach ([['@l1', '@f2', 1], ['@l2', '@f2', 2], ['@l3', '@f2', 3], ['@l5', '@f3', 1], ['@l4', '@f5', 1], ['@l6', '@f4', 1], ['@l7', '@f6', 1], ['@l8', '@f7', 1]] as [$l, $f, $n]) {
+    $out[] = "UPDATE lessons SET folder_id = $f, sort_order = $n WHERE id = $l;";
+}
+// Viena pamoka - iš blokų: antraštė, tekstas, video, trenerio pastaba, sąrašas
+$blocksDemo = [
+    ['heading', 'Kaip mokytis', null, null],
+    ['text', "Heian Shodan - pirmoji kata. Ją sudaro **21 judesys**.\n\nPirma pažiūrėkite video, tada kartokite po vieną dalį.", null, null],
+    ['video', null, 'dQw4w9WgXcQ', 'Visa kata lėtai'],
+    ['note', 'Atkreipkite dėmesį į kvėpavimą ir į tai, kur žiūrite - visada į tą pusę, į kurią darote judesį.', null, null],
+    ['heading', 'Namų užduotis', null, null],
+    ['text', "- Kartokite 10 minučių kasdien\n- Prieš veidrodį patikrinkite stovėsenas\n- Paprašykite tėvų nufilmuoti ir parodykite treneriui", null, null],
+];
+foreach ($blocksDemo as $i => [$type, $body, $yt, $caption]) {
+    $out[] = 'INSERT INTO lesson_blocks (lesson_id, type, body, youtube_id, caption, sort_order) VALUES (@l1, ' . s($type) . ', ' . s($body) . ', ' . s($yt) . ', ' . s($caption) . ', ' . ($i + 1) . ');';
+}
+
+// Teisėjų ir egzaminatorių medžiaga (mato tik su žyma; reikia db/014)
+$out[] = 'INSERT INTO lessons (title, topic, belt_level, audience, body, videos, is_published, author_id, created_at) VALUES ('
+    . s('WKF kumite taisyklės: taškai ir komandos') . ", 'Teisėjavimas', NULL, 'teisejas', "
+    . s("Yuko - 1 taškas, waza-ari - 2, ippon - 3.\n\nKomandos: Shobu hajime, Yame, Aka / Ao no kachi, Torimasen.\n\nPrieš varžybas išlaikykite teisėjo testą skiltyje „Egzaminas“.")
+    . ", NULL, 1, @admin, '" . SENTINEL . "');";
+$out[] = 'INSERT INTO lessons (title, topic, belt_level, audience, body, videos, is_published, author_id, created_at) VALUES ('
+    . s('Kaip vyksta kyu egzaminas') . ", 'Egzaminai', NULL, 'egzaminatorius', "
+    . s("1. Mokinys išlaiko teorijos testą (bent 83 %).\n2. Praktika: kihon, kata, kumite pagal diržo programą.\n3. Rezultatus treneris įveda svetainėje - diržas pakeliamas automatiškai.")
+    . ", NULL, 1, @admin, '" . SENTINEL . "');";
+
+$out[] = "UPDATE lessons SET folder_id = @f8 WHERE audience = 'teisejas' AND created_at = '" . SENTINEL . "';";
+$out[] = "UPDATE lessons SET folder_id = @f9 WHERE audience = 'egzaminatorius' AND created_at = '" . SENTINEL . "';";
+
 // ===== Trenerio pastabos ir užduotys =====
 $out[] = '';
 $out[] = '-- ===== Trenerio pastabos ir užduotys =====';
@@ -288,6 +338,15 @@ for ($i = 0; $i < 14 && $i < count($all); $i++) {
         . "$m, @admin, $g, " . fn_date(-mt_rand(1, 14)) . ', ' . s($text) . ', NULL, ' . ($lesson ?? 'NULL') . ', ' . ($isTask ? 1 : 0) . ", $read, $done);";
 }
 
+// Žinutės (reikia db/018): keli nariai atsakė į pastabas, vienas klausia prie pamokos, treneris atsakė
+$out[] = 'INSERT INTO member_messages (member_id, note_id, author_id, from_staff, body, created_at) '
+    . "SELECT cn.member_id, cn.id, (SELECT am.account_id FROM account_members am WHERE am.member_id = cn.member_id ORDER BY am.relation = 'parent' DESC LIMIT 1), 0, "
+    . "ELT(1 + MOD(cn.id, 3), 'Ačiū, pakartosime namuose!', 'Supratau, pabandysiu iki kitos treniruotės.', 'O ar galima tą patį daryti ir su Heian Nidan?'), NOW() - INTERVAL MOD(cn.id, 5) HOUR "
+    . "FROM coach_notes cn WHERE cn.member_id BETWEEN @m1 AND @m$memberVar ORDER BY cn.id LIMIT 3;";
+$out[] = "INSERT INTO member_messages (member_id, note_id, author_id, from_staff, body, created_at) SELECT mm.member_id, mm.note_id, @admin, 1, 'Taip, galima - tik pradėk lėtai.', NOW() FROM member_messages mm ORDER BY mm.id LIMIT 1;";
+$out[] = 'INSERT INTO member_messages (member_id, lesson_id, author_id, from_staff, body, created_at) '
+    . "SELECT @m1, @l1, (SELECT am.account_id FROM account_members am WHERE am.member_id = @m1 LIMIT 1), 0, 'Kur žiūrėti po pirmo posūkio?', NOW() - INTERVAL 2 HOUR;";
+
 // Lankomumas: paskutinės 5 savaitės pagal grupių tvarkaraštį, ~85% buvo
 $out[] = '';
 $out[] = '-- ===== Lankomumas =====';
@@ -308,6 +367,144 @@ $out[] = 'INSERT INTO point_awards (member_id, category_id, points, awarded_on, 
 // Vienas renginys ir viena naujiena - tik nariams
 $out[] = "UPDATE events SET members_only = 1 WHERE id = @e1;";
 $out[] = "UPDATE news SET members_only = 1 WHERE id = @n2;";
+
+// Renginių dalyviai: artimiausiam egzaminui ir varžyboms - dalis dalyvaus, dalis pakviesta, keli negalės (reikia db/013)
+$out[] = '';
+$out[] = '-- ===== Renginių dalyviai ir žymos =====';
+foreach (['exam', 'competition'] as $type) {
+    $out[] = "SET @ev = (SELECT id FROM events WHERE type = '$type' AND created_at = '" . SENTINEL . "' AND starts_on >= CURDATE() ORDER BY starts_on LIMIT 1);";
+    $out[] = 'INSERT IGNORE INTO event_participants (event_id, member_id, status, invited_by, responded_at) '
+        . "SELECT @ev, m.id, ELT(1 + MOD(m.id, 4), 'going', 'invited', 'going', 'declined'), @admin, IF(MOD(m.id, 4) = 1, NULL, NOW()) "
+        . "FROM members m WHERE @ev IS NOT NULL AND m.status = 'active' AND m.id BETWEEN @m1 AND @m$memberVar "
+        . "AND (NOT EXISTS (SELECT 1 FROM event_groups eg WHERE eg.event_id = @ev) OR m.group_id IN (SELECT group_id FROM event_groups eg WHERE eg.event_id = @ev)) "
+        . 'ORDER BY m.id LIMIT 14;';
+}
+// Keli suaugę - teisėjai ir egzaminatoriai
+$out[] = "INSERT IGNORE INTO member_tags (member_id, tag) SELECT m.id, 'teisejas' FROM members m JOIN training_groups g ON g.id = m.group_id "
+    . "WHERE g.category IN ('suauge', 'jaunimas') AND m.id BETWEEN @m1 AND @m$memberVar AND TIMESTAMPDIFF(YEAR, m.birth_date, CURDATE()) >= 16 ORDER BY m.id LIMIT 4;";
+$out[] = "INSERT IGNORE INTO member_tags (member_id, tag) SELECT m.id, 'egzaminatorius' FROM members m JOIN training_groups g ON g.id = m.group_id "
+    . "WHERE g.category = 'suauge' AND m.id BETWEEN @m1 AND @m$memberVar ORDER BY m.id LIMIT 2;";
+
+// ===== Egzaminų programa ir testai (reikia db/014) =====
+$out[] = '';
+$out[] = '-- ===== Egzaminų programa ir testai =====';
+$program = [
+    // diržas => [[dalis, ko reikia, paaiškinimas, pamoka]]
+    2 => [
+        ['kihon', 'Zenkutsu-dachi', 'Priekinė stovėsena: priekinis kelis virš pėdos, užpakalinė koja tiesi.', null],
+        ['kihon', 'Oi-zuki', 'Smūgis žengiant į priekį.', '@l6'],
+        ['kihon', 'Gyaku-zuki', 'Smūgis priešinga ranka.', '@l6'],
+        ['kihon', 'Age-uke ir gedan-barai', 'Blokas aukštyn ir žemutinis blokas.', '@l6'],
+        ['kata', 'Heian Shodan', null, '@l1'],
+        ['kumite', 'Gohon kumite', 'Penkių žingsnių kumite su partneriu.', null],
+        ['teorija', 'Skaičiuoti iki 10 japoniškai', 'Ichi, ni, san, shi, go, roku, shichi, hachi, kū, jū.', null],
+        ['teorija', 'Dojo etiketas', 'Kada ir kaip nusilenkti, kaip kreiptis į trenerį.', null],
+    ],
+    3 => [
+        ['kihon', 'Soto-uke ir uchi-uke', 'Blokai iš išorės ir iš vidaus.', null],
+        ['kihon', 'Shuto-uke kokutsu-dachi stovėsenoje', null, null],
+        ['kihon', 'Mae-geri', 'Spyris į priekį.', null],
+        ['kata', 'Heian Nidan', null, '@l2'],
+        ['kumite', 'Sanbon kumite', 'Trijų žingsnių kumite.', null],
+        ['teorija', 'Japoniški terminai', 'Stovėsenų, blokų ir smūgių pavadinimai.', null],
+    ],
+    4 => [
+        ['kihon', 'Kiba-dachi', 'Raitelio stovėsena.', null],
+        ['kihon', 'Yoko-geri keage ir kekomi', 'Šoniniai spyriai.', null],
+        ['kata', 'Heian Sandan', null, '@l3'],
+        ['kumite', 'Kihon ippon kumite', 'Vieno žingsnio kumite.', '@l4'],
+    ],
+];
+foreach ($program as $belt => $items) {
+    foreach ($items as $i => [$section, $title, $body, $lesson]) {
+        $out[] = 'INSERT INTO belt_requirements (belt_level, section, title, body, lesson_id, sort_order, created_at) VALUES ('
+            . "$belt, " . s($section) . ', ' . s($title) . ', ' . s($body) . ', ' . ($lesson ?? 'NULL') . ', ' . ($i + 1) . ", '" . SENTINEL . "');";
+    }
+}
+// Dalis narių jau pažymėjo, ką moka
+$out[] = 'INSERT IGNORE INTO requirement_progress (member_id, requirement_id) SELECT m.id, r.id FROM members m '
+    . "JOIN belt_requirements r ON r.belt_level = COALESCE(m.belt_level, 1) + 1 AND r.created_at = '" . SENTINEL . "' "
+    . "WHERE m.id BETWEEN @m1 AND @m$memberVar AND MOD(m.id * 7 + r.id * 3, 10) < 6;";
+
+$quizzes = [
+    // [pavadinimas, kam, diržas, aprašymas, klausimų teste, vaikams, [[klausimas, [atsakymai - pirmas teisingas], paaiškinimas]]]
+    ['Geltonas diržas (8 kyu)', 'karateka', 2, 'Pasitikrink, ar žinai, ko reikia geltonam diržui.', 8, 1, [
+        ['Ką darome įeidami į dojo?', ['Nusilenkiame', 'Bėgame į salės vidurį', 'Garsiai pasisveikiname su draugais', 'Nieko ypatingo'], 'Įeidami ir išeidami iš dojo visada nusilenkiame.'],
+        ['Kaip japoniškai vadinamas treneris?', ['Sensei', 'Senpai', 'Obi', 'Dojo'], 'Senpai - vyresnis mokinys, obi - diržas, dojo - salė.'],
+        ['Kaip japoniškai „vienas“?', ['Ichi', 'Ni', 'San', 'Go'], null],
+        ['Kaip japoniškai „du“?', ['Ni', 'Ichi', 'Shi', 'Roku'], null],
+        ['Kas yra kata?', ['Judesių seka su įsivaizduojamu priešininku', 'Diržo spalva', 'Karatė apranga', 'Šūksnis'], null],
+        ['Kas yra obi?', ['Diržas', 'Treneris', 'Spyris', 'Salė'], null],
+        ['Kokios spalvos diržą gauna pradedantysis?', ['Baltą', 'Geltoną', 'Juodą', 'Žalią'], null],
+        ['Kas yra kiai?', ['Šūksnis, padedantis sutelkti jėgą', 'Blokas', 'Pasisveikinimas', 'Stovėsena'], null],
+        ['Kuri kata yra pirmoji?', ['Heian Shodan', 'Heian Nidan', 'Bassai Dai', 'Heian Sandan'], null],
+        ['Ką reiškia komanda „Yame“?', ['Sustoti', 'Pradėti', 'Nusilenkti', 'Atsisėsti'], null],
+    ]],
+    ['Oranžinis diržas (7 kyu)', 'karateka', 3, 'Teorija oranžiniam diržui: technikos ir terminai.', 8, 0, [
+        ['Oi-zuki - tai...', ['Smūgis ranka žengiant į priekį', 'Smūgis priešinga ranka', 'Spyris į priekį', 'Blokas aukštyn'], null],
+        ['Gyaku-zuki - tai...', ['Smūgis priešinga ranka nei priekinė koja', 'Smūgis žengiant į priekį', 'Šoninis spyris', 'Žemutinis blokas'], null],
+        ['Age-uke - tai...', ['Blokas aukštyn', 'Žemutinis blokas', 'Blokas iš išorės', 'Spyris atgal'], null],
+        ['Gedan-barai - tai...', ['Žemutinis blokas', 'Blokas aukštyn', 'Smūgis į galvą', 'Spyris į priekį'], null],
+        ['Mae-geri - tai...', ['Spyris į priekį', 'Šoninis spyris', 'Spyris lanku', 'Smūgis alkūne'], null],
+        ['Kokia tai stovėsena: zenkutsu-dachi?', ['Priekinė stovėsena', 'Raitelio stovėsena', 'Užpakalinė stovėsena', 'Natūrali stovėsena'], 'Zenkutsu-dachi - daugiau svorio ant priekinės kojos.'],
+        ['Kokia tai stovėsena: kokutsu-dachi?', ['Užpakalinė stovėsena', 'Priekinė stovėsena', 'Raitelio stovėsena', 'Kryžminė stovėsena'], null],
+        ['Ką reiškia komanda „Hajime“?', ['Pradėti', 'Sustoti', 'Nusilenkti', 'Pakeisti pusę'], null],
+        ['Kaip japoniškai „penki“?', ['Go', 'Roku', 'Shi', 'Hachi'], null],
+        ['Kuri kata reikalinga oranžiniam diržui?', ['Heian Nidan', 'Heian Shodan', 'Bassai Dai', 'Kanku Dai'], null],
+    ]],
+    ['Teisėjo testas: kumite taisyklės', 'teisejas', null, 'Pagrindinės WKF kumite taisyklės ir komandos.', 6, 0, [
+        ['Kiek taškų skiriama už yuko?', ['1', '2', '3', '0,5'], null],
+        ['Kiek taškų skiriama už ippon?', ['3', '2', '1', '5'], null],
+        ['Už ką skiriamas waza-ari (2 taškai)?', ['Spyris į korpusą (chudan)', 'Smūgis ranka į galvą', 'Spyris į galvą (jodan)', 'Blokas'], 'Spyris į galvą ir pargriovimas su baigiamuoju smūgiu - ippon.'],
+        ['Kokia komanda pradeda kovą?', ['Shobu hajime', 'Yame', 'Aka no kachi', 'Torimasen'], null],
+        ['Ką reiškia „Aka no kachi“?', ['Laimėjo raudonasis (aka)', 'Laimėjo mėlynasis (ao)', 'Lygiosios', 'Įspėjimas raudonajam'], null],
+        ['Ką reiškia senshu?', ['Pirmojo taško pranašumas', 'Įspėjimas', 'Diskvalifikacija', 'Papildomas laikas'], null],
+        ['Kokia taškų persvara baigia kovą anksčiau laiko?', ['8 taškai', '5 taškai', '6 taškai', '10 taškų'], null],
+    ]],
+    ['Egzaminatoriaus testas', 'egzaminatorius', null, 'Klubo egzaminų tvarka.', 5, 0, [
+        ['Kiek procentų reikia surinkti teoriniame teste, kad mokinys galėtų laikyti praktiką?', ['83 %', '50 %', '70 %', '100 %'], null],
+        ['Kokia diržų tvarka nuo pradedančiojo?', ['Baltas → geltonas → oranžinis → žalias', 'Baltas → oranžinis → geltonas → žalias', 'Geltonas → baltas → žalias → mėlynas', 'Baltas → žalias → geltonas → mėlynas'], null],
+        ['Kas vertinama kihon dalyje?', ['Pagrindinė technika: stovėsenos, smūgiai, blokai, spyriai', 'Tik kata', 'Tik kumite', 'Fizinis pasiruošimas'], null],
+        ['Kas yra kumite?', ['Kova su partneriu', 'Judesių seka vienam', 'Teorijos testas', 'Pasisveikinimas'], null],
+        ['Kada žymimas naujas diržas sistemoje?', ['Įvedus egzamino rezultatus ir pažymėjus diržo pakėlimą', 'Narys pasižymi pats', 'Automatiškai po testo', 'Kartą per metus'], null],
+    ]],
+];
+foreach ($quizzes as $qi => [$title, $aud, $belt, $desc, $count, $kids, $questions]) {
+    $qv = '@qz' . ($qi + 1);
+    $out[] = 'INSERT INTO quizzes (title, audience, belt_level, description, question_count, pass_percent, kids_mode, is_published, created_at) VALUES ('
+        . s($title) . ', ' . s($aud) . ', ' . ($belt ?? 'NULL') . ', ' . s($desc) . ", $count, 83, $kids, 1, '" . SENTINEL . "');";
+    $out[] = "SET $qv = LAST_INSERT_ID();";
+    foreach ($questions as $i => [$body, $answers, $expl]) {
+        $out[] = 'INSERT INTO quiz_questions (quiz_id, body, explanation, sort_order) VALUES (' . "$qv, " . s($body) . ', ' . s($expl) . ', ' . ($i + 1) . ');';
+        $out[] = 'SET @qq = LAST_INSERT_ID();';
+        // Atsakymų tvarka sumaišoma, kad teisingas nebūtų visada pirmas
+        $order = array_keys($answers);
+        shuffle($order);
+        foreach ($order as $pos => $k) {
+            $out[] = 'INSERT INTO quiz_answers (question_id, body, is_correct, sort_order) VALUES (@qq, ' . s($answers[$k]) . ', ' . ($k === 0 ? 1 : 0) . ', ' . ($pos + 1) . ');';
+        }
+    }
+}
+// Bandymai: dalis narių jau laikė savo kito diržo testą (~85 % atsakymų teisingi)
+$out[] = 'INSERT INTO quiz_attempts (quiz_id, member_id, account_id, question_ids, score, total, passed, started_at, finished_at) '
+    . "SELECT q.id, m.id, (SELECT am.account_id FROM account_members am WHERE am.member_id = m.id ORDER BY am.relation = 'self' DESC LIMIT 1), "
+    . '(SELECT GROUP_CONCAT(qq.id ORDER BY qq.sort_order) FROM quiz_questions qq WHERE qq.quiz_id = q.id), 0, (SELECT COUNT(*) FROM quiz_questions qq WHERE qq.quiz_id = q.id), 0, '
+    . 'NOW() - INTERVAL MOD(m.id, 20) DAY - INTERVAL 10 MINUTE, NOW() - INTERVAL MOD(m.id, 20) DAY FROM quizzes q '
+    . "JOIN members m ON COALESCE(m.belt_level, 1) + 1 = q.belt_level AND m.status = 'active' AND m.id BETWEEN @m1 AND @m$memberVar "
+    . "WHERE q.created_at = '" . SENTINEL . "' AND MOD(m.id, 3) <> 0;";
+$out[] = 'INSERT INTO quiz_attempt_answers (attempt_id, question_id, answer_id, is_correct) '
+    . 'SELECT a.id, qq.id, IF(MOD(a.member_id * 31 + qq.id * 17, 100) < 85, '
+    . '(SELECT MIN(x.id) FROM quiz_answers x WHERE x.question_id = qq.id AND x.is_correct = 1), (SELECT MIN(x.id) FROM quiz_answers x WHERE x.question_id = qq.id AND x.is_correct = 0)), '
+    . 'IF(MOD(a.member_id * 31 + qq.id * 17, 100) < 85, 1, 0) '
+    . "FROM quiz_attempts a JOIN quizzes q ON q.id = a.quiz_id AND q.created_at = '" . SENTINEL . "' JOIN quiz_questions qq ON qq.quiz_id = a.quiz_id;";
+$out[] = 'UPDATE quiz_attempts a JOIN quizzes q ON q.id = a.quiz_id '
+    . 'SET a.score = (SELECT COALESCE(SUM(x.is_correct), 0) FROM quiz_attempt_answers x WHERE x.attempt_id = a.id) '
+    . "WHERE q.created_at = '" . SENTINEL . "';";
+$out[] = "UPDATE quiz_attempts a JOIN quizzes q ON q.id = a.quiz_id SET a.passed = IF(100 * a.score >= q.pass_percent * a.total, 1, 0) WHERE q.created_at = '" . SENTINEL . "';";
+// Teisėjų testą jau išlaikė du teisėjai
+$out[] = 'INSERT INTO quiz_attempts (quiz_id, member_id, question_ids, score, total, passed, started_at, finished_at) '
+    . "SELECT @qz3, t.member_id, '', 6, 6, 1, NOW() - INTERVAL 40 DAY, NOW() - INTERVAL 40 DAY FROM member_tags t "
+    . "WHERE t.tag = 'teisejas' AND t.member_id BETWEEN @m1 AND @m$memberVar ORDER BY t.member_id LIMIT 2;";
 
 echo implode("\n", $out) . "\n";
 fwrite(STDERR, sprintf("Paskyros: %d, nariai: %d\n", $accountVar, $memberVar));

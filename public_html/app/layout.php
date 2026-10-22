@@ -33,22 +33,10 @@ function page_start(string $title, array $opt = []): void
 <link rel="stylesheet" href="<?= e($css) ?>">
 </head>
 <body class="<?= $admin ? 'is-admin' : '' ?>">
-<?php site_header(); ?>
-<?php if ($admin): ?>
-<?php $pendingCount = pending_approvals_count(); ?>
-<nav class="admin-tabs">
-  <a href="<?= url('admin/') ?>">Pradžia</a>
-  <a href="<?= url('admin/treniruote.php') ?>">Treniruotė</a>
-  <a href="<?= url('admin/nariai.php') ?>">Nariai</a>
-  <a href="<?= url('admin/grupes.php') ?>">Grupės</a>
-  <a href="<?= url('admin/renginiai.php') ?>">Renginiai</a>
-  <a href="<?= url('admin/taskai.php') ?>">Taškai</a>
-  <a href="<?= url('admin/naujienos.php') ?>">Naujienos 🙂</a>
-  <a href="<?= url('admin/pamokos.php') ?>">Pamokos</a>
-  <?php if (is_admin()): ?><a href="<?= url('admin/paskyros.php') ?>">Paskyros</a><?php endif; ?>
-  <a href="<?= url('admin/patvirtinimai.php') ?>" class="tab-last">Patvirtinimai<?php if ($pendingCount): ?> <span class="count-badge"><?= $pendingCount ?></span><?php endif; ?></a>
-</nav>
-<?php endif; ?>
+<?php
+    // Renginiai, Naujienos, Pamokos - viena vieta visiems (ir treneriui su redagavimo mygtukais), be trenerio skirtukų juostos
+    $section = $opt['section'] ?? null;
+    site_header(false, $admin && !$section ? 'admin' : (!empty($opt['account']) ? 'account' : null), $opt['account'] ?? null, $section); ?>
 <main class="page <?= !empty($opt['narrow']) ? 'narrow' : '' ?>">
 <?php foreach ($flashes as $f): ?>
   <div class="flash flash-<?= e($f['type']) ?>"><?= e($f['message']) ?></div>
@@ -113,11 +101,11 @@ function staff_link(string $path, string $label = '✎ Redaguoti'): string
  * "Kam skirta?" varnelės: "Visos grupės", kiekviena kategorija (Vaikai / Jaunimas / Suaugusieji) ir jos grupės.
  * $selected tuščias = visoms grupėms (tada pažymėta viskas).
  */
-function audience_field(array $selected, string $allLabel = 'Visos grupės'): string
+function audience_field(array $selected, string $allLabel = 'Visos grupės', bool $emptyMeansAll = true): string
 {
     $groups = q_all('SELECT * FROM training_groups WHERE is_active = 1 ORDER BY sort_order, name');
     $sel = array_map('intval', $selected);
-    $all = !$sel;
+    $all = !$sel && $emptyMeansAll;
     $byCat = [];
     foreach ($groups as $g) {
         $byCat[$g['category']][] = $g;
@@ -148,7 +136,7 @@ function audience_field(array $selected, string $allLabel = 'Visos grupės'): st
         }
         $html .= '</div>';
     }
-    $html .= '<p class="hint" style="margin-top:6px;">Nieko nepažymėjus - visiems.</p></div>';
+    $html .= ($emptyMeansAll ? '<p class="hint" style="margin-top:6px;">Nieko nepažymėjus - visiems.</p>' : '') . '</div>';
     static $js = false;
     if (!$js) {
         $js = true;
@@ -224,14 +212,109 @@ function asset_url(string $path): string
     return url($path) . '?v=' . @filemtime(PUBLIC_DIR . '/' . $path);
 }
 
+/** Treneriams: skirtukai po viršutine juosta [raktas => [pavadinimas, kelias, skaičiukas]] */
+function admin_nav_items(): array
+{
+    $items = [
+        'siandien'   => ['Šiandien', 'admin/'],
+        'treniruote' => ['Treniruotė', 'admin/treniruote.php'],
+        'zinutes'    => ['Žinutės', 'admin/zinutes.php', staff_unread_messages()],
+        'nariai'     => ['Nariai', 'admin/nariai.php'],
+        'grupes'     => ['Grupės', 'admin/grupes.php'],
+        'taskai'     => ['Taškai', 'admin/taskai.php'],
+    ];
+    $items['varzybos'] = ['Varžybos', 'admin/varzybos.php'];   // ir kai sistema dar neprijungta - puslapis paaiškina
+    // Renginiai, naujienos ir pamokos tvarkomi savo skiltyse (viršutinėje juostoje), čia nedubliuojama
+    foreach (ADMIN_NAV_EXTRA as $key => $item) {
+        if (empty($item[2]) || is_admin()) {
+            $items[$key] = [$item[0], $item[1]];
+        }
+    }
+    if (is_admin()) {
+        $items['paskyros'] = ['Paskyros', 'admin/paskyros.php'];
+    }
+    $items['patvirtinimai'] = ['Patvirtinimai', 'admin/patvirtinimai.php', pending_approvals_count()];
+    return $items;
+}
+
+// Vėliau pridėti skirtukai: [raktas => [pavadinimas, kelias, tik adminui]]
+const ADMIN_NAV_EXTRA = [
+    'testai' => ['Testai', 'admin/testai.php', false],
+    'sms'    => ['SMS', 'admin/sms.php', true],
+];
+
+/** Kuris trenerio skirtukas aktyvus (pagal failą) */
+function admin_nav_current(): string
+{
+    $file = basename($_SERVER['SCRIPT_NAME'] ?? '', '.php');
+    $map = ['index' => 'siandien', 'renginio-rezultatai' => 'renginiai', 'varzybu-rezultatai' => 'varzybos', 'renginio-dalyviai' => 'renginiai', 'programa' => 'testai',
+            'varzybos-sso' => 'varzybos', 'varzybu-dalyviai' => 'varzybos',
+            'pirmas-adminas' => 'siandien'];
+    return $map[$file] ?? $file;
+}
+
+/** Nario paskyros skirtukai */
+function account_nav_items(array $a): array
+{
+    $items = ['apzvalga' => ['Apžvalga', 'paskyra.php', account_attention_count((int) $a['id'])]];
+    if ($a['status'] === 'active') {
+        foreach (account_nav_extra($a) as $key => $item) {
+            $items[$key] = $item;
+        }
+    }
+    $items['nustatymai'] = ['Nustatymai', 'paskyra.php?skiltis=nustatymai'];
+    return $items;
+}
+
+/** Skirtukai tarp „Apžvalga“ ir „Nustatymai“. Renginiai ir Pamokos - viršutinėje juostoje, čia nedubliuojama. */
+function account_nav_extra(array $a): array
+{
+    return [
+        'egzaminas' => ['Egzaminas', 'egzaminas.php'],
+    ];
+}
+
+/** Treneriui skilties viršuje: ką čia galima sukurti ar sutvarkyti. $links = [[tekstas, kelias, pagrindinis?], ...] */
+function staff_bar(array $links): string
+{
+    if (!is_staff()) {
+        return '';
+    }
+    $html = '<div class="staff-bar"><span class="staff-bar-label">Treneriui</span>';
+    foreach ($links as $l) {
+        $html .= '<a class="btn btn-sm ' . (!empty($l[2]) ? 'btn-primary' : 'btn-ghost') . '" href="' . e(url($l[1])) . '">' . e($l[0]) . '</a>';
+    }
+    return $html . '</div>';
+}
+
+/** Skirtukų juosta po viršutine juosta (Treneriams arba Mano paskyra) */
+function render_sub_nav(string $label, array $items, string $current): string
+{
+    $html = '<div class="sub-nav"><div class="sub-inner"><span class="sub-label">' . e($label) . '</span>';
+    foreach ($items as $key => $it) {
+        $badge = !empty($it[2]) ? ' <span class="count-badge">' . (int) $it[2] . '</span>' : '';
+        $cls = ($key === $current ? 'active' : '') . ($key === 'patvirtinimai' ? ' sub-last' : '');
+        $html .= '<a href="' . e(url($it[1])) . '" class="' . trim($cls) . '"' . ($key === $current ? ' aria-current="page"' : '') . '>' . e($it[0]) . $badge . '</a>';
+    }
+    return $html . '</div></div>';
+}
+
 /**
  * Bendra viršutinė juosta visiems puslapiams.
  * $home = true pagrindiniame puslapyje (nuorodos į skiltis be perkrovimo).
+ * $area - 'admin' (Treneriams) arba 'account' (Mano paskyra): po juosta rodomi tos dalies skirtukai.
  */
-function site_header(bool $home = false): void
+function site_header(bool $home = false, ?string $area = null, ?string $tab = null, ?string $section = null): void
 {
+    $cur = function (string $s) use ($section) { return $section === $s ? ' is-current' : ''; };
     $a = current_account();
     $h = $home ? '' : url('index.php');
+    $subNav = '';
+    if ($a && $area === 'admin' && is_staff($a)) {
+        $subNav = render_sub_nav('Treneriams', admin_nav_items(), admin_nav_current());
+    } elseif ($a && $area === 'account') {
+        $subNav = render_sub_nav('Mano paskyra', account_nav_items($a), (string) $tab);
+    }
     ?>
 <div class="progress-wrap"><div class="progress-bar" id="progressBar"></div></div>
 <header class="site-header">
@@ -250,16 +333,16 @@ function site_header(bool $home = false): void
       <!-- Kiti puslapiai -->
       <li class="nav-section page-section">
         <ul>
-          <li><a class="nav-page" href="<?= url('renginiai.php') ?>">Renginiai</a></li>
-          <li><a class="nav-page" href="<?= url('naujienos.php') ?>">Naujienos</a></li>
+          <li><a class="nav-page<?= $cur('renginiai') ?>" href="<?= url('renginiai.php') ?>">Renginiai<?php if ($a && !is_staff($a) && ($inv = account_pending_invites((int) $a['id']))): ?> <span class="count-badge" title="Treneris kviečia - atsakykite"><?= $inv ?></span><?php endif; ?></a></li>
+          <li><a class="nav-page<?= $cur('naujienos') ?>" href="<?= url('naujienos.php') ?>">Naujienos</a></li>
           <?php if ($a && can_see_lessons($a)): ?>
-            <li><a class="nav-page" href="<?= url('pamokos.php') ?>">Pamokos</a></li>
+            <li><a class="nav-page<?= $cur('pamokos') ?>" href="<?= url('pamokos.php') ?>">Pamokos</a></li>
           <?php endif; ?>
           <?php if ($a && is_staff($a)): ?>
             <!-- Treneriui vienas mygtukas "Paskyra": trenerio panelė su paskyros nustatymais -->
-            <li><a class="nav-login" href="<?= url('admin/') ?>">Paskyra<?php if ($n = pending_approvals_count()): ?> <span class="count-badge" title="Laukia patvirtinimo"><?= $n ?></span><?php endif; ?></a></li>
+            <li><a class="nav-login<?= $area === 'admin' ? ' is-current' : '' ?>" href="<?= url('admin/') ?>">Paskyra<?php if ($n = pending_approvals_count()): ?> <span class="count-badge" title="Laukia patvirtinimo"><?= $n ?></span><?php endif; ?></a></li>
           <?php elseif ($a): ?>
-            <li><a class="nav-login" href="<?= url('paskyra.php') ?>">Mano paskyra<?php if ($att = account_attention_count((int) $a['id'])): ?> <span class="count-badge" title="Naujos pastabos ar neatliktos užduotys"><?= $att ?></span><?php endif; ?></a></li>
+            <li><a class="nav-login<?= $area === 'account' ? ' is-current' : '' ?>" href="<?= url('paskyra.php') ?>">Mano paskyra<?php if ($att = account_attention_count((int) $a['id'])): ?> <span class="count-badge" title="Naujos pastabos ar neatliktos užduotys"><?= $att ?></span><?php endif; ?></a></li>
           <?php endif; ?>
           <?php if ($a): ?>
             <li class="mobile-only">
@@ -276,12 +359,13 @@ function site_header(bool $home = false): void
     <a class="nav-cta mobile-only" href="<?= $h ?>#registracija">2 treniruotės nemokamai</a>
     <button class="burger" id="burgerBtn" type="button" aria-label="Meniu"><span></span><span></span><span></span><?php if ($a && account_attention_count((int) $a['id'])): ?><i class="burger-dot"></i><?php endif; ?></button>
   </nav>
+  <?= $subNav ?>
 </header>
 <?php
     // Kol yra neperskaitytų trenerio pastabų ar neatliktų užduočių - juosta po meniu visuose puslapiuose
     if ($a && ($att = account_attention_count((int) $a['id'])) && basename($_SERVER['SCRIPT_NAME'] ?? '') !== 'paskyra.php'):
         $attMember = account_attention_member((int) $a['id']); ?>
-<a class="attention-bar" href="<?= url('paskyra.php' . ($attMember ? '?m=' . $attMember : '')) ?>#pastabos">❗ Turite <?= $att ?> <?= $att === 1 ? 'trenerio pastabą ar užduotį' : 'trenerio pastabų ar užduočių' ?>, kurios dar nepažymėtos - <strong>peržiūrėti →</strong></a>
+<a class="attention-bar" href="<?= url('paskyra.php' . ($attMember ? '?m=' . $attMember : '')) ?>#pastabos">❗ Turite <?= $att ?> <?= $att === 1 ? 'naują trenerio pastabą, atsakymą ar užduotį' : 'naujų trenerio pastabų, atsakymų ar užduočių' ?> - <strong>peržiūrėti →</strong></a>
 <?php endif; ?>
 <?php
 }

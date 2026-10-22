@@ -39,7 +39,7 @@ if (is_post()) {
             q('UPDATE members SET photo_consent = ? WHERE id = ?', [!empty($_POST['photo_consent']) ? 1 : 0, $mid]);
             flash('ok', 'Sutikimas dėl nuotraukų atnaujintas.');
         }
-        redirect('paskyra.php?m=' . $mid);
+        redirect('paskyra.php?skiltis=nustatymai&m=' . $mid);
     }
 
     // Diržą gali pasikeisti patys (tėvai arba narys); treneris prireikus pataiso
@@ -49,7 +49,7 @@ if (is_post()) {
             q('UPDATE members SET belt_level = ? WHERE id = ?', [belt_from_post('belt_level'), $mid]);
             flash('ok', 'Diržas atnaujintas.');
         }
-        redirect('paskyra.php?m=' . $mid);
+        redirect('paskyra.php?skiltis=nustatymai&m=' . $mid);
     }
 
     if ($action === 'invite') {
@@ -70,7 +70,7 @@ if (is_post()) {
                 . "Matysi savo grupės tvarkaraštį, egzaminus ir varžybas.\n\n"
                 . abs_url('pakvietimas.php?t=' . $token) . "\n\nNuoroda galioja 14 dienų.");
             flash('ok', "Kvietimas išsiųstas: $email");
-            redirect('paskyra.php?m=' . $mid);
+            redirect('paskyra.php?skiltis=nustatymai&m=' . $mid);
         }
     }
 
@@ -99,8 +99,11 @@ if (is_post()) {
         redirect('paskyra.php?m=' . (int) ($note['member_id'] ?? 0) . '#pastabos');
     }
 
-    handle_account_settings($a, 'paskyra.php#nustatymai', $errors);
+    handle_account_settings($a, 'paskyra.php?skiltis=nustatymai', $errors);
 }
+
+// Skirtukas: apžvalga (taškai, tvarkaraštis, pastabos) arba nustatymai (nario duomenys, vaikai, paskyra)
+$tab = get('skiltis') === 'nustatymai' || (is_post() && $errors && post('action') !== '') ? 'nustatymai' : 'apzvalga';
 
 $isStaff = is_staff($a);
 $members = account_members($aid);
@@ -130,6 +133,10 @@ if ($active) {
     $notes = member_notes((int) $selected['id']);
     // Neperskaitytos (ne užduotys) pastabos; užduotys skaičiuojamos atskirai, kol neatliktos
     $unreadIds = array_map('intval', array_column(array_filter($notes, function ($n) { return !$n['is_task'] && $n['read_at'] === null; }), 'id'));
+    // Žinutės su treneriu: atsakymai po pastabomis, klausimai prie pamokų ir bendros. Atidarius - trenerio atsakymai perskaityti.
+    $noteMsgs = note_messages(array_column($notes, 'id'));
+    $threads = member_free_threads((int) $selected['id']);
+    mark_staff_messages_read((int) $selected['id']);
 
     // Kurį reitingą rodyti: savo (numatytasis), kitos amžiaus kategorijos arba viso klubo
     $ownPartition = ranking_partition($selected);
@@ -154,17 +161,17 @@ if ($active) {
     $meTag = ($selected['relation'] ?? '') === 'self' ? '<span class="me-tag">tu</span>' : '';
 }
 
-page_start('Mano paskyra', ['noindex' => true]);
+page_start($tab === 'nustatymai' ? 'Nustatymai' : 'Mano paskyra', ['noindex' => true, 'account' => $tab]);
 ?>
 <div class="account-top">
   <div>
-    <div class="eyebrow">Mano paskyra</div>
+    <div class="eyebrow"><?= $tab === 'nustatymai' ? 'Nustatymai' : 'Apžvalga' ?></div>
     <div class="hello">Sveiki, <?= e($a['first_name']) ?>!</div>
   </div>
   <?php if (count($members) > 1): ?>
     <div class="member-tabs">
       <?php foreach ($members as $m): ?>
-        <a href="?m=<?= (int) $m['id'] ?>" class="<?= $selected && $m['id'] === $selected['id'] ? 'active' : '' ?>">
+        <a href="?<?= $tab === 'nustatymai' ? 'skiltis=nustatymai&amp;' : '' ?>m=<?= (int) $m['id'] ?>" class="<?= $selected && $m['id'] === $selected['id'] ? 'active' : '' ?>">
           <?= e($m['first_name']) ?><?= $m['relation'] === 'self' ? ' (aš)' : '' ?><?php if ($u = member_attention_count((int) $m['id'])): ?> <span class="count-badge" title="Naujos pastabos ar neatliktos užduotys"><?= $u ?></span><?php endif; ?>
         </a>
       <?php endforeach; ?>
@@ -178,7 +185,11 @@ page_start('Mano paskyra', ['noindex' => true]);
 <?php endif; ?>
 <?= form_errors($errors) ?>
 <?php if ($active && ($att = count($unreadIds) + count(array_filter($notes, function ($n) { return $n['is_task'] && !$n['done_at']; })))): ?>
-  <a class="flash flash-attention" href="#pastabos">❗ <?= count($members) > 1 ? e($selected['first_name']) . ': ' : '' ?>yra naujų trenerio pastabų ar neatliktų užduočių (<?= $att ?>) - žiūrėti ↓</a>
+  <a class="flash flash-attention" href="<?= url('paskyra.php?m=' . (int) $selected['id']) ?>#pastabos">❗ <?= count($members) > 1 ? e($selected['first_name']) . ': ' : '' ?>yra naujų trenerio pastabų ar neatliktų užduočių (<?= $att ?>) - žiūrėti ↓</a>
+<?php endif; ?>
+
+<?php if ($active && $tab === 'apzvalga' && varzybos_enabled()): ?>
+  <a class="flash flash-info" style="display:block;" href="<?= url('varzybos.php') ?>">🥋 Registracija į varžybas: <strong>pasirinkti varžybas ir kategorijas →</strong></a>
 <?php endif; ?>
 
 <?php if ($isStaff): ?>
@@ -190,7 +201,7 @@ page_start('Mano paskyra', ['noindex' => true]);
   <?php if ($members): ?><h2 style="margin:28px 0 12px;">Nariai mano paskyroje</h2><?php endif; ?>
 <?php endif; ?>
 
-<?php if ($selected): ?>
+<?php if ($selected && $tab === 'apzvalga'): ?>
   <div class="grid-2 account-main <?= $active ? 'has-points' : 'no-points' ?>">
     <?php if ($active): ?>
       <!-- Taškai ir Top 5 - svarbiausia, todėl pirma -->
@@ -250,7 +261,7 @@ page_start('Mano paskyra', ['noindex' => true]);
       </div>
 
       <div class="panel card events-card">
-        <div class="kicker">Artėjantys renginiai <?= staff_link('admin/renginiai.php', '✎ Keisti') ?></div>
+        <div class="kicker">Artėjantys renginiai <?= staff_link('renginiai.php', '✎ Keisti') ?></div>
         <?php $events = $active ? upcoming_events($selected['group_id'] ? (int) $selected['group_id'] : null, 20) : []; ?>
         <?php if (!$events): ?>
           <p class="muted">Artėjančių renginių nėra.</p>
@@ -277,7 +288,7 @@ page_start('Mano paskyra', ['noindex' => true]);
       </div>
       <?php foreach ($notes as $n): ?>
         <?php $openTask = $n['is_task'] && !$n['done_at']; ?>
-        <div class="coach-note <?= in_array((int) $n['id'], $unreadIds, true) || $openTask ? 'unread' : '' ?>">
+        <div class="coach-note <?= in_array((int) $n['id'], $unreadIds, true) || $openTask ? 'unread' : '' ?>" id="n<?= (int) $n['id'] ?>">
           <div class="meta">
             <?= note_source($n) ?><?= $n['author'] ? ' · treneris ' . e($n['author']) : '' ?>
             <?= !$n['is_task'] && $n['read_at'] === null ? ' <span class="badge badge-new">Nauja</span>' : '' ?>
@@ -306,8 +317,31 @@ page_start('Mano paskyra', ['noindex' => true]);
               <button class="btn btn-primary btn-sm" type="submit" style="margin-top:10px;">✓ Perskaičiau</button>
             </form>
           <?php endif; ?>
+          <?php $nm = $noteMsgs[(int) $n['id']] ?? []; ?>
+          <?php if ($nm): ?><div class="msg-thread"><?php foreach ($nm as $r): ?><?= render_message($r, false) ?><?php endforeach; ?></div><?php endif; ?>
+          <details class="msg-reply"<?= $nm && end($nm)['from_staff'] ? ' open' : '' ?>>
+            <summary>💬 <?= $nm ? 'Atsakyti' : 'Atsakyti treneriui' ?></summary>
+            <?= message_form('msg', ['member_id' => (int) $selected['id'], 'note_id' => (int) $n['id']], 'Parašykite treneriui - matys tik treneriai', 'Siųsti', url('zinute.php')) ?>
+          </details>
         </div>
       <?php endforeach; ?>
+    </div>
+  <?php endif; ?>
+
+  <?php if ($active): ?>
+    <div class="panel card" id="zinutes" style="margin-top:20px;">
+      <div class="kicker">Žinutės treneriui</div>
+      <p class="small muted" style="margin-top:-4px;">Klausimą ar komentarą mato tik treneriai, o trenerio atsakymą - tik jūs<?= $selected['relation'] === 'parent' ? ' ir ' . e($selected['first_name']) : '' ?>.</p>
+      <?php foreach ($threads as $key => $msgs): $lessonId = $key === 'general' ? 0 : (int) substr($key, 1); ?>
+        <div class="msg-topic">
+          <div class="msg-topic-title"><?= $lessonId ? '📘 Pamoka: <a href="' . e(url('pamokos.php?id=' . $lessonId)) . '">' . e($msgs[0]['lesson_title'] ?? 'pamoka') . '</a>' : 'Bendros žinutės' ?></div>
+          <div class="msg-thread"><?php foreach ($msgs as $r): ?><?= render_message($r, false) ?><?php endforeach; ?></div>
+          <?php if ($lessonId): ?>
+            <details class="msg-reply"><summary>💬 Atsakyti</summary><?= message_form('msg', ['member_id' => (int) $selected['id'], 'lesson_id' => $lessonId], 'Jūsų žinutė', 'Siųsti', url('zinute.php')) ?></details>
+          <?php endif; ?>
+        </div>
+      <?php endforeach; ?>
+      <?= message_form('msg', ['member_id' => (int) $selected['id']], 'Parašykite treneriui' . (count($members) > 1 ? ' (dėl ' . $selected['first_name'] . ')' : ''), 'Siųsti treneriui', url('zinute.php')) ?>
     </div>
   <?php endif; ?>
 
@@ -330,7 +364,11 @@ page_start('Mano paskyra', ['noindex' => true]);
     <?php endif; ?>
   </div>
 
-  <div class="panel card" style="margin-top:20px;">
+  <p class="small" style="margin-top:18px;"><a href="?skiltis=nustatymai&amp;m=<?= (int) $selected['id'] ?>">Nario duomenys, diržas ir paskyros nustatymai →</a></p>
+<?php endif; ?>
+
+<?php if ($selected && $tab === 'nustatymai'): ?>
+  <div class="panel card" style="margin-top:4px;">
     <div class="kicker">Nario duomenys</div>
     <div class="row between">
       <div>
@@ -399,7 +437,7 @@ page_start('Mano paskyra', ['noindex' => true]);
   </div>
 <?php endif; ?>
 
-<?php if ($isParent): ?>
+<?php if ($isParent && ($tab === 'nustatymai' || !$members)): ?>
   <details class="panel card" style="margin-top:20px;" <?= !$members || ($errors && post('action') === 'add_kid') ? 'open' : '' ?>>
     <summary style="cursor:pointer; font-family:'Space Grotesk',sans-serif; font-weight:700;">+ Pridėti vaiką</summary>
     <form method="post" class="form" style="margin-top:16px;">
@@ -419,6 +457,8 @@ page_start('Mano paskyra', ['noindex' => true]);
   </details>
 <?php endif; ?>
 
-<?= render_account_settings($a) ?>
+<?php if ($tab === 'nustatymai'): ?>
+  <?= render_account_settings($a) ?>
+<?php endif; ?>
 <?php
 page_end();
