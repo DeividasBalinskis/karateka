@@ -23,6 +23,8 @@ Live site: [karateka.lt](https://karateka.lt). The member system is in staging a
 - Attendance in one tap per member, notes for the whole group on one screen
 - Event results that award points automatically
 - Approvals, members, groups, events, news, lessons and point values
+- WTKU referee knowledge test: question bank, timed exam that coaches open and close, practice mode,
+  results per section; question count, pass mark, time limit, attempts and who may take it are set in the admin panel
 
 ## Tech
 

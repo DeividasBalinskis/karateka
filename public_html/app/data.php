@@ -74,7 +74,7 @@ function event_edit_link(int $id, string $back): string
 /** Nustatymas iš site_settings; jei lentelės dar nėra (neimportuotas 011) - $default */
 function site_setting(string $name, ?string $default = null): ?string
 {
-    static $cache = [];
+    $cache = &site_settings_cache();
     if (!array_key_exists($name, $cache)) {
         try {
             $v = q_value('SELECT value FROM site_settings WHERE name = ?', [$name]);
@@ -89,6 +89,15 @@ function site_setting(string $name, ?string $default = null): ?string
 function set_site_setting(string $name, string $value): void
 {
     q('INSERT INTO site_settings (name, value) VALUES (?, ?) ON DUPLICATE KEY UPDATE value = VALUES(value)', [$name, $value]);
+    $cache = &site_settings_cache();
+    $cache[$name] = $value;
+}
+
+/** Jau nuskaityti nustatymai (vienos užklausos metu), kad pakeitus būtų matoma nauja reikšmė */
+function &site_settings_cache(): array
+{
+    static $cache = [];
+    return $cache;
 }
 
 // ---------- Reakcijos į naujienas ----------
