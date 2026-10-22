@@ -80,6 +80,7 @@ To start over with an empty database: `docker compose down -v`.
 
 ## Deployment
 
+`tools/atnaujinti-is-github.ps1` pulls the latest `main` from GitHub, builds the upload package and lists new migrations to import.
 `tools/paruosti-ikelimui.ps1` builds a versioned upload package. New migrations from `db/` are imported once
 per environment. Each environment (local, staging, live) has its own `config.php`, which is never committed.
 

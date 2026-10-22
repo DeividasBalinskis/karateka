@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Sudeda db/0xx failus į vieną atnaujinimo failą, kurį galima importuoti kelis kartus:
 CREATE TABLE -> IF NOT EXISTS, ALTER ... ADD COLUMN / ADD CONSTRAINT - tik jei dar nėra.
+INSERT leidžiamas tik su sąlyga @do_... toje pačioje eilutėje (pvz. db/019: įkeliama, tik jei testo dar nėra).
 Naudojimas: python tools/atnaujinimo-sql.py 8 18 ikelimui/atnaujinti-db-v1.4.sql 1.4"""
 import re, sys, pathlib
 
@@ -28,7 +29,7 @@ def alter(m):
     res = []
     for p in parts:
         p = ' '.join(p.split())
-        mc = re.match(r'ADD COLUMN (\w+) ', p)
+        mc = re.match(r'ADD COLUMN (?:IF NOT EXISTS )?(\w+) ', p)
         mf = re.match(r'ADD CONSTRAINT (\w+) ', p)
         if mc:
             res.append(guard(col_check(t, mc.group(1)), f'ALTER TABLE {t} {p}'))
@@ -60,7 +61,7 @@ for f in files:
         sys.exit('016 duomenų dalis pasikeitė - atnaujinkite FOLDERS_OLD')
     s = s.replace('INSERT INTO point_categories', 'INSERT IGNORE INTO point_categories')   # code - unikalus
     s = re.sub(r'ALTER TABLE (\w+)\s+(.*?);', alter, s, flags=re.S)
-    if re.search(r'^\s*(INSERT INTO(?!.*@do_folders)|DROP|DELETE|TRUNCATE)', s, re.M):
+    if re.search(r'^\s*(INSERT INTO(?!.*@do_)|DROP|DELETE|TRUNCATE)', s, re.M):
         sys.exit(f'{f.name}: nepatikrinta komanda (INSERT/DROP/DELETE) - peržiūrėkite')
     chunks.append(f'-- ===== {f.name} =====\n' + s.strip() + '\n')
 
