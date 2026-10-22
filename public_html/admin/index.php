@@ -63,6 +63,10 @@ document.getElementById('settingsBtn').addEventListener('click', function () {
   <a class="tile" href="<?= url('admin/naujienos.php') ?>">
     <div class="num"><?= $news ?></div><div class="label">Naujienos</div>
   </a>
+  <?php $refOpen = !empty(referee_settings()['exam_open']); ?>
+  <a class="tile <?= $refOpen ? 'alert' : '' ?>" href="<?= url('admin/teiseju-testas.php') ?>">
+    <div class="num"><?= $refOpen ? '●' : '?' ?></div><div class="label">Teisėjų testas<?= $refOpen ? ': egzaminas vyksta' : '' ?></div>
+  </a>
   <a class="tile" href="<?= url('admin/grupes.php') ?>">
     <div class="num"><?= (int) q_value('SELECT COUNT(*) FROM training_groups WHERE is_active = 1') ?></div><div class="label">Grupės ir tvarkaraštis</div>
   </a>

@@ -20,6 +20,9 @@ function run_cleanup(): void
 
     q('DELETE FROM email_tokens WHERE (used_at IS NOT NULL OR expires_at < NOW()) AND created_at < NOW() - INTERVAL 30 DAY');
     q('DELETE FROM login_attempts WHERE attempted_at < NOW() - INTERVAL 30 DAY');
+
+    // Teisėjų testas: pradėti ir nebaigti mokomieji testai (egzaminai lieka - juos užbaigia laikas arba treneris)
+    q('DELETE FROM referee_attempts WHERE mode = "practice" AND finished_at IS NULL AND started_at < NOW() - INTERVAL 7 DAY');
 }
 
 function maybe_run_cleanup(): void

@@ -58,6 +58,7 @@ link_member($teen, $kid2, 'self');
 // Suaugęs narys
 $adult = acc('narys@karateka.test', 'Tomas', 'Kazlauskas');
 link_member($adult, mem('Tomas', 'Kazlauskas', '1992-02-28', 13), 'self');
+q('INSERT INTO referee_access (account_id, added_by) VALUES (?, ?)', [$adult, $coach]);   // gali laikyti teisėjų testą
 
 // Laukia patvirtinimo
 $new = acc('naujas@karateka.test', 'Inga', 'Jankauskienė', 'member', 'pending_approval');
@@ -139,5 +140,5 @@ echo "Paruošta. Paskyros (slaptažodis " . PW . "):\n"
     . "  info@karateka.lt         - administratorius\n"
     . "  tevai@karateka.test      - tėvai su 2 vaikais\n"
     . "  jaunuolis@karateka.test  - jaunuolis\n"
-    . "  narys@karateka.test      - suaugęs narys\n"
+    . "  narys@karateka.test      - suaugęs narys (gali laikyti teisėjų testą)\n"
     . "  naujas@karateka.test     - laukia patvirtinimo\n";

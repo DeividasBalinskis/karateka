@@ -24,6 +24,7 @@ page_start('Privatumo politika', ['description' => 'Kaip VšĮ Karate Ateitis tv
     <li><strong>Nario duomenys:</strong> vardas, pavardė, gimimo data, grupė, dalyvavimas renginiuose.</li>
     <li><strong>Sutikimai:</strong> ar sutinkate su nuotraukų skelbimu, ar gautas tėvų sutikimas, ir kada jie duoti.</li>
     <li><strong>Reakcijos</strong> į naujienas (kuris narys kokią reakciją paspaudė).</li>
+    <li><strong>Teisėjų testo rezultatai:</strong> kada laikėte, pasirinkti atsakymai ir rezultatas. Juos mato jūs ir treneriai.</li>
   </ul>
   <p>Šiuos duomenis naudojame narystei administruoti: priskirti grupę, rodyti tvarkaraštį, egzaminus ir varžybas, siųsti su naryste susijusius pranešimus.
      Pagrindas: narystės sutartis su klubu.</p>
@@ -50,6 +51,7 @@ page_start('Privatumo politika', ['description' => 'Kaip VšĮ Karate Ateitis tv
     <li>Paskyros ir nario duomenis - kol esate narys, ir <span class="todo">[pvz. 1 metus]</span> po narystės pabaigos. Vėliau ištriname.</li>
     <li>Bandomosios treniruotės užklausas - <span class="todo">[pvz. 6 mėnesius]</span>, jei narystė neprasideda.</li>
     <li>Nepatvirtintas registracijas (el. paštas nepatvirtintas ar negautas tėvų sutikimas) - <span class="todo">[pvz. 30 dienų]</span>.</li>
+    <li>Teisėjų egzamino ir mokomųjų testų rezultatus - <span class="todo">[pvz. kol esate narys]</span>; pradėtus ir nebaigtus mokomuosius testus - 7 dienas.</li>
     <li>Prisijungimo bandymų įrašus (el. paštas, IP adresas) apsaugai nuo įsilaužimų - 30 dienų.</li>
   </ul>
 

@@ -45,6 +45,7 @@ function page_start(string $title, array $opt = []): void
   <a href="<?= url('admin/taskai.php') ?>">Taškai</a>
   <a href="<?= url('admin/naujienos.php') ?>">Naujienos 🙂</a>
   <a href="<?= url('admin/pamokos.php') ?>">Pamokos</a>
+  <a href="<?= url('admin/teiseju-testas.php') ?>">Teisėjų testas</a>
   <?php if (is_admin()): ?><a href="<?= url('admin/paskyros.php') ?>">Paskyros</a><?php endif; ?>
   <a href="<?= url('admin/patvirtinimai.php') ?>" class="tab-last">Patvirtinimai<?php if ($pendingCount): ?> <span class="count-badge"><?= $pendingCount ?></span><?php endif; ?></a>
 </nav>
@@ -254,6 +255,9 @@ function site_header(bool $home = false): void
           <li><a class="nav-page" href="<?= url('naujienos.php') ?>">Naujienos</a></li>
           <?php if ($a && can_see_lessons($a)): ?>
             <li><a class="nav-page" href="<?= url('pamokos.php') ?>">Pamokos</a></li>
+          <?php endif; ?>
+          <?php if ($a && referee_menu_visible($a)): ?>
+            <li><a class="nav-page" href="<?= url('teiseju-testas.php') ?>">Teisėjams</a></li>
           <?php endif; ?>
           <?php if ($a && is_staff($a)): ?>
             <!-- Treneriui vienas mygtukas "Paskyra": trenerio panelė su paskyros nustatymais -->
