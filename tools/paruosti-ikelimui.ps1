@@ -3,9 +3,19 @@
 #   duomenu-baze.sql   - visa duomenų bazė naujai DB (001-... failai iš db/ viename)
 # config.php ir demo/ šis skriptas nekeičia.
 #
-# Paleidimas: dešiniu pelės klavišu -> "Run with PowerShell".
+# Paleidimas: dešiniu pelės klavišu -> "Run with PowerShell". Langas lieka atidarytas, kol paspausite Enter.
+
+param([switch]$NoPause)   # -NoPause: kai paleidžia tools\atnaujinti-is-github.ps1 (jis pats palaukia Enter)
 
 $ErrorActionPreference = 'Stop'
+
+# Klaida - parodoma, o ne iškart uždaromas langas
+trap {
+    Write-Host "`nKLAIDA: $_" -ForegroundColor Red
+    if (-not $NoPause) { Read-Host 'Spauskite Enter' }
+    exit 1
+}
+
 $root  = Split-Path -Parent $PSScriptRoot
 $out   = Join-Path $root 'ikelimui'
 $stage = Join-Path $env:TEMP 'karateka-svetaine'
@@ -37,3 +47,5 @@ Get-ChildItem (Join-Path $root 'db') -Filter '0*.sql' | Sort-Object Name |
     Set-Content -Encoding UTF8 (Join-Path $out 'duomenu-baze.sql')
 
 Write-Host "OK: $out  (versija v$version)"
+Write-Host "Paruošta: ikelimui\svetaine-v$version.zip" -ForegroundColor Green
+if (-not $NoPause) { Read-Host 'Spauskite Enter' }
