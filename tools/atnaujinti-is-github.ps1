@@ -34,8 +34,8 @@ if ($LASTEXITCODE -ne 0) { Stop-WithMessage 'Nepavyko atsisiųsti (git pull). Nu
 $after = (git rev-parse HEAD).Trim()
 
 Write-Host "`n2/2 Ruošiamas įkėlimo paketas..." -ForegroundColor Cyan
-& (Join-Path $PSScriptRoot 'paruosti-ikelimui.ps1')
-if (-not $?) { Stop-WithMessage 'Nepavyko paruošti zip.' }
+& (Join-Path $PSScriptRoot 'paruosti-ikelimui.ps1') -NoPause
+if (-not $? -or $LASTEXITCODE -ne 0) { Stop-WithMessage 'Nepavyko paruošti zip (klaida parašyta aukščiau).' }
 
 if ($before -eq $after) {
     Write-Host "`nNaujų pakeitimų GitHub'e nebuvo - zip ta pati versija." -ForegroundColor Yellow
