@@ -274,8 +274,9 @@ page_start($tab === 'nustatymai' ? 'Nustatymai' : 'Mano paskyra', ['noindex' => 
           <p class="muted">Artėjančių renginių nėra.</p>
         <?php else: ?>
           <ul class="list events-scroll">
-            <?php foreach ($events as $ev): ?><li><?= render_event($ev) ?></li><?php endforeach; ?>
+            <?php foreach (array_slice($events, 0, 3) as $ev): ?><li><?= render_event($ev) ?></li><?php endforeach; ?>
           </ul>
+          <?php if (count($events) > 3): ?><p class="small" style="margin-top:10px;"><a href="<?= url('renginiai.php') ?>">Visi renginiai (<?= count($events) ?>) →</a></p><?php endif; ?>
         <?php endif; ?>
       </div>
     </div>

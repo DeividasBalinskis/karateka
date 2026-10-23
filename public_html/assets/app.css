@@ -650,6 +650,8 @@ label.q-answer:has(input:checked){border-color:var(--accent); background:rgba(47
 .quiz-timer.low{background:#D9534F; color:#fff;}
 
 /* Treneriams -> Testai, Egzaminų programa */
+.sr-only{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap;}
+.q-search input{width:100%; margin:0 0 12px;}
 .q-item summary{list-style:none; display:flex; gap:12px; align-items:flex-start; cursor:pointer;}
 .q-item summary::-webkit-details-marker{display:none;}
 .q-item[open] summary{margin-bottom:14px;}

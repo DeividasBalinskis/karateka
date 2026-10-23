@@ -30,6 +30,11 @@ Pataisymai po patikros (nepriklauso nuo susitikimo sprendimų):
 - „Tėvų sutikimas gautas“ rodomas tik jaunesniems nei 14 m. (B11). Varžybų mygtukai slepiami, kai varžybų sistema nepasiekiama (B14).
 - Nemokamos treniruotės forma siunčia per bendrą pašto funkciją (`config.php` → `mail`), turi apsaugą nuo šlamšto (paslėptas laukas, laikas, 5 per valandą iš vieno IP), o klubo laiške „Atsakyti“ nueina tiesiai tėvams (C2). **Patikrinkite test svetainėje, ar laiškas ateina.** Bloko `smtp` faile `config.php` nebereikia.
 - SMS puslapyje treneriui - be techninių žodžių (C4). Ištrintas nenaudojamas `page1.html` (C3).
+- WTKU testo redagavimas: puslapis ~1 MB → ~190 KB. Klausimų paieška; redagavimo forma įsikelia tik atidarius klausimą, po išsaugojimo klausimas lieka atidarytas (C1).
+- Trenerio „Šiandien“: „+ Naujiena / + Renginys / + Pamoka“ - viršuje (B9).
+- Renginiuose ilgas grupių sąrašas sutrumpintas: „Vaikai (7 grupės) · Jaunimas“, visas - užvedus pelę (B6).
+- Paskyros apžvalgoje - 3 artimiausi renginiai ir „Visi renginiai →“ (B7).
+- Kai patvirtinti tėvai pakviečia vaiką jungtis pačiam, vaiko paskyra aktyvi iškart - treneriui tvirtinti dar kartą nereikia (B13).
 - Senesnių versijų zip nebeištrinami - lieka kaip atsarginės kopijos.
 
 Nauji projektai tame pačiame aplanke (karateka.lt tai neįtakoja):

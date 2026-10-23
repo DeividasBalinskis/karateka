@@ -26,11 +26,29 @@ function event_group_names(int $eventId): array
         ->fetchAll(PDO::FETCH_COLUMN);
 }
 
-/** Kam skirtas renginys: grupių vardai, „pakviestiems“ arba „visiems“ */
+/** Grupių sąrašas trumpai: „Vaikai: Viršuliškės, pažengę“ ×7 + „Jaunimas“ -> „Vaikai (7 grupės) · Jaunimas“ */
+function groups_summary(array $names): string
+{
+    if (count($names) <= 2) {
+        return implode(', ', $names);
+    }
+    $byCat = [];
+    foreach ($names as $n) {
+        $cat = trim(explode(':', $n, 2)[0]);
+        $byCat[$cat] = ($byCat[$cat] ?? 0) + 1;
+    }
+    $parts = [];
+    foreach ($byCat as $cat => $count) {
+        $parts[] = $count > 1 ? $cat . ' (' . kiek($count, 'grupė', 'grupės', 'grupių') . ')' : $cat;
+    }
+    return implode(' · ', $parts);
+}
+
+/** Kam skirtas renginys: grupės (trumpai), „pakviestiems“ arba „visiems“ */
 function event_audience_label(array $ev): string
 {
     $groups = event_group_names((int) $ev['id']);
-    return $groups ? implode(', ', $groups) : (!empty($ev['invited_only']) ? 'pakviestiems' : 'visiems');
+    return $groups ? groups_summary($groups) : (!empty($ev['invited_only']) ? 'pakviestiems' : 'visiems');
 }
 
 function render_schedule(array $rows): string

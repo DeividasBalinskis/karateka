@@ -31,7 +31,9 @@ if (is_post()) {
     } else {
         db()->beginTransaction();
         try {
-            $id = create_account($token['email'], $pw, $member['first_name'], $member['last_name'], null, 'pending_approval');
+            // Narys jau patvirtintas (kvietė patvirtinti tėvai) - treneriui tvirtinti dar kartą nereikia
+            $active = $member['status'] === 'active';
+            $id = create_account($token['email'], $pw, $member['first_name'], $member['last_name'], null, $active ? 'active' : 'pending_approval');
             q('UPDATE accounts SET email_verified_at = NOW() WHERE id = ?', [$id]);
             link_member($id, (int) $member['id'], 'self');
             token_use((int) $token['id']);
@@ -40,9 +42,11 @@ if (is_post()) {
             db()->rollBack();
             throw $ex;
         }
-        notify_coach_pending(q_one('SELECT * FROM accounts WHERE id = ?', [$id]));
+        if (!$active) {
+            notify_coach_pending(q_one('SELECT * FROM accounts WHERE id = ?', [$id]));
+        }
         login_account($id);
-        flash('ok', 'Paskyra sukurta! Kai treneris ją patvirtins, matysi savo tvarkaraštį ir renginius.');
+        flash('ok', $active ? 'Paskyra sukurta! Čia matysi savo tvarkaraštį, renginius ir taškus.' : 'Paskyra sukurta! Kai treneris ją patvirtins, matysi savo tvarkaraštį ir renginius.');
         redirect('paskyra.php');
     }
 }
