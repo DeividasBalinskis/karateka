@@ -40,6 +40,9 @@ Pataisymai po patikros (nepriklauso nuo susitikimo sprendimų):
 - Kol varžybų sistema neprijungta, puslapis „Varžybos“ nariams nerodo klaidos, o nukreipia į renginių kalendorių (paleidimo sąrašo punktas).
 - Naujienų redaktoriuje prie nuotraukų – suskleidžiamas sąrašas, kurie nariai neleidžia klubui skelbti nuotraukų: pagal per 30 dienų vykusius renginius ir pagal grupes.
 - Varžybų prototipe naujas skirtukas „Rezultatai“: prizininkai, klubų medalių lentelė su taškais, CSV Excel'iui ir spausdinimas (taip pat ir lentelių).
+- Naujas serveris be phpMyAdmin vargo: importuoti tik db/001–007, sukūrus pirmą adminą atsidaro „Reikia atnaujinti duomenų bazę“ su vienu mygtuku (anksčiau „Sistema“ tuščioje DB lūždavo). Klaidos puslapis „DB neatnaujinta“ veda į „Sistemą“.
+- Draugiškas 404 puslapis su nuorodomis (Į pradžią, Renginiai, Naujienos, Prisijungti) – seniems karateka.lt adresams.
+- `docs/perkelimas.md` – perkėlimo į karateka.lt žingsniai, `.htaccess` pavyzdys ir 10 min. patikra.
 - Senesnių versijų zip nebeištrinami - lieka kaip atsarginės kopijos.
 
 Nauji projektai tame pačiame aplanke (karateka.lt tai neįtakoja):

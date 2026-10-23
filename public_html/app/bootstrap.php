@@ -25,8 +25,9 @@ set_exception_handler(function (Throwable $ex) {
     echo '<!DOCTYPE html><html lang="lt"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Klaida</title></head>'
         . '<body style="font-family:system-ui,sans-serif;max-width:640px;margin:60px auto;padding:0 20px;line-height:1.55;color:#17140F;background:#F7F4EC">';
     if ($missing && !$live) {
-        echo '<h1>Duomenų bazė neatnaujinta</h1><p>Svetainės failai naujesni nei duomenų bazė. Importuokite trūkstamus <code>db/0xx</code> failus '
-            . '(kuriuos - parašyta <code>docs/pakeitimai.md</code>), o kompiuteryje paleiskite <code>tools/lokali-svetaine.ps1</code>.</p>';
+        echo '<h1>Duomenų bazė neatnaujinta</h1><p>Svetainės failai naujesni nei duomenų bazė. Administratoriui: atidarykite '
+            . '<a href="' . htmlspecialchars(url('admin/sistema.php'), ENT_QUOTES, 'UTF-8') . '">Treneriams → Sistema</a> ir spauskite „Atnaujinti duomenų bazę“. '
+            . 'Kompiuteryje - paleiskite <code>tools/lokali-svetaine.ps1</code>.</p>';
     } else {
         echo '<h1>Įvyko klaida</h1><p>' . ($missing ? 'Svetainė šiuo metu atnaujinama - užsukite po kelių minučių.' : 'Bandykite dar kartą. Jei kartojasi - parašykite info@karateka.lt.') . '</p>';
     }

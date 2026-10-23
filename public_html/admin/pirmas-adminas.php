@@ -33,7 +33,7 @@ if (is_post()) {
         q('UPDATE accounts SET role = "admin", email_verified_at = NOW(), approved_at = NOW() WHERE id = ?', [$id]);
         login_account($id);
         flash('ok', 'Administratorius sukurtas. Pakeiskite setup_key config.php faile.');
-        redirect('admin/');
+        redirect(db_needs_update() ? 'admin/sistema.php' : 'admin/');   // naujame serveryje - pirma atnaujinti DB
     }
 }
 
