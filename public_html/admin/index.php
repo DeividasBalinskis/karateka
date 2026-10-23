@@ -58,6 +58,9 @@ $upcoming = q_all('SELECT * FROM events WHERE COALESCE(ends_on, starts_on) >= CU
 
 page_start('Šiandien', ['admin' => true]);
 ?>
+<?php if (is_admin() && db_needs_update()): ?>
+  <div class="flash flash-err">Duomenų bazė neatnaujinta – kai kurios dalys gali neveikti. <a href="<?= url('admin/sistema.php') ?>">Sistemos būklė → „Atnaujinti duomenų bazę“</a></div>
+<?php endif; ?>
 <div class="page-head row between" style="align-items:flex-end; flex-wrap:wrap; gap:12px;">
   <div>
     <div class="eyebrow"><?= e(LT_WEEKDAYS[$weekday]) ?>, <?= e(fmt_date($today)) ?></div>

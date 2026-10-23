@@ -27,6 +27,7 @@ Copy-Item -Recurse (Join-Path $root 'public_html') $stage
 # Ko nekelti į serverį
 Remove-Item -Force -ErrorAction SilentlyContinue (Join-Path $stage 'config.php')                 # serveryje savas
 Remove-Item -Recurse -Force -ErrorAction SilentlyContinue (Join-Path $stage 'app\cli')         # tik kompiuteriui
+Remove-Item -Recurse -Force -ErrorAction SilentlyContinue (Join-Path $stage 'app\backups')     # DB kopijos lieka ten, kur padarytos
 Remove-Item -Recurse -Force -ErrorAction SilentlyContinue (Join-Path $stage 'uploads\news')    # įkeltos nuotraukos lieka serveryje
 Remove-Item -Recurse -Force -ErrorAction SilentlyContinue (Join-Path $stage 'uploads\quiz')    # testų klausimų paveikslėliai - irgi
 Remove-Item -Recurse -Force -ErrorAction SilentlyContinue (Join-Path $stage 'uploads\lessons') # pamokų nuotraukos - irgi

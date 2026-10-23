@@ -5,7 +5,7 @@ Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test 
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
 ## v1.7 - 2026-10-23 (nuotraukų sutikimai, pataisymai po patikros, LTKF ir varžybų prototipai)
-**Duomenų bazė:** importuoti `db/020_nuotrauku_sutikimai.sql`. Failą galima importuoti ir antrą kartą - nieko nepridės dvigubai.
+**Duomenų bazė:** šį kartą dar per phpMyAdmin importuoti `db/020_nuotrauku_sutikimai.sql` (galima ir antrą kartą). Arba: įkėlus zip → Treneriams → Sistema → „Atnaujinti duomenų bazę“.
 
 Nuotraukų sutikimai (pasiūlymas susitikimui - Denio klausimas „svetainėje ne, varžybose taip“):
 - Vietoj vieno klausimo - du: ar **klubas** gali skelbti nuotraukas (karateka.lt, klubo soc. tinklai) ir ar **varžybų organizatorius** gali skelbti varžybų nuotraukas. Klausiama registracijoje, tėvų sutikime, pridedant vaiką ir paskyros Nustatymuose.
@@ -14,6 +14,12 @@ Nuotraukų sutikimai (pasiūlymas susitikimui - Denio klausimas „svetainėje n
 - Treneriui: narių sąraše stulpelis „Nuotraukos: klubas · varžybos“, nario kortelėje abu atsakymai; lankomume ir renginio dalyviuose žymė „Be nuotraukų“.
 - Varžybų sistemai kartu su dalyviu perduodama žymė `photo_ok` (ar organizatorius gali skelbti nuotraukas).
 - Privatumo politikos skyrius „Nuotraukos ir vaizdo įrašai“ perrašytas pagal du klausimus.
+
+Sistemos būklė ir DB atnaujinimas be phpMyAdmin (tik administratoriui, Treneriams → „Sistema“):
+- Rodo, kurie DB failai (008–020) jau įkelti, o kurių trūksta. Trūkstant - įspėjimas „Šiandien“ puslapyje ir „⚠“ prie skirtuko.
+- Mygtukas **„Atnaujinti duomenų bazę“**: pirmiausia automatiškai padaro visos DB kopiją, tada įkelia trūkstamus pakeitimus. Galima spausti kelis kartus - kas jau yra, praleidžiama. **Nuo šiol phpMyAdmin importuoti nebereikia.**
+- Atsarginės kopijos: „Padaryti kopiją dabar“ ir atsisiuntimas (suspaustas .sql.gz; atkurti - phpMyAdmin → Import). Patikrinta: iš kopijos atkurta DB turi visas 35 lenteles ir tiek pat įrašų.
+- Bandomasis laiškas sau, varžybų sistemos, SMS ir serverio būklė vienoje vietoje.
 
 Pataisymai po patikros (nepriklauso nuo susitikimo sprendimų):
 - Skaičiai su teisingomis galūnėmis: „1 klausimas“, „14 narių“, „22 nariai“ (A6, A7). Egzamino žvaigždutės: „★ 3 žvaigždutės“ (A13).
