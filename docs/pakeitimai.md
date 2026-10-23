@@ -37,6 +37,7 @@ Pataisymai po patikros (nepriklauso nuo susitikimo sprendimų):
 - Kai patvirtinti tėvai pakviečia vaiką jungtis pačiam, vaiko paskyra aktyvi iškart - treneriui tvirtinti dar kartą nereikia (B13).
 - Gimimo data telefone: metai atskiroje eilutėje, mėnuo ir diena nebenukirpti (B1).
 - Pamokos redaktoriuje šoninis skydelis („Kam skirta?“) nebelenda po apatine „Išsaugoti“ juosta (B10).
+- Kol varžybų sistema neprijungta, puslapis „Varžybos“ nariams nerodo klaidos, o nukreipia į renginių kalendorių (paleidimo sąrašo punktas).
 - Senesnių versijų zip nebeištrinami - lieka kaip atsarginės kopijos.
 
 Nauji projektai tame pačiame aplanke (karateka.lt tai neįtakoja):

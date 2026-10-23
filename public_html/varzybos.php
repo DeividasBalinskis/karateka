@@ -4,6 +4,10 @@
 require __DIR__ . '/app/bootstrap.php';
 
 $a = require_login();
+if (!varzybos_enabled()) {   // kol varžybų sistema neprijungta - nėra ką rodyti
+    flash('info', 'Registracija į varžybas per svetainę dar neveikia. Artėjančios varžybos - renginių kalendoriuje.');
+    redirect('renginiai.php?tipas=varzybos');
+}
 if (!is_active_account($a)) {
     flash('info', 'Registracija į varžybas atsiras, kai treneris patvirtins paskyrą.');
     redirect('paskyra.php');
