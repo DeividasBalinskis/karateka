@@ -60,6 +60,45 @@ function state_badge(string $state): string
     return '<span class="badge ' . $cls . '">' . $label . '</span>';
 }
 
+// Kol DB neatnaujinta, įprastas išdėstymas gali lūžti (meniu skaito naujas lenteles),
+// todėl rodomas paprastas puslapis tik su atnaujinimo mygtuku. Pvz. naujame serveryje po db/001-007.
+if ($missingCount) {
+    $css = url('assets/app.css') . '?v=' . @filemtime(PUBLIC_DIR . '/assets/app.css');
+    ?>
+<!DOCTYPE html>
+<html lang="lt">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex">
+<title>Duomenų bazės atnaujinimas — Karateka</title><link rel="stylesheet" href="<?= e($css) ?>"></head>
+<body>
+<main class="wrap" style="max-width:640px; padding:40px 20px;">
+  <?php foreach (take_flashes() as $f): ?>
+    <div class="flash flash-<?= e($f['type']) ?>"><?= e($f['message']) ?></div>
+  <?php endforeach; ?>
+  <div class="panel card">
+    <h1 class="styled">Reikia atnaujinti duomenų bazę</h1>
+    <p>Svetainės failai (versija <?= e(site_version()) ?>) naujesni nei duomenų bazė: trūksta <?= kiek($missingCount, 'DB pakeitimo', 'DB pakeitimų', 'DB pakeitimų') ?>. Kol neatnaujinta, dalis puslapių rodo klaidą.</p>
+    <p>Paspauskite mygtuką – prieš tai automatiškai pasidarys atsarginė kopija. phpMyAdmin nereikia.</p>
+    <form method="post" style="margin-top:14px;">
+      <?= csrf_field() ?>
+      <input type="hidden" name="action" value="update">
+      <button class="btn btn-primary" type="submit">Atnaujinti duomenų bazę</button>
+    </form>
+    <details style="margin-top:14px;">
+      <summary class="summary-link">Ko trūksta</summary>
+      <ul class="small" style="margin-top:8px;">
+        <?php foreach ($migrations as $m): if (!$m['missing']) { continue; } ?>
+          <li><code><?= e($m['file']) ?></code>: <?= e(implode(', ', array_slice($m['missing'], 0, 4))) ?><?= count($m['missing']) > 4 ? '…' : '' ?></li>
+        <?php endforeach; ?>
+      </ul>
+    </details>
+  </div>
+</main>
+</body>
+</html>
+    <?php
+    exit;
+}
+
 page_start('Sistemos būklė', ['admin' => true]);
 ?>
 <div class="page-head">

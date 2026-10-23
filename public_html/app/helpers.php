@@ -104,7 +104,11 @@ function not_found(): void
 {
     http_response_code(404);
     page_start('Puslapis nerastas');
-    echo '<div class="panel card"><h1>Puslapis nerastas</h1><p class="muted">Tokio puslapio nėra arba jis buvo pašalintas.</p></div>';
+    echo '<div class="panel card"><h1>Puslapis nerastas</h1><p class="muted">Tokio puslapio nėra arba jis buvo pašalintas. Jei atėjote per seną nuorodą - svetainė atsinaujino.</p>'
+        . '<p class="row" style="margin-top:12px;"><a class="btn btn-primary" href="' . e(url('')) . '">Į pradžią</a> '
+        . '<a class="btn btn-ghost" href="' . e(url('renginiai.php')) . '">Renginiai</a> '
+        . '<a class="btn btn-ghost" href="' . e(url('naujienos.php')) . '">Naujienos</a> '
+        . '<a class="btn btn-ghost" href="' . e(url('prisijungti.php')) . '">Prisijungti</a></p></div>';
     page_end();
     exit;
 }
