@@ -39,6 +39,7 @@ Pataisymai po patikros (nepriklauso nuo susitikimo sprendimų):
 - Pamokos redaktoriuje šoninis skydelis („Kam skirta?“) nebelenda po apatine „Išsaugoti“ juosta (B10).
 - Kol varžybų sistema neprijungta, puslapis „Varžybos“ nariams nerodo klaidos, o nukreipia į renginių kalendorių (paleidimo sąrašo punktas).
 - Naujienų redaktoriuje prie nuotraukų – suskleidžiamas sąrašas, kurie nariai neleidžia klubui skelbti nuotraukų: pagal per 30 dienų vykusius renginius ir pagal grupes.
+- Varžybų prototipe naujas skirtukas „Rezultatai“: prizininkai, klubų medalių lentelė su taškais, CSV Excel'iui ir spausdinimas (taip pat ir lentelių).
 - Senesnių versijų zip nebeištrinami - lieka kaip atsarginės kopijos.
 
 Nauji projektai tame pačiame aplanke (karateka.lt tai neįtakoja):

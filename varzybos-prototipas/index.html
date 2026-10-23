@@ -126,6 +126,29 @@ th { font-size: .78rem; text-transform: uppercase; letter-spacing: .05em; color:
 tfoot td { font-weight: 800; background: var(--surface-2); }
 td.num, th.num { text-align: center; font-variant-numeric: tabular-nums; }
 .warn-row td { background: var(--amber-soft); }
+/* Rezultatai */
+.res-layout { display: grid; grid-template-columns: minmax(0, 420px) minmax(0, 1fr); gap: 16px; align-items: start; }
+.res-cats { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; padding: 12px; }
+.res-cat { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; display: grid; gap: 6px; align-content: start; break-inside: avoid; }
+.res-cat-top { display: flex; gap: 8px; align-items: baseline; justify-content: space-between; }
+.res-cat-top button { all: unset; cursor: pointer; font-weight: 700; color: var(--blue); }
+.res-cat-top button:hover { text-decoration: underline; }
+.rp { display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 8px; align-items: center; font-size: .92rem; }
+.rp .club { color: var(--muted); font-size: .8rem; }
+.medal { display: inline-grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; font-weight: 700; font-size: .8rem; }
+.medal.g { background: #F7D774; } .medal.s { background: #D9DEE3; } .medal.b { background: #E8C1A0; }
+@media (max-width: 860px) { .res-layout { grid-template-columns: minmax(0, 1fr); } }
+@media print {
+  body { background: #fff; font-size: 12px; }
+  .tabs, .notice, .toolbar, .hint, .res-cat-top .pill, .draw-head .btn { display: none !important; }
+  .top { background: #fff; color: var(--ink); border-bottom: 2px solid var(--ink); }
+  .top h1 { font-size: 1rem; }
+  main { padding: 8px 0; max-width: none; }
+  .panel, .bracket-wrap { border-color: #bbb; overflow: visible; }
+  .res-layout { grid-template-columns: minmax(0, 1fr); }
+  .res-cat, .match, .rep-col { break-inside: avoid; }
+  .res-cat-top button { color: var(--ink); }
+}
 [hidden] { display: none !important; }
 @media (max-width: 860px) { .cat-layout { grid-template-columns: minmax(0, 1fr); } .cat-list { max-height: 260px; } }
 </style>
@@ -141,6 +164,7 @@ td.num, th.num { text-align: center; font-variant-numeric: tabular-nums; }
       <button role="tab" id="tab-kategorijos" aria-selected="false" aria-controls="v-kategorijos">Kategorijos</button>
       <button role="tab" id="tab-lenteles" aria-selected="false" aria-controls="v-lenteles">Lentelės</button>
       <button role="tab" id="tab-tvarkarastis" aria-selected="false" aria-controls="v-tvarkarastis">Tvarkaraštis</button>
+      <button role="tab" id="tab-rezultatai" aria-selected="false" aria-controls="v-rezultatai">Rezultatai</button>
     </nav>
   </div>
 </header>
@@ -209,6 +233,7 @@ td.num, th.num { text-align: center; font-variant-numeric: tabular-nums; }
       <button class="btn" id="draw-lock" type="button" aria-pressed="false">Užrakinti</button>
       <button class="btn" id="draw-undo" type="button">Atšaukti</button>
       <span class="spacer"></span>
+      <button class="btn" id="draw-print" type="button">Spausdinti</button>
       <button class="btn" id="draw-clear" type="button">Išvalyti rezultatus</button>
     </div>
     <div id="draw-view"></div>
@@ -228,6 +253,22 @@ td.num, th.num { text-align: center; font-variant-numeric: tabular-nums; }
     </div>
     <div class="sched" id="sched"></div>
     <p class="hint">Tempkite kategorijas tarp tatamių arba naudokite ↑ ↓ →. Laikai persiskaičiuoja patys pagal kovų skaičių ir trukmę. Juosta rodo atliktas kovas, kaip Kihapp.</p>
+  </section>
+
+  <!-- REZULTATAI -->
+  <section id="v-rezultatai" role="tabpanel" aria-labelledby="tab-rezultatai" hidden>
+    <div class="toolbar">
+      <label class="small"><input type="checkbox" id="res-done"> Tik baigtos kategorijos</label>
+      <span class="muted small" id="res-count"></span>
+      <span class="spacer"></span>
+      <button class="btn" id="res-csv" type="button">Atsisiųsti CSV (Excel)</button>
+      <button class="btn btn-primary" id="res-print" type="button">Spausdinti</button>
+    </div>
+    <div class="res-layout">
+      <div class="panel"><h2>Klubų medaliai</h2><div id="medals-view"></div></div>
+      <div class="panel"><h2>Prizininkai pagal kategorijas</h2><div id="podium-view"></div></div>
+    </div>
+    <p class="hint">Taškai klubui – pavyzdys: 1 vieta 3, 2 vieta 2, 3 vieta 1. Tikrą tvarką nuspręs Denis. Iš čia rezultatai keliautų į karateka.lt (nario taškai) ir LTKF svetainę.</p>
   </section>
 </main>
 
@@ -459,7 +500,7 @@ td.num, th.num { text-align: center; font-variant-numeric: tabular-nums; }
   }
 
   // ---------- Skirtukai ----------
-  var tabs = ['klubai', 'dalyviai', 'komandos', 'kategorijos', 'lenteles', 'tvarkarastis'];
+  var tabs = ['klubai', 'dalyviai', 'komandos', 'kategorijos', 'lenteles', 'tvarkarastis', 'rezultatai'];
   function showTab(t) {
     tabs.forEach(function (x) {
       document.getElementById('tab-' + x).setAttribute('aria-selected', x === t ? 'true' : 'false');
@@ -860,10 +901,70 @@ td.num, th.num { text-align: center; font-variant-numeric: tabular-nums; }
 
   var renderPending = false;
   function renderSoon() { if (renderPending) return; renderPending = true; setTimeout(function () { renderPending = false; render(); }, 0); }
+  // ---------- Rezultatai: prizininkai ir klubų medaliai ----------
+  function results() {
+    return S.categories.filter(function (c) { return c.competitors.length; }).map(function (c) {
+      var total = matchCount(c), done = doneCount(c), places = [];
+      if (c.draw && !drawStale(c)) {
+        bracket(c).places.forEach(function (pl) {
+          pl[1].forEach(function (id) { var p = person(c, id); if (p && pl[0] <= 3) places.push({ place: pl[0], name: p.name, club: p.club }); });
+        });
+      }
+      var finished = total > 0 ? done >= total && places.some(function (p) { return p.place === 1; }) : places.length > 0;
+      return { c: c, total: total, done: done, finished: finished, places: places };
+    });
+  }
+  function medalTable(rs) {
+    var med = {};
+    rs.forEach(function (r) {
+      r.places.forEach(function (p) { var m = med[p.club] = med[p.club] || { g: 0, s: 0, b: 0, pts: 0 }; m[['g', 's', 'b'][p.place - 1]]++; m.pts += 4 - p.place; });
+    });
+    return Object.keys(med).map(function (k) { return { club: k, m: med[k] }; }).sort(function (a, b) {
+      return b.m.g - a.m.g || b.m.s - a.m.s || b.m.b - a.m.b || a.club.localeCompare(b.club, 'lt');
+    });
+  }
+  function shownResults() {
+    var rs = results(), onlyDone = document.getElementById('res-done').checked;
+    return { all: rs, list: onlyDone ? rs.filter(function (r) { return r.finished; }) : rs };
+  }
+  var MEDAL = { 1: '<span class="medal g">1</span>', 2: '<span class="medal s">2</span>', 3: '<span class="medal b">3</span>' };
+  function renderResults() {
+    var sr = shownResults(), rs = sr.list, table = medalTable(rs), sum = { g: 0, s: 0, b: 0, pts: 0 };
+    document.getElementById('res-count').textContent = 'Baigta ' + sr.all.filter(function (r) { return r.finished; }).length + ' iš ' + sr.all.length + ' kategorijų';
+    document.getElementById('medals-view').innerHTML = table.length ? '<table><thead><tr><th class="num">#</th><th>Klubas</th><th class="num">' + MEDAL[1] + '</th><th class="num">' + MEDAL[2] + '</th><th class="num">' + MEDAL[3] + '</th><th class="num">Taškai</th></tr></thead><tbody>' +
+      table.map(function (t, i) {
+        ['g', 's', 'b', 'pts'].forEach(function (k) { sum[k] += t.m[k]; });
+        return '<tr><td class="num">' + (i + 1) + '</td><td>' + esc(t.club) + '</td><td class="num">' + t.m.g + '</td><td class="num">' + t.m.s + '</td><td class="num">' + t.m.b + '</td><td class="num"><b>' + t.m.pts + '</b></td></tr>';
+      }).join('') + '</tbody><tfoot><tr><td></td><td>Iš viso</td><td class="num">' + sum.g + '</td><td class="num">' + sum.s + '</td><td class="num">' + sum.b + '</td><td class="num">' + sum.pts + '</td></tr></tfoot></table>'
+      : '<p class="muted" style="padding:12px 14px;margin:0;">Dar nėra prizininkų. Pažymėkite kovų nugalėtojus skirtuke „Lentelės“.</p>';
+    document.getElementById('podium-view').innerHTML = rs.length ? '<div class="res-cats">' + rs.map(function (r) {
+      var state = r.finished ? '<span class="pill ok">Baigta</span>' : r.done ? '<span class="pill warn">Vyksta ' + r.done + '/' + r.total + '</span>' : '<span class="pill">Nepradėta</span>';
+      return '<div class="res-cat"><div class="res-cat-top"><button type="button" data-res-open="' + r.c.id + '" title="Atidaryti lentelę"><span class="disc d-' + r.c.discipline + '"></span>' + esc(r.c.name) + '</button>' + state + '</div>' +
+        (r.places.length ? r.places.map(function (p) { return '<div class="rp">' + MEDAL[p.place] + '<span>' + esc(p.name) + ' <span class="club">' + esc(p.club) + '</span></span></div>'; }).join('') : '<span class="muted small">Prizininkų dar nėra</span>') + '</div>';
+    }).join('') + '</div>' : '<p class="muted" style="padding:12px 14px;margin:0;">Nėra baigtų kategorijų.</p>';
+  }
+  document.getElementById('res-done').addEventListener('change', renderResults);
+  document.getElementById('podium-view').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-res-open]'); if (!b) return;
+    S.selected = b.dataset.resOpen; save(); showTab('lenteles');
+  });
+  document.getElementById('res-print').addEventListener('click', function () { window.print(); });
+  document.getElementById('draw-print').addEventListener('click', function () { window.print(); });
+  document.getElementById('res-csv').addEventListener('click', function () {
+    var q = function (v) { return '"' + String(v).replace(/"/g, '""') + '"'; };
+    var lines = [['Kategorija', 'Rungtis', 'Vieta', 'Vardas', 'Klubas'].map(q).join(';')];
+    shownResults().list.forEach(function (r) { r.places.forEach(function (p) { lines.push([r.c.name, DISC[r.c.discipline] || r.c.discipline, p.place, p.name, p.club].map(q).join(';')); }); });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' }));
+    // Failo pavadinimas be lietuviškų raidžių - kitaip kai kurios naršyklės jį pakeičia į „download“
+    a.download = (S.tournament || 'varzybos').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^A-Za-z0-9]+/g, '-').replace(/^-|-$/g, '') + '-rezultatai.csv';
+    document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+  });
+
   function render() {
     document.getElementById('t-name').textContent = S.tournament;
     var tab = tabs.find(function (t) { return !document.getElementById('v-' + t).hidden; });
-    if (tab === 'klubai') renderClubs(); else if (tab === 'dalyviai') renderPeople(); else if (tab === 'komandos') renderTeams(); else if (tab === 'kategorijos') renderCats(); else if (tab === 'lenteles') renderDraw(); else renderSched();
+    if (tab === 'klubai') renderClubs(); else if (tab === 'dalyviai') renderPeople(); else if (tab === 'komandos') renderTeams(); else if (tab === 'kategorijos') renderCats(); else if (tab === 'lenteles') renderDraw(); else if (tab === 'rezultatai') renderResults(); else renderSched();
   }
   load();
   var startTab = 'klubai';
