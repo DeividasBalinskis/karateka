@@ -115,6 +115,15 @@ const LT_WEEKDAYS = [1 => 'Pirmadienis', 'Antradienis', 'Trečiadienis', 'Ketvir
 const LT_MONTHS_GEN = [1 => 'sausio', 'vasario', 'kovo', 'balandžio', 'gegužės', 'birželio', 'liepos', 'rugpjūčio', 'rugsėjo', 'spalio', 'lapkričio', 'gruodžio'];
 
 /** "spalio 6 d." arba "2027 m. sausio 3 d." */
+/** Skaičius su teisinga galūne: kiek(1, 'narys', 'nariai', 'narių') -> „1 narys“, 14 -> „14 narių“, 22 -> „22 nariai“ */
+function kiek(int $n, string $one, string $few, string $many): string
+{
+    $d = $n % 10;
+    $t = $n % 100;
+    $word = ($d === 1 && $t !== 11) ? $one : (($d >= 2 && $d <= 9 && ($t < 12 || $t > 19)) ? $few : $many);
+    return $n . ' ' . $word;
+}
+
 function fmt_date(?string $date, bool $forceYear = false): string
 {
     if (!$date) {

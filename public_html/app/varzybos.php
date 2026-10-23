@@ -81,6 +81,8 @@ function varzybos_athlete(array $member): array
         'birth_date'  => $member['birth_date'],
         'gender'      => $member['gender'] ?? null,
         'belt_level'  => $member['belt_level'] !== null ? (int) $member['belt_level'] : null,
+        // Ar organizatorius gali skelbti varžybų nuotraukas (null - tėvai dar neatsakė, laikoma „ne“)
+        'photo_ok'    => isset($member['photo_events']) && (int) $member['photo_events'] === 1,
     ];
 }
 

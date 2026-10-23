@@ -40,7 +40,7 @@ if (is_post()) {
     redirect($back);
 }
 
-$rows = q_all('SELECT ep.*, m.first_name, m.last_name, m.birth_date, m.belt_level, g.name AS group_name
+$rows = q_all('SELECT ep.*, m.first_name, m.last_name, m.birth_date, m.belt_level, m.photo_consent, g.name AS group_name
                  FROM event_participants ep JOIN members m ON m.id = ep.member_id LEFT JOIN training_groups g ON g.id = m.group_id
                 WHERE ep.event_id = ? ORDER BY g.sort_order, m.last_name, m.first_name', [$id]);
 $byStatus = ['going' => [], 'invited' => [], 'declined' => []];
@@ -87,7 +87,7 @@ page_start('Dalyviai: ' . $event['title'], ['admin' => true, 'section' => 'rengi
         <?php foreach ($list as $r): $mid = (int) $r['member_id']; $mt = $tags[$mid] ?? []; ?>
           <li class="row">
             <span>
-              <a href="<?= url('admin/nariai.php?id=' . $mid) ?>"><strong><?= e($r['first_name'] . ' ' . $r['last_name']) ?></strong></a><?= $r['role'] === 'referee' ? ' <span class="badge badge-tag">teisėjas</span>' : '' ?>
+              <a href="<?= url('admin/nariai.php?id=' . $mid) ?>"><strong><?= e($r['first_name'] . ' ' . $r['last_name']) ?></strong></a><?= photo_badge($r) ?><?= $r['role'] === 'referee' ? ' <span class="badge badge-tag">teisėjas</span>' : '' ?>
               <div class="muted"><?= e($r['group_name'] ?: 'be grupės') ?> · <?= age_on($r['birth_date']) ?> m.<?= $r['belt_level'] !== null ? ' · ' . e(belt_label((int) $r['belt_level'])) : '' ?></div>
               <?= participant_extra_info($event, $r) ?>
             </span>

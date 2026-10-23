@@ -45,6 +45,9 @@ page_start('Prisijungti', ['narrow' => true, 'noindex' => true]);
 ?>
 <div class="panel card">
   <h1 class="styled">Prisijungti</h1>
+  <?php if (!is_post() && (string) get('r') !== '' && !preg_match('#/(paskyra|prisijungti)\.php#', (string) get('r'))): ?>
+    <div class="flash flash-info">Šis puslapis matomas tik prisijungusiems nariams. Prisijunkite – ir iškart grįšite į jį.</div>
+  <?php endif; ?>
   <?php if ($error): ?><div class="flash flash-err"><?= e($error) ?></div><?php endif; ?>
   <?php if ($resendFor): ?>
     <form method="post" class="form" style="margin-bottom:18px;">

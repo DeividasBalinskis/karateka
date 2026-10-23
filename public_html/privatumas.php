@@ -24,15 +24,21 @@ page_start('Privatumo politika', ['description' => 'Kaip VšĮ Karate Ateitis tv
     <li><strong>Narys:</strong> vardas, pavardė, gimimo data, lytis, grupė ir diržas.</li>
     <li><strong>Klubo veikla:</strong> lankomumas, dalyvavimas renginiuose, egzaminų ir varžybų rezultatai, taškai, testų rezultatai.</li>
     <li><strong>Trenerio pastabos, užduotys ir žinutės</strong> tarp nario (ar tėvų) ir trenerių.</li>
-    <li><strong>Sutikimai:</strong> dėl nuotraukų, tėvų sutikimas ir kada jie duoti.</li>
+    <li><strong>Sutikimai:</strong> dėl nuotraukų (klubo ir varžybų organizatoriaus), tėvų sutikimas – ir kas bei kada juos davė ar pakeitė.</li>
     <li><strong>Reakcijos</strong> į naujienas.</li>
   </ul>
   <p>Šiuos duomenis naudojame narystės administravimui. Pagal juos priskiriame grupę, rodome tvarkaraštį, ruošiame egzaminams ir varžyboms, skaičiuojame taškus.
      Taip pat siunčiame pranešimus apie treniruotes ir renginius el. paštu, vėliau galbūt ir SMS. Pagrindas - narystė klube.</p>
 
   <h3>Nuotraukos ir vaizdo įrašai</h3>
-  <p>Treniruočių ir renginių nuotraukas bei vaizdo įrašus svetainėje ir klubo socialiniuose tinkluose skelbiame <strong>tik tų narių, kurie davė sutikimą</strong>.
-     Už vaikus iki 14 m. sutikimą duoda tėvai. Sutikimą galite bet kada atšaukti paskyroje arba parašę mums.
+  <p>Klausiame dviejų dalykų atskirai, nes svarbu, <strong>kas</strong> nuotrauką skelbia:</p>
+  <ul>
+    <li><strong>Klubas.</strong> Treniruočių, renginių ir varžybų nuotraukas bei vaizdo įrašus karateka.lt ir klubo socialiniuose tinkluose skelbiame <strong>tik tų narių, kurie su tuo sutiko</strong>.</li>
+    <li><strong>Varžybų organizatorius.</strong> Registruodami į varžybas perduodame organizatoriui žymę, ar jis gali skelbti varžybų nuotraukas ir vaizdo įrašus su šiuo dalyviu. Kitų organizatorių varžybose galioja ir jų taisyklės.</li>
+  </ul>
+  <p>Pavyzdžiui, jei sutinkate tik dėl varžybų organizatoriaus, klubas vaiko nuotraukų nekels niekur – net ir iš varžybų.
+     Grupinių nuotraukų, kuriose aiškiai matosi narys be sutikimo, neskelbiame arba jas apkarpome.
+     Už vaikus iki 14 m. atsako tėvai. Atsakymus galite bet kada pakeisti paskyroje (Nustatymai) arba parašę mums.
      Tada naujų nuotraukų neskelbsime, o paprašius pašalinsime ir jau paskelbtas mūsų kanaluose.</p>
 
   <h2>3. Vaikų duomenys</h2>
@@ -55,7 +61,7 @@ page_start('Privatumo politika', ['description' => 'Kaip VšĮ Karate Ateitis tv
   <ul>
     <li>Paskyros ir nario duomenis - kol esate narys, ir <span class="todo">[pvz. 1 metus]</span> po narystės pabaigos. Vėliau ištriname.</li>
     <li>Bandomosios treniruotės užklausas (el. laiškus) - <span class="todo">[pvz. 6 mėnesius]</span>, jei narystė neprasideda.</li>
-    <li>Nebaigtas registracijas (nepatvirtintas el. paštas ar negautas tėvų sutikimas) - <?= (int) config('retention.unfinished_days', 30) ?> dienų. Vėliau jos ištrinamos automatiškai.</li>
+    <li>Nebaigtas registracijas (nepatvirtintas el. paštas ar negautas tėvų sutikimas) - <?= kiek((int) config('retention.unfinished_days', 30), 'diena', 'dienos', 'dienų') ?>. Vėliau jos ištrinamos automatiškai.</li>
     <li>Prisijungimo bandymų įrašus (el. paštas, IP adresas) apsaugai nuo įsilaužimų - 30 dienų.</li>
   </ul>
 

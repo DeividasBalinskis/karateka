@@ -16,10 +16,10 @@ if (is_post()) {
         $birth = date_from_input($_POST['birth_date'] ?? '');
         if ($first === '' || $last === '' || !valid_birth_date($birth)) {
             $errors[] = 'Įveskite vaiko vardą, pavardę ir gimimo datą.';
-        } elseif (!in_array(post('photo_consent'), ['0', '1'], true)) {
-            $errors[] = 'Pasirinkite, ar sutinkate dėl nuotraukų.';
+        } elseif (!in_array(post('photo_consent'), ['0', '1'], true) || !in_array(post('photo_events'), ['0', '1'], true)) {
+            $errors[] = 'Atsakykite į abu klausimus dėl nuotraukų.';
         } else {
-            $mid = create_member($first, $last, $birth, !empty($_POST['photo_consent']), belt_from_post('belt_level'));
+            $mid = create_member($first, $last, $birth, !empty($_POST['photo_consent']), belt_from_post('belt_level'), !empty($_POST['photo_events']), $aid);
             q('UPDATE members SET parent_consent_at = NOW() WHERE id = ?', [$mid]);
             link_member($aid, $mid, 'parent');
             if ($a['status'] === 'active') {
@@ -36,10 +36,14 @@ if (is_post()) {
         $m = q_one('SELECT * FROM members WHERE id = ?', [$mid]);
         // Keisti gali tėvai, o pats narys - tik nuo 14 m.
         if ($m && ($rel === 'parent' || ($rel === 'self' && age_on($m['birth_date']) >= CONSENT_AGE))) {
-            q('UPDATE members SET photo_consent = ? WHERE id = ?', [!empty($_POST['photo_consent']) ? 1 : 0, $mid]);
-            flash('ok', 'Sutikimas dėl nuotraukų atnaujintas.');
+            $club = in_array(post('photo_consent'), ['0', '1'], true) ? post('photo_consent') === '1' : null;
+            $events = in_array(post('photo_events'), ['0', '1'], true) ? post('photo_events') === '1' : null;
+            if ($club !== null || $events !== null) {
+                set_photo_consents($mid, $club, $events, $aid);
+                flash('ok', 'Atsakymai dėl nuotraukų išsaugoti.');
+            }
         }
-        redirect('paskyra.php?skiltis=nustatymai&m=' . $mid);
+        redirect('paskyra.php?skiltis=nustatymai&m=' . $mid . '#nuotraukos');
     }
 
     // Diržą gali pasikeisti patys (tėvai arba narys); treneris prireikus pataiso
@@ -180,6 +184,9 @@ page_start($tab === 'nustatymai' ? 'Nustatymai' : 'Mano paskyra', ['noindex' => 
   <form method="post" action="<?= url('atsijungti.php') ?>" class="inline-form logout"><?= csrf_field() ?><button type="submit" class="btn btn-ghost btn-sm">Atsijungti</button></form>
 </div>
 
+<?php if ($tab !== 'nustatymai' && $selected && $selected['photo_events'] === null && ($selected['relation'] === 'parent' || age_on($selected['birth_date']) >= CONSENT_AGE)): ?>
+  <div class="flash flash-info">Naujas klausimas: ar varžybų organizatorius gali skelbti varžybų nuotraukas? <a href="?skiltis=nustatymai&amp;m=<?= (int) $selected['id'] ?>#nuotraukos">Atsakyti →</a></div>
+<?php endif; ?>
 <?php if ($a['status'] === 'pending_approval'): ?>
   <div class="flash flash-info">Paskyra laukia trenerio patvirtinimo. Kai treneris patvirtins ir priskirs grupę, čia matysite tvarkaraštį, renginius ir taškus.</div>
 <?php endif; ?>
@@ -341,7 +348,7 @@ page_start($tab === 'nustatymai' ? 'Nustatymai' : 'Mano paskyra', ['noindex' => 
           <?php endif; ?>
         </div>
       <?php endforeach; ?>
-      <?= message_form('msg', ['member_id' => (int) $selected['id']], 'Parašykite treneriui' . (count($members) > 1 ? ' (dėl ' . $selected['first_name'] . ')' : ''), 'Siųsti treneriui', url('zinute.php')) ?>
+      <?= message_form('msg', ['member_id' => (int) $selected['id']], 'Žinutė treneriui' . (count($members) > 1 ? ' · ' . $selected['first_name'] : ''), 'Siųsti treneriui', url('zinute.php')) ?>
     </div>
   <?php endif; ?>
 
@@ -389,27 +396,23 @@ page_start($tab === 'nustatymai' ? 'Nustatymai' : 'Mano paskyra', ['noindex' => 
       <noscript><button class="btn btn-ghost btn-sm" type="submit">Išsaugoti</button></noscript>
     </form>
 
-    <?php $canPhoto = $selected['relation'] === 'parent' || age_on($selected['birth_date']) >= CONSENT_AGE; ?>
-    <?php if ($canPhoto && $selected['photo_consent']): ?>
-      <!-- Sutikimas duotas - langelio nebereikia, bet atšaukti galima visada (BDAR) -->
-      <form method="post" class="consent-line" onsubmit="return confirm('Atšaukti sutikimą skelbti nuotraukas ir vaizdo įrašus?')">
+    <?php $canPhoto = $selected['relation'] === 'parent' || age_on($selected['birth_date']) >= CONSENT_AGE;
+          $kid = $selected['relation'] === 'parent'; ?>
+    <?php if ($canPhoto): ?>
+      <!-- Du klausimai: kas skelbia - klubas ar varžybų organizatorius. Pakeisti galima bet kada (BDAR). -->
+      <form method="post" class="form photo-consents" id="nuotraukos" style="margin-top:16px;">
         <?= csrf_field() ?>
         <input type="hidden" name="action" value="photo_consent">
         <input type="hidden" name="member_id" value="<?= (int) $selected['id'] ?>">
-        <span class="small muted">✓ Sutikimas skelbti nuotraukas ir vaizdo įrašus duotas</span>
-        <button class="linklike small muted" type="submit" style="border:none; padding:0; text-decoration:underline;">atšaukti</button>
-      </form>
-    <?php elseif ($canPhoto): ?>
-      <form method="post" class="form" style="margin-top:16px;">
-        <?= csrf_field() ?>
-        <input type="hidden" name="action" value="photo_consent">
-        <input type="hidden" name="member_id" value="<?= (int) $selected['id'] ?>">
-        <label class="check"><input type="checkbox" name="photo_consent" value="1" onchange="this.form.submit()">
-          <span>Sutinku, kad klubas skelbtų <?= $selected['relation'] === 'parent' ? 'vaiko' : 'mano' ?> nuotraukas ir vaizdo įrašus</span></label>
-        <noscript><button class="btn btn-ghost btn-sm" type="submit">Išsaugoti</button></noscript>
+        <h3 style="margin:0;">Nuotraukos ir vaizdo įrašai</h3>
+        <?php if ($selected['photo_events'] === null): ?><div class="flash flash-info" style="margin:0;">Naujas klausimas apie varžybų nuotraukas – atsakykite ir išsaugokite.</div><?php endif; ?>
+        <?= photo_consent_choice('photo_consent', (string) (int) $selected['photo_consent'], $kid ? 'Ar klubas gali skelbti vaiko nuotraukas ir vaizdo įrašus karateka.lt ir klubo socialiniuose tinkluose?' : 'Ar klubas gali skelbti mano nuotraukas ir vaizdo įrašus karateka.lt ir klubo socialiniuose tinkluose?') ?>
+        <?= photo_consent_choice('photo_events', $selected['photo_events'] === null ? null : (string) (int) $selected['photo_events'], $kid ? 'Ar varžybų organizatorius gali skelbti varžybų nuotraukas ir vaizdo įrašus, kuriuose matosi vaikas?' : 'Ar varžybų organizatorius gali skelbti varžybų nuotraukas ir vaizdo įrašus, kuriuose matausi aš?') ?>
+        <div><button class="btn btn-ghost btn-sm" type="submit">Išsaugoti atsakymus</button>
+          <?php if ($selected['photo_answered_at']): ?><span class="small muted">Paskutinį kartą atsakyta <?= e(fmt_date($selected['photo_answered_at'], true)) ?></span><?php endif; ?></div>
       </form>
     <?php else: ?>
-      <p class="small muted" style="margin-top:12px;">Sutikimas dėl nuotraukų: <?= $selected['photo_consent'] ? 'duotas' : 'neduotas' ?> (keičia tėvai).</p>
+      <p class="small muted" style="margin-top:12px;">Nuotraukos: <?= e(photo_consent_text($selected)) ?> (atsako tėvai).</p>
     <?php endif; ?>
 
     <?php if ($selected['relation'] === 'parent'): ?>
@@ -451,7 +454,8 @@ page_start($tab === 'nustatymai' ? 'Nustatymai' : 'Mano paskyra', ['noindex' => 
         <label>Gimimo data <?= date_parts_field('birth_date', null) ?></label>
         <label>Diržas <span class="hint">nežinote - palikite tuščią</span><select name="belt_level"><?= belt_options(null, '— nežinau / dar neturi —') ?></select></label>
       </div>
-      <?= photo_consent_choice('photo_consent', post('action') === 'add_kid' ? post('photo_consent') : null, 'Ar sutinkate, kad klubas skelbtų vaiko nuotraukas ir vaizdo įrašus?') ?>
+      <?= photo_consent_choice('photo_consent', post('action') === 'add_kid' ? post('photo_consent') : null, 'Ar klubas gali skelbti vaiko nuotraukas ir vaizdo įrašus karateka.lt ir klubo socialiniuose tinkluose?') ?>
+      <?= photo_consent_choice('photo_events', post('action') === 'add_kid' ? post('photo_events') : null, 'Ar varžybų organizatorius gali skelbti varžybų nuotraukas ir vaizdo įrašus, kuriuose matosi vaikas?') ?>
       <div><button class="btn btn-primary" type="submit">Pridėti</button></div>
     </form>
   </details>

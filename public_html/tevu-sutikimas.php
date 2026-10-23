@@ -28,6 +28,9 @@ if (is_post()) {
     if (empty($_POST['consent'])) {
         $errors[] = 'Pažymėkite sutikimą, kad patvirtintumėte registraciją.';
     }
+    if (!in_array(post('photo_consent'), ['0', '1'], true) || !in_array(post('photo_events'), ['0', '1'], true)) {
+        $errors[] = 'Atsakykite į abu klausimus dėl nuotraukų.';
+    }
     $createAccount = !$parent && !empty($_POST['create_account']);
     if ($createAccount) {
         if (post('first_name') === '' || post('last_name') === '') {
@@ -42,15 +45,17 @@ if (is_post()) {
     if (!$errors) {
         db()->beginTransaction();
         try {
-            q('UPDATE members SET parent_consent_at = NOW(), photo_consent = ? WHERE id = ?',
-                [!empty($_POST['photo_consent']) ? 1 : 0, $member['id']]);
+            q('UPDATE members SET parent_consent_at = NOW() WHERE id = ?', [$member['id']]);
+            $pid = null;
             if ($createAccount) {
                 $pid = create_account($token['email'], $pw, post('first_name'), post('last_name'), post('phone'), 'pending_approval');
                 q('UPDATE accounts SET email_verified_at = NOW() WHERE id = ?', [$pid]);
                 link_member($pid, (int) $member['id'], 'parent');
             } elseif ($parent) {
-                link_member((int) $parent['id'], (int) $member['id'], 'parent');
+                $pid = (int) $parent['id'];
+                link_member($pid, (int) $member['id'], 'parent');
             }
+            set_photo_consents((int) $member['id'], post('photo_consent') === '1', post('photo_events') === '1', $pid);
             token_use((int) $token['id']);
             db()->commit();
         } catch (Throwable $ex) {
@@ -88,14 +93,14 @@ page_start('Tėvų sutikimas', ['narrow' => true, 'noindex' => true]);
     <input type="hidden" name="t" value="<?= e($t) ?>">
     <label class="check"><input type="checkbox" name="consent" value="1" required>
       <span>Esu vaiko tėvas / mama / globėjas ir sutinku, kad vaikas turėtų paskyrą, o klubas tvarkytų jo duomenis narystės administravimo tikslais (<a href="<?= url('privatumas.php') ?>" target="_blank">privatumo politika</a>).</span></label>
-    <label class="check"><input type="checkbox" name="photo_consent" value="1" <?= !empty($v['photo_consent']) ? 'checked' : '' ?>>
-      <span>Sutinku, kad klubas skelbtų vaiko nuotraukas ir vaizdo įrašus iš treniruočių ir renginių.</span></label>
+    <?= photo_consent_choice('photo_consent', $v['photo_consent'] ?? null, 'Ar klubas gali skelbti vaiko nuotraukas ir vaizdo įrašus karateka.lt ir klubo socialiniuose tinkluose?') ?>
+    <?= photo_consent_choice('photo_events', $v['photo_events'] ?? null, 'Ar varžybų organizatorius gali skelbti varžybų nuotraukas ir vaizdo įrašus, kuriuose matosi vaikas?') ?>
 
     <?php if ($parent): ?>
       <p class="hint">Vaikas bus susietas su jūsų paskyra (<?= e($parent['email']) ?>).</p>
     <?php else: ?>
       <hr class="divider">
-      <label class="check"><input type="checkbox" name="create_account" value="1" id="createAcc" <?= !is_post() || !empty($v['create_account']) ? 'checked' : '' ?>>
+      <label class="check"><input type="checkbox" name="create_account" value="1" id="createAcc" <?= !empty($v['create_account']) ? 'checked' : '' ?>>
         <span>Susikurti tėvų paskyrą (<?= e($token['email']) ?>) - matysiu vaiko tvarkaraštį ir renginius</span></label>
       <div id="accFields" class="form">
         <div class="form-row">

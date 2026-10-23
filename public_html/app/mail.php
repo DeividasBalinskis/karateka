@@ -2,7 +2,8 @@
 // Laiškų siuntimas per SMTP (nustatymai config.php -> 'mail').
 // Lokaliai laiškai keliauja į Mailpit: http://localhost:8025
 
-function send_mail(string $to, string $subject, string $body): bool
+/** $replyTo - kam atsakys gavėjas, paspaudęs „Atsakyti“ (pvz. nemokamos treniruotės formos pildytojas) */
+function send_mail(string $to, string $subject, string $body, ?string $replyTo = null): bool
 {
     $c = config('mail');
     $fromName = '=?UTF-8?B?' . base64_encode($c['from_name']) . '?=';
@@ -13,6 +14,7 @@ function send_mail(string $to, string $subject, string $body): bool
 
     $message = "From: {$fromName} <{$c['from']}>\r\n"
         . "To: <{$to}>\r\n"
+        . ($replyTo && filter_var($replyTo, FILTER_VALIDATE_EMAIL) ? "Reply-To: <{$replyTo}>\r\n" : '')
         . "Subject: {$subjectEnc}\r\n"
         . 'Date: ' . date('r') . "\r\n"
         . 'Message-ID: <' . bin2hex(random_bytes(12)) . '@karateka.lt>' . "\r\n"

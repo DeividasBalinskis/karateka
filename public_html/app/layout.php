@@ -36,7 +36,7 @@ function page_start(string $title, array $opt = []): void
 <?php
     // Renginiai, Naujienos, Pamokos - viena vieta visiems (ir treneriui su redagavimo mygtukais), be trenerio skirtukų juostos
     $section = $opt['section'] ?? null;
-    site_header(false, $admin && !$section ? 'admin' : (!empty($opt['account']) ? 'account' : null), $opt['account'] ?? null, $section); ?>
+    site_header(false, $admin ? 'admin' : (!empty($opt['account']) ? 'account' : null), $opt['account'] ?? null, $section); ?>
 <main class="page <?= !empty($opt['narrow']) ? 'narrow' : '' ?>">
 <?php foreach ($flashes as $f): ?>
   <div class="flash flash-<?= e($f['type']) ?>"><?= e($f['message']) ?></div>

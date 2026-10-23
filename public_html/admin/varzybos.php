@@ -48,7 +48,7 @@ page_start('Varžybos', ['admin' => true]);
     <h1 class="styled">Varžybos</h1>
     <p class="muted" style="margin:0;">Varžybų sistema: kategorijos, lentelės, tvarkaraštis ir rezultatai gyvai. Nariai registruojasi per karateka.lt, rezultatai grįžta į taškus.</p>
   </div>
-  <?php if (varzybos_enabled()): ?>
+  <?php if (varzybos_enabled() && !$error): ?>
     <div class="row" style="gap:8px;">
       <a class="btn btn-ghost" href="<?= e(varzybos_public_url('/')) ?>" target="_blank" rel="noopener">Viešas puslapis ↗</a>
       <a class="btn btn-primary" href="<?= url('admin/varzybos-sso.php') ?>" target="_blank" rel="noopener">Atidaryti varžybų valdymą ↗</a>
