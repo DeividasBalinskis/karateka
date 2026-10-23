@@ -35,6 +35,8 @@ Pataisymai po patikros (nepriklauso nuo susitikimo sprendimų):
 - Renginiuose ilgas grupių sąrašas sutrumpintas: „Vaikai (7 grupės) · Jaunimas“, visas - užvedus pelę (B6).
 - Paskyros apžvalgoje - 3 artimiausi renginiai ir „Visi renginiai →“ (B7).
 - Kai patvirtinti tėvai pakviečia vaiką jungtis pačiam, vaiko paskyra aktyvi iškart - treneriui tvirtinti dar kartą nereikia (B13).
+- Gimimo data telefone: metai atskiroje eilutėje, mėnuo ir diena nebenukirpti (B1).
+- Pamokos redaktoriuje šoninis skydelis („Kam skirta?“) nebelenda po apatine „Išsaugoti“ juosta (B10).
 - Senesnių versijų zip nebeištrinami - lieka kaip atsarginės kopijos.
 
 Nauji projektai tame pačiame aplanke (karateka.lt tai neįtakoja):
