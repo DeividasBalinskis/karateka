@@ -74,6 +74,7 @@ docker compose exec web php app/cli/dev_seed.php
 | http://localhost:8088 | Website |
 | http://localhost:8081 | phpMyAdmin |
 | http://localhost:8025 | Mailpit (catches outgoing e-mail) |
+| http://localhost:8089 | LTKF federation site draft (`ltkf/`, no database) |
 
 On Windows, `tools/lokali-svetaine.ps1` does all of the above in one step and also loads demo data.
 To start over with an empty database: `docker compose down -v`.
