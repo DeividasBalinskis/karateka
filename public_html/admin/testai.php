@@ -166,11 +166,31 @@ if ($id || get('id') === 'new' || get('new')) {
     if ($id && !$quiz) {
         not_found();
     }
+    // Vieno klausimo redagavimo forma - įkeliama tik atidarius klausimą (kitaip WTKU puslapis sveria ~1 MB)
+    if ($id && get('forma') !== '') {
+        $row = q_one('SELECT * FROM quiz_questions WHERE id = ? AND quiz_id = ?', [(int) get('forma'), $id]);
+        if (!$row) {
+            http_response_code(404);
+            exit('Klausimas nerastas.');
+        }
+        $row['answers'] = q_all('SELECT * FROM quiz_answers WHERE question_id = ? ORDER BY sort_order, id', [(int) $row['id']]);
+        header('Content-Type: text/html; charset=utf-8');
+        echo question_form($id, $row)
+            . '<form method="post" class="inline-form" onsubmit="return confirm(\'Ištrinti klausimą?\')">' . csrf_field()
+            . '<input type="hidden" name="id" value="' . $id . '"><input type="hidden" name="qid" value="' . (int) $row['id'] . '">'
+            . '<button class="linklike small muted" name="action" value="delete_question" style="border:none; padding:0; text-decoration:underline;">ištrinti klausimą</button></form>';
+        exit;
+    }
     $quiz = $quiz ?? ['id' => 0, 'title' => '', 'audience' => 'karateka', 'belt_level' => null, 'description' => '', 'question_count' => 10, 'pass_percent' => 83, 'time_limit' => 0, 'kids_mode' => 0, 'is_published' => 1];
     $all = [];
     if ($id) {
+        // Visi atsakymai viena užklausa (ne po vieną kiekvienam klausimui)
+        $answers = [];
+        foreach (q_all('SELECT a.* FROM quiz_answers a JOIN quiz_questions qq ON qq.id = a.question_id WHERE qq.quiz_id = ? ORDER BY a.sort_order, a.id', [$id]) as $an) {
+            $answers[(int) $an['question_id']][] = $an;
+        }
         foreach (q_all('SELECT * FROM quiz_questions WHERE quiz_id = ? ORDER BY sort_order, id', [$id]) as $row) {
-            $row['answers'] = q_all('SELECT * FROM quiz_answers WHERE question_id = ? ORDER BY sort_order, id', [(int) $row['id']]);
+            $row['answers'] = $answers[(int) $row['id']] ?? [];
             $all[] = $row;
         }
     }
@@ -223,6 +243,10 @@ if ($id || get('id') === 'new' || get('new')) {
       <?php if ($distinct < (int) $quiz['question_count']): ?>
         <p class="small muted">Banke skirtingų klausimų (<?= $distinct ?>) mažiau nei teste (<?= (int) $quiz['question_count'] ?>) - kol kas bus užduodami visi esami.</p>
       <?php endif; ?>
+      <?php if (count($all) > 10): ?>
+        <label class="q-search"><span class="sr-only">Ieškoti klausimo</span><input type="search" id="qSearch" placeholder="Ieškoti klausimo, atsakymo ar temos (<?= count($all) ?>)"></label>
+        <p class="small muted" id="qSearchEmpty" hidden>Nieko nerasta.</p>
+      <?php endif; ?>
       <datalist id="quizTopics"><?php foreach (array_unique(array_filter(array_column($all, 'topic'))) as $t): ?><option value="<?= e($t) ?>"><?php endforeach; ?></datalist>
       <?php foreach ($all as $i => $qq): $correct = array_values(array_filter($qq['answers'], function ($an) { return $an['is_correct']; })); ?>
         <details class="panel card q-item" id="q<?= (int) $qq['id'] ?>">
@@ -231,13 +255,34 @@ if ($id || get('id') === 'new' || get('new')) {
             <span class="q-sum"><strong><?= e(mb_strimwidth($qq['body'], 0, 120, '…')) ?></strong>
               <span class="small muted">✓ <?= e($correct ? $correct[0]['body'] : 'nepažymėtas teisingas atsakymas!') ?> · <?= count($qq['answers']) ?> ats.<?= !empty($qq['topic']) ? ' · tema: ' . e($qq['topic']) : '' ?><?= $qq['image'] ? ' · paveikslėlis' : '' ?><?= $qq['youtube_id'] ? ' · video' : '' ?></span></span>
           </summary>
-          <?= question_form($id, $qq) ?>
-          <form method="post" class="inline-form" onsubmit="return confirm('Ištrinti klausimą?')">
-            <?= csrf_field() ?><input type="hidden" name="id" value="<?= $id ?>"><input type="hidden" name="qid" value="<?= (int) $qq['id'] ?>">
-            <button class="linklike small muted" name="action" value="delete_question" style="border:none; padding:0; text-decoration:underline;">ištrinti klausimą</button>
-          </form>
+          <div class="q-form-slot" data-src="<?= e(url('admin/testai.php?id=' . $id . '&forma=' . (int) $qq['id'])) ?>"><p class="small muted">Įkeliama…</p></div>
         </details>
       <?php endforeach; ?>
+      <script>
+      (function () {
+        // Forma įkeliama atidarius klausimą; paieška - pagal klausimą, teisingą atsakymą ir temą
+        function load(d) {
+          var slot = d.querySelector('.q-form-slot');
+          if (!slot || slot.dataset.loaded) return;
+          slot.dataset.loaded = '1';
+          fetch(slot.dataset.src, { credentials: 'same-origin' }).then(function (r) { return r.ok ? r.text() : Promise.reject(); })
+            .then(function (html) { slot.innerHTML = html; })
+            .catch(function () { slot.dataset.loaded = ''; slot.innerHTML = '<p class="small muted">Nepavyko įkelti – atidarykite dar kartą.</p>'; });
+        }
+        document.querySelectorAll('.q-item').forEach(function (d) { d.addEventListener('toggle', function () { if (d.open) load(d); }); });
+        var target = location.hash && document.querySelector('.q-item' + location.hash);
+        if (target) { target.open = true; load(target); }
+        var s = document.getElementById('qSearch');
+        if (s) s.addEventListener('input', function () {
+          var t = s.value.trim().toLowerCase(), shown = 0;
+          document.querySelectorAll('.q-item').forEach(function (d) {
+            var ok = !t || d.querySelector('summary').textContent.toLowerCase().indexOf(t) !== -1;
+            d.hidden = !ok; if (ok) shown++;
+          });
+          document.getElementById('qSearchEmpty').hidden = shown > 0;
+        });
+      })();
+      </script>
       <div class="panel card">
         <h2>Naujas klausimas</h2>
         <?= question_form($id, null) ?>

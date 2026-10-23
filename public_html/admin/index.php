@@ -71,6 +71,12 @@ page_start('Šiandien', ['admin' => true]);
     <form method="post" action="<?= url('atsijungti.php') ?>" class="inline-form"><?= csrf_field() ?><button type="submit" class="btn btn-ghost btn-sm">Atsijungti</button></form>
   </div>
 </div>
+<div class="row quick-actions" style="margin:-6px 0 18px; gap:8px; flex-wrap:wrap;">
+  <a class="btn btn-ghost btn-sm" href="<?= url('admin/naujienos.php?edit=new') ?>">+ Naujiena</a>
+  <a class="btn btn-ghost btn-sm" href="<?= url('admin/renginiai.php?edit=new') ?>">+ Renginys</a>
+  <a class="btn btn-ghost btn-sm" href="<?= url('admin/pamokos.php?edit=new') ?>">+ Pamoka</a>
+  <?php if ($ownMembers): ?><a class="small" style="margin-left:auto;" href="<?= url('paskyra.php') ?>">Mano šeimos nariai (taškai, pastabos) →</a><?php endif; ?>
+</div>
 <?= form_errors($errors) ?>
 <div id="settingsPanel" style="margin:-8px 0 24px;" <?= $settingsOpen ? '' : 'hidden' ?>><?= render_account_settings($me) ?></div>
 <script>
@@ -140,11 +146,6 @@ document.getElementById('settingsBtn').addEventListener('click', function () {
   <?php endif; ?>
 </div>
 
-<div class="row quick-actions">
-  <a class="btn btn-ghost btn-sm" href="<?= url('admin/naujienos.php?edit=new') ?>">+ Naujiena</a>
-  <a class="btn btn-ghost btn-sm" href="<?= url('admin/renginiai.php?edit=new') ?>">+ Renginys</a>
-  <a class="btn btn-ghost btn-sm" href="<?= url('admin/pamokos.php?edit=new') ?>">+ Pamoka</a>
-  <?php if ($ownMembers): ?><a class="small" style="margin-left:auto;" href="<?= url('paskyra.php') ?>">Mano šeimos nariai (taškai, pastabos) →</a><?php endif; ?>
-</div>
+
 <?php
 page_end();

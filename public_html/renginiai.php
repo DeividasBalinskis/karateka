@@ -73,7 +73,7 @@ $n = 0;   // eilės nr. animacijai (laipteliai)
     <?php foreach ($events as $ev): $groups = event_group_names((int) $ev['id']); ?>
       <div class="panel card rise" id="e<?= (int) $ev['id'] ?>" style="--i:<?= min($n++, 8) ?>;">
         <?= render_event($ev) ?>
-        <div class="events-for small muted"><?= $groups ? 'Grupėms: ' . e(implode(', ', $groups)) : (!empty($ev['invited_only']) ? 'Pakviestiems' : 'Visoms grupėms') ?><?= members_only_badge($ev) ?></div>
+        <div class="events-for small muted"><?= $groups ? (count($groups) > 2 ? '<span title="' . e(implode(', ', $groups)) . '">Grupėms: ' . e(groups_summary($groups)) . '</span>' : 'Grupėms: ' . e(implode(', ', $groups))) : (!empty($ev['invited_only']) ? 'Pakviestiems' : 'Visoms grupėms') ?><?= members_only_badge($ev) ?></div>
         <?= $rsvpMembers ? render_event_rsvp($ev, $rsvpMembers, 'renginiai.php' . ($filter ? '?tipas=' . $filter : '') . '#e' . (int) $ev['id']) : '' ?>
         <?php if ($rsvpMembers && $ev['type'] === 'competition' && varzybos_enabled()): ?>
           <p class="small" style="margin-top:8px;"><a href="<?= url('varzybos.php') ?>">Varžybų kategorijos ir registracija varžybų sistemoje →</a></p>
