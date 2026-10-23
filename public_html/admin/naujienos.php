@@ -129,6 +129,22 @@ if ($edit !== '') {
         $n = array_merge($n, ['title' => post('title'), 'body' => post('body'), 'members_only' => !empty($_POST['members_only'])]);
     }
     $media = $n['id'] ? news_media((int) $n['id']) : [];
+    // Kas neleidžia klubui skelbti nuotraukų - treneriui prieš keliant (NULL = neatsakyta, laikome „ne“)
+    $noPhoto = q_all("SELECT m.first_name, m.last_name, COALESCE(g.name, 'Be grupės') AS grp
+        FROM members m LEFT JOIN training_groups g ON g.id = m.group_id
+        WHERE m.status = 'active' AND NOT (m.photo_consent <=> 1)
+        ORDER BY g.sort_order IS NULL, g.sort_order, g.name, m.first_name, m.last_name");
+    $noPhotoEvents = $noPhoto ? q_all("SELECT e.title, e.starts_on,
+            GROUP_CONCAT(CONCAT(m.first_name, ' ', m.last_name) ORDER BY m.first_name, m.last_name SEPARATOR ', ') AS names
+        FROM events e
+        JOIN event_participants p ON p.event_id = e.id AND p.status = 'going'
+        JOIN members m ON m.id = p.member_id AND m.status = 'active' AND NOT (m.photo_consent <=> 1)
+        WHERE e.starts_on BETWEEN CURDATE() - INTERVAL 30 DAY AND CURDATE()
+        GROUP BY e.id, e.title, e.starts_on ORDER BY e.starts_on DESC") : [];
+    $noPhotoGroups = [];
+    foreach ($noPhoto as $m) {
+        $noPhotoGroups[$m['grp']][] = $m['first_name'] . ' ' . $m['last_name'];
+    }
 
     page_start($n['id'] ? 'Redaguoti naujieną' : 'Nauja naujiena', ['admin' => true, 'section' => 'naujienos']);
     ?>
@@ -145,6 +161,26 @@ if ($edit !== '') {
           <textarea name="body" rows="10" required><?= e($n['body']) ?></textarea></label>
         <label>Nuotraukos <span class="hint">galima pasirinkti kelias; sumažinamos automatiškai</span>
           <input type="file" name="images[]" accept="image/jpeg,image/png,image/webp" multiple></label>
+        <?php if ($noPhoto): ?>
+          <details class="nophoto-list">
+            <summary><span class="badge badge-nophoto">Be nuotraukų</span> <?= kiek(count($noPhoto), 'narys neleidžia', 'nariai neleidžia', 'narių neleidžia') ?> skelbti savo nuotraukų – peržiūrėkite prieš keliant</summary>
+            <p class="hint">Jei nuotraukoje aiškiai matosi kuris nors iš jų – nekelkite jos arba apkarpykite. Varžybų organizatoriaus nuotraukoms tai negalioja.</p>
+            <?php if ($noPhotoEvents): ?>
+              <h3>Renginiai per 30 dienų</h3>
+              <ul>
+                <?php foreach ($noPhotoEvents as $ev): ?>
+                  <li><b><?= e($ev['title']) ?></b> <span class="muted">(<?= e(fmt_date($ev['starts_on'])) ?>)</span>: <?= e($ev['names']) ?></li>
+                <?php endforeach; ?>
+              </ul>
+            <?php endif; ?>
+            <h3>Pagal grupes</h3>
+            <ul>
+              <?php foreach ($noPhotoGroups as $grp => $names): ?>
+                <li><b><?= e($grp) ?></b>: <?= e(implode(', ', $names)) ?></li>
+              <?php endforeach; ?>
+            </ul>
+          </details>
+        <?php endif; ?>
         <label>YouTube nuorodos <span class="hint">po vieną eilutėje</span>
           <textarea name="youtube" rows="2" placeholder="https://www.youtube.com/watch?v=..." style="min-height:70px;"><?= e(post('youtube')) ?></textarea></label>
         <div class="form-row">
