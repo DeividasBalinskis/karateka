@@ -2,6 +2,7 @@
 #   Svetainė:    http://localhost:8088
 #   phpMyAdmin:  http://localhost:8081
 #   Mailpit:     http://localhost:8025  (pagauna visus išsiųstus laiškus)
+#   LTKF:        http://localhost:8089  (federacijos svetainės juodraštis, be DB)
 services:
   web:
     build: ./docker
@@ -39,6 +40,16 @@ services:
     image: axllent/mailpit
     ports:
       - "8025:8025"
+
+  # Federacijos svetainė (aplankas ltkf/). Jei paleista ir varžybų sistema (8090), kalendorius rodo jos varžybas.
+  ltkf:
+    build: ./docker
+    ports:
+      - "8089:80"
+    volumes:
+      - ./ltkf:/var/www/html
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
 volumes:
   dbdata:

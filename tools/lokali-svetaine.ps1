@@ -65,5 +65,7 @@ Write-Host '  narys@karateka.test      / testas123  - suaugęs narys su 0 tšk.'
 Write-Host '  tevai@karateka.test      / testas123  - tėvai su 2 vaikais'
 Write-Host '  ...@demo.karateka.lt     / demo12345  - demo nariai'
 Write-Host '  Laiškai: http://localhost:8025   Duomenų bazė: http://localhost:8081'
+Write-Host '  LTKF svetainė: http://localhost:8089' -ForegroundColor Green
 Start-Process 'http://localhost:8088'
+Start-Process 'http://localhost:8089'
 Read-Host "`nSpauskite Enter"
