@@ -17,6 +17,7 @@ Kai `Varzybos` bus GitHub'e, šią logiką ir mygtukus perkelsime į ją.
 | Kategorijos | Kategorijos su dalyvių skaičiais | Perkelti dalyvį į kitą kategoriją vienu pasirinkimu, padalinti kategoriją, sujungti dvi mažas, pridėti/pašalinti, pervadinti, keisti rungtį. Pakeitus dalyvius – lentelė pažymima „pasenusi“ ir, jei kovų dar nebuvo, burtai traukiami iš naujo patys |
 | Lentelės | Olimpinė lentelė, aka/shiro, numeruotos kovos, paguoda, vietos | Trys sistemos: paguoda (2 bronzos, WKF principu), kova dėl 3 vietos, 2 bronzos be kovos. **Sukeisti dalyvius** prieš pradedant, **užrakinti** lentelę, **atšaukti** (40 žingsnių), išvalyti rezultatus. Burtai atskiria to paties klubo sportininkus pirmame rate (patikrinta: 140 porų, 0 to paties klubo) |
 | Tvarkaraštis | Tatamiai, kategorijos su laikais, juosta „atlikta / iš viso“ | **Tempti** kategorijas tarp tatamių ir eilėje (arba ↑ ↓ →), keisti pradžios laiką ir pavadinimą, pridėti/pašalinti tatamį, kovos trukmė pagal rungtį, **„Paskirstyti tolygiai“** – kad visi tatamiai baigtų panašiu metu. Laikai persiskaičiuoja patys |
+| Rezultatai | Prizininkai pagal kategorijas | **Klubų medalių lentelė** (auksas → sidabras → bronza) su taškais, „Tik baigtos kategorijos“, **atsisiųsti CSV** Excel'iui, **spausdinti** (rezultatus ir lentelę – be mygtukų). Paspaudus kategoriją atsidaro jos lentelė |
 
 ## Ko dar nėra (ir kas bus vėliau)
 
@@ -30,3 +31,4 @@ Kai `Varzybos` bus GitHub'e, šią logiką ir mygtukus perkelsime į ją.
 - `bracket()` – kovos apskaičiuojamos iš burtų ir rezultatų (niekas nesaugoma dvigubai), paguoda ir vietos.
 - `prune()` – pakeitus rezultatą, nebegaliojantys tolimesni rezultatai išvalomi patys.
 - Tvarkaraščio laikų skaičiavimas ir „Paskirstyti tolygiai“ (ilgiausios kategorijos – pirmos į laisviausią tatamį).
+- `results()` ir `medalTable()` – prizininkai ir klubų įskaita; iš čia rezultatai keliautų į karateka.lt (nario taškai) ir LTKF.
