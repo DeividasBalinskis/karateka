@@ -118,8 +118,8 @@ page_start('Patvirtinimai', ['admin' => true]);
         <div class="small">
           <strong><?= e($m['first_name'] . ' ' . $m['last_name']) ?></strong>
           <span class="badge"><?= $relLabel[$m['relation']] ?></span>
-          <span class="muted"><?= age_on($m['birth_date']) ?> m. · gim. <?= e($m['birth_date']) ?> · nuotraukos: <?= $m['photo_consent'] ? 'taip' : 'ne' ?></span>
-          <?php if ($m['parent_consent_at'] && $m['relation'] === 'self'): ?><span class="badge badge-ok">tėvų sutikimas gautas</span><?php endif; ?>
+          <span class="muted"><?= age_on($m['birth_date']) ?> m. · gim. <?= e($m['birth_date']) ?> · nuotraukos: <?= e(photo_consent_text($m)) ?></span>
+          <?php if ($m['parent_consent_at'] && $m['relation'] === 'self' && age_on($m['birth_date']) < CONSENT_AGE): ?><span class="badge badge-ok">tėvų sutikimas gautas</span><?php endif; ?>
         </div>
         <?php if ($m['status'] === 'pending'): ?>
           <div class="form-row" style="margin-top:8px;">
@@ -150,7 +150,7 @@ page_start('Patvirtinimai', ['admin' => true]);
       <input type="hidden" name="member_id" value="<?= (int) $m['id'] ?>">
       <div>
         <strong><?= e($m['first_name'] . ' ' . $m['last_name']) ?></strong>
-        <div class="muted small"><?= age_on($m['birth_date']) ?> m. · tėvai: <?= e($m['parent_first'] . ' ' . $m['parent_last']) ?> (<?= e($m['parent_email']) ?>) · nuotraukos: <?= $m['photo_consent'] ? 'taip' : 'ne' ?></div>
+        <div class="muted small"><?= age_on($m['birth_date']) ?> m. · tėvai: <?= e($m['parent_first'] . ' ' . $m['parent_last']) ?> (<?= e($m['parent_email']) ?>) · nuotraukos: <?= e(photo_consent_text($m)) ?></div>
       </div>
       <div class="form-row">
       <label>Grupė <select name="group[<?= (int) $m['id'] ?>]" required><?= group_options(null) ?></select></label>

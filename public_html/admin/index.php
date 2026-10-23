@@ -88,7 +88,7 @@ document.getElementById('settingsBtn').addEventListener('click', function () {
             <span class="t-time"><?= e(fmt_time($t['start_time'])) ?><?= $t['end_time'] ? '<small>' . e(fmt_time($t['end_time'])) . '</small>' : '' ?></span>
             <span>
               <strong><?= e($t['group_name']) ?></strong>
-              <div class="muted small"><?= e($t['location'] ?: '') ?><?= $t['location'] ? ' · ' : '' ?><?= (int) $t['members_count'] ?> nar.<?= $done ? ' · pažymėta ' . (int) $t['marked'] : '' ?></div>
+              <div class="muted small"><?= e($t['location'] ?: '') ?><?= $t['location'] ? ' · ' : '' ?><?= kiek((int) $t['members_count'], 'narys', 'nariai', 'narių') ?><?= $done ? ' · pažymėta ' . (int) $t['marked'] : '' ?></div>
             </span>
             <a class="btn btn-sm <?= $done ? 'btn-ghost' : 'btn-primary' ?>" href="<?= url('admin/treniruote.php?g=' . (int) $t['group_id'] . '&d=' . $today) ?>"><?= $done ? 'Pastabos' : 'Lankomumas' ?></a>
           </li>

@@ -73,8 +73,8 @@ if (is_post() && in_array($type, ['tevai', 'pats'], true)) {
             if (!valid_birth_date($k['birth_date'] ?? '')) {
                 $errors[] = "Vaikas nr. $n: įveskite gimimo datą.";
             }
-            if (!in_array($k['photo_consent'] ?? '', ['0', '1'], true)) {
-                $errors[] = "Vaikas nr. $n: pasirinkite, ar sutinkate dėl nuotraukų.";
+            if (!in_array($k['photo_consent'] ?? '', ['0', '1'], true) || !in_array($k['photo_events'] ?? '', ['0', '1'], true)) {
+                $errors[] = "Vaikas nr. $n: atsakykite į abu klausimus dėl nuotraukų.";
             }
             $kids[] = $k;
         }
@@ -93,8 +93,8 @@ if (is_post() && in_array($type, ['tevai', 'pats'], true)) {
             } elseif ($parentEmail === $email) {
                 $errors[] = 'Tėvų el. paštas turi skirtis nuo tavo el. pašto.';
             }
-        } elseif (!in_array(post('photo_consent'), ['0', '1'], true)) {
-            $errors[] = 'Pasirink, ar sutinki dėl nuotraukų.';
+        } elseif (!in_array(post('photo_consent'), ['0', '1'], true) || !in_array(post('photo_events'), ['0', '1'], true)) {
+            $errors[] = 'Atsakyk į abu klausimus dėl nuotraukų.';
         }
     }
 
@@ -106,14 +106,14 @@ if (is_post() && in_array($type, ['tevai', 'pats'], true)) {
 
             if ($type === 'tevai') {
                 foreach ($kids as $k) {
-                    $mid = create_member($k['first_name'], $k['last_name'], $k['birth_date'], !empty($k['photo_consent']), (int) ($k['belt_level'] ?? 0) ?: null);
+                    $mid = create_member($k['first_name'], $k['last_name'], $k['birth_date'], !empty($k['photo_consent']), (int) ($k['belt_level'] ?? 0) ?: null, !empty($k['photo_events']), $accountId);
                     // Tėvai patys registruoja vaiką - tai ir yra tėvų sutikimas
                     q('UPDATE members SET parent_consent_at = NOW() WHERE id = ?', [$mid]);
                     link_member($accountId, $mid, 'parent');
                 }
             } else {
                 // Jaunesniems nei 14 m. sutikimą dėl nuotraukų duoda tėvai
-                $mid = create_member($first, $last, $birth, !$under14 && !empty($_POST['photo_consent']), belt_from_post('belt_level'));
+                $mid = create_member($first, $last, $birth, !$under14 && !empty($_POST['photo_consent']), belt_from_post('belt_level'), $under14 ? null : !empty($_POST['photo_events']), $accountId);
                 link_member($accountId, $mid, 'self');
             }
             db()->commit();
@@ -233,7 +233,8 @@ $kidsInput = array_values((array) ($v['kids'] ?? [[]])) ?: [[]];
               </div>
               <label>Gimimo data <?= date_parts_field("kids[$i][birth_date]", $k['birth_date'] ?? null, false) ?></label>
               <label>Diržas <span class="hint">nežinote - palikite tuščią</span><select name="kids[<?= $i ?>][belt_level]"><?= belt_options(!empty($k['belt_level']) ? (int) $k['belt_level'] : null, '— nežinau / dar neturi —') ?></select></label>
-              <?= photo_consent_choice("kids[$i][photo_consent]", $k['photo_consent'] ?? null, 'Ar sutinkate, kad klubas skelbtų vaiko nuotraukas ir vaizdo įrašus iš treniruočių ir renginių (svetainėje, socialiniuose tinkluose)?') ?>
+              <?= photo_consent_choice("kids[$i][photo_consent]", $k['photo_consent'] ?? null, 'Ar klubas gali skelbti vaiko nuotraukas ir vaizdo įrašus karateka.lt ir klubo socialiniuose tinkluose?') ?>
+              <?= photo_consent_choice("kids[$i][photo_events]", $k['photo_events'] ?? null, 'Ar varžybų organizatorius gali skelbti varžybų nuotraukas ir vaizdo įrašus, kuriuose matosi vaikas?') ?>
             </fieldset>
           <?php endforeach; ?>
         </div>
@@ -248,7 +249,8 @@ $kidsInput = array_values((array) ($v['kids'] ?? [[]])) ?: [[]];
           <label id="parentEmailWrap" style="display:none;">Tėvų / globėjų el. paštas
             <input type="email" name="parent_email" value="<?= e($v['parent_email'] ?? '') ?>">
           </label>
-          <div id="photoWrap"><?= photo_consent_choice('photo_consent', $v['photo_consent'] ?? null, 'Ar sutinki, kad klubas skelbtų tavo nuotraukas ir vaizdo įrašus iš treniruočių ir renginių?') ?></div>
+          <div id="photoWrap"><?= photo_consent_choice('photo_consent', $v['photo_consent'] ?? null, 'Ar klubas gali skelbti tavo nuotraukas ir vaizdo įrašus karateka.lt ir klubo socialiniuose tinkluose?') ?>
+            <?= photo_consent_choice('photo_events', $v['photo_events'] ?? null, 'Ar varžybų organizatorius gali skelbti varžybų nuotraukas ir vaizdo įrašus, kuriuose esi tu?') ?></div>
           <p class="hint">Neturi savo el. pašto? Tegul tėvai tave užregistruoja per <a href="?tipas=tevai">tėvų registraciją</a> - vėliau jie galės pakviesti tave prisijungti.</p>
         </div>
       <?php endif; ?>

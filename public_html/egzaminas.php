@@ -71,7 +71,7 @@ page_start('Egzaminas', ['noindex' => true, 'account' => 'egzaminas']);
       <div class="kicker">Diržų kelias</div>
       <p class="muted small" style="margin:0;"><?= $belt ? 'Dabar: ' . e(belt_label($belt)) : 'Diržas nenurodytas - laikome, kad baltas. Pakeisti galima Nustatymuose.' ?></p>
     </div>
-    <div class="stars" title="Žvaigždutės: už kiekvieną išmoktą programos punktą ir išlaikytą testą (+3)">★ <?= $stars ?></div>
+    <div class="stars" title="Žvaigždutės: už kiekvieną išmoktą programos punktą ir išlaikytą testą (+3)">★ <?= kiek((int) $stars, 'žvaigždutė', 'žvaigždutės', 'žvaigždučių') ?></div>
   </div>
   <ol class="belt-path">
     <?php foreach (BELTS as $lvl => [$kyu, $name, $color]):
@@ -192,7 +192,7 @@ page_start('Egzaminas', ['noindex' => true, 'account' => 'egzaminas']);
             <span>
               <?php if ($qz['audience'] !== 'karateka'): ?><span class="badge badge-tag"><?= e(QUIZ_AUDIENCE[$qz['audience']]) ?></span><?php endif; ?>
               <strong><?= e($qz['title']) ?></strong>
-              <div class="muted small"><?= min((int) $qz['question_count'], (int) $qz['questions_total']) ?> klausimų · reikia ≥ <?= (int) $qz['pass_percent'] ?> %<?= !empty($qz['time_limit']) ? ' · ' . (int) $qz['time_limit'] . ' min.' : '' ?></div>
+              <div class="muted small"><?= kiek(min((int) $qz['question_count'], (int) $qz['questions_total']), 'klausimas', 'klausimai', 'klausimų') ?> · reikia ≥ <?= (int) $qz['pass_percent'] ?> %<?= !empty($qz['time_limit']) ? ' · ' . (int) $qz['time_limit'] . ' min.' : '' ?></div>
             </span>
             <?php if ($ok): ?><span class="badge badge-ok">✓ Išlaikytas</span><?php elseif ($best): ?><span class="badge">geriausias <?= attempt_percent($best) ?> %</span><?php endif; ?>
           </div>

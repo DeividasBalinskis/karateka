@@ -201,7 +201,7 @@ page_start('Testas: ' . $quiz['title'], ['noindex' => true, 'narrow' => true, 'a
 <div class="page-head">
   <div class="eyebrow">Testas · <?= e($member['first_name']) ?></div>
   <h1 class="styled"><?= e($quiz['title']) ?></h1>
-  <p class="muted"><?= count($ids) ?> klausimų. Kad išlaikytum, reikia bent <?= (int) $quiz['pass_percent'] ?> % teisingų atsakymų. Atsakymus pamatysi pabaigoje.<?php if ($left !== null): ?>
+  <p class="muted"><?= kiek(count($ids), 'klausimas', 'klausimai', 'klausimų') ?>. Kad išlaikytum, reikia bent <?= (int) $quiz['pass_percent'] ?> % teisingų atsakymų. Atsakymus pamatysi pabaigoje.<?php if ($left !== null): ?>
     Laikas: <?= (int) round((strtotime($att['deadline_at']) - strtotime($att['started_at'])) / 60) ?> min. - pasibaigus testas išsiunčiamas automatiškai.<?php endif; ?></p>
 </div>
 <?php if ($left !== null): ?><div class="quiz-timer" id="quizTimer" data-left="<?= $left ?>" title="Liko laiko">⏱ <?= sprintf('%d:%02d', intdiv($left, 60), $left % 60) ?></div><?php endif; ?>

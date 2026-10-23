@@ -196,7 +196,7 @@ if (is_post()) {
                 send_coach_note($m, $me, $body, $id, !empty($_POST['is_task']), !empty($_POST['email']));
             }
         }
-        flash('ok', 'Pamoka išsiųsta: ' . count($ids) . ' nar. Jie ją matys paskyroje („Trenerio pastabos“) ir galės atsakyti.');
+        flash('ok', 'Pamoka išsiųsta: ' . kiek(count($ids), 'nariui', 'nariams', 'narių') . '. Jie ją matys paskyroje („Trenerio pastabos“) ir galės atsakyti.');
         redirect('pamokos.php?id=' . $id);
     }
 

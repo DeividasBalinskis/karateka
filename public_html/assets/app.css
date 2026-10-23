@@ -129,6 +129,7 @@ legend{font-family:'Space Grotesk',sans-serif; font-weight:700; padding:0 6px;}
 
 .badge{display:inline-block; font-size:0.72rem; font-weight:700; padding:3px 9px; border-radius:20px; background:rgba(23,20,15,0.07); color:var(--muted); white-space:nowrap;}
 .badge-ok{background:rgba(47,107,90,0.14); color:var(--accent-dark);}
+.badge-nophoto{background:rgba(181,40,31,0.1); color:#9A2A20;}
 .badge-warn{background:rgba(230,132,43,0.16); color:#8A4A0E;}
 .badge-pink{background:rgba(168,92,126,0.14); color:#7A3558;}
 

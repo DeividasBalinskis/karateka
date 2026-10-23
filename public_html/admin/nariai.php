@@ -30,7 +30,7 @@ if (get('new') !== '' || post('action') === 'create') {
         } elseif ($email !== '' && !$acc) {
             $errors[] = 'Paskyros su tokiu el. paštu nėra. Palikite tuščią - susieti galėsite vėliau nario puslapyje.';
         } else {
-            $mid = create_member($first, $last, $birth, !empty($_POST['photo_consent']), belt_from_post('belt_level'));
+            $mid = create_member($first, $last, $birth, !empty($_POST['photo_consent']), belt_from_post('belt_level'), in_array(post('photo_events'), ['0', '1'], true) ? post('photo_events') === '1' : null, (int) $me['id']);
             q('UPDATE members SET group_id = ?, status = "active" WHERE id = ?', [$group, $mid]);
             if ($acc) {
                 link_member((int) $acc['id'], $mid, post('relation') === 'self' ? 'self' : 'parent');
@@ -57,7 +57,8 @@ if (get('new') !== '' || post('action') === 'create') {
         <label>Diržas <select name="belt_level"><?= belt_options(belt_from_post('belt_level'), '— nežinau / dar neturi —') ?></select></label>
       </div>
       <label class="check"><input type="checkbox" name="photo_consent" value="1" <?= !empty($_POST['photo_consent']) ? 'checked' : '' ?>>
-        <span>Tėvai (ar pats narys) sutiko, kad klubas skelbtų nuotraukas</span></label>
+        <span>Tėvai (ar pats narys) sutiko, kad klubas skelbtų nuotraukas (karateka.lt, klubo soc. tinklai)</span></label>
+      <label>Varžybų organizatoriaus nuotraukos <select name="photo_events"><option value="">— dar neatsakyta —</option><option value="1"<?= post('photo_events') === '1' ? ' selected' : '' ?>>Taip, sutinka</option><option value="0"<?= post('photo_events') === '0' ? ' selected' : '' ?>>Ne</option></select></label>
       <hr class="divider">
       <div class="form-row">
         <label>Susieti su paskyra <span class="hint">nebūtina - tėvų ar paties nario el. paštas, jei jau užsiregistravę</span>
@@ -122,8 +123,15 @@ if ($id) {
             $errors[] = 'Aktyviam nariui reikia grupės.';
         } else {
             $gender = in_array(post('gender'), ['M', 'F'], true) ? post('gender') : null;
-            q('UPDATE members SET first_name = ?, last_name = ?, birth_date = ?, gender = ?, group_id = ?, status = ?, photo_consent = ?, belt_level = ? WHERE id = ?',
-                [$first, $last, $birth, $gender, $group, $status, !empty($_POST['photo_consent']) ? 1 : 0, belt_from_post('belt_level'), $id]);
+            q('UPDATE members SET first_name = ?, last_name = ?, birth_date = ?, gender = ?, group_id = ?, status = ?, belt_level = ? WHERE id = ?',
+                [$first, $last, $birth, $gender, $group, $status, belt_from_post('belt_level'), $id]);
+            // Sutikimai keičiami tik pasikeitus - ir įrašomi į žurnalą (kas ir kada)
+            $club = !empty($_POST['photo_consent']);
+            $events = in_array(post('photo_events'), ['0', '1'], true) ? post('photo_events') === '1' : null;
+            $oldEvents = $m['photo_events'] === null ? null : (bool) $m['photo_events'];
+            if ($club !== (bool) $m['photo_consent'] || ($events !== null && $events !== $oldEvents)) {
+                set_photo_consents($id, $club !== (bool) $m['photo_consent'] ? $club : null, $events !== $oldEvents ? $events : null, (int) $me['id']);
+            }
             set_member_tags($id, (array) ($_POST['tags'] ?? []));
             flash('ok', 'Išsaugota.');
             redirect('admin/nariai.php?id=' . $id);
@@ -165,7 +173,9 @@ if ($id) {
           </select>
         </label>
         <label class="check"><input type="checkbox" name="photo_consent" value="1" <?= $m['photo_consent'] ? 'checked' : '' ?>>
-          <span>Sutikimas skelbti nuotraukas</span></label>
+          <span>Klubas gali skelbti nuotraukas (karateka.lt, klubo soc. tinklai)</span></label>
+        <label>Varžybų organizatoriaus nuotraukos <select name="photo_events"><option value=""<?= $m['photo_events'] === null ? ' selected' : '' ?>>— dar neatsakyta —</option><option value="1"<?= $m['photo_events'] !== null && (int) $m['photo_events'] === 1 ? ' selected' : '' ?>>Taip, sutinka</option><option value="0"<?= $m['photo_events'] !== null && (int) $m['photo_events'] === 0 ? ' selected' : '' ?>>Ne</option></select></label>
+        <?php if (!empty($m['photo_answered_at'])): ?><p class="small muted" style="margin:0;">Atsakyta <?= e(fmt_date($m['photo_answered_at'], true)) ?> Visi atsakymai saugomi sutikimų žurnale.</p><?php endif; ?>
         <fieldset class="tags-field">
           <legend>Žymos <span class="hint">Karateka - visi nariai; žymos atveria papildomą medžiagą ir testus</span></legend>
           <?php $mTags = member_tags($id); foreach (MEMBER_TAGS as $k => $label): ?>
@@ -188,7 +198,7 @@ if ($id) {
             </li>
           <?php endforeach; ?>
         </ul>
-        <?php if ($m['parent_consent_at']): ?><p class="small muted" style="margin-top:10px;">Tėvų sutikimas: <?= e($m['parent_consent_at']) ?></p><?php endif; ?>
+        <?php if ($m['parent_consent_at']): ?><p class="small muted" style="margin-top:10px;">Tėvų sutikimas gautas <?= e(fmt_date($m['parent_consent_at'], true)) ?></p><?php endif; ?>
         <details style="margin-top:12px;">
           <summary class="summary-link">+ Susieti su paskyra</summary>
           <form method="post" class="form" style="margin-top:10px;">
@@ -299,7 +309,7 @@ page_start('Nariai', ['admin' => true]);
 <div class="panel card">
   <p class="muted small" style="margin-bottom:8px;">Rasta: <?= count($rows) ?></p>
   <table class="table cards">
-    <thead><tr><th>Vardas, pavardė</th><th>Amžius</th><th>Grupė</th><th>Diržas</th><th>Nuotraukos</th></tr></thead>
+    <thead><tr><th>Vardas, pavardė</th><th>Amžius</th><th>Grupė</th><th>Diržas</th><th>Nuotraukos: klubas · varžybos</th></tr></thead>
     <tbody>
       <?php foreach ($rows as $r): ?>
         <tr>
@@ -307,7 +317,7 @@ page_start('Nariai', ['admin' => true]);
           <td><?= age_on($r['birth_date']) ?> m.</td>
           <td><?= e($r['group_name'] ?: '—') ?></td>
           <td><?= belt_chip($r['belt_level'] !== null ? (int) $r['belt_level'] : null) ?></td>
-          <td><?= $r['photo_consent'] ? '<span class="badge badge-ok">sutinka</span>' : '<span class="badge">ne</span>' ?></td>
+          <td><?= $r['photo_consent'] ? '<span class="badge badge-ok">taip</span>' : '<span class="badge badge-nophoto">ne</span>' ?> · <?= $r['photo_events'] === null ? '<span class="badge">?</span>' : ((int) $r['photo_events'] ? '<span class="badge badge-ok">taip</span>' : '<span class="badge badge-nophoto">ne</span>') ?></td>
         </tr>
       <?php endforeach; ?>
     </tbody>

@@ -547,7 +547,7 @@ require __DIR__ . '/app/bootstrap.php';
               </div>
               <div class="picker-schedule" id="vaikamsSchedulePanel">
                 <div class="kicker">Tvarkaraštis</div>
-                <p class="schedule-placeholder">← Pasirinkite vietą kairėje</p>
+                <p class="schedule-placeholder">Pasirinkite vietą sąraše</p>
               </div>
             </div>
           </div>
@@ -787,6 +787,8 @@ require __DIR__ . '/app/bootstrap.php';
       </div>
       <div class="registration-panel">
         <form class="contact-form" id="registrationForm">
+          <div style="position:absolute; left:-9999px;" aria-hidden="true"><input type="text" name="website" tabindex="-1" autocomplete="off"></div>
+          <input type="hidden" name="t" value="<?= time() ?>">
           <input type="text" name="vardas" placeholder="Mokinio vardas, pavardė" required>
           <input type="email" name="email" placeholder="El. paštas" required>
           <input type="tel" name="telefonas" placeholder="Telefono numeris" required>

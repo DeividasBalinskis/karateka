@@ -12,14 +12,7 @@ return [
     'retention'   => ['unfinished_days' => 30],    // nebaigtos registracijos ištrinamos po N dienų
     'ranking'     => ['scope' => 'category'],     // reitingas: category (vaikai/jaunimas/suaugę) | group | club
 
-    // "2 treniruotės nemokamai" formai (uzklausa.php)
-    'smtp' => [
-        'host' => 'smtp.example.com',
-        'port' => 465,
-        'user' => 'info@karateka.lt',
-        'pass' => 'CHANGE_ME',
-    ],
-    // Narių sistemos laiškams
+    // Visiems svetainės laiškams, ir nemokamos treniruotės formai (nuo v1.7 atskiro 'smtp' bloko nebereikia)
     'mail' => [
         'host'      => 'smtp.example.com',
         'port'      => 465,

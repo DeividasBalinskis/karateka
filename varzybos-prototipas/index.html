@@ -196,14 +196,19 @@ th { font-size: .78rem; text-transform: uppercase; letter-spacing: .05em; color:
   function sample() {
     var seed = 7;
     function rnd(n) { seed = (seed * 9301 + 49297) % 233280; return Math.floor(seed / 233280 * n); }
-    var uid = 1;
+    var uid = 1, used = {};
     function people(n, female) {
       var out = [];
       for (var i = 0; i < n; i++) {
-        var v = female ? VARDAI[12 + rnd(10)] : VARDAI[rnd(12)];
-        var p = PAVARDES[rnd(PAVARDES.length)];
-        if (female) p = /ius$/.test(p) ? p.replace(/ius$/, 'iūtė') : p.replace(/as$/, 'aitė').replace(/us$/, 'utė').replace(/is$/, 'ytė');
-        out.push({ id: 'c' + (uid++), name: v + ' ' + p, club: KLUBAI[rnd(KLUBAI.length)] });
+        var name, guard = 0;
+        do {   // vardai nesikartoja - kad lentelėje nebūtų dviejų vienodų
+          var v = female ? VARDAI[12 + rnd(10)] : VARDAI[rnd(12)];
+          var p = PAVARDES[rnd(PAVARDES.length)];
+          if (female) p = /ius$/.test(p) ? p.replace(/ius$/, 'iūtė') : p.replace(/as$/, 'aitė').replace(/us$/, 'utė').replace(/is$/, 'ytė');
+          name = v + ' ' + p;
+        } while (used[name] && ++guard < 50);
+        used[name] = true;
+        out.push({ id: 'c' + (uid++), name: name, club: KLUBAI[rnd(KLUBAI.length)] });
       }
       return out;
     }

@@ -268,7 +268,7 @@ page_start('Grupės', ['admin' => true]);
             <?php if (!$g['is_active']): ?><span class="badge">neaktyvi</span><?php endif; ?>
             <div class="muted small"><?= e($g['location'] ?? '') ?></div>
           </span>
-          <span class="badge"><?= (int) $g['members'] ?> nar.</span>
+          <span class="badge"><?= kiek((int) $g['members'], 'narys', 'nariai', 'narių') ?></span>
         </li>
       <?php endforeach; ?>
     </ul>

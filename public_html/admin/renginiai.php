@@ -123,7 +123,7 @@ if ($edit !== '') {
           <label>Pavadinimas <input type="text" name="title" value="<?= e($ev['title']) ?>" required></label>
           <div class="form-row three">
             <label>Data <input type="date" name="starts_on" value="<?= e($ev['starts_on']) ?>" required></label>
-            <label>Iki <span class="hint">nebūtina</span><input type="date" name="ends_on" value="<?= e($ev['ends_on']) ?>"></label>
+            <label>Pabaigos data <span class="hint">jei renginys trunka kelias dienas</span><input type="date" name="ends_on" value="<?= e($ev['ends_on']) ?>"></label>
             <label>Laikas <input type="time" name="start_time" value="<?= e(fmt_time($ev['start_time'])) ?>"></label>
           </div>
           <?= location_field('location', $ev['location']) ?>

@@ -197,7 +197,7 @@ page_start('Treniruotė', ['admin' => true]);
     <?php foreach ($members as $m): ?>
       <div class="note-row">
         <div class="note-who" id="who<?= (int) $m['id'] ?>">
-          <strong><?= e($m['first_name'] . ' ' . $m['last_name']) ?></strong>
+          <strong><?= e($m['first_name'] . ' ' . $m['last_name']) ?></strong><?= photo_badge($m) ?>
           <?php $a1 = $att[$m['id']] ?? null; ?>
           <div class="att" data-member="<?= (int) $m['id'] ?>">
             <button type="button" class="att-btn yes<?= $a1 === 1 || $a1 === '1' ? ' on' : '' ?>" data-v="1">✓ Buvo</button>

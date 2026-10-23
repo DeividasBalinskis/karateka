@@ -155,11 +155,49 @@ function create_account(string $email, string $password, string $first, string $
 }
 
 /** $belt - diržas, kurį narys / tėvai nurodo registruodamiesi (treneris vėliau gali pataisyti) */
-function create_member(string $first, string $last, string $birthDate, bool $photoConsent, ?int $belt = null): int
+/** $photoEvents - sutikimas dėl varžybų organizatoriaus nuotraukų (null - dar neatsakyta); $answeredBy - kas atsakė */
+function create_member(string $first, string $last, string $birthDate, bool $photoConsent, ?int $belt = null, ?bool $photoEvents = null, ?int $answeredBy = null): int
 {
     q('INSERT INTO members (first_name, last_name, birth_date, photo_consent, belt_level) VALUES (?, ?, ?, ?, ?)',
         [$first, $last, $birthDate, $photoConsent ? 1 : 0, $belt !== null && isset(BELTS[$belt]) ? $belt : null]);
-    return (int) db()->lastInsertId();
+    $id = (int) db()->lastInsertId();
+    if ($photoEvents !== null) {
+        set_photo_consents($id, $photoConsent, $photoEvents, $answeredBy);
+    }
+    return $id;
+}
+
+/**
+ * Nuotraukų sutikimai pagal tai, kas skelbia: $club - klubas (karateka.lt, klubo socialiniai tinklai),
+ * $events - varžybų organizatorius. null - nekeičiama. Kiekvienas atsakymas įrašomas į consent_log.
+ */
+function set_photo_consents(int $memberId, ?bool $club, ?bool $events, ?int $accountId): void
+{
+    $sets = ['photo_answered_at = NOW()', 'photo_answered_by = ?'];
+    $params = [$accountId];
+    foreach (['photo_club' => [$club, 'photo_consent'], 'photo_events' => [$events, 'photo_events']] as $kind => [$value, $column]) {
+        if ($value === null) {
+            continue;
+        }
+        $sets[] = $column . ' = ?';
+        $params[] = $value ? 1 : 0;
+        q('INSERT INTO consent_log (member_id, kind, value, account_id) VALUES (?, ?, ?, ?)', [$memberId, $kind, $value ? 1 : 0, $accountId]);
+    }
+    $params[] = $memberId;
+    q('UPDATE members SET ' . implode(', ', $sets) . ' WHERE id = ?', $params);
+}
+
+/** Trumpai treneriui: „klubas – taip · varžybos – ne“ */
+function photo_consent_text(array $m): string
+{
+    $ev = $m['photo_events'] ?? null;
+    return 'klubas – ' . ($m['photo_consent'] ? 'taip' : 'ne') . ' · varžybos – ' . ($ev === null ? 'neatsakyta' : ((int) $ev ? 'taip' : 'ne'));
+}
+
+/** Žymė prie vardo: klubas negali skelbti šio nario nuotraukų */
+function photo_badge(array $m): string
+{
+    return empty($m['photo_consent']) ? ' <span class="badge badge-nophoto" title="Tėvai (ar narys) nesutiko, kad klubas skelbtų nuotraukas">Be nuotraukų</span>' : '';
 }
 
 function link_member(int $accountId, int $memberId, string $relation): void

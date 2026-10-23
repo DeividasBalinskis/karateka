@@ -104,7 +104,7 @@ page_start('SMS žinutės', ['admin' => true]);
 <?php if (!sms_live()): ?>
   <div class="notice-test panel">
     <strong>Bandomasis režimas.</strong> SMS niekam nesiunčiamos - tik parodoma, kas jas gautų, ir įrašoma į istoriją.
-    Tikram siuntimui reikia SMS teikėjo paskyros ir nustatymų faile <code>config.php</code> (<code>sms</code>).
+    Tikros SMS dar neįjungtos – kreipkitės į svetainės administratorių.
   </div>
 <?php endif; ?>
 <?= form_errors($errors) ?>

@@ -4,6 +4,34 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.7 - 2026-10-23 (nuotraukų sutikimai, pataisymai po patikros, LTKF ir varžybų prototipai)
+**Duomenų bazė:** importuoti `db/020_nuotrauku_sutikimai.sql`. Failą galima importuoti ir antrą kartą - nieko nepridės dvigubai.
+
+Nuotraukų sutikimai (pasiūlymas susitikimui - Denio klausimas „svetainėje ne, varžybose taip“):
+- Vietoj vieno klausimo - du: ar **klubas** gali skelbti nuotraukas (karateka.lt, klubo soc. tinklai) ir ar **varžybų organizatorius** gali skelbti varžybų nuotraukas. Klausiama registracijoje, tėvų sutikime, pridedant vaiką ir paskyros Nustatymuose.
+- Kiekvienas atsakymas įrašomas į sutikimų žurnalą (`consent_log`): kas, kada ir ką atsakė. Paskyroje rodoma „Paskutinį kartą atsakyta …“.
+- Esamiems nariams senas atsakymas lieka kaip „klubas“, o dėl varžybų paskyroje rodomas pranešimas „Naujas klausimas … Atsakyti →“.
+- Treneriui: narių sąraše stulpelis „Nuotraukos: klubas · varžybos“, nario kortelėje abu atsakymai; lankomume ir renginio dalyviuose žymė „Be nuotraukų“.
+- Varžybų sistemai kartu su dalyviu perduodama žymė `photo_ok` (ar organizatorius gali skelbti nuotraukas).
+- Privatumo politikos skyrius „Nuotraukos ir vaizdo įrašai“ perrašytas pagal du klausimus.
+
+Pataisymai po patikros (nepriklauso nuo susitikimo sprendimų):
+- Skaičiai su teisingomis galūnėmis: „1 klausimas“, „14 narių“, „22 nariai“ (A6, A7). Egzamino žvaigždutės: „★ 3 žvaigždutės“ (A13).
+- „Pasirinkite vietą sąraše“ vietoj „kairėje“ (A4), „Žinutė treneriui · Austėja“ (A5), „Visoms grupėms“ (A9), renginio „Pabaigos data“ (A10), „Tėvų sutikimas gautas 2026 m. spalio 22 d.“ (A11).
+- Tėvų sutikime „Susikurti tėvų paskyrą“ nebežymima iš anksto - tėvai, kurie nori tik sutikti, nebegauna klaidos (B2).
+- Trenerių skirtukai rodomi ir naujienų, pamokų bei renginių tvarkyme (B5); telefone skirtukų juosta dešinėje blunka - matosi, kad yra daugiau (B4).
+- Atidarius narių puslapį neprisijungus - paaiškinimas „Šis puslapis matomas tik prisijungusiems nariams“ (B8).
+- „Tėvų sutikimas gautas“ rodomas tik jaunesniems nei 14 m. (B11). Varžybų mygtukai slepiami, kai varžybų sistema nepasiekiama (B14).
+- Nemokamos treniruotės forma siunčia per bendrą pašto funkciją (`config.php` → `mail`), turi apsaugą nuo šlamšto (paslėptas laukas, laikas, 5 per valandą iš vieno IP), o klubo laiške „Atsakyti“ nueina tiesiai tėvams (C2). **Patikrinkite test svetainėje, ar laiškas ateina.** Bloko `smtp` faile `config.php` nebereikia.
+- SMS puslapyje treneriui - be techninių žodžių (C4). Ištrintas nenaudojamas `page1.html` (C3).
+- Senesnių versijų zip nebeištrinami - lieka kaip atsarginės kopijos.
+
+Nauji projektai tame pačiame aplanke (karateka.lt tai neįtakoja):
+- `ltkf/` - LTKF svetainės juodraštis. Kompiuteryje: `docker compose up -d` → http://localhost:8089.
+- `varzybos-prototipas/index.html` - varžybų lentelių ir tvarkaraščio prototipas (kaip Kihapp, bet su redagavimu). Atidaryti dukart spustelėjus.
+
+Laukia susitikimo sprendimų: „Karatekams“ (A1), „Registruotis“ (A2), 1 ar 2 nemokamos treniruotės (A3), „žymė“ (A8), „tu“ ar „jūs“ (A12), slėpti reklamą prisijungusiems (B3), privatumo politikos tarpai.
+
 ## v1.6 - 2026-10-22 (WTKU teisėjų testas, laiko limitas testams)
 **Duomenų bazė:** importuoti `db/019_wtku_teiseju_testas.sql`. Failą galima importuoti ir antrą kartą - nieko nepridės dvigubai.
 
