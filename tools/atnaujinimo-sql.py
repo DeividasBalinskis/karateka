@@ -2,7 +2,9 @@
 """Sudeda db/0xx failus į vieną atnaujinimo failą, kurį galima importuoti kelis kartus:
 CREATE TABLE -> IF NOT EXISTS, ALTER ... ADD COLUMN / ADD CONSTRAINT - tik jei dar nėra.
 INSERT leidžiamas tik su sąlyga @do_... toje pačioje eilutėje (pvz. db/019: įkeliama, tik jei testo dar nėra).
-Naudojimas: python tools/atnaujinimo-sql.py 8 18 ikelimui/atnaujinti-db-v1.4.sql 1.4"""
+Naudojimas: python tools/atnaujinimo-sql.py 8 18 ikelimui/atnaujinti-db-v1.4.sql 1.4
+Pridėjus naują db/0xx failą, atnaujinkite ir failą mygtukui „Atnaujinti duomenų bazę“ (Treneriams → Sistema):
+    python tools/atnaujinimo-sql.py 8 999 public_html/app/db-atnaujinimas.sql <versija>"""
 import re, sys, pathlib
 
 lo, hi, out, ver = int(sys.argv[1]), int(sys.argv[2]), sys.argv[3], sys.argv[4]

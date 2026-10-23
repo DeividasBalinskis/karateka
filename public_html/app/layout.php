@@ -232,6 +232,7 @@ function admin_nav_items(): array
     }
     if (is_admin()) {
         $items['paskyros'] = ['Paskyros', 'admin/paskyros.php'];
+        $items['sistema'] = ['Sistema' . (db_needs_update() ? ' ⚠' : ''), 'admin/sistema.php'];
     }
     $items['patvirtinimai'] = ['Patvirtinimai', 'admin/patvirtinimai.php', pending_approvals_count()];
     return $items;
