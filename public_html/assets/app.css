@@ -926,3 +926,28 @@ h1 .ls-icon{font-size:1.5rem; vertical-align:middle; margin-right:4px;}
 .tour-link{display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; margin-top:12px; padding-top:12px; border-top:1px dashed rgba(23,20,15,0.12);}
 .tour-link select{padding:7px 10px; border-radius:10px; border:1px solid rgba(23,20,15,0.15); font:inherit; max-width:260px;}
 .cat-pick{flex-wrap:wrap;}
+
+/* ===== Tvarkaraščio ir kainų redagavimas (išsaugoma iš karto) ===== */
+.sched-cat h2{margin-bottom:10px;}
+.sl-editor{display:flex; flex-direction:column; gap:14px; margin-top:10px;}
+.sl-group{padding:12px 14px; border-radius:14px; background:rgba(255,255,255,0.55); border:1px solid rgba(23,20,15,0.07);}
+.sl-head{display:flex; gap:10px; align-items:baseline; flex-wrap:wrap; margin-bottom:6px;}
+.sl-rows{display:flex; flex-direction:column; gap:6px; margin-bottom:8px;}
+.sl-row{display:flex; gap:8px; align-items:center; flex-wrap:wrap;}
+.sl-row select, .sl-row input, .pr-edit input{padding:7px 10px; border-radius:10px; border:1px solid rgba(23,20,15,0.15); font:inherit; font-size:0.9rem; background:#fff;}
+.sl-day{width:150px;}
+.sl-time{display:inline-flex; align-items:center; gap:4px;}
+.sl-time input{width:128px; font-family:'JetBrains Mono',monospace;}
+.sl-note{flex:1 1 160px; min-width:140px;}
+.sl-row button{border:1px solid rgba(23,20,15,0.12); background:#fff; border-radius:8px; width:32px; height:32px; cursor:pointer; color:var(--muted);}
+.sl-row button:hover{color:var(--accent); border-color:var(--accent);}
+.sl-row .sl-del:hover{color:var(--danger); border-color:var(--danger);}
+.sl-state{min-width:22px; font-size:0.82rem; font-weight:700; color:var(--muted); max-width:260px;}
+.sl-state.ok{color:var(--accent);}
+.sl-state.warn{color:#8A4A0E; font-weight:600;}
+.sl-state.bad{color:var(--danger); font-weight:600;}
+.pr-edit{display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap; margin-bottom:6px;}
+.pr-edit label{display:flex; flex-direction:column; gap:3px; font-size:0.8rem; font-weight:600; color:var(--muted);}
+.pr-edit .pr-main{width:130px;}
+.pr-edit .pr-note, .pr-edit .pr-alt{width:230px;}
+@media (max-width:600px){ .sl-day{width:100%;} .sl-note{flex-basis:100%;} .pr-edit .pr-note, .pr-edit .pr-alt{width:100%;} .pr-edit label{flex:1 1 100%;} }

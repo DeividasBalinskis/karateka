@@ -221,6 +221,7 @@ function admin_nav_items(): array
         'zinutes'    => ['Žinutės', 'admin/zinutes.php', staff_unread_messages()],
         'nariai'     => ['Nariai', 'admin/nariai.php'],
         'grupes'     => ['Grupės', 'admin/grupes.php'],
+        'tvarkarastis' => ['Tvarkaraštis', 'admin/tvarkarastis.php'],
         'taskai'     => ['Taškai', 'admin/taskai.php'],
     ];
     $items['varzybos'] = ['Varžybos', 'admin/varzybos.php'];   // ir kai sistema dar neprijungta - puslapis paaiškina
