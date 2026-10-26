@@ -69,14 +69,19 @@ function render_schedule_lines(array $lines): string
     return $html;
 }
 
-/** Aktyvios kategorijos grupės su tvarkaraščiu */
+/** Aktyvios kategorijos grupės su tvarkaraščiu (pagrindiniame puslapyje kviečiama kelis kartus - įsimenama) */
 function public_groups(string $category): array
 {
-    $groups = q_all('SELECT * FROM training_groups WHERE is_active = 1 AND category = ? ORDER BY sort_order, name', [$category]);
-    foreach ($groups as &$g) {
-        $g['slots'] = group_schedule((int) $g['id']);
+    static $cache = [];
+    if (!isset($cache[$category])) {
+        $groups = q_all('SELECT * FROM training_groups WHERE is_active = 1 AND category = ? ORDER BY sort_order, name', [$category]);
+        foreach ($groups as &$g) {
+            $g['slots'] = group_schedule((int) $g['id']);
+        }
+        unset($g);
+        $cache[$category] = $groups;
     }
-    return $groups;
+    return $cache[$category];
 }
 
 /** Jaunimui / suaugusiems: visų kategorijos grupių tvarkaraštis vienoje vietoje */

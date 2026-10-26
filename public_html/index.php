@@ -1,6 +1,9 @@
 <?php
-// Pagrindinis puslapis: grupių pasirinkimas viršuje, apie klubą, kontaktai, registracija
+// Pagrindinis puslapis iš blokų (app/home.php): grupės, renginiai, naujienos, apie klubą, kontaktai, „Išbandyti“, partneriai.
+// Adminas viską keičia čia pat: index.php?redaguoti=1
 require __DIR__ . '/app/bootstrap.php';
+$edit = home_edit_mode();
+$page = home_page();
 ?>
 <!DOCTYPE html>
 <html lang="lt">
@@ -515,318 +518,138 @@ require __DIR__ . '/app/bootstrap.php';
     .hn-body{padding:10px 12px;}
     .home-news p{display:none;}
   }
+
+  /* ===== Blokai, pridėti v1.7 ===== */
+  /* Vertybės: kairėje ir dešinėje po pusę, istorija viduryje (bet koks vertybių skaičius) */
+  .roots-row{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.75fr) minmax(0,1fr); grid-template-areas:none; gap:14px 22px; align-items:stretch;}
+  .roots-col{display:flex; flex-direction:column; justify-content:space-around; gap:14px;}
+  .roots-history{grid-area:auto;}
+  .value-item::after{display:block;}
+  .roots-col .value-item:last-child::after{display:none;}
+  @media(max-width:1080px){
+    .roots-row{grid-template-columns:1fr 1fr;}
+    .roots-history{grid-column:1 / -1; order:-1;}
+  }
+  @media(max-width:560px){ .roots-row{grid-template-columns:1fr;} }
+  .about-text p, .roots-text p{margin-bottom:14px;}
+  .about-text p:last-child, .roots-text p:last-child{margin-bottom:0;}
+  .roots-text p{color:var(--muted); font-size:0.96rem;}
+  .roots-text strong{color:var(--ink);}
+  .instructors-intro p{color:var(--muted); font-size:0.95rem;}
+  .community-banner p{margin:0;}
+  .instructor-card .avatar{overflow:hidden; position:relative;}
+  .instructor-card .avatar img{width:100%; height:100%; object-fit:cover;}
+  .instructor-card .avatar.has-photo{width:76px; height:76px;}
+  /* Sekcijų tarpai: atskiri blokai vietoj vienos „Apie“ sekcijos */
+  .hb-about{padding:100px 0 28px;}
+  .hb-values, .hb-instructors, .hb-banner{padding:28px 0;}
+  .hb-text{padding:60px 0 28px;}
+  .hb-contacts{padding:40px 0;}
+  .hb-contacts .section-head{margin-bottom:24px;}
+  #registracija{padding-top:40px;}
+  @media(min-width:1500px){ .hb-about .wrap, .hb-values .wrap, .hb-instructors .wrap, .hb-banner .wrap, .hb-text .wrap{max-width:1520px;} }
+  /* Tekstas su nuotrauka */
+  .hb-text-grid.with-img{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:48px; align-items:stretch;}
+  .hb-text-grid.img-left .hb-text-photo{order:-1;}
+  .hb-text-photo{border-radius:var(--radius); overflow:hidden; box-shadow:0 20px 44px rgba(23,20,15,0.15); min-height:300px; position:relative;}
+  .hb-text-photo img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover;}
+  @media(max-width:860px){ .hb-text-grid.with-img{grid-template-columns:1fr;} .hb-text-grid.img-left .hb-text-photo{order:0;} }
+  /* Kontaktai ir treniruočių vietos */
+  .contacts-grid.two{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:24px; align-items:start;}
+  .contact-locs h3{font-size:1.1rem; margin-bottom:14px;}
+  .contact-locs-cat + .contact-locs-cat{margin-top:14px;}
+  .contact-locs-cat strong{display:block; font-size:0.85rem; color:var(--accent); font-family:'JetBrains Mono',monospace; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:6px;}
+  .contact-locs-cat ul{list-style:none; display:grid; gap:4px;}
+  .contact-locs-cat li{font-size:0.9rem; color:var(--muted); padding-left:14px; text-indent:-14px;}
+  .contact-locs-cat li::before{content:"● "; color:#A85C7E; font-size:0.6em; vertical-align:middle;}
+  @media(max-width:860px){ .contacts-grid.two{grid-template-columns:1fr;} }
+  .registration-title{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:1.5rem; letter-spacing:-0.01em; margin-bottom:10px; background:linear-gradient(90deg, var(--ink) 0%, #A85C7E 100%); -webkit-background-clip:text; background-clip:text; color:transparent; -webkit-text-fill-color:transparent;}
+  /* Partnerių logotipai - apačioje, baltose kortelėse */
+  .hb-partners{padding:30px 0 10px;}
+  .partners-head{text-align:center; margin-bottom:18px;}
+  .partners-head h3{font-family:'JetBrains Mono',monospace; font-size:0.78rem; letter-spacing:0.16em; text-transform:uppercase; color:var(--muted); font-weight:700;}
+  .partners-row{display:flex; flex-wrap:wrap; justify-content:center; gap:16px;}
+  .partner{display:block; width:150px;}
+  img[hidden], [hidden]{display:none !important;}
+  .partner-logo{height:96px; padding:12px 16px; border-radius:14px; background:#fff; box-shadow:0 10px 26px rgba(23,20,15,0.08); display:flex; align-items:center; justify-content:center; position:relative; transition:transform .2s ease, box-shadow .2s ease;}
+  .partner-logo img{max-width:100%; max-height:100%; width:auto; height:auto; object-fit:contain;}
+  a.partner:hover .partner-logo{transform:translateY(-3px); box-shadow:0 16px 32px rgba(23,20,15,0.14);}
+  @media(max-width:560px){ .partner{width:calc(50% - 8px);} .partner-logo{height:80px;} }
+  /* Treneriui: redagavimo mygtukas */
+  .hb-fab{position:fixed; right:18px; bottom:18px; z-index:900; padding:12px 18px; border-radius:30px; background:var(--accent); color:#fff; font-weight:700; font-size:0.88rem; box-shadow:0 12px 30px rgba(23,20,15,0.25);}
+  .hb-fab:hover{background:var(--accent-dark);}
 </style>
+<?php if ($edit): ?><link rel="stylesheet" href="<?= e(asset_url('assets/home-edit.css')) ?>"><?php endif; ?>
 </head>
-<body>
+<body class="<?= $edit ? 'home-edit' : '' ?>">
 
 <?php site_header(true); ?>
 
-<!-- Pirmas ekranas: grupės + renginiai. Užpildo visą ekraną, kad apačioje nesimatytų kitos dalies kraštelio -->
-<div class="first-screen">
-<section style="padding:0; position:relative;" id="grupes">
-  <div class="chooser"><h1 class="chooser-title">Kam ieškote treniruočių?</h1></div>
-  <div class="carousel-wrap">
-  <div class="group-scroll" id="groupScroll">
-
-    <div class="group-section" id="vaikams">
-      <div class="group-photo-panel"><img src="img/vaikai.jpg" alt="Vaikų treniruotė" style="object-position:50% 25%;"></div>
-      <div class="group-text-panel"><div class="group-content">
-        <div class="eyebrow">VAIKAMS</div>
-        <h2>Žaismingas įvadas į discipliną ir pagarbą</h2>
-        <p>Vaikų ir priešmokyklinukų grupė, kur mokomasi per žaidimą — pagrindinės technikos, koordinacija ir pirmieji žingsniai karate kelyje.</p>
-        <div class="group-facts">
-          <div>
-            <div class="kicker">Kainos</div>
-            <?= render_price('vaikai') ?>
-          </div>
-          <div class="full">
-            <div class="kicker">Kur treniruojamės</div>
-            <div class="schedule-picker">
-              <div class="picker-locations loc-scroll loc-accordion">
-                <?= render_kids_locations() ?>
-              </div>
-              <div class="picker-schedule" id="vaikamsSchedulePanel">
-                <div class="kicker">Tvarkaraštis</div>
-                <p class="schedule-placeholder">← Pasirinkite vietą kairėje</p>
-              </div>
-            </div>
-          </div>
-        </div>
-        <a href="#registracija" class="btn btn-primary group-cta">Registruotis</a>
-      </div></div>
-    </div>
-
-    <div class="group-section" id="jaunimui">
-      <div class="group-photo-panel"><img src="img/jaunimas.jpg" alt="Jaunimo treniruotė" style="object-position:62% 20%;"></div>
-      <div class="group-text-panel"><div class="group-content">
-        <div class="eyebrow">JAUNIMUI</div>
-        <h2>Tempas, technika ir pasiruošimas varžyboms</h2>
-        <p>Paaugliams skirtos treniruotės, kuriose derinama technika, fizinis pasirengimas ir noras siekti rezultatų — nuo pirmų kata iki varžybų.</p>
-        <div class="group-facts">
-          <div>
-            <div class="kicker">Kainos</div>
-            <?= render_price('jaunimas') ?>
-          </div>
-          <div>
-            <div class="kicker">Tvarkaraštis</div>
-            <?= render_category_schedule('jaunimas') ?>
-          </div>
-          <div class="full">
-            <div class="kicker">Kur treniruojamės</div>
-            <?= render_category_locations('jaunimas') ?>
-          </div>
-        </div>
-        <a href="#registracija" class="btn btn-primary group-cta">Registruotis</a>
-      </div></div>
-    </div>
-
-    <div class="group-section" id="suaugusiems">
-      <div class="group-photo-panel"><img src="img/suaugusieji.jpg" alt="Karatistas ant varžybų tatamio" style="object-position:24% 30%;"></div>
-      <div class="group-text-panel"><div class="group-content">
-        <div class="eyebrow">SUAUGUSIEMS</div>
-        <h2>Jėga, forma ir aiški galva po darbo dienos</h2>
-        <p>Treniruotės suaugusiems, pritaikytos tiek pradedantiesiems, tiek turintiems patirties. Realus fizinis krūvis kartu su savigynos pagrindais.</p>
-        <div class="group-facts">
-          <div>
-            <div class="kicker">Kainos</div>
-            <?= render_price('suauge') ?>
-          </div>
-          <div>
-            <div class="kicker">Tvarkaraštis</div>
-            <?= render_category_schedule('suauge') ?>
-          </div>
-          <div class="full">
-            <div class="kicker">Kur treniruojamės</div>
-            <?= render_category_locations('suauge') ?>
-          </div>
-        </div>
-        <a href="#registracija" class="btn btn-primary group-cta">Registruotis</a>
-      </div></div>
-    </div>
-
-  </div>
-
-  <button class="group-arrow prev" id="groupPrev" aria-label="Ankstesnė grupė">‹</button>
-  <button class="group-arrow next" id="groupNext" aria-label="Kita grupė">›</button>
-  <div class="chooser-buttons" id="groupTabs" role="tablist">
-        <button type="button" data-i="0" class="active" role="tab">Vaikams</button>
-        <button type="button" data-i="1" role="tab">Jaunimui</button>
-        <button type="button" data-i="2" role="tab">Suaugusiems</button>
-      </div>
-  </div>
-</section>
-
-<?php $homeEvents = public_upcoming_events(3); if ($homeEvents): ?>
-<section id="renginiai" class="home-events-section">
-  <div class="events-wrap">
-    <div class="events-head">
-      <h2>Artėjantys renginiai</h2>
-      <a class="events-all" href="renginiai.php">Visi renginiai →</a>
-    </div>
-    <div class="events-grid">
-      <?php foreach ($homeEvents as $ev): $ts = strtotime($ev['starts_on']); ?>
-        <div class="he-wrap reveal">
-        <a class="panel home-event" href="renginiai.php#e<?= (int) $ev['id'] ?>">
-          <div class="he-date"><span class="d"><?= date('j', $ts) ?></span><span class="m"><?= e(mb_substr(LT_MONTHS_GEN[(int) date('n', $ts)], 0, 3)) ?></span></div>
-          <div class="he-body">
-            <span class="he-type t-<?= e($ev['type']) ?>"><?= e(EVENT_TYPES[$ev['type']]) ?></span>
-            <h3><?= e($ev['title']) ?></h3>
-            <div class="he-meta"><?= e(fmt_date($ev['starts_on'])) ?><?= $ev['ends_on'] && $ev['ends_on'] !== $ev['starts_on'] ? ' – ' . e(fmt_date($ev['ends_on'])) : '' ?><?= $ev['start_time'] ? ', ' . e(fmt_time($ev['start_time'])) : '' ?><?= $ev['location'] ? ' · ' . e($ev['location']) : '' ?></div>
-          </div>
-        </a>
-        <?= event_edit_link((int) $ev['id'], 'index') ?>
-        </div>
-      <?php endforeach; ?>
-    </div>
-  </div>
-</section>
-<?php endif; ?>
+<?php if ($edit): ?>
+<div class="hb-toolbar" id="hbToolbar">
+  <strong>✎ Redaguojate pagrindinį puslapį</strong>
+  <span class="small">Spauskite ant teksto ir rašykite. Blokus tempkite ⠿.</span>
+  <span class="hb-toolbar-btns">
+    <button type="button" class="btn btn-primary btn-sm" id="hbSave">Išsaugoti</button>
+    <a class="btn btn-ghost btn-sm" href="<?= url('index.php') ?>" id="hbExit">Baigti</a>
+    <button type="button" class="btn btn-ghost btn-sm" id="hbUndo" title="Grąžinti prieš paskutinį išsaugojimą buvusį puslapį">↶ Ankstesnė versija</button>
+  </span>
+  <span class="hb-status" id="hbStatus"></span>
 </div>
-
-<?php $homeNews = q_all('SELECT * FROM news WHERE is_published = 1 AND published_at <= NOW() AND ' . visibility_sql() . ' ORDER BY published_at DESC LIMIT 3'); if ($homeNews): ?>
-<!-- Naujausios naujienos (po pirmu ekranu) + nuoroda į visas -->
-<section id="naujienos" class="home-news-section">
-  <div class="events-wrap">
-    <div class="events-head">
-      <h2>Naujausios naujienos</h2>
-      <a class="events-all" href="naujienos.php">Visos naujienos →</a>
-    </div>
-    <div class="news-grid">
-      <?php foreach ($homeNews as $n): $cover = news_cover((int) $n['id']); $body = trim(preg_replace('/\s+/', ' ', $n['body'])); ?>
-        <a class="panel home-news reveal" href="naujienos.php?id=<?= (int) $n['id'] ?>">
-          <div class="hn-cover<?= $cover ? '' : ' empty' ?>"><?php if ($cover): ?><img src="<?= e($cover) ?>" alt="" loading="lazy"><?php else: ?><img class="hn-logo" src="img/logo.png" alt=""><?php endif; ?></div>
-          <div class="hn-body">
-            <div class="hn-date"><?= e(fmt_date($n['published_at'])) ?></div>
-            <h3><?= e($n['title']) ?></h3>
-            <p><?= e(mb_strlen($body) > 160 ? mb_substr($body, 0, 160) . '…' : $body) ?></p>
-          </div>
-        </a>
-      <?php endforeach; ?>
-    </div>
-  </div>
-</section>
 <?php endif; ?>
 
-<section id="apie" style="position:relative;">
-  <div class="wrap">
-    <div class="about-grid">
-      <div class="about-left reveal">
-        <div class="section-head" style="margin-bottom:20px;">
-          <h2 class="styled">Klubas, statantis charakterį</h2>
-        </div>
-        <div class="panel about-panel">
-          <p>„Karateka" — tradicinio karate-do klubas Vilniuje, kuriame savo kelią gali pradėti ir tęsti vaikai, jaunimas ir suaugusieji.</p>
-          <p>Mus vienija ne tik technikos tobulinimas, bet ir noras augti kaip asmenybėms — stiprinti kūną, ugdyti charakterį ir mokytis pagarbos sau bei aplinkiniams.</p>
-          <div class="about-quote">„Tikras karate meistriškumas prasideda nuo darbo su savimi — kūno, proto ir dvasios darnos."</div>
-        </div>
-      </div>
-      <div class="about-photo reveal" id="aboutSlider">
-        <div class="slide active"><img src="img/apie-1.jpg" alt="Karateka komanda su medaliais"></div>
-        <div class="slide"><img src="img/apie-2.jpg" alt="Sportininkės išeina į varžybų tatamį"></div>
-        <div class="slide"><img src="img/apie-3.jpg" alt="Apkabinimas po kovos"></div>
-        <div class="slide"><img src="img/apie-4.jpg" alt="Vaikų komanda su trofėjais"></div>
-        <div class="slide"><img src="img/apie-5.jpg" alt="Kata varžybose"></div>
-      </div>
-    </div>
+<main id="homeBlocks">
+<?php
+$visible = array_values(array_filter($page, function ($b) use ($edit) { return $edit || !$b['hidden']; }));
+// Pirmas ekranas: grupės + renginiai užpildo visą ekraną, kad apačioje nesimatytų kitos dalies kraštelio
+$first = !$edit && ($visible[0]['type'] ?? '') === 'groups';
+$firstEnds = $first && ($visible[1]['type'] ?? '') === 'events' ? 1 : 0;
+foreach ($visible as $i => $b) {
+    if ($first && $i === 0) {
+        echo '<div class="first-screen">';
+    }
+    echo home_block_wrap($b, home_render_block($b));
+    if ($first && $i === $firstEnds) {
+        echo '</div>';
+    }
+}
+?>
+</main>
 
-    <div class="about-sub">
-      <div class="about-sub-head about-sub-head-center"><h3>Šaknys ir vertybės</h3></div>
-
-      <div class="roots-row">
-        <div class="panel roots-history reveal">
-          <div class="kicker">Mūsų istorija</div>
-          <p>Klubo šaknys siekia <strong>2013 metus</strong>, kai treniravomės Tradicinio karate-do klubo „Sanrei" komandoje. Įgiję patirties ir subrendę savo idėjai, <strong>2017 metais</strong> įkūrėme savarankišką klubą „Karateka", kuriam vadovauja Denis Balinskis.</p>
-          <p>Denis savo karate kelią pradėjo būdamas vos 5 metų — ir šią vaikystės svajonę įgyvendino, sukurdamas bendruomenę, kurioje šiandien sportuoja žmonės nuo 2 iki 54 metų.</p>
-        </div>
-        <div class="value-item l reveal" style="grid-area:v1;"><span class="value-icon rose">道</span><span><span class="value-translation">kelias</span><strong>Saviugda</strong></span></div>
-        <div class="value-item l reveal" style="grid-area:v2;"><span class="value-icon indigo">力</span><span><span class="value-translation">jėga</span><strong>Charakterio ir valios stiprinimas</strong></span></div>
-        <div class="value-item l reveal" style="grid-area:v3;"><span class="value-icon green">忍</span><span><span class="value-translation">kantrybė</span><strong>Savidisciplina</strong></span></div>
-        <div class="value-item reveal" style="grid-area:v4;"><span class="value-icon rose">礼</span><span><span class="value-translation">pagarba</span><strong>Pagarba tradicijoms ir dojo etiketui</strong></span></div>
-        <div class="value-item reveal" style="grid-area:v5;"><span class="value-icon indigo">守</span><span><span class="value-translation">apsauga</span><strong>Savigynos įgūdžiai</strong></span></div>
-        <div class="value-item reveal" style="grid-area:v6;"><span class="value-icon green">和</span><span><span class="value-translation">harmonija</span><strong>Vidinė pusiausvyra</strong></span></div>
-      </div>
-    </div>
-
-    <div class="about-sub">
-      <div class="about-sub-head about-sub-head-center"><h3>Mūsų instruktoriai</h3></div>
-      <div class="instructors-row">
-        <div class="panel instructors-intro reveal"><p>Klubo instruktoriai nuolat gilina žinias, dalyvaudami stažuotėse Lietuvoje ir užsienyje — karate, fizioterapijos, psichologijos, sporto, medicinos, masažų, biomechanikos, sporto mitybos, kinesiologijos ir sporto pedagogikos srityse. Tai leidžia mums treniruotes kurti remiantis ne tik karate tradicijomis, bet ir šiuolaikiniais mokslo pasiekimais.</p></div>
-        <div class="instructor-grid">
-          <div class="panel instructor-card lead reveal">
-            <div class="avatar">DB</div>
-            <div class="name">Denis Balinskis</div>
-            <div class="rank">3 Dan · klubo vadovas</div>
-          </div>
-          <div class="panel instructor-card reveal">
-            <div class="avatar">LČ</div>
-            <div class="name">Lukas Čiulkinas</div>
-            <div class="rank">1 Dan</div>
-          </div>
-          <div class="panel instructor-card reveal">
-            <div class="avatar">JK</div>
-            <div class="name">Joris Kėrys</div>
-            <div class="rank">1 Dan</div>
-          </div>
-          <div class="panel instructor-card reveal">
-            <div class="avatar">EČ</div>
-            <div class="name">Esmilė Česevičiūtė</div>
-            <div class="rank">1 Dan</div>
-          </div>
-          <div class="panel instructor-card reveal">
-            <div class="avatar">KK</div>
-            <div class="name">Karolis Kiela</div>
-            <div class="rank">1 Dan</div>
-          </div>
-          <div class="panel instructor-card reveal">
-            <div class="avatar">GL</div>
-            <div class="name">Giedrius Li Tang</div>
-            <div class="rank">1 Dan</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="about-sub">
-      <div class="panel community-banner reveal">
-        „Karateka" — tai klubas, kuriame karate tampa <span>visos šeimos veikla</span>. Treniruotėse kartu sportuoja tėvai su vaikais — amžiaus riba mums nėra kliūtis, svarbiausia noras augti ir tobulėti.
-      </div>
-    </div>
+<?php if ($edit):
+    // Nauji blokai: šablonai (vieno egzemplioriaus blokai - tik jei jų puslapyje nėra)
+    $present = array_column($page, 'type'); ?>
+  <div class="hb-add-menu" id="hbAddMenu" hidden>
+    <div class="hb-add-title">Kokį bloką pridėti?</div>
+    <?php foreach (HOME_BLOCK_TYPES as $type => [$label, $multi]): if (!$multi && in_array($type, $present, true)) { continue; } ?>
+      <button type="button" data-add-block="<?= $type ?>"<?= $multi ? '' : ' data-single="1"' ?>><?= e($label) ?></button>
+      <template data-block-tpl="<?= $type ?>"><?= home_block_wrap(['id' => '', 'type' => $type, 'menu' => '', 'hidden' => false, 'd' => home_block_defaults($type)],
+          home_render_block(['id' => '', 'type' => $type, 'menu' => '', 'hidden' => false, 'd' => home_block_defaults($type)])) ?></template>
+    <?php endforeach; ?>
+    <button type="button" class="hb-add-cancel">Atšaukti</button>
   </div>
-</section>
-
-
-
-<section id="kontaktai" style="position:relative;">
-  <div class="wrap">
-    <div class="section-head reveal">
-      <h2 class="styled">Kur mus rasti</h2>
-    </div>
-    <div class="panel contact-panel reveal">
-      <ul class="contact-list">
-        <li><span class="mark">V</span><div><strong>VšĮ Karate Ateitis</strong><span>Vilnius, Lietuva</span></div></li>
-        <li><span class="mark">@</span><div><strong>El. paštas</strong><span>info@karateka.lt</span></div></li>
-        <li><span class="mark">T</span><div><strong>Telefonas</strong><span>+370 601 44392</span></div></li>
-        <li><span class="mark">#</span><div><strong>Įmonės kodas</strong><span>305105392</span></div></li>
-        <li><span class="mark">$</span><div><strong>Sąskaita</strong><span>LT76 7300 0101 6008 0310</span></div></li>
-      </ul>
-    </div>
-  </div>
-</section>
-
-
-<section class="contact" id="registracija" style="position:relative;">
-  <div class="wrap">
-    <div class="section-head reveal">
-      <h2 class="styled">Registruokis</h2>
-      <p>Užpildykite formą ir išbandykite pirmąją treniruotę nemokamai</p>
-    </div>
-    <div class="panel registration-grid reveal">
-      <div class="registration-panel">
-        <h3 style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:1.5rem; letter-spacing:-0.01em; margin-bottom:10px; background:linear-gradient(90deg, var(--ink) 0%, #A85C7E 100%); -webkit-background-clip:text; background-clip:text; color:transparent; -webkit-text-fill-color:transparent;">Pradėkite nuo dviejų nemokamų treniruočių</h3>
-        <p>Užpildykite formą ir susisieksime, kad suderintume laiką jums tinkamiausiai grupei.</p>
-      </div>
-      <div class="registration-panel">
-        <form class="contact-form" id="registrationForm">
-          <input type="text" name="vardas" placeholder="Mokinio vardas, pavardė" required>
-          <input type="email" name="email" placeholder="El. paštas" required>
-          <input type="tel" name="telefonas" placeholder="Telefono numeris" required>
-          <select name="lokacija" required>
-            <option value="" disabled selected>Pasirinkite lokaciją</option>
-            <?= render_trial_location_options() ?>
-          </select>
-          <select name="gimimo_metai" id="gimimoMetai" class="is-empty">
-            <option value="" disabled selected>Gimimo metai</option>
-          </select>
-          <textarea name="zinute" rows="3" placeholder="Žinutė (nebūtina)"></textarea>
-          <button type="submit" class="btn btn-primary">Registruotis nemokamai</button>
-          <div id="formStatus" class="form-status"></div>
-        </form>
-      </div>
-    </div>
-  </div>
-</section>
+  <script>window.HOME_API = <?= json_encode(['url' => url('admin/puslapis.php'), 'csrf' => csrf_token(), 'fragment' => url('admin/tvarkarastis.php?fragment=')]) ?>;</script>
+  <script src="<?= e(asset_url('assets/vendor/sortable.min.js')) ?>"></script>
+  <script src="<?= e(asset_url('assets/home-editor.js')) ?>"></script>
+<?php elseif (is_admin()): ?>
+  <a class="hb-fab" href="<?= url('index.php?redaguoti=1') ?>">✎ Redaguoti puslapį</a>
+<?php endif; ?>
 
 <footer>
   <div class="wrap">
     <div class="footer-bottom">
-      <span>© 2026 VšĮ Karate Ateitis. Visos teisės saugomos. · <a href="privatumas.php" style="color:inherit; text-decoration:underline;">Privatumo politika</a></span>
+      <span>© <?= date('Y') ?> VšĮ Karate Ateitis. Visos teisės saugomos. · <a href="privatumas.php" style="color:inherit; text-decoration:underline;">Privatumo politika</a></span>
       <span>Nuo balto iki juodo diržo.</span>
     </div>
   </div>
 </footer>
 
 <script>
-
-  // about section photo slider - auto-rotates
-  const aboutSlides = document.querySelectorAll('#aboutSlider .slide');
-  let aboutSlideIndex = 0;
-  if(aboutSlides.length > 1){
-    setInterval(()=>{
-      aboutSlides[aboutSlideIndex].classList.remove('active');
-      aboutSlideIndex = (aboutSlideIndex + 1) % aboutSlides.length;
-      aboutSlides[aboutSlideIndex].classList.add('active');
-    }, 4000);
-  }
+  // „Apie“ nuotraukų skaidrės keičiasi pačios
+  document.querySelectorAll('[data-slider]').forEach(function (box) {
+    var slides = box.querySelectorAll('.slide'), i = 0;
+    if (slides.length > 1) setInterval(function () { slides[i].classList.remove('active'); i = (i + 1) % slides.length; slides[i].classList.add('active'); }, 4000);
+  });
 
   // Elementas tolygiai atsiranda, kai pasiekiamas slenkant, ir toliau lieka matomas
   const io = new IntersectionObserver((entries)=>{
@@ -836,98 +659,80 @@ require __DIR__ . '/app/bootstrap.php';
   }, {threshold:0.12});
   document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
 
-  // group horizontal scroll window - native left/right scroll (trackpad/touch/wheel), plus buttons + dots as a convenience
+  // Grupių langas: slenkama į šonus (pele, pirštu), mygtukai ir skirtukai - patogumui
   const groupScroll = document.getElementById('groupScroll');
-  const groupSlideIds = ['vaikams','jaunimui','suaugusiems'];
-  const groupDots = document.querySelectorAll('#groupTabs button');
-
-  function scrollToGroup(i){
-    const idx = ((i % groupSlideIds.length) + groupSlideIds.length) % groupSlideIds.length;
-    groupScroll.scrollTo({left: idx * groupScroll.clientWidth, behavior:'smooth'});
-    groupDots.forEach((d, di) => d.classList.toggle('active', di === idx));
-  }
-  document.getElementById('groupPrev').addEventListener('click', ()=>{
-    scrollToGroup(Math.round(groupScroll.scrollLeft / groupScroll.clientWidth) - 1);
-  });
-  document.getElementById('groupNext').addEventListener('click', ()=>{
-    scrollToGroup(Math.round(groupScroll.scrollLeft / groupScroll.clientWidth) + 1);
-  });
-  groupDots.forEach(d => d.addEventListener('click', ()=> scrollToGroup(parseInt(d.dataset.i))));
-
-  // keep dots in sync while the person scrolls the window themselves
-  let scrollTimeout;
-  groupScroll.addEventListener('scroll', ()=>{
-    clearTimeout(scrollTimeout);
-    scrollTimeout = setTimeout(()=>{
-      const idx = Math.round(groupScroll.scrollLeft / groupScroll.clientWidth);
+  if (groupScroll) {
+    const groupSlideIds = [].map.call(groupScroll.querySelectorAll('.group-section'), s => s.id);
+    const groupDots = document.querySelectorAll('#groupTabs button');
+    function scrollToGroup(i){
+      const idx = ((i % groupSlideIds.length) + groupSlideIds.length) % groupSlideIds.length;
+      groupScroll.scrollTo({left: idx * groupScroll.clientWidth, behavior:'smooth'});
+      groupDots.forEach((d, di) => d.classList.toggle('active', di === idx));
+    }
+    document.getElementById('groupPrev').addEventListener('click', ()=> scrollToGroup(Math.round(groupScroll.scrollLeft / groupScroll.clientWidth) - 1));
+    document.getElementById('groupNext').addEventListener('click', ()=> scrollToGroup(Math.round(groupScroll.scrollLeft / groupScroll.clientWidth) + 1));
+    groupDots.forEach(d => d.addEventListener('click', ()=> scrollToGroup(parseInt(d.dataset.i))));
+    let scrollTimeout;
+    groupScroll.addEventListener('scroll', ()=>{
+      clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(()=>{
+        const idx = Math.round(groupScroll.scrollLeft / groupScroll.clientWidth);
+        groupDots.forEach((d, i) => d.classList.toggle('active', i === idx));
+      }, 80);
+    }, {passive:true});
+    // Atidaro grupę pagal #vaikams / #jaunimui / #suaugusiems. Grupių sekcija pačiame viršuje, todėl slenkame į puslapio pradžią.
+    function openGroup(id, smooth){
+      const idx = groupSlideIds.indexOf(id);
+      if(idx < 0) return false;
+      // Karuselę perjungiame iškart, o puslapį į viršų slenkame atskirai (du lygiagretūs "smooth" slinkimai vienas kitą nutraukia)
+      groupScroll.style.scrollBehavior = 'auto';
+      groupScroll.scrollLeft = idx * groupScroll.clientWidth;
+      groupScroll.style.scrollBehavior = '';
+      window.scrollTo({top:0, behavior: smooth ? 'smooth' : 'instant'});
       groupDots.forEach((d, i) => d.classList.toggle('active', i === idx));
-    }, 80);
-  }, {passive:true});
-
-  // open directly on the right group if the URL has #vaikams / #jaunimui / #suaugusiems
-  // Atidaro grupę pagal #vaikams / #jaunimui / #suaugusiems. Grupių sekcija yra pačiame viršuje,
-  // todėl slenkame į puslapio pradžią - kad matytųsi ir pavadinimas "Kam ieškote treniruočių?".
-  function openGroup(id, smooth){
-    const idx = groupSlideIds.indexOf(id);
-    if(idx < 0) return false;
-    // Karuselę perjungiame iškart, o puslapį į viršų slenkame atskirai (du lygiagretūs "smooth" slinkimai vienas kitą nutraukia)
-    groupScroll.style.scrollBehavior = 'auto';
-    groupScroll.scrollLeft = idx * groupScroll.clientWidth;
-    groupScroll.style.scrollBehavior = '';
-    window.scrollTo({top:0, behavior: smooth ? 'smooth' : 'instant'});
-    groupDots.forEach((d, i) => d.classList.toggle('active', i === idx));
-    return true;
-  }
-  function openGroupFromHash(){
-    const id = window.location.hash.replace('#','');
-    if(id === 'grupes'){ window.scrollTo({top:0, behavior:'instant'}); return; }
-    openGroup(id, false);
-  }
-  // Meniu "Treniruotės" - į puslapio viršų, kur "Kam ieškote treniruočių?"
-  document.querySelectorAll('a[href="#grupes"]').forEach(a => a.addEventListener('click', (e) => {
-    e.preventDefault();
-    history.replaceState(null, '', '#grupes');
-    window.scrollTo({top:0, behavior:'smooth'});
-  }));
-  window.addEventListener('load', openGroupFromHash);
-  window.addEventListener('hashchange', openGroupFromHash);
-  // Meniu nuorodos į grupes veikia ir tada, kai adreso #... nesikeičia (pvz. du kartus iš eilės ta pati grupė)
-  document.querySelectorAll('a[href="#vaikams"], a[href="#jaunimui"], a[href="#suaugusiems"]').forEach(a => {
-    a.addEventListener('click', (e) => {
-      const id = a.getAttribute('href').slice(1);
-      if(openGroup(id, true)){ e.preventDefault(); history.replaceState(null, '', '#' + id); }
-    });
-  });
-
-  // location accordions - opening one closes its siblings, keeps the card height predictable
-  document.querySelectorAll('.loc-accordion').forEach(group => {
-    const items = group.querySelectorAll('details.loc-group');
-    items.forEach(d => {
-      d.addEventListener('toggle', () => {
-        if (d.open) {
-          items.forEach(other => { if (other !== d) other.open = false; });
-        }
-      });
-    });
-  });
-
-  // vaikams schedule picker - click a location, its schedule appears in the panel on the right
-  const schedulePanel = document.getElementById('vaikamsSchedulePanel');
-  if (schedulePanel) {
-    const allLocationItems = document.querySelectorAll('.picker-locations li[data-schedule]');
-    allLocationItems.forEach(li => {
-      li.addEventListener('click', () => {
-        allLocationItems.forEach(other => other.classList.remove('active'));
-        li.classList.add('active');
-        schedulePanel.innerHTML =
-          '<div class="kicker">Tvarkaraštis</div>' +
-          '<div class="schedule-name">' + li.dataset.name + '</div>' +
-          li.dataset.schedule;
+      return true;
+    }
+    function openGroupFromHash(){
+      const id = window.location.hash.replace('#','');
+      if(id === 'grupes'){ window.scrollTo({top:0, behavior:'instant'}); return; }
+      openGroup(id, false);
+    }
+    // Meniu "Treniruotės" - į puslapio viršų, kur "Kam ieškote treniruočių?"
+    document.querySelectorAll('a[href="#grupes"]').forEach(a => a.addEventListener('click', (e) => {
+      e.preventDefault();
+      history.replaceState(null, '', '#grupes');
+      window.scrollTo({top:0, behavior:'smooth'});
+    }));
+    window.addEventListener('load', openGroupFromHash);
+    window.addEventListener('hashchange', openGroupFromHash);
+    // Meniu nuorodos į grupes veikia ir tada, kai adreso #... nesikeičia (pvz. du kartus iš eilės ta pati grupė)
+    document.querySelectorAll('a[href="#vaikams"], a[href="#jaunimui"], a[href="#suaugusiems"]').forEach(a => {
+      a.addEventListener('click', (e) => {
+        const id = a.getAttribute('href').slice(1);
+        if(openGroup(id, true)){ e.preventDefault(); history.replaceState(null, '', '#' + id); }
       });
     });
   }
 
-  // birth-year dropdown - filled here so the range lives in one place
+  // Vietų sąrašas: atidarius vieną grupę, kitos užsidaro (sąrašas gali būti atnaujintas redaguojant - todėl per document)
+  document.addEventListener('toggle', (ev) => {
+    const d = ev.target;
+    if (!d.matches || !d.matches('.loc-accordion details.loc-group') || !d.open) return;
+    d.closest('.loc-accordion').querySelectorAll('details.loc-group').forEach(other => { if (other !== d) other.open = false; });
+  }, true);
+
+  // Vaikams: paspaudus vietą, jos tvarkaraštis rodomas dešinėje
+  document.addEventListener('click', (ev) => {
+    const li = ev.target.closest('.picker-locations li[data-schedule]');
+    const panel = document.getElementById('vaikamsSchedulePanel');
+    if (!li || !panel) return;
+    document.querySelectorAll('.picker-locations li[data-schedule]').forEach(other => other.classList.remove('active'));
+    li.classList.add('active');
+    panel.innerHTML = '<div class="kicker">Tvarkaraštis</div><div class="schedule-name"></div>' + li.dataset.schedule;
+    panel.querySelector('.schedule-name').textContent = li.dataset.name;
+  });
+
+  // Gimimo metai - užpildoma čia, kad intervalas būtų vienoje vietoje
   const yearSelect = document.getElementById('gimimoMetai');
   if (yearSelect) {
     const YEAR_NEWEST = new Date().getFullYear();
@@ -943,10 +748,10 @@ require __DIR__ . '/app/bootstrap.php';
     });
   }
 
-  // registration form -> sends to uzklausa.php (see accompanying file), falls back to a clear error if it can't reach it
+  // Registracijos forma -> uzklausa.php; nepavykus - aiški klaida
   const regForm = document.getElementById('registrationForm');
   const formStatus = document.getElementById('formStatus');
-  regForm.addEventListener('submit', async (e)=>{
+  if (regForm && !document.body.classList.contains('home-edit')) regForm.addEventListener('submit', async (e)=>{
     e.preventDefault();
     formStatus.textContent = 'Siunčiama...';
     formStatus.className = 'form-status';
