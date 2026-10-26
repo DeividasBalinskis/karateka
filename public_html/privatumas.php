@@ -10,7 +10,7 @@ page_start('Privatumo politika', ['description' => 'Kaip VšĮ Karate Ateitis tv
   <p class="muted small">Atnaujinta: <span class="todo">[data]</span></p>
 
   <h2>1. Kas mes</h2>
-  <p>Jūsų asmens duomenis tvarko <strong>VšĮ Karate Ateitis</strong> (įmonės kodas 305105392, <span class="todo">[registracijos adresas]</span>, Vilnius).
+  <p>Jūsų asmens duomenis tvarko <strong>VšĮ Karate Ateitis</strong> (įmonės kodas 305105392, Girulių g. 5, Vilnius).
      Kontaktai: <a href="mailto:info@karateka.lt">info@karateka.lt</a>, +370 601 44392.</p>
 
   <h2>2. Kokius duomenis renkame ir kodėl</h2>
@@ -18,22 +18,27 @@ page_start('Privatumo politika', ['description' => 'Kaip VšĮ Karate Ateitis tv
   <p>Renkame vardą, pavardę, el. paštą, telefoną, treniruočių vietą, gimimo metus ir jūsų žinutę. Užklausa ateina klubui el. laišku.
      Ją naudojame tik tam, kad susisiektume ir suderintume treniruotę. Pagrindas - jūsų prašymas prieš sudarant sutartį.</p>
 
+  <h3>Narystės sutartis</h3>
+  <p>Ją tėvai (ar suaugęs narys) pasirašo elektroniniu parašu per Edufi. Sutartyje yra nario vardas, pavardė ir gimimo data, tėvų (globėjų) vardas, pavardė, telefonas ir el. paštas.
+     Šiuo el. paštu siunčiame informaciją apie treniruotes, renginius ir tvarkaraščio pakeitimus.
+     Klubui taip pat pateikiate gydytojo pažymą, kad narys gali sportuoti, į svetainę ji nekeliama. Pagrindas - narystės sutartis.</p>
+
   <h3>Narių paskyros</h3>
   <ul>
     <li><strong>Paskyra:</strong> vardas, pavardė, el. paštas, telefonas ir slaptažodis (saugomas tik užšifruotas, jo nematome).</li>
     <li><strong>Narys:</strong> vardas, pavardė, gimimo data, lytis, grupė ir diržas.</li>
     <li><strong>Klubo veikla:</strong> lankomumas, dalyvavimas renginiuose, egzaminų ir varžybų rezultatai, taškai, testų rezultatai.</li>
     <li><strong>Trenerio pastabos, užduotys ir žinutės</strong> tarp nario (ar tėvų) ir trenerių.</li>
-    <li><strong>Sutikimai:</strong> dėl nuotraukų, tėvų sutikimas ir kada jie duoti.</li>
+    <li><strong>Sutikimai:</strong> ar atsisakyta nuotraukų skelbimo, tėvų patvirtinimas vaiko paskyrai ir kada tai padaryta.</li>
     <li><strong>Reakcijos</strong> į naujienas.</li>
   </ul>
   <p>Šiuos duomenis naudojame narystės administravimui. Pagal juos priskiriame grupę, rodome tvarkaraštį, ruošiame egzaminams ir varžyboms, skaičiuojame taškus.
      Taip pat siunčiame pranešimus apie treniruotes ir renginius el. paštu, vėliau galbūt ir SMS. Pagrindas - narystė klube.</p>
 
   <h3>Nuotraukos ir vaizdo įrašai</h3>
-  <p>Treniruočių ir renginių nuotraukas bei vaizdo įrašus svetainėje ir klubo socialiniuose tinkluose skelbiame <strong>tik tų narių, kurie davė sutikimą</strong>.
-     Už vaikus iki 14 m. sutikimą duoda tėvai. Sutikimą galite bet kada atšaukti paskyroje arba parašę mums.
-     Tada naujų nuotraukų neskelbsime, o paprašius pašalinsime ir jau paskelbtas mūsų kanaluose.</p>
+  <p>Pasirašydami narystės sutartį sutinkate, kad treniruočių ir renginių nuotraukos bei vaizdo įrašai būtų skelbiami klubo svetainėje ir socialiniuose tinkluose - tik klubo pristatymui.
+     <strong>Šio sutikimo galite bet kada atsisakyti savo paskyroje</strong> arba parašę mums.
+     Tada naujų nuotraukų neskelbsime, o paprašius pašalinsime ir jau paskelbtas mūsų kanaluose. Treneriai mato, kurie nariai atsisakė.</p>
 
   <h2>3. Vaikų duomenys</h2>
   <p>Vaiko iki 14 metų paskyra aktyvuojama tik gavus tėvų ar globėjų sutikimą el. paštu. Lietuvoje savarankiškai sutikimą vaikas gali duoti nuo 14 metų.
@@ -46,7 +51,7 @@ page_start('Privatumo politika', ['description' => 'Kaip VšĮ Karate Ateitis tv
     <li><strong>Varžybų sistema.</strong> Registruojant į varžybas jai perduodame vardą, pavardę, gimimo datą, lytį, diržą ir klubą. Pagal juos parenkama kategorija.
         Varžybų lentelėse ir rezultatuose viešai rodomas dalyvio vardas, pavardė, klubas ir kategorija, kaip įprasta varžybose.
         <span class="todo">[kas tvarko varžybų sistemą - tik klubas, ar ir federacija bei kiti klubai]</span></li>
-    <li><strong>Paslaugų teikėjai.</strong> Svetainę ir el. paštą talpina domenai.lt (Lietuva). SMS siuntimo teikėjas <span class="todo">[dar nepasirinktas - kol kas SMS nesiunčiamos]</span>.
+    <li><strong>Paslaugų teikėjai.</strong> Svetainę ir el. paštą talpina domenai.lt (Lietuva). Narystės sutartys pasirašomos per Edufi. SMS siuntimo teikėjas <span class="todo">[dar nepasirinktas - kol kas SMS nesiunčiamos]</span>.
         Jie duomenų nenaudoja savo tikslais.</li>
   </ul>
   <p>Duomenų neparduodame ir neperduodame reklamos tikslais.</p>
@@ -54,6 +59,7 @@ page_start('Privatumo politika', ['description' => 'Kaip VšĮ Karate Ateitis tv
   <h2>5. Kiek laiko saugome</h2>
   <ul>
     <li>Paskyros ir nario duomenis - kol esate narys, ir <span class="todo">[pvz. 1 metus]</span> po narystės pabaigos. Vėliau ištriname.</li>
+    <li>Narystės sutartis ir sveikatos pažymas - <span class="todo">[kiek laiko]</span>.</li>
     <li>Bandomosios treniruotės užklausas (el. laiškus) - <span class="todo">[pvz. 6 mėnesius]</span>, jei narystė neprasideda.</li>
     <li>Nebaigtas registracijas (nepatvirtintas el. paštas ar negautas tėvų sutikimas) - <?= (int) config('retention.unfinished_days', 30) ?> dienų. Vėliau jos ištrinamos automatiškai.</li>
     <li>Prisijungimo bandymų įrašus (el. paštas, IP adresas) apsaugai nuo įsilaužimų - 30 dienų.</li>
