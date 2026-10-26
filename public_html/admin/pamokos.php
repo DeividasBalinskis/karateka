@@ -1,75 +1,16 @@
 <?php
 // Pamokos treneriui: aplankai aplankuose, pamokos iš blokų (tekstas, video, nuotrauka, pastaba...), tempimas pele
 require dirname(__DIR__) . '/app/bootstrap.php';
-require APP_DIR . '/images.php';
+require_once APP_DIR . '/images.php';
 $me = require_staff();
 
-$edit = (string) (get('edit') ?: post('edit'));
+// Pamoka redaguojama pačiame pamokos puslapyje (senos nuorodos ?edit=... nukreipiamos ten)
+if (($edit = (string) get('edit')) !== '') {
+    redirect($edit === 'new' ? 'pamokos.php?nauja=1' . ((int) get('aplankas') ? '&aplankas=' . (int) get('aplankas') : '') : 'pamokos.php?id=' . (int) $edit . '&keisti=1');
+}
 $folderEdit = (string) (get('folder') ?: post('folder'));
 $errors = [];
 $folders = lesson_folders();
-
-/** Formos blokai -> blokai saugojimui. Klaidos įrašomos į $errors. Grąžina ir „žalius“ duomenis formai. */
-function lesson_blocks_from_post(array &$errors): array
-{
-    $out = [];
-    foreach ((array) ($_POST['blocks'] ?? []) as $key => $b) {
-        $type = (string) ($b['type'] ?? '');
-        if (!isset(LESSON_BLOCK_TYPES[$type]) || !is_array($b)) {
-            continue;
-        }
-        $row = ['type' => $type, 'body' => null, 'youtube_id' => null, 'image' => null, 'url' => null,
-            'caption' => trim((string) ($b['caption'] ?? '')) ?: null, 'raw_url' => trim((string) ($b['url'] ?? ''))];
-        $body = trim(str_replace("\r\n", "\n", (string) ($b['body'] ?? '')));
-        switch ($type) {
-            case 'heading':
-            case 'text':
-            case 'note':
-                if ($body === '') {
-                    continue 2;
-                }
-                $row['body'] = $body;
-                break;
-            case 'video':
-                if ($row['raw_url'] === '') {
-                    continue 2;
-                }
-                $row['youtube_id'] = youtube_id($row['raw_url']);
-                if (!$row['youtube_id']) {
-                    $errors[] = 'Neatpažinta YouTube nuoroda: ' . $row['raw_url'];
-                }
-                break;
-            case 'image':
-                $existing = basename((string) ($b['image'] ?? ''));
-                $row['image'] = preg_match('/^[a-f0-9]{8,64}\.jpg$/', $existing) ? $existing : null;
-                $f = $_FILES['block_image'] ?? null;
-                if ($f && isset($f['error'][$key]) && $f['error'][$key] !== UPLOAD_ERR_NO_FILE) {
-                    try {
-                        $row['image'] = save_uploaded_image(['name' => $f['name'][$key], 'type' => $f['type'][$key], 'tmp_name' => $f['tmp_name'][$key],
-                            'error' => $f['error'][$key], 'size' => $f['size'][$key]], LESSON_DIR);
-                    } catch (RuntimeException $ex) {
-                        $errors[] = $ex->getMessage();
-                    }
-                }
-                if (!$row['image']) {
-                    continue 2;
-                }
-                break;
-            case 'link':
-                if ($row['raw_url'] === '') {
-                    continue 2;
-                }
-                if (!preg_match('~^https?://~i', $row['raw_url'])) {
-                    $errors[] = 'Nuoroda turi prasidėti http:// arba https:// - ' . $row['raw_url'];
-                }
-                $row['url'] = $row['raw_url'];
-                $row['body'] = $body !== '' ? $body : null;
-                break;
-        }
-        $out[] = $row;
-    }
-    return $out;
-}
 
 if (is_post()) {
     csrf_check();
@@ -113,16 +54,64 @@ if (is_post()) {
         exit;
     }
 
+    // Tvarka pamokų puslapyje: [tipas f|l, id, tėvinis aplankas, vieta] - tik tie sąrašai, kurie ten rodomi
+    if ($action === 'order_items') {
+        header('Content-Type: application/json; charset=utf-8');
+        $items = json_decode((string) post('items'), true);
+        $items = is_array($items) ? $items : [];
+        $parents = [];
+        foreach ($folders as $fid => $f) {
+            $parents[$fid] = $f['parent_id'] !== null ? (int) $f['parent_id'] : null;
+        }
+        foreach ($items as $r) {
+            if (($r[0] ?? '') === 'f' && isset($folders[(int) $r[1]])) {
+                $parents[(int) $r[1]] = $r[2] !== null ? (int) $r[2] : null;
+            }
+        }
+        foreach (array_keys($parents) as $fid) {
+            $seen = [];
+            for ($p = $parents[$fid]; $p !== null; $p = $parents[$p] ?? null) {
+                if ($p === $fid || isset($seen[$p]) || !isset($folders[$p])) {
+                    echo json_encode(['ok' => false, 'error' => 'Aplanko negalima įdėti į jį patį.']);
+                    exit;
+                }
+                $seen[$p] = true;
+            }
+        }
+        db()->beginTransaction();
+        foreach ($items as $r) {
+            $parent = ($r[2] ?? null) !== null ? (int) $r[2] : null;
+            if ($parent !== null && !isset($folders[$parent])) {
+                continue;
+            }
+            if (($r[0] ?? '') === 'f' && isset($folders[(int) $r[1]])) {
+                q('UPDATE lesson_folders SET parent_id = ?, sort_order = ? WHERE id = ?', [$parent, (int) $r[3], (int) $r[1]]);
+            } elseif (($r[0] ?? '') === 'l') {
+                q('UPDATE lessons SET folder_id = ?, sort_order = ? WHERE id = ?', [$parent, (int) $r[3], (int) $r[1]]);
+            }
+        }
+        db()->commit();
+        echo json_encode(['ok' => true]);
+        exit;
+    }
+
     // Greitas naujas aplankas (tik pavadinimas)
     if ($action === 'folder_quick') {
         $title = trim(post('title'));
         $parent = (int) post('parent_id') ?: null;
         if ($title !== '' && ($parent === null || isset($folders[$parent]))) {
             $sort = (int) q_value('SELECT COALESCE(MAX(sort_order), 0) + 1 FROM lesson_folders WHERE parent_id <=> ?', [$parent]);
-            q('INSERT INTO lesson_folders (parent_id, title, icon, sort_order) VALUES (?, ?, ?, ?)', [$parent, mb_substr($title, 0, 120), '📁', $sort]);
+            // Diržo pavadinimo aplankas (pvz. „8 kyu“) iš karto gauna tą diržą
+            $belt = null;
+            foreach (BELTS as $lvl => [$kyu]) {
+                if (mb_strtolower($title) === $kyu) {
+                    $belt = $lvl;
+                }
+            }
+            q('INSERT INTO lesson_folders (parent_id, title, icon, belt_level, sort_order) VALUES (?, ?, ?, ?, ?)', [$parent, mb_substr($title, 0, 120), $belt ? '' : '📁', $belt, $sort]);
             flash('ok', 'Aplankas „' . $title . '“ sukurtas. Pamokas į jį galima nutempti pele.');
         }
-        redirect('admin/pamokos.php');
+        redirect(lessons_back('admin/pamokos.php'));
     }
 
     if ($action === 'folder_save') {
@@ -131,6 +120,7 @@ if (is_post()) {
         $parent = (int) post('parent_id') ?: null;
         $audience = isset(QUIZ_AUDIENCE[post('audience')]) ? post('audience') : 'karateka';
         $icon = mb_substr(trim(post('icon')), 0, 8) ?: null;
+        $belt = belt_from_post('belt_level');
         if ($title === '') {
             $errors[] = 'Įveskite aplanko pavadinimą.';
         }
@@ -138,16 +128,20 @@ if (is_post()) {
             $errors[] = 'Aplanko negalima įdėti į jį patį.';
         }
         if (!$errors) {
-            $vals = [$parent, mb_substr($title, 0, 120), $icon, post('description') ?: null, $audience, !empty($_POST['is_published']) ? 1 : 0];
+            $vals = [$parent, mb_substr($title, 0, 120), $icon, post('description') ?: null, $audience, $belt, !empty($_POST['is_published']) ? 1 : 0];
             if ($id) {
                 $moved = isset($folders[$id]) && $folders[$id]['parent_id'] != $parent;
-                q('UPDATE lesson_folders SET parent_id = ?, title = ?, icon = ?, description = ?, audience = ?, is_published = ?' . ($moved ? ', sort_order = 9999' : '') . ' WHERE id = ?', array_merge($vals, [$id]));
+                q('UPDATE lesson_folders SET parent_id = ?, title = ?, icon = ?, description = ?, audience = ?, belt_level = ?, is_published = ?' . ($moved ? ', sort_order = 9999' : '') . ' WHERE id = ?', array_merge($vals, [$id]));
             } else {
                 $sort = (int) q_value('SELECT COALESCE(MAX(sort_order), 0) + 1 FROM lesson_folders WHERE parent_id <=> ?', [$parent]);
-                q('INSERT INTO lesson_folders (parent_id, title, icon, description, audience, is_published, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?)', array_merge($vals, [$sort]));
+                q('INSERT INTO lesson_folders (parent_id, title, icon, description, audience, belt_level, is_published, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', array_merge($vals, [$sort]));
             }
             flash('ok', 'Aplankas išsaugotas.');
-            redirect('admin/pamokos.php');
+            redirect(lessons_back('admin/pamokos.php'));
+        }
+        if (post('back') !== '') {
+            flash('err', implode(' ', $errors));
+            redirect(lessons_back('admin/pamokos.php'));
         }
     }
 
@@ -160,7 +154,9 @@ if (is_post()) {
         q('DELETE FROM lesson_folders WHERE id = ?', [$id]);
         db()->commit();
         flash('ok', 'Aplankas ištrintas, jo turinys perkeltas lygiu aukščiau.');
-        redirect('admin/pamokos.php');
+        // Ištrintas aplankas, kuriame buvome - grįžtame lygiu aukščiau
+        $back = lessons_back('admin/pamokos.php');
+        redirect(preg_match('~aplankas=' . $id . '(&|$)~', $back) ? 'pamokos.php' . ($up ? '?aplankas=' . $up . '&' : '?') . 'tvarkyti=1' : $back);
     }
 
     if ($action === 'lesson_copy' && ($id = (int) post('id')) && ($src = q_one('SELECT * FROM lessons WHERE id = ?', [$id]))) {
@@ -174,7 +170,7 @@ if (is_post()) {
         q('INSERT INTO lesson_groups (lesson_id, group_id) SELECT ?, group_id FROM lesson_groups WHERE lesson_id = ?', [$new, $id]);
         db()->commit();
         flash('ok', 'Sukurta kopija (nepaskelbta). Pakeiskite ir paskelbkite.');
-        redirect('admin/pamokos.php?edit=' . $new);
+        redirect('pamokos.php?id=' . $new . '&keisti=1');
     }
 
     // Pamoką su komentaru nusiųsti pasirinktiems nariams (kiekvienam - trenerio pastaba su prisegta pamoka)
@@ -203,51 +199,9 @@ if (is_post()) {
     if ($action === 'delete' && ($id = (int) post('id'))) {
         q('DELETE FROM lessons WHERE id = ?', [$id]);
         flash('ok', 'Pamoka ištrinta.');
-        redirect('admin/pamokos.php');
+        redirect(lessons_back('admin/pamokos.php'));
     }
 
-    // Pamokos išsaugojimas
-    if ($action === 'lesson_save') {
-        $id = (int) post('id');
-        $title = trim(post('title'));
-        $folderId = (int) post('folder_id') ?: null;
-        $belt = belt_from_post('belt_level');
-        $audience = isset(QUIZ_AUDIENCE[post('audience')]) ? post('audience') : 'karateka';
-        $published = !empty($_POST['is_published']) ? 1 : 0;
-        $groupIds = $audience === 'karateka' ? audience_from_post() : [];
-        $blocks = $postedBlocks = lesson_blocks_from_post($errors);
-        if ($title === '') {
-            $errors[] = 'Įveskite pamokos pavadinimą.';
-        }
-        if ($folderId !== null && !isset($folders[$folderId])) {
-            $folderId = null;
-        }
-        if (!$blocks && $published) {
-            $errors[] = 'Pamokoje dar nieko nėra - pridėkite tekstą, video ar nuotrauką (arba išsaugokite nepaskelbtą).';
-        }
-        if (!$errors) {
-            db()->beginTransaction();
-            if ($id) {
-                $old = q_one('SELECT folder_id FROM lessons WHERE id = ?', [$id]);
-                $moved = $old && $old['folder_id'] != $folderId;
-                q('UPDATE lessons SET title = ?, folder_id = ?, belt_level = ?, audience = ?, is_published = ?, updated_at = NOW()' . ($moved ? ', sort_order = 9999' : '') . ' WHERE id = ?',
-                    [mb_substr($title, 0, 190), $folderId, $belt, $audience, $published, $id]);
-                q('DELETE FROM lesson_groups WHERE lesson_id = ?', [$id]);
-            } else {
-                $sort = (int) q_value('SELECT COALESCE(MAX(sort_order), 0) + 1 FROM lessons WHERE folder_id <=> ?', [$folderId]);
-                q('INSERT INTO lessons (folder_id, sort_order, title, belt_level, audience, is_published, author_id) VALUES (?, ?, ?, ?, ?, ?, ?)',
-                    [$folderId, $sort, mb_substr($title, 0, 190), $belt, $audience, $published, $me['id']]);
-                $id = (int) db()->lastInsertId();
-            }
-            foreach ($groupIds as $gid) {
-                q('INSERT IGNORE INTO lesson_groups (lesson_id, group_id) VALUES (?, ?)', [$id, $gid]);
-            }
-            save_lesson_blocks($id, $blocks);
-            db()->commit();
-            flash('ok', $published ? 'Pamoka išsaugota ir paskelbta.' : 'Pamoka išsaugota (nepaskelbta - nariai jos nemato).');
-            redirect(post('after') === 'stay' ? 'admin/pamokos.php?edit=' . $id : 'admin/pamokos.php#l' . $id);
-        }
-    }
 }
 
 $folders = lesson_folders();
@@ -289,14 +243,14 @@ if ($sendId = (int) get('siusti')) {
 // ---------- Aplanko forma ----------
 if ($folderEdit !== '') {
     $f = $folderEdit === 'new'
-        ? ['id' => 0, 'parent_id' => (int) get('parent') ?: null, 'title' => '', 'icon' => '📁', 'description' => '', 'audience' => 'karateka', 'is_published' => 1]
+        ? ['id' => 0, 'parent_id' => (int) get('parent') ?: null, 'title' => '', 'icon' => '📁', 'description' => '', 'audience' => 'karateka', 'belt_level' => null, 'is_published' => 1]
         : ($folders[(int) $folderEdit] ?? null);
     if (!$f) {
         not_found();
     }
     if ($errors) {
         $f = array_merge($f, ['parent_id' => (int) post('parent_id') ?: null, 'title' => post('title'), 'icon' => post('icon'), 'description' => post('description'),
-            'audience' => post('audience'), 'is_published' => !empty($_POST['is_published'])]);
+            'audience' => post('audience'), 'belt_level' => belt_from_post('belt_level'), 'is_published' => !empty($_POST['is_published'])]);
     }
     $exclude = $f['id'] ? folder_descendant_ids($folders, (int) $f['id']) : [];
     page_start($f['id'] ? 'Aplankas: ' . $f['title'] : 'Naujas aplankas', ['admin' => true, 'section' => 'pamokos']);
@@ -313,8 +267,10 @@ if ($folderEdit !== '') {
       </div>
       <label>Ženkliukas
         <input type="text" name="icon" id="folderIcon" value="<?= e((string) $f['icon']) ?>" maxlength="8" style="max-width:90px;">
-        <span class="icon-pick"><?php foreach (FOLDER_ICONS as $ic): ?><button type="button" data-icon="<?= $ic ?>"><?= $ic ?></button><?php endforeach; ?></span>
+        <?= icon_picker('folderIcon', $f['icon']) ?>
       </label>
+      <label>Diržas <span class="hint">pvz. Egzaminams → „8 kyu“: narys iš karto mato tik savo diržo aplanką</span>
+        <select name="belt_level" style="max-width:320px;"><?= belt_options($f['belt_level'] !== null ? (int) $f['belt_level'] : null, 'Visiems diržams') ?></select></label>
       <label>Aprašymas <span class="hint">nebūtina; rodomas aplanko viršuje</span>
         <textarea name="description" rows="3"><?= e((string) $f['description']) ?></textarea></label>
       <div class="seg-choice">
@@ -332,171 +288,9 @@ if ($folderEdit !== '') {
       </div>
     </form>
     <script>
-    document.querySelectorAll('.icon-pick button').forEach(function (b) {
-      b.addEventListener('click', function () { document.getElementById('folderIcon').value = b.dataset.icon; });
+    document.querySelectorAll('.icon-pick').forEach(function (p) {
+      p.addEventListener('click', function (ev) { var b = ev.target.closest('button'); if (b) { document.getElementById(p.dataset.for).value = b.dataset.icon; p.querySelector('.icon-now').innerHTML = b.innerHTML; } });
     });
-    </script>
-    <?php
-    page_end();
-    exit;
-}
-
-// ---------- Pamokos redaktorius ----------
-if ($edit !== '') {
-    $l = $edit === 'new'
-        ? ['id' => 0, 'folder_id' => (int) get('aplankas') ?: null, 'title' => '', 'belt_level' => null, 'audience' => 'karateka', 'body' => '', 'videos' => '', 'is_published' => 1]
-        : q_one('SELECT * FROM lessons WHERE id = ?', [(int) $edit]);
-    if (!$l) {
-        not_found();
-    }
-    $selectedGroups = $l['id'] ? array_map('intval', q('SELECT group_id FROM lesson_groups WHERE lesson_id = ?', [$l['id']])->fetchAll(PDO::FETCH_COLUMN)) : [];
-    $blocks = lesson_blocks($l);
-    if ($errors) {
-        $l = array_merge($l, ['title' => post('title'), 'folder_id' => (int) post('folder_id') ?: null, 'belt_level' => belt_from_post('belt_level'),
-            'audience' => post('audience'), 'is_published' => !empty($_POST['is_published'])]);
-        $selectedGroups = array_map('intval', (array) ($_POST['groups'] ?? []));
-        $blocks = $postedBlocks ?? $blocks;
-    }
-    if (!$blocks && !$l['id']) {
-        $blocks = [['type' => 'text', 'body' => '']];
-    }
-
-    $blockHtml = function (array $b, string $key): string {
-        [$label, $sign] = LESSON_BLOCK_TYPES[$b['type']];
-        $n = 'blocks[' . $key . ']';
-        $h = '<div class="lblock lb-' . $b['type'] . '" data-key="' . e($key) . '">'
-            . '<div class="lblock-head"><span class="lb-drag" title="Tempkite">⠿</span><span class="lb-sign">' . $sign . '</span><strong>' . e($label) . '</strong>'
-            . '<span class="lblock-tools"><button type="button" class="lb-up" title="Aukštyn">↑</button><button type="button" class="lb-down" title="Žemyn">↓</button>'
-            . '<button type="button" class="lb-del" title="Pašalinti">✕</button></span></div>'
-            . '<input type="hidden" name="' . $n . '[type]" value="' . $b['type'] . '">';
-        $body = e((string) ($b['body'] ?? ''));
-        switch ($b['type']) {
-            case 'heading':
-                $h .= '<input type="text" name="' . $n . '[body]" value="' . $body . '" placeholder="pvz. Pagrindiniai judesiai" maxlength="190">';
-                break;
-            case 'text':
-            case 'note':
-                $h .= '<div class="lb-toolbar"><button type="button" data-fmt="bold"><b>B</b> paryškinti</button><button type="button" data-fmt="list">• sąrašas</button><button type="button" data-fmt="num">1. sąrašas</button></div>'
-                    . '<textarea name="' . $n . '[body]" rows="' . ($b['type'] === 'note' ? 3 : 6) . '" placeholder="' . ($b['type'] === 'note' ? 'pvz. Atkreipkite dėmesį į kvėpavimą' : 'Tekstas. Tuščia eilutė - nauja pastraipa.') . '">' . $body . '</textarea>';
-                break;
-            case 'video':
-                $url = $b['raw_url'] ?? (!empty($b['youtube_id']) ? 'https://youtu.be/' . $b['youtube_id'] : '');
-                $h .= '<div class="lb-media"><div class="lb-fields"><input type="text" class="lb-yt" name="' . $n . '[url]" value="' . e($url) . '" placeholder="YouTube nuoroda, pvz. https://youtu.be/...">'
-                    . '<input type="text" name="' . $n . '[caption]" value="' . e((string) ($b['caption'] ?? '')) . '" placeholder="Prierašas po video (nebūtina)" maxlength="255"></div>'
-                    . '<img class="lb-preview" alt="" ' . (!empty($b['youtube_id']) ? 'src="https://i.ytimg.com/vi/' . e($b['youtube_id']) . '/mqdefault.jpg"' : 'hidden') . '></div>';
-                break;
-            case 'image':
-                $h .= '<div class="lb-media"><div class="lb-fields"><input type="file" name="block_image[' . e($key) . ']" accept="image/jpeg,image/png,image/webp">'
-                    . '<input type="hidden" name="' . $n . '[image]" value="' . e((string) ($b['image'] ?? '')) . '">'
-                    . '<input type="text" name="' . $n . '[caption]" value="' . e((string) ($b['caption'] ?? '')) . '" placeholder="Prierašas po nuotrauka (nebūtina)" maxlength="255"></div>'
-                    . '<img class="lb-preview" alt="" ' . (!empty($b['image']) ? 'src="' . e(lesson_image_url($b['image'], true)) . '"' : 'hidden') . '></div>';
-                break;
-            case 'link':
-                $h .= '<div class="form-row"><input type="text" name="' . $n . '[url]" value="' . e($b['raw_url'] ?? (string) ($b['url'] ?? '')) . '" placeholder="https://...">'
-                    . '<input type="text" name="' . $n . '[body]" value="' . $body . '" placeholder="Nuorodos tekstas, pvz. WKF taisyklės (PDF)"></div>';
-                break;
-        }
-        return $h . '</div>';
-    };
-
-    $allGroups = q_all('SELECT * FROM training_groups WHERE is_active = 1 ORDER BY sort_order, name');
-    page_start($l['id'] ? 'Redaguoti pamoką' : 'Nauja pamoka', ['admin' => true, 'section' => 'pamokos']);
-    ?>
-    <a class="small" href="<?= url('admin/pamokos.php') ?>">← Pamokų tvarkymas</a>
-    <?= form_errors($errors) ?>
-    <form method="post" class="form lesson-editor" enctype="multipart/form-data" id="lessonForm">
-      <?= csrf_field() ?>
-      <input type="hidden" name="action" value="lesson_save">
-      <input type="hidden" name="id" value="<?= (int) $l['id'] ?>">
-      <input type="hidden" name="edit" value="<?= e($edit) ?>">
-      <input type="text" class="lesson-title-input" name="title" value="<?= e($l['title']) ?>" maxlength="190" required placeholder="Pamokos pavadinimas, pvz. Heian Shodan">
-      <div class="lesson-editor-grid">
-        <div>
-          <div id="blocks">
-            <?php foreach ($blocks as $i => $b): ?><?= $blockHtml($b, 'b' . $i) ?><?php endforeach; ?>
-          </div>
-          <div class="lb-add">
-            <span class="small muted">Pridėti:</span>
-            <?php foreach (LESSON_BLOCK_TYPES as $t => [$label, $sign]): ?>
-              <button type="button" class="btn btn-ghost btn-sm" data-add="<?= $t ?>"><?= $sign ?> <?= e($label) ?></button>
-            <?php endforeach; ?>
-          </div>
-          <?php foreach (LESSON_BLOCK_TYPES as $t => $x): ?>
-            <template id="tpl-<?= $t ?>"><?= $blockHtml(['type' => $t], '__K__') ?></template>
-          <?php endforeach; ?>
-        </div>
-        <aside class="panel card lesson-settings">
-          <label>Aplankas <select name="folder_id"><?= folder_options($folders, $l['folder_id'] !== null ? (int) $l['folder_id'] : null) ?></select></label>
-          <label>Diržas <span class="hint">narys mato savo, žemesnių ir kito diržo pamokas</span>
-            <select name="belt_level"><?= belt_options($l['belt_level'] !== null ? (int) $l['belt_level'] : null, 'Visiems diržams') ?></select></label>
-          <label class="check"><input type="checkbox" name="is_published" value="1" <?= $l['is_published'] ? 'checked' : '' ?>><span>Paskelbta (nariai mato)</span></label>
-          <div class="kicker" style="margin-top:6px;">Kam skirta?</div>
-          <div class="seg-choice">
-            <?php foreach (QUIZ_AUDIENCE as $k => $label): ?>
-              <label class="check"><input type="radio" name="audience" value="<?= $k ?>" <?= ($l['audience'] ?? 'karateka') === $k ? 'checked' : '' ?>><span><?= e($label) ?></span></label>
-            <?php endforeach; ?>
-          </div>
-          <div id="lessonGroups"><?= audience_field($selectedGroups) ?></div>
-        </aside>
-      </div>
-      <div class="sticky-save lesson-save">
-        <button class="btn btn-primary" type="submit">Išsaugoti</button>
-        <button class="btn btn-ghost" type="submit" name="after" value="stay">Išsaugoti ir likti</button>
-        <?php if ($l['id']): ?>
-          <a class="btn btn-ghost" href="<?= url('pamokos.php?id=' . (int) $l['id']) ?>" target="_blank">👁 Peržiūrėti</a>
-        <?php endif; ?>
-      </div>
-    </form>
-    <?php if ($l['id']): ?>
-      <div class="row lesson-extra">
-        <a class="btn btn-ghost btn-sm" href="<?= url('admin/pamokos.php?siusti=' . (int) $l['id']) ?>">📨 Siųsti nariams</a>
-        <form method="post"><?= csrf_field() ?><input type="hidden" name="id" value="<?= (int) $l['id'] ?>"><button class="btn btn-ghost btn-sm" name="action" value="lesson_copy">⧉ Kopijuoti pamoką</button></form>
-        <form method="post" onsubmit="return confirm('Ištrinti pamoką visam laikui?')"><?= csrf_field() ?><input type="hidden" name="id" value="<?= (int) $l['id'] ?>"><button class="btn btn-danger btn-sm" name="action" value="delete">Ištrinti pamoką</button></form>
-      </div>
-    <?php endif; ?>
-    <script src="<?= e(asset_url('assets/vendor/sortable.min.js')) ?>"></script>
-    <script>
-    (function () {
-      var box = document.getElementById('blocks'), form = document.getElementById('lessonForm'), n = 0, dirty = false;
-      function ytId(u) { var m = String(u).match(/(?:youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|live\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/) || String(u).trim().match(/^([A-Za-z0-9_-]{11})$/); return m ? m[1] : null; }
-      function wire(el) {
-        el.querySelector('.lb-up').onclick = function () { if (el.previousElementSibling) { box.insertBefore(el, el.previousElementSibling); dirty = true; } };
-        el.querySelector('.lb-down').onclick = function () { if (el.nextElementSibling) { box.insertBefore(el.nextElementSibling, el); dirty = true; } };
-        el.querySelector('.lb-del').onclick = function () {
-          var filled = Array.prototype.some.call(el.querySelectorAll('textarea, input[type=text], input[type=hidden][name$="[image]"]'), function (i) { return i.value.trim() !== ''; });
-          if (!filled || confirm('Pašalinti šį bloką?')) { el.remove(); dirty = true; }
-        };
-        var yt = el.querySelector('.lb-yt');
-        if (yt) yt.addEventListener('input', function () { var id = ytId(yt.value), img = el.querySelector('.lb-preview'); if (id) { img.src = 'https://i.ytimg.com/vi/' + id + '/mqdefault.jpg'; img.hidden = false; } else { img.hidden = true; } });
-        var file = el.querySelector('input[type=file]');
-        if (file) file.addEventListener('change', function () { var img = el.querySelector('.lb-preview'); if (file.files[0]) { img.src = URL.createObjectURL(file.files[0]); img.hidden = false; } });
-        el.querySelectorAll('[data-fmt]').forEach(function (b) {
-          b.onclick = function () {
-            var ta = el.querySelector('textarea'), s = ta.selectionStart, e = ta.selectionEnd, v = ta.value, sel = v.slice(s, e), out;
-            if (b.dataset.fmt === 'bold') { out = '**' + (sel || 'tekstas') + '**'; }
-            else { var k = 0; out = (sel || 'punktas').split('\n').map(function (line) { k++; return (b.dataset.fmt === 'num' ? k + '. ' : '- ') + line.replace(/^\s*([-•*]|\d+[.)])\s+/, ''); }).join('\n'); }
-            ta.value = v.slice(0, s) + out + v.slice(e); ta.focus(); ta.selectionStart = s; ta.selectionEnd = s + out.length; dirty = true;
-          };
-        });
-      }
-      box.querySelectorAll('.lblock').forEach(wire);
-      document.querySelectorAll('[data-add]').forEach(function (b) {
-        b.addEventListener('click', function () {
-          var tpl = document.getElementById('tpl-' + b.dataset.add).innerHTML.replace(/__K__/g, 'n' + (++n) + Date.now());
-          var wrap = document.createElement('div'); wrap.innerHTML = tpl; var el = wrap.firstElementChild;
-          box.appendChild(el); wire(el); dirty = true;
-          var f = el.querySelector('textarea, input[type=text], input[type=file]'); if (f) f.focus();
-        });
-      });
-      if (window.Sortable) Sortable.create(box, { handle: '.lb-drag', animation: 150, forceFallback: true, onEnd: function () { dirty = true; } });
-      form.addEventListener('input', function () { dirty = true; });
-      form.addEventListener('submit', function () { dirty = false; });
-      window.addEventListener('beforeunload', function (ev) { if (dirty) { ev.preventDefault(); ev.returnValue = ''; } });
-      // Teisėjų / egzaminatorių pamokoms grupės netaikomos
-      var groups = document.getElementById('lessonGroups');
-      function sync() { var v = document.querySelector('input[name=audience]:checked'); groups.hidden = v && v.value !== 'karateka'; }
-      document.querySelectorAll('input[name=audience]').forEach(function (r) { r.addEventListener('change', sync); }); sync();
-    })();
     </script>
     <?php
     page_end();
@@ -523,12 +317,13 @@ function render_lesson_tree(?int $parent, array $folders, array $byFolder, array
         $fid = (int) $f['id'];
         $html .= '<li class="lt-folder" data-type="folder" data-id="' . $fid . '" id="f' . $fid . '"><div class="lt-row">'
             . '<span class="lt-drag" title="Tempkite">⠿</span><button type="button" class="lt-toggle" aria-label="Išskleisti / suskleisti">▾</button>'
-            . '<span class="lt-icon">' . e($f['icon'] ?: '📁') . '</span>'
+            . '<span class="lt-icon">' . folder_icon($f) . '</span>'
             . '<a class="lt-title" href="?folder=' . $fid . '">' . e($f['title']) . '</a>'
             . '<span class="lt-meta">' . ($counts[$fid] ?? 0) . ' pam.</span>'
+            . ($f['belt_level'] !== null ? belt_chip((int) $f['belt_level']) : '')
             . ($f['audience'] !== 'karateka' ? '<span class="badge badge-tag">' . e(QUIZ_AUDIENCE[$f['audience']]) . '</span>' : '')
             . (!$f['is_published'] ? '<span class="badge badge-warn">nepaskelbtas</span>' : '')
-            . '<span class="lt-actions"><a class="btn btn-ghost btn-sm" href="?edit=new&amp;aplankas=' . $fid . '">+ Pamoka</a>'
+            . '<span class="lt-actions"><a class="btn btn-ghost btn-sm" href="' . e(url('pamokos.php?nauja=1&aplankas=' . $fid)) . '">+ Pamoka</a>'
             . '<a class="btn btn-ghost btn-sm" href="?folder=new&amp;parent=' . $fid . '">+ Aplankas</a>'
             . '<button type="button" class="lt-up" title="Aukštyn">↑</button><button type="button" class="lt-down" title="Žemyn">↓</button></span></div>'
             . render_lesson_tree($fid, $folders, $byFolder, $info, $counts) . '</li>';
@@ -540,14 +335,14 @@ function render_lesson_tree(?int $parent, array $folders, array $byFolder, array
             $groups ? 'tik: ' . (count($groups) > 2 ? count($groups) . ' grupėms' : implode(', ', $groups)) : '']);
         $html .= '<li class="lt-lesson" data-type="lesson" data-id="' . (int) $l['id'] . '" id="l' . (int) $l['id'] . '"><div class="lt-row">'
             . '<span class="lt-drag" title="Tempkite">⠿</span><span class="lt-icon">' . ($i['video'] ? '▶' : '📄') . '</span>'
-            . '<a class="lt-title" href="?edit=' . (int) $l['id'] . '">' . e($l['title']) . '</a>'
+            . '<a class="lt-title" href="' . e(url('pamokos.php?id=' . (int) $l['id'] . '&keisti=1')) . '">' . e($l['title']) . '</a>'
             . ($l['belt_level'] !== null ? belt_chip((int) $l['belt_level']) : '')
             . ($l['audience'] !== 'karateka' ? '<span class="badge badge-tag">' . e(QUIZ_AUDIENCE[$l['audience']]) . '</span>' : '')
             . (!$l['is_published'] ? '<span class="badge badge-warn">nepaskelbta</span>' : '')
             . ($meta ? '<span class="lt-meta">' . e(implode(' · ', $meta)) . '</span>' : '')
             . '<span class="lt-actions"><a class="btn btn-ghost btn-sm" href="?siusti=' . (int) $l['id'] . '" title="Siųsti nariams su komentaru">📨</a>'
             . '<a class="btn btn-ghost btn-sm" href="' . e(url('pamokos.php?id=' . (int) $l['id'])) . '" target="_blank" title="Peržiūrėti kaip narys">👁</a>'
-            . '<a class="btn btn-ghost btn-sm" href="?edit=' . (int) $l['id'] . '">✎ Keisti</a>'
+            . '<a class="btn btn-ghost btn-sm" href="' . e(url('pamokos.php?id=' . (int) $l['id'] . '&keisti=1')) . '">✎ Keisti</a>'
             . '<button type="button" class="lt-up" title="Aukštyn">↑</button><button type="button" class="lt-down" title="Žemyn">↓</button></span></div></li>';
     }
     return $html . '</ul>';
@@ -555,7 +350,7 @@ function render_lesson_tree(?int $parent, array $folders, array $byFolder, array
 
 page_start('Pamokų tvarkymas', ['admin' => true, 'section' => 'pamokos']);
 ?>
-<a class="small" href="<?= url('pamokos.php') ?>">← Pamokos (kaip mato nariai)</a>
+<a class="small" href="<?= url('pamokos.php') ?>">← Pamokos (kaip mato nariai)</a> · <a class="small" href="<?= url('pamokos.php?tvarkyti=1') ?>">✎ Tvarkyti pamokų puslapyje</a>
 <div class="page-head row between" style="align-items:flex-end; flex-wrap:wrap; gap:12px; margin-top:8px;">
   <div>
     <h1 class="styled">Pamokų tvarkymas</h1>
@@ -563,7 +358,7 @@ page_start('Pamokų tvarkymas', ['admin' => true, 'section' => 'pamokos']);
   </div>
   <div class="row" style="gap:8px;">
     <a class="btn btn-ghost" href="?folder=new">+ Aplankas</a>
-    <a class="btn btn-primary" href="?edit=new">+ Nauja pamoka</a>
+    <a class="btn btn-primary" href="<?= url('pamokos.php?nauja=1') ?>">+ Nauja pamoka</a>
   </div>
 </div>
 <div class="panel card lesson-tree-card">

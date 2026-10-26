@@ -69,14 +69,19 @@ function render_schedule_lines(array $lines): string
     return $html;
 }
 
-/** Aktyvios kategorijos grupės su tvarkaraščiu */
+/** Aktyvios kategorijos grupės su tvarkaraščiu (pagrindiniame puslapyje kviečiama kelis kartus - įsimenama) */
 function public_groups(string $category): array
 {
-    $groups = q_all('SELECT * FROM training_groups WHERE is_active = 1 AND category = ? ORDER BY sort_order, name', [$category]);
-    foreach ($groups as &$g) {
-        $g['slots'] = group_schedule((int) $g['id']);
+    static $cache = [];
+    if (!isset($cache[$category])) {
+        $groups = q_all('SELECT * FROM training_groups WHERE is_active = 1 AND category = ? ORDER BY sort_order, name', [$category]);
+        foreach ($groups as &$g) {
+            $g['slots'] = group_schedule((int) $g['id']);
+        }
+        unset($g);
+        $cache[$category] = $groups;
     }
-    return $groups;
+    return $cache[$category];
 }
 
 /** Jaunimui / suaugusiems: visų kategorijos grupių tvarkaraštis vienoje vietoje */
@@ -149,4 +154,61 @@ function render_trial_location_options(): string
         $html .= '</optgroup>';
     }
     return $html;
+}
+
+// ---------- Tvarkaraščio ir kainų redagavimas (tik adminui; išsaugoma iš karto per admin/tvarkarastis.php) ----------
+
+/** Viena tvarkaraščio eilutė: diena, nuo, iki, pastaba */
+function schedule_row_editor(array $s): string
+{
+    $html = '<div class="sl-row" data-id="' . (int) ($s['id'] ?? 0) . '"><select class="sl-day" aria-label="Diena">';
+    foreach (LT_WEEKDAYS as $n => $day) {
+        $html .= '<option value="' . $n . '"' . ((int) ($s['weekday'] ?? 1) === $n ? ' selected' : '') . '>' . e($day) . '</option>';
+    }
+    return $html . '</select>'
+        . '<span class="sl-time"><input type="time" class="sl-start" value="' . e($s['start_time'] ? fmt_time($s['start_time']) : '') . '" aria-label="Nuo">'
+        . '<span>–</span><input type="time" class="sl-end" value="' . e($s['end_time'] ? fmt_time($s['end_time']) : '') . '" aria-label="Iki"></span>'
+        . '<input type="text" class="sl-note" value="' . e((string) ($s['note'] ?? '')) . '" maxlength="190" placeholder="Pastaba, pvz. pažengę" aria-label="Pastaba">'
+        . '<span class="sl-state" aria-live="polite"></span>'
+        . '<button type="button" class="sl-copy" title="Kopijuoti į kitą dieną">⧉</button><button type="button" class="sl-del" title="Ištrinti laiką">✕</button></div>';
+}
+
+/** Grupių tvarkaraščiai redagavimui */
+function schedule_editor(array $groups): string
+{
+    $html = '<div class="sl-editor">';
+    foreach ($groups as $g) {
+        $html .= '<div class="sl-group" data-group="' . (int) $g['id'] . '"><div class="sl-head"><strong>' . e($g['name']) . '</strong>'
+            . ($g['location'] ? '<span class="small muted">' . e($g['location']) . '</span>' : '')
+            . (!$g['is_active'] ? '<span class="badge">neaktyvi</span>' : '') . '</div><div class="sl-rows">';
+        foreach (group_schedule((int) $g['id']) as $s) {
+            $html .= schedule_row_editor($s);
+        }
+        $html .= '</div><button type="button" class="btn btn-ghost btn-sm sl-add">+ Pridėti laiką</button></div>';
+    }
+    return $html . '<template class="sl-tpl">' . schedule_row_editor(['id' => 0, 'weekday' => 1, 'start_time' => null, 'end_time' => null, 'note' => '']) . '</template></div>'
+        . schedule_editor_script();
+}
+
+/** Redaktoriaus skriptas - vieną kartą puslapyje */
+function schedule_editor_script(): string
+{
+    static $done = false;
+    if ($done) {
+        return '';
+    }
+    $done = true;
+    return '<script>window.SCHEDULE_API = ' . json_encode(['url' => url('admin/tvarkarastis.php'), 'csrf' => csrf_token()]) . ';</script>'
+        . '<script src="' . e(asset_url('assets/schedule-editor.js')) . '"></script>';
+}
+
+/** Kategorijos kainos redagavimui (išsaugoma iš karto) */
+function price_editor(string $category): string
+{
+    $p = category_price($category);
+    return '<div class="pr-edit" data-cat="' . e($category) . '">'
+        . '<label>Kaina <input type="text" class="pr-main" value="' . e($p['price_main']) . '" placeholder="60€/mėn" maxlength="40"></label>'
+        . '<label>Sąlyga <input type="text" class="pr-note" value="' . e((string) $p['price_note']) . '" placeholder="(pasirašius metinę sutartį)" maxlength="120"></label>'
+        . '<label>Kita kaina <input type="text" class="pr-alt" value="' . e((string) $p['price_alt']) . '" placeholder="90€/mėn be sutarties" maxlength="120"></label>'
+        . '<span class="sl-state" aria-live="polite"></span></div>' . schedule_editor_script();
 }

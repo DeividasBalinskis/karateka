@@ -221,6 +221,7 @@ function admin_nav_items(): array
         'zinutes'    => ['Žinutės', 'admin/zinutes.php', staff_unread_messages()],
         'nariai'     => ['Nariai', 'admin/nariai.php'],
         'grupes'     => ['Grupės', 'admin/grupes.php'],
+        'tvarkarastis' => ['Tvarkaraštis', 'admin/tvarkarastis.php'],
         'taskai'     => ['Taškai', 'admin/taskai.php'],
     ];
     $items['varzybos'] = ['Varžybos', 'admin/varzybos.php'];   // ir kai sistema dar neprijungta - puslapis paaiškina
@@ -321,13 +322,14 @@ function site_header(bool $home = false, ?string $area = null, ?string $tab = nu
   <nav>
     <a class="logo" href="<?= $home ? '#' : url('index.php') ?>"><img src="<?= url('img/logo.png') ?>" alt="Karateka logotipas"><?php if (config('env') !== 'live'): ?><span class="ver-tag" title="Svetainės versija (rodoma tik testuojant)">v<?= e(site_version()) ?><?= config('env') === 'local' ? ' · local' : '' ?></span><?php endif; ?></a>
     <ul class="nav-list" id="navList">
-      <!-- Pagrindinio puslapio skiltys -->
+      <!-- Pagrindinio puslapio skiltys: blokai, kuriems adminas įrašė meniu pavadinimą -->
       <li class="nav-section onpage-section">
         <ul>
-          <li><a class="nav-link nl-gray" href="<?= $h ?>#grupes">Treniruotės</a></li>
-          <li><a class="nav-link nl-pink" href="<?= $h ?>#apie">Apie klubą</a></li>
-          <li><a class="nav-link nl-blue" href="<?= $h ?>#kontaktai">Kontaktai</a></li>
-          <li class="desktop-only"><a class="nav-cta" href="<?= $h ?>#registracija">2 treniruotės nemokamai</a></li>
+          <?php $cta = null; $colors = ['nl-gray', 'nl-pink', 'nl-blue']; $n = 0;
+          foreach (home_nav() as [$label, $anchor, $isCta]): if ($isCta) { $cta = [$label, $anchor]; continue; } ?>
+            <li><a class="nav-link <?= $colors[$n++ % 3] ?>" href="<?= $h . e($anchor) ?>"><?= e($label) ?></a></li>
+          <?php endforeach; ?>
+          <?php if ($cta): ?><li class="desktop-only"><a class="nav-cta" href="<?= $h . e($cta[1]) ?>"><?= e($cta[0]) ?></a></li><?php endif; ?>
         </ul>
       </li>
       <!-- Kiti puslapiai -->
@@ -356,7 +358,7 @@ function site_header(bool $home = false, ?string $area = null, ?string $tab = nu
         </ul>
       </li>
     </ul>
-    <a class="nav-cta mobile-only" href="<?= $h ?>#registracija">2 treniruotės nemokamai</a>
+    <?php if ($cta): ?><a class="nav-cta mobile-only" href="<?= $h . e($cta[1]) ?>"><?= e($cta[0]) ?></a><?php endif; ?>
     <button class="burger" id="burgerBtn" type="button" aria-label="Meniu"><span></span><span></span><span></span><?php if ($a && account_attention_count((int) $a['id'])): ?><i class="burger-dot"></i><?php endif; ?></button>
   </nav>
   <?= $subNav ?>

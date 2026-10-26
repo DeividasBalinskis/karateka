@@ -261,57 +261,9 @@ function can_see_lessons(?array $a = null): bool
     return is_active_account($a ?? current_account());
 }
 
-/**
- * Pamokos, matomos šiai paskyrai. Pamoka matoma, jei bent vienas paskyros narys (pats ar vaikas):
- *  - yra pamokos grupėje (arba pamoka skirta visoms grupėms), IR
- *  - turi tą diržą arba vienu žemesnį (baltas mato ir geltono pamokas), arba pamoka skirta visiems diržams.
- * Diržo nenurodžius laikoma, kad narys baltas (9 kyu). Treneriai mato viską (ir nepaskelbtas).
- */
-function visible_lessons(array $a, ?string $topic = null): array
-{
-    $params = [];
-    $sql = 'SELECT l.* FROM lessons l WHERE 1';
-    if (!is_staff($a)) {
-        // Teisėjų / egzaminatorių pamokas mato tik turintys tą žymą (nepriklausomai nuo diržo ir grupės)
-        $tags = [];
-        foreach (account_member_tags((int) $a['id']) as $memberTags) {
-            $tags = array_merge($tags, $memberTags);
-        }
-        $tags = array_values(array_intersect(array_keys(MEMBER_TAGS), $tags));
-        $sql .= ' AND l.is_published = 1 AND ((l.audience = "karateka" AND (
-                    (l.belt_level IS NULL AND NOT EXISTS (SELECT 1 FROM lesson_groups lg WHERE lg.lesson_id = l.id))
-                    OR EXISTS (SELECT 1 FROM members m JOIN account_members am ON am.member_id = m.id
-                                WHERE am.account_id = ? AND m.status = "active"
-                                  AND (NOT EXISTS (SELECT 1 FROM lesson_groups lg WHERE lg.lesson_id = l.id)
-                                       OR EXISTS (SELECT 1 FROM lesson_groups lg WHERE lg.lesson_id = l.id AND lg.group_id = m.group_id))
-                                  AND (l.belt_level IS NULL OR l.belt_level <= COALESCE(m.belt_level, 1) + 1))))'
-            . ($tags ? ' OR l.audience IN ("' . implode('","', $tags) . '")' : '') . ')';
-        $params[] = $a['id'];
-    }
-    if ($topic !== null) {
-        $sql .= ' AND l.topic <=> ?';
-        $params[] = $topic === '' ? null : $topic;
-    }
-    $rows = q_all($sql . ' ORDER BY l.sort_order, l.id', $params);
-    if (is_staff($a)) {
-        return $rows;
-    }
-    // Aplankas (ar aukštesnis aplankas) nepaskelbtas ar skirtas kitai žymai - jo pamokų nematyti
-    $folders = lesson_folders();
-    $tags = account_tag_list($a);
-    return array_values(array_filter($rows, function ($l) use ($folders, $tags) {
-        return $l['folder_id'] === null || folder_allowed($folders, (int) $l['folder_id'], $tags);
-    }));
-}
-
 function lesson_videos(array $lesson): array
 {
     return array_values(array_filter(explode(',', (string) $lesson['videos'])));
-}
-
-function lesson_topics(): array
-{
-    return q('SELECT DISTINCT topic FROM lessons WHERE topic IS NOT NULL AND topic <> "" ORDER BY topic')->fetchAll(PDO::FETCH_COLUMN);
 }
 
 // ---------- Matomumas: "tik nariams" ----------

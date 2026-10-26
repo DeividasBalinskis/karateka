@@ -31,20 +31,6 @@ if (is_post()) {
     csrf_check();
     $action = post('action');
 
-    if ($action === 'save_prices') {
-        foreach (GROUP_CATEGORIES as $cat => $_) {
-            $p = (array) ($_POST['price'][$cat] ?? []);
-            $main = trim((string) ($p['main'] ?? ''));
-            if ($main === '') {
-                continue;
-            }
-            q('INSERT INTO category_prices (category, price_main, price_note, price_alt) VALUES (?, ?, ?, ?)
-               ON DUPLICATE KEY UPDATE price_main = VALUES(price_main), price_note = VALUES(price_note), price_alt = VALUES(price_alt)',
-                [$cat, $main, trim((string) ($p['note'] ?? '')) ?: null, trim((string) ($p['alt'] ?? '')) ?: null]);
-        }
-        flash('ok', 'Kainos išsaugotos - jau matomos pagrindiniame puslapyje.');
-        redirect('admin/grupes.php');
-    }
     if ($action === 'create') {
         $g = group_from_post($errors);
         if (!$errors) {
@@ -87,25 +73,6 @@ if (is_post()) {
         q('DELETE FROM training_groups WHERE id = ?', [$id]);
         flash('ok', 'Grupė ištrinta.');
         redirect('admin/grupes.php');
-    }
-    if ($action === 'add_slot' && $id) {
-        $wd = (int) post('weekday');
-        $start = post('start_time') ?: null;
-        $end = post('end_time') ?: null;
-        if ($wd < 1 || $wd > 7) {
-            $errors[] = 'Pasirinkite savaitės dieną.';
-        } elseif (($start === null) !== ($end === null) || ($start && $end <= $start)) {
-            $errors[] = 'Įveskite pradžios ir pabaigos laiką (arba palikite abu tuščius ir parašykite pastabą).';
-        } else {
-            q('INSERT INTO schedule (group_id, weekday, start_time, end_time, note) VALUES (?, ?, ?, ?, ?)', [$id, $wd, $start, $end, post('note') ?: null]);
-            flash('ok', 'Laikas pridėtas.');
-            redirect('admin/grupes.php?id=' . $id);
-        }
-    }
-    if ($action === 'delete_slot' && $id) {
-        q('DELETE FROM schedule WHERE id = ? AND group_id = ?', [(int) post('slot_id'), $id]);
-        flash('ok', 'Laikas pašalintas.');
-        redirect('admin/grupes.php?id=' . $id);
     }
 }
 
@@ -153,38 +120,20 @@ if ($id) {
     <?= form_errors($errors) ?>
     <div class="grid-2">
       <div class="panel card">
-        <h2>Tvarkaraštis</h2>
-        <?php if (!$slots): ?><p class="muted small">Laikų dar nėra.</p><?php endif; ?>
-        <?php foreach ($slots as $s): ?>
-          <div class="schedule-line">
-            <span><?= e(LT_WEEKDAYS[(int) $s['weekday']]) ?><?= $s['note'] ? ' <span class="muted small">· ' . e($s['note']) . '</span>' : '' ?></span>
-            <span class="row" style="gap:8px;">
+        <div class="row between" style="flex-wrap:wrap; gap:8px;"><h2 style="margin:0;">Tvarkaraštis</h2><a class="small" href="<?= url('admin/tvarkarastis.php') ?>">Visų grupių tvarkaraštis →</a></div>
+        <?php if (is_admin()): ?>
+          <p class="hint" style="margin:6px 0 4px;">Keiskite tiesiog laukeliuose - išsaugoma iš karto (✓).</p>
+          <?= schedule_editor([$g]) ?>
+        <?php else: ?>
+          <?php if (!$slots): ?><p class="muted small">Laikų dar nėra.</p><?php endif; ?>
+          <?php foreach ($slots as $s): ?>
+            <div class="schedule-line">
+              <span><?= e(LT_WEEKDAYS[(int) $s['weekday']]) ?><?= $s['note'] ? ' <span class="muted small">· ' . e($s['note']) . '</span>' : '' ?></span>
               <span class="schedule-time"><?= $s['start_time'] ? e(fmt_time($s['start_time']) . '–' . fmt_time($s['end_time'])) : '' ?></span>
-              <form method="post" class="inline-form" onsubmit="return confirm('Pašalinti šį laiką?')">
-                <?= csrf_field() ?><input type="hidden" name="id" value="<?= $id ?>"><input type="hidden" name="action" value="delete_slot"><input type="hidden" name="slot_id" value="<?= (int) $s['id'] ?>">
-                <button class="btn btn-danger btn-sm" type="submit" aria-label="Pašalinti">✕</button>
-              </form>
-            </span>
-          </div>
-        <?php endforeach; ?>
-        <hr class="divider">
-        <h3>Pridėti laiką</h3>
-        <form method="post" class="form">
-          <?= csrf_field() ?>
-          <input type="hidden" name="id" value="<?= $id ?>">
-          <input type="hidden" name="action" value="add_slot">
-          <label>Diena
-            <select name="weekday" required>
-              <?php foreach (LT_WEEKDAYS as $n => $day): ?><option value="<?= $n ?>"><?= $day ?></option><?php endforeach; ?>
-            </select>
-          </label>
-          <div class="form-row">
-            <label>Nuo <input type="time" name="start_time"></label>
-            <label>Iki <input type="time" name="end_time"></label>
-          </div>
-          <label>Pastaba <span class="hint">nebūtina, pvz. „pažengę“ arba „laikas tikslinamas“</span><input type="text" name="note"></label>
-          <div><button class="btn btn-primary" type="submit">Pridėti</button></div>
-        </form>
+            </div>
+          <?php endforeach; ?>
+          <p class="hint">Tvarkaraštį keičia administratorius.</p>
+        <?php endif; ?>
       </div>
       <div class="stack">
         <form method="post" class="panel card form">
@@ -280,19 +229,16 @@ page_start('Grupės', ['admin' => true]);
     <div><button class="btn btn-primary" type="submit">Sukurti</button></div>
   </form>
 </div>
-<form method="post" class="panel card form" style="margin-top:20px;">
-  <?= csrf_field() ?>
-  <input type="hidden" name="action" value="save_prices">
-  <h2>Kainos pagrindiniame puslapyje</h2>
-  <p class="hint">Tvarkaraštis pagrindiniame puslapyje imamas iš grupių žemiau - pakeitus laiką grupėje, jis pasikeičia ir svetainėje.</p>
-  <?php foreach (GROUP_CATEGORIES as $cat => $catLabel): $p = category_price($cat); ?>
-    <div class="form-row three">
-      <label><?= e($catLabel) ?>: kaina <input type="text" name="price[<?= $cat ?>][main]" value="<?= e($p['price_main']) ?>" placeholder="60€/mėn" required></label>
-      <label>Sąlyga <input type="text" name="price[<?= $cat ?>][note]" value="<?= e($p['price_note']) ?>" placeholder="(pasirašius metinę sutartį)"></label>
-      <label>Kita kaina <input type="text" name="price[<?= $cat ?>][alt]" value="<?= e($p['price_alt']) ?>" placeholder="90€/mėn be sutarties"></label>
-    </div>
+<?php if (is_admin()): ?>
+<div class="panel card" style="margin-top:20px;">
+  <div class="row between" style="flex-wrap:wrap; gap:8px;"><h2 style="margin:0;">Kainos pagrindiniame puslapyje</h2>
+    <span class="row" style="gap:12px;"><a class="small" href="<?= url('admin/tvarkarastis.php') ?>">Visų grupių tvarkaraštis →</a><a class="small" href="<?= url('index.php') ?>" target="_blank">Pagrindinis puslapis ↗</a></span></div>
+  <p class="hint" style="margin:6px 0 10px;">Išsaugoma iš karto (✓). Tvarkaraštis pagrindiniame puslapyje imamas iš grupių - pakeitus laiką grupėje, jis pasikeičia ir svetainėje.</p>
+  <?php foreach (GROUP_CATEGORIES as $cat => $catLabel): ?>
+    <div class="kicker" style="margin:12px 0 4px;"><?= e($catLabel) ?></div>
+    <?= price_editor($cat) ?>
   <?php endforeach; ?>
-  <div class="row"><button class="btn btn-primary" type="submit">Išsaugoti kainas</button> <a class="small" href="<?= url('index.php') ?>" target="_blank">Peržiūrėti pagrindinį puslapį ↗</a></div>
-</form>
+</div>
+<?php endif; ?>
 <?php
 page_end();

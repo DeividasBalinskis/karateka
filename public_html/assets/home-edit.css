@@ -1,0 +1,115 @@
+/* Pagrindinio puslapio redagavimas (tik adminui, index.php?redaguoti=1) */
+.home-edit .reveal{opacity:1 !important; transform:none !important;}
+.hb-toolbar{position:sticky; top:74px; z-index:95; display:flex; flex-wrap:wrap; align-items:center; gap:10px 14px; margin:8px auto 14px; max-width:1200px; padding:10px 16px;
+  border-radius:14px; background:#1F3B33; color:#F7F4EC; box-shadow:0 12px 30px rgba(23,20,15,0.25); font-size:0.9rem;}
+.hb-toolbar .small{opacity:0.75;}
+.hb-toolbar-btns{display:flex; gap:8px; margin-left:auto; flex-wrap:wrap;}
+.hb-toolbar .btn{padding:8px 14px; font-size:0.82rem; border-radius:10px; font-weight:700; cursor:pointer; border:none; font-family:inherit;}
+.hb-toolbar .btn-primary{background:#E9749E; color:#fff;}
+.hb-toolbar .btn-ghost{background:rgba(247,244,236,0.14); color:#F7F4EC;}
+.hb-toolbar .btn-ghost:hover{background:rgba(247,244,236,0.24);}
+.hb-status{flex-basis:100%; font-size:0.82rem; min-height:0;}
+.hb-status:empty{display:none;}
+.hb-status.bad{color:#FFB4A8;}
+
+
+/* Blokas */
+.hb{position:relative; outline:2px dashed transparent; outline-offset:-2px; border-radius:18px; margin:6px 8px; padding-top:44px; transition:outline-color .15s;}
+.hb:hover{outline-color:rgba(47,107,90,0.45);}
+.hb.is-hidden{opacity:0.45;}
+.hb.is-hidden::after{content:"Paslėpta - lankytojai nemato"; position:absolute; top:8px; right:14px; font-size:0.75rem; font-weight:700; color:#8A4A0E; background:#FFF0D6; padding:3px 10px; border-radius:20px;}
+.hb.sortable-ghost{opacity:0.35;}
+.hb-bar{position:absolute; top:6px; left:10px; z-index:30; display:flex; flex-wrap:wrap; align-items:center; gap:6px; padding:5px 8px; border-radius:12px;
+  background:rgba(255,255,255,0.95); box-shadow:0 4px 14px rgba(23,20,15,0.12); font-size:0.78rem; font-family:'Inter',sans-serif; color:#17140F;}
+.hb-bar strong{font-size:0.78rem; margin-right:4px;}
+.hb-bar button, .hb-bar input{font:inherit; font-size:0.76rem; border:1px solid rgba(23,20,15,0.14); background:#fff; border-radius:8px; padding:4px 8px; cursor:pointer; color:#17140F;}
+.hb-bar button:hover{border-color:#2F6B5A; color:#2F6B5A;}
+.hb-bar .hb-del:hover{border-color:#B5281F; color:#B5281F;}
+.hb-bar .hb-insert{background:#2F6B5A; color:#fff; border-color:#2F6B5A;}
+.hb-bar .hb-insert:hover{background:#204B3F; color:#fff;}
+.hb-menu{display:inline-flex; align-items:center; gap:4px; color:#4A453A;}
+.hb-menu input{width:150px; cursor:text;}
+.hb-block-drag, .hb-drag{cursor:grab; color:rgba(23,20,15,0.5); font-size:1.05rem; padding:0 4px; user-select:none; touch-action:none;}
+
+/* Redaguojami tekstai */
+.hb-edit{outline:1px dashed rgba(47,107,90,0.35); outline-offset:3px; border-radius:4px; cursor:text; min-width:30px; min-height:1em; transition:outline-color .15s, background .15s;}
+.hb-edit:hover{outline-color:#2F6B5A;}
+.hb-edit:focus{outline:2px solid #2F6B5A; background:rgba(255,255,255,0.35);}
+.group-content .hb-edit:focus, .group-content .hb-edit:hover{outline-color:#E9749E; background:rgba(255,255,255,0.08);}
+.hb-ml{white-space:pre-wrap; display:block;}
+.hb-edit:empty::before{content:"(tuščia)"; opacity:0.45; font-style:italic;}
+.chooser-title.hb-edit, .section-head h2.styled.hb-edit, .about-sub-head h3.hb-edit, .registration-title.hb-edit{-webkit-text-fill-color:#17140F; color:#17140F; background:none;}
+
+/* Nuotraukos */
+[data-img]{position:relative;}
+.hb-img-tools{position:absolute; top:10px; left:10px; z-index:12; display:flex; gap:4px;}
+.hb-img-tools button{font:inherit; font-size:0.76rem; font-weight:700; border:none; border-radius:8px; padding:6px 10px; cursor:pointer; background:rgba(255,255,255,0.92); color:#17140F; box-shadow:0 3px 10px rgba(0,0,0,0.25);}
+.hb-img-tools button:hover{background:#2F6B5A; color:#fff;}
+.avatar .hb-img-tools, .partner-logo .hb-img-tools{top:auto; bottom:-6px; left:50%; transform:translateX(-50%);}
+.avatar .hb-img-tools button{padding:3px 6px; font-size:0.68rem;}
+.instructor-card .avatar{overflow:visible;}
+.instructor-card .avatar img{border-radius:50%;}
+.hb-img-empty{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:#4A453A; background:rgba(255,255,255,0.5); border:2px dashed rgba(47,107,90,0.3); border-radius:var(--radius);}
+.hb-img-empty[hidden]{display:none;}
+.hb-uploading{opacity:0.5;}
+
+/* Sąrašai */
+[data-item]{position:relative;}
+.hb-item-tools{position:absolute; top:-10px; right:-6px; z-index:14; display:flex; gap:3px; opacity:0; transition:opacity .15s;}
+[data-item]:hover > .hb-item-tools, [data-item]:focus-within > .hb-item-tools{opacity:1;}
+.hb-item-tools > *{background:#fff; border:1px solid rgba(23,20,15,0.14); border-radius:8px; padding:2px 6px; font-size:0.8rem; line-height:1.4; cursor:pointer; box-shadow:0 2px 8px rgba(23,20,15,0.12);}
+.hb-item-del:hover{color:#B5281F; border-color:#B5281F;}
+.hb-add-item{font:inherit; font-size:0.82rem; font-weight:700; margin-top:12px; padding:8px 14px; border-radius:10px; border:2px dashed rgba(47,107,90,0.45); background:rgba(255,255,255,0.6); color:#204B3F; cursor:pointer;}
+.hb-add-item:hover{background:#fff;}
+.hb-center{text-align:center;}
+[data-list] .sortable-ghost{opacity:0.35;}
+.hb-opt{display:inline-flex; align-items:center; gap:6px; font-size:0.78rem; font-family:'Inter',sans-serif; color:#4A453A; margin-top:6px;}
+.hb-opt input[type=text], .hb-opt select{font:inherit; padding:4px 8px; border-radius:8px; border:1px solid rgba(23,20,15,0.15); background:#fff;}
+.hb-opts{margin-top:10px;}
+.value-item .hb-opt{position:absolute; bottom:-18px; left:64px; opacity:0;}
+.value-item.l .hb-opt{left:auto; right:64px;}
+.value-item:hover .hb-opt, .value-item:focus-within .hb-opt{opacity:1;}
+.instructor-card .hb-opt{font-size:0.72rem;}
+.partner{width:170px;}
+.partner .hb-opt{display:flex; width:100%; margin-top:6px;}
+.partner .hb-opt input{flex:1; min-width:0;}
+.contact-list li{position:relative;}
+
+/* Grupių skaidrės */
+.hb-slide-tools{display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:12px;}
+.hb-slide-tools .hb-opt{color:#D8D2C2; margin:0;}
+.hb-sched-btn{font:inherit; font-size:0.8rem; font-weight:700; padding:6px 12px; border-radius:10px; border:1px solid rgba(247,244,236,0.5); background:rgba(233,116,158,0.25); color:#F7F4EC; cursor:pointer;}
+.hb-sched-btn:hover{background:rgba(233,116,158,0.5);}
+.chooser .hb-opt{display:flex; justify-content:center;}
+.hb-sched{width:min(860px, 94vw); max-height:88vh; border:none; border-radius:18px; padding:20px 22px; box-shadow:0 30px 80px rgba(0,0,0,0.35); font-family:'Inter',sans-serif;}
+.hb-sched::backdrop{background:rgba(23,20,15,0.45);}
+.hb-sched-head{display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:6px;}
+.hb-sched .btn{padding:8px 14px; font-size:0.82rem; border-radius:10px; border:1px solid rgba(23,20,15,0.15); background:#fff; cursor:pointer; font-weight:700;}
+.hb-sched .small{font-size:0.85rem;}
+.hb-sched .muted{color:#4A453A;}
+
+/* „Apie“ nuotraukos redaguojant */
+.hb-slides-edit{padding:12px; background:rgba(255,255,255,0.4); min-height:0 !important; overflow:visible !important;}
+.hb-slides{display:grid; grid-template-columns:repeat(auto-fill, minmax(150px,1fr)); gap:10px;}
+.hb-slide-img{aspect-ratio:4/3; border-radius:12px; overflow:hidden; background:#ddd;}
+.hb-slide-img img{width:100%; height:100%; object-fit:cover;}
+.hb-note{color:#4A453A; font-size:0.9rem; padding:14px 18px; border:2px dashed rgba(47,107,90,0.3); border-radius:14px; grid-column:1 / -1;}
+
+/* Naujas blokas */
+.hb-add-menu{position:fixed; z-index:1200; inset:0; background:rgba(23,20,15,0.45); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; padding:20px;}
+.hb-add-menu[hidden]{display:none;}
+.hb-add-menu > *{width:min(420px, 92vw);}
+.hb-add-title{color:#fff; font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:1.2rem; margin-bottom:6px; text-align:center;}
+.hb-add-menu button{font:inherit; font-weight:600; padding:12px 16px; border-radius:12px; border:none; background:#fff; cursor:pointer; text-align:left;}
+.hb-add-menu button:hover{background:#E3EDE9;}
+.hb-add-menu .hb-add-cancel{background:transparent; color:#fff; text-align:center;}
+
+/* Telefone: juostos kompaktiškos, bloko įrankiai - virš bloko */
+@media(max-width:860px){
+  .hb-toolbar{top:60px; margin:8px 12px 12px; padding:8px 10px;}
+  .hb-toolbar > strong, .hb-toolbar > .small{display:none;}
+  .hb-toolbar-btns{margin-left:0;}
+  .hb{padding-top:0; margin:6px 4px;}
+  .hb-bar{position:relative; top:auto; left:auto; margin:0 6px 8px;}
+  .hb-menu input{width:110px;}
+}
