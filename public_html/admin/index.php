@@ -140,7 +140,7 @@ document.getElementById('settingsBtn').addEventListener('click', function () {
 <div class="row quick-actions">
   <a class="btn btn-ghost btn-sm" href="<?= url('admin/naujienos.php?edit=new') ?>">+ Naujiena</a>
   <a class="btn btn-ghost btn-sm" href="<?= url('admin/renginiai.php?edit=new') ?>">+ Renginys</a>
-  <a class="btn btn-ghost btn-sm" href="<?= url('admin/pamokos.php?edit=new') ?>">+ Pamoka</a>
+  <a class="btn btn-ghost btn-sm" href="<?= url('pamokos.php?nauja=1') ?>">+ Pamoka</a>
   <?php if ($ownMembers): ?><a class="small" style="margin-left:auto;" href="<?= url('paskyra.php') ?>">Mano šeimos nariai (taškai, pastabos) →</a><?php endif; ?>
 </div>
 <?php

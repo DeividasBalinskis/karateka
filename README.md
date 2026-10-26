@@ -7,7 +7,8 @@ Live site: [karateka.lt](https://karateka.lt). The member system is in staging a
 ## Features
 
 **Public site**
-- Groups, prices and weekly schedules for kids, youth and adults, edited from the admin panel
+- Home page built from blocks that the admin edits in place: texts, photos, order, menu links, partner logos
+- Groups, prices and weekly schedules for kids, youth and adults, edited in place by the admin
 - Event calendar (exams, competitions, seminars, camps) with type filters
 - News with photos and YouTube videos, emoji reactions and sharing
 - Trial training sign-up form
@@ -16,13 +17,14 @@ Live site: [karateka.lt](https://karateka.lt). The member system is in staging a
 - Family accounts: one parent account can manage several children; children under 14 are activated only after a parent confirms by e-mail (GDPR)
 - Every new account is approved by a coach, who assigns the training group
 - Season points and ranking (exams, competitions, seminars, attendance, refereeing) with a Top 5 per age category
-- Belt tracking from 9 kyu to 9 dan; lessons are shown by belt and group
+- Belt tracking from 9 kyu to 9 dan; members first see the lessons for their own belt, grouped in sections (exams, referees, fitness)
 - Coach notes and homework after each training, with read / done status
 
 **Coaches** (mobile-first, used in the gym)
 - Attendance in one tap per member, notes for the whole group on one screen
 - Event results that award points automatically
 - Approvals, members, groups, events, news, lessons and point values
+- Lessons are arranged and edited on the lessons page itself; coaches can preview the page as a chosen member
 
 ## Tech
 

@@ -4,6 +4,34 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.7 - 2026-10-26 (redaguojamas pagrindinis puslapis, pamokos pagal diržą, tvarkaraštis)
+**Duomenų bazė:** importuoti `db/020_pamokos_puslapis.sql`. Failą galima importuoti ir antrą kartą.
+
+Pagrindinis puslapis (keičia tik adminas):
+- Pagrindiniame puslapyje mygtukas „✎ Redaguoti puslapį“: tekstus rašai tiesiai puslapyje, nuotraukas keiti „📷 Keisti“, išsaugai „Išsaugoti“.
+- Puslapis sudarytas iš blokų: juos galima tempti ⠿ (ar ↑ ↓), paslėpti, ištrinti, grąžinti pradinį turinį ir pridėti naujų („+ Blokas po šiuo“), pvz. „Tekstas (su nuotrauka ar be)“ - vieta atskiram tekstui „Apie klubą“.
+- Kiekvienam blokui galima įrašyti „Meniu“ pavadinimą - jis atsiranda viršutiniame meniu (taip pakeičiama, kur veda „Apie klubą“, „Kontaktai“ ir pan.).
+- Sąrašai: vertybės, instruktoriai (galima įkelti nuotrauką vietoj raidžių), kontaktai, „Apie“ nuotraukų skaidrės, partneriai - pridėti, pašalinti, perstatyti.
+- „Kur mus rasti“ → „Kontaktai“, šalia - treniruočių vietų adresai (iš grupių; galima išjungti).
+- „Registruokis“ → „Išbandyti“, formos mygtukas - „Siųsti“, grupių mygtukai - „Išbandyti“. Prisijungusiems nariams forma ir „2 treniruotės nemokamai“ nerodomi.
+- Apačioje - partnerių logotipai (LTKF, Sanrei, Vilniaus karate mokykla, Karate akademija, Takami, Budo Cup Open).
+- Grupių skaidrėje „✎ Kaina ir tvarkaraštis“ - kainą ir laikus pakeiti čia pat (išsaugoma iš karto).
+- „↶ Ankstesnė versija“ grąžina puslapį, koks buvo prieš paskutinį išsaugojimą.
+
+Tvarkaraštis:
+- Treneriams → „Tvarkaraštis“: visų grupių laikai ir kainos vienoje vietoje. Laiką galima pakeisti (anksčiau tik ištrinti ir sukurti iš naujo), kopijuoti į kitą dieną; išsaugoma iš karto (✓).
+- Įspėja, jei grupės laikai tą pačią dieną persidengia. Grupės puslapyje - tas pats redaktorius.
+- Tvarkaraštį ir kainas keičia tik adminas (treneriai mato).
+
+Pamokos:
+- Pamokos skyriais (išskleidžiami): pvz. „Egzaminams“ (viduje aplankai „9 kyu“, „8 kyu“...), „Teisėjams“ (mato tik su žyma), „Fizinis pasiruošimas“.
+- Aplankui galima nurodyti diržą. Narys iš karto mato savo diržo pamokas; viršuje gali perjungti į kitą (žemesnį ar kitą) diržą. Tėvai mato kiekvieno vaiko diržą.
+- „📨 Treneris atsiuntė“ - pamokų puslapio viršuje pamokos, kurias treneris atsiuntė (ir aukštesnio diržo).
+- Treneriui: „✎ Tvarkyti“ pamokų puslapyje - skyrius, aplankus ir pamokas tempi ⠿, aplanko pavadinimą, ženkliuką, diržą ir kam skirta keiti čia pat, kuri naujus.
+- Pamoka redaguojama pačiame pamokos puslapyje („✎ Keisti“), tarp blokų „+“ - įterpti naują bloką. Medis (Treneriams → Pamokos) lieka.
+- „👁 Žiūrėti kaip narys“: treneris pasirenka narį ir mato pamokas taip, kaip jis.
+- Nauji ženkliukai aplankams: spalvoti diržai ir teisėjo vėliavėlės (balta ir raudona).
+
 ## v1.6 - 2026-10-22 (WTKU teisėjų testas, laiko limitas testams)
 **Duomenų bazė:** importuoti `db/019_wtku_teiseju_testas.sql`. Failą galima importuoti ir antrą kartą - nieko nepridės dvigubai.
 
