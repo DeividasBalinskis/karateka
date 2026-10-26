@@ -35,6 +35,8 @@ def alter(m):
             res.append(guard(col_check(t, mc.group(1)), f'ALTER TABLE {t} {p}'))
         elif mf:
             res.append(guard(fk_check(t, mf.group(1)), f'ALTER TABLE {t} {p}'))
+        elif p.startswith('MODIFY '):
+            res.append(f'ALTER TABLE {t} {p};')   # stulpelio tipo keitimą galima kartoti
         else:
             sys.exit('Nežinomas ALTER: ' + p)
     return '\n'.join(res)
