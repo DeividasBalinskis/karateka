@@ -145,6 +145,7 @@ if ($edit !== '') {
           <textarea name="body" rows="10" required><?= e($n['body']) ?></textarea></label>
         <label>Nuotraukos <span class="hint">galima pasirinkti kelias; sumažinamos automatiškai</span>
           <input type="file" name="images[]" accept="image/jpeg,image/png,image/webp" multiple></label>
+        <?= no_photo_consent_html() ?>
         <label>YouTube nuorodos <span class="hint">po vieną eilutėje</span>
           <textarea name="youtube" rows="2" placeholder="https://www.youtube.com/watch?v=..." style="min-height:70px;"><?= e(post('youtube')) ?></textarea></label>
         <div class="form-row">

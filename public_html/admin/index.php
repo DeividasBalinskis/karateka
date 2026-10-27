@@ -53,6 +53,8 @@ foreach (q_all("SELECT e.* FROM events e
     $todo[] = ['Įvesk rezultatus: ' . $ev['title'] . ' (' . fmt_date($ev['starts_on']) . ')', 'admin/renginio-rezultatai.php?id=' . (int) $ev['id'], 'Rezultatai'];
 }
 $todo = array_merge($todo, admin_today_extra_todo());
+// Pranešimai: registracijos į egzaminą, pavėlavusieji, „Moku“ patvirtinimai, atšaukti sutikimai - sprendžiami čia pat
+$notifs = account_notifications((int) $me['id']);
 
 $upcoming = q_all('SELECT * FROM events WHERE COALESCE(ends_on, starts_on) >= CURDATE() AND starts_on <= DATE_ADD(CURDATE(), INTERVAL 21 DAY) ORDER BY starts_on, start_time');
 
@@ -77,6 +79,16 @@ document.getElementById('settingsBtn').addEventListener('click', function () {
   this.setAttribute('aria-expanded', open ? 'true' : 'false');
 });
 </script>
+
+<?php if ($notifs): ?>
+  <section class="panel card important" id="svarbu">
+    <div class="row between" style="gap:10px; flex-wrap:wrap;">
+      <div class="kicker" style="margin:0;">Pranešimai<?= ($nn = notification_count((int) $me['id'])) ? ' <span class="badge badge-new">' . $nn . ' nauj.</span>' : '' ?></div>
+      <span class="small muted">Patvirtinkite čia pat - pranešimas dings.</span>
+    </div>
+    <?= render_notifications($notifs, 'admin/#svarbu') ?>
+  </section>
+<?php endif; ?>
 
 <div class="today-grid">
   <div class="panel card">
@@ -141,6 +153,7 @@ document.getElementById('settingsBtn').addEventListener('click', function () {
   <a class="btn btn-ghost btn-sm" href="<?= url('admin/naujienos.php?edit=new') ?>">+ Naujiena</a>
   <a class="btn btn-ghost btn-sm" href="<?= url('admin/renginiai.php?edit=new') ?>">+ Renginys</a>
   <a class="btn btn-ghost btn-sm" href="<?= url('pamokos.php?nauja=1') ?>">+ Pamoka</a>
+  <?php if (is_admin()): ?><a class="btn btn-ghost btn-sm" href="<?= url('admin/pranesimai.php') ?>">📣 Pranešimas nariams</a><?php endif; ?>
   <?php if ($ownMembers): ?><a class="small" style="margin-left:auto;" href="<?= url('paskyra.php') ?>">Mano šeimos nariai (taškai, pastabos) →</a><?php endif; ?>
 </div>
 <?php

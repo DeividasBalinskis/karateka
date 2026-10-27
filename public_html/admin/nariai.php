@@ -15,6 +15,30 @@ function account_by_email(string $email): ?array
 // ---------- Naujas narys (treneris prideda pats, iškart aktyvus su grupe) ----------
 if (get('new') !== '' || post('action') === 'create') {
     $errors = [];
+    // Pamoka ar užduotis nariui (atsiranda jo paskyroje „Svarbu“)
+    if (is_post() && post('action') === 'send_lesson') {
+        csrf_check();
+        $lessonId = (int) post('lesson_id');
+        if ($m['status'] !== 'active' || !q_value('SELECT 1 FROM lessons WHERE id = ?', [$lessonId])) {
+            flash('err', 'Pasirinkite pamoką.');
+        } else {
+            send_coach_note($m, $me, post('body'), $lessonId, !empty($_POST['is_task']), !empty($_POST['email']));
+            flash('ok', 'Pamoka išsiųsta - ' . $m['first_name'] . ' ją matys paskyroje.');
+        }
+        redirect('admin/nariai.php?id=' . $id . '#pamokos');
+    }
+    // Egzamino programos punktas: patvirtinti (skiriami XP) arba grąžinti
+    if (is_post() && post('action') === 'skill') {
+        csrf_check();
+        $reqId = (int) post('req_id');
+        if (post('op') === 'approve') {
+            flash('ok', approve_skill($id, $reqId, (int) $me['id']) ? 'Patvirtinta, XP skirti.' : 'Jau buvo patvirtinta.');
+        } elseif (post('op') === 'reject') {
+            reject_skill($id, $reqId);
+            flash('ok', 'Grąžinta - narys galės pažymėti dar kartą.');
+        }
+        redirect('admin/nariai.php?id=' . $id . '#programa');
+    }
     if (is_post()) {
         csrf_check();
         $first = post('first_name');
@@ -106,6 +130,30 @@ if ($id) {
             flash('ok', 'Taškai pašalinti.');
         }
         redirect('admin/nariai.php?id=' . $id . '#taskai');
+    }
+    // Pamoka ar užduotis nariui (atsiranda jo paskyroje „Svarbu“)
+    if (is_post() && post('action') === 'send_lesson') {
+        csrf_check();
+        $lessonId = (int) post('lesson_id');
+        if ($m['status'] !== 'active' || !q_value('SELECT 1 FROM lessons WHERE id = ?', [$lessonId])) {
+            flash('err', 'Pasirinkite pamoką.');
+        } else {
+            send_coach_note($m, $me, post('body'), $lessonId, !empty($_POST['is_task']), !empty($_POST['email']));
+            flash('ok', 'Pamoka išsiųsta - ' . $m['first_name'] . ' ją matys paskyroje.');
+        }
+        redirect('admin/nariai.php?id=' . $id . '#pamokos');
+    }
+    // Egzamino programos punktas: patvirtinti (skiriami XP) arba grąžinti
+    if (is_post() && post('action') === 'skill') {
+        csrf_check();
+        $reqId = (int) post('req_id');
+        if (post('op') === 'approve') {
+            flash('ok', approve_skill($id, $reqId, (int) $me['id']) ? 'Patvirtinta, XP skirti.' : 'Jau buvo patvirtinta.');
+        } elseif (post('op') === 'reject') {
+            reject_skill($id, $reqId);
+            flash('ok', 'Grąžinta - narys galės pažymėti dar kartą.');
+        }
+        redirect('admin/nariai.php?id=' . $id . '#programa');
     }
     if (is_post()) {
         csrf_check();
@@ -229,8 +277,9 @@ if ($id) {
         <h2>Lankomumas</h2>
         <?= render_attendance($id) ?>
         <hr class="divider">
-        <h2>Taškai</h2>
-        <p class="small muted"><?= e($seasonLabel) ?>: <strong><?= member_points_total($id, $from, $to) ?></strong> · iš viso: <strong><?= member_points_total($id) ?></strong></p>
+        <h2>Taškai ir lygis</h2>
+        <?= render_xp_card($m) ?>
+        <p class="small muted"><?= e($seasonLabel) ?>: <strong><?= member_points_total($id, $from, $to) ?></strong> · iš viso (XP): <strong><?= member_points_total($id) ?></strong></p>
         <?php if (!$history): ?><p class="muted small" style="margin-top:8px;">Taškų dar nėra.</p><?php endif; ?>
         <ul class="list small">
           <?php foreach ($history as $h): ?>
@@ -245,6 +294,65 @@ if ($id) {
             </li>
           <?php endforeach; ?>
         </ul>
+      </div>
+    </div>
+    <?php
+    // Pamokos ir pastabos nariui; kito diržo programa su patvirtinimais
+    $notes = member_notes($id, 12);
+    $nextBelt = next_belt($m['belt_level'] !== null ? (int) $m['belt_level'] : null);
+    $reqs = $nextBelt ? belt_requirements($nextBelt) : [];
+    $progress = requirement_done_ids($id);
+    $lessons = q_all('SELECT id, title, belt_level FROM lessons WHERE is_published = 1 ORDER BY belt_level IS NULL, belt_level, title');
+    ?>
+    <div class="grid-2" style="margin-top:20px;">
+      <div class="panel card" id="pamokos">
+        <h2>Pamokos ir pastabos</h2>
+        <?php if ($m['status'] === 'active'): ?>
+          <form method="post" class="form send-lesson">
+            <?= csrf_field() ?><input type="hidden" name="id" value="<?= $id ?>"><input type="hidden" name="action" value="send_lesson">
+            <label>Pamoka <select name="lesson_id" required><option value="">— pasirinkite —</option>
+              <?php foreach ($lessons as $l): ?><option value="<?= (int) $l['id'] ?>" <?= $nextBelt && (int) $l['belt_level'] === $nextBelt ? 'class="next"' : '' ?>><?= e(($l['belt_level'] ? BELTS[(int) $l['belt_level']][0] . ' · ' : '') . $l['title']) ?></option><?php endforeach; ?>
+            </select></label>
+            <label>Komentaras <span class="hint">nebūtina</span><input type="text" name="body" maxlength="500" placeholder="pvz. Pasikartok prieš egzaminą"></label>
+            <div class="row" style="gap:6px 16px;">
+              <label class="check"><input type="checkbox" name="is_task" value="1"><span>Užduotis („Atlikau“)</span></label>
+              <label class="check"><input type="checkbox" name="email" value="1"><span>ir el. laiškas</span></label>
+              <button class="btn btn-primary btn-sm" type="submit" style="margin-left:auto;">📨 Siųsti</button>
+            </div>
+          </form>
+        <?php endif; ?>
+        <?php if (!$notes): ?><p class="muted small">Pastabų ir atsiųstų pamokų dar nėra.</p><?php endif; ?>
+        <ul class="list small">
+          <?php foreach ($notes as $n): ?>
+            <li>
+              <?= $n['lesson_title'] ? '📘 <a href="' . e(url('pamokos.php?id=' . (int) $n['lesson_id'])) . '">' . e($n['lesson_title']) . '</a> · ' : '' ?><?= e(mb_strimwidth($n['body'], 0, 110, '…')) ?>
+              <div class="muted"><?= e(fmt_date($n['note_date'])) ?><?= $n['author'] ? ' · ' . e($n['author']) : '' ?> ·
+                <?= $n['is_task'] ? ($n['done_at'] ? '<span class="test-ok">✓ atlikta</span>' : 'užduotis neatlikta') : ($n['read_at'] ? 'peržiūrėta' : 'dar neperžiūrėta') ?></div>
+            </li>
+          <?php endforeach; ?>
+        </ul>
+        <p class="small" style="margin-top:8px;"><a href="<?= url('admin/zinutes.php?m=' . $id) ?>">Pokalbis su nariu →</a></p>
+      </div>
+      <div class="panel card" id="programa">
+        <h2>Egzamino programa<?= $nextBelt ? ' · ' . e(belt_label($nextBelt)) : '' ?></h2>
+        <?php if (!$reqs): ?><p class="muted small"><?= $nextBelt ? 'Šio diržo programos dar nėra.' : 'Aukščiausias diržas.' ?> <a href="<?= url('admin/programa.php' . ($nextBelt ? '?dirzas=' . $nextBelt : '')) ?>">Egzaminų programa →</a></p><?php endif; ?>
+        <?php foreach ($reqs as $section => $items): ?>
+          <h3 class="req-section"><?= e(REQ_SECTIONS[$section]) ?></h3>
+          <ul class="list small req-admin-list">
+            <?php foreach ($items as $r): $st = $progress[(int) $r['id']] ?? null; ?>
+              <li class="row between">
+                <span><?= $st === 'approved' ? '★' : ($st === 'pending' ? '⏳' : '☆') ?> <?= e($r['title']) ?> <span class="xp-chip<?= $st === 'approved' ? ' earned' : '' ?>">+<?= (int) $r['xp'] ?> XP</span></span>
+                <?php if ($st !== 'approved'): ?>
+                  <form method="post" class="inline-form">
+                    <?= csrf_field() ?><input type="hidden" name="id" value="<?= $id ?>"><input type="hidden" name="action" value="skill"><input type="hidden" name="req_id" value="<?= (int) $r['id'] ?>">
+                    <button class="btn btn-sm <?= $st === 'pending' ? 'btn-primary' : 'btn-ghost' ?>" name="op" value="approve" title="<?= $st === 'pending' ? 'Narys pažymėjo „Moku“' : 'Įskaityti, nors narys nepažymėjo' ?>">✓ <?= $st === 'pending' ? 'Patvirtinti' : 'Įskaityti' ?></button>
+                    <?php if ($st === 'pending'): ?><button class="btn btn-ghost btn-sm" name="op" value="reject">Dar ne</button><?php endif; ?>
+                  </form>
+                <?php endif; ?>
+              </li>
+            <?php endforeach; ?>
+          </ul>
+        <?php endforeach; ?>
       </div>
     </div>
     <?php

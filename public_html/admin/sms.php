@@ -97,7 +97,8 @@ $selStatuses = is_post() ? (array) ($_POST['ev_status'] ?? []) : ['going'];
 
 page_start('SMS žinutės', ['admin' => true]);
 ?>
-<div class="page-head">
+<a class="small" href="<?= url('admin/pranesimai.php') ?>">← Pranešimas nariams (paskyroje, el. paštu, SMS)</a>
+<div class="page-head" style="margin-top:8px;">
   <h1 class="styled">SMS žinutės</h1>
   <p class="muted" style="margin:0;">Trumpi pranešimai telefonu, pvz. „Šiandien treniruotės nebus“. Vaikams SMS gauna tėvai, suaugusieji - patys. Numeriai imami iš paskyrų.</p>
 </div>

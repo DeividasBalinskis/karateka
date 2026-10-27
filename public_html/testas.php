@@ -165,7 +165,8 @@ if (is_post()) {
         redirect('egzaminas.php?m=' . $mid);
     }
     $answers = [];
-    if (quiz_time_is_up($att)) {
+    $late = quiz_time_is_up($att);
+    if ($late) {
         flash('err', 'Laikas baigėsi - atsakymai pateikti per vėlai ir neįskaityti.');
     } else {
         foreach ((array) ($_POST['a'] ?? []) as $qid => $aid) {
@@ -173,6 +174,10 @@ if (is_post()) {
         }
     }
     $res = grade_quiz_attempt($att, $quiz, $answers);
+    // XP: už pirmą bandymą ir pirmą išlaikymą per sezoną (kiek - Treneriams -> Taškai)
+    if (!$late && ($xp = award_quiz_points($res, $quiz, (int) $a['id']))) {
+        flash('ok', '+' . $xp . ' XP už testą!');
+    }
     redirect('testas.php?rezultatas=' . (int) $res['id']);
 }
 

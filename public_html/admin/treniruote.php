@@ -192,7 +192,8 @@ page_start('Treniruotė', ['admin' => true]);
       <button type="button" class="btn btn-primary btn-sm" id="attAll">✓ Visi buvo</button>
       <?php if (!$hasTraining): ?><span class="hint">Pagal tvarkaraštį šią dieną šios grupės treniruotės nėra - patikrinkite datą.</span><?php endif; ?>
     </div>
-    <p class="hint" style="margin-bottom:10px;">Lankomumas išsaugomas iškart paspaudus „Buvo“ / „Nebuvo“ (paspaudus dar kartą - žyma nuimama). Pastaba: parašykite ir spauskite <strong>Enter</strong>.</p>
+    <p class="hint" style="margin-bottom:10px;">Lankomumas išsaugomas iškart paspaudus „Buvo“ / „Nebuvo“ (paspaudus dar kartą - žyma nuimama). Pastaba: parašykite ir spauskite <strong>Enter</strong> -
+      vaikas ir tėvai ją iškart mato paskyroje („Svarbu“). „Užduotis“ - vaikas pažymės „Atlikau“.</p>
 
     <?php foreach ($members as $m): ?>
       <div class="note-row">
@@ -213,7 +214,7 @@ page_start('Treniruotė', ['admin' => true]);
         <textarea name="note[<?= (int) $m['id'] ?>]" data-member="<?= (int) $m['id'] ?>" rows="2" enterkeyhint="send" placeholder="Parašykite ir spauskite Enter"></textarea>
         <div class="note-extras">
           <select name="lesson[<?= (int) $m['id'] ?>]" aria-label="Prisegti pamoką"><?= $lessonOptions ?></select>
-          <label class="note-task" title="Narys paskyroje matys mygtuką „Atlikau“"><input type="checkbox" name="task[<?= (int) $m['id'] ?>]" value="1"> Tai užduotis – vaikas pažymės, kai atliks</label>
+          <label class="note-task" title="Tai užduotis: narys paskyroje matys mygtuką „Atlikau“ ir pažymės, kai atliks"><input type="checkbox" name="task[<?= (int) $m['id'] ?>]" value="1"> Užduotis</label>
           <details class="note-video">
             <summary>+ YouTube nuoroda</summary>
             <input type="url" name="video[<?= (int) $m['id'] ?>]" placeholder="https://youtu.be/...">

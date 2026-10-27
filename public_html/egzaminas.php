@@ -18,11 +18,17 @@ foreach ($members as $m) {
 }
 $mid = (int) $selected['id'];
 
-// „Moku“ - pažymi pats narys arba tėvai
+// „Moku“ - pažymi pats narys arba tėvai, treneris patvirtina pranešime (tada skiriami punkto XP)
 if (is_post()) {
     csrf_check();
-    if (post('action') === 'req' && account_relation((int) $a['id'], $mid)) {
-        set_requirement_done($mid, (int) post('req_id'), post('done') === '1');
+    $req = q_one('SELECT * FROM belt_requirements WHERE id = ?', [(int) post('req_id')]);
+    if (post('action') === 'req' && $req && account_relation((int) $a['id'], $mid)) {
+        if (post('done') === '1') {
+            request_skill($selected, $req, $a);
+            flash('ok', 'Pažymėta! Kai treneris patvirtins, gausi' . ((int) $req['xp'] > 0 ? ' +' . (int) $req['xp'] . ' XP' : ' žvaigždutę') . '.');
+        } else {
+            cancel_skill($mid, (int) $req['id']);
+        }
     }
     redirect('egzaminas.php?m=' . $mid . (get('dirzas') ? '&dirzas=' . (int) get('dirzas') : '') . '#r' . (int) post('req_id'));
 }
@@ -32,13 +38,15 @@ $cur = current_belt($belt);
 $next = next_belt($belt);
 $showBelt = isset(BELTS[(int) get('dirzas')]) ? (int) get('dirzas') : $next;
 $reqs = $showBelt ? belt_requirements($showBelt) : [];
-$done = requirement_done_ids($mid);
+$done = requirement_done_ids($mid);   // [id => 'pending' | 'approved']
 $reqTotal = 0;
 $reqDone = 0;
+$reqPending = 0;
 foreach ($reqs as $items) {
     foreach ($items as $r) {
         $reqTotal++;
-        $reqDone += isset($done[(int) $r['id']]) ? 1 : 0;
+        $reqDone += ($done[(int) $r['id']] ?? '') === 'approved' ? 1 : 0;
+        $reqPending += ($done[(int) $r['id']] ?? '') === 'pending' ? 1 : 0;
     }
 }
 $isKid = age_on($selected['birth_date']) < 12;
@@ -46,7 +54,6 @@ $tags = member_tags($mid);
 $quizzes = quizzes_for_member($selected, $tags);
 $examTest = exam_test_status($selected);
 $exam = member_upcoming_exam($selected);
-$stars = count($done) + ($examTest && $examTest['passed'] ? 3 : 0);
 
 page_start('Egzaminas', ['noindex' => true, 'account' => 'egzaminas']);
 ?>
@@ -71,7 +78,7 @@ page_start('Egzaminas', ['noindex' => true, 'account' => 'egzaminas']);
       <div class="kicker">Diržų kelias</div>
       <p class="muted small" style="margin:0;"><?= $belt ? 'Dabar: ' . e(belt_label($belt)) : 'Diržas nenurodytas - laikome, kad baltas. Pakeisti galima Nustatymuose.' ?></p>
     </div>
-    <div class="stars" title="Žvaigždutės: už kiekvieną išmoktą programos punktą ir išlaikytą testą (+3)">★ <?= $stars ?></div>
+    <?= render_xp_card($selected, true) ?>
   </div>
   <ol class="belt-path">
     <?php foreach (BELTS as $lvl => [$kyu, $name, $color]):
@@ -101,7 +108,7 @@ page_start('Egzaminas', ['noindex' => true, 'account' => 'egzaminas']);
         <strong>Peržiūrėk programą</strong>
         <?php if ($reqTotal): ?>
           <div class="progress"><span style="width:<?= (int) round(100 * $reqDone / $reqTotal) ?>%"></span></div>
-          <span class="small muted">Moku <?= $reqDone ?> iš <?= $reqTotal ?></span>
+          <span class="small muted">Moku <?= $reqDone ?> iš <?= $reqTotal ?><?= $reqPending ? ' · ' . $reqPending . ' laukia trenerio' : '' ?></span>
         <?php else: ?>
           <span class="small muted">Programą treneris dar įkels.</span>
         <?php endif; ?>
@@ -149,7 +156,8 @@ page_start('Egzaminas', ['noindex' => true, 'account' => 'egzaminas']);
     </div>
     <?php if ($reqTotal): ?>
       <div class="progress big" title="Moku <?= $reqDone ?> iš <?= $reqTotal ?>"><span style="width:<?= (int) round(100 * $reqDone / $reqTotal) ?>%"></span></div>
-      <p class="small muted" style="margin:4px 0 0;">Moku <?= $reqDone ?> iš <?= $reqTotal ?><?= $reqDone === $reqTotal ? ' - puiku, esi pasiruošęs (-usi)! 🎉' : '' ?></p>
+      <p class="small muted" style="margin:4px 0 0;">Moku <?= $reqDone ?> iš <?= $reqTotal ?><?= $reqPending ? ' · ' . $reqPending . ' laukia trenerio patvirtinimo' : '' ?><?= $reqDone === $reqTotal ? ' - puiku, esi pasiruošęs (-usi)! 🎉' : '' ?></p>
+      <p class="small muted" style="margin:2px 0 0;">Paspausk ☆, kai moki. Treneris patvirtins - ir gausi XP.</p>
     <?php endif; ?>
     <?php if (!$reqs): ?>
       <p class="muted" style="margin-top:14px;">Šio diržo programos treneris dar neįkėlė.</p>
@@ -157,16 +165,23 @@ page_start('Egzaminas', ['noindex' => true, 'account' => 'egzaminas']);
     <?php foreach ($reqs as $section => $items): ?>
       <h3 class="req-section"><?= e(REQ_SECTIONS[$section]) ?></h3>
       <ul class="req-list">
-        <?php foreach ($items as $r): $isDone = isset($done[(int) $r['id']]); ?>
-          <li id="r<?= (int) $r['id'] ?>" class="<?= $isDone ? 'done' : '' ?>">
-            <form method="post" class="inline-form">
-              <?= csrf_field() ?>
-              <input type="hidden" name="action" value="req"><input type="hidden" name="member_id" value="<?= $mid ?>">
-              <input type="hidden" name="req_id" value="<?= (int) $r['id'] ?>"><input type="hidden" name="done" value="<?= $isDone ? '0' : '1' ?>">
-              <button class="req-check" type="submit" aria-label="<?= $isDone ? 'Pažymėta, kad moku - atžymėti' : 'Pažymėti, kad moku' ?>"><?= $isDone ? '★' : '☆' ?></button>
-            </form>
+        <?php foreach ($items as $r): $st = $done[(int) $r['id']] ?? null; $xp = (int) ($r['xp'] ?? 0); ?>
+          <li id="r<?= (int) $r['id'] ?>" class="<?= $st === 'approved' ? 'done' : ($st === 'pending' ? 'pending' : '') ?>">
+            <?php if ($st === 'approved'): ?>
+              <span class="req-check" title="Treneris patvirtino">★</span>
+            <?php else: ?>
+              <form method="post" class="inline-form">
+                <?= csrf_field() ?>
+                <input type="hidden" name="action" value="req"><input type="hidden" name="member_id" value="<?= $mid ?>">
+                <input type="hidden" name="req_id" value="<?= (int) $r['id'] ?>"><input type="hidden" name="done" value="<?= $st ? '0' : '1' ?>">
+                <button class="req-check" type="submit" aria-label="<?= $st ? 'Laukia trenerio patvirtinimo - atšaukti' : 'Pažymėti, kad moku' ?>" title="<?= $st ? 'Laukia trenerio patvirtinimo. Paspaudus - atšaukti.' : 'Moku' ?>"><?= $st ? '⏳' : '☆' ?></button>
+              </form>
+            <?php endif; ?>
             <div class="req-body">
-              <strong><?= e($r['title']) ?></strong>
+              <div class="req-title"><strong><?= e($r['title']) ?></strong>
+                <?php if ($xp > 0): ?><span class="xp-chip<?= $st === 'approved' ? ' earned' : '' ?>"><?= $st === 'approved' ? '✓ ' : '+' ?><?= $xp ?> XP</span><?php endif; ?>
+                <?php if ($st === 'pending'): ?><span class="req-wait">laukia trenerio</span><?php endif; ?>
+              </div>
               <?php if ($r['body']): ?><div class="small"><?= text_to_html($r['body']) ?></div><?php endif; ?>
               <?php if ($r['lesson_id']): ?><a class="small" href="<?= url('pamokos.php?id=' . (int) $r['lesson_id']) ?>">Pamoka: <?= e($r['lesson_title']) ?> →</a><?php endif; ?>
               <?php if ($r['youtube_id']): ?>

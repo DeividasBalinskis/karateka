@@ -19,6 +19,7 @@ if (is_post()) {
     $title = post('title');
     $yt = post('youtube') !== '' ? youtube_id(post('youtube')) : null;
     $lesson = (int) post('lesson_id') ?: null;
+    $xp = max(0, min(1000, (int) post('xp')));
     if ($title === '') {
         $errors[] = 'Įveskite, ko reikia (pvz. „Heian Shodan“).';
     }
@@ -27,12 +28,12 @@ if (is_post()) {
     }
     if (!$errors) {
         if ($rid) {
-            q('UPDATE belt_requirements SET section = ?, title = ?, body = ?, youtube_id = ?, lesson_id = ?, sort_order = ? WHERE id = ?',
-                [$section, $title, post('body') ?: null, $yt, $lesson, (int) post('sort_order'), $rid]);
+            q('UPDATE belt_requirements SET section = ?, title = ?, body = ?, youtube_id = ?, lesson_id = ?, sort_order = ?, xp = ? WHERE id = ?',
+                [$section, $title, post('body') ?: null, $yt, $lesson, (int) post('sort_order'), $xp, $rid]);
         } else {
             $next = (int) q_value('SELECT COALESCE(MAX(sort_order), 0) + 1 FROM belt_requirements WHERE belt_level = ? AND section = ?', [$belt, $section]);
-            q('INSERT INTO belt_requirements (belt_level, section, title, body, youtube_id, lesson_id, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?)',
-                [$belt, $section, $title, post('body') ?: null, $yt, $lesson, $next]);
+            q('INSERT INTO belt_requirements (belt_level, section, title, body, youtube_id, lesson_id, sort_order, xp) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+                [$belt, $section, $title, post('body') ?: null, $yt, $lesson, $next, $xp]);
         }
         flash('ok', 'Išsaugota.');
         redirect($back);
@@ -50,11 +51,12 @@ function req_form(int $belt, ?array $r, array $lessons): string
 {
     $html = '<form method="post" class="form req-form">' . csrf_field()
         . '<input type="hidden" name="dirzas" value="' . $belt . '"><input type="hidden" name="rid" value="' . (int) ($r['id'] ?? 0) . '">'
-        . '<div class="form-row' . ($r ? ' three' : '') . '"><label>Dalis <select name="section">';
+        . '<div class="form-row ' . ($r ? 'four' : 'three') . '"><label>Dalis <select name="section">';
     foreach (REQ_SECTIONS as $k => $label) {
         $html .= '<option value="' . $k . '"' . (($r['section'] ?? 'kihon') === $k ? ' selected' : '') . '>' . e($label) . '</option>';
     }
     $html .= '</select></label><label>Ko reikia <input type="text" name="title" value="' . e($r['title'] ?? '') . '" placeholder="pvz. Heian Shodan" required></label>'
+        . '<label>XP <span class="hint">patvirtinus</span><input type="number" name="xp" min="0" max="1000" value="' . (int) ($r['xp'] ?? 20) . '"></label>'
         . ($r ? '<label>Eilė <input type="number" name="sort_order" value="' . (int) $r['sort_order'] . '"></label>' : '') . '</div>'
         . '<label>Paaiškinimas <span class="hint">nebūtina</span><textarea name="body" rows="2">' . e($r['body'] ?? '') . '</textarea></label>'
         . '<div class="form-row"><label>YouTube <span class="hint">nebūtina</span><input type="text" name="youtube" value="' . (!empty($r['youtube_id']) ? 'https://youtu.be/' . e($r['youtube_id']) : '') . '"></label>'
@@ -71,7 +73,8 @@ page_start('Egzaminų programa', ['admin' => true]);
 <a class="small" href="<?= url('admin/testai.php') ?>">← Testai</a>
 <div class="page-head" style="margin-top:8px;">
   <h1 class="styled">Egzaminų programa</h1>
-  <p class="muted" style="margin:0;">Ko reikia norint gauti diržą. Nariai mato savo kito diržo programą skiltyje „Egzaminas“ ir žymi, ką jau moka.</p>
+  <p class="muted" style="margin:0;">Ko reikia norint gauti diržą. Nariai mato savo kito diržo programą skiltyje „Egzaminas“ ir žymi „Moku“ -
+    jūs patvirtinate pranešime (Treneriams → pradžia), ir narys gauna to punkto XP. XP kelia paskyros lygį, diržo jie nesuteikia.</p>
 </div>
 <div class="top-tabs belt-tabs">
   <?php foreach (BELTS as $lvl => [$kyu, $name, $color]): if ($lvl === 1 || $lvl > 12) { continue; } ?>
@@ -86,7 +89,7 @@ page_start('Egzaminų programa', ['admin' => true]);
     <h3 class="req-section"><?= e(REQ_SECTIONS[$section]) ?></h3>
     <?php foreach ($items as $r): ?>
       <details class="req-admin">
-        <summary><strong><?= e($r['title']) ?></strong><?= $r['youtube_id'] ? ' <span class="badge">video</span>' : '' ?><?= $r['lesson_id'] ? ' <span class="badge">pamoka</span>' : '' ?>
+        <summary><strong><?= e($r['title']) ?></strong> <span class="xp-chip">+<?= (int) $r['xp'] ?> XP</span><?= $r['youtube_id'] ? ' <span class="badge">video</span>' : '' ?><?= $r['lesson_id'] ? ' <span class="badge">pamoka</span>' : '' ?>
           <?php if ($r['body']): ?><span class="small muted"> · <?= e(mb_strimwidth($r['body'], 0, 80, '…')) ?></span><?php endif; ?></summary>
         <?= req_form($belt, $r, $lessons) ?>
         <form method="post" class="inline-form" onsubmit="return confirm('Ištrinti punktą?')">
