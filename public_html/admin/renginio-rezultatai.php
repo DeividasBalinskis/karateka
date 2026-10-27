@@ -12,6 +12,9 @@ $options = EVENT_RESULTS[$event['type']];
 
 if (is_post()) {
     csrf_check();
+    if (!is_admin($me)) {
+        forbidden();   // galutinius rezultatus ir taškus tvirtina Denis (adminas)
+    }
     $results = [];
     foreach ((array) ($_POST['result'] ?? []) as $mid => $r) {
         $r = is_string($r) ? $r : '';
@@ -36,6 +39,16 @@ if (is_post()) {
             flash('ok', "Diržas pakeltas: $raised nar.");
         }
     }
+    // Išlaikiusiems egzaminą - šventė ekrane (fejerverkai) ir pranešimas paskyroje
+    if ($event['type'] === 'exam') {
+        foreach ($results as $mid => $r) {
+            if ($r === 'yes' && ($before[$mid] ?? '') !== 'yes') {
+                $m = q_one('SELECT first_name, belt_level FROM members WHERE id = ?', [$mid]);
+                notify_member((int) $mid, 'exam_passed', ($m['first_name'] ?? '') . ' išlaikė egzaminą!',
+                    $event['title'] . ($m && $m['belt_level'] !== null ? ' · ' . belt_label((int) $m['belt_level']) : ''), 'egzaminas.php?m=' . (int) $mid, (int) $event['id']);
+            }
+        }
+    }
     flash('ok', $changes ? 'Rezultatai išsaugoti, taškai atnaujinti.' : 'Pakeitimų nebuvo.');
     redirect('admin/renginio-rezultatai.php?id=' . $id);
 }
@@ -44,7 +57,7 @@ if (is_post()) {
 // Jei renginyje yra užsiregistravusių dalyvių - rodomi tik jie (ir jau turintys rezultatą), nebent pasirinkta „rodyti visus“.
 $groupIds = q('SELECT group_id FROM event_groups WHERE event_id = ?', [$id])->fetchAll(PDO::FETCH_COLUMN);
 $current = event_results($event);
-$going = array_map('intval', q('SELECT member_id FROM event_participants WHERE event_id = ? AND status = "going"', [$id])->fetchAll(PDO::FETCH_COLUMN));
+$going = array_map('intval', q('SELECT member_id FROM event_participants WHERE event_id = ? AND status IN ("going", "late")', [$id])->fetchAll(PDO::FETCH_COLUMN));
 $onlyGoing = $going && !get('visi');
 $where = $onlyGoing
     ? 'm.id IN (' . implode(',', $going) . ')'
@@ -120,9 +133,11 @@ page_start('Rezultatai: ' . $event['title'], ['admin' => true, 'section' => 'ren
   <?php if ($event['type'] === 'exam'): ?>
     <label class="raise-belt"><input type="checkbox" name="raise_belt" value="1"><span>Naujai išlaikiusiems pakelti diržą vienu lygiu <span class="small muted">(pvz. 9 kyu → 8 kyu; nariams be diržo - geltonas)</span></span></label>
   <?php endif; ?>
+  <?php if (is_admin($me)): ?>
   <div class="sticky-save">
     <button class="btn btn-primary btn-block" type="submit">Išsaugoti rezultatus</button>
   </div>
+  <?php else: ?><p class="small muted">Rezultatus ir taškus tvirtina administratorius.</p><?php endif; ?>
 </form>
 <?php endif; ?>
 <?php

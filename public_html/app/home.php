@@ -388,7 +388,7 @@ function home_render_block(array $b): string
                 . '<a class="events-all" href="renginiai.php">' . hb_t('link', $d['link']) . '</a></div><div class="events-grid">';
             foreach ($events as $ev) {
                 $ts = strtotime($ev['starts_on']);
-                $html .= '<div class="he-wrap reveal"><a class="panel home-event" href="renginiai.php#e' . (int) $ev['id'] . '">'
+                $html .= '<div class="he-wrap reveal"><a class="panel home-event" href="renginys.php?id=' . (int) $ev['id'] . '">'
                     . '<div class="he-date"><span class="d">' . date('j', $ts) . '</span><span class="m">' . e(mb_substr(LT_MONTHS_GEN[(int) date('n', $ts)], 0, 3)) . '</span></div>'
                     . '<div class="he-body"><span class="he-type t-' . e($ev['type']) . '">' . e(EVENT_TYPES[$ev['type']]) . '</span><h3>' . e($ev['title']) . '</h3>'
                     . '<div class="he-meta">' . e(fmt_date($ev['starts_on'])) . ($ev['ends_on'] && $ev['ends_on'] !== $ev['starts_on'] ? ' – ' . e(fmt_date($ev['ends_on'])) : '')

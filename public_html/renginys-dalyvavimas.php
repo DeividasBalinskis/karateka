@@ -9,7 +9,7 @@ if (!is_post()) {
 csrf_check();
 
 $back = post('back');
-$back = preg_match('#^(mano-renginiai|renginiai|egzaminas)\.php(\?[\w=&-]*)?(\#[\w-]+)?$#', $back) ? $back : 'renginiai.php';
+$back = preg_match('#^(mano-renginiai|renginiai|renginys|egzaminas|paskyra)\.php(\?[\w=&-]*)?(\#[\w-]+)?$#', $back) ? $back : 'renginiai.php';
 $eventId = (int) post('event_id');
 $memberId = (int) post('member_id');
 $status = post('status');
@@ -31,7 +31,28 @@ if ($status === 'going' && $role === 'participant' && !event_participant($eventI
     flash('err', 'Šis renginys skirtas kitoms grupėms.');
     redirect($back);
 }
+$who = $m['first_name'] . ' ' . $m['last_name'];
+$current = event_participant($eventId, $memberId);
+// Po termino „Dalyvausiu“ - prašymas Deniui: narys sąraše kaip „vėlavo“, kol Denis patvirtins
+if ($status === 'going' && date('Y-m-d') > event_deadline($ev) && ($current['status'] ?? '') !== 'going') {
+    set_participation($eventId, $memberId, 'late', null, $role);
+    notify_admins('late_request', 'Pavėlavo užsiregistruoti: ' . $who, $ev['title'] . ' (' . fmt_date($ev['starts_on'], true) . '). Registracija baigėsi ' . fmt_date(event_deadline($ev)) . '.',
+        'admin/renginio-dalyviai.php?id=' . $eventId, $memberId, $eventId);
+    flash('ok', "{$m['first_name']}: registracija jau baigėsi, todėl Denis gavo prašymą. Kol jis patvirtins - sąraše pažymėta „vėlavo“.");
+    redirect($back);
+}
 set_participation($eventId, $memberId, $status, null, $status === 'going' ? $role : null);
+if ($ev['type'] === 'exam') {
+    if ($status === 'going') {
+        notify_admins('exam_registration', 'Užsiregistravo į egzaminą: ' . $who, $ev['title'] . ' · ' . fmt_date($ev['starts_on'], true)
+            . ($m['belt_level'] !== null ? ' · dabar ' . BELTS[(int) $m['belt_level']][0] : ''), 'admin/renginio-dalyviai.php?id=' . $eventId, $memberId, $eventId);
+    } else {
+        notifications_done('exam_registration', $eventId, $memberId);
+    }
+}
+if ($status === 'declined') {
+    notifications_done('late_request', $eventId, $memberId);
+}
 flash('ok', $status === 'going'
     ? "{$m['first_name']}: " . ($role === 'referee' ? 'teisėjaus' : 'dalyvaus') . " - {$ev['title']}."
     : "{$m['first_name']}: pažymėta, kad negalės - {$ev['title']}.");
