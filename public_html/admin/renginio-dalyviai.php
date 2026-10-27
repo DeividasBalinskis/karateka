@@ -9,9 +9,14 @@ if (!$event) {
     not_found();
 }
 $back = 'admin/renginio-dalyviai.php?id=' . $id;
+// Galutinį dalyvių sąrašą tvarko tik Denis (adminas); kiti treneriai mato
+$canEdit = is_admin($me);
 
 if (is_post()) {
     csrf_check();
+    if (!$canEdit) {
+        forbidden();
+    }
     $action = post('action');
     $mid = (int) post('member_id');
 
@@ -23,12 +28,30 @@ if (is_post()) {
         }
         if (!$ids) {
             flash('err', 'Pažymėkite grupes arba narius, kuriuos kviečiate.');
+        } elseif (!empty($_POST['as_going'])) {
+            // Denis prideda pats - iškart „Dalyvaus“, be kvietimo
+            $n = 0;
+            foreach (array_unique($ids) as $x) {
+                if ((event_participant($id, $x)['status'] ?? '') !== 'going') {
+                    set_participation($id, $x, 'going', (int) $me['id']);
+                    $n++;
+                }
+            }
+            flash('ok', $n ? "Pridėta dalyvaujančių: $n" : 'Visi pažymėti jau dalyvauja.');
         } else {
-            $n = invite_members($event, $ids, (int) $me['id'], !empty($_POST['send_email']));
+            $n = invite_members($event, $ids, (int) $me['id'], !empty($_POST['send_email']), !empty($_POST['send_sms']));
             flash('ok', $n ? "Pakviesta: $n" . (!empty($_POST['send_email']) ? ' (išsiųsti laiškai)' : '') : 'Visi pažymėti jau yra sąraše.');
         }
     } elseif ($mid && in_array($action, ['going', 'declined', 'invited'], true)) {
+        $was = event_participant($id, $mid)['status'] ?? '';
         set_participation($id, $mid, $action, (int) $me['id']);
+        if ($was === 'late') {
+            notifications_done('late_request', $id, $mid);
+            if ($action === 'going') {
+                notify_member($mid, 'late_approved', 'Dalyvavimas patvirtintas: ' . $event['title'], 'Denis patvirtino - lauksime ' . fmt_date($event['starts_on'], true) . '.',
+                    'renginys.php?id=' . $id, $id, false);
+            }
+        }
     } elseif ($mid && $action === 'remove') {
         remove_participation($id, $mid);
     } elseif ($mid && $action === 'role') {
@@ -43,7 +66,7 @@ if (is_post()) {
 $rows = q_all('SELECT ep.*, m.first_name, m.last_name, m.birth_date, m.belt_level, g.name AS group_name
                  FROM event_participants ep JOIN members m ON m.id = ep.member_id LEFT JOIN training_groups g ON g.id = m.group_id
                 WHERE ep.event_id = ? ORDER BY g.sort_order, m.last_name, m.first_name', [$id]);
-$byStatus = ['going' => [], 'invited' => [], 'declined' => []];
+$byStatus = ['going' => [], 'late' => [], 'invited' => [], 'declined' => []];
 foreach ($rows as $r) {
     $byStatus[$r['status']][] = $r;
 }
@@ -69,8 +92,8 @@ page_start('Dalyviai: ' . $event['title'], ['admin' => true, 'section' => 'rengi
     <div><span class="badge type-badge t-<?= e($event['type']) ?>"><?= e(EVENT_TYPES[$event['type']]) ?></span></div>
     <h1 class="styled" style="margin-top:8px;"><?= e($event['title']) ?></h1>
     <p><?= e(fmt_date($event['starts_on'], true)) ?><?= $event['start_time'] ? ', ' . e(fmt_time($event['start_time'])) : '' ?><?= $event['location'] ? ' · ' . e($event['location']) : '' ?></p>
-    <p class="small muted no-print"><?= !empty($event['registration']) ? 'Nariai gali registruotis patys' . ($event['registration_until'] ? ' iki ' . e(fmt_date($event['registration_until'])) : '') . '.' : 'Nariai patys registruotis negali - tik pagal kvietimą.' ?>
-      <a href="<?= url('admin/renginiai.php?edit=' . $id) ?>">Keisti</a></p>
+    <p class="small muted no-print"><?= !empty($event['registration']) ? 'Nariai gali registruotis patys iki ' . e(fmt_date(event_deadline($event))) . '.' : 'Nariai patys registruotis negali - tik pagal kvietimą (atsakyti iki ' . e(fmt_date(event_deadline($event))) . ').' ?>
+      Nariai mato tik dalyvių skaičių. <?php if ($canEdit): ?><a href="<?= url('admin/renginiai.php?edit=' . $id) ?>">Keisti</a><?php endif; ?></p>
   </div>
   <div class="row no-print" style="gap:8px;">
     <?php if (isset(EVENT_RESULTS[$event['type']]) && $event['starts_on'] <= date('Y-m-d')): ?><a class="btn btn-primary btn-sm" href="<?= url('admin/renginio-rezultatai.php?id=' . $id) ?>">Rezultatai →</a><?php endif; ?>
@@ -78,8 +101,9 @@ page_start('Dalyviai: ' . $event['title'], ['admin' => true, 'section' => 'rengi
   </div>
 </div>
 
+<?php if (!$canEdit): ?><p class="small muted">Dalyvių sąrašą tvarko administratorius.</p><?php endif; ?>
 <div class="participants-grid">
-  <?php foreach ($byStatus as $status => $list): ?>
+  <?php foreach ($byStatus as $status => $list): if ($status === 'late' && !$list) { continue; } ?>
     <div class="panel card p-col p-<?= $status ?>">
       <div class="kicker"><?= e(PARTICIPANT_STATUS[$status]) ?> · <?= count($list) ?></div>
       <?php if (!$list): ?><p class="muted small"><?= $status === 'going' ? 'Dar niekas.' : '-' ?></p><?php endif; ?>
@@ -91,12 +115,12 @@ page_start('Dalyviai: ' . $event['title'], ['admin' => true, 'section' => 'rengi
               <div class="muted"><?= e($r['group_name'] ?: 'be grupės') ?> · <?= age_on($r['birth_date']) ?> m.<?= $r['belt_level'] !== null ? ' · ' . e(belt_label((int) $r['belt_level'])) : '' ?></div>
               <?= participant_extra_info($event, $r) ?>
             </span>
-            <span class="p-actions no-print">
-              <?php if ($status !== 'going'): ?><?= p_btn($mid, 'going', '✓', 'btn-ghost', 'Dalyvaus') ?><?php endif; ?>
+            <?php if ($canEdit): ?><span class="p-actions no-print">
+              <?php if ($status === 'late'): ?><?= p_btn($mid, 'going', '✓ Patvirtinti', 'btn-primary', 'Patvirtinti dalyvavimą') ?><?php elseif ($status !== 'going'): ?><?= p_btn($mid, 'going', '✓', 'btn-ghost', 'Dalyvaus') ?><?php endif; ?>
               <?php if ($status !== 'declined'): ?><?= p_btn($mid, 'declined', '✕', 'btn-ghost', 'Negalės') ?><?php endif; ?>
               <?php if ($event['type'] === 'competition' && (in_array('teisejas', $mt, true) || $r['role'] === 'referee')): ?><?= p_btn($mid, 'role', $r['role'] === 'referee' ? 'Sportininkas' : 'Teisėjas', 'btn-ghost', 'Keisti vaidmenį') ?><?php endif; ?>
               <?= p_btn($mid, 'remove', 'Išimti', 'btn-ghost') ?>
-            </span>
+            </span><?php endif; ?>
           </li>
         <?php endforeach; ?>
       </ul>
@@ -104,6 +128,7 @@ page_start('Dalyviai: ' . $event['title'], ['admin' => true, 'section' => 'rengi
   <?php endforeach; ?>
 </div>
 
+<?php if ($canEdit): ?>
 <form method="post" class="panel card form no-print" id="kviesti">
   <?= csrf_field() ?>
   <input type="hidden" name="action" value="invite">
@@ -112,8 +137,13 @@ page_start('Dalyviai: ' . $event['title'], ['admin' => true, 'section' => 'rengi
   <div style="margin-top:6px;">
     <?= member_tree_field([], [], ['locked' => $inList, 'locked_title' => 'jau sąraše', 'hint' => 'Pažymėkite visą grupę arba išskleiskite ▸ ir pasirinkite tik norimus.']) ?>
   </div>
-  <label class="check" style="margin-top:12px;"><input type="checkbox" name="send_email" value="1" checked><span>Išsiųsti kvietimą el. paštu</span></label>
+  <div class="seg-choice" style="margin-top:12px;">
+    <label class="check"><input type="checkbox" name="send_email" value="1"><span>Ir el. paštu</span></label>
+    <label class="check"><input type="checkbox" name="send_sms" value="1"><span>Ir SMS tėvams<?= sms_live() ? '' : ' <span class="hint">(bandomasis režimas)</span>' ?></span></label>
+    <label class="check"><input type="checkbox" name="as_going" value="1"><span>Ne kviesti, o iškart pažymėti „Dalyvaus“</span></label>
+  </div>
   <div><button class="btn btn-primary" type="submit">Pakviesti</button></div>
 </form>
+<?php endif; ?>
 <?php
 page_end();
