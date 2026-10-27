@@ -995,8 +995,8 @@ h1 .ls-icon{font-size:1.5rem; vertical-align:middle; margin-right:4px;}
 .xp-card.compact .xp-belt{display:none;}
 .xp-chip{display:inline-block; font-family:'JetBrains Mono',monospace; font-weight:700; font-size:0.68rem; padding:2px 7px; border-radius:8px; background:rgba(240,203,78,0.24); color:#7A5B08; white-space:nowrap; vertical-align:1px;}
 .xp-chip.earned{background:rgba(47,107,90,0.14); color:var(--accent-dark);}
-.xp-setting{display:flex; align-items:center; gap:8px; margin:4px 0 14px; font-weight:600; font-size:0.9rem;}
-.xp-setting input{width:96px; padding:8px 10px; font-size:14px;}
+.form label.xp-setting, .xp-setting{display:flex; align-items:center; gap:8px; margin:4px 0 14px; font-weight:600; font-size:0.9rem;}
+.form label.xp-setting input:not([type=checkbox]):not([type=radio]):not([type=file]){width:96px; padding:8px 10px; font-size:14px;}
 .req-title{display:flex; flex-wrap:wrap; gap:4px 8px; align-items:baseline;}
 .req-list li.done .req-title strong{text-decoration:line-through; text-decoration-color:rgba(47,107,90,0.5);}
 span.req-check{display:inline-flex; align-items:center; justify-content:center; cursor:default;}

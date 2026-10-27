@@ -36,7 +36,7 @@ $current = event_participant($eventId, $memberId);
 // Po termino „Dalyvausiu“ - prašymas Deniui: narys sąraše kaip „vėlavo“, kol Denis patvirtins
 if ($status === 'going' && date('Y-m-d') > event_deadline($ev) && ($current['status'] ?? '') !== 'going') {
     set_participation($eventId, $memberId, 'late', null, $role);
-    notify_admins('late_request', 'Pavėlavo užsiregistruoti: ' . $who, $ev['title'] . ' (' . fmt_date($ev['starts_on'], true) . '). Registracija baigėsi ' . fmt_date(event_deadline($ev)) . '.',
+    notify_admins('late_request', 'Pavėlavo užsiregistruoti: ' . $who, $ev['title'] . ' (' . fmt_date($ev['starts_on'], true) . '). Registracija baigėsi ' . fmt_date(event_deadline($ev)),
         'admin/renginio-dalyviai.php?id=' . $eventId, $memberId, $eventId);
     flash('ok', "{$m['first_name']}: registracija jau baigėsi, todėl Denis gavo prašymą. Kol jis patvirtins - sąraše pažymėta „vėlavo“.");
     redirect($back);

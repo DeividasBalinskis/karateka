@@ -98,6 +98,19 @@ if (is_post()) {
         redirect(preg_match('~^pamokos\.php\?id=\d+$~', post('back')) ? post('back') : 'paskyra.php?m=' . $mid . (post('back') === 'svarbu' ? '#svarbu' : '#pastabos'));
     }
 
+    // Denio atsakymas perskaitytas („Svarbu“): visa tema - pastaba, pamoka, renginys, naujiena ar bendros žinutės
+    if ($action === 'replies_read') {
+        $mid = (int) post('member_id');
+        $topic = post('topic');
+        if (account_relation($aid, $mid) && preg_match('~^(general|[nlew]\d+)$~', $topic)) {
+            $cols = ['n' => 'note_id', 'l' => 'lesson_id', 'e' => 'event_id', 'w' => 'news_id'];
+            $where = $topic === 'general' ? 'note_id IS NULL AND lesson_id IS NULL AND event_id IS NULL AND news_id IS NULL'
+                : $cols[$topic[0]] . ' = ' . (int) substr($topic, 1) . ($topic[0] !== 'n' ? ' AND note_id IS NULL' : '');
+            q("UPDATE member_messages SET read_at = NOW() WHERE member_id = ? AND from_staff = 1 AND read_at IS NULL AND $where", [$mid]);
+        }
+        redirect('paskyra.php?m=' . $mid . '#svarbu');
+    }
+
     if ($action === 'task_done' || $action === 'task_undo') {
         $note = q_one('SELECT cn.* FROM coach_notes cn JOIN account_members am ON am.member_id = cn.member_id WHERE cn.id = ? AND am.account_id = ? AND cn.is_task = 1',
             [(int) post('note_id'), $aid]);
@@ -145,8 +158,11 @@ if ($active) {
     // Žinutės su treneriu: atsakymai po pastabomis, klausimai prie pamokų ir bendros. Atidarius - trenerio atsakymai perskaityti.
     $noteMsgs = note_messages(array_column($notes, 'id'));
     $threads = member_free_threads((int) $selected['id']);
-    $newReplies = member_unread_replies((int) $selected['id']);
-    mark_staff_messages_read((int) $selected['id']);
+    // Nauji Denio atsakymai: po vieną (naujausią) kiekvienai temai. Lieka „Svarbu“, kol paspaudžiama „Perskaičiau“ ar atidaromas pokalbis.
+    $newReplies = [];
+    foreach (message_rows('mm.member_id = ? AND mm.from_staff = 1 AND mm.read_at IS NULL', [(int) $selected['id']]) as $r) {
+        $newReplies[$r['note_id'] ? 'n' . $r['note_id'] : message_topic_key($r)] = $r;
+    }
 
     // „Svarbu“: kvietimai (su laikmačiu), egzamino testas, naujos pastabos / užduotys / atsiųstos pamokos, pranešimai
     $invites = q_all('SELECT e.*, ep.status AS p_status FROM event_participants ep JOIN events e ON e.id = ep.event_id
@@ -224,7 +240,7 @@ page_start($tab === 'nustatymai' ? 'Nustatymai' : 'Mano paskyra', ['noindex' => 
           <span class="notif-icon" aria-hidden="true">📝</span>
           <div class="notif-body">
             <div class="notif-title">Prieš egzaminą išlaikyk testą</div>
-            <div class="notif-text"><?= e($examSoon['title']) ?> · <?= e(fmt_date($examSoon['starts_on'], true)) ?>. Reikia surinkti bent <?= (int) $examTest['quiz']['pass_percent'] ?> %<?= $examTest['best'] !== null ? ' (geriausias: ' . (int) $examTest['best'] . ' %)' : '' ?>.</div>
+            <div class="notif-text"><?= e($examSoon['title']) ?> · <?= e(fmt_date($examSoon['starts_on'], true)) ?> Reikia surinkti bent <?= (int) $examTest['quiz']['pass_percent'] ?> %<?= $examTest['best'] !== null ? ' (geriausias: ' . (int) $examTest['best'] . ' %)' : '' ?>.</div>
           </div>
           <div class="notif-actions">
             <a class="btn btn-primary btn-sm" href="<?= url('testas.php?q=' . (int) $examTest['quiz']['id'] . '&m=' . (int) $selected['id']) ?>">Laikyti testą</a>
@@ -256,13 +272,24 @@ page_start($tab === 'nustatymai' ? 'Nustatymai' : 'Mano paskyra', ['noindex' => 
           </div>
         </li>
       <?php endforeach; ?>
-      <?php if ($newReplies): ?>
+      <?php foreach ($newReplies as $key => $r): ?>
         <li class="notif is-new t-reply">
           <span class="notif-icon" aria-hidden="true">💬</span>
-          <div class="notif-body"><div class="notif-title"><a href="#zinutes">Treneris atsakė<?= $newReplies > 1 ? ' (' . $newReplies . ')' : '' ?></a></div>
-            <div class="notif-text">Atsakymą rasite žemiau, skiltyje „Žinutės treneriui“.</div></div>
+          <div class="notif-body">
+            <div class="notif-title"><?= e(message_author($r, false)) ?> atsakė<?= $key[0] === 'n' ? ': <a href="#' . e($key) . '">į pastabą</a>' : ($key !== 'general' ? ' · ' . message_topic_title($key, $r) : '') ?></div>
+            <div class="notif-text"><?= e(mb_strimwidth(trim(preg_replace('~\s+~u', ' ', $r['body'])), 0, 200, '…')) ?></div>
+            <div class="notif-meta"><?= e(notification_when($r['created_at'])) ?></div>
+          </div>
+          <div class="notif-actions">
+            <?php if ($key === 'general'): ?><button type="button" class="btn btn-primary btn-sm" data-open-chat data-member="<?= (int) $selected['id'] ?>">Atsakyti</button><?php endif; ?>
+            <form method="post" class="inline-form">
+              <?= csrf_field() ?><input type="hidden" name="action" value="replies_read"><input type="hidden" name="member_id" value="<?= (int) $selected['id'] ?>">
+              <input type="hidden" name="topic" value="<?= e($key) ?>">
+              <button class="btn btn-ghost btn-sm" type="submit">✓ Perskaičiau</button>
+            </form>
+          </div>
         </li>
-      <?php endif; ?>
+      <?php endforeach; ?>
     </ul>
     <?= render_notifications($notifs, $back . '#svarbu') ?>
   </section>

@@ -189,7 +189,8 @@ function celebration_html(): string
   var f = document.getElementById("celebrateForm");
   f.addEventListener("submit", function (ev) {
     ev.preventDefault();
-    fetch(f.action, { method: "POST", body: new FormData(f), credentials: "same-origin" }).catch(function () {});
+    // f.action netinka - formoje yra laukas name="action"
+    fetch(f.getAttribute("action"), { method: "POST", body: new FormData(f), credentials: "same-origin" }).catch(function () {});
     document.getElementById("celebrate").remove();
   });
 })();</script>';

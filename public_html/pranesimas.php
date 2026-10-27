@@ -44,7 +44,7 @@ switch (post('action')) {
         if ($ev) {
             set_participation((int) $ev['id'], (int) $n['member_id'], 'going', (int) $a['id']);
             notify_member((int) $n['member_id'], 'late_approved', 'Dalyvavimas patvirtintas: ' . $ev['title'],
-                'Denis patvirtino - lauksime ' . fmt_date($ev['starts_on'], true) . '.', 'renginys.php?id=' . (int) $ev['id'], (int) $ev['id'], false);
+                'Denis patvirtino - lauksime ' . fmt_date($ev['starts_on'], true), 'renginys.php?id=' . (int) $ev['id'], (int) $ev['id'], false);
             flash('ok', 'Dalyvavimas patvirtintas.');
         }
         notifications_done('late_request', (int) $n['ref_id'], (int) $n['member_id']);

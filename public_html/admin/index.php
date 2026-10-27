@@ -107,7 +107,7 @@ document.getElementById('settingsBtn').addEventListener('click', function () {
         <?php endforeach; ?>
       </ul>
     <?php else: ?>
-      <p class="muted">Šiandien treniruočių nėra.<?php if ($nextDay): ?> Artimiausios - <?= e(mb_strtolower(LT_WEEKDAYS[(int) date('N', strtotime($nextDay))])) ?>, <?= e(fmt_date($nextDay)) ?>.<?php endif; ?></p>
+      <p class="muted">Šiandien treniruočių nėra.<?php if ($nextDay): ?> Artimiausios - <?= e(mb_strtolower(LT_WEEKDAYS[(int) date('N', strtotime($nextDay))])) ?>, <?= e(fmt_date($nextDay)) ?><?php endif; ?></p>
     <?php endif; ?>
   </div>
 
