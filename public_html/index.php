@@ -19,6 +19,7 @@ $page = home_page();
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="<?= e(asset_url('assets/header.css')) ?>">
+<link rel="stylesheet" href="<?= e(asset_url('assets/widgets.css')) ?>">
 <script>document.documentElement.classList.add('js');</script>
 <style>
   :root{
@@ -300,6 +301,7 @@ $page = home_page();
   .picker-schedule .schedule-line{display:block; padding:7px 0;}
   .picker-schedule .schedule-day{display:block;}
   .picker-schedule .schedule-time{display:block; margin-top:2px; font-size:0.82em;}
+  .schedule-price .schedule-time{white-space:normal; color:#F0CB4E; font-family:'Inter',sans-serif; letter-spacing:0;}
 
   .picker-schedule .schedule-placeholder{font-size:0.85em; color:#8F8874; font-style:italic;}
   .picker-schedule .schedule-name{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:0.92em; line-height:1.3; color:#F7F4EC; margin-bottom:8px; overflow-wrap:break-word; hyphens:auto;}
@@ -780,6 +782,7 @@ foreach ($visible as $i => $b) {
   });
 
 </script>
+<?= page_widgets() ?>
 <script src="<?= e(asset_url('assets/header.js')) ?>"></script>
 
 </body>

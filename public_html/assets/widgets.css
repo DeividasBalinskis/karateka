@@ -1,0 +1,89 @@
+/* Visų puslapių valdikliai (ir pagrindiniame): pokalbis su Deniu apačioje dešinėje, šventė (naujas lygis / išlaikytas egzaminas) */
+
+/* ---------- Pokalbis ---------- */
+.chat-fab{
+  position:fixed; right:max(18px, env(safe-area-inset-right)); bottom:max(18px, env(safe-area-inset-bottom)); z-index:950;
+  display:inline-flex; align-items:center; gap:9px; height:52px; padding:0 20px 0 16px; border-radius:26px; border:none; cursor:pointer;
+  background:#17140F; color:#F7F4EC; font:600 15px/1 'Inter',sans-serif; text-decoration:none;
+  box-shadow:0 10px 30px rgba(23,20,15,0.28), 0 2px 6px rgba(23,20,15,0.18); transition:transform .15s, box-shadow .15s;
+}
+.chat-fab:hover{transform:translateY(-2px); box-shadow:0 14px 34px rgba(23,20,15,0.32); text-decoration:none; color:#F7F4EC;}
+.chat-fab:focus-visible{outline:3px solid #A85C7E; outline-offset:3px;}
+.chat-fab .count-badge{display:inline-flex; align-items:center; justify-content:center; min-width:20px; height:20px; padding:0 6px; border-radius:10px; background:#D9534F; color:#fff; font-size:12px; font-weight:700;}
+.chat-fab .count-badge[hidden]{display:none;}
+.chat.open .chat-fab{background:#2F6B5A;}
+.chat-hint{
+  position:fixed; right:max(18px, env(safe-area-inset-right)); bottom:calc(max(18px, env(safe-area-inset-bottom)) + 64px); z-index:950;
+  display:flex; gap:10px; align-items:flex-start; max-width:290px; padding:12px 12px 12px 16px; border-radius:16px 16px 4px 16px;
+  background:#fff; color:#17140F; font:14px/1.45 'Inter',sans-serif; box-shadow:0 14px 36px rgba(23,20,15,0.2); animation:chatIn .35s ease-out;
+}
+.chat-hint[hidden]{display:none;}
+.chat-hint-x{flex-shrink:0; border:none; background:none; font-size:20px; line-height:1; color:#4A453A; cursor:pointer; padding:0 2px;}
+.chat-panel{
+  position:fixed; right:max(18px, env(safe-area-inset-right)); bottom:calc(max(18px, env(safe-area-inset-bottom)) + 64px); z-index:960;
+  width:min(380px, calc(100vw - 36px)); max-height:min(560px, calc(100vh - 110px)); display:flex; flex-direction:column;
+  background:#FBFAF6; color:#17140F; border-radius:20px; overflow:hidden; font:15px/1.5 'Inter',sans-serif;
+  box-shadow:0 24px 60px rgba(23,20,15,0.28), 0 0 0 1px rgba(23,20,15,0.06); animation:chatIn .22s ease-out;
+}
+.chat-panel[hidden]{display:none;}
+@keyframes chatIn{from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:none;}}
+.chat-head{display:flex; align-items:center; gap:12px; padding:14px 14px 12px 16px; background:#17140F; color:#F7F4EC;}
+.chat-head strong{display:block; font-family:'Space Grotesk',sans-serif; font-size:16px; line-height:1.2;}
+.chat-head span{font-size:12px; opacity:0.75;}
+.chat-head > div{flex:1; min-width:0;}
+.chat-avatar{flex-shrink:0; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg,#A85C7E,#5C68A0); font:700 16px 'Space Grotesk',sans-serif; opacity:1 !important;}
+.chat-close{border:none; background:none; color:inherit; font-size:26px; line-height:1; cursor:pointer; padding:0 4px; opacity:0.8;}
+.chat-close:hover{opacity:1;}
+.chat-tabs{display:flex; gap:4px; padding:8px 10px 0; border-bottom:1px solid rgba(23,20,15,0.08);}
+.chat-tabs button{flex:1; border:none; background:none; padding:8px 6px 9px; font:600 13px 'Inter',sans-serif; color:#4A453A; cursor:pointer; border-bottom:2px solid transparent;}
+.chat-tabs button.active{color:#17140F; border-bottom-color:#A85C7E;}
+.chat-pane{display:flex; flex-direction:column; gap:8px; padding:10px 14px 14px; min-height:0; flex:1;}
+.chat-pane[hidden]{display:none;}
+.chat-member{display:flex; align-items:center; gap:8px; font-size:13px; color:#4A453A;}
+.chat-member select{padding:5px 8px; border-radius:8px; border:1px solid rgba(23,20,15,0.15); font:inherit; background:#fff;}
+.chat-thread{flex:1; min-height:120px; max-height:300px; overflow-y:auto; display:flex; flex-direction:column; gap:8px; padding:4px 2px;}
+.chat-empty{margin:auto; color:#4A453A; font-size:13px; text-align:center;}
+.chat-msg{max-width:86%; padding:8px 12px; border-radius:14px; background:#fff; border:1px solid rgba(23,20,15,0.07);}
+.chat-msg.from-staff{align-self:flex-start; background:rgba(47,107,90,0.1); border-color:rgba(47,107,90,0.2); border-bottom-left-radius:4px;}
+.chat-msg.from-me{align-self:flex-end; background:rgba(92,104,160,0.12); border-color:rgba(92,104,160,0.22); border-bottom-right-radius:4px;}
+.chat-meta{font-size:11px; color:#4A453A; margin-bottom:1px;}
+.chat-text{white-space:pre-wrap; word-wrap:break-word; font-size:14px;}
+.chat-form, .chat-anon{display:flex; flex-direction:column; gap:8px;}
+.chat-form{flex-direction:row; align-items:flex-end;}
+.chat-form textarea, .chat-anon textarea{flex:1; width:100%; min-height:44px; padding:9px 12px; border-radius:12px; border:1px solid rgba(23,20,15,0.15); font:inherit; font-size:14px; background:#fff; resize:none;}
+.chat-form textarea:focus, .chat-anon textarea:focus{outline:2px solid rgba(47,107,90,0.4); border-color:#2F6B5A;}
+.chat-anon .btn{align-self:flex-end;}
+.chat-panel .btn{display:inline-flex; align-items:center; justify-content:center; padding:10px 16px; font:700 13px 'Inter',sans-serif; border-radius:10px; border:none; cursor:pointer; background:#2F6B5A; color:#fff;}
+.chat-panel .btn:disabled{opacity:0.6; cursor:wait;}
+.chat-note{margin:0; font-size:12px; color:#4A453A;}
+.chat-ok{margin:0; font-size:13px; font-weight:600; color:#204B3F;}
+.chat-ok[hidden]{display:none;}
+@media (max-width:600px){
+  .chat-fab{height:54px; width:54px; padding:0; justify-content:center; border-radius:50%;}
+  .chat-fab-label{display:none;}
+  .chat-fab .count-badge{position:absolute; top:-3px; right:-3px;}
+  .chat-panel{right:0; left:0; bottom:0; width:100%; max-height:85vh; border-radius:20px 20px 0 0;}
+  .chat.open .chat-fab{display:none;}
+  .chat-hint{max-width:calc(100vw - 36px);}
+}
+@media print{ .chat-fab, .chat-panel, .chat-hint{display:none !important;} }
+
+/* ---------- Šventė: naujas lygis / išlaikytas egzaminas ---------- */
+.celebrate{position:fixed; inset:0; z-index:1900; display:flex; align-items:center; justify-content:center; padding:20px; background:rgba(18,14,10,0.55); backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px); animation:celFade .25s ease-out;}
+@keyframes celFade{from{opacity:0;} to{opacity:1;}}
+.celebrate-card{position:relative; width:min(380px, 100%); padding:36px 28px 28px; text-align:center; border-radius:24px; background:#FBFAF6; color:#17140F; font-family:'Inter',sans-serif;
+  box-shadow:0 30px 80px rgba(0,0,0,0.35); overflow:hidden; animation:celPop .45s cubic-bezier(.2,1.4,.4,1);}
+@keyframes celPop{from{transform:scale(0.85); opacity:0;} to{transform:none; opacity:1;}}
+.celebrate-card::before{content:""; position:absolute; left:0; right:0; top:0; height:6px; background:var(--belt, #F0CB4E);}
+.celebrate-burst{position:absolute; left:50%; top:86px; width:220px; height:220px; margin-left:-110px; border-radius:50%;
+  background:radial-gradient(circle, color-mix(in srgb, var(--belt, #F0CB4E) 38%, transparent) 0%, transparent 65%); pointer-events:none; animation:celPulse 2.4s ease-in-out infinite;}
+@keyframes celPulse{0%,100%{transform:scale(0.9); opacity:0.7;} 50%{transform:scale(1.08); opacity:1;}}
+.celebrate-kicker{position:relative; font:700 11px 'JetBrains Mono',monospace; letter-spacing:0.16em; text-transform:uppercase; color:#2F6B5A;}
+.celebrate-big{position:relative; margin:10px 0 4px; font:700 46px/1.05 'Space Grotesk',sans-serif; letter-spacing:-0.02em;}
+.celebrate-belt{position:relative; display:inline-flex; align-items:center; gap:8px; margin:4px 0 2px; font-weight:600; color:#4A453A;}
+.celebrate-belt svg{width:34px; height:auto;}
+.celebrate-text{position:relative; margin:12px 0 20px; font-size:15px; line-height:1.5;}
+.celebrate-text span{color:#4A453A; font-size:14px;}
+.celebrate .btn{display:inline-flex; align-items:center; justify-content:center; padding:13px 28px; font:700 15px 'Inter',sans-serif; border-radius:12px; border:none; cursor:pointer; background:#17140F; color:#F7F4EC;}
+.celebrate .btn:hover{background:#2F6B5A;}
+@media (prefers-reduced-motion: reduce){ .celebrate, .celebrate-card, .celebrate-burst, .chat-panel, .chat-hint{animation:none;} }

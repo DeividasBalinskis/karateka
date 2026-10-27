@@ -404,25 +404,23 @@ if ($id) {
             $next = $siblings[$k + 1] ?? null;
         }
     }
-    // Klausimai treneriui apie šią pamoką: narys mato tik savo, treneris - visų (peržiūroje - nerodoma)
-    $myMembers = $isStaff ? [] : $v['members'];
-    $lessonMsgs = [];
-    if ($staffTools) {
-        $lessonMsgs = q_all('SELECT mm.member_id, m.first_name, m.last_name, COUNT(*) AS cnt, SUM(mm.from_staff = 0 AND mm.read_at IS NULL) AS unread, MAX(mm.created_at) AS last_at
-                               FROM member_messages mm JOIN members m ON m.id = mm.member_id WHERE mm.lesson_id = ? GROUP BY mm.member_id ORDER BY last_at DESC', [$id]);
-    } elseif ($myMembers) {
-        foreach ($myMembers as $m) {
-            $rows = message_rows('mm.member_id = ? AND mm.lesson_id = ?', [(int) $m['id'], $id]);
-            if ($rows) {
-                $lessonMsgs[(int) $m['id']] = $rows;
-            }
-            mark_staff_messages_read((int) $m['id'], $id);
-        }
-    }
+    // Treneris atsiuntė šią pamoką (pastaba su pamoka) - narys pažymi „Peržiūrėjau“ ir ji dingsta iš svarbių
+    $sentNotes = $memberIds ? q_all('SELECT cn.*, m.first_name FROM coach_notes cn JOIN members m ON m.id = cn.member_id
+                                      WHERE cn.lesson_id = ? AND cn.member_id IN (' . implode(',', $memberIds) . ') AND (cn.read_at IS NULL OR (cn.is_task = 1 AND cn.done_at IS NULL))', [$id]) : [];
     page_start($lesson['title'], $navOpt);
     ?>
     <?= $v['preview'] ? $topBar(null) : '' ?>
     <?= $crumbs($fid) ?>
+    <?php foreach ($v['preview'] ? [] : $sentNotes as $sn): ?>
+      <div class="sent-banner">
+        <span>📨 <?= count($v['members']) > 1 ? e($sn['first_name']) . ': ' : '' ?>treneris atsiuntė šią pamoką<?= $sn['body'] && $sn['body'] !== 'Pažiūrėk prisegtą pamoką.' ? ' - „' . e(mb_strimwidth($sn['body'], 0, 160, '…')) . '“' : '' ?><?= $sn['is_task'] ? ' <span class="badge badge-warn">užduotis</span>' : '' ?></span>
+        <form method="post" action="<?= url('paskyra.php') ?>" class="inline-form">
+          <?= csrf_field() ?><input type="hidden" name="member_id" value="<?= (int) $sn['member_id'] ?>"><input type="hidden" name="note_id" value="<?= (int) $sn['id'] ?>">
+          <input type="hidden" name="back" value="pamokos.php?id=<?= (int) $lesson['id'] ?>">
+          <button class="btn btn-primary btn-sm" name="action" value="<?= $sn['is_task'] ? 'task_done' : 'note_read' ?>"><?= $sn['is_task'] ? '✓ Atlikau' : '✓ Peržiūrėjau' ?></button>
+        </form>
+      </div>
+    <?php endforeach; ?>
     <article class="panel card lesson" style="margin-top:12px;">
       <div class="row" style="gap:8px; flex-wrap:wrap; align-items:center;">
         <?= $lesson['belt_level'] !== null ? belt_chip((int) $lesson['belt_level']) : '' ?>
@@ -436,39 +434,9 @@ if ($id) {
       </div>
     </article>
     <?php if ($staffTools): ?>
-      <div class="panel card lesson-questions no-print" id="klausimas">
-        <div class="row between" style="flex-wrap:wrap; gap:8px;">
-          <div class="kicker" style="margin:0;">Narių klausimai apie šią pamoką</div>
-          <a class="btn btn-primary btn-sm" href="<?= url('admin/pamokos.php?siusti=' . (int) $lesson['id']) ?>">📨 Siųsti pamoką nariams</a>
-        </div>
-        <?php if (!$lessonMsgs): ?><p class="small muted" style="margin-top:8px;">Klausimų dar nėra.</p><?php endif; ?>
-        <ul class="list">
-          <?php foreach ($lessonMsgs as $r): ?>
-            <li class="row between"><span><strong><?= e($r['first_name'] . ' ' . $r['last_name']) ?></strong> <span class="small muted"><?= (int) $r['cnt'] ?> žin.</span><?= $r['unread'] ? ' <span class="badge badge-new">' . (int) $r['unread'] . ' nauj.</span>' : '' ?></span>
-              <a class="btn btn-ghost btn-sm" href="<?= url('admin/zinutes.php?m=' . (int) $r['member_id']) ?>">Atsakyti →</a></li>
-          <?php endforeach; ?>
-        </ul>
-      </div>
-    <?php elseif ($myMembers): ?>
-      <div class="panel card lesson-questions" id="klausimas">
-        <div class="kicker">💬 Klausimas treneriui</div>
-        <p class="small muted" style="margin-top:-4px;">Neaišku ar norite pasidalinti? Parašykite - mato tik treneriai, atsakymą matysite čia ir paskyroje.</p>
-        <?php foreach ($lessonMsgs as $mid => $rows): ?>
-          <?php if (count($myMembers) > 1): ?><div class="msg-topic-title"><?= e(array_column($myMembers, 'first_name', 'id')[$mid] ?? '') ?></div><?php endif; ?>
-          <div class="msg-thread"><?php foreach ($rows as $r): ?><?= render_message($r, false) ?><?php endforeach; ?></div>
-        <?php endforeach; ?>
-        <form method="post" action="<?= url('zinute.php') ?>" class="msg-form">
-          <?= csrf_field() ?><input type="hidden" name="lesson_id" value="<?= (int) $lesson['id'] ?>"><input type="hidden" name="back" value="pamoka">
-          <?php if (count($myMembers) > 1): ?>
-            <select name="member_id" aria-label="Kieno vardu"><?php foreach ($myMembers as $m): ?><option value="<?= (int) $m['id'] ?>"><?= e($m['first_name']) ?></option><?php endforeach; ?></select>
-          <?php else: ?>
-            <input type="hidden" name="member_id" value="<?= (int) $myMembers[0]['id'] ?>">
-          <?php endif; ?>
-          <textarea name="body" rows="2" maxlength="<?= MESSAGE_MAX ?>" placeholder="Jūsų klausimas ar komentaras" required></textarea>
-          <button class="btn btn-primary btn-sm" type="submit">Siųsti treneriui</button>
-        </form>
-      </div>
+      <p class="no-print" style="margin-top:14px;"><a class="btn btn-primary btn-sm" href="<?= url('admin/pamokos.php?siusti=' . (int) $lesson['id']) ?>">📨 Siųsti pamoką nariams</a></p>
     <?php endif; ?>
+    <?= $v['preview'] ? '' : questions_box('lesson', (int) $lesson['id'], 'pamokos.php?id=' . (int) $lesson['id']) ?>
     <?php if ($prev || $next): ?>
       <nav class="lesson-pager">
         <?= $prev ? '<a class="panel" href="' . e(url('pamokos.php?id=' . (int) $prev['id'])) . '"><span class="small muted">← Ankstesnė</span><strong>' . e($prev['title']) . '</strong></a>' : '<span></span>' ?>
