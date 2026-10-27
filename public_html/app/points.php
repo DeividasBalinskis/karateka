@@ -6,6 +6,7 @@ const EVENT_RESULTS = [
     'exam'        => ['yes' => 'Išlaikė'],
     'seminar'     => ['yes' => 'Dalyvavo'],
     'camp'        => ['yes' => 'Dalyvavo'],
+    'other'       => ['yes' => 'Dalyvavo'],
 ];
 
 /** Sezonas: rugsėjo 1 - rugpjūčio 31. Grąžina [pradžia, pabaiga, pavadinimas]. */
@@ -160,10 +161,13 @@ function category_by_code(string $code): array
     return $c;
 }
 
-function award_points(int $memberId, array $category, string $date, ?int $eventId, ?string $note, int $by): void
+/** Skiria taškus (XP). $points - kitokia vertė nei kategorijos (pvz. egzamino programos punkto XP). Pakilus lygiui - šventė nariui. */
+function award_points(int $memberId, array $category, string $date, ?int $eventId, ?string $note, int $by, ?int $points = null): void
 {
+    $before = member_points_total($memberId);
     q('INSERT INTO point_awards (member_id, category_id, points, awarded_on, event_id, note, awarded_by) VALUES (?, ?, ?, ?, ?, ?, ?)',
-        [$memberId, $category['id'], $category['points'], $date, $eventId, $note ?: null, $by]);
+        [$memberId, $category['id'], $points ?? $category['points'], $date, $eventId, $note ? mb_substr($note, 0, 190) : null, $by]);
+    xp_check_level_up($memberId, $before);
 }
 
 /** Kurias kategorijas atitinka rezultatas renginyje. Prizinė vieta = dalyvavimas + vieta. */
@@ -184,6 +188,8 @@ function result_category_codes(array $event, string $result): array
         case 'seminar':
         case 'camp':
             return $result === 'yes' ? ['seminar'] : [];
+        case 'other':
+            return $result === 'yes' ? ['event_other'] : [];
     }
     return [];
 }
