@@ -54,6 +54,8 @@ docker compose cp $tmp db:/tmp/demo.sql
 docker compose exec -T db sh -c 'mariadb -u karateka -p$MARIADB_PASSWORD karateka < /tmp/demo.sql'
 if ($LASTEXITCODE -ne 0) { Write-Host 'Demo duomenų įkelti nepavyko - svetainė veikia ir be jų.' -ForegroundColor Yellow }
 Remove-Item -Force -ErrorAction SilentlyContinue $tmp
+# Naujausių funkcijų pavyzdžiai (pranešimai, kvietimai su terminu, XP, pokalbis) - kad iškart matytųsi
+docker compose exec -T web php app/cli/dev_pavyzdziai.php
 
 # Demo naujienų nuotraukos (jei yra paruoštas paketas)
 $photos = Join-Path $root 'ikelimui\demo\demo-nuotraukos.zip'
