@@ -1,7 +1,7 @@
 <?php
 // Egzaminai: programa pagal diržą, pasiruošimo žingsniai ir testai
 
-const REQ_SECTIONS = ['kihon' => 'Kihon', 'kata' => 'Kata', 'kumite' => 'Kumite', 'teorija' => 'Teorija', 'kita' => 'Kita'];
+const REQ_SECTIONS = ['kihon' => 'Kihon', 'kata' => 'Kata', 'kumite' => 'Kumite', 'teorija' => 'Teorija', 'fizinis' => 'Fizinis pasiruošimas', 'kita' => 'Kita'];
 const QUIZ_AUDIENCE = ['karateka' => 'Nariams', 'teisejas' => 'Teisėjams', 'egzaminatorius' => 'Egzaminatoriams'];
 // Išlaikytas testas galioja tiek mėnesių (egzamino ir teisėjo / egzaminatoriaus statusui)
 const QUIZ_VALID_MONTHS = 12;
@@ -25,25 +25,20 @@ function belt_requirements(int $belt): array
 {
     $out = [];
     foreach (q_all('SELECT r.*, l.title AS lesson_title FROM belt_requirements r LEFT JOIN lessons l ON l.id = r.lesson_id
-                     WHERE r.belt_level = ? ORDER BY FIELD(r.section, "kihon", "kata", "kumite", "teorija", "kita"), r.sort_order, r.id', [$belt]) as $r) {
+                     WHERE r.belt_level = ? ORDER BY FIELD(r.section, "kihon", "kata", "kumite", "teorija", "fizinis", "kita"), r.sort_order, r.id', [$belt]) as $r) {
         $out[$r['section']][] = $r;
     }
     return $out;
 }
 
-/** Kuriuos punktus narys pažymėjo „Moku“: [requirement_id => true] */
+/** Pažymėti punktai: [requirement_id => 'pending' (laukia trenerio) | 'approved' (patvirtinta)] */
 function requirement_done_ids(int $memberId): array
 {
-    $ids = q('SELECT requirement_id FROM requirement_progress WHERE member_id = ?', [$memberId])->fetchAll(PDO::FETCH_COLUMN);
-    return array_fill_keys(array_map('intval', $ids), true);
-}
-
-function set_requirement_done(int $memberId, int $reqId, bool $done): void
-{
-    if ($done) {
-        q('INSERT IGNORE INTO requirement_progress (member_id, requirement_id) VALUES (?, ?)', [$memberId, $reqId]);
-    } else {
-        q('DELETE FROM requirement_progress WHERE member_id = ? AND requirement_id = ?', [$memberId, $reqId]);
+    try {
+        return array_map('strval', q('SELECT requirement_id, status FROM requirement_progress WHERE member_id = ?', [$memberId])->fetchAll(PDO::FETCH_KEY_PAIR));
+    } catch (PDOException $ex) {
+        // dar neimportuotas db/021 - visi pažymėti laikomi patvirtintais
+        return array_fill_keys(array_map('intval', q('SELECT requirement_id FROM requirement_progress WHERE member_id = ?', [$memberId])->fetchAll(PDO::FETCH_COLUMN)), 'approved');
     }
 }
 
