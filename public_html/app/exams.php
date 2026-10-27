@@ -2,7 +2,7 @@
 // Egzaminai: programa pagal diržą, pasiruošimo žingsniai ir testai
 
 const REQ_SECTIONS = ['kihon' => 'Kihon', 'kata' => 'Kata', 'kumite' => 'Kumite', 'teorija' => 'Teorija', 'kita' => 'Kita'];
-const QUIZ_AUDIENCE = ['karateka' => 'Karatekams', 'teisejas' => 'Teisėjams', 'egzaminatorius' => 'Egzaminatoriams'];
+const QUIZ_AUDIENCE = ['karateka' => 'Nariams', 'teisejas' => 'Teisėjams', 'egzaminatorius' => 'Egzaminatoriams'];
 // Išlaikytas testas galioja tiek mėnesių (egzamino ir teisėjo / egzaminatoriaus statusui)
 const QUIZ_VALID_MONTHS = 12;
 // Kiek sekundžių po laiko pabaigos dar priimami atsakymai (lėtas internetas telefone)

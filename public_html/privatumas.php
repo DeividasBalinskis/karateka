@@ -7,7 +7,7 @@ page_start('Privatumo politika', ['description' => 'Kaip VšĮ Karate Ateitis tv
 <article class="panel card legal">
   <div class="eyebrow">Asmens duomenų apsauga</div>
   <h1 class="styled">Privatumo politika</h1>
-  <p class="muted small">Atnaujinta: <span class="todo">[data]</span></p>
+  <p class="muted small">Atnaujinta: 2026 m. spalio 27 d.</p>
 
   <h2>1. Kas mes</h2>
   <p>Jūsų asmens duomenis tvarko <strong>VšĮ Karate Ateitis</strong> (įmonės kodas 305105392, Girulių g. 5, Vilnius).
@@ -50,17 +50,17 @@ page_start('Privatumo politika', ['description' => 'Kaip VšĮ Karate Ateitis tv
     <li><strong>Kiti nariai</strong> nemato jūsų kontaktų, gimimo datos, pastabų ar žinučių. Prisijungę nariai mato reitingo Top 5: vardą, pavardės pirmąją raidę ir taškus.</li>
     <li><strong>Varžybų sistema.</strong> Registruojant į varžybas jai perduodame vardą, pavardę, gimimo datą, lytį, diržą ir klubą. Pagal juos parenkama kategorija.
         Varžybų lentelėse ir rezultatuose viešai rodomas dalyvio vardas, pavardė, klubas ir kategorija, kaip įprasta varžybose.
-        <span class="todo">[kas tvarko varžybų sistemą - tik klubas, ar ir federacija bei kiti klubai]</span></li>
-    <li><strong>Paslaugų teikėjai.</strong> Svetainę ir el. paštą talpina domenai.lt (Lietuva). Narystės sutartys pasirašomos per Edufi. SMS siuntimo teikėjas <span class="todo">[dar nepasirinktas - kol kas SMS nesiunčiamos]</span>.
-        Jie duomenų nenaudoja savo tikslais.</li>
+        Varžybų sistemą prižiūri Deividas Balinskis. Ja gali naudotis ir kiti klubai: kurti ir vesti varžybas, gauti rezultatus.</li>
+    <li><strong>Paslaugų teikėjai.</strong> Svetainę ir el. paštą talpina domenai.lt (Lietuva). Narystės sutartys pasirašomos per Edufi. Jie duomenų nenaudoja savo tikslais.
+        SMS žinučių kol kas nesiunčiame - pasirinkus SMS teikėją, jis bus nurodytas čia.</li>
   </ul>
   <p>Duomenų neparduodame ir neperduodame reklamos tikslais.</p>
 
   <h2>5. Kiek laiko saugome</h2>
   <ul>
-    <li>Paskyros ir nario duomenis - kol esate narys, ir <span class="todo">[pvz. 1 metus]</span> po narystės pabaigos. Vėliau ištriname.</li>
-    <li>Narystės sutartis ir sveikatos pažymas - <span class="todo">[kiek laiko]</span>.</li>
-    <li>Bandomosios treniruotės užklausas (el. laiškus) - <span class="todo">[pvz. 6 mėnesius]</span>, jei narystė neprasideda.</li>
+    <li>Paskyros ir nario duomenis - kol esate narys, ir 1 metus po narystės pabaigos. Vėliau ištriname.</li>
+    <li>Narystės sutartis ir sveikatos pažymas - kol esate narys, ir 1 metus po narystės pabaigos.</li>
+    <li>Bandomosios treniruotės užklausas (el. laiškus) - 6 mėnesius, jei narystė neprasideda.</li>
     <li>Nebaigtas registracijas (nepatvirtintas el. paštas ar negautas tėvų sutikimas) - <?= (int) config('retention.unfinished_days', 30) ?> dienų. Vėliau jos ištrinamos automatiškai.</li>
     <li>Prisijungimo bandymų įrašus (el. paštas, IP adresas) apsaugai nuo įsilaužimų - 30 dienų.</li>
   </ul>
