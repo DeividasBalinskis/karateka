@@ -4,6 +4,12 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.8 - kuriama
+**Duomenų bazė:** nekeičiama.
+
+- Privatumo politika: įrašyta, kas prižiūri varžybų sistemą, kiek laiko saugomi duomenys (paskyros, sutartys ir pažymos - kol narys ir 1 metus po; užklausos - 6 mėn.), data. Geltonų vietų neliko.
+- „Kam skirta?“: „Karatekams“ pervadinta į „Nariams“ (pamokos, testai).
+
 ## v1.7 - 2026-10-26 (redaguojamas pagrindinis puslapis, pamokos pagal diržą, tvarkaraštis)
 **Duomenų bazė:** importuoti `db/020_pamokos_puslapis.sql`. Failą galima importuoti ir antrą kartą.
 
