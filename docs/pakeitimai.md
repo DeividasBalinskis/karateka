@@ -4,9 +4,53 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
-## v1.8 - kuriama
-**Duomenų bazė:** nekeičiama.
+## v1.8 - 2026-10-27 (pranešimai „Svarbu“, renginio puslapis, pokalbis su Deniu, XP ir lygiai)
+**Duomenų bazė:** importuoti `db/021_pranesimai_renginiai_xp.sql`. Failą galima importuoti ir antrą kartą.
 
+Mano paskyra:
+- Viršuje skiltis „Svarbu“ - viskas, ką reikia padaryti: kvietimai į renginius (su laikmačiu ir „Dalyvausiu / Negalėsiu“), egzamino testas,
+  naujos trenerio pastabos, užduotys ir atsiųstos pamokos, trenerio atsakymai, pranešimai. Paspaudus „Perskaičiau“, „Peržiūrėjau“, „Atlikau“ ar „Supratau“ - dingsta.
+  Išsaugotos pamokos čia nerodomos.
+- Raudona juosta viršuje (visuose puslapiuose) veda tiesiai į „Svarbu“.
+- Atsiųstos pamokos puslapio viršuje - „✓ Peržiūrėjau“ (užduočiai „✓ Atlikau“): pamoka dingsta iš „Svarbu“.
+- Taškų kortelėje - lygis ir XP juosta.
+
+Renginiai:
+- Kiekvienas renginys turi savo puslapį (paspaudus pavadinimą ar „Plačiau →“): visas aprašymas, vieta su žemėlapiu, registracija, kiek dalyvauja.
+  Dalyvių sąrašą mato tik treneriai, keičia ir rezultatus suveda - tik adminas.
+- Renginio forma - 4 žingsniai, naujas laukas „Trumpai“ (rodomas sąraše). Visos grupės pažymėtos (numatyta) - kviečiami visi;
+  nieko nepažymėta - atviras renginys: kvietimų nėra, prisijungti gali visi.
+- Registracija: numatyta iki dienos prieš renginį (galima pakeisti), rodomas laikmatis „liko 2 d. 5 val.“. Renginio dieną ir po jo - nebegalima.
+- Po termino - mygtukas „Noriu dalyvauti (pavėlavau)“: Denis gauna pranešimą ir patvirtina. Nepatvirtinus narys lieka sąraše kaip „vėlavo“ ir skaičiuojamas dalyviu.
+- Kvietimas visada matomas svetainėje; el. laiškas ir SMS - tik jei pažymėta kuriant renginį.
+- Egzamino puslapyje nariui: testo būsena ir „Laikyti testą“, egzamino programa, pamokos egzaminui. Užsiregistravus į egzaminą - pranešimas Deniui paskyroje.
+- Taškai skiriami tik už dalyvavimą; „Kita“ tipo renginiams - nauja kategorija „Renginys: dalyvavimas“ (3 tšk., keičiama).
+
+Klausimai ir pokalbis su Deniu:
+- Prie renginių, naujienų ir pamokų - „💬 Klausimas Deniui“ (aiškiai parašyta, kad mato tik Denis). Atsakymą mato tik klausęs,
+  nebent Denis paspaudžia „👁 Rodyti visiems“ (ir pasirenka - su vardu ar be).
+- Prisijungusiems apačioje dešinėje - „Rašyti Deniui“: pokalbis atsinaujina kas 10 s, tėvai pasirenka, dėl kurio vaiko rašo.
+  Skirtukas „Anoniminis komentaras“ - kas parašė, neišsaugoma. Po prisijungimo trumpai parodoma užuomina apie pokalbį.
+- Treneriams tas pats mygtukas veda į „Žinutės“: visi pokalbiai ir anoniminiai komentarai, puslapis atsinaujina pats.
+  Laiškas apie naują nario žinutę - ne dažniau kaip kas 30 min.
+
+XP ir lygiai:
+- Taškai = XP. Iš sezono taškų skaičiuojamas reitingas, iš visų kada nors surinktų - paskyros lygis (lygis diržo nesuteikia).
+  Kiek XP reikia vienam lygiui - Treneriams → Taškai (numatyta 100).
+- Egzamino programos punktai turi XP (numatyta 20, keičiama programoje). Narys spaudžia ☆ „Moku“ → ⏳ laukia trenerio →
+  Denis patvirtina pranešime (ar nario kortelėje) → ★ ir XP. „Dar ne“ - punktas grąžinamas.
+- Testai: XP už pirmą bandymą ir už pirmą išlaikymą per sezoną (2 ir 5, keičiama Taškuose).
+- Pakilus lygiui ar išlaikius egzaminą - šventė ekrane (vieną kartą). Programoje naujas skyrius „Fizinis pasiruošimas“.
+
+Treneriams:
+- „Šiandien“ viršuje „Pranešimai“: „Moku“ patvirtinimai, pavėlavusieji, registracijos į egzaminą, atšaukti sutikimai - sprendžiami čia pat.
+- Naujas skirtukas „Pranešimai“ (tik adminas): vienas tekstas pasirinktoms grupėms ar žmonėms - paskyroje, el. paštu ir (ar) SMS. SMS puslapis - ten pat.
+- Nario kortelėje: siųsti pamoką ar užduotį, atsiųstų pamokų sąrašas (peržiūrėta ar ne), kito diržo programa su „Patvirtinti“ / „Įskaityti“, lygis.
+- Treniruotė: plačiame ekrane vienas vaikas - viena eilutė (vardas, buvo / nebuvo, pastaba, pamoka). Pastabą vaikas ir tėvai iškart mato „Svarbu“.
+- Grupei galima įrašyti atskirą kainą (pvz. mokyklose) - pagrindiniame puslapyje rodoma prie tos vietos tvarkaraščio.
+- Atšaukus sutikimą dėl nuotraukų - pranešimas Deniui. Rašant naujieną, šalia nuotraukų - kas nesutinka (mato tik adminas).
+
+Kita:
 - Privatumo politika: įrašyta, kas prižiūri varžybų sistemą, kiek laiko saugomi duomenys (paskyros, sutartys ir pažymos - kol narys ir 1 metus po; užklausos - 6 mėn.), data. Geltonų vietų neliko.
 - „Kam skirta?“: „Karatekams“ pervadinta į „Nariams“ (pamokos, testai).
 

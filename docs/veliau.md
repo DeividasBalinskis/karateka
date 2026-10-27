@@ -12,3 +12,5 @@ Sutarta atidėti (klausimai ir atsakymai 2026-10-27). Kai imsimės - išbraukti 
   (amžius, kyu, el. paštas, telefonas). Informacija tarp LTKF ir karateka.lt - į abi puses.
   Kiti klubai (Vilniaus karate mokykla, Sanrei, Karate akademija) jungiasi prie LTKF, ne prie karateka.lt. Apmokėjimų kol kas nėra.
 - **SMS teikėjas** - dar nepasirinktas; pasirinkus įrašyti į privatumo politiką.
+- **Mokėjimai „Svarbu“ skiltyje** - kai atsiras mokėjimų sistema, „Ką turi padaryti“ galėtų rodyti ir neapmokėtus mėnesius.
+- **Klubo vadovo vardas** - tekstuose „Rašyti Deniui“, „Klausimas Deniui“ įrašytas Denis; jei keistųsi - pakeisti tekstus.
