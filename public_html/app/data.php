@@ -58,12 +58,20 @@ function render_event(array $ev): string
     if ($ev['start_time']) {
         $when .= ', ' . fmt_time($ev['start_time']);
     }
+    // Sąraše - trumpas tekstas (arba aprašymo pradžia), visas aprašymas - atidarius renginį
+    $short = trim((string) ($ev['summary'] ?? ''));
+    if ($short === '' && $ev['description']) {
+        $plain = trim(preg_replace('/\s+/u', ' ', $ev['description']));
+        $short = mb_strlen($plain) > 220 ? mb_substr($plain, 0, 220) . '…' : $plain;
+    }
+    $link = url('renginys.php?id=' . (int) $ev['id']);
     return '<div class="event">'
         . '<div class="event-date"><span class="d">' . date('j', $ts) . '</span><span class="m">' . e(mb_substr(LT_MONTHS_GEN[(int) date('n', $ts)], 0, 3)) . '</span></div>'
         . '<div><span class="badge type-badge t-' . e($ev['type']) . '">' . e(EVENT_TYPES[$ev['type']]) . '</span>'
-        . '<h3 style="margin-top:6px;">' . e($ev['title']) . '</h3>'
+        . '<h3 style="margin-top:6px;"><a class="event-title" href="' . e($link) . '">' . e($ev['title']) . '</a></h3>'
         . '<div class="muted small">' . e($when) . ($ev['location'] ? ' · ' . e($ev['location']) : '') . '</div>'
-        . ($ev['description'] ? '<div class="small" style="margin-top:6px;">' . text_to_html($ev['description']) . '</div>' : '')
+        . ($short !== '' ? '<div class="small" style="margin-top:6px;">' . e($short) . '</div>' : '')
+        . '<a class="small event-more" href="' . e($link) . '">Plačiau →</a>'
         . '</div></div>';
 }
 
@@ -308,7 +316,8 @@ function account_attention_count(int $accountId): int
     if (!isset($cache[$accountId])) {
         $cache[$accountId] = (int) q_value('SELECT COUNT(*) FROM coach_notes cn JOIN account_members am ON am.member_id = cn.member_id
                                              WHERE am.account_id = ? AND (cn.read_at IS NULL OR (cn.is_task = 1 AND cn.done_at IS NULL))', [$accountId])
-            + account_unread_replies($accountId);
+            + account_unread_replies($accountId)
+            + notification_count($accountId);   // lygis, patvirtinti punktai, pranešimai visiems...
     }
     return $cache[$accountId];
 }
@@ -327,7 +336,15 @@ function account_attention_member(int $accountId): ?int
             $id = false;
         }
     }
-    return $id === false ? null : (int) $id;
+    if ($id === false) {
+        try {
+            $id = q_value('SELECT member_id FROM notifications WHERE account_id = ? AND member_id IS NOT NULL AND important = 1 AND done_at IS NULL AND read_at IS NULL
+                            ORDER BY created_at DESC LIMIT 1', [$accountId]);
+        } catch (PDOException $ex) {
+            $id = false;
+        }
+    }
+    return $id === false || $id === null ? null : (int) $id;
 }
 
 /** Lankomumas laikotarpyje: ['buvo' => n, 'nebuvo' => n] */
@@ -361,6 +378,13 @@ function admin_today_extra_todo(): array
     $todo = [];
     if ($n = staff_unread_messages()) {
         $todo[] = ['Naujos narių žinutės: ' . $n, 'admin/zinutes.php', 'Atsakyti'];
+    }
+    try {
+        if ($n = (int) q_value('SELECT COUNT(*) FROM anon_feedback WHERE read_at IS NULL')) {
+            $todo[] = ['Nauji anoniminiai komentarai: ' . $n, 'admin/zinutes.php#anoniminiai', 'Skaityti'];
+        }
+    } catch (PDOException $ex) {
+        // dar neimportuotas db/021
     }
     // Nauji testų rezultatai per savaitę
     $r = q_one('SELECT COUNT(*) c, COALESCE(SUM(passed), 0) p FROM quiz_attempts WHERE finished_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)');

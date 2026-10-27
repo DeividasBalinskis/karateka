@@ -16,6 +16,9 @@ if (is_post()) {
             q('UPDATE point_categories SET name = ?, points = ?, is_active = ? WHERE id = ?',
                 [$name, (int) ($_POST['points'][$id] ?? 0), !empty($_POST['active'][$id]) ? 1 : 0, (int) $id]);
         }
+        if (post('xp_per_level') !== '') {
+            set_site_setting('xp_per_level', (string) max(10, min(10000, (int) post('xp_per_level'))));
+        }
         flash('ok', 'Taškų vertės išsaugotos. Jos galioja naujiems skyrimams.');
     }
 
@@ -56,15 +59,23 @@ page_start('Taškai', ['admin' => true]);
     <form method="post" class="panel card form">
       <?= csrf_field() ?>
       <input type="hidden" name="action" value="save_categories">
-      <h2>Už ką skiriami taškai</h2>
-      <p class="hint">Pakeista vertė galioja tik naujiems skyrimams - anksčiau skirti taškai nesikeičia.<?= is_admin() ? '' : ' Keisti gali administratorius.' ?></p>
+      <h2>Už ką skiriami taškai (XP)</h2>
+      <p class="hint">Taškai ir XP - tas pats: iš sezono taškų skaičiuojamas reitingas, iš visų kada nors surinktų - nario paskyros lygis.
+        Pakeista vertė galioja tik naujiems skyrimams - anksčiau skirti taškai nesikeičia.<?= is_admin() ? '' : ' Keisti gali administratorius.' ?></p>
+      <label class="xp-setting">Vienam lygiui reikia
+        <input type="number" name="xp_per_level" min="10" max="10000" value="<?= xp_per_level() ?>" <?= is_admin() ? '' : 'disabled' ?>> XP
+      </label>
       <table class="table">
         <thead><tr><th>Kategorija</th><th style="width:80px;">Taškai</th><th style="width:40px;" title="Aktyvi">✓</th></tr></thead>
         <tbody>
           <?php foreach ($categories as $c): ?>
             <tr>
               <td><input type="text" name="name[<?= (int) $c['id'] ?>]" value="<?= e($c['name']) ?>" style="padding:8px 10px; font-size:14px;" <?= is_admin() ? '' : 'disabled' ?>></td>
-              <td><input type="number" name="points[<?= (int) $c['id'] ?>]" value="<?= (int) $c['points'] ?>" style="padding:8px 10px; font-size:14px;" <?= is_admin() ? '' : 'disabled' ?>></td>
+              <?php if ($c['code'] === 'skill'): ?>
+                <td><input type="hidden" name="points[<?= (int) $c['id'] ?>]" value="0"><a class="small" href="<?= url('admin/programa.php') ?>" title="Kiekvienas programos punktas turi savo XP">prie punkto</a></td>
+              <?php else: ?>
+                <td><input type="number" name="points[<?= (int) $c['id'] ?>]" value="<?= (int) $c['points'] ?>" style="padding:8px 10px; font-size:14px;" <?= is_admin() ? '' : 'disabled' ?>></td>
+              <?php endif; ?>
               <td><input type="checkbox" name="active[<?= (int) $c['id'] ?>]" value="1" <?= $c['is_active'] ? 'checked' : '' ?> <?= is_admin() ? '' : 'disabled' ?>></td>
             </tr>
           <?php endforeach; ?>

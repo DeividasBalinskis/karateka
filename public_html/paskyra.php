@@ -36,7 +36,16 @@ if (is_post()) {
         $m = q_one('SELECT * FROM members WHERE id = ?', [$mid]);
         // Keisti gali tėvai, o pats narys - tik nuo 14 m.
         if ($m && ($rel === 'parent' || ($rel === 'self' && age_on($m['birth_date']) >= CONSENT_AGE))) {
-            q('UPDATE members SET photo_consent = ? WHERE id = ?', [!empty($_POST['photo_consent']) ? 1 : 0, $mid]);
+            $consent = !empty($_POST['photo_consent']) ? 1 : 0;
+            q('UPDATE members SET photo_consent = ? WHERE id = ?', [$consent, $mid]);
+            // Atšaukė - pranešama Deniui (kad nebeskelbtų nuotraukų); sąrašas matomas prie nuotraukų įkėlimo
+            if ($m['photo_consent'] && !$consent) {
+                notify_admins('consent_withdrawn', 'Atšauktas sutikimas dėl nuotraukų: ' . $m['first_name'] . ' ' . $m['last_name'],
+                    'Atšaukė ' . $a['first_name'] . ' ' . $a['last_name'] . ($rel === 'parent' ? ' (tėvai)' : '') . '. Naujose nuotraukose šio nario neskelbkite.',
+                    'admin/nariai.php?id=' . $mid, $mid);
+            } elseif (!$m['photo_consent'] && $consent) {
+                notifications_done('consent_withdrawn', null, $mid);
+            }
             flash('ok', 'Sutikimas dėl nuotraukų atnaujintas.');
         }
         redirect('paskyra.php?skiltis=nustatymai&m=' . $mid);
@@ -86,7 +95,7 @@ if (is_post()) {
                 q('UPDATE coach_notes SET read_at = NOW() WHERE id = ? AND member_id = ? AND read_at IS NULL', [(int) post('note_id'), $mid]);
             }
         }
-        redirect('paskyra.php?m=' . $mid . '#pastabos');
+        redirect(preg_match('~^pamokos\.php\?id=\d+$~', post('back')) ? post('back') : 'paskyra.php?m=' . $mid . (post('back') === 'svarbu' ? '#svarbu' : '#pastabos'));
     }
 
     if ($action === 'task_done' || $action === 'task_undo') {
@@ -96,7 +105,7 @@ if (is_post()) {
             q('UPDATE coach_notes SET done_at = ' . ($action === 'task_done' ? 'NOW()' : 'NULL') . ', read_at = COALESCE(read_at, NOW()) WHERE id = ?', [$note['id']]);
             flash('ok', $action === 'task_done' ? 'Puiku! Užduotis pažymėta kaip atlikta.' : 'Užduotis grąžinta į neatliktas.');
         }
-        redirect('paskyra.php?m=' . (int) ($note['member_id'] ?? 0) . '#pastabos');
+        redirect(preg_match('~^pamokos\.php\?id=\d+$~', post('back')) ? post('back') : 'paskyra.php?m=' . (int) ($note['member_id'] ?? 0) . (post('back') === 'svarbu' ? '#svarbu' : '#pastabos'));
     }
 
     handle_account_settings($a, 'paskyra.php?skiltis=nustatymai', $errors);
@@ -136,7 +145,17 @@ if ($active) {
     // Žinutės su treneriu: atsakymai po pastabomis, klausimai prie pamokų ir bendros. Atidarius - trenerio atsakymai perskaityti.
     $noteMsgs = note_messages(array_column($notes, 'id'));
     $threads = member_free_threads((int) $selected['id']);
+    $newReplies = member_unread_replies((int) $selected['id']);
     mark_staff_messages_read((int) $selected['id']);
+
+    // „Svarbu“: kvietimai (su laikmačiu), egzamino testas, naujos pastabos / užduotys / atsiųstos pamokos, pranešimai
+    $invites = q_all('SELECT e.*, ep.status AS p_status FROM event_participants ep JOIN events e ON e.id = ep.event_id
+                       WHERE ep.member_id = ? AND ep.status IN ("invited", "late") AND e.starts_on > CURDATE()
+                       ORDER BY e.starts_on, e.start_time', [(int) $selected['id']]);
+    $examSoon = member_upcoming_exam($selected);
+    $examTest = $examSoon && in_array($examSoon['p_status'], ['going', 'invited'], true) ? exam_test_status($selected) : null;
+    $todoNotes = array_values(array_filter($notes, function ($n) { return (!$n['is_task'] && $n['read_at'] === null) || ($n['is_task'] && !$n['done_at']); }));
+    $notifs = account_notifications($aid, (int) $selected['id']);
 
     // Kurį reitingą rodyti: savo (numatytasis), kitos amžiaus kategorijos arba viso klubo
     $ownPartition = ranking_partition($selected);
@@ -172,7 +191,7 @@ page_start($tab === 'nustatymai' ? 'Nustatymai' : 'Mano paskyra', ['noindex' => 
     <div class="member-tabs">
       <?php foreach ($members as $m): ?>
         <a href="?<?= $tab === 'nustatymai' ? 'skiltis=nustatymai&amp;' : '' ?>m=<?= (int) $m['id'] ?>" class="<?= $selected && $m['id'] === $selected['id'] ? 'active' : '' ?>">
-          <?= e($m['first_name']) ?><?= $m['relation'] === 'self' ? ' (aš)' : '' ?><?php if ($u = member_attention_count((int) $m['id'])): ?> <span class="count-badge" title="Naujos pastabos ar neatliktos užduotys"><?= $u ?></span><?php endif; ?>
+          <?= e($m['first_name']) ?><?= $m['relation'] === 'self' ? ' (aš)' : '' ?><?php if ($u = member_attention_count((int) $m['id']) + member_notification_count($aid, (int) $m['id'])): ?> <span class="count-badge" title="Naujos pastabos ar neatliktos užduotys"><?= $u ?></span><?php endif; ?>
         </a>
       <?php endforeach; ?>
     </div>
@@ -184,8 +203,69 @@ page_start($tab === 'nustatymai' ? 'Nustatymai' : 'Mano paskyra', ['noindex' => 
   <div class="flash flash-info">Paskyra laukia trenerio patvirtinimo. Kai treneris patvirtins ir priskirs grupę, čia matysite tvarkaraštį, renginius ir taškus.</div>
 <?php endif; ?>
 <?= form_errors($errors) ?>
-<?php if ($active && ($att = count($unreadIds) + count(array_filter($notes, function ($n) { return $n['is_task'] && !$n['done_at']; })))): ?>
-  <a class="flash flash-attention" href="<?= url('paskyra.php?m=' . (int) $selected['id']) ?>#pastabos">❗ <?= count($members) > 1 ? e($selected['first_name']) . ': ' : '' ?>yra naujų trenerio pastabų ar neatliktų užduočių (<?= $att ?>) - žiūrėti ↓</a>
+<?php if ($active && $tab === 'apzvalga' && ($invites || ($examTest && !$examTest['passed']) || $todoNotes || $newReplies || $notifs)):
+    $back = 'paskyra.php?m=' . (int) $selected['id']; ?>
+  <!-- Svarbu: kas laukia atsakymo ar dėmesio. Pažymėjus „Supratau“ / „Perskaičiau“ - dingsta. -->
+  <section class="panel card important" id="svarbu">
+    <div class="kicker">Svarbu<?= count($members) > 1 ? ' · ' . e($selected['first_name']) : '' ?></div>
+    <ul class="notif-list">
+      <?php foreach ($invites as $ev): ?>
+        <li class="notif is-new t-invite">
+          <span class="notif-icon" aria-hidden="true">📅</span>
+          <div class="notif-body">
+            <div class="notif-title"><a href="<?= url('renginys.php?id=' . (int) $ev['id']) ?>"><?= $ev['p_status'] === 'late' ? '' : 'Kvietimas: ' ?><?= e($ev['title']) ?></a></div>
+            <div class="notif-text"><?= e(fmt_date($ev['starts_on'], true)) ?><?= $ev['start_time'] ? ', ' . e(fmt_time($ev['start_time'])) : '' ?><?= $ev['location'] ? ' · ' . e($ev['location']) : '' ?></div>
+            <?= render_event_rsvp($ev, [$selected], $back . '#svarbu') ?>
+          </div>
+        </li>
+      <?php endforeach; ?>
+      <?php if ($examTest && !$examTest['passed']): ?>
+        <li class="notif is-new t-exam">
+          <span class="notif-icon" aria-hidden="true">📝</span>
+          <div class="notif-body">
+            <div class="notif-title">Prieš egzaminą išlaikyk testą</div>
+            <div class="notif-text"><?= e($examSoon['title']) ?> · <?= e(fmt_date($examSoon['starts_on'], true)) ?>. Reikia surinkti bent <?= (int) $examTest['quiz']['pass_percent'] ?> %<?= $examTest['best'] !== null ? ' (geriausias: ' . (int) $examTest['best'] . ' %)' : '' ?>.</div>
+          </div>
+          <div class="notif-actions">
+            <a class="btn btn-primary btn-sm" href="<?= url('testas.php?q=' . (int) $examTest['quiz']['id'] . '&m=' . (int) $selected['id']) ?>">Laikyti testą</a>
+            <a class="btn btn-ghost btn-sm" href="<?= url('egzaminas.php?m=' . (int) $selected['id']) ?>">Programa</a>
+          </div>
+        </li>
+      <?php endif; ?>
+      <?php foreach ($todoNotes as $n): $isLesson = $n['lesson_id'] && $n['lesson_title']; ?>
+        <li class="notif is-new t-note">
+          <span class="notif-icon" aria-hidden="true"><?= $isLesson ? '📘' : ($n['is_task'] ? '✏️' : '💬') ?></span>
+          <div class="notif-body">
+            <div class="notif-title">
+              <?php if ($isLesson): ?>Treneris atsiuntė pamoką: <a href="<?= url('pamokos.php?id=' . (int) $n['lesson_id']) ?>"><?= e($n['lesson_title']) ?></a>
+              <?php else: ?><a href="#n<?= (int) $n['id'] ?>"><?= $n['is_task'] ? 'Užduotis nuo trenerio' : 'Nauja trenerio pastaba' ?></a><?php endif; ?>
+            </div>
+            <div class="notif-text"><?= e(mb_strimwidth(trim(preg_replace('~\s+~u', ' ', $n['body'])), 0, 160, '…')) ?></div>
+            <div class="notif-meta"><?= e(fmt_date($n['note_date'] ?? substr($n['created_at'], 0, 10))) ?><?= $n['author'] ? ' · ' . e($n['author']) : '' ?></div>
+          </div>
+          <div class="notif-actions">
+            <form method="post" class="inline-form">
+              <?= csrf_field() ?><input type="hidden" name="member_id" value="<?= (int) $selected['id'] ?>"><input type="hidden" name="note_id" value="<?= (int) $n['id'] ?>">
+              <input type="hidden" name="back" value="svarbu">
+              <?php if ($n['is_task']): ?>
+                <button class="btn btn-primary btn-sm" name="action" value="task_done">✓ Atlikau</button>
+              <?php else: ?>
+                <button class="btn btn-ghost btn-sm" name="action" value="note_read"><?= $isLesson ? '✓ Peržiūrėjau' : '✓ Perskaičiau' ?></button>
+              <?php endif; ?>
+            </form>
+          </div>
+        </li>
+      <?php endforeach; ?>
+      <?php if ($newReplies): ?>
+        <li class="notif is-new t-reply">
+          <span class="notif-icon" aria-hidden="true">💬</span>
+          <div class="notif-body"><div class="notif-title"><a href="#zinutes">Treneris atsakė<?= $newReplies > 1 ? ' (' . $newReplies . ')' : '' ?></a></div>
+            <div class="notif-text">Atsakymą rasite žemiau, skiltyje „Žinutės treneriui“.</div></div>
+        </li>
+      <?php endif; ?>
+    </ul>
+    <?= render_notifications($notifs, $back . '#svarbu') ?>
+  </section>
 <?php endif; ?>
 
 <?php if ($active && $tab === 'apzvalga' && varzybos_enabled()): ?>
@@ -213,8 +293,8 @@ page_start($tab === 'nustatymai' ? 'Nustatymai' : 'Mano paskyra', ['noindex' => 
               <span class="big-number"><?= $seasonPoints ?></span><span class="muted">tšk.</span>
             </div>
           </div>
-          <div class="muted small" style="text-align:right;">iš viso per visą laiką<br><strong><?= member_points_total((int) $selected['id']) ?> tšk.</strong></div>
         </div>
+        <?= render_xp_card($selected) ?>
 
         <div class="top-tabs">
           <?php foreach ($topChoices as $key => $p): ?>
@@ -330,18 +410,18 @@ page_start($tab === 'nustatymai' ? 'Nustatymai' : 'Mano paskyra', ['noindex' => 
 
   <?php if ($active): ?>
     <div class="panel card" id="zinutes" style="margin-top:20px;">
-      <div class="kicker">Žinutės treneriui</div>
-      <p class="small muted" style="margin-top:-4px;">Klausimą ar komentarą mato tik treneriai, o trenerio atsakymą - tik jūs<?= $selected['relation'] === 'parent' ? ' ir ' . e($selected['first_name']) : '' ?>.</p>
-      <?php foreach ($threads as $key => $msgs): $lessonId = $key === 'general' ? 0 : (int) substr($key, 1); ?>
+      <div class="kicker">Žinutės Deniui</div>
+      <p class="small muted" style="margin-top:-4px;">Žinutę ar klausimą mato tik Denis (ir kiti treneriai), o atsakymą - tik jūs<?= $selected['relation'] === 'parent' ? ' ir ' . e($selected['first_name']) : '' ?>. Parašyti galima ir bet kuriame puslapyje - mygtukas 💬 apačioje dešinėje.</p>
+      <?php foreach ($threads as $key => $msgs): ?>
         <div class="msg-topic">
-          <div class="msg-topic-title"><?= $lessonId ? '📘 Pamoka: <a href="' . e(url('pamokos.php?id=' . $lessonId)) . '">' . e($msgs[0]['lesson_title'] ?? 'pamoka') . '</a>' : 'Bendros žinutės' ?></div>
+          <div class="msg-topic-title"><?= message_topic_title($key, $msgs[0]) ?></div>
           <div class="msg-thread"><?php foreach ($msgs as $r): ?><?= render_message($r, false) ?><?php endforeach; ?></div>
-          <?php if ($lessonId): ?>
-            <details class="msg-reply"><summary>💬 Atsakyti</summary><?= message_form('msg', ['member_id' => (int) $selected['id'], 'lesson_id' => $lessonId], 'Jūsų žinutė', 'Siųsti', url('zinute.php')) ?></details>
+          <?php if ($key !== 'general'): ?>
+            <details class="msg-reply"><summary>💬 Atsakyti</summary><?= message_form('msg', ['member_id' => (int) $selected['id']] + message_topic_hidden($key), 'Jūsų žinutė', 'Siųsti', url('zinute.php')) ?></details>
           <?php endif; ?>
         </div>
       <?php endforeach; ?>
-      <?= message_form('msg', ['member_id' => (int) $selected['id']], 'Parašykite treneriui' . (count($members) > 1 ? ' (dėl ' . $selected['first_name'] . ')' : ''), 'Siųsti treneriui', url('zinute.php')) ?>
+      <?= message_form('msg', ['member_id' => (int) $selected['id']], 'Parašykite Deniui' . (count($members) > 1 ? ' (' . $selected['first_name'] . ')' : ''), 'Siųsti Deniui', url('zinute.php')) ?>
     </div>
   <?php endif; ?>
 

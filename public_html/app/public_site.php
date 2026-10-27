@@ -125,12 +125,18 @@ function render_kids_locations(): string
         $html .= '<details class="loc-group"' . ($first ? ' open' : '') . '><summary>' . e($typeLabel) . '</summary><ul>';
         foreach ($byType[$type] as $loc => $groups) {
             $lines = [];
+            $prices = [];
             foreach ($groups as $g) {
                 $lines = array_merge($lines, schedule_lines($g['slots'], count($groups) > 1 ? ($g['label'] ?: null) : null));
+                if (!empty($g['price_note'])) {
+                    $prices[] = $g['price_note'];
+                }
             }
             // "Sporto centras Viršuliškės (...)" -> sąraše užtenka "Viršuliškės (...)"
             $short = $type === 'sporto_centras' ? preg_replace('/^Sporto centras\s+/u', '', $loc) : $loc;
-            $html .= '<li data-name="' . e($loc) . '" data-schedule="' . e(render_schedule_lines($lines)) . '">' . e($short) . '</li>';
+            // Atskira grupės kaina (pvz. mokykloje) - po tvarkaraščiu
+            $priceHtml = $prices ? '<div class="schedule-line schedule-price"><span class="schedule-day">Kaina</span><span class="schedule-time">' . e(implode(' · ', array_unique($prices))) . '</span></div>' : '';
+            $html .= '<li data-name="' . e($loc) . '" data-schedule="' . e(render_schedule_lines($lines) . $priceHtml) . '">' . e($short) . '</li>';
         }
         $html .= '</ul></details>';
         $first = false;

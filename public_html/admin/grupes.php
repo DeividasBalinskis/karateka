@@ -16,6 +16,7 @@ function group_from_post(array &$errors): array
         'is_active'  => !empty($_POST['is_active']) ? 1 : 0,
         'place_type' => isset(PLACE_TYPES[post('place_type')]) ? post('place_type') : 'kita',
         'label'      => post('label') ?: null,
+        'price_note' => mb_substr(post('price_note'), 0, 120) ?: null,
     ];
     if ($g['name'] === '') {
         $errors[] = 'Įveskite grupės pavadinimą.';
@@ -34,7 +35,7 @@ if (is_post()) {
     if ($action === 'create') {
         $g = group_from_post($errors);
         if (!$errors) {
-            q('INSERT INTO training_groups (name, category, location, sort_order, is_active, place_type, label) VALUES (?, ?, ?, ?, ?, ?, ?)', array_values($g));
+            q('INSERT INTO training_groups (name, category, location, sort_order, is_active, place_type, label, price_note) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', array_values($g));
             flash('ok', 'Grupė sukurta. Pridėkite tvarkaraštį.');
             redirect('admin/grupes.php?id=' . db()->lastInsertId());
         }
@@ -42,7 +43,7 @@ if (is_post()) {
     if ($action === 'update' && $id) {
         $g = group_from_post($errors);
         if (!$errors) {
-            q('UPDATE training_groups SET name = ?, category = ?, location = ?, sort_order = ?, is_active = ?, place_type = ?, label = ? WHERE id = ?', array_merge(array_values($g), [$id]));
+            q('UPDATE training_groups SET name = ?, category = ?, location = ?, sort_order = ?, is_active = ?, place_type = ?, label = ?, price_note = ? WHERE id = ?', array_merge(array_values($g), [$id]));
             flash('ok', 'Išsaugota.');
             redirect('admin/grupes.php?id=' . $id);
         }
@@ -99,6 +100,8 @@ function group_form(array $g, string $action): void
       </label>
       <label>Žymė svetainėje <span class="hint">nebūtina, pvz. „pažengę“</span><input type="text" name="label" value="<?= e($g['label'] ?? '') ?>" maxlength="60"></label>
     </div>
+    <label>Šios grupės kaina <span class="hint">nebūtina - jei kitokia nei kategorijos (pvz. mokykloje), rodoma prie vietos tvarkaraščio</span>
+      <input type="text" name="price_note" value="<?= e($g['price_note'] ?? '') ?>" maxlength="120" placeholder="pvz. 45 €/mėn. (1 kartą per savaitę)"></label>
     <label class="check"><input type="checkbox" name="is_active" value="1" <?= ($g['is_active'] ?? 1) ? 'checked' : '' ?>><span>Aktyvi grupė</span></label>
 <?php }
 
