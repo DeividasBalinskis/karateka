@@ -9,8 +9,34 @@ if ($mid && !$member) {
     not_found();
 }
 
+// Anoniminiai komentarai: perskaityti / ištrinti
+if (is_post() && in_array(post('action'), ['anon_read', 'anon_delete'], true)) {
+    csrf_check();
+    q(post('action') === 'anon_read' ? 'UPDATE anon_feedback SET read_at = COALESCE(read_at, NOW()) WHERE id = ?' : 'DELETE FROM anon_feedback WHERE id = ?', [(int) post('id')]);
+    redirect('admin/zinutes.php#anoniminiai');
+}
+
+// Naujos žinutės (pokalbio langas atsinaujina pats): JSON su paskutinės žinutės id
+if (get('naujausia') !== '') {
+    header('Content-Type: application/json; charset=utf-8');
+    $where = $mid ? 'member_id = ' . $mid : '1';
+    exit(json_encode(['last' => (int) q_value("SELECT COALESCE(MAX(id), 0) FROM member_messages WHERE $where"),
+        'anon' => (int) q_value('SELECT COALESCE(MAX(id), 0) FROM anon_feedback')]));
+}
+
 if (is_post() && $member) {
     csrf_check();
+    // Klausimas viešas (rodomas visiems su atsakymu) / su vardu
+    if (post('action') === 'publish') {
+        $msg = q_one('SELECT * FROM member_messages WHERE id = ? AND member_id = ? AND from_staff = 0', [(int) post('message_id'), $mid]);
+        if ($msg) {
+            $field = post('field') === 'show_name' ? 'show_name' : 'is_public';
+            q("UPDATE member_messages SET $field = 1 - $field WHERE id = ?", [(int) $msg['id']]);
+            flash('ok', $field === 'is_public' ? ($msg['is_public'] ? 'Klausimas paslėptas - matys tik klausęs.' : 'Klausimas ir atsakymas rodomi visiems prisijungusiems.')
+                : ($msg['show_name'] ? 'Vardas paslėptas.' : 'Rodomas klaususiojo vardas.'));
+        }
+        redirect('admin/zinutes.php?m=' . $mid . '#' . preg_replace('~[^a-z0-9]~', '', post('topic')));
+    }
     $body = trim(str_replace("\r\n", "\n", post('body')));
     $email = !empty($_POST['email']);
     if ($body === '' && post('action') !== 'note') {
@@ -20,16 +46,18 @@ if (is_post() && $member) {
     if (post('action') === 'reply') {
         $noteId = (int) post('note_id') ?: null;
         $lessonId = (int) post('lesson_id') ?: null;
+        $eventId = (int) post('event_id') ?: null;
+        $newsId = (int) post('news_id') ?: null;
         if ($noteId && !q_value('SELECT 1 FROM coach_notes WHERE id = ? AND member_id = ?', [$noteId, $mid])) {
             $noteId = null;
         }
-        add_member_message($mid, (int) $me['id'], true, $body, $noteId, $lessonId);
+        add_member_message($mid, (int) $me['id'], true, $body, $noteId, $lessonId, $eventId, $newsId);
         mark_member_messages_read($mid);
         if ($email) {
             notify_member_reply($member, $me, $body);
         }
         flash('ok', 'Atsakymas išsiųstas ' . $member['first_name'] . ($email ? ' (ir laiškas).' : '.'));
-        redirect('admin/zinutes.php?m=' . $mid . '#' . ($noteId ? 'n' . $noteId : ($lessonId ? 'l' . $lessonId : 'general')));
+        redirect('admin/zinutes.php?m=' . $mid . '#' . ($noteId ? 'n' . $noteId : ($lessonId ? 'l' . $lessonId : ($eventId ? 'e' . $eventId : ($newsId ? 'w' . $newsId : 'general')))));
     }
     // Nauja trenerio pastaba (su pamoka, užduotis) - atsiranda nario paskyroje „Trenerio pastabos“
     if (post('action') === 'note') {
@@ -60,7 +88,7 @@ if ($member) {
         }
     }
     foreach ($free as $key => $msgs) {
-        $topics[] = ['key' => $key, 'note' => null, 'lesson_id' => $key === 'general' ? null : (int) substr($key, 1), 'msgs' => $msgs];
+        $topics[] = ['key' => $key, 'note' => null, 'msgs' => $msgs];
     }
     usort($topics, function ($x, $y) { return strcmp(end($y['msgs'])['created_at'], end($x['msgs'])['created_at']); });
     $plain = array_filter($notes, function ($n) use ($noteMsgs) { return empty($noteMsgs[(int) $n['id']]); });
@@ -68,10 +96,14 @@ if ($member) {
     $lessons = q_all('SELECT id, title, belt_level FROM lessons ORDER BY title');
     $accounts = q_all('SELECT a.first_name, a.last_name, am.relation FROM accounts a JOIN account_members am ON am.account_id = a.id WHERE am.member_id = ? AND a.status = "active"', [$mid]);
 
-    $replyForm = function (?int $noteId, ?int $lessonId) use ($mid): string {
+    $replyForm = function (?int $noteId, string $key) use ($mid): string {
+        $hidden = '';
+        foreach (message_topic_hidden($key) as $k => $v) {
+            $hidden .= '<input type="hidden" name="' . $k . '" value="' . (int) $v . '">';
+        }
         return '<form method="post" class="msg-form">' . csrf_field()
             . '<input type="hidden" name="action" value="reply"><input type="hidden" name="member_id" value="' . $mid . '">'
-            . '<input type="hidden" name="note_id" value="' . (int) $noteId . '"><input type="hidden" name="lesson_id" value="' . (int) $lessonId . '">'
+            . '<input type="hidden" name="note_id" value="' . (int) $noteId . '">' . $hidden
             . '<textarea name="body" rows="2" maxlength="' . MESSAGE_MAX . '" placeholder="Atsakymas - matys tik šis narys" required></textarea>'
             . '<label class="check small"><input type="checkbox" name="email" value="1" checked><span>ir laiškas</span></label>'
             . '<button class="btn btn-primary btn-sm" type="submit">Atsakyti</button></form>';
@@ -115,14 +147,26 @@ if ($member) {
           <?php if ($t['note']): $n = $t['note']; ?>
             Trenerio pastaba · <?= note_source($n) ?><?= $n['author'] ? ' · ' . e($n['author']) : '' ?>
             <div class="note-quote"><?= nl2br(e(mb_strimwidth($n['body'], 0, 300, '…'))) ?><?= $n['lesson_title'] ? ' <span class="small">📘 ' . e($n['lesson_title']) . '</span>' : '' ?></div>
-          <?php elseif ($t['lesson_id']): ?>
-            📘 Pamoka: <a href="<?= url('pamokos.php?id=' . $t['lesson_id']) ?>" target="_blank"><?= e($t['msgs'][0]['lesson_title'] ?? 'pamoka') ?></a>
           <?php else: ?>
-            Bendros žinutės
+            <?= message_topic_title($t['key'], $t['msgs'][0]) ?>
           <?php endif; ?>
         </div>
-        <div class="msg-thread"><?php foreach ($t['msgs'] as $r): ?><?= render_message($r, true) ?><?php endforeach; ?></div>
-        <?= $replyForm($t['note'] ? (int) $t['note']['id'] : null, $t['lesson_id']) ?>
+        <div class="msg-thread">
+          <?php foreach ($t['msgs'] as $r): ?>
+            <?= render_message($r, true) ?>
+            <?php if (!$r['from_staff'] && !$t['note'] && $t['key'] !== 'general'): ?>
+              <!-- Klausimas prie pamokos / renginio / naujienos: Denis gali parodyti visiems -->
+              <form method="post" class="q-publish">
+                <?= csrf_field() ?><input type="hidden" name="action" value="publish"><input type="hidden" name="member_id" value="<?= $mid ?>">
+                <input type="hidden" name="message_id" value="<?= (int) $r['id'] ?>"><input type="hidden" name="topic" value="<?= e($t['key']) ?>">
+                <button class="linklike small" name="field" value="is_public"><?= !empty($r['is_public']) ? '🔒 Slėpti nuo kitų' : '👁 Rodyti visiems' ?></button>
+                <?php if (!empty($r['is_public'])): ?> · <button class="linklike small" name="field" value="show_name"><?= !empty($r['show_name']) ? 'be vardo' : 'su vardu' ?></button>
+                  <span class="small muted">· dabar rodoma <?= !empty($r['show_name']) ? 'su vardu' : 'be vardo' ?></span><?php endif; ?>
+              </form>
+            <?php endif; ?>
+          <?php endforeach; ?>
+        </div>
+        <?= $replyForm($t['note'] ? (int) $t['note']['id'] : null, $t['key']) ?>
       </div>
     <?php endforeach; ?>
 
@@ -136,6 +180,7 @@ if ($member) {
         </ul>
       </details>
     <?php endif; ?>
+    <?= live_refresh_js('admin/zinutes.php?m=' . $mid . '&naujausia=1') ?>
     <?php
     page_end();
     exit;
@@ -167,7 +212,7 @@ page_start('Žinutės', ['admin' => true]);
 <div class="page-head row between" style="flex-wrap:wrap; gap:10px; align-items:flex-end;">
   <div>
     <h1 class="styled">Žinutės</h1>
-    <p class="muted" style="margin:0;">Narių atsakymai į pastabas ir klausimai prie pamokų. Jūsų atsakymą mato tik tas narys (ir jo tėvai).</p>
+    <p class="muted" style="margin:0;">Pokalbiai su nariais, klausimai prie pamokų, renginių ir naujienų. Jūsų atsakymą mato tik tas narys (ir jo tėvai), nebent paspausite „Rodyti visiems“. Atsinaujina pats.</p>
   </div>
   <form method="get" class="row msg-start" style="gap:6px;">
     <select name="m" required aria-label="Narys"><option value="">Parašyti nariui…</option><?php foreach ($all as $m): ?><option value="<?= (int) $m['id'] ?>"><?= e($m['first_name'] . ' ' . $m['last_name'] . ($m['group_name'] ? ' · ' . $m['group_name'] : '')) ?></option><?php endforeach; ?></select>
@@ -178,6 +223,7 @@ page_start('Žinutės', ['admin' => true]);
   <a href="<?= url('admin/zinutes.php') ?>" class="<?= !$onlyOpen ? 'active' : '' ?>">Visos</a>
   <a href="<?= url('admin/zinutes.php?neatsakyta=1') ?>" class="<?= $onlyOpen ? 'active' : '' ?>">Laukia atsakymo</a>
 </div>
+<?php $anon = []; try { $anon = q_all('SELECT * FROM anon_feedback ORDER BY created_at DESC LIMIT 50'); } catch (PDOException $ex) {} ?>
 <div class="panel card">
   <?php if (!$rows): ?><p class="muted"><?= $onlyOpen ? 'Visiems atsakyta ✓' : 'Žinučių dar nėra. Nariai gali atsakyti į jūsų pastabas paskyroje arba paklausti prie pamokos.' ?></p><?php endif; ?>
   <ul class="list inbox">
@@ -193,5 +239,25 @@ page_start('Žinutės', ['admin' => true]);
     <?php endforeach; ?>
   </ul>
 </div>
+<div class="panel card" id="anoniminiai">
+  <div class="kicker">Anoniminiai komentarai<?= ($an = count(array_filter($anon, function ($x) { return !$x['read_at']; }))) ? ' <span class="badge badge-new">' . $an . ' nauj.</span>' : '' ?></div>
+  <p class="small muted" style="margin-top:-4px;">Kas parašė - nesaugoma, todėl atsakyti negalima.</p>
+  <?php if (!$anon): ?><p class="muted small">Anoniminių komentarų dar nėra.</p><?php endif; ?>
+  <ul class="list">
+    <?php foreach ($anon as $x): ?>
+      <li class="anon-item<?= $x['read_at'] ? '' : ' unread' ?>">
+        <div><?= nl2br(e($x['body'])) ?></div>
+        <div class="row between small muted" style="gap:8px; flex-wrap:wrap;">
+          <span><?= e(notification_when($x['created_at'])) ?><?= $x['page'] ? ' · ' . e($x['page']) : '' ?></span>
+          <span class="row" style="gap:6px;">
+            <?php if (!$x['read_at']): ?><form method="post" class="inline-form"><?= csrf_field() ?><input type="hidden" name="id" value="<?= (int) $x['id'] ?>"><button class="btn btn-ghost btn-sm" name="action" value="anon_read">✓ Perskaičiau</button></form><?php endif; ?>
+            <form method="post" class="inline-form" onsubmit="return confirm('Ištrinti komentarą?')"><?= csrf_field() ?><input type="hidden" name="id" value="<?= (int) $x['id'] ?>"><button class="btn btn-ghost btn-sm" name="action" value="anon_delete">Ištrinti</button></form>
+          </span>
+        </div>
+      </li>
+    <?php endforeach; ?>
+  </ul>
+</div>
+<?= live_refresh_js('admin/zinutes.php?naujausia=1') ?>
 <?php
 page_end();

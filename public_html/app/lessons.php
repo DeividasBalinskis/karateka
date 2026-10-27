@@ -250,7 +250,7 @@ function lessons_for_belt(array $v, array $lessons, ?int $belt): array
     }));
 }
 
-/** Treneris atsiuntė (pastaba su prisegta pamoka): naujausios pirmos */
+/** Treneris atsiuntė (pastaba su prisegta pamoka), dar neperžiūrėtos: naujausios pirmos. Pažymėjus „Peržiūrėjau“ - dingsta. */
 function sent_lessons(array $memberIds, int $limit = 8): array
 {
     $ids = implode(',', array_map('intval', $memberIds));
@@ -259,7 +259,7 @@ function sent_lessons(array $memberIds, int $limit = 8): array
     }
     return q_all('SELECT l.*, MAX(cn.created_at) AS sent_at, MAX(cn.is_task = 1 AND cn.done_at IS NULL) AS task_open
                     FROM coach_notes cn JOIN lessons l ON l.id = cn.lesson_id
-                   WHERE cn.member_id IN (' . $ids . ') AND l.is_published = 1
+                   WHERE cn.member_id IN (' . $ids . ') AND l.is_published = 1 AND (cn.read_at IS NULL OR (cn.is_task = 1 AND cn.done_at IS NULL))
                    GROUP BY l.id ORDER BY sent_at DESC LIMIT ' . (int) $limit);
 }
 

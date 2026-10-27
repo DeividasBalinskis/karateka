@@ -44,6 +44,7 @@ if ($id) {
       <?php endif; endforeach; ?>
       <div class="news-actions"><?= render_reactions($id) ?><?= share_button($n) ?></div>
     </article>
+    <?= current_account() ? questions_box('news', $id, 'naujienos.php?id=' . $id) : '' ?>
     <?php
     news_script();
     page_end();
