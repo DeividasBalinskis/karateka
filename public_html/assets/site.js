@@ -96,6 +96,14 @@
     clearInterval(timer);
   }
   fab.addEventListener('click', function () { panel.hidden ? open() : close(); });
+  // „Atsakyti“ mygtukai puslapyje (pvz. „Svarbu“) atidaro pokalbį
+  document.addEventListener('click', function (ev) {
+    var b = ev.target.closest('[data-open-chat]');
+    if (!b) return;
+    ev.preventDefault();
+    if (b.getAttribute('data-member') && memberSel) { memberSel.value = b.getAttribute('data-member'); member = memberSel.value; lastKey = ''; }
+    open();
+  });
   panel.querySelector('.chat-close').addEventListener('click', close);
   document.addEventListener('keydown', function (ev) { if (ev.key === 'Escape' && !panel.hidden) close(); });
   if (memberSel) memberSel.addEventListener('change', function () { member = this.value; lastKey = ''; load(); });

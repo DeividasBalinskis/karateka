@@ -37,7 +37,7 @@ if (is_post()) {
     if (!$errors) {
         $accounts = q_all('SELECT a.id, a.email, a.first_name, GROUP_CONCAT(DISTINCT m.first_name ORDER BY m.first_name SEPARATOR ", ") AS kids
                              FROM accounts a JOIN account_members am ON am.account_id = a.id JOIN members m ON m.id = am.member_id
-                            WHERE a.status = "active" AND am.member_id IN (' . implode(',', $memberIds) . ') GROUP BY a.id');
+                            WHERE a.status = "active" AND a.id <> ? AND am.member_id IN (' . implode(',', $memberIds) . ') GROUP BY a.id', [(int) $me['id']]);   // sau nesiunčiama
         q('INSERT INTO broadcasts (title, body, channels, recipients, sent_by) VALUES (?, ?, ?, ?, ?)',
             [mb_substr($title, 0, 190), $body, implode(',', $channels), count($accounts), (int) $me['id']]);
         $bcId = (int) db()->lastInsertId();

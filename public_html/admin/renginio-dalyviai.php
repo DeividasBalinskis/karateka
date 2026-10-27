@@ -48,7 +48,7 @@ if (is_post()) {
         if ($was === 'late') {
             notifications_done('late_request', $id, $mid);
             if ($action === 'going') {
-                notify_member($mid, 'late_approved', 'Dalyvavimas patvirtintas: ' . $event['title'], 'Denis patvirtino - lauksime ' . fmt_date($event['starts_on'], true) . '.',
+                notify_member($mid, 'late_approved', 'Dalyvavimas patvirtintas: ' . $event['title'], 'Denis patvirtino - lauksime ' . fmt_date($event['starts_on'], true),
                     'renginys.php?id=' . $id, $id, false);
             }
         }
@@ -92,7 +92,7 @@ page_start('Dalyviai: ' . $event['title'], ['admin' => true, 'section' => 'rengi
     <div><span class="badge type-badge t-<?= e($event['type']) ?>"><?= e(EVENT_TYPES[$event['type']]) ?></span></div>
     <h1 class="styled" style="margin-top:8px;"><?= e($event['title']) ?></h1>
     <p><?= e(fmt_date($event['starts_on'], true)) ?><?= $event['start_time'] ? ', ' . e(fmt_time($event['start_time'])) : '' ?><?= $event['location'] ? ' · ' . e($event['location']) : '' ?></p>
-    <p class="small muted no-print"><?= !empty($event['registration']) ? 'Nariai gali registruotis patys iki ' . e(fmt_date(event_deadline($event))) . '.' : 'Nariai patys registruotis negali - tik pagal kvietimą (atsakyti iki ' . e(fmt_date(event_deadline($event))) . ').' ?>
+    <p class="small muted no-print"><?= !empty($event['registration']) ? 'Nariai gali registruotis patys iki ' . e(fmt_date(event_deadline($event))) : 'Nariai patys registruotis negali - tik pagal kvietimą (atsakyti iki ' . e(fmt_date(event_deadline($event))) . ').' ?>
       Nariai mato tik dalyvių skaičių. <?php if ($canEdit): ?><a href="<?= url('admin/renginiai.php?edit=' . $id) ?>">Keisti</a><?php endif; ?></p>
   </div>
   <div class="row no-print" style="gap:8px;">

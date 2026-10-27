@@ -11,6 +11,7 @@ Mano paskyra:
 - Viršuje skiltis „Svarbu“ - viskas, ką reikia padaryti: kvietimai į renginius (su laikmačiu ir „Dalyvausiu / Negalėsiu“), egzamino testas,
   naujos trenerio pastabos, užduotys ir atsiųstos pamokos, trenerio atsakymai, pranešimai. Paspaudus „Perskaičiau“, „Peržiūrėjau“, „Atlikau“ ar „Supratau“ - dingsta.
   Išsaugotos pamokos čia nerodomos.
+- Denio atsakymas rodomas „Svarbu“ su tekstu, kol paspaudžiama „Perskaičiau“ arba „Atsakyti“ (atidaro pokalbį).
 - Raudona juosta viršuje (visuose puslapiuose) veda tiesiai į „Svarbu“.
 - Atsiųstos pamokos puslapio viršuje - „✓ Peržiūrėjau“ (užduočiai „✓ Atlikau“): pamoka dingsta iš „Svarbu“.
 - Taškų kortelėje - lygis ir XP juosta.
@@ -51,6 +52,7 @@ Treneriams:
 - Atšaukus sutikimą dėl nuotraukų - pranešimas Deniui. Rašant naujieną, šalia nuotraukų - kas nesutinka (mato tik adminas).
 
 Kita:
+- Lokaliai (`tools/lokali-svetaine.ps1`) įkeliami ir naujų funkcijų pavyzdžiai: kvietimai su terminu, pranešimai, XP, pokalbis.
 - Privatumo politika: įrašyta, kas prižiūri varžybų sistemą, kiek laiko saugomi duomenys (paskyros, sutartys ir pažymos - kol narys ir 1 metus po; užklausos - 6 mėn.), data. Geltonų vietų neliko.
 - „Kam skirta?“: „Karatekams“ pervadinta į „Nariams“ (pamokos, testai).
 
