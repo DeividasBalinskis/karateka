@@ -212,6 +212,8 @@ const REACTIONS = ['👍', '❤️', '🔥', '👏', '🥋'];
 
 // Iš ko adminas renkasi reakcijų emoji (Treneriams -> Naujienos)
 const REACTION_CHOICES = [
+    // Diržų spalvos ir teisėjo vėliavėlės (balta ir raudona) - piešiami ženkliukai, ne emoji (žr. reaction_html)
+    'Diržai ir teisėjai' => ['belt:1', 'belt:2', 'belt:3', 'belt:4', 'belt:5', 'belt:7', 'belt:10', 'teisejas'],
     'Sportas ir karate' => ['🥋', '🥇', '🥈', '🥉', '🏅', '🏆', '🎖️', '🎯', '💪', '👊', '🤜', '🤛', '🦵', '🤸', '🧘', '⛩️', '🎌', '🇯🇵', '🇱🇹', '🐉', '🐯', '🌸'],
     'Rankos'            => ['👍', '👏', '🙌', '🙏', '🤝', '👌', '✌️', '✊', '🫡', '👋', '🤙', '🫶'],
     'Širdys'            => ['❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍', '💖', '💯'],

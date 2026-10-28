@@ -212,7 +212,7 @@ page_start('Reakcijų emoji', ['admin' => true, 'section' => 'naujienos']);
 <details class="panel card emoji-settings" id="emoji" open>
   <summary>
     <span><strong>🙂 Reakcijų emoji</strong> <span class="muted small">· nariai gali naudoti <?= count($allowed) ?></span></span>
-    <span class="emoji-now" aria-hidden="true"><?= e(implode(' ', $allowed)) ?></span>
+    <span class="emoji-now" aria-hidden="true"><?= implode(' ', array_map('reaction_html', $allowed)) ?></span>
     <span class="btn btn-ghost btn-sm">Keisti</span>
   </summary>
   <form method="post" class="emoji-form">
@@ -224,7 +224,7 @@ page_start('Reakcijų emoji', ['admin' => true, 'section' => 'naujienos']);
         <div class="kicker"><?= e($groupName) ?></div>
         <div class="emoji-grid">
           <?php foreach ($list as $emoji): ?>
-            <label class="emoji-opt" title="<?= e($emoji) ?>"><input type="checkbox" name="reactions[]" value="<?= e($emoji) ?>" <?= in_array($emoji, $allowed, true) ? 'checked' : '' ?>><span><?= e($emoji) ?></span></label>
+            <label class="emoji-opt" title="<?= e(reaction_label($emoji)) ?>"><input type="checkbox" name="reactions[]" value="<?= e($emoji) ?>" <?= in_array($emoji, $allowed, true) ? 'checked' : '' ?>><span><?= reaction_html($emoji) ?></span></label>
           <?php endforeach; ?>
         </div>
       </div>
