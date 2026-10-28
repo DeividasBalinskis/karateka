@@ -4,7 +4,8 @@
 // Paleidžia tools/lokali-svetaine.ps1 po demo duomenų (arba ranka):
 //   docker compose exec web php app/cli/dev_pavyzdziai.php
 // Sukuria: kvietimus su terminu, pavėlavusį, registraciją į egzaminą, „Moku“ prašymus ir naują lygį,
-// atsiųstą pamoką, pokalbį su Deniu, viešą klausimą, anoniminį komentarą, pranešimą visiems, atšauktą sutikimą.
+// atsiųstą pamoką, pokalbį su Deniu, viešą klausimą, anoniminį komentarą, pranešimą visiems, atšauktą sutikimą,
+// atšauktas treniruotes.
 if (PHP_SAPI !== 'cli') {
     exit;
 }
@@ -22,8 +23,33 @@ $adult = q_one('SELECT * FROM accounts WHERE email = "narys@karateka.test"');
 if (!$admin || !$parent || !$adult) {
     exit("Pirma paleiskite app/cli/dev_seed.php\n");
 }
+/** v1.10: atšauktos treniruotės (vienos grupės - po 5 d., atostogos visoms - po 20 d.), pranešimas tėvams */
+function dev_examples_v110(array $admin, array $parent): void
+{
+    if (site_setting('dev_pavyzdziai_v110')) {
+        return;
+    }
+    set_site_setting('dev_pavyzdziai_v110', date('Y-m-d H:i'));
+    $jonas = q_one('SELECT m.* FROM members m JOIN account_members am ON am.member_id = m.id WHERE am.account_id = ? AND m.first_name = "Jonas"', [(int) $parent['id']]);
+    if (!$jonas || !$jonas['group_id']) {
+        return;
+    }
+    $in = function (int $n): string {
+        return date('Y-m-d', strtotime("+$n days"));
+    };
+    q('INSERT INTO training_cancellations (starts_on, ends_on, reason, created_by) VALUES (?, ?, ?, ?)',
+        [$in(5), $in(5), 'TEST: Salė užimta (pavyzdys - Nustatymai → Atšauktos treniruotės)', (int) $admin['id']]);
+    $id = (int) db()->lastInsertId();
+    q('INSERT INTO training_cancellation_groups (cancellation_id, group_id) VALUES (?, ?)', [$id, (int) $jonas['group_id']]);
+    notify_account((int) $parent['id'], 'cancelled', 'Treniruočių nebus: ' . fmt_date($in(5)), 'TEST: Salė užimta (pavyzdys) (Jonas)', 'paskyra.php', null, $id);
+    q('INSERT INTO training_cancellations (starts_on, ends_on, reason, created_by) VALUES (?, ?, ?, ?)',
+        [$in(20), $in(22), 'TEST: Atostogos visoms grupėms (pavyzdys)', (int) $admin['id']]);
+}
+
 if (site_setting('dev_pavyzdziai_v19')) {
-    exit("Pavyzdžiai jau sukurti.\n");
+    $had = (bool) site_setting('dev_pavyzdziai_v110');
+    dev_examples_v110($admin, $parent);
+    exit($had ? "Pavyzdžiai jau sukurti.\n" : "Pridėti v1.10 pavyzdžiai: atšauktos treniruotės.\n");
 }
 $upgrade = (bool) site_setting('dev_pavyzdziai');   // v1.8 pavyzdžiai jau yra - tik pervadinami į TEST ir pridedami nauji
 set_site_setting('dev_pavyzdziai', date('Y-m-d H:i'));
@@ -65,7 +91,8 @@ if ($upgrade) {
     if (site_setting('reactions') === null) {
         set_site_setting('reactions', '👍 ❤️ 🔥 👏 🥋 belt:2 belt:4 belt:10 teisejas');
     }
-    exit("Ankstesni pavyzdžiai pažymėti „TEST:“, pridėti nauji (komentarai, anoniminis komentaras).\n");
+    dev_examples_v110($admin, $parent);
+    exit("Ankstesni pavyzdžiai pažymėti „TEST:“, pridėti nauji (komentarai, anoniminis komentaras, atšauktos treniruotės).\n");
 }
 
 // ---------- Renginiai ----------
@@ -174,4 +201,6 @@ if (site_setting('reactions') === null) {
     set_site_setting('reactions', '👍 ❤️ 🔥 👏 🥋 belt:2 belt:4 belt:10 teisejas');
 }
 
-echo "TEST pavyzdžiai sukurti: renginiai su terminu, pranešimai, XP, pokalbis, komentarai.\n";
+dev_examples_v110($admin, $parent);
+
+echo "TEST pavyzdžiai sukurti: renginiai su terminu, pranešimai, XP, pokalbis, komentarai, atšauktos treniruotės.\n";

@@ -356,6 +356,7 @@ page_start($tab === 'nustatymai' ? 'Nustatymai' : 'Mano paskyra', ['noindex' => 
         <?php if ($active && $selected['group_id']): ?>
           <h2><?= e($selected['group_name']) ?></h2>
           <div style="margin:-4px 0 10px;"><?= belt_chip($selected['belt_level'] !== null ? (int) $selected['belt_level'] : null) ?></div>
+          <?= render_cancellation_notes(cancellations_for_groups([(int) $selected['group_id']], 30)) ?>
           <?= render_schedule_lines(schedule_lines(group_schedule((int) $selected['group_id']))) ?>
           <div class="kicker" style="margin-top:14px;">Lankomumas</div>
           <?= render_attendance((int) $selected['id']) ?>

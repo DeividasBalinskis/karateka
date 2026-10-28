@@ -179,7 +179,8 @@ $tile = function (array $g) use ($group, $date): string {
     $on = $group && (int) $group['id'] === (int) $g['id'];
     return '<a class="group-tile' . ($on ? ' on' : '') . '" style="--gc:' . e(group_color($g)) . '" href="' . e(url('admin/treniruote.php?g=' . (int) $g['id'] . '&d=' . $date)) . '"'
         . ($on ? ' aria-current="true"' : '') . '><span class="gt-name">' . e(group_short_name($g)) . '</span>'
-        . '<span class="gt-meta">' . ($g['day_time'] ? '<b>' . e(fmt_time($g['day_time'])) . '</b> · ' : '') . (int) $g['members_count'] . ' nar.</span></a>';
+        . '<span class="gt-meta">' . ($g['day_time'] ? '<b>' . e(fmt_time($g['day_time'])) . '</b> · ' : '') . (int) $g['members_count'] . ' nar.</span>'
+        . (training_cancelled((int) $g['id'], $date) ? '<span class="gt-off">atšaukta</span>' : '') . '</a>';
 };
 $todayTiles = array_filter($tileGroups, function ($g) { return $g['day_time'] !== null; });
 usort($todayTiles, function ($x, $y) { return strcmp((string) $x['day_time'], (string) $y['day_time']); });
@@ -187,7 +188,8 @@ usort($todayTiles, function ($x, $y) { return strcmp((string) $x['day_time'], (s
 <details class="panel card group-picker"<?= $group ? '' : ' open' ?>>
   <summary>
     <?php if ($group): ?>
-      <span class="gp-current"><span class="group-dot" style="background:<?= e(group_color($group)) ?>"></span><strong><?= e($group['name']) ?></strong></span>
+      <span class="gp-current"><span class="group-dot" style="background:<?= e(group_color($group)) ?>"></span><strong><?= e($group['name']) ?></strong>
+        <?php if ($off = training_cancelled((int) $group['id'], $date)): ?><span class="cancel-tag">atšaukta · <?= e($off['reason']) ?></span><?php endif; ?></span>
       <span class="btn btn-ghost btn-sm">Keisti grupę</span>
     <?php else: ?>
       <strong>Pasirinkite grupę</strong>
@@ -223,7 +225,7 @@ usort($todayTiles, function ($x, $y) { return strcmp((string) $x['day_time'], (s
     <div class="att-bar">
       <span>Buvo: <strong id="attPresent"><?= count(array_filter($att)) ?></strong> iš <?= count($members) ?></span>
       <button type="button" class="btn btn-primary btn-sm" id="attAll">✓ Visi buvo</button>
-      <?php if (!$hasTraining): ?><span class="hint">Pagal tvarkaraštį šią dieną šios grupės treniruotės nėra - patikrinkite datą.</span><?php endif; ?>
+      <?php if (!$hasTraining && !training_cancelled($groupId, $date)): ?><span class="hint">Pagal tvarkaraštį šią dieną šios grupės treniruotės nėra - patikrinkite datą.</span><?php endif; ?>
     </div>
     <p class="hint" style="margin-bottom:10px;">Lankomumas išsaugomas iškart paspaudus „Nebuvo“ / „Buvo“ (paspaudus dar kartą - žyma nuimama). Pastaba: parašykite ir spauskite <strong>Enter</strong> -
       vaikas ir tėvai ją iškart mato paskyroje („Svarbu“). „Užduotis“ - vaikas pažymės „Atlikau“.</p>

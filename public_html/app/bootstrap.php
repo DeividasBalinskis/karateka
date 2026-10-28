@@ -46,9 +46,11 @@ require APP_DIR . '/csrf.php';
 require APP_DIR . '/mail.php';
 require APP_DIR . '/tokens.php';
 require APP_DIR . '/auth.php';
+require APP_DIR . '/two_factor.php';
 require APP_DIR . '/data.php';
 require APP_DIR . '/points.php';
 require APP_DIR . '/public_site.php';
+require APP_DIR . '/cancellations.php';
 require APP_DIR . '/belts.php';
 require APP_DIR . '/varzybos.php';
 require APP_DIR . '/participants.php';
@@ -62,6 +64,7 @@ require APP_DIR . '/notifications.php';
 require APP_DIR . '/xp.php';
 require APP_DIR . '/chat.php';
 require APP_DIR . '/cleanup.php';
+require APP_DIR . '/backup.php';
 require APP_DIR . '/layout.php';
 
 // HTTPS
@@ -92,3 +95,4 @@ session_set_cookie_params([
 session_start();
 
 maybe_run_cleanup();
+maybe_run_backup();
