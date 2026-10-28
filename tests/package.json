@@ -1,0 +1,13 @@
+{
+  "name": "karateka-tests",
+  "private": true,
+  "description": "Naršyklės testai karateka.lt svetainei (Playwright)",
+  "scripts": {
+    "reset-db": "bash setup/reset-db.sh",
+    "test": "playwright test",
+    "test:clean": "bash setup/reset-db.sh && playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0"
+  }
+}

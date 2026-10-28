@@ -1,0 +1,75 @@
+# Testai kiekvienam įkėlimui: greitos patikros, švari duomenų bazė su pavyzdiniais duomenimis, naršyklės testai (Playwright).
+name: Testai
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    services:
+      mariadb:
+        image: mariadb:10.11
+        env:
+          MARIADB_ROOT_PASSWORD: root
+          TZ: Europe/Vilnius
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=5s --health-timeout=5s --health-retries=24
+    env:
+      DB_HOST: 127.0.0.1
+      DB_USER: root
+      DB_PASS: root
+      DB_NAME: karateka
+      TZ: Europe/Vilnius
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: pdo_mysql, mbstring, gd, zlib
+          coverage: none
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: tests/package-lock.json
+
+      - name: Greitos patikros (PHP sintaksė, db failai, koduotė)
+        run: bash tests/checks.sh
+
+      - name: Konfigūracija ir testų duomenų bazė
+        run: |
+          cp tests/setup/config.ci.php public_html/config.php
+          bash tests/setup/reset-db.sh
+
+      - name: Svetainė (PHP serveris)
+        run: |
+          php -S 127.0.0.1:8088 -t public_html > /tmp/php-server.log 2>&1 &
+          sleep 1
+          curl -fsS -o /dev/null http://127.0.0.1:8088/
+
+      - name: Naršyklės testai
+        working-directory: tests
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+          npx playwright test
+
+      - name: Ataskaita, jei nepavyko
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: testu-ataskaita
+          path: |
+            tests/playwright-report
+            tests/test-results
+            /tmp/php-server.log
+          retention-days: 7
