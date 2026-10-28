@@ -26,6 +26,7 @@ function page_start(string $title, array $opt = []): void
 <?php endif; ?>
 <link rel="icon" type="image/png" sizes="32x32" href="<?= url('favicon-32.png?v=2') ?>">
 <link rel="apple-touch-icon" href="<?= url('apple-touch-icon.png?v=2') ?>">
+<link rel="manifest" href="<?= url('manifest.json') ?>">
 <meta name="theme-color" content="#811517">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
@@ -233,6 +234,16 @@ function location_from_post(string $name): string
 function asset_url(string $path): string
 {
     return url($path) . '?v=' . @filemtime(PUBLIC_DIR . '/' . $path);
+}
+
+/** Kaip įsidiegti svetainę telefone kaip programėlę (įdiegus - nerodoma) */
+function render_app_install_card(): string
+{
+    return '<div class="panel card app-card" id="programele"><div class="kicker">Programėlė telefone</div>'
+        . '<p class="small">Karateka gali atsidaryti kaip programėlė - su ikona telefono ekrane, be naršyklės juostos.</p>'
+        . '<button type="button" class="btn btn-primary btn-sm" data-install-app hidden>Įdiegti programėlę</button>'
+        . '<ul class="app-steps small muted"><li><strong>Android (Chrome):</strong> meniu ⋮ → „Įdiegti programą“ (ar „Pridėti prie pradžios ekrano“).</li>'
+        . '<li><strong>iPhone (Safari):</strong> „Bendrinti“ → „Į pradžios ekraną“.</li></ul></div>';
 }
 
 /** Treneriams: skirtukai po viršutine juosta [raktas => [pavadinimas, kelias, skaičiukas]] */

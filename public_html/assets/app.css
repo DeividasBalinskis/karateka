@@ -1161,3 +1161,9 @@ span.req-check:hover{transform:none;}
 .cancel-list li{padding:10px 0; gap:12px; align-items:flex-start;}
 .cancel-list li.is-past{opacity:0.6;}
 @media (max-width:860px){ .cancel-grid{grid-template-columns:1fr;} }
+
+/* Programėlė telefone */
+.app-card{margin-top:20px;}
+.app-steps{margin:10px 0 0 18px; display:grid; gap:4px;}
+@media (display-mode: standalone){ .app-card{display:none;} }
+.dash-side .app-card{margin-top:0;}

@@ -567,6 +567,7 @@ page_start($tab === 'nustatymai' ? 'Nustatymai' : 'Mano paskyra', ['noindex' => 
 
 <?php if ($tab === 'nustatymai'): ?>
   <?= render_account_settings($a) ?>
+  <?= render_app_install_card() ?>
 <?php endif; ?>
 <?php
 page_end();
