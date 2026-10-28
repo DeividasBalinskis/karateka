@@ -18,19 +18,19 @@ function Stop-WithMessage($msg) {
 if (-not (Get-Command git -ErrorAction SilentlyContinue)) { Stop-WithMessage 'Nerastas git. Įdiekite „Git for Windows“ ir paleiskite dar kartą.' }
 
 $branch = (git rev-parse --abbrev-ref HEAD).Trim()
-if ($branch -ne 'main') { Stop-WithMessage "Aplankas ne „main“ šakoje (dabar: $branch). Parašykite Claude." }
+if ($branch -ne 'main') { Stop-WithMessage "Aplankas ne „main“ šakoje (dabar: $branch). Parašykite Deividui." }
 
 $changes = git status --porcelain
 if ($changes) {
     Write-Host 'Šiame aplanke yra pakeitimų, kurių nėra GitHub:' -ForegroundColor Yellow
     $changes | ForEach-Object { Write-Host "  $_" }
-    Stop-WithMessage "Pirma juos įkelkite į GitHub:`n  git add -A`n  git commit -m `"Pakeitimai`"`n  git push origin main`narba parašykite Claude."
+    Stop-WithMessage "Pirma juos įkelkite į GitHub:`n  git add -A`n  git commit -m `"Pakeitimai`"`n  git push origin main`narba parašykite Deividui."
 }
 
 Write-Host '1/2 Atsisiunčiama iš GitHub...' -ForegroundColor Cyan
 $before = (git rev-parse HEAD).Trim()
 git pull --ff-only origin main
-if ($LASTEXITCODE -ne 0) { Stop-WithMessage 'Nepavyko atsisiųsti (git pull). Nukopijuokite klaidą Claude.' }
+if ($LASTEXITCODE -ne 0) { Stop-WithMessage 'Nepavyko atsisiųsti (git pull). Nukopijuokite klaidą ir parašykite Deividui.' }
 $after = (git rev-parse HEAD).Trim()
 
 Write-Host "`n2/2 Ruošiamas įkėlimo paketas..." -ForegroundColor Cyan

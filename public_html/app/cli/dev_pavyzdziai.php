@@ -1,5 +1,6 @@
 <?php
-// TIK LOKALIAI: v1.8 naujovių pavyzdžiai, kad atidarius svetainę viskas iškart matytųsi.
+// TIK LOKALIAI: naujovių pavyzdžiai, kad atidarius svetainę viskas iškart matytųsi.
+// Viskas, kas sukuriama, pavadinime turi „TEST:“, o aprašyme - ką patikrinti. Test ir tikroje svetainėje nepaleidžiama.
 // Paleidžia tools/lokali-svetaine.ps1 po demo duomenų (arba ranka):
 //   docker compose exec web php app/cli/dev_pavyzdziai.php
 // Sukuria: kvietimus su terminu, pavėlavusį, registraciją į egzaminą, „Moku“ prašymus ir naują lygį,
@@ -21,10 +22,12 @@ $adult = q_one('SELECT * FROM accounts WHERE email = "narys@karateka.test"');
 if (!$admin || !$parent || !$adult) {
     exit("Pirma paleiskite app/cli/dev_seed.php\n");
 }
-if (site_setting('dev_pavyzdziai')) {
+if (site_setting('dev_pavyzdziai_v19')) {
     exit("Pavyzdžiai jau sukurti.\n");
 }
+$upgrade = (bool) site_setting('dev_pavyzdziai');   // v1.8 pavyzdžiai jau yra - tik pervadinami į TEST ir pridedami nauji
 set_site_setting('dev_pavyzdziai', date('Y-m-d H:i'));
+set_site_setting('dev_pavyzdziai_v19', date('Y-m-d H:i'));
 $kid = function (string $first) use ($parent): array {
     return q_one('SELECT m.* FROM members m JOIN account_members am ON am.member_id = m.id WHERE am.account_id = ? AND m.first_name = ?', [(int) $parent['id'], $first]);
 };
@@ -36,6 +39,34 @@ $day = function (int $n): string {
 };
 $by = (int) $admin['id'];
 $allActive = array_map('intval', q('SELECT id FROM members WHERE status = "active"')->fetchAll(PDO::FETCH_COLUMN));
+$teen = q_one('SELECT * FROM accounts WHERE email = "jaunuolis@karateka.test"');
+
+if ($upgrade) {
+    // Ankstesni (v1.8) pavyzdžiai: aiškiai pažymimi „TEST:“ - nieko neištrinant
+    $rename = [
+        'Rudens atostogų stovykla' => ['TEST: Stovykla - registracija vyksta', 'Ką patikrinti: kvietimas „Svarbu“ su laikmačiu, „Dalyvausiu“, komentaras Deniui.'],
+        'Heian kata seminaras'     => ['TEST: Seminaras - registracija baigėsi', 'Ką patikrinti: po termino - „Noriu dalyvauti (pavėlavau)“ ir Denio patvirtinimas.'],
+        'Atvira treniruotė parke'  => ['TEST: Atviras renginys', 'Ką patikrinti: niekas nepakviestas, bet prisijungti gali visi.'],
+    ];
+    foreach ($rename as $old => [$title, $summary]) {
+        q('UPDATE events SET title = ?, summary = ? WHERE title = ?', [$title, $summary, $old]);
+    }
+    q('UPDATE notifications SET title = "TEST: Pranešimas nariams" WHERE type = "broadcast" AND title = "Šeštadienio treniruotė perkelta"');
+    q('UPDATE broadcasts SET title = "TEST: Pranešimas nariams" WHERE title = "Šeštadienio treniruotė perkelta"');
+    // Nauji v1.9: anoniminis komentaras su autoriumi ir neatsakytas komentaras prie stovyklos
+    $id = add_member_message((int) $tomas['id'], (int) $adult['id'], false, 'TEST: Gal galėtumėte vasarą kartais treniruotis lauke? (anoniminis komentaras - Denis mato, kas parašė, ir gali paviešinti be vardo)');
+    q('UPDATE member_messages SET anonymous = 1, page = "/renginiai.php" WHERE id = ?', [$id]);
+    notify_comment($tomas, $adult, $id);
+    $camp = q_one('SELECT * FROM events WHERE title = "TEST: Stovykla - registracija vyksta" ORDER BY id DESC LIMIT 1');
+    if ($camp && $teen) {
+        $id = add_member_message((int) $austeja['id'], (int) $teen['id'], false, 'TEST: Ar stovykloje bus maitinimas?', null, null, (int) $camp['id']);
+        notify_comment($austeja, $teen, $id);
+    }
+    if (site_setting('reactions') === null) {
+        set_site_setting('reactions', '👍 ❤️ 🔥 👏 🥋 belt:2 belt:4 belt:10 teisejas');
+    }
+    exit("Ankstesni pavyzdžiai pažymėti „TEST:“, pridėti nauji (komentarai, anoniminis komentaras).\n");
+}
 
 // ---------- Renginiai ----------
 $newEvent = function (string $type, string $title, string $summary, string $desc, int $in, ?int $until, string $time, string $place) use ($day): array {
@@ -44,19 +75,20 @@ $newEvent = function (string $type, string $title, string $summary, string $desc
     return q_one('SELECT * FROM events WHERE id = ?', [(int) db()->lastInsertId()]);
 };
 // Kviečiami visi, registracija dar vyksta (laikmatis)
-$camp = $newEvent('camp', 'Rudens atostogų stovykla', 'Trys dienos treniruočių, žaidimų ir kata. Vietų skaičius ribotas.',
-    "Stovykla vyks Trakuose.\n\nKą pasiimti: kimono, sportinę aprangą lauke, miegmaišį ir gerą nuotaiką.", 8, 6, '10:00', 'Trakai, poilsio namai „Ežerėlis“');
+$camp = $newEvent('camp', 'TEST: Stovykla - registracija vyksta', 'Ką patikrinti: kvietimas „Svarbu“ su laikmačiu, „Dalyvausiu“, komentaras Deniui.',
+    "Ką patikrinti:\n\n1. tevai@karateka.test - „Mano paskyra“ → „Svarbu“: kvietimas su laikmačiu „liko … d.“.\n2. Paspauskite „Dalyvausiu“ - kvietimas dingsta, čia rodoma „✓ Dalyvaus“.\n3. Apačioje parašykite komentarą Deniui (galima ir „Anonimiškai“).\n4. info@karateka.lt - „Šiandien“ pranešimas „Komentaras“ → „Atsakyti“ atveda čia; atsakykite ir paspauskite „👁 Rodyti visiems“.", 8, 6, '10:00', 'Trakai, poilsio namai „Ežerėlis“');
 invite_members($camp, $allActive, $by, false);
 // Registracija jau baigėsi - galima tik „pavėlavau“
-$seminar = $newEvent('seminar', 'Heian kata seminaras', 'Seminaras visoms grupėms: Heian kata detalės.', 'Seminarą ves Denis. Atsineškite vandens.', 3, -1, '11:00', 'Sporto centras Viršuliškės');
+$seminar = $newEvent('seminar', 'TEST: Seminaras - registracija baigėsi', 'Ką patikrinti: po termino - „Noriu dalyvauti (pavėlavau)“ ir Denio patvirtinimas.',
+    "Ką patikrinti:\n\n1. tevai@karateka.test - paspauskite „Noriu dalyvauti (pavėlavau)“: būsena „Pavėlavo - laukia Denio patvirtinimo“.\n2. info@karateka.lt - „Šiandien“ → „✓ Patvirtinti dalyvavimą“.\n3. Dalyvių sąraše (Renginys → Dalyviai) - stulpelis „Vėlavo“.", 3, -1, '11:00', 'Sporto centras Viršuliškės');
 invite_members($seminar, $allActive, $by, false);
 set_participation((int) $seminar['id'], (int) $tomas['id'], 'late');
 notify_admins('late_request', 'Pavėlavo užsiregistruoti: ' . $tomas['first_name'] . ' ' . $tomas['last_name'],
     $seminar['title'] . ' (' . fmt_date($seminar['starts_on'], true) . '). Registracija baigėsi ' . fmt_date(event_deadline($seminar)),
     'admin/renginio-dalyviai.php?id=' . (int) $seminar['id'], (int) $tomas['id'], (int) $seminar['id']);
 // Atviras renginys: kvietimų nėra, prisijungti gali visi
-$newEvent('other', 'Atvira treniruotė parke', 'Kviečiame visus - ir draugus, ir tėvus. Registruotis nebūtina, bet smagu žinoti, kiek būsime.',
-    'Vingio parkas, prie estrados. Jei lis - treniruotė salėje.', 10, null, '12:00', 'Vingio parkas');
+$newEvent('other', 'TEST: Atviras renginys', 'Ką patikrinti: niekas nepakviestas, bet prisijungti gali visi.',
+    "Ką patikrinti:\n\n1. Kuriant renginį nepažymėta nė viena grupė - kvietimų nėra, „Svarbu“ jis nerodomas.\n2. Bet kuris narys šiame puslapyje gali paspausti „Dalyvausiu“.", 10, null, '12:00', 'Vingio parkas');
 
 // Registracija į egzaminą - pranešimas Deniui
 $exam = q_one('SELECT * FROM events WHERE type = "exam" AND starts_on > CURDATE() ORDER BY starts_on LIMIT 1');
@@ -85,7 +117,7 @@ if ($reqs) {
 // ---------- Pamoka ir pokalbiai ----------
 $lesson = q_one('SELECT id FROM lessons WHERE title LIKE "Heian Shodan%" AND is_published = 1 ORDER BY id LIMIT 1');
 if ($lesson) {
-    send_coach_note($jonas, $admin, 'Pasikartok prieš egzaminą - ypač posūkius.', (int) $lesson['id'], false, false);
+    send_coach_note($jonas, $admin, 'TEST: atsiųsta pamoka - paspauskite „Peržiūrėjau“ (čia arba pamokos viršuje), ji dings iš „Svarbu“.', (int) $lesson['id'], false, false);
 }
 // Bendras pokalbis: Rasa parašė, Denis atsakė (Rasai - naujas atsakymas)
 $ago = function (int $min): string {
@@ -96,22 +128,27 @@ $msg = function (array $m, int $author, bool $staff, string $body, string $when,
     q('UPDATE member_messages SET created_at = ? WHERE id = ?', [$when, $id]);
     return $id;
 };
-$msg($jonas, (int) $parent['id'], false, 'Laba diena, ar šį šeštadienį treniruotė vyks?', $ago(90));
+$msg($jonas, (int) $parent['id'], false, 'TEST: Laba diena, ar šį šeštadienį treniruotė vyks?', $ago(90));
 q('UPDATE member_messages SET read_at = NOW() WHERE member_id = ? AND from_staff = 0', [(int) $jonas['id']]);
-$msg($jonas, $by, true, 'Laba diena! Taip, vyks kaip įprastai, 10:00.', $ago(40));
+$msg($jonas, $by, true, 'TEST: Taip, vyks kaip įprastai, 10:00. (atsakymas matosi pokalbyje ir „Svarbu“)', $ago(40));
 // Tomas parašė - laukia Denio atsakymo
-$msg($tomas, (int) $adult['id'], false, 'Ar galiu kartais ateiti ir į jaunimo treniruotę?', $ago(15));
+$msg($tomas, (int) $adult['id'], false, 'TEST: Ar galiu kartais ateiti ir į jaunimo treniruotę? (Denis - atsakykite pokalbio langelyje)', $ago(15));
 // Klausimas prie renginio - Denis atsakė ir parodė visiems (be vardo)
-$q = $msg($jonas, (int) $parent['id'], false, 'Ar reikia pasiimti miegmaišį?', $ago(120), (int) $camp['id']);
+$q = $msg($jonas, (int) $parent['id'], false, 'TEST: Ar reikia pasiimti miegmaišį?', $ago(120), (int) $camp['id']);
 q('UPDATE member_messages SET is_public = 1, read_at = NOW() WHERE id = ?', [$q]);
-$msg($jonas, $by, true, 'Taip, miegmaišį ir pagalvę pasiimkite.', $ago(100), (int) $camp['id']);
+$msg($jonas, $by, true, 'TEST: Taip, miegmaišį ir pagalvę pasiimkite. (paviešintas atsakymas - mato visi nariai)', $ago(100), (int) $camp['id']);
 q('UPDATE member_messages SET read_at = NOW() WHERE member_id = ? AND event_id = ? AND from_staff = 1', [(int) $jonas['id'], (int) $camp['id']]);
-// Anoniminis komentaras
-q('INSERT INTO anon_feedback (body, page, created_at) VALUES (?, ?, ?)', ['Gal galėtumėte vasarą kartais treniruotis lauke?', '/renginiai.php', $ago(30)]);
+// Anoniminis komentaras: Denis mato, kas parašė (Tomas), paviešinus - be vardo
+$anonId = $msg($tomas, (int) $adult['id'], false, 'TEST: Gal galėtumėte vasarą kartais treniruotis lauke? (anoniminis komentaras - Denis mato, kas parašė, ir gali paviešinti be vardo)', $ago(30));
+q('UPDATE member_messages SET anonymous = 1, page = "/renginiai.php" WHERE id = ?', [$anonId]);
+notify_comment($tomas, $adult, $anonId);
+// Komentaras prie stovyklos, dar neatsakytas - Deniui pranešimas „Komentaras“ su nuoroda į renginį
+$c = $msg($austeja, (int) $teen['id'], false, 'TEST: Ar stovykloje bus maitinimas?', $ago(20), (int) $camp['id']);
+notify_comment($austeja, $teen, $c);
 
 // ---------- Pranešimas visiems (paskyroje) ----------
-$title = 'Šeštadienio treniruotė perkelta';
-$body = "Šį šeštadienį treniruotė vyks ne 10:00, o 11:00 - salėje vyksta varžybos.\nAčiū, kad suprantate!";
+$title = 'TEST: Pranešimas nariams';
+$body = "Ką patikrinti: šis pranešimas visiems atėjo per Treneriams → Pranešimai. Paspauskite „Supratau“ - jis dingsta iš „Svarbu“.";
 $accounts = q('SELECT DISTINCT a.id FROM accounts a JOIN account_members am ON am.account_id = a.id JOIN members m ON m.id = am.member_id
                 WHERE a.status = "active" AND m.status = "active" AND a.id <> ?', [$by])->fetchAll(PDO::FETCH_COLUMN);
 q('INSERT INTO broadcasts (title, body, channels, recipients, sent_by) VALUES (?, ?, "site", ?, ?)', [$title, $body, count($accounts), $by]);
@@ -132,4 +169,9 @@ q('UPDATE training_groups SET price_note = "30 €/mėn. (1 kartą per savaitę)
 // Pokalbio užuomina - visiems po prisijungimo
 q('UPDATE accounts SET chat_hint_at = NULL');
 
-echo "v1.8 pavyzdžiai sukurti: renginiai su terminu, pranešimai, XP, pokalbis.\n";
+// Reakcijos: ir diržų spalvos bei teisėjo vėliavėlės (jei adminas dar nieko nekeitė)
+if (site_setting('reactions') === null) {
+    set_site_setting('reactions', '👍 ❤️ 🔥 👏 🥋 belt:2 belt:4 belt:10 teisejas');
+}
+
+echo "TEST pavyzdžiai sukurti: renginiai su terminu, pranešimai, XP, pokalbis, komentarai.\n";
