@@ -4,6 +4,35 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.9 - 2026-10-28 (pokalbis kaip Messenger, komentarai su vieta, instruktorių langas, lankomumas su spalvotomis grupėmis)
+**Duomenų bazė:** importuoti `db/022_pokalbiai_grupiu_spalvos.sql`. Failą galima importuoti ir antrą kartą.
+**Kompiuteryje:** atnaujinti su `tools\lokali-atnaujinti.ps1` - duomenys ir nuotraukos lieka. `tools\lokali-svetaine.ps1` viską ištrina ir kuria iš naujo (dabar prieš tai paklausia).
+
+Pokalbis ir komentarai:
+- Pokalbio langelis kaip Messenger: atsinaujina kas 2,5 s, Enter - siųsti. Nariai rašo tik Deniui.
+- Treneriui: kairėje visi pokalbiai su paieška (rasti galima ir tą, su kuriuo dar nerašyta), dešinėje pokalbis.
+  „Žinutės“ ir „Atsakyti“ atidaro langelį - į kitą puslapį nebeperkelia. Telefone - sąrašas, paspaudus - pokalbis (‹ atgal).
+- Prie kiekvienos žinutės matyti, kur parašyta (renginys, naujiena, pamoka ar puslapis), kas ir kada. Galima „↩ Atsakyti čia“ ir „👁 Rodyti visiems“.
+- Anoniminis komentaras: Denis mato, kas parašė, gali atsakyti ir paviešinti - kitiems nariams vardas nerodomas.
+  Prie renginių, naujienų ir pamokų - varnelė „Anonimiškai“.
+- Pranešimas apie komentarą („Svarbu“ apžvalgoje) veda tiesiai į įrašą, kur komentaras paliktas; ten matyti kas ir kada, atsakoma čia pat.
+- Naujas puslapis „Klausimai ir atsakymai“ (nuoroda apačioje) - Denio paviešinti bendri klausimai.
+
+Treneriams:
+- Apžvalga: kairėje - ką reikia padaryti (pranešimai ir darbai kartu), šiandienos treniruotės, artimiausi renginiai;
+  dešinėje - greiti veiksmai, visi nustatymai grupėmis ir „Mano paskyra“. Skirtukai „Grupės“, „Tvarkaraštis“, „Taškai“, „Paskyros“ sujungti į vieną - „Nustatymai“.
+- Lankomumas: „✓ Buvo“ dešinėje (patogiau dešine ranka). Grupė renkama iš spalvotų kvadratėlių (šiandienos - pirmos).
+  Grupės spalvą galima pakeisti grupės nustatymuose.
+- Reakcijos: visų diržų spalvos ir teisėjo vėliavėlės (balta ir raudona) - Nustatymai → Reakcijų emoji.
+
+Pagrindinis puslapis:
+- Instruktoriai: paspaudus nuotrauką ar vardą - langas su daugiau informacijos. Tekstą keisti redagavimo režime, po kortele - „Plačiau (rodoma paspaudus)“.
+- „2 treniruotės nemokamai“ perkeltas į dešinę meniu dalį - prisijungus dingsta ir tuščios vietos nebelieka.
+- Meniu „Kontaktai“ ir kitos nuorodos nuslenka taip, kad visa skiltis matyti. Kontaktų ir treniruočių vietų blokai - vienodo aukščio.
+
+Kita:
+- Lokalūs pavyzdžiai pažymėti „TEST:“, aprašyme - ką patikrinti. Atnaujinant niekas neištrinama ir nekeičiama.
+
 ## v1.8 - 2026-10-27 (pranešimai „Svarbu“, renginio puslapis, pokalbis su Deniu, XP ir lygiai)
 **Duomenų bazė:** importuoti `db/021_pranesimai_renginiai_xp.sql`. Failą galima importuoti ir antrą kartą.
 
