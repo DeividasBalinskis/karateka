@@ -113,3 +113,10 @@
   .hb-bar{position:relative; top:auto; left:auto; margin:0 6px 8px;}
   .hb-menu input{width:110px;}
 }
+/* Instruktorius: „Plačiau“ - rodoma lankytojams paspaudus kortelę */
+.hb-more{width:100%; margin-top:8px; text-align:left; font-size:0.8rem;}
+.hb-more summary{cursor:pointer; font-weight:700; color:#A85C7E;}
+.hb-more-role, .hb-more-bio{margin-top:6px; padding:6px 8px; border-radius:8px; background:rgba(255,255,255,0.7); border:1px dashed rgba(23,20,15,0.25); min-height:28px;}
+.hb-more-bio{min-height:70px; white-space:pre-wrap;}
+.hb-more-role:empty::before{content:"Pareigos, pvz. vaikų grupių treneris"; color:#8B8478;}
+.hb-more-bio:empty::before{content:"Plačiau: nuo kada treniruojasi, diržas, ką treniruoja, pasiekimai"; color:#8B8478;}

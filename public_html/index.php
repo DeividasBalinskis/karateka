@@ -29,6 +29,7 @@ $page = home_page();
     --cream:#F7F4EC;
     --accent:#2F6B5A;
     --accent-dark:#204B3F;
+    --pink:#A85C7E;
     --radius:16px;
   }
   *{box-sizing:border-box; margin:0; padding:0;}
@@ -201,6 +202,33 @@ $page = home_page();
   }
   .instructor-card .name{font-size:0.92rem; font-weight:700; color:var(--ink); margin-bottom:4px;}
   .instructor-card .rank{font-family:'JetBrains Mono',monospace; font-size:0.7rem; color:var(--accent); font-weight:600;}
+  /* Paspaudus - langas su daugiau informacijos */
+  .instructor-card[data-instructor]{cursor:pointer; transition:transform .15s ease, box-shadow .15s ease;}
+  .instructor-card[data-instructor]:hover{transform:translateY(-2px); box-shadow:0 18px 36px rgba(23,20,15,0.14);}
+  .instructor-card[data-instructor]:focus-visible{outline:3px solid var(--pink); outline-offset:3px;}
+  .instructor-card .ins-open{margin-top:8px; font-size:0.72rem; font-weight:700; color:var(--pink); opacity:0; transition:opacity .15s;}
+  .instructor-card[data-instructor]:hover .ins-open, .instructor-card[data-instructor]:focus-visible .ins-open{opacity:1;}
+  @media (hover:none){ .instructor-card .ins-open{opacity:1;} }
+  .ins-modal{position:fixed; inset:0; z-index:1200; display:flex; align-items:center; justify-content:center; padding:20px; background:rgba(18,14,10,0.55); backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px);}
+  .ins-modal[hidden]{display:none;}
+  .ins-pop{position:relative; width:min(640px,100%); max-height:calc(100vh - 40px); overflow:auto; background:#FBFAF6; border-radius:22px; box-shadow:0 30px 80px rgba(0,0,0,0.35); animation:insIn .22s ease-out;}
+  @keyframes insIn{from{opacity:0; transform:translateY(12px) scale(.98);} to{opacity:1; transform:none;}}
+  @media (prefers-reduced-motion: reduce){ .ins-pop{animation:none;} }
+  .ins-pop-in{display:grid; grid-template-columns:180px minmax(0,1fr); gap:26px; padding:30px;}
+  .ins-pop-photo{width:180px; height:220px; border-radius:16px; overflow:hidden; background:linear-gradient(135deg,#A85C7E,#5C68A0); display:flex; align-items:center; justify-content:center;}
+  .ins-pop-photo img{width:100%; height:100%; object-fit:cover;}
+  .ins-pop-photo span{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:3rem; color:#fff;}
+  .ins-pop-body h3{font-size:1.5rem; margin:4px 0 6px; padding-right:30px;}
+  .ins-pop-rank{font-family:'JetBrains Mono',monospace; font-size:0.78rem; font-weight:600; color:var(--accent);}
+  .ins-pop-role{margin-top:4px; font-weight:600;}
+  .ins-pop-bio{margin-top:14px; color:var(--muted); font-size:0.95rem; line-height:1.6;}
+  .ins-pop-bio p + p{margin-top:10px;}
+  .ins-pop-bio strong{color:var(--ink);}
+  .ins-pop-hint{margin-top:12px; font-size:0.8rem; color:var(--pink);}
+  .ins-close{position:absolute; top:12px; right:12px; width:36px; height:36px; border-radius:50%; border:none; background:rgba(23,20,15,0.07); font-size:22px; line-height:1; cursor:pointer; color:var(--ink);}
+  .ins-close:hover{background:rgba(23,20,15,0.14);}
+  body.ins-lock{overflow:hidden;}
+  @media(max-width:600px){ .ins-pop-in{grid-template-columns:1fr; padding:22px; gap:16px;} .ins-pop-photo{width:120px; height:140px;} }
 
   .community-banner{
     padding:36px 40px; text-align:center;
@@ -457,7 +485,7 @@ $page = home_page();
   #apie{padding-bottom:40px;}
   #kontaktai{padding:40px 0;}
   #kontaktai .section-head{margin-bottom:24px;}
-  #registracija{padding-top:40px;}
+  #registracija{padding-top:40px; scroll-margin-top:84px;}
   /* ARTĖJANTYS RENGINIAI */
   /* Tokio pat pločio kaip grupių langas; antraštė ir "Visi renginiai" vienoje eilutėje virš kortelių */
   .home-events-section{padding:20px 0 0;}
@@ -548,7 +576,7 @@ $page = home_page();
   .hb-text{padding:60px 0 28px;}
   .hb-contacts{padding:40px 0;}
   .hb-contacts .section-head{margin-bottom:24px;}
-  #registracija{padding-top:40px;}
+  #registracija{padding-top:40px; scroll-margin-top:84px;}
   @media(min-width:1500px){ .hb-about .wrap, .hb-values .wrap, .hb-instructors .wrap, .hb-banner .wrap, .hb-text .wrap{max-width:1520px;} }
   /* Tekstas su nuotrauka */
   .hb-text-grid.with-img{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:48px; align-items:stretch;}
@@ -557,7 +585,10 @@ $page = home_page();
   .hb-text-photo img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover;}
   @media(max-width:860px){ .hb-text-grid.with-img{grid-template-columns:1fr;} .hb-text-grid.img-left .hb-text-photo{order:0;} }
   /* Kontaktai ir treniruočių vietos */
-  .contacts-grid.two{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:24px; align-items:start;}
+  .contacts-grid.two{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:24px; align-items:stretch;}   /* abu blokai vienodo aukščio */
+  .contacts-grid.two > .contact-panel{height:100%;}
+  /* Paspaudus meniu nuorodą - visa skiltis su pavadinimu matosi po viršutine juosta (šiose skiltyse viršuje mažas tarpas) */
+  section.hb-contacts, section.hb-values, section.hb-instructors, section.hb-banner, section.hb-text, section.hb-partners{scroll-margin-top:84px;}
   .contact-locs h3{font-size:1.1rem; margin-bottom:14px;}
   .contact-locs-cat + .contact-locs-cat{margin-top:14px;}
   .contact-locs-cat strong{display:block; font-size:0.85rem; color:var(--accent); font-family:'JetBrains Mono',monospace; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:6px;}
