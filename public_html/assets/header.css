@@ -42,6 +42,7 @@ html{scrollbar-gutter:stable;}
   transition:transform 0.15s ease, background-position 0.3s ease;
 }
 .site-header .nav-cta:hover{background-position:100% 0; filter:brightness(1.08); text-decoration:none;}
+.site-header .page-section .nav-cta{margin-left:8px;}
 
 /* 2 grupė: kiti puslapiai - atskirti brūkšniu, paprastos nuorodos su rodykle */
 .site-header .page-section{border-left:1px solid rgba(23,20,15,0.15); padding-left:14px;}

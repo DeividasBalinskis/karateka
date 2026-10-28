@@ -66,7 +66,8 @@ function home_block_defaults(string $type): array
             return ['title' => 'Mūsų instruktoriai',
                 'text' => 'Klubo instruktoriai nuolat gilina žinias, dalyvaudami stažuotėse Lietuvoje ir užsienyje — karate, fizioterapijos, psichologijos, sporto, medicinos, masažų, biomechanikos, sporto mitybos, kinesiologijos ir sporto pedagogikos srityse. Tai leidžia mums treniruotes kurti remiantis ne tik karate tradicijomis, bet ir šiuolaikiniais mokslo pasiekimais.',
                 'items' => [
-                    ['name' => 'Denis Balinskis', 'rank' => '3 Dan · klubo vadovas', 'photo' => '', 'lead' => true],
+                    ['name' => 'Denis Balinskis', 'rank' => '3 Dan · klubo vadovas', 'photo' => '', 'lead' => true, 'role' => 'Klubo vadovas, vyr. treneris',
+                     'bio' => "[Pavyzdys - pakeiskite] Trumpas pristatymas: kada pradėjo treniruotis karate, kokį diržą turi, kokias grupes treniruoja.\n\n**Pasiekimai:** varžybos, stažuotės, kursai.\n\nTekstą keičia administratorius: ✎ Redaguoti puslapį → instruktoriaus kortelė → „Plačiau“."],
                     ['name' => 'Lukas Čiulkinas', 'rank' => '1 Dan', 'photo' => '', 'lead' => false],
                     ['name' => 'Joris Kėrys', 'rank' => '1 Dan', 'photo' => '', 'lead' => false],
                     ['name' => 'Esmilė Česevičiūtė', 'rank' => '1 Dan', 'photo' => '', 'lead' => false],
@@ -476,19 +477,36 @@ function home_render_block(array $b): string
                 . '</div></section>';
 
         case 'instructors':
+            // Paspaudus instruktorių - langas su daugiau informacijos (pareigos, „Plačiau“); redaguojant - laukai kortelėje
             $card = function ($p) {
                 $photo = (string) ($p['photo'] ?? '');
-                return '<div class="panel instructor-card' . (!empty($p['lead']) ? ' lead' : '') . ' reveal"' . hb_item() . '>'
+                $edit = home_edit_mode();
+                $more = '';
+                if (!$edit) {
+                    $bio = trim((string) ($p['bio'] ?? ''));
+                    $more = '<template class="ins-more"><div class="ins-pop-photo">' . ($photo ? '<img src="' . e(url($photo)) . '" alt="">' : '<span>' . e(initials((string) $p['name'])) . '</span>') . '</div>'
+                        . '<div class="ins-pop-body"><h3 id="insTitle">' . e((string) $p['name']) . '</h3>'
+                        . ((string) $p['rank'] !== '' ? '<div class="ins-pop-rank">' . e((string) $p['rank']) . '</div>' : '')
+                        . (trim((string) ($p['role'] ?? '')) !== '' ? '<div class="ins-pop-role">' . e((string) $p['role']) . '</div>' : '')
+                        . '<div class="ins-pop-bio">' . ($bio !== '' ? home_text_html($bio) : '<p class="muted">Daugiau informacijos apie instruktorių - netrukus.</p>'
+                            . (is_admin() ? '<p class="ins-pop-hint">Įrašykite tekstą: ✎ Redaguoti puslapį → instruktoriaus kortelė → „Plačiau“.</p>' : '')) . '</div></div></template>';
+                }
+                return '<div class="panel instructor-card' . (!empty($p['lead']) ? ' lead' : '') . ' reveal"' . hb_item()
+                    . (!$edit ? ' role="button" tabindex="0" aria-haspopup="dialog" aria-label="' . e((string) $p['name']) . ' - daugiau informacijos" data-instructor' : '') . '>'
                     . '<div class="avatar' . ($photo ? ' has-photo' : '') . '"' . hb_img_attrs('photo', $photo) . '>'
-                    . ($photo || home_edit_mode() ? '<img src="' . e($photo ? url($photo) : '') . '" alt=""' . ($photo ? '' : ' hidden') . '>' : '')
+                    . ($photo || $edit ? '<img src="' . e($photo ? url($photo) : '') . '" alt=""' . ($photo ? '' : ' hidden') . '>' : '')
                     . '<span class="hb-initials"' . ($photo ? ' hidden' : '') . '>' . e(initials((string) $p['name'])) . '</span>'
                     . hb_img_tools(true) . '</div>' . hb_t('name', (string) $p['name'], 'div', 'name') . hb_t('rank', (string) $p['rank'], 'div', 'rank')
-                    . (home_edit_mode() ? hb_input('lead', !empty($p['lead']), 'Paryškinti') : '') . hb_item_tools() . '</div>';
+                    . ($edit ? hb_input('lead', !empty($p['lead']), 'Paryškinti')
+                        . '<details class="hb-more"' . (trim((string) ($p['bio'] ?? '')) === '' ? '' : ' open') . '><summary>Plačiau (rodoma paspaudus)</summary>'
+                        . hb_t('role', (string) ($p['role'] ?? ''), 'div', 'hb-more-role') . hb_t('bio', (string) ($p['bio'] ?? ''), 'div', 'hb-more-bio', true) . '</details>'
+                        : '<span class="ins-open" aria-hidden="true">Plačiau</span>' . $more)
+                    . hb_item_tools() . '</div>';
             };
             return '<section id="' . $id . '" class="hb-instructors"><div class="wrap"><div class="about-sub-head about-sub-head-center">' . hb_t('title', $d['title'], 'h3') . '</div>'
                 . '<div class="instructors-row"><div class="panel instructors-intro reveal">' . hb_t('text', $d['text'], 'div', '', true) . '</div>'
-                . '<div class="instructor-grid"' . hb_list('items') . '>' . hb_list_items((array) $d['items'], $card, ['name' => 'Vardas Pavardė', 'rank' => '1 Dan', 'photo' => '', 'lead' => false], '') . '</div></div>'
-                . ($edit ? '<div class="hb-center">' . hb_add_button('Pridėti instruktorių') . '</div>' : '') . '</div></section>';
+                . '<div class="instructor-grid"' . hb_list('items') . '>' . hb_list_items((array) $d['items'], $card, ['name' => 'Vardas Pavardė', 'rank' => '1 Dan', 'photo' => '', 'lead' => false, 'role' => '', 'bio' => ''], '') . '</div></div>'
+                . ($edit ? '<div class="hb-center">' . hb_add_button('Pridėti instruktorių') . '</div>' : instructor_modal()) . '</div></section>';
 
         case 'banner':
             return '<section id="' . $id . '" class="hb-banner"><div class="wrap"><div class="panel community-banner reveal">' . hb_t('text', $d['text'], 'div', '', true, 'span') . '</div></div></section>';
@@ -568,4 +586,22 @@ function home_block_wrap(array $b, string $html): string
         . '<button type="button" class="hb-del" title="Ištrinti bloką">✕</button>'
         . '<button type="button" class="hb-insert" title="Pridėti bloką po šiuo">+ Blokas po šiuo</button></div>'
         . $html . '</div>';
+}
+
+/** Instruktoriaus langas (vienas puslapyje): turinys imamas iš paspaustos kortelės <template> */
+function instructor_modal(): string
+{
+    return '<div class="ins-modal" id="insModal" hidden role="dialog" aria-modal="true" aria-labelledby="insTitle"><div class="ins-pop">'
+        . '<button type="button" class="ins-close" aria-label="Uždaryti">×</button><div class="ins-pop-in"></div></div></div>'
+        . '<script>(function () {
+  var m = document.getElementById("insModal"), box = m.querySelector(".ins-pop-in"), last = null;
+  function open(card) { last = card; box.innerHTML = ""; box.appendChild(card.querySelector("template.ins-more").content.cloneNode(true)); m.hidden = false; document.body.classList.add("ins-lock"); m.querySelector(".ins-close").focus(); }
+  function close() { m.hidden = true; document.body.classList.remove("ins-lock"); if (last) last.focus(); }
+  document.querySelectorAll("[data-instructor]").forEach(function (c) {
+    c.addEventListener("click", function () { open(c); });
+    c.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(c); } });
+  });
+  m.addEventListener("click", function (e) { if (e.target === m || e.target.closest(".ins-close")) close(); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !m.hidden) close(); });
+})();</script>';
 }
