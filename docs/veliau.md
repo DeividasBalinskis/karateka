@@ -2,8 +2,8 @@
 
 Sutarta atidėti (klausimai ir atsakymai 2026-10-27). Kai imsimės - išbraukti iš čia ir įrašyti į `pakeitimai.md`.
 
-- **Laikini tvarkaraščio pakeitimai** - atšaukta treniruotė, atostogos, vasaros tvarkaraštis nuo datos. Reikia, bet vėliau.
-  „Šiandien“ ir „Treniruotė“ turėtų nerodyti atšauktų treniruočių.
+- **Vasaros tvarkaraštis nuo datos** - kitas tvarkaraštis tam tikram laikotarpiui (atšauktos treniruotės ir atostogos jau yra - v1.10).
+- **Pranešimai į telefoną** (push) - kai įdiegta programėlė; dabar pranešimai matomi atidarius svetainę.
 - **Ką rodyti treneriams (instruktoriams)** - kiek informacijos jiems matyti tam tikrose vietose. Dar neapsispręsta.
 - **Egzamino sertifikatas** - lapas su patvirtinto egzamino informacija, vardu ir parašais. Pavyzdys bus vėliau,
   kai bus baigta egzaminų sistema.

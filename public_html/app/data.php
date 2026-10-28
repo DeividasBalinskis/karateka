@@ -401,6 +401,14 @@ function admin_today_extra_todo(): array
     } catch (PDOException $ex) {
         // dar neimportuotas db/021
     }
+    // Atsarginė kopija: nepavyko arba nedaryta ilgiau nei 2 d.
+    if (is_admin() && backup_auto()) {
+        $last = backup_last_time();
+        $tried = @filemtime(backup_dir() . '/.bandyta');   // pirmą kartą kopija daroma dabar - nerodoma
+        if (backup_error() || ($last && $last < time() - 2 * 86400) || (!$last && $tried && $tried < time() - 3600)) {
+            $todo[] = [backup_error() ? 'Atsarginė duomenų bazės kopija nepavyko' : 'Atsarginė duomenų bazės kopija nedaryta ' . ($last ? 'nuo ' . fmt_date(date('Y-m-d', $last)) : 'nė karto'), 'admin/kopijos.php', 'Peržiūrėti'];
+        }
+    }
     // Nauji testų rezultatai per savaitę
     $r = q_one('SELECT COUNT(*) c, COALESCE(SUM(passed), 0) p FROM quiz_attempts WHERE finished_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)');
     if ($r && (int) $r['c']) {

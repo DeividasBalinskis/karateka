@@ -17,6 +17,7 @@ const NOTIFY_ICONS = [
     'broadcast'         => '📣',
     'training'          => '🥋',
     'comment'           => '💬',
+    'cancelled'         => '🚫',
 ];
 // Šventė ekrane (vieną kartą, kol neperskaityta)
 const NOTIFY_CELEBRATE = ['level_up', 'exam_passed'];

@@ -94,7 +94,7 @@ function login_throttled(string $email): bool
 
 /**
  * Grąžina ['ok' => true] arba ['ok' => false, 'error' => kodas].
- * Kodai: throttled, invalid, pending_email, pending_parent, disabled
+ * Kodai: throttled, invalid, pending_email, pending_parent, disabled, code (reikia kodo iš el. pašto - kodas.php)
  */
 function attempt_login(string $email, string $password): array
 {
@@ -117,6 +117,11 @@ function attempt_login(string $email, string $password): array
     if (password_needs_rehash($a['password_hash'], PASSWORD_DEFAULT)) {
         q('UPDATE accounts SET password_hash = ? WHERE id = ?', [password_hash($password, PASSWORD_DEFAULT), $a['id']]);
     }
+    // Antras žingsnis: kodas el. paštu (jei įjungta ir įrenginys nepažymėtas kaip patikimas)
+    if (two_factor_on($a) && !device_trusted((int) $a['id'])) {
+        $_SESSION['tfa'] = ['account_id' => (int) $a['id'], 'at' => time()];
+        return ['ok' => false, 'error' => 'code', 'mail_error' => login_code_send($a, 'login')];
+    }
     login_account((int) $a['id']);
     return ['ok' => true];
 }
@@ -125,7 +130,7 @@ function login_account(int $accountId): void
 {
     session_regenerate_id(true);
     $_SESSION['account_id'] = $accountId;
-    unset($_SESSION['csrf']);
+    unset($_SESSION['csrf'], $_SESSION['tfa'], $_SESSION['dev_login_code']);
     q('UPDATE accounts SET last_login_at = NOW() WHERE id = ?', [$accountId]);
 }
 
@@ -275,7 +280,7 @@ function pending_approvals_count(): int
 }
 
 /**
- * Paskyros nustatymai (el. paštas, telefonas, slaptažodis) - tėvų paskyroje ir trenerio "Paskyra" puslapyje.
+ * Paskyros nustatymai (el. paštas, telefonas, slaptažodis, prisijungimas su kodu) - tėvų paskyroje ir trenerio apžvalgoje.
  * Sėkmės atveju nukreipia į $back; klaidos įrašomos į $errors.
  */
 function handle_account_settings(array $a, string $back, array &$errors): void
@@ -306,6 +311,52 @@ function handle_account_settings(array $a, string $back, array &$errors): void
                 . abs_url('el-pastas.php?t=' . $token) . "\n\nNuoroda galioja 1 dieną. Jei el. pašto nekeitėte, šį laišką ignoruokite.");
             flash('ok', "Išsiuntėme patvirtinimo nuorodą į $email. El. paštas pasikeis, kai ją paspausite.");
             redirect($back);
+        }
+    }
+
+    // Prisijungimas su kodu: įjungiama tik patvirtinus kodą iš el. pašto (taip žinome, kad laiškai ateina)
+    if ($action === 'tfa_start') {
+        if (!password_verify((string) ($_POST['current'] ?? ''), $a['password_hash'])) {
+            $errors[] = 'Neteisingas slaptažodis.';
+        } elseif ($err = login_code_send($a, 'enable')) {
+            $errors[] = $err;
+        } else {
+            $_SESSION['tfa_enable'] = time();
+            flash('ok', 'Išsiuntėme kodą į ' . masked_email($a['email']) . ' - įveskite jį žemiau.');
+            redirect($back . '#tfa');
+        }
+    }
+    if ($action === 'tfa_confirm') {
+        $res = login_code_check($aid, 'enable', post('code'));
+        if ($res === 'ok') {
+            q('UPDATE accounts SET two_factor = 1 WHERE id = ?', [$aid]);
+            unset($_SESSION['tfa_enable']);
+            trust_device($aid);
+            flash('ok', 'Prisijungimas su kodu įjungtas. Šiame įrenginyje kodo neprašysime ' . TRUSTED_DEVICE_DAYS . ' dienų.');
+            redirect($back . '#tfa');
+        }
+        $errors[] = $res === 'invalid' ? 'Neteisingas kodas. Liko bandymų: ' . login_code_attempts_left($aid, 'enable') . '.' : 'Kodas nebegalioja - paspauskite „Siųsti kodą“ dar kartą.';
+        if ($res === 'expired') {
+            unset($_SESSION['tfa_enable']);
+        }
+    }
+    if ($action === 'tfa_cancel') {
+        unset($_SESSION['tfa_enable']);
+        redirect($back . '#tfa');
+    }
+    if ($action === 'tfa_forget') {
+        forget_devices($aid);
+        flash('ok', 'Visi įrenginiai pamiršti - kitą kartą prisijungiant reikės kodo.');
+        redirect($back . '#tfa');
+    }
+    if ($action === 'tfa_off') {
+        if (!password_verify((string) ($_POST['current'] ?? ''), $a['password_hash'])) {
+            $errors[] = 'Neteisingas slaptažodis.';
+        } else {
+            q('UPDATE accounts SET two_factor = 0 WHERE id = ?', [$aid]);
+            forget_devices($aid);
+            flash('ok', 'Prisijungimas su kodu išjungtas.');
+            redirect($back . '#tfa');
         }
     }
 

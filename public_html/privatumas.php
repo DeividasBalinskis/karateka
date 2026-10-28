@@ -7,7 +7,7 @@ page_start('Privatumo politika', ['description' => 'Kaip VšĮ Karate Ateitis tv
 <article class="panel card legal">
   <div class="eyebrow">Asmens duomenų apsauga</div>
   <h1 class="styled">Privatumo politika</h1>
-  <p class="muted small">Atnaujinta: 2026 m. spalio 27 d.</p>
+  <p class="muted small">Atnaujinta: 2026 m. spalio 28 d.</p>
 
   <h2>1. Kas mes</h2>
   <p>Jūsų asmens duomenis tvarko <strong>VšĮ Karate Ateitis</strong> (įmonės kodas 305105392, Girulių g. 5, Vilnius).
@@ -63,6 +63,7 @@ page_start('Privatumo politika', ['description' => 'Kaip VšĮ Karate Ateitis tv
     <li>Bandomosios treniruotės užklausas (el. laiškus) - 6 mėnesius, jei narystė neprasideda.</li>
     <li>Nebaigtas registracijas (nepatvirtintas el. paštas ar negautas tėvų sutikimas) - <?= (int) config('retention.unfinished_days', 30) ?> dienų. Vėliau jos ištrinamos automatiškai.</li>
     <li>Prisijungimo bandymų įrašus (el. paštas, IP adresas) apsaugai nuo įsilaužimų - 30 dienų.</li>
+    <li>Atsargines duomenų bazės kopijas (kad duomenys nedingtų dėl gedimo) - <?= (int) config('backup.keep', 14) ?> dienų. Jas pasiekti gali tik administratorius.</li>
   </ul>
 
   <h2>6. Slapukai ir trečiųjų šalių turinys</h2>
@@ -83,7 +84,8 @@ page_start('Privatumo politika', ['description' => 'Kaip VšĮ Karate Ateitis tv
      Jei manote, kad jūsų teisės pažeistos, galite kreiptis į Valstybinę duomenų apsaugos inspekciją (<a href="https://vdai.lrv.lt" target="_blank" rel="noopener">vdai.lrv.lt</a>).</p>
 
   <h2>8. Kaip saugome duomenis</h2>
-  <p>Svetainė veikia per šifruotą HTTPS ryšį. Slaptažodžiai saugomi tik užšifruoti. Narių duomenis mato tik prisijungę treneriai.</p>
+  <p>Svetainė veikia per šifruotą HTTPS ryšį. Slaptažodžiai saugomi tik užšifruoti. Narių duomenis mato tik prisijungę treneriai,
+     jų paskyroms galima įjungti prisijungimą su papildomu kodu el. paštu. Kasdien daroma atsarginė duomenų bazės kopija.</p>
 
   <h2>9. Pakeitimai</h2>
   <p>Pasikeitus šiai politikai, atnaujinsime datą viršuje. Apie esminius pakeitimus pranešime nariams el. paštu.</p>

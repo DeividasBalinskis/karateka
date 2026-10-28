@@ -28,6 +28,12 @@ if (is_post()) {
     if ($result['ok']) {
         redirect($return);
     }
+    if ($result['error'] === 'code') {
+        if ($result['mail_error']) {
+            flash('err', $result['mail_error']);
+        }
+        redirect('kodas.php?r=' . rawurlencode($return));
+    }
     $messages = [
         'throttled'      => 'Per daug nesėkmingų bandymų. Pabandykite po 15 minučių arba atkurkite slaptažodį.',
         'invalid'        => 'Neteisingas el. paštas arba slaptažodis.',

@@ -20,6 +20,12 @@ function run_cleanup(): void
 
     q('DELETE FROM email_tokens WHERE (used_at IS NOT NULL OR expires_at < NOW()) AND created_at < NOW() - INTERVAL 30 DAY');
     q('DELETE FROM login_attempts WHERE attempted_at < NOW() - INTERVAL 30 DAY');
+    try {
+        q('DELETE FROM login_codes WHERE created_at < NOW() - INTERVAL 1 DAY');
+        q('DELETE FROM trusted_devices WHERE expires_at < NOW()');
+    } catch (PDOException $ex) {
+        // dar neimportuotas db/023
+    }
 }
 
 function maybe_run_cleanup(): void

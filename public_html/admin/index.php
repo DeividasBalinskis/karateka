@@ -60,9 +60,9 @@ $upcoming = q_all('SELECT * FROM events WHERE COALESCE(ends_on, starts_on) >= CU
 page_start('Šiandien', ['admin' => true]);
 // Nustatymai (dešinėje): visi vienoje vietoje, sugrupuoti - meniu juostoje jų nebėra, kad nesikartotų
 $settings = [
-    'Klubas'                 => [['Grupės ir jų spalvos', 'admin/grupes.php', true], ['Tvarkaraštis ir kainos', 'admin/tvarkarastis.php', true], ['Taškai ir XP', 'admin/taskai.php', true]],
+    'Klubas'                 => [['Grupės ir jų spalvos', 'admin/grupes.php', true], ['Tvarkaraštis ir kainos', 'admin/tvarkarastis.php', true], ['Atšauktos treniruotės ir atostogos', 'admin/atsaukimai.php', true], ['Taškai ir XP', 'admin/taskai.php', true]],
     'Egzaminai ir pamokos'   => [['Egzaminų programa (XP)', 'admin/programa.php', true], ['Testai', 'admin/testai.php', true], ['Pamokų medis', 'admin/pamokos.php', true]],
-    'Svetainė'               => [['Pagrindinis puslapis (redaguoti)', 'index.php?redaguoti=1', is_admin()], ['Reakcijų emoji', 'admin/naujienos.php?emoji=1', is_admin()]],
+    'Svetainė'               => [['Pagrindinis puslapis (redaguoti)', 'index.php?redaguoti=1', is_admin()], ['Reakcijų emoji', 'admin/naujienos.php?emoji=1', is_admin()], ['Atsarginės kopijos ir sistema', 'admin/kopijos.php', is_admin()]],
     'Žmonės ir pranešimai'   => [['Paskyros ir rolės', 'admin/paskyros.php', is_admin()], ['Pranešimai nariams ir SMS', 'admin/pranesimai.php', is_admin()], ['Varžybų sistema', 'admin/varzybos.php', true]],
 ];
 $todoCount = count($notifs) + count($todo);
@@ -99,14 +99,20 @@ $todoCount = count($notifs) + count($todo);
       <div class="kicker">Šiandienos treniruotės</div>
       <?php if ($trainings): ?>
         <ul class="list today-list">
-          <?php foreach ($trainings as $t): $done = (int) $t['marked'] > 0; ?>
-            <li class="row">
+          <?php foreach ($trainings as $t): $done = (int) $t['marked'] > 0; $off = training_cancelled((int) $t['group_id'], $today); ?>
+            <li class="row<?= $off ? ' is-cancelled' : '' ?>">
               <span class="t-time"><?= $t['start_time'] ? e(fmt_time($t['start_time'])) : '–' ?><?= $t['end_time'] ? '<small>' . e(fmt_time($t['end_time'])) . '</small>' : '' ?></span>
               <span>
                 <strong><span class="group-dot" style="background:<?= e(group_color(['id' => $t['group_id'], 'color' => $t['group_color']])) ?>"></span><?= e($t['group_name']) ?></strong>
-                <div class="muted small"><?= e($t['location'] ?: '') ?><?= $t['location'] ? ' · ' : '' ?><?= (int) $t['members_count'] ?> nar.<?= $done ? ' · pažymėta ' . (int) $t['marked'] : '' ?></div>
+                <div class="muted small"><?= e($t['location'] ?: '') ?><?= $t['location'] ? ' · ' : '' ?><?= (int) $t['members_count'] ?> nar.<?= $done ? ' · pažymėta ' . (int) $t['marked'] : '' ?>
+                  <?php if (is_admin() && !$done && !$off): ?> · <a class="cancel-btn" href="<?= url('admin/atsaukimai.php?g=' . (int) $t['group_id'] . '&d=' . $today . '#naujas') ?>">atšaukti</a><?php endif; ?></div>
+                <?php if ($off): ?><div class="cancel-tag">Atšaukta · <?= e($off['reason']) ?></div><?php endif; ?>
               </span>
-              <a class="btn btn-sm <?= $done ? 'btn-ghost' : 'btn-primary' ?>" href="<?= url('admin/treniruote.php?g=' . (int) $t['group_id'] . '&d=' . $today) ?>"><?= $done ? 'Pastabos' : 'Lankomumas' ?></a>
+              <?php if ($off): ?>
+                <a class="btn btn-sm btn-ghost" href="<?= url('admin/atsaukimai.php') ?>">Atšaukimai</a>
+              <?php else: ?>
+                <a class="btn btn-sm <?= $done ? 'btn-ghost' : 'btn-primary' ?>" href="<?= url('admin/treniruote.php?g=' . (int) $t['group_id'] . '&d=' . $today) ?>"><?= $done ? 'Pastabos' : 'Lankomumas' ?></a>
+              <?php endif; ?>
             </li>
           <?php endforeach; ?>
         </ul>

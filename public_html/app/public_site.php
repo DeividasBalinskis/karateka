@@ -92,7 +92,7 @@ function render_category_schedule(string $category): string
     foreach ($groups as $g) {
         $lines = array_merge($lines, schedule_lines($g['slots'], count($groups) > 1 ? ($g['label'] ?: null) : null));
     }
-    return render_schedule_lines($lines);
+    return render_cancellation_notes(cancellations_for_groups(array_column($groups, 'id'), 21)) . render_schedule_lines($lines);
 }
 
 function render_category_locations(string $category): string
@@ -136,7 +136,8 @@ function render_kids_locations(): string
             $short = $type === 'sporto_centras' ? preg_replace('/^Sporto centras\s+/u', '', $loc) : $loc;
             // Atskira grupės kaina (pvz. mokykloje) - po tvarkaraščiu
             $priceHtml = $prices ? '<div class="schedule-line schedule-price"><span class="schedule-day">Kaina</span><span class="schedule-time">' . e(implode(' · ', array_unique($prices))) . '</span></div>' : '';
-            $html .= '<li data-name="' . e($loc) . '" data-schedule="' . e(render_schedule_lines($lines) . $priceHtml) . '">' . e($short) . '</li>';
+            $notes = render_cancellation_notes(cancellations_for_groups(array_column($groups, 'id'), 21));
+            $html .= '<li data-name="' . e($loc) . '" data-schedule="' . e($notes . render_schedule_lines($lines) . $priceHtml) . '">' . e($short) . '</li>';
         }
         $html .= '</ul></details>';
         $first = false;

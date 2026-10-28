@@ -269,7 +269,7 @@ function admin_nav_current(): string
     $file = basename($_SERVER['SCRIPT_NAME'] ?? '', '.php');
     $map = ['index' => 'siandien', 'renginio-rezultatai' => 'renginiai', 'varzybu-rezultatai' => 'varzybos', 'renginio-dalyviai' => 'renginiai', 'programa' => 'testai',
             'varzybos-sso' => 'varzybos', 'varzybu-dalyviai' => 'varzybos', 'sms' => 'pranesimai',
-            'grupes' => 'nustatymai', 'tvarkarastis' => 'nustatymai', 'taskai' => 'nustatymai', 'paskyros' => 'nustatymai',
+            'grupes' => 'nustatymai', 'tvarkarastis' => 'nustatymai', 'taskai' => 'nustatymai', 'paskyros' => 'nustatymai', 'kopijos' => 'nustatymai', 'atsaukimai' => 'nustatymai',
             'pirmas-adminas' => 'siandien'];
     return $map[$file] ?? $file;
 }
@@ -457,6 +457,11 @@ function date_from_input($v): string
 function render_account_settings(array $a, string $id = 'nustatymai', string $title = 'Paskyros nustatymai'): string
 {
     $openSetting = in_array(post('action'), ['email', 'password', 'profile'], true) ? post('action') : '';
+    if (strpos(post('action'), 'tfa_') === 0 || !empty($_SESSION['tfa_enable'])) {
+        $openSetting = 'tfa';
+    }
+    // Dar neimportuotas db/023 (nėra accounts.two_factor) - nustatymas nerodomas
+    $devices = !array_key_exists('two_factor', $a) ? null : (two_factor_on($a) ? trusted_devices((int) $a['id']) : []);
     ob_start();
     ?>
 <div class="panel card" id="<?= e($id) ?>" style="margin-top:20px;">
@@ -499,6 +504,53 @@ function render_account_settings(array $a, string $id = 'nustatymai', string $ti
       <div><button class="btn btn-primary btn-sm" type="submit">Keisti slaptažodį</button></div>
     </form>
   </details>
+
+  <?php if ($devices !== null): ?>
+  <details class="setting" id="tfa" <?= $openSetting === 'tfa' ? 'open' : '' ?>>
+    <summary><span class="setting-label">Kodas el. paštu</span><span class="setting-value"><?= two_factor_on($a) ? 'Įjungtas' : '<span class="muted">išjungtas</span>' ?></span><span class="setting-btn">Keisti</span></summary>
+    <div class="setting-form">
+      <?php if (two_factor_on($a)): ?>
+        <p class="hint">Prisijungiant naujame įrenginyje, be slaptažodžio, reikia kodo iš el. pašto. Patikimuose įrenginiuose kodo neprašoma <?= TRUSTED_DEVICE_DAYS ?> dienų.</p>
+        <?php if ($devices): ?>
+          <ul class="device-list">
+            <?php foreach ($devices as $d): ?>
+              <li><strong><?= e($d['label'] ?: 'Įrenginys') ?></strong> <span class="muted small">· paskutinį kartą <?= e(notification_when($d['last_used_at'] ?: $d['created_at'])) ?></span></li>
+            <?php endforeach; ?>
+          </ul>
+          <form method="post" class="inline-form" style="margin-bottom:12px;"><?= csrf_field() ?>
+            <button class="btn btn-ghost btn-sm" name="action" value="tfa_forget">Pamiršti visus įrenginius</button></form>
+        <?php endif; ?>
+        <form method="post" class="form">
+          <?= csrf_field() ?>
+          <input type="hidden" name="action" value="tfa_off">
+          <label>Slaptažodis <span class="hint">išjungimui</span><input type="password" name="current" autocomplete="current-password" required></label>
+          <div><button class="btn btn-ghost btn-sm" type="submit">Išjungti</button></div>
+        </form>
+      <?php elseif (!empty($_SESSION['tfa_enable'])): ?>
+        <p class="hint">Išsiuntėme kodą į <strong><?= e(masked_email($a['email'])) ?></strong>.</p>
+        <?php if (config('env') === 'local' && !empty($_SESSION['dev_login_code'])): ?>
+          <p class="hint">Kompiuteryje laiškai nesiunčiami - kodas: <code class="dev-code"><?= e($_SESSION['dev_login_code']) ?></code></p>
+        <?php endif; ?>
+        <form method="post" class="form">
+          <?= csrf_field() ?>
+          <input type="hidden" name="action" value="tfa_confirm">
+          <label>Kodas iš laiško <input class="code-input" type="text" name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="7" required></label>
+          <div class="row" style="gap:10px;"><button class="btn btn-primary btn-sm" type="submit">Patvirtinti ir įjungti</button>
+            <button class="btn btn-ghost btn-sm" type="submit" name="action" value="tfa_cancel" formnovalidate>Atšaukti</button></div>
+        </form>
+      <?php else: ?>
+        <p class="hint">Papildoma apsauga: prisijungiant naujame įrenginyje, be slaptažodžio, reikės kodo, kurį atsiųsime el. paštu.
+          <?= is_staff($a) ? 'Rekomenduojama - jūsų paskyra mato narių duomenis.' : '' ?> Pirma atsiųsime kodą, kad įsitikintume, jog laiškai ateina.</p>
+        <form method="post" class="form">
+          <?= csrf_field() ?>
+          <input type="hidden" name="action" value="tfa_start">
+          <label>Slaptažodis <span class="hint">patvirtinimui</span><input type="password" name="current" autocomplete="current-password" required></label>
+          <div><button class="btn btn-primary btn-sm" type="submit">Siųsti kodą</button></div>
+        </form>
+      <?php endif; ?>
+    </div>
+  </details>
+  <?php endif; ?>
 </div>
     <?php
     return ob_get_clean();
