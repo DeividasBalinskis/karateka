@@ -4,6 +4,37 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.10 - 2026-10-28 (atsarginės kopijos, prisijungimas su kodu, atšauktos treniruotės, programėlė telefone, testai)
+**Duomenų bazė:** importuoti `db/023_kodas_atsauktos_treniruotes.sql`. Failą galima importuoti ir antrą kartą.
+**Kompiuteryje:** `tools\lokali-atnaujinti.ps1` - importuoja pats.
+
+Atsarginės kopijos:
+- Visa duomenų bazė kopijuojama automatiškai kartą per dieną, saugomos 14 paskutinių (test ir oficialioje svetainėje).
+- Treneriams → Nustatymai → „Atsarginės kopijos ir sistema“ (tik adminas): „Sukurti kopiją dabar“, „Atsisiųsti“, kaip atkurti.
+  Ten pat - svetainės versija ir kurie db failai importuoti. Jei kopija nepavyko ar nedaryta 2 d. - pranešimas „Reikia padaryti“.
+- Instrukcija: `docs/atsargines-kopijos.md`. Privatumo politikoje - kiek laiko saugomos kopijos.
+
+Prisijungimas su kodu el. paštu (rekomenduojama Deniui):
+- Mano paskyra → „Kodas el. paštu“ → „Siųsti kodą“ → įvesti kodą iš laiško. Įjungiama tik patvirtinus kodą (taip žinome, kad laiškai ateina).
+- Naujame įrenginyje po slaptažodžio prašomas 6 skaitmenų kodas. „Pasitikėti šiuo įrenginiu“ - 30 d. kodo neprašoma.
+  Patikimų įrenginių sąrašas ir „Pamiršti visus įrenginius“ - nustatymuose.
+- Jei laiškai nustotų eiti: phpMyAdmin → `UPDATE accounts SET two_factor = 0 WHERE email = '...'`.
+
+Atšauktos treniruotės ir atostogos:
+- Nustatymai → „Atšauktos treniruotės ir atostogos“ (ar „Šiandien“ prie treniruotės - „atšaukti“): nuo-iki, priežastis, grupės.
+  Galima iškart pranešti nariams paskyroje („Svarbu“) ir el. paštu.
+- Atšaukta treniruotė pažymima „Šiandien“ ir „Treniruotė“; nariai mato įspėjimą tvarkaraštyje, pagrindiniame puslapyje - 3 sav. prieš.
+- Ištrynus atšaukimą - viskas vėl kaip įprastai, pranešimai dingsta.
+
+Programėlė telefone:
+- Svetainę galima įsidiegti kaip programėlę (ikona telefono ekrane, be naršyklės juostos). Kaip - paskyros nustatymuose.
+- Be interneto rodoma „Nėra interneto ryšio“. Puslapiai su narių duomenimis telefone nesaugomi.
+
+Kita:
+- Automatiniai testai (`tests/`): kiekvienas įkėlimas į GitHub patikrinamas pats (GitHub → Actions → „Testai“).
+- README atnaujintas su nuotraukomis. Pagrindinio puslapio CSS ir JS - atskiruose failuose (greičiau krauna).
+- Lokaliai yra trenerio (ne admino) paskyra: `treneris@karateka.test` / `testas123`.
+
 ## v1.9 - 2026-10-28 (pokalbis kaip Messenger, komentarai su vieta, instruktorių langas, lankomumas su spalvotomis grupėmis)
 **Duomenų bazė:** importuoti `db/022_pokalbiai_grupiu_spalvos.sql`. Failą galima importuoti ir antrą kartą.
 **Kompiuteryje:** atnaujinti su `tools\lokali-atnaujinti.ps1` - duomenys ir nuotraukos lieka. `tools\lokali-svetaine.ps1` viską ištrina ir kuria iš naujo (dabar prieš tai paklausia).
