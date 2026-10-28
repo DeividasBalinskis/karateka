@@ -2,8 +2,8 @@
 #   - švari duomenų bazė su VISAIS db\0xx failais (ir naujais, pvz. 011)
 #   - testinės paskyros (slaptažodis testas123) + demo nariai, taškai, renginiai, naujienos
 #
-# Kada naudoti: pirmą kartą arba kai atsiranda naujas db\0xx failas.
-# Kitiems pakeitimams nieko daryti nereikia - užtenka F5 naršyklėje.
+# Kada naudoti: tik pirmą kartą arba kai norite pradėti nuo švarios bazės.
+# Atnaujinti NEIŠTRINANT savo duomenų - tools\lokali-atnaujinti.ps1.
 #
 # DĖMESIO: ištrina lokalios DB duomenis (tik jūsų kompiuteryje; test ir tikra svetainė nepaliečiamos).
 # Reikia įjungto Docker Desktop. Paleidimas: dešiniu pelės klavišu -> "Run with PowerShell".
@@ -22,6 +22,11 @@ docker info *> $null
 if ($LASTEXITCODE -ne 0) { Fail 'Docker neveikia. Įjunkite Docker Desktop, palaukite, kol užsikraus, ir paleiskite šį failą dar kartą.' }
 if (-not (Test-Path '.env')) { Copy-Item '.env.example' '.env' }
 if (-not (Test-Path 'public_html\config.php')) { Fail 'Nėra public_html\config.php (žr. README.md: „Running locally“).' }
+
+Write-Host "`nDĖMESIO: lokali duomenų bazė bus IŠTRINTA ir sukurta iš naujo (jūsų lokaliai įkeltos nuotraukos, tekstai ir renginiai dings)." -ForegroundColor Yellow
+Write-Host 'Atnaujinti neištrinant - tools\lokali-atnaujinti.ps1' -ForegroundColor Yellow
+$ans = Read-Host 'Tikrai ištrinti ir pradėti iš naujo? Įrašykite TAIP'
+if ($ans -ne 'TAIP') { Write-Host 'Nieko nepakeista.' -ForegroundColor Green; Read-Host 'Spauskite Enter'; exit 0 }
 
 Write-Host "`n1/4 Išvaloma lokali duomenų bazė..." -ForegroundColor Cyan
 docker compose down -v
@@ -54,7 +59,7 @@ docker compose cp $tmp db:/tmp/demo.sql
 docker compose exec -T db sh -c 'mariadb -u karateka -p$MARIADB_PASSWORD karateka < /tmp/demo.sql'
 if ($LASTEXITCODE -ne 0) { Write-Host 'Demo duomenų įkelti nepavyko - svetainė veikia ir be jų.' -ForegroundColor Yellow }
 Remove-Item -Force -ErrorAction SilentlyContinue $tmp
-# Naujausių funkcijų pavyzdžiai (pranešimai, kvietimai su terminu, XP, pokalbis) - kad iškart matytųsi
+# Naujausių funkcijų TEST pavyzdžiai (pavadinimai prasideda „TEST:“, aprašyme - ką patikrinti)
 docker compose exec -T web php app/cli/dev_pavyzdziai.php
 
 # Demo naujienų nuotraukos (jei yra paruoštas paketas)
