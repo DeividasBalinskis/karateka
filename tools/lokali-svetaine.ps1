@@ -69,6 +69,7 @@ if (Test-Path $photos) { Expand-Archive -Force $photos (Join-Path $root 'public_
 Write-Host "`nParuošta: http://localhost:8088" -ForegroundColor Green
 Write-Host '  info@karateka.lt         / testas123  - administratorius'
 Write-Host '  narys@karateka.test      / testas123  - suaugęs narys su 0 tšk.'
+Write-Host '  treneris@karateka.test   / testas123  - treneris (ne adminas)'
 Write-Host '  tevai@karateka.test      / testas123  - tėvai su 2 vaikais'
 Write-Host '  ...@demo.karateka.lt     / demo12345  - demo nariai'
 Write-Host '  Laiškai: http://localhost:8025   Duomenų bazė: http://localhost:8081'

@@ -61,6 +61,9 @@ $tomas = mem('Tomas', 'Kazlauskas', '1992-02-28', 13);
 link_member($adult, $tomas, 'self');
 q('INSERT INTO member_tags (member_id, tag) VALUES (?, "teisejas")', [$tomas]);   // mato WTKU teisėjų testą (db/019)
 
+// Treneris (ne adminas): mato trenerio puslapius, bet ne admino nustatymus
+acc('treneris@karateka.test', 'Lukas', 'Treneris', 'coach');
+
 // Laukia patvirtinimo
 $new = acc('naujas@karateka.test', 'Inga', 'Jankauskienė', 'member', 'pending_approval');
 link_member($new, mem('Matas', 'Jankauskas', '2018-11-30', null, 'pending', false), 'parent');
@@ -142,4 +145,5 @@ echo "Paruošta. Paskyros (slaptažodis " . PW . "):\n"
     . "  tevai@karateka.test      - tėvai su 2 vaikais\n"
     . "  jaunuolis@karateka.test  - jaunuolis\n"
     . "  narys@karateka.test      - suaugęs narys, teisėjas (WTKU teisėjų testas)\n"
+    . "  treneris@karateka.test   - treneris (ne adminas)\n"
     . "  naujas@karateka.test     - laukia patvirtinimo\n";
