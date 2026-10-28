@@ -1079,3 +1079,57 @@ span.req-check:hover{transform:none;}
   .note-row .note-extras select{width:100%; max-width:100%;}
   .note-row .note-existing{grid-column:1 / -1; margin:0; padding-left:2px;}
 }
+
+/* ===== Treniruotė: grupės - spalvoti kvadratai ===== */
+.group-picker > summary{display:flex; align-items:center; justify-content:space-between; gap:10px; cursor:pointer; list-style:none;}
+.group-picker > summary::-webkit-details-marker{display:none;}
+.group-picker[open] > summary .btn{display:none;}
+.gp-current{display:flex; align-items:center; gap:8px; font-size:1.05rem;}
+.group-dot{display:inline-block; width:12px; height:12px; border-radius:4px; margin-right:6px; vertical-align:-1px; flex-shrink:0;}
+.gp-date{display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin:14px 0 4px;}
+.gp-date label{display:flex; align-items:center; gap:8px; font-size:0.86rem; font-weight:600;}
+.gp-date input{padding:8px 10px; border-radius:10px; border:1px solid rgba(23,20,15,0.15); font:inherit; background:#fff;}
+.gp-edit{margin-left:auto;}
+.group-picker .kicker{margin-top:14px;}
+.group-tiles{display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:10px;}
+.group-tile{display:flex; flex-direction:column; justify-content:space-between; gap:8px; min-height:84px; padding:12px 14px; border-radius:14px;
+  background:var(--gc); color:#fff; text-decoration:none !important; box-shadow:0 6px 16px color-mix(in srgb, var(--gc) 35%, transparent); transition:transform .12s ease, box-shadow .12s ease;}
+.group-tile:hover{transform:translateY(-2px); box-shadow:0 10px 22px color-mix(in srgb, var(--gc) 45%, transparent);}
+.group-tile:focus-visible{outline:3px solid var(--ink); outline-offset:2px;}
+.group-tile.on{outline:3px solid var(--ink); outline-offset:2px;}
+.gt-name{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:0.98rem; line-height:1.2; text-shadow:0 1px 2px rgba(0,0,0,0.2);}
+.gt-meta{font-size:0.76rem; opacity:0.92;}
+.gt-meta b{font-family:'JetBrains Mono',monospace;}
+@media (max-width:600px){ .group-tiles{grid-template-columns:repeat(2, minmax(0, 1fr));} .group-tile{min-height:76px;} .gp-edit{margin-left:0;} }
+.color-field{display:grid; gap:8px;}
+.color-field input[type=color]{width:64px; height:40px; padding:2px; border-radius:8px; border:1px solid rgba(23,20,15,0.15); background:#fff; cursor:pointer;}
+.color-swatches{display:flex; flex-wrap:wrap; gap:6px;}
+.color-swatches button{width:26px; height:26px; border-radius:8px; border:2px solid #fff; box-shadow:0 0 0 1px rgba(23,20,15,0.15); cursor:pointer;}
+
+/* ===== Komentarai prie įrašų: treneris atsako čia pat ===== */
+.q-thread{padding:12px 0; border-top:1px solid rgba(23,20,15,0.08); scroll-margin-top:150px;}
+.q-thread:first-of-type{border-top:none;}
+.q-thread:target{background:rgba(240,203,78,0.12); border-radius:12px; padding:12px; margin:0 -12px;}
+.q-thread-head{display:flex; align-items:baseline; gap:4px 12px; flex-wrap:wrap;}
+.q-thread-head .linklike{border:none; padding:0; color:var(--accent); text-decoration:underline; font-size:0.85rem;}
+.q-anon{flex-basis:100%; margin:2px 0 0; font-weight:500;}
+.badge-anon{background:#3E3A33; color:#fff;}
+.q-publish .inline-form + .inline-form{margin-left:2px;}
+
+/* ===== Trenerio pradžia: kairėje darbai, dešinėje nustatymai ===== */
+.dash{display:grid; grid-template-columns:minmax(0, 1fr) 340px; gap:20px; align-items:start;}
+.dash-main > .card, .dash-side > .card{margin-bottom:20px;}
+.dash-side > .card:first-child{margin-top:0;}
+.dash-side #paskyra{margin-top:0;}
+.dash-actions{display:flex; flex-wrap:wrap; gap:8px;}
+.dash-set + .dash-set{margin-top:14px; padding-top:12px; border-top:1px solid rgba(23,20,15,0.07);}
+.dash-set-title{font-weight:700; font-size:0.86rem; margin-bottom:4px;}
+.dash-set ul{list-style:none; display:grid; gap:3px;}
+.dash-set a{font-size:0.9rem;}
+.dash-logout{margin-bottom:20px;}
+.dash-side{scroll-margin-top:150px;}
+.dash-side .setting summary{gap:10px;}
+.dash-side .setting-label{width:84px;}
+.dash-side .setting-value{font-size:0.88rem;}
+.dash-side .form-row{grid-template-columns:1fr;}
+@media (max-width:960px){ .dash{grid-template-columns:1fr;} }

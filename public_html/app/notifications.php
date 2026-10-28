@@ -16,6 +16,7 @@ const NOTIFY_ICONS = [
     'consent_withdrawn' => '📷',
     'broadcast'         => '📣',
     'training'          => '🥋',
+    'comment'           => '💬',
 ];
 // Šventė ekrane (vieną kartą, kol neperskaityta)
 const NOTIFY_CELEBRATE = ['level_up', 'exam_passed'];
@@ -127,10 +128,18 @@ function render_notifications(array $list, string $back): string
     $html = '<ul class="notif-list">';
     foreach ($list as $n) {
         $actions = '';
+        // Bendras komentaras (ne prie įrašo) - atsakoma pokalbio langelyje, ne atskirame puslapyje
+        $inChat = $n['type'] === 'comment' && $n['member_id'] && strpos((string) $n['link'], '#q-') === false;
+        $chatAttr = $inChat ? ' data-open-chat data-member="' . (int) $n['member_id'] . '"' : '';
         switch ($n['type']) {
             case 'skill_request':
                 $actions = notification_button($n, 'skill_approve', '✓ Patvirtinti', 'btn-primary', $back)
                     . notification_button($n, 'skill_reject', 'Dar ne', 'btn-ghost', $back);
+                break;
+            case 'comment':
+                // Komentaras prie renginio / naujienos / pamokos - atsakoma ten, kur paliktas
+                $actions = ($n['link'] ? '<a class="btn btn-sm btn-primary" href="' . e(url($n['link'])) . '"' . $chatAttr . '>Atsakyti</a>' : '')
+                    . notification_button($n, 'done', 'Supratau', 'btn-ghost', $back);
                 break;
             case 'late_request':
                 $actions = notification_button($n, 'late_approve', '✓ Patvirtinti dalyvavimą', 'btn-primary', $back)
@@ -141,7 +150,7 @@ function render_notifications(array $list, string $back): string
         }
         $new = !$n['read_at'] && $n['important'];
         $html .= '<li class="notif' . ($new ? ' is-new' : '') . ' t-' . e($n['type']) . '"><span class="notif-icon" aria-hidden="true">' . (NOTIFY_ICONS[$n['type']] ?? '🔔') . '</span>'
-            . '<div class="notif-body"><div class="notif-title">' . ($n['link'] ? '<a href="' . e(url($n['link'])) . '">' . e($n['title']) . '</a>' : e($n['title']))
+            . '<div class="notif-body"><div class="notif-title">' . ($n['link'] ? '<a href="' . e(url($n['link'])) . '"' . $chatAttr . '>' . e($n['title']) . '</a>' : e($n['title']))
             . ($new ? ' <span class="badge badge-new">Nauja</span>' : '') . '</div>'
             . ($n['body'] ? '<div class="notif-text">' . nl2br(e($n['body'])) . '</div>' : '')
             . '<div class="notif-meta">' . e(notification_when($n['created_at'])) . '</div></div>'
@@ -199,7 +208,9 @@ function celebration_html(): string
 /** Puslapio apačia: šventė (naujas lygis / egzaminas), pokalbio langelis ir bendras JS (laikmačiai, pokalbis) */
 function page_widgets(): string
 {
-    return celebration_html() . chat_widget_html() . '<script src="' . e(asset_url('assets/site.js')) . '" defer></script>';
+    $chat = chat_widget_html();
+    return celebration_html() . $chat . '<script src="' . e(asset_url('assets/site.js')) . '" defer></script>'
+        . ($chat ? '<script src="' . e(asset_url('assets/chat.js')) . '" defer></script>' : '');
 }
 
 /**

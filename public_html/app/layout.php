@@ -51,7 +51,7 @@ function page_end(): void
 </main>
 <footer class="site-footer">
   <div class="footer-bottom">
-    <span>© <?= date('Y') ?> VšĮ Karate Ateitis · <a href="<?= url('privatumas.php') ?>">Privatumo politika</a></span>
+    <span>© <?= date('Y') ?> VšĮ Karate Ateitis · <a href="<?= url('privatumas.php') ?>">Privatumo politika</a><?= current_account() ? ' · <a href="' . url('klausimai.php') . '">Klausimai ir atsakymai</a>' : '' ?></span>
     <span>Nuo balto iki juodo diržo.</span>
   </div>
 </footer>
@@ -88,6 +88,27 @@ function group_options(?int $selected, bool $withEmpty = true): string
         $html .= '<option value="' . (int) $g['id'] . '"' . ((int) $g['id'] === $selected ? ' selected' : '') . '>' . e($g['name']) . '</option>';
     }
     return $html . ($current !== null ? '</optgroup>' : '');
+}
+
+// Grupių spalvos (jei grupei nepriskirta - parenkama pagal id), kad kvadratai „Treniruotė“ puslapyje skirtųsi
+const GROUP_COLORS = ['#2F6B5A', '#A85C7E', '#5C68A0', '#E6842B', '#4C8353', '#B5281F', '#2E6FA8', '#8A6A0E', '#6B4A34', '#7860A0', '#1F7A8C', '#C2185B'];
+
+function group_color(array $g): string
+{
+    static $order = null;
+    if (preg_match('/^#[0-9a-fA-F]{6}$/', (string) ($g['color'] ?? ''))) {
+        return $g['color'];
+    }
+    if ($order === null) {   // be spalvos - pagal grupių eilę, kad gretimos grupės nesutaptų
+        $order = array_flip(array_map('intval', q('SELECT id FROM training_groups ORDER BY sort_order, id')->fetchAll(PDO::FETCH_COLUMN)));
+    }
+    return GROUP_COLORS[($order[(int) $g['id']] ?? (int) $g['id']) % count(GROUP_COLORS)];
+}
+
+/** Grupės pavadinimas be kategorijos priešdėlio („Vaikai: Viršuliškės“ -> „Viršuliškės“) kvadratams */
+function group_short_name(array $g): string
+{
+    return preg_replace('/^(Vaikai|Jaunimas|Suaugusieji)\s*:\s*/u', '', (string) $g['name']);
 }
 
 /** Mygtukas "Redaguoti" viešuose puslapiuose - matomas tik treneriams */
@@ -222,9 +243,7 @@ function admin_nav_items(): array
         'treniruote' => ['Treniruotė', 'admin/treniruote.php'],
         'zinutes'    => ['Žinutės', 'admin/zinutes.php', staff_unread_messages()],
         'nariai'     => ['Nariai', 'admin/nariai.php'],
-        'grupes'     => ['Grupės', 'admin/grupes.php'],
-        'tvarkarastis' => ['Tvarkaraštis', 'admin/tvarkarastis.php'],
-        'taskai'     => ['Taškai', 'admin/taskai.php'],
+        // Grupės, tvarkaraštis, taškai, paskyros - „Nustatymai“ (Šiandien puslapio dešinėje), kad meniu nesikartotų
     ];
     $items['varzybos'] = ['Varžybos', 'admin/varzybos.php'];   // ir kai sistema dar neprijungta - puslapis paaiškina
     // Renginiai, naujienos ir pamokos tvarkomi savo skiltyse (viršutinėje juostoje), čia nedubliuojama
@@ -233,10 +252,8 @@ function admin_nav_items(): array
             $items[$key] = [$item[0], $item[1]];
         }
     }
-    if (is_admin()) {
-        $items['paskyros'] = ['Paskyros', 'admin/paskyros.php'];
-    }
     $items['patvirtinimai'] = ['Patvirtinimai', 'admin/patvirtinimai.php', pending_approvals_count()];
+    $items['nustatymai'] = ['Nustatymai', 'admin/#nustatymai'];
     return $items;
 }
 
@@ -252,6 +269,7 @@ function admin_nav_current(): string
     $file = basename($_SERVER['SCRIPT_NAME'] ?? '', '.php');
     $map = ['index' => 'siandien', 'renginio-rezultatai' => 'renginiai', 'varzybu-rezultatai' => 'varzybos', 'renginio-dalyviai' => 'renginiai', 'programa' => 'testai',
             'varzybos-sso' => 'varzybos', 'varzybu-dalyviai' => 'varzybos', 'sms' => 'pranesimai',
+            'grupes' => 'nustatymai', 'tvarkarastis' => 'nustatymai', 'taskai' => 'nustatymai', 'paskyros' => 'nustatymai',
             'pirmas-adminas' => 'siandien'];
     return $map[$file] ?? $file;
 }
@@ -297,7 +315,8 @@ function render_sub_nav(string $label, array $items, string $current): string
     foreach ($items as $key => $it) {
         $badge = !empty($it[2]) ? ' <span class="count-badge">' . (int) $it[2] . '</span>' : '';
         $cls = ($key === $current ? 'active' : '') . ($key === 'patvirtinimai' ? ' sub-last' : '');
-        $html .= '<a href="' . e(url($it[1])) . '" class="' . trim($cls) . '"' . ($key === $current ? ' aria-current="page"' : '') . '>' . e($it[0]) . $badge . '</a>';
+        // „Žinutės“ treneriui atidaro pokalbių langelį (be JS - puslapis admin/zinutes.php)
+        $html .= '<a href="' . e(url($it[1])) . '" class="' . trim($cls) . '"' . ($key === $current ? ' aria-current="page"' : '') . ($key === 'zinutes' ? ' data-open-chat' : '') . '>' . e($it[0]) . $badge . '</a>';
     }
     return $html . '</div></div>';
 }
@@ -331,7 +350,6 @@ function site_header(bool $home = false, ?string $area = null, ?string $tab = nu
           foreach (home_nav() as [$label, $anchor, $isCta]): if ($isCta) { $cta = [$label, $anchor]; continue; } ?>
             <li><a class="nav-link <?= $colors[$n++ % 3] ?>" href="<?= $h . e($anchor) ?>"><?= e($label) ?></a></li>
           <?php endforeach; ?>
-          <?php if ($cta): ?><li class="desktop-only"><a class="nav-cta" href="<?= $h . e($cta[1]) ?>"><?= e($cta[0]) ?></a></li><?php endif; ?>
         </ul>
       </li>
       <!-- Kiti puslapiai -->
@@ -355,6 +373,8 @@ function site_header(bool $home = false, ?string $area = null, ?string $tab = nu
               </form>
             </li>
           <?php else: ?>
+            <?php // „Išbandyti“ - šalia „Prisijungti“ (ne pagrindinio meniu kapsulėje), kad prisijungus jam dingus niekas nepasislinktų ?>
+            <?php if ($cta): ?><li class="desktop-only"><a class="nav-cta" href="<?= $h . e($cta[1]) ?>"><?= e($cta[0]) ?></a></li><?php endif; ?>
             <li><a class="nav-login" href="<?= url('prisijungti.php') ?>">Prisijungti</a></li>
           <?php endif; ?>
         </ul>
@@ -434,13 +454,13 @@ function date_from_input($v): string
 }
 
 /** Paskyros nustatymų kortelė (atidaroma ta dalis, kurioje buvo klaida) */
-function render_account_settings(array $a): string
+function render_account_settings(array $a, string $id = 'nustatymai', string $title = 'Paskyros nustatymai'): string
 {
     $openSetting = in_array(post('action'), ['email', 'password', 'profile'], true) ? post('action') : '';
     ob_start();
     ?>
-<div class="panel card" id="nustatymai" style="margin-top:20px;">
-  <h2>Paskyros nustatymai</h2>
+<div class="panel card" id="<?= e($id) ?>" style="margin-top:20px;">
+  <h2><?= e($title) ?></h2>
   <p class="muted small"><?= e($a['first_name'] . ' ' . $a['last_name']) ?></p>
 
   <details class="setting" <?= $openSetting === 'email' ? 'open' : '' ?>>

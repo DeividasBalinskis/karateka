@@ -1,11 +1,14 @@
 <?php
-// Pokalbio langelis apačioje dešinėje (assets/site.js): bendros nario / tėvų žinutės su Deniu,
-// anoniminis komentaras (kas parašė - nesaugoma) ir vienkartinė užuomina po prisijungimo.
-// Siunčiama žinutė - per zinute.php (ajax=1).
+// Pokalbio langelio API (assets/chat.js). Narys: savo pokalbis su Deniu, anoniminis komentaras, užuomina po prisijungimo.
+// Treneris: pokalbių sąrašas su paieška, vieno nario pokalbis, atsakymas (ir prie renginio / naujienos / pamokos), paviešinimas.
+// Nario žinutė siunčiama per zinute.php (ajax=1). Formos be JS (atsakymas prie įrašo) - grąžinama atgal (back).
 require __DIR__ . '/app/bootstrap.php';
 
-header('Content-Type: application/json; charset=utf-8');
-header('Cache-Control: no-store');
+$ajax = post('ajax') === '1' || !is_post();
+if ($ajax) {
+    header('Content-Type: application/json; charset=utf-8');
+    header('Cache-Control: no-store');
+}
 
 function chat_out(array $data, int $code = 200): void
 {
@@ -13,57 +16,115 @@ function chat_out(array $data, int $code = 200): void
     exit(json_encode($data, JSON_UNESCAPED_UNICODE));
 }
 
+/** Klaida: JSON arba (formai) pranešimas ir atgal */
+function chat_fail(bool $ajax, string $msg, string $back, int $code = 400): void
+{
+    if ($ajax) {
+        chat_out(['ok' => false, 'error' => $msg], $code);
+    }
+    flash('err', $msg);
+    redirect($back);
+}
+
 $a = current_account();
 if (!$a || !is_active_account($a)) {
-    chat_out(['ok' => false, 'error' => 'Prisijunkite.'], 403);
+    $ajax ? chat_out(['ok' => false, 'error' => 'Prisijunkite.'], 403) : redirect('prisijungti.php');
 }
 $aid = (int) $a['id'];
+$isStaff = is_staff($a);
+$back = preg_match('~^(renginys|naujienos|pamokos|klausimai)\.php(\?[\w=&%.\-]*)?(#[\w-]*)?$~', post('back')) ? post('back') : 'index.php';
+
+// Skaičiukas ant mygtuko (kol langelis uždarytas)
+if (!is_post() && get('badge') !== '') {
+    chat_out(['ok' => true, 'unread' => chat_unread_count($a)]);
+}
 
 if (is_post()) {
     csrf_check();
-    if (post('action') === 'hint') {
-        try {
-            q('UPDATE accounts SET chat_hint_at = NOW() WHERE id = ? AND chat_hint_at IS NULL', [$aid]);
-        } catch (PDOException $ex) {
-            // dar neimportuotas db/021
-        }
+    $action = post('action');
+
+    if ($action === 'hint') {
+        q('UPDATE accounts SET chat_hint_at = NOW() WHERE id = ? AND chat_hint_at IS NULL', [$aid]);
         chat_out(['ok' => true]);
     }
-    if (post('action') === 'anon') {
+
+    // Anoniminis komentaras: Denis mato, kas parašė; paviešinus kitiems vardas nerodomas
+    if ($action === 'anon' && !$isStaff) {
+        $mid = (int) post('member_id');
+        $m = q_one('SELECT * FROM members WHERE id = ? AND status = "active"', [$mid]);
         $body = trim(str_replace("\r\n", "\n", post('body')));
+        if (!$m || !account_relation($aid, $mid)) {
+            chat_out(['ok' => false, 'error' => 'Narys nerastas.'], 404);
+        }
         if ($body === '') {
             chat_out(['ok' => false, 'error' => 'Įrašykite komentarą.']);
         }
-        // Ne daugiau kaip 5 per valandą iš vienos sesijos
-        $sent = array_filter((array) ($_SESSION['anon_sent'] ?? []), function ($t) { return $t > time() - 3600; });
-        if (count($sent) >= 5) {
-            chat_out(['ok' => false, 'error' => 'Per daug komentarų - pabandykite vėliau.']);
+        $page = mb_substr(preg_replace('~[^\w/.\-?=&%#]~u', '', post('page')), 0, 190);
+        $ctx = chat_page_context($page);
+        $id = add_member_message($mid, $aid, false, $body, null, $ctx['lesson_id'] ?? null, $ctx['event_id'] ?? null, $ctx['news_id'] ?? null);
+        q('UPDATE member_messages SET anonymous = 1, page = ? WHERE id = ?', [$page !== '' ? $page : null, $id]);
+        notify_comment($m, $a, $id);
+        chat_out(['ok' => true]);
+    }
+
+    if (!$isStaff) {
+        chat_out(['ok' => false, 'error' => 'Nežinomas veiksmas.'], 400);
+    }
+
+    // ---------- Treneris ----------
+    $mid = (int) post('member_id');
+    $member = $mid ? q_one('SELECT * FROM members WHERE id = ?', [$mid]) : null;
+    if (!$member) {
+        chat_fail($ajax, 'Narys nerastas.', $back, 404);
+    }
+    if ($action === 'reply') {
+        $body = trim(str_replace("\r\n", "\n", post('body')));
+        if ($body === '') {
+            chat_fail($ajax, 'Įrašykite atsakymą.', $back);
         }
-        $page = preg_replace('~[^\w/.\-?=&%#]~u', '', mb_substr(post('page'), 0, 190));
-        q('INSERT INTO anon_feedback (body, page) VALUES (?, ?)', [mb_substr($body, 0, MESSAGE_MAX), $page !== '' ? $page : null]);
-        $sent[] = time();
-        $_SESSION['anon_sent'] = array_values($sent);
+        chat_staff_reply($mid, $a, $body, post('ctx'));
+        if (!$ajax) {
+            flash('ok', 'Atsakyta - ' . $member['first_name'] . ' matys atsakymą čia ir pokalbyje.');
+            redirect($back);
+        }
+        chat_out(['ok' => true]);
+    }
+    if ($action === 'publish') {
+        $msg = q_one('SELECT * FROM member_messages WHERE id = ? AND member_id = ? AND from_staff = 0', [(int) post('message_id'), $mid]);
+        if ($msg) {
+            $field = post('field') === 'show_name' && !$msg['anonymous'] ? 'show_name' : 'is_public';
+            q("UPDATE member_messages SET $field = 1 - $field WHERE id = ?", [(int) $msg['id']]);
+        }
+        if (!$ajax) {
+            redirect($back);
+        }
         chat_out(['ok' => true]);
     }
     chat_out(['ok' => false, 'error' => 'Nežinomas veiksmas.'], 400);
 }
 
-// Bendros žinutės (ne prie pastabų, pamokų, renginių ar naujienų) vienam paskyros nariui
+// ---------- Skaitymas ----------
+if ($isStaff) {
+    $out = ['ok' => true];
+    if (get('list') !== '') {
+        $out += chat_conversations(mb_substr(trim(get('q')), 0, 60));
+    }
+    if ($mid = (int) get('m')) {
+        $info = chat_member_info($mid);
+        if (!$info) {
+            chat_out(['ok' => false, 'error' => 'Narys nerastas.'], 404);
+        }
+        mark_member_messages_read($mid);
+        $out['member'] = $info;
+        $out['messages'] = chat_thread($mid, true);
+    }
+    chat_out($out);
+}
+
 $mid = (int) get('m');
 if (!$mid || !account_relation($aid, $mid)) {
     chat_out(['ok' => false, 'error' => 'Narys nerastas.'], 404);
 }
-$general = 'mm.member_id = ? AND mm.note_id IS NULL AND mm.lesson_id IS NULL AND mm.event_id IS NULL AND mm.news_id IS NULL';
-$rows = array_slice(message_rows($general, [$mid]), -60);
-q('UPDATE member_messages mm SET mm.read_at = NOW() WHERE ' . $general . ' AND mm.from_staff = 1 AND mm.read_at IS NULL', [$mid]);
-$out = [];
-foreach ($rows as $r) {
-    $out[] = [
-        'id'    => (int) $r['id'],
-        'staff' => (bool) $r['from_staff'],
-        'who'   => message_author($r, false),
-        'when'  => notification_when($r['created_at']),
-        'body'  => $r['body'],
-    ];
-}
-chat_out(['ok' => true, 'messages' => $out]);
+$messages = chat_thread($mid, false);
+q('UPDATE member_messages SET read_at = NOW() WHERE member_id = ? AND from_staff = 1 AND read_at IS NULL', [$mid]);
+chat_out(['ok' => true, 'messages' => $messages]);
