@@ -170,11 +170,44 @@ page_start('Treniruotė', ['admin' => true]);
   <p>Pažymėkite, kas buvo treniruotėje, ir, jei reikia, parašykite pastabą vaikui.</p>
 </div>
 
-<form method="get" class="panel card form notes-filter">
-  <label>Grupė <select name="g" onchange="this.form.submit()" required><?= group_options($group ? (int) $group['id'] : null) ?></select></label>
-  <label>Treniruotės data <input type="date" name="d" value="<?= e($date) ?>" onchange="this.form.submit()"></label>
-  <button class="btn btn-ghost" type="submit">Rodyti</button>
-</form>
+<?php
+// Grupės - spalvoti kvadratai: pirma tos, kurios treniruojasi pasirinktą dieną (su laiku), po to visos pagal kategoriją
+$tileGroups = q_all('SELECT g.*, (SELECT COUNT(*) FROM members m WHERE m.group_id = g.id AND m.status = "active") AS members_count,
+                            (SELECT MIN(s.start_time) FROM schedule s WHERE s.group_id = g.id AND s.weekday = ?) AS day_time
+                       FROM training_groups g WHERE g.is_active = 1 ORDER BY g.sort_order, g.name', [(int) date('N', strtotime($date))]);
+$tile = function (array $g) use ($group, $date): string {
+    $on = $group && (int) $group['id'] === (int) $g['id'];
+    return '<a class="group-tile' . ($on ? ' on' : '') . '" style="--gc:' . e(group_color($g)) . '" href="' . e(url('admin/treniruote.php?g=' . (int) $g['id'] . '&d=' . $date)) . '"'
+        . ($on ? ' aria-current="true"' : '') . '><span class="gt-name">' . e(group_short_name($g)) . '</span>'
+        . '<span class="gt-meta">' . ($g['day_time'] ? '<b>' . e(fmt_time($g['day_time'])) . '</b> · ' : '') . (int) $g['members_count'] . ' nar.</span></a>';
+};
+$todayTiles = array_filter($tileGroups, function ($g) { return $g['day_time'] !== null; });
+usort($todayTiles, function ($x, $y) { return strcmp((string) $x['day_time'], (string) $y['day_time']); });
+?>
+<details class="panel card group-picker"<?= $group ? '' : ' open' ?>>
+  <summary>
+    <?php if ($group): ?>
+      <span class="gp-current"><span class="group-dot" style="background:<?= e(group_color($group)) ?>"></span><strong><?= e($group['name']) ?></strong></span>
+      <span class="btn btn-ghost btn-sm">Keisti grupę</span>
+    <?php else: ?>
+      <strong>Pasirinkite grupę</strong>
+    <?php endif; ?>
+  </summary>
+  <form method="get" class="gp-date">
+    <?php if ($group): ?><input type="hidden" name="g" value="<?= (int) $group['id'] ?>"><?php endif; ?>
+    <label>Data <input type="date" name="d" value="<?= e($date) ?>" onchange="this.form.submit()"></label>
+    <?php if ($date !== date('Y-m-d')): ?><a class="small" href="<?= url('admin/treniruote.php' . ($group ? '?g=' . (int) $group['id'] : '')) ?>">Šiandien</a><?php endif; ?>
+    <?php if (is_admin()): ?><a class="small gp-edit" href="<?= url('admin/grupes.php') ?>">✎ Grupių pavadinimai ir spalvos</a><?php endif; ?>
+  </form>
+  <?php if ($todayTiles): ?>
+    <div class="kicker"><?= $date === date('Y-m-d') ? 'Šiandien treniruojasi' : 'Treniruojasi ' . e(mb_strtolower(LT_WEEKDAYS[(int) date('N', strtotime($date))])) ?></div>
+    <div class="group-tiles"><?php foreach ($todayTiles as $g) { echo $tile($g); } ?></div>
+  <?php endif; ?>
+  <?php foreach (GROUP_CATEGORIES as $cat => $catLabel): $list = array_filter($tileGroups, function ($g) use ($cat) { return $g['category'] === $cat; }); if (!$list) { continue; } ?>
+    <div class="kicker"><?= e($catLabel) ?></div>
+    <div class="group-tiles"><?php foreach ($list as $g) { echo $tile($g); } ?></div>
+  <?php endforeach; ?>
+</details>
 
 <?php if ($group && !$members): ?>
   <div class="panel card"><p class="muted">Šioje grupėje aktyvių narių nėra.</p></div>
@@ -192,7 +225,7 @@ page_start('Treniruotė', ['admin' => true]);
       <button type="button" class="btn btn-primary btn-sm" id="attAll">✓ Visi buvo</button>
       <?php if (!$hasTraining): ?><span class="hint">Pagal tvarkaraštį šią dieną šios grupės treniruotės nėra - patikrinkite datą.</span><?php endif; ?>
     </div>
-    <p class="hint" style="margin-bottom:10px;">Lankomumas išsaugomas iškart paspaudus „Buvo“ / „Nebuvo“ (paspaudus dar kartą - žyma nuimama). Pastaba: parašykite ir spauskite <strong>Enter</strong> -
+    <p class="hint" style="margin-bottom:10px;">Lankomumas išsaugomas iškart paspaudus „Nebuvo“ / „Buvo“ (paspaudus dar kartą - žyma nuimama). Pastaba: parašykite ir spauskite <strong>Enter</strong> -
       vaikas ir tėvai ją iškart mato paskyroje („Svarbu“). „Užduotis“ - vaikas pažymės „Atlikau“.</p>
 
     <?php foreach ($members as $m): ?>
@@ -201,8 +234,9 @@ page_start('Treniruotė', ['admin' => true]);
           <strong><?= e($m['first_name'] . ' ' . $m['last_name']) ?></strong>
           <?php $a1 = $att[$m['id']] ?? null; ?>
           <div class="att" data-member="<?= (int) $m['id'] ?>">
-            <button type="button" class="att-btn yes<?= $a1 === 1 || $a1 === '1' ? ' on' : '' ?>" data-v="1">✓ Buvo</button>
+            <?php // „Buvo“ - dešinėje: laikant telefoną dešine ranka, nykščiu lengviau pasiekti ?>
             <button type="button" class="att-btn no<?= $a1 === 0 || $a1 === '0' ? ' on' : '' ?>" data-v="0">✗ Nebuvo</button>
+            <button type="button" class="att-btn yes<?= $a1 === 1 || $a1 === '1' ? ' on' : '' ?>" data-v="1">✓ Buvo</button>
           </div>
           <?php foreach ($todayNotes[$m['id']] ?? [] as $n): ?>
             <div class="note-existing">
