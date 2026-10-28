@@ -17,6 +17,7 @@ function group_from_post(array &$errors): array
         'place_type' => isset(PLACE_TYPES[post('place_type')]) ? post('place_type') : 'kita',
         'label'      => post('label') ?: null,
         'price_note' => mb_substr(post('price_note'), 0, 120) ?: null,
+        'color'      => preg_match('/^#[0-9a-fA-F]{6}$/', post('color')) && !post('color_auto') ? strtoupper(post('color')) : null,
     ];
     if ($g['name'] === '') {
         $errors[] = 'Įveskite grupės pavadinimą.';
@@ -35,7 +36,7 @@ if (is_post()) {
     if ($action === 'create') {
         $g = group_from_post($errors);
         if (!$errors) {
-            q('INSERT INTO training_groups (name, category, location, sort_order, is_active, place_type, label, price_note) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', array_values($g));
+            q('INSERT INTO training_groups (name, category, location, sort_order, is_active, place_type, label, price_note, color) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', array_values($g));
             flash('ok', 'Grupė sukurta. Pridėkite tvarkaraštį.');
             redirect('admin/grupes.php?id=' . db()->lastInsertId());
         }
@@ -43,7 +44,7 @@ if (is_post()) {
     if ($action === 'update' && $id) {
         $g = group_from_post($errors);
         if (!$errors) {
-            q('UPDATE training_groups SET name = ?, category = ?, location = ?, sort_order = ?, is_active = ?, place_type = ?, label = ?, price_note = ? WHERE id = ?', array_merge(array_values($g), [$id]));
+            q('UPDATE training_groups SET name = ?, category = ?, location = ?, sort_order = ?, is_active = ?, place_type = ?, label = ?, price_note = ?, color = ? WHERE id = ?', array_merge(array_values($g), [$id]));
             flash('ok', 'Išsaugota.');
             redirect('admin/grupes.php?id=' . $id);
         }
@@ -102,6 +103,13 @@ function group_form(array $g, string $action): void
     </div>
     <label>Šios grupės kaina <span class="hint">nebūtina - jei kitokia nei kategorijos (pvz. mokykloje), rodoma prie vietos tvarkaraščio</span>
       <input type="text" name="price_note" value="<?= e($g['price_note'] ?? '') ?>" maxlength="120" placeholder="pvz. 45 €/mėn. (1 kartą per savaitę)"></label>
+    <div class="color-field">
+      <label>Spalva <span class="hint">grupės kvadratas „Treniruotė“ puslapyje</span>
+        <input type="color" name="color" value="<?= e(isset($g['id']) ? group_color($g) : '#2F6B5A') ?>"></label>
+      <div class="color-swatches" aria-hidden="true"><?php foreach (GROUP_COLORS as $c): ?><button type="button" style="background:<?= $c ?>" data-color="<?= $c ?>" title="<?= $c ?>"></button><?php endforeach; ?></div>
+      <label class="check small"><input type="checkbox" name="color_auto" value="1" <?= empty($g['color']) ? 'checked' : '' ?>><span>Parinkti automatiškai</span></label>
+    </div>
+    <script>document.querySelectorAll('.color-swatches').forEach(function (s) { s.addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; var f = s.closest('.color-field'); f.querySelector('input[type=color]').value = b.dataset.color; f.querySelector('input[name=color_auto]').checked = false; }); });</script>
     <label class="check"><input type="checkbox" name="is_active" value="1" <?= ($g['is_active'] ?? 1) ? 'checked' : '' ?>><span>Aktyvi grupė</span></label>
 <?php }
 
@@ -216,7 +224,7 @@ page_start('Grupės', ['admin' => true]);
       <?php foreach ($groups as $g): ?>
         <li class="row between">
           <span>
-            <a href="?id=<?= (int) $g['id'] ?>"><strong><?= e($g['name']) ?></strong></a>
+            <a href="?id=<?= (int) $g['id'] ?>"><span class="group-dot" style="background:<?= e(group_color($g)) ?>"></span><strong><?= e($g['name']) ?></strong></a>
             <?php if (!$g['is_active']): ?><span class="badge">neaktyvi</span><?php endif; ?>
             <div class="muted small"><?= e($g['location'] ?? '') ?></div>
           </span>
