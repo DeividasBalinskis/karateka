@@ -135,6 +135,21 @@ function allowed_reactions(): array
     return $list ?: REACTIONS;
 }
 
+/** Reakcija HTML: emoji arba diržo / teisėjo vėliavėlių ženkliukas ("belt:N", "teisejas") */
+function reaction_html(string $emoji): string
+{
+    return preg_match('/^(belt:\d+|teisejas)$/', $emoji) ? icon_html($emoji) : e($emoji);
+}
+
+/** Reakcijos pavadinimas ekrano skaitytuvams ir užuominai */
+function reaction_label(string $emoji): string
+{
+    if (preg_match('/^belt:(\d+)$/', $emoji, $m) && isset(BELTS[(int) $m[1]])) {
+        return BELTS[(int) $m[1]][1] . ' diržas';
+    }
+    return $emoji === 'teisejas' ? 'teisėjo vėliavėlės' : $emoji;
+}
+
 /** Panaudoti emoji su skaičiais: [emoji => count], daugiausiai paspaustas pirmas. Rodomi ir vėliau išjungti emoji. */
 function news_reaction_counts(int $newsId): array
 {
@@ -156,10 +171,10 @@ function render_reaction_chips(int $newsId, ?string $mine): string
     $allowed = allowed_reactions();
     $html = '';
     foreach (news_reaction_counts($newsId) as $emoji => $count) {
-        $label = e($emoji) . '<span class="count">' . $count . '</span>';
+        $label = reaction_html((string) $emoji) . '<span class="count">' . $count . '</span>';
         if (in_array($emoji, $allowed, true) || $mine === $emoji) {
             $html .= '<button type="submit" name="emoji" value="' . e($emoji) . '" class="reaction' . ($mine === $emoji ? ' mine' : '') . '"'
-                . ' aria-label="' . e($emoji) . ' ' . $count . ($mine === $emoji ? ' (jūsų - paspaudus nuimama)' : '') . '">' . $label . '</button>';
+                . ' aria-label="' . e(reaction_label((string) $emoji)) . ' ' . $count . ($mine === $emoji ? ' (jūsų - paspaudus nuimama)' : '') . '">' . $label . '</button>';
         } else {
             // Adminas šį emoji išjungė: reakcijos lieka matomos, bet naujų pridėti nebegalima
             $html .= '<span class="reaction off" title="Šis emoji nebenaudojamas">' . $label . '</span>';
@@ -176,7 +191,7 @@ function render_reactions(int $newsId): string
     $mine = $mine === false || $mine === null ? null : (string) $mine;
     $picker = '';
     foreach (allowed_reactions() as $emoji) {
-        $picker .= '<button type="submit" name="emoji" value="' . e($emoji) . '" class="pick' . ($mine === $emoji ? ' mine' : '') . '" role="menuitem" aria-label="Reaguoti ' . e($emoji) . '">' . e($emoji) . '</button>';
+        $picker .= '<button type="submit" name="emoji" value="' . e($emoji) . '" class="pick' . ($mine === $emoji ? ' mine' : '') . '" role="menuitem" aria-label="Reaguoti: ' . e(reaction_label($emoji)) . '" title="' . e(reaction_label($emoji)) . '">' . reaction_html($emoji) . '</button>';
     }
     return '<form class="reactions" method="post" action="' . url('reakcija.php') . '" data-news="' . $newsId . '">'
         . csrf_field() . '<input type="hidden" name="news_id" value="' . $newsId . '">'
