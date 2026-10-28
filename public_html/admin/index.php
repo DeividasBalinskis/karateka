@@ -169,6 +169,7 @@ $todoCount = count($notifs) + count($todo);
       <?php if ($ownMembers): ?><p class="small" style="margin-top:12px;"><a href="<?= url('paskyra.php') ?>">Mano šeimos nariai (taškai, pastabos) →</a></p><?php endif; ?>
     </div>
     <?= render_account_settings($me, 'paskyra', 'Mano paskyra') ?>
+    <?= render_app_install_card() ?>
     <form method="post" action="<?= url('atsijungti.php') ?>" class="dash-logout"><?= csrf_field() ?><button type="submit" class="btn btn-ghost btn-sm btn-block">Atsijungti</button></form>
   </aside>
 </div>

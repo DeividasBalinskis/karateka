@@ -18,4 +18,23 @@
     document.addEventListener('scroll', update, { passive: true });
     update();
   }
+
+  // Programėlė telefone (manifest.json, sw.js): įdiegta atsidaro be naršyklės juostos, be ryšio - „Nėra interneto ryšio“
+  var manifest = document.querySelector('link[rel="manifest"]');
+  if (manifest && 'serviceWorker' in navigator) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register(new URL('sw.js', manifest.href).href).catch(function () {});
+    });
+  }
+  // „Įdiegti programėlę“ (paskyros nustatymuose) - kai naršyklė siūlo įdiegti
+  window.addEventListener('beforeinstallprompt', function (ev) {
+    var btn = document.querySelector('[data-install-app]');
+    if (!btn) return;
+    ev.preventDefault();
+    btn.hidden = false;
+    btn.onclick = function () {
+      ev.prompt();
+      ev.userChoice.then(function () { btn.hidden = true; });
+    };
+  });
 })();
