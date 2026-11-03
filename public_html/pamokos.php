@@ -16,6 +16,7 @@ if (!can_see_lessons($a)) {
 }
 $isStaff = is_staff($a);
 lessons_belt_folders_setup();
+lessons_kata_seed();
 
 // „Žiūrėti kaip narys“ (treneriui): ?kaip=narys, ?kaip=0 - baigti
 if ($isStaff && isset($_GET['kaip'])) {
@@ -267,9 +268,8 @@ $topBar = function (?int $cur) use ($v, $staffTools, $editMode) {
     } else {
         $html .= '<a class="btn btn-sm btn-primary" href="' . e(url($here . ($cur ? '&' : '?') . 'tvarkyti=1')) . '">✎ Tvarkyti</a>';
     }
-    $html .= '<a class="btn btn-sm btn-ghost" href="' . e(url('pamokos.php?nauja=1' . ($cur ? '&aplankas=' . $cur : ''))) . '">+ Nauja pamoka</a>'
-        . '<a class="btn btn-sm btn-ghost" href="' . e(url('admin/pamokos.php' . ($cur ? '#f' . $cur : ''))) . '" title="Visas medis: aplankai ir pamokos">⇅ Medis</a>'
-        . preview_select(null);
+    // Nauja pamoka - aplanke („Pridėti: Tekstas / Nuotrauka / Video“), tvarka - „✎ Tvarkyti“ (atskiro medžio puslapio nebereikia)
+    $html .= preview_select(null);
     return $html . '</div>';
 };
 

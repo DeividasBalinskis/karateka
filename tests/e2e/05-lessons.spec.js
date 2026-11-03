@@ -11,6 +11,15 @@ test('kyu folders, photo without title, subfolder, member view', async ({ browse
     '1 dan', '2 dan', '3 dan', '4 dan', '5 dan', '6 dan', '7 dan', '8 dan', '9 dan']);
   check('belt colors', await a.locator('.kyu-tile.has-belt').count() === 18);
 
+  // Katos: diržo aplanke - kata su mokomuoju video, kaip egzaminų programoje (8 kyu - Heian Shodan); viršuje
+  const kata = sql("SELECT CONCAT(f.title, '|', b.youtube_id) FROM lessons l JOIN lesson_folders f ON f.id = l.folder_id JOIN lesson_blocks b ON b.lesson_id = l.id AND b.type = 'video' WHERE l.title = 'Heian Shodan' AND l.topic = 'Kata'");
+  check('kata in 8 kyu folder', kata === '8 kyu|q1Rg8rUpjjw', kata);
+  check('kata in every belt folder 8 kyu - 7 dan', +sql("SELECT COUNT(DISTINCT folder_id) FROM lessons WHERE topic = 'Kata' AND created_at > '2001-01-01'") === 15);
+  check('kata only once', +sql("SELECT COUNT(*) FROM lessons WHERE title = 'Heian Shodan'") === 1);
+  await a.goto('pamokos.php?aplankas=' + sql("SELECT id FROM lesson_folders WHERE title = '8 kyu' AND parent_id IS NULL"));
+  check('kata first in folder', /Heian Shodan/.test(await a.locator('.lesson-card').first().textContent()));
+  await a.goto('pamokos.php');
+
   // 8 kyu aplanke: nuotrauka be pavadinimo
   await nav(a, () => a.locator('.kyu-tile', { hasText: '8 kyu' }).click());
   const folderUrl = a.url();

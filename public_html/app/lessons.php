@@ -114,6 +114,71 @@ function lessons_belt_folders_setup(): void
     }
 }
 
+// Katos pagal diržą (kaip egzaminų programoje: diržas, kurį gausi išlaikęs; įprasta Shotokan eilė).
+// Narys mato savo ir kito diržo aplanką - taip mato katą, kurios reikės kitam egzaminui.
+// [diržas => [[pavadinimas, YouTube id, trumpai]]]. Video - viena mokomųjų video serija („Full Tutorial“, anglų k.).
+const KATA_VIDEOS = [
+    2  => [['Heian Shodan', 'q1Rg8rUpjjw', 'pirmoji Heian kata („taikus protas“), 21 judesys']],
+    3  => [['Heian Nidan', 'rgs1ysn0R-0', 'antroji Heian kata, 26 judesiai']],
+    4  => [['Heian Sandan', '1MrRmimBJoA', 'trečioji Heian kata, 20 judesių']],
+    5  => [['Heian Yondan', 'k72E1u962Qg', 'ketvirtoji Heian kata, 27 judesiai']],
+    6  => [['Heian Godan', 'JA0Ym97vjLg', 'penktoji Heian kata, 23 judesiai']],
+    7  => [['Tekki Shodan', 'uifXvEXd_NU', '„geležinis raitelis“: kiba-dachi stovėsena, darbas klubais (video - visos trys Tekki katos)']],
+    8  => [['Bassai Dai', 'Qpt3W7Y06Kg', '„šturmuoti tvirtovę“: jėga ir ritmas']],
+    9  => [['Kanku Dai', '5Hgi2vi9EbA', '„žvilgsnis į dangų“: ilgiausia pagrindinė kata, 65 judesiai']],
+    10 => [['Enpi', 'IInNlHZQUrE', '„skrendanti kregždė“: greitis ir šuolis'], ['Jion', 'KErsdtTwqM8', 'tvirti pagrindai ir tikslumas']],
+    11 => [['Tekki Nidan', 'uifXvEXd_NU', 'antroji Tekki kata (video - visos trys Tekki katos)'], ['Hangetsu', 'vOP8dAalfms', '„pusmėnulis“: lėti judesiai su kvėpavimu']],
+    12 => [['Tekki Sandan', 'uifXvEXd_NU', 'trečioji Tekki kata (video - visos trys Tekki katos)'], ['Gankaku', 'OJi3lwnx0jI', '„gervė ant uolos“: pusiausvyra ant vienos kojos']],
+    13 => [['Kanku Sho', 'veaayoYQ9D4', 'mažoji Kanku kata su šuoliu ir apsisukimu'], ['Sochin', 'KqmlVtZZuxY', '„rami jėga“: fudo-dachi stovėsena']],
+    14 => [['Nijushiho', 'ZE8EqPvwruE', '„24 žingsniai“'], ['Gojushiho Sho', 'c2qiJNrCYGw', '„54 žingsniai“ (mažoji)']],
+    15 => [['Gojushiho Dai', 'qVGcqVEBRRs', '„54 žingsniai“ (didžioji)']],
+    16 => [['Unsu', 'MjVKvHf_Ny0', '„debesų rankos“']],
+];
+
+/** Vieną kartą: kiekvieno diržo aplanke - katos pamoka su mokomuoju video (viršuje). Jei aplanke jau yra ta kata - praleidžiama. */
+function lessons_kata_seed(): void
+{
+    // Diržų aplankai tikrinami tiesiogiai (ne site_setting - ta pačia užklausa ką tik sukurti nustatymai dar nematomi)
+    if (site_setting('pamokos_katos') || !q_value('SELECT 1 FROM lesson_folders WHERE parent_id IS NULL AND belt_level IS NOT NULL LIMIT 1')) {
+        return;
+    }
+    try {
+        db()->beginTransaction();
+        $author = q_value('SELECT id FROM accounts WHERE role = "admin" AND status = "active" ORDER BY id LIMIT 1');
+        foreach (KATA_VIDEOS as $belt => $katas) {
+            $folder = (int) q_value('SELECT id FROM lesson_folders WHERE parent_id IS NULL AND belt_level = ? ORDER BY sort_order, id LIMIT 1', [$belt]);
+            if (!$folder) {
+                continue;   // aplanką adminas ištrynė - nekuriama
+            }
+            // Jau yra (pavadinime - katos vardas arba tas pats video), išskyrus testinius pavyzdžius
+            $new = array_values(array_filter($katas, function ($k) use ($folder) {
+                return !q_value('SELECT 1 FROM lessons l WHERE l.folder_id = ? AND NOT (' . DEMO_LESSON_SQL . ')
+                                    AND (l.title LIKE ? OR l.videos LIKE ? OR EXISTS (SELECT 1 FROM lesson_blocks b WHERE b.lesson_id = l.id AND b.youtube_id = ?)) LIMIT 1',
+                    [$folder, '%' . $k[0] . '%', '%' . $k[1] . '%', $k[1]]);
+            }));
+            if (!$new) {
+                continue;
+            }
+            q('UPDATE lessons SET sort_order = sort_order + ? WHERE folder_id = ?', [count($new), $folder]);
+            foreach ($new as $n => [$name, $yt, $about]) {
+                q('INSERT INTO lessons (folder_id, sort_order, title, topic, belt_level, audience, is_published, author_id) VALUES (?, ?, ?, "Kata", ?, "karateka", 1, ?)',
+                    [$folder, $n, $name, $belt, $author ?: null]);
+                save_lesson_blocks((int) db()->lastInsertId(), [
+                    ['type' => 'text', 'body' => 'Kata ' . $name . ' - ' . $about . ".\n\nVideo: pirma judesiai po vieną, tada visa kata. Kartokite po truputį kasdien; kaip daroma mūsų klube - parodys treneris."],
+                    ['type' => 'video', 'youtube_id' => $yt, 'caption' => $name . ' - mokomasis video (YouTube, anglų k.)'],
+                ]);
+            }
+        }
+        db()->commit();
+        set_site_setting('pamokos_katos', date('Y-m-d H:i'));
+    } catch (Throwable $ex) {
+        if (db()->inTransaction()) {
+            db()->rollBack();
+        }
+        error_log('lessons_kata_seed: ' . $ex->getMessage());
+    }
+}
+
 /** Diržo aplankas (pagrindinio lygio, su diržu: „8 kyu“, „1 dan“) */
 function is_belt_folder(array $f): bool
 {
