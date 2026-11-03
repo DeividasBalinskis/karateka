@@ -258,10 +258,11 @@ test('admin: notifications, chat, comments at the post, broadcast, events, atten
   const edges = await a.evaluate(() => {
     const r = s => document.querySelector(s).getBoundingClientRect();
     const tabs = document.querySelectorAll('.sub-nav a');
-    return { logo: Math.round(r('.site-header .logo').left), label: Math.round(r('.sub-nav .sub-label').left),
+    return { logo: Math.round(r('.site-header .logo').left), first: Math.round(tabs[0].getBoundingClientRect().left),
       login: Math.round(r('.site-header .nav-login').right), last: Math.round(tabs[tabs.length - 1].getBoundingClientRect().right) };
   });
-  check('sub-nav aligned with header', Math.abs(edges.logo - edges.label) <= 2 && Math.abs(edges.login - edges.last) <= 14, JSON.stringify(edges));
+  check('sub-nav aligned with header', Math.abs(edges.logo - edges.first) <= 2 && Math.abs(edges.login - edges.last) <= 2, JSON.stringify(edges));
+  check('no messages tab (chat window instead)', !tabs.some(t => /Žinutės/.test(t)), tabs.join(','));
   // Pokalbis: „Visi nariai“ pagal grupes, profilis paspaudus vardą
   await a.click('#chatFab'); await a.waitForTimeout(1000);
   await a.click('#chatPanel .chat-side-tabs button[data-side=all]'); await a.waitForTimeout(1200);
@@ -334,11 +335,16 @@ test('guest: event page, menu, contacts, instructors', async ({ browser }) => {
   await g.goto('index.php');
   await g.locator('[data-instructor]').first().click(); await g.waitForTimeout(500);
   check('instructor popup', await g.locator('.ins-modal:visible, dialog[open]').count() >= 1);
-  // Meniu vienoje vietoje: prisijungus („Išbandyk“ dingsta) meniu kapsulė nepasislenka
-  const menuX = pg => pg.evaluate(() => Math.round(document.querySelector('.site-header .nav-main').getBoundingClientRect().left));
-  const gX = await menuX(g);
+  // Meniu kapsulė - per vidurį tarp logotipo ir paskyros (vienodi tarpai), ir svečiui, ir prisijungus
+  const gaps = pg => pg.evaluate(() => {
+    const r = s => document.querySelector(s).getBoundingClientRect();
+    return [Math.round(r('.site-header .nav-main').left - r('.site-header .logo').right), Math.round(r('.site-header .nav-account').left - r('.site-header .nav-main').right)];
+  });
+  const [gl, gr] = await gaps(g);
+  check('guest menu evenly spaced', Math.abs(gl - gr) <= 3, gl + ' vs ' + gr);
   await t.goto('index.php');
-  check('menu does not move without trial button', await t.locator('.site-header .nav-cta').count() === 0 && Math.abs(gX - await menuX(t)) <= 1, gX + ' vs ' + await menuX(t));
+  const [tl, tr] = await gaps(t);
+  check('member menu evenly spaced, no trial button', await t.locator('.site-header .nav-cta').count() === 0 && Math.abs(tl - tr) <= 3, tl + ' vs ' + tr);
   await g.goto('index.php');
   check('guest main page price', /30 €\/mėn\. testas|45 €/.test(await g.content()));
   noJsErrors(g, t);

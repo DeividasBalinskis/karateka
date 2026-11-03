@@ -21,10 +21,12 @@ test('manifest, service worker and offline page', async ({ browser }) => {
   await expect(p.locator('h1')).toHaveText('Nėra interneto ryšio');
   // Asmeninis puslapis neišsaugotas - be ryšio jo nėra
   expect(await p.content()).not.toContain('Petrauskienė');
-  // Atsiradus ryšiui puslapis atsidaro pats
-  await Promise.all([p.waitForNavigation(), p.context().setOffline(false)]);
-  await expect(p.getByText('Nėra interneto ryšio')).toHaveCount(0);
-  await p.goto('paskyra.php?skiltis=nustatymai');
+  // Atsiradus ryšiui - vėl įprasti puslapiai (offline.html pati persikrauna, todėl perėjimas gali būti nutrauktas - bandoma iš naujo)
+  await p.context().setOffline(false);
+  await expect.poll(async () => {
+    await p.goto('paskyra.php?skiltis=nustatymai').catch(() => {});
+    return p.locator('#programele').count();
+  }, { timeout: 20_000 }).toBe(1);
   await expect(p.locator('#programele')).toBeVisible();
   noJsErrors(p);
 });

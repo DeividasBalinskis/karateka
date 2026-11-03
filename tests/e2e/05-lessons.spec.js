@@ -1,4 +1,4 @@
-// Pamokos: aplankai pagal kyu (diržo spalva), aplanke - tekstas, nuotrauka, video ir poaplankiai; narys mato savo diržų aplankus.
+// Pamokos: aplankai pagal diržą - kyu ir dan (diržo spalva), aplanke - tekstas, nuotrauka, video ir poaplankiai; narys mato savo diržų aplankus.
 const { test, expect } = require('@playwright/test');
 const path = require('path');
 const { sql, login, nav, check, noJsErrors } = require('./helpers');
@@ -7,8 +7,9 @@ test('kyu folders, photo without title, subfolder, member view', async ({ browse
   const a = await login(browser, 'info@karateka.lt');
   await a.goto('pamokos.php');
   const titles = await a.locator('.kyu-tile strong').allTextContents();
-  expect(titles.slice(0, 9)).toEqual(['9 kyu', '8 kyu', '7 kyu', '6 kyu', '5 kyu', '4 kyu', '3 kyu', '2 kyu', '1 kyu']);
-  check('belt colors', await a.locator('.kyu-tile.has-belt').count() === 9);
+  expect(titles.slice(0, 18)).toEqual(['9 kyu', '8 kyu', '7 kyu', '6 kyu', '5 kyu', '4 kyu', '3 kyu', '2 kyu', '1 kyu',
+    '1 dan', '2 dan', '3 dan', '4 dan', '5 dan', '6 dan', '7 dan', '8 dan', '9 dan']);
+  check('belt colors', await a.locator('.kyu-tile.has-belt').count() === 18);
 
   // 8 kyu aplanke: nuotrauka be pavadinimo
   await nav(a, () => a.locator('.kyu-tile', { hasText: '8 kyu' }).click());

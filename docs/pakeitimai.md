@@ -4,6 +4,15 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.12 - 2026-11-03 (meniu ir skirtukai be dublių, dan aplankai)
+**Duomenų bazė:** nieko importuoti nereikia.
+
+- Meniu kapsulė - per vidurį tarp logotipo ir paskyros (vienodi tarpai). Versija (test / kompiuteryje) - po logotipu, dešinėje.
+- Skirtukų eilutė - „Paskyra“ mygtuko tęsinys: ta pati rožinė-violetinė spalva, skirtukai - tokie pat „lustai“ kaip meniu. Be užrašo „Treneriams“.
+- Skirtuko „Žinutės“ nebėra - visos žinutės pokalbio lange (mygtukas apačioje dešinėje).
+- Nustatymuose - tik tai, ko nėra meniu: be Testų, Pranešimų, Varžybų, pamokų medžio ir puslapio redagavimo (jie pasiekiami savo vietose).
+- Pamokose ir dan aplankai: 1 dan ... 9 dan (juodas diržas). Jau sukurti kyu aplankai ir jų turinys nekeičiami.
+
 ## v1.11 - 2026-11-03 (vientisas meniu, nario profilis, pokalbis su visais nariais, pamokos pagal kyu)
 **Duomenų bazė:** nieko importuoti nereikia.
 
