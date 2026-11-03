@@ -1,5 +1,5 @@
 <?php
-// Privatumo politika. Geltonai pažymėtos vietos - dar reikia patvirtinti / įrašyti.
+// Privatumo politika. Pakeitus - atnaujinti datą viršuje (ir, jei pakeitimas esminis, pranešti nariams).
 require __DIR__ . '/app/bootstrap.php';
 
 page_start('Privatumo politika', ['description' => 'Kaip VšĮ Karate Ateitis tvarko asmens duomenis.']);
@@ -7,7 +7,7 @@ page_start('Privatumo politika', ['description' => 'Kaip VšĮ Karate Ateitis tv
 <article class="panel card legal">
   <div class="eyebrow">Asmens duomenų apsauga</div>
   <h1 class="styled">Privatumo politika</h1>
-  <p class="muted small">Atnaujinta: 2026 m. spalio 28 d.</p>
+  <p class="muted small">Atnaujinta: 2026 m. lapkričio 3 d.</p>
 
   <h2>1. Kas mes</h2>
   <p>Jūsų asmens duomenis tvarko <strong>VšĮ Karate Ateitis</strong> (įmonės kodas 305105392, Girulių g. 5, Vilnius).
@@ -27,8 +27,10 @@ page_start('Privatumo politika', ['description' => 'Kaip VšĮ Karate Ateitis tv
   <ul>
     <li><strong>Paskyra:</strong> vardas, pavardė, el. paštas, telefonas ir slaptažodis (saugomas tik užšifruotas, jo nematome).</li>
     <li><strong>Narys:</strong> vardas, pavardė, gimimo data, lytis, grupė ir diržas.</li>
-    <li><strong>Klubo veikla:</strong> lankomumas, dalyvavimas renginiuose, egzaminų ir varžybų rezultatai, taškai, testų rezultatai.</li>
+    <li><strong>Klubo veikla:</strong> lankomumas, dalyvavimas renginiuose, egzaminų ir varžybų rezultatai, taškai ir lygiai, pažymėti egzamino programos punktai, testų rezultatai.</li>
     <li><strong>Trenerio pastabos, užduotys ir žinutės</strong> tarp nario (ar tėvų) ir trenerių.</li>
+    <li><strong>Komentarai ir klausimai</strong> prie renginių ir naujienų. Juos gauna treneriai. Treneris gali klausimą su atsakymu paskelbti prie renginio ar naujienos -
+        be vardo arba su vardu ir pavardės pirmąja raide. Parašius anonimiškai, vardas niekada neskelbiamas, bet treneriai mato, kas parašė.</li>
     <li><strong>Sutikimai:</strong> ar atsisakyta nuotraukų skelbimo, tėvų patvirtinimas vaiko paskyrai ir kada tai padaryta.</li>
     <li><strong>Reakcijos</strong> į naujienas.</li>
   </ul>
@@ -63,11 +65,14 @@ page_start('Privatumo politika', ['description' => 'Kaip VšĮ Karate Ateitis tv
     <li>Bandomosios treniruotės užklausas (el. laiškus) - 6 mėnesius, jei narystė neprasideda.</li>
     <li>Nebaigtas registracijas (nepatvirtintas el. paštas ar negautas tėvų sutikimas) - <?= (int) config('retention.unfinished_days', 30) ?> dienų. Vėliau jos ištrinamos automatiškai.</li>
     <li>Prisijungimo bandymų įrašus (el. paštas, IP adresas) apsaugai nuo įsilaužimų - 30 dienų.</li>
+    <li>Prisijungimo kodus el. paštu - 1 parą, „patikimo įrenginio“ įrašą - <?= (int) TRUSTED_DEVICE_DAYS ?> dienų arba kol jį išjungsite.</li>
     <li>Atsargines duomenų bazės kopijas (kad duomenys nedingtų dėl gedimo) - <?= (int) config('backup.keep', 14) ?> dienų. Jas pasiekti gali tik administratorius.</li>
   </ul>
 
   <h2>6. Slapukai ir trečiųjų šalių turinys</h2>
-  <p>Naudojame tik vieną būtiną slapuką - prisijungimo sesijai išlaikyti. Reklamos ar sekimo slapukų nenaudojame.</p>
+  <p>Naudojame tik būtinus slapukus: prisijungimo sesijai išlaikyti ir, jei įjungėte prisijungimą su kodu ir pažymėjote „Pasitikėti šiuo įrenginiu“,
+     kad tame įrenginyje <?= (int) TRUSTED_DEVICE_DAYS ?> dienų nereikėtų kodo. Reklamos ar sekimo slapukų nenaudojame.</p>
+  <p>Įdiegus svetainę kaip programėlę telefone, naršyklė įsimena tik svetainės dizaino failus (be jūsų duomenų), kad ji greičiau atsidarytų.</p>
   <p>Svetainės šriftai įkeliami iš „Google Fonts“, o vaizdo įrašai rodomi per „YouTube“ privatumo režimu (youtube-nocookie.com).
      Įkeliant šį turinį jūsų naršyklė susisiekia su „Google“ serveriais ir perduoda jūsų IP adresą.</p>
 
