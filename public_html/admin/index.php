@@ -60,10 +60,10 @@ $upcoming = q_all('SELECT * FROM events WHERE COALESCE(ends_on, starts_on) >= CU
 page_start('Šiandien', ['admin' => true]);
 // Nustatymai (dešinėje): visi vienoje vietoje, sugrupuoti - meniu juostoje jų nebėra, kad nesikartotų
 $settings = [
+    // Tik tai, ko nėra meniu (Testai, Pranešimai, Varžybos - skirtukuose; pamokų medis - Pamokose; puslapio redagavimas - pagrindiniame puslapyje)
     'Klubas'                 => [['Grupės ir jų spalvos', 'admin/grupes.php', true], ['Tvarkaraštis ir kainos', 'admin/tvarkarastis.php', true], ['Atšauktos treniruotės ir atostogos', 'admin/atsaukimai.php', true], ['Taškai ir XP', 'admin/taskai.php', true]],
-    'Egzaminai ir pamokos'   => [['Egzaminų programa (XP)', 'admin/programa.php', true], ['Testai', 'admin/testai.php', true], ['Pamokų medis', 'admin/pamokos.php', true]],
-    'Svetainė'               => [['Pagrindinis puslapis (redaguoti)', 'index.php?redaguoti=1', is_admin()], ['Reakcijų emoji', 'admin/naujienos.php?emoji=1', is_admin()], ['Atsarginės kopijos ir sistema', 'admin/kopijos.php', is_admin()]],
-    'Žmonės ir pranešimai'   => [['Paskyros ir rolės', 'admin/paskyros.php', is_admin()], ['Pranešimai nariams ir SMS', 'admin/pranesimai.php', is_admin()], ['Varžybų sistema', 'admin/varzybos.php', true]],
+    'Programa ir svetainė'   => [['Egzaminų programa (XP)', 'admin/programa.php', true], ['Reakcijų emoji', 'admin/naujienos.php?emoji=1', is_admin()]],
+    'Sistema'                => [['Paskyros ir rolės', 'admin/paskyros.php', is_admin()], ['Atsarginės kopijos ir sistema', 'admin/kopijos.php', is_admin()]],
 ];
 $todoCount = count($notifs) + count($todo);
 ?>
@@ -155,7 +155,6 @@ $todoCount = count($notifs) + count($todo);
         <a class="btn btn-ghost btn-sm" href="<?= url('admin/renginiai.php?edit=new') ?>">+ Renginys</a>
         <a class="btn btn-ghost btn-sm" href="<?= url('pamokos.php?nauja=1') ?>">+ Pamoka</a>
         <a class="btn btn-ghost btn-sm" href="<?= url('admin/nariai.php?new=1') ?>">+ Narys</a>
-        <?php if (is_admin()): ?><a class="btn btn-ghost btn-sm" href="<?= url('admin/pranesimai.php') ?>">📣 Pranešimas nariams</a><?php endif; ?>
       </div>
     </div>
     <div class="panel card">

@@ -252,9 +252,8 @@ function admin_nav_items(): array
     $items = [
         'siandien'   => ['Šiandien', 'admin/'],
         'treniruote' => ['Treniruotė', 'admin/treniruote.php'],
-        'zinutes'    => ['Žinutės', 'admin/zinutes.php', staff_unread_messages()],
         'nariai'     => ['Nariai', 'admin/nariai.php'],
-        // Grupės, tvarkaraštis, taškai, paskyros - „Nustatymai“ (Šiandien puslapio dešinėje), kad meniu nesikartotų
+        // Žinutės - tik pokalbio lange (mygtukas apačioje dešinėje); grupės, tvarkaraštis, taškai, paskyros - „Nustatymai“
     ];
     $items['varzybos'] = ['Varžybos', 'admin/varzybos.php'];   // ir kai sistema dar neprijungta - puslapis paaiškina
     // Renginiai, naujienos ir pamokos tvarkomi savo skiltyse (viršutinėje juostoje), čia nedubliuojama
@@ -322,12 +321,11 @@ function staff_bar(array $links): string
 /** Skirtukų juosta po viršutine juosta (Treneriams arba Mano paskyra) */
 function render_sub_nav(string $label, array $items, string $current): string
 {
-    $html = '<div class="sub-nav"><div class="sub-inner"><span class="sub-label">' . e($label) . '</span>';
+    $html = '<div class="sub-nav" role="navigation" aria-label="' . e($label) . '"><div class="sub-inner">';
     foreach ($items as $key => $it) {
         $badge = !empty($it[2]) ? ' <span class="count-badge">' . (int) $it[2] . '</span>' : '';
         $cls = ($key === $current ? 'active' : '') . ($key === 'patvirtinimai' ? ' sub-last' : '');
-        // „Žinutės“ treneriui atidaro pokalbių langelį (be JS - puslapis admin/zinutes.php)
-        $html .= '<a href="' . e(url($it[1])) . '" class="' . trim($cls) . '"' . ($key === $current ? ' aria-current="page"' : '') . ($key === 'zinutes' ? ' data-open-chat' : '') . '>' . e($it[0]) . $badge . '</a>';
+        $html .= '<a href="' . e(url($it[1])) . '" class="' . trim($cls) . '"' . ($key === $current ? ' aria-current="page"' : '') . '>' . e($it[0]) . $badge . '</a>';
     }
     return $html . '</div></div>';
 }

@@ -19,16 +19,17 @@ html{scrollbar-gutter:stable;}
 .site-header nav{display:flex; align-items:center; gap:20px; max-width:var(--nav-w); margin:0 auto; padding:9px var(--nav-pad); position:relative;}
 .site-header ul{list-style:none; margin:0; padding:0;}
 
-/* Logotipas (ir versija - tik test / kompiuteryje) */
-.site-header .logo{flex-shrink:0; display:flex; align-items:flex-end; gap:6px; text-decoration:none;}
+/* Logotipas; versija (tik test / kompiuteryje) - po logotipu, dešinėje, kad neužimtų vietos šalia meniu */
+.site-header .logo{flex-shrink:0; display:flex; flex-direction:column; align-items:flex-end; gap:2px; text-decoration:none;}
 .site-header .logo img{height:46px; width:auto; display:block;}
-.site-header .ver-tag{margin-bottom:1px; font-family:'JetBrains Mono',monospace; font-size:10px; font-weight:600; line-height:1; letter-spacing:0.02em;
-  color:#2F6B5A; background:rgba(47,107,90,0.10); border:1px solid rgba(47,107,90,0.25); border-radius:6px; padding:3px 5px; white-space:nowrap;}
+.site-header .logo:has(.ver-tag) img{height:40px;}
+.site-header .ver-tag{font-family:'JetBrains Mono',monospace; font-size:9px; font-weight:600; line-height:1; letter-spacing:0.02em;
+  color:#6E4A86; background:rgba(110,74,134,0.08); border:1px solid rgba(110,74,134,0.22); border-radius:5px; padding:2px 4px; white-space:nowrap;}
 
-.site-header ul.nav-list{display:flex; align-items:center; gap:16px; flex:1; min-width:0;}
+.site-header ul.nav-list{display:flex; align-items:center; gap:20px; flex:1; min-width:0;}   /* tas pats tarpas kaip tarp logotipo ir meniu */
 
 /* Meniu kapsulė: dvi grupės viename fone, tarp jų - plonas skirtukas */
-.site-header .nav-main{display:flex; align-items:center; padding:4px; border-radius:14px; background:rgba(23,20,15,0.045);}
+.site-header .nav-main{display:flex; align-items:center; padding:4px; border-radius:14px; background:rgba(23,20,15,0.045); margin:0 auto;}   /* vienodas tarpas iki logotipo ir iki paskyros */
 .site-header .nav-group{display:flex; align-items:center; gap:2px;}
 .site-header .nav-onpage + .nav-pages{position:relative; margin-left:6px; padding-left:7px;}
 .site-header .nav-onpage + .nav-pages::before{content:""; position:absolute; left:0; top:9px; bottom:9px; width:1px; background:rgba(23,20,15,0.16);}
@@ -41,18 +42,18 @@ html{scrollbar-gutter:stable;}
 .site-header .nav-main a:hover{background:#fff; box-shadow:0 1px 3px rgba(23,20,15,0.08); text-decoration:none;}
 /* Kiti puslapiai - su rodykle (nuveda į atskirą puslapį) */
 .site-header a.nav-page::after{content:"›"; margin-left:2px; color:#A85C7E; font-weight:700;}
-.site-header a.nav-page.is-current{background:#fff; color:#204B3F; box-shadow:0 1px 3px rgba(23,20,15,0.10);}
+.site-header a.nav-page.is-current{background:#fff; color:#6E4A86; box-shadow:0 1px 3px rgba(80,50,100,0.14);}
 .site-header a.nav-page .count-badge{margin-left:2px;}
 
 /* Paskyra / Prisijungti (ir „Išbandyti“ svečiams) - dešinėje */
-.site-header .nav-account{margin-left:auto;}
 .site-header .nav-account > ul{display:flex; align-items:center; gap:8px;}
 .site-header .nav-login{
   position:relative; display:inline-block; color:#F7F4EC !important; background:#17140F; padding:11px 16px; font-size:13px; font-weight:700; line-height:1.1;
   border-radius:10px; white-space:nowrap; text-decoration:none; transition:background 0.15s ease;
 }
 .site-header .nav-login:hover{background:#2F6B5A; text-decoration:none;}
-.site-header .nav-login.is-current{background:#2F6B5A;}
+.site-header .nav-login.is-current{background:linear-gradient(135deg, #A85C7E 0%, #6E5A9A 100%); box-shadow:0 6px 16px rgba(110,74,134,0.28);}
+.site-header .nav-login.is-current:hover{filter:brightness(1.06);}
 .site-header .nav-cta{
   display:inline-block; background:linear-gradient(90deg, #2E7FB0 0%, #A85C7E 55%, #D9698C 100%); background-size:200% 100%;
   color:#fff !important; padding:11px 18px; font-size:13px; font-weight:700; line-height:1.1; border-radius:10px; white-space:nowrap;
@@ -72,7 +73,7 @@ html{scrollbar-gutter:stable;}
 /* Siauresniuose kompiuterių ekranuose - glaudžiau, kad tilptų viena eilute */
 @media(min-width:1101px) and (max-width:1280px){
   .site-header{--nav-pad:20px;}
-  .site-header nav{gap:14px;}
+  .site-header nav, .site-header ul.nav-list{gap:14px;}
   .site-header .nav-main a{padding:10px 9px;}
 }
 
@@ -85,7 +86,7 @@ html{scrollbar-gutter:stable;}
     background:#FBF9F4; border-bottom:1px solid rgba(23,20,15,0.08); box-shadow:0 16px 28px rgba(23,20,15,0.1);
   }
   .site-header ul.nav-list.nav-open{display:flex;}
-  .site-header .nav-main{flex-direction:column; align-items:stretch; padding:0; background:none; border-radius:0;}
+  .site-header .nav-main{flex-direction:column; align-items:stretch; padding:0; background:none; border-radius:0; margin:0;}
   .site-header .nav-group{flex-direction:column; align-items:stretch; gap:2px;}
   .site-header .nav-onpage + .nav-pages{margin:8px 0 0; padding:8px 0 0; border-top:1px solid rgba(23,20,15,0.12);}
   .site-header .nav-onpage + .nav-pages::before{display:none;}
@@ -110,24 +111,23 @@ html{scrollbar-gutter:stable;}
 .attention-bar{display:block; position:relative; z-index:90; text-align:center; padding:9px 16px; font-family:'Inter',sans-serif; font-size:14px; color:#9B2C28; background:#FBE9E8; border-bottom:1px solid rgba(217,83,79,0.35); text-decoration:none;}
 .attention-bar:hover{background:#F8DCDA; text-decoration:none;}
 
-/* Skirtukai po viršutine juosta: Treneriams / Mano paskyra. Kraštai - kaip viršutinės juostos (logotipas ... paskyra). */
+/* Skirtukai po viršutine juosta (trenerio / nario paskyra) - „Paskyra“ mygtuko tęsinys: ta pati spalva, tokie pat „lustai“ kaip meniu.
+   Kraštai - kaip viršutinės juostos (logotipas ... paskyra). */
 @media(min-width:1101px){
-  .site-header .nav-login.is-current::after{content:""; position:absolute; left:50%; bottom:-13px; transform:translateX(-50%);
-    border:7px solid transparent; border-bottom-color:#EFEBE1;}
+  .site-header .nav-login.is-current::after{content:""; position:absolute; left:50%; bottom:-11px; transform:translateX(-50%);
+    border:7px solid transparent; border-bottom-color:#EFE9F3;}
 }
-.sub-nav{background:#EFEBE1; border-top:1px solid rgba(23,20,15,0.06);}
-.sub-nav .sub-inner{display:flex; align-items:stretch; gap:2px; max-width:var(--nav-w); margin:0 auto; padding:0 var(--nav-pad); overflow-x:auto; scrollbar-width:none;}
+.sub-nav{background:linear-gradient(90deg, #F6EEF3 0%, #EFE9F3 60%, #EFE9F3 100%); border-top:1px solid rgba(110,74,134,0.10);}
+.sub-nav .sub-inner{display:flex; align-items:center; gap:4px; max-width:var(--nav-w); margin:0 auto; padding:6px var(--nav-pad); overflow-x:auto; scrollbar-width:none;}
 .sub-nav .sub-inner::-webkit-scrollbar{display:none;}
-.sub-nav .sub-label{flex-shrink:0; align-self:center; margin-right:12px; font-family:'JetBrains Mono',monospace; font-size:10.5px; font-weight:600;
-  letter-spacing:0.1em; text-transform:uppercase; color:#2F6B5A;}
-.sub-nav a{flex-shrink:0; display:inline-flex; align-items:center; gap:2px; padding:12px 12px 10px; font-size:14px; font-weight:600; line-height:1;
-  color:rgba(23,20,15,0.66); text-decoration:none; white-space:nowrap; border-bottom:2.5px solid transparent; transition:color 0.15s ease, border-color 0.15s ease;}
-.sub-nav a:hover{color:#17140F; text-decoration:none; border-bottom-color:rgba(47,107,90,0.35);}
-.sub-nav a.active{color:#17140F; border-bottom-color:#2F6B5A;}
+.sub-nav a{flex-shrink:0; display:inline-flex; align-items:center; gap:2px; padding:9px 13px; border-radius:10px; font-size:14px; font-weight:600; line-height:1;
+  color:#57506A; text-decoration:none; white-space:nowrap; transition:background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;}
+.sub-nav a:hover{background:rgba(255,255,255,0.7); color:#17140F; text-decoration:none;}
+.sub-nav a.active{background:#fff; color:#6E4A86; box-shadow:0 1px 4px rgba(80,50,100,0.14);}
 .sub-nav a.sub-last{margin-left:auto;}
 .sub-nav a .count-badge{margin-left:4px;}
 @media(max-width:860px){
-  .sub-nav .sub-label{display:none;}
-  .sub-nav a{padding:12px 10px 10px; font-size:13px;}
+  .sub-nav .sub-inner{padding:6px 10px;}
+  .sub-nav a{padding:9px 11px; font-size:13px;}
   .sub-nav a.sub-last{margin-left:0;}
 }

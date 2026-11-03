@@ -462,7 +462,7 @@ footer{padding:44px 0 30px; position:relative; z-index:2;}
 #apie{padding-bottom:40px;}
 #kontaktai{padding:40px 0;}
 #kontaktai .section-head{margin-bottom:24px;}
-#registracija{padding-top:40px; scroll-margin-top:84px;}
+#registracija{padding-top:40px; scroll-margin-top:96px;}
 /* ARTĖJANTYS RENGINIAI */
 /* Tokio pat pločio kaip grupių langas; antraštė ir "Visi renginiai" vienoje eilutėje virš kortelių */
 .home-events-section{padding:20px 0 0;}
@@ -553,7 +553,7 @@ footer{padding:44px 0 30px; position:relative; z-index:2;}
 .hb-text{padding:60px 0 28px;}
 .hb-contacts{padding:40px 0;}
 .hb-contacts .section-head{margin-bottom:24px;}
-#registracija{padding-top:40px; scroll-margin-top:84px;}
+#registracija{padding-top:40px; scroll-margin-top:96px;}
 @media(min-width:1500px){ .hb-about .wrap, .hb-values .wrap, .hb-instructors .wrap, .hb-banner .wrap, .hb-text .wrap{max-width:1520px;} }
 /* Tekstas su nuotrauka */
 .hb-text-grid.with-img{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:48px; align-items:stretch;}
@@ -565,7 +565,7 @@ footer{padding:44px 0 30px; position:relative; z-index:2;}
 .contacts-grid.two{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:24px; align-items:stretch;}   /* abu blokai vienodo aukščio */
 .contacts-grid.two > .contact-panel{height:100%;}
 /* Paspaudus meniu nuorodą - visa skiltis su pavadinimu matosi po viršutine juosta (šiose skiltyse viršuje mažas tarpas) */
-section.hb-contacts, section.hb-values, section.hb-instructors, section.hb-banner, section.hb-text, section.hb-partners{scroll-margin-top:84px;}
+section.hb-contacts, section.hb-values, section.hb-instructors, section.hb-banner, section.hb-text, section.hb-partners{scroll-margin-top:96px;}   /* viršutinė juosta + versija po logotipu */
 .contact-locs h3{font-size:1.1rem; margin-bottom:14px;}
 .contact-locs-cat + .contact-locs-cat{margin-top:14px;}
 .contact-locs-cat strong{display:block; font-size:0.85rem; color:var(--accent); font-family:'JetBrains Mono',monospace; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:6px;}
