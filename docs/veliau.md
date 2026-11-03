@@ -14,3 +14,5 @@ Sutarta atidėti (klausimai ir atsakymai 2026-10-27). Kai imsimės - išbraukti 
 - **SMS teikėjas** - dar nepasirinktas; pasirinkus įrašyti į privatumo politiką.
 - **Mokėjimai „Svarbu“ skiltyje** - kai atsiras mokėjimų sistema, „Ką turi padaryti“ galėtų rodyti ir neapmokėtus mėnesius.
 - **Klubo vadovo vardas** - tekstuose „Rašyti Deniui“, „Klausimas Deniui“ įrašytas Denis; jei keistųsi - pakeisti tekstus.
+- **Buvusių narių duomenys po 1 metų** - privatumo politikoje pažadėta ištrinti praėjus 1 m. po narystės pabaigos.
+  Dabar tai daroma ranka (Nariai → narys → „Ištrinti narį“). Galima pridėti: išėjimo data ir priminimas „Šiandien“.

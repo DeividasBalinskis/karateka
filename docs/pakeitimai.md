@@ -4,6 +4,35 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.13 - 2026-11-03 (testinių duomenų ištrynimas, katos pamokose, Nustatymai atskirai, be dublių)
+**Duomenų bazė:** nieko importuoti nereikia.
+
+Testiniai duomenys:
+- Nustatymai → „Atsarginės kopijos ir sistema“ → „Testiniai duomenys“ (tik adminas, rodoma tik kol jų yra):
+  sąrašas, kas bus ištrinta (demo paskyros `@demo.karateka.lt`, jų vaikai, demo renginiai, naujienos, pamokos, egzaminų programa, testai, „TEST:“ pavyzdžiai)
+  ir kas lieka („Lieka (tikri)“ - pačių užsiregistravę ir Denio pridėti). Varnelėmis galima palikti dalį (pvz. egzaminų programą).
+- Prieš trinant automatiškai sukuriama atsarginė kopija. Išvalomas ir senas pavyzdinis video (ne apie karate) bei pavyzdinis instruktoriaus aprašymas.
+- Nario kortelės apačioje (tik adminui) - „Ištrinti narį“: visam laikui, su lankomumu, taškais ir žinutėmis;
+  tėvų ar paties nario paskyra, kurioje neliko narių, ištrinama irgi. Reikia, kai žmogus paprašo ištrinti duomenis.
+- Pavyzdžiuose kompiuteryje senas pavyzdinis video pakeistas tikrais katų video.
+
+Pamokos:
+- Kiekvieno diržo aplanke (8 kyu ... 7 dan) - katos pamoka su mokomuoju YouTube video, kaip egzaminų programoje:
+  8 kyu Heian Shodan, 7 kyu Heian Nidan ... 3 kyu Tekki Shodan, 2 kyu Bassai Dai, 1 kyu Kanku Dai, dan - po 1-2 katas.
+  Narys mato ir kito diržo aplanką - t. y. katą kitam egzaminui. Pamokas galima keisti ar ištrinti kaip įprasta.
+
+Treneriams:
+- „Šiandien“ ir „Nustatymai“ - atskiri puslapiai. „Šiandien“: kas reikia padaryti, šiandienos treniruotės, artimiausi renginiai
+  ir greiti mygtukai „+ Naujiena“, „+ Renginys“, „+ Narys“. „Nustatymai“: klubo nustatymai, egzaminų programa, sistema, mano paskyra.
+- Skirtukų eilutė - per vidurį.
+- Be dublių - kiekvienas dalykas vienoje vietoje: kainos ir tvarkaraštis - tik „Tvarkaraštis ir kainos“ (iš pagrindinio puslapio ir grupės - nuoroda ten),
+  žinutės - tik pokalbio lange, egzaminų programa - tik Nustatymuose, nauja pamoka - aplanke „Pridėti“.
+
+Svetainė:
+- Instruktoriaus langas atsidaro tik jei įrašytas aprašymas ar pareigos (be „netrukus“ teksto).
+- Bandomosios treniruotės formoje - nuoroda į privatumo politiką.
+- Privatumo politika papildyta: komentarai ir klausimai prie renginių / naujienų, lygiai, prisijungimas su kodu ir „patikimo įrenginio“ slapukas.
+
 ## v1.12 - 2026-11-03 (meniu ir skirtukai be dublių, dan aplankai)
 **Duomenų bazė:** nieko importuoti nereikia.
 
