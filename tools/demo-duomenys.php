@@ -213,11 +213,11 @@ $award($members['jaunimas'][0][0], 'organize', -6, null, 'Padėjo organizuoti va
 $out[] = '';
 $out[] = '-- ===== Naujienos (nuotraukos: demo-nuotraukos.zip) =====';
 $news = [
-    ['Puikūs rezultatai Lietuvos karate taurėje', "Mūsų sportininkai parvežė 3 aukso, 4 sidabro ir 5 bronzos medalius!\n\nAčiū visiems, kurie atvyko palaikyti. Ypatingas ačiū tėvams už pagalbą kelionėje.", 2, ['demo_news_1.jpg', 'demo_news_2.jpg'], ['dQw4w9WgXcQ']],
+    ['Puikūs rezultatai Lietuvos karate taurėje', "Mūsų sportininkai parvežė 3 aukso, 4 sidabro ir 5 bronzos medalius!\n\nAčiū visiems, kurie atvyko palaikyti. Ypatingas ačiū tėvams už pagalbą kelionėje.", 2, ['demo_news_1.jpg', 'demo_news_2.jpg'], []],
     ['Rudens kyu egzaminas jau netrukus', "Egzaminas vyks Viršuliškėse. Prašome iki penktadienio patvirtinti dalyvavimą treneriui.\n\nReikalavimai kiekvienam diržui - pamokų skiltyje.", 6, ['demo_news_3.jpg'], []],
     ['Naujokų grupė vaikams - dar yra vietų', "Antradieniais ir ketvirtadieniais 17:30 Viršuliškėse renkasi naujokų grupė.\n\nPirmos dvi treniruotės nemokamos - kvieskite draugus!", 14, ['demo_news_4.jpg'], []],
     ['Sezonas prasidėjo!', "Sveiki sugrįžę į salę! Treniruotės vyksta pagal įprastą tvarkaraštį.\n\nPrimename: tvarkaraštį ir artėjančius renginius matote savo paskyroje.", 33, ['demo_news_5.jpg'], []],
-    ['Vasaros stovyklos akimirkos', "Savaitė prie ežero: treniruotės aušroje, žygiai ir daug juoko. Ačiū visiems dalyviams!", 60, [], ['dQw4w9WgXcQ']],
+    ['Vasaros stovyklos akimirkos', "Savaitė prie ežero: treniruotės aušroje, žygiai ir daug juoko. Ačiū visiems dalyviams!", 60, [], []],
 ];
 foreach ($news as $i => [$title, $body, $daysAgo, $images, $videos]) {
     $var = '@n' . ($i + 1);
@@ -245,11 +245,11 @@ $out[] = '';
 $out[] = '-- ===== Pamokos =====';
 $lessons = [
     // [pavadinimas, tema, diržas, tekstas, video, grupės]
-    ['Heian Shodan - žingsnis po žingsnio', 'Kata', 1, "Pirmoji kata. Žiūrėkite video ir kartokite po 10 minučių kasdien.\n\nAtkreipkite dėmesį į stovėsenas ir kvėpavimą.", 'dQw4w9WgXcQ', []],
-    ['Heian Nidan', 'Kata', 2, "Antroji kata geltonam diržui. Svarbiausia - šoniniai blokai ir posūkiai.", 'dQw4w9WgXcQ', []],
-    ['Heian Sandan', 'Kata', 3, "Oranžinio diržo kata: alkūnių smūgiai ir kiba-dachi stovėsena.", 'dQw4w9WgXcQ', []],
-    ['Kumite pagrindai', 'Kumite', 4, "Distancija, judėjimas ir pirmieji deriniai.", 'dQw4w9WgXcQ', []],
-    ['Bassai Dai', 'Kata', 7, "Ruduoju diržu besiruošiantiems - jėga ir ritmas.", 'dQw4w9WgXcQ', []],
+    ['Heian Shodan - žingsnis po žingsnio', 'Kata', 1, "Pirmoji kata. Žiūrėkite video ir kartokite po 10 minučių kasdien.\n\nAtkreipkite dėmesį į stovėsenas ir kvėpavimą.", 'q1Rg8rUpjjw', []],
+    ['Heian Nidan', 'Kata', 2, "Antroji kata geltonam diržui. Svarbiausia - šoniniai blokai ir posūkiai.", 'rgs1ysn0R-0', []],
+    ['Heian Sandan', 'Kata', 3, "Oranžinio diržo kata: alkūnių smūgiai ir kiba-dachi stovėsena.", '1MrRmimBJoA', []],
+    ['Kumite pagrindai', 'Kumite', 4, "Distancija, judėjimas ir pirmieji deriniai.", null, []],
+    ['Bassai Dai', 'Kata', 7, "Ruduoju diržu besiruošiantiems - jėga ir ritmas.", 'Qpt3W7Y06Kg', []],
     ['Kihon: pagrindiniai smūgiai', 'Kihon', null, "1. Oi-zuki - smūgis į priekį žengiant.\n2. Gyaku-zuki - priešinga ranka.\n3. Age-uke - blokas aukštyn.\n\nKiekvieną pratimą kartokite po 20 kartų.", null, []],
     ['Tempimo pratimai vaikams', 'Fizinis pasiruošimas', null, "1. Atsisėskite, kojos tiesios - lėtai lenkitės į priekį.\n2. Drugelis - padai kartu, keliai žemyn.\n3. Šoninis tempimas stovint.\n\nKiekvieną padėtį laikykite 20 sekundžių.", null, [1, 2, 3, 4, 5, 6, 11]],
     ['Kyu egzamino reikalavimai', null, null, "Baltas → geltonas diržas: Heian Shodan, kihon (oi-zuki, gyaku-zuki, age-uke, gedan-barai), gohon kumite.\n\nGeltonas → oranžinis: Heian Nidan ir aukščiau išvardinti pagrindai.", null, []],
@@ -282,7 +282,7 @@ foreach ([['@l1', '@k1', 1], ['@l6', '@k1', 2], ['@l7', '@k1', 3], ['@l8', '@k1'
 $blocksDemo = [
     ['heading', 'Kaip mokytis', null, null],
     ['text', "Heian Shodan - pirmoji kata. Ją sudaro **21 judesys**.\n\nPirma pažiūrėkite video, tada kartokite po vieną dalį.", null, null],
-    ['video', null, 'dQw4w9WgXcQ', 'Visa kata lėtai'],
+    ['video', null, 'q1Rg8rUpjjw', 'Visa kata lėtai'],
     ['note', 'Atkreipkite dėmesį į kvėpavimą ir į tai, kur žiūrite - visada į tą pusę, į kurią darote judesį.', null, null],
     ['heading', 'Namų užduotis', null, null],
     ['text', "- Kartokite 10 minučių kasdien\n- Prieš veidrodį patikrinkite stovėsenas\n- Paprašykite tėvų nufilmuoti ir parodykite treneriui", null, null],

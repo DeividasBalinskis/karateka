@@ -19,6 +19,7 @@ if (q_value('SELECT COUNT(*) FROM accounts')) {
 }
 
 const PW = 'testas123';
+const SEED = '2000-01-01 00:00:00';   // pavyzdžių žymė - juos atpažįsta „Testiniai duomenys“ (app/test_data.php)
 
 function acc(string $email, string $first, string $last, string $role = 'member', string $status = 'active'): int
 {
@@ -76,8 +77,8 @@ $events = [
     ['seminar', 'Seminaras su svečiu iš Japonijos', '+45 days', null, '11:00', 'Vilnius', 'Kata ir kumite seminaras. Registracija pas trenerį.', [12, 13]],
 ];
 foreach ($events as [$type, $title, $start, $end, $time, $loc, $desc, $groups]) {
-    q('INSERT INTO events (type, title, starts_on, ends_on, start_time, location, description) VALUES (?, ?, ?, ?, ?, ?, ?)',
-        [$type, $title, date('Y-m-d', strtotime($start)), $end ? date('Y-m-d', strtotime($end)) : null, $time, $loc, $desc]);
+    q('INSERT INTO events (type, title, starts_on, ends_on, start_time, location, description, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+        [$type, $title, date('Y-m-d', strtotime($start)), $end ? date('Y-m-d', strtotime($end)) : null, $time, $loc, $desc, SEED]);
     $eid = (int) db()->lastInsertId();
     foreach ($groups as $g) {
         q('INSERT INTO event_groups (event_id, group_id) VALUES (?, ?)', [$eid, $g]);
@@ -86,18 +87,19 @@ foreach ($events as [$type, $title, $start, $end, $time, $loc, $desc, $groups]) 
 
 // Praėję renginiai su rezultatais ir taškais (2 etapas)
 foreach ([['Rudenėlio taurė', 'Vilnius', 0], ['Sakura Cup', 'Ryga', 1]] as $i => [$title, $loc, $abroad]) {
-    q('INSERT INTO events (type, title, starts_on, location, is_abroad) VALUES ("competition", ?, ?, ?, ?)',
-        [$title, date('Y-m-d', strtotime('-' . (20 + $i * 7) . ' days')), $loc, $abroad]);
+    q('INSERT INTO events (type, title, starts_on, location, is_abroad, created_at) VALUES ("competition", ?, ?, ?, ?, ?)',
+        [$title, date('Y-m-d', strtotime('-' . (20 + $i * 7) . ' days')), $loc, $abroad, SEED]);
     $eid = (int) db()->lastInsertId();
     q('INSERT INTO event_groups (event_id, group_id) VALUES (?, 12), (?, 13)', [$eid, $eid]);
 }
-q('INSERT INTO events (type, title, starts_on, location) VALUES ("exam", "Pavasario kyu egzaminas", ?, "Viršuliškės")', [date('Y-m-d', strtotime('-30 days'))]);
+q('INSERT INTO events (type, title, starts_on, location, created_at) VALUES ("exam", "Pavasario kyu egzaminas", ?, "Viršuliškės", ?)', [date('Y-m-d', strtotime('-30 days')), SEED]);
 $examId = (int) db()->lastInsertId();
 
 // Daugiau jaunimo narių, kad reitingas turėtų ką rodyti
 $youth = [$kid2];
 foreach ([['Lukas', 'Vaitkus'], ['Gabija', 'Stankevičiūtė'], ['Matas', 'Žukauskas'], ['Emilija', 'Paulauskaitė'], ['Dovydas', 'Urbonas'], ['Kamilė', 'Rimkutė']] as $i => [$f, $l]) {
-    $youth[] = mem($f, $l, (2009 + $i % 4) . '-0' . (1 + $i) . '-1' . $i, 12);
+    $youth[] = $y = mem($f, $l, (2009 + $i % 4) . '-0' . (1 + $i) . '-1' . $i, 12);
+    q('UPDATE members SET created_at = ? WHERE id = ?', [SEED, $y]);   // be paskyros - pažymima kaip pavyzdys
 }
 $comp = q_all('SELECT * FROM events WHERE type = "competition" AND starts_on < CURDATE() ORDER BY starts_on');
 $results = [
@@ -113,10 +115,10 @@ award_points($youth[2], category_by_code('lead_training'), date('Y-m-d', strtoti
 // Naujienos su esamomis svetainės nuotraukomis
 $news = [
     ['Rudens sezonas prasidėjo!', "Sveiki sugrįžę į salę! Treniruotės vyksta pagal įprastą tvarkaraštį.\n\nNaujokams pirmos dvi treniruotės nemokamos - kvieskite draugus.", '-10 days', ['img/apie-1.jpg', 'img/apie-2.jpg', 'img/apie-3.jpg'], []],
-    ['Puikūs rezultatai varžybose', "Mūsų sportininkai parvežė 3 aukso ir 2 sidabro medalius. Sveikiname!\n\nVaizdo įrašas iš varžybų žemiau.", '-3 days', ['img/suaugusieji.jpg'], ['dQw4w9WgXcQ']],
+    ['Puikūs rezultatai varžybose', "Mūsų sportininkai parvežė 3 aukso ir 2 sidabro medalius. Sveikiname!\n\nNuotrauka iš varžybų žemiau.", '-3 days', ['img/suaugusieji.jpg'], []],
 ];
 foreach ($news as [$title, $body, $when, $images, $videos]) {
-    q('INSERT INTO news (title, body, author_id, published_at) VALUES (?, ?, ?, ?)', [$title, $body, $coach, date('Y-m-d H:i:s', strtotime($when))]);
+    q('INSERT INTO news (title, body, author_id, published_at, updated_at) VALUES (?, ?, ?, ?, ?)', [$title, $body, $coach, date('Y-m-d H:i:s', strtotime($when)), SEED]);
     $nid = (int) db()->lastInsertId();
     $sort = 0;
     foreach ($images as $img) {
@@ -135,9 +137,9 @@ foreach ($news as [$title, $body, $when, $images, $videos]) {
 
 // Pamokos
 // 9 kyu (baltas diržas) - pirmą kartą atidarius pamokas jos atsiduria „9 kyu“ aplanke
-q('INSERT INTO lessons (title, topic, belt_level, body, videos, author_id) VALUES (?, ?, 1, ?, ?, ?)', ['Heian Shodan žingsnis po žingsnio', 'Kata', "Kartokite kasdien po 10 minučių.", 'dQw4w9WgXcQ', $coach]);
-q('INSERT INTO lessons (title, topic, belt_level, body, author_id) VALUES (?, ?, 1, ?, ?)', ['Tempimo pratimai vaikams', 'Fizinis pasiruošimas', "1. Atsisėskite, kojos tiesios.
-2. Lėtai lenkitės į priekį.", $coach]);
+q('INSERT INTO lessons (title, topic, belt_level, body, author_id, created_at) VALUES (?, ?, 1, ?, ?, ?)', ['Kihon žingsnis po žingsnio', 'Kihon', "Kartokite kasdien po 10 minučių.", $coach, SEED]);
+q('INSERT INTO lessons (title, topic, belt_level, body, author_id, created_at) VALUES (?, ?, 1, ?, ?, ?)', ['Tempimo pratimai vaikams', 'Fizinis pasiruošimas', "1. Atsisėskite, kojos tiesios.
+2. Lėtai lenkitės į priekį.", $coach, SEED]);
 q('INSERT INTO lesson_groups (lesson_id, group_id) VALUES (?, 1)', [db()->lastInsertId()]);
 
 echo "Paruošta. Paskyros (slaptažodis " . PW . "):\n"

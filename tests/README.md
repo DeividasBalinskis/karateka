@@ -10,9 +10,10 @@ Browser tests (Playwright) and quick static checks. They run on every push in Gi
 | `e2e/02-two-factor.spec.js` | Login with an e-mail code: enabling, trusted devices, attempt and resend limits |
 | `e2e/03-cancellations.spec.js` | Cancelled trainings and holidays: dashboard, attendance page, member notice, delete restores |
 | `e2e/04-backups.spec.js` | Database backup: created, downloadable, complete; admin only |
-| `e2e/05-lessons.spec.js` | Lessons: kyu folders in belt colors, photo without a title, subfolders, what a member sees |
+| `e2e/05-lessons.spec.js` | Lessons: kyu and dan folders in belt colors, kata video in each belt folder, photo without a title, subfolders, what a member sees |
 | `e2e/06-app.spec.js` | Installable phone app: manifest, icons, service worker, offline page without personal data |
 | `e2e/07-pages.spec.js` | Every page for every role at desktop and phone width: no PHP/JS errors, no horizontal scroll |
+| `e2e/08-test-data.spec.js` | Deleting demo/test data: preview, real people and content stay, backup first (runs last - it empties the demo data) |
 
 ## Running locally
 

@@ -102,6 +102,26 @@ if ($id) {
         not_found();
     }
     $errors = [];
+    // Ištrinti narį visam laikui (tik adminas; pvz. paprašius ar praėjus 1 m. po narystės pabaigos - žr. privatumo politiką).
+    // Kartu dingsta jo lankomumas, taškai, pastabos, žinutės; paskyros, kuriose neliko narių (ne trenerių), ištrinamos irgi.
+    if (is_post() && post('action') === 'delete_member') {
+        csrf_check();
+        if (!is_admin($me)) {
+            forbidden();
+        }
+        $accIds = array_map('intval', q('SELECT account_id FROM account_members WHERE member_id = ?', [$id])->fetchAll(PDO::FETCH_COLUMN));
+        q('DELETE FROM members WHERE id = ?', [$id]);
+        $gone = [];
+        foreach ($accIds as $aid) {
+            $acc = q_one('SELECT * FROM accounts a WHERE a.id = ? AND a.role = "member" AND NOT EXISTS (SELECT 1 FROM account_members am WHERE am.account_id = a.id)', [$aid]);
+            if ($acc && $aid !== (int) $me['id']) {
+                q('DELETE FROM accounts WHERE id = ?', [$aid]);
+                $gone[] = $acc['email'];
+            }
+        }
+        flash('ok', 'Ištrinta: ' . $m['first_name'] . ' ' . $m['last_name'] . ($gone ? ' ir paskyra ' . implode(', ', $gone) : '') . '.');
+        redirect('admin/nariai.php');
+    }
     // Susieti esamą narį su tėvų / paties nario paskyra
     if (is_post() && post('action') === 'link_account') {
         csrf_check();
@@ -331,7 +351,7 @@ if ($id) {
             </li>
           <?php endforeach; ?>
         </ul>
-        <p class="small" style="margin-top:8px;"><a href="<?= url('admin/zinutes.php?m=' . $id) ?>">Pokalbis su nariu →</a></p>
+        <p class="small" style="margin-top:8px;"><button type="button" class="linklike" style="color:var(--accent); text-decoration:underline;" data-open-chat data-member="<?= $id ?>">💬 Pokalbis su nariu</button></p>
       </div>
       <div class="panel card" id="programa">
         <h2>Egzamino programa<?= $nextBelt ? ' · ' . e(belt_label($nextBelt)) : '' ?></h2>
@@ -355,6 +375,17 @@ if ($id) {
         <?php endforeach; ?>
       </div>
     </div>
+    <?php if (is_admin($me)): ?>
+      <details class="panel card danger-zone">
+        <summary>Ištrinti narį</summary>
+        <p class="small">Narys ištrinamas visam laikui su lankomumu, taškais, pastabomis ir žinutėmis. Tėvų ar paties nario paskyra, kurioje neliks narių, ištrinama irgi.
+          Jei narys tik nebetreniruoja - geriau „Būsena: Neaktyvus“ (privatumo politikoje: ištriname praėjus 1 m.).</p>
+        <form method="post" onsubmit="return confirm('Ištrinti <?= e(addslashes($m['first_name'] . ' ' . $m['last_name'])) ?> visam laikui?')">
+          <?= csrf_field() ?><input type="hidden" name="id" value="<?= $id ?>">
+          <button class="btn btn-danger btn-sm" name="action" value="delete_member">Ištrinti visam laikui</button>
+        </form>
+      </details>
+    <?php endif; ?>
     <?php
     page_end();
     exit;

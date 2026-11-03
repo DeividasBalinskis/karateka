@@ -57,6 +57,7 @@ require APP_DIR . '/participants.php';
 require APP_DIR . '/exams.php';
 require APP_DIR . '/sms.php';
 require APP_DIR . '/lessons.php';
+require APP_DIR . '/test_data.php';
 require APP_DIR . '/pickers.php';
 require APP_DIR . '/messages.php';
 require APP_DIR . '/home.php';
