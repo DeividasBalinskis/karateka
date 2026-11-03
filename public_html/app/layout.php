@@ -354,25 +354,27 @@ function site_header(bool $home = false, ?string $area = null, ?string $tab = nu
   <nav>
     <a class="logo" href="<?= $home ? '#' : url('index.php') ?>"><img src="<?= url('img/logo.png') ?>" alt="Karateka logotipas"><?php if (config('env') !== 'live'): ?><span class="ver-tag" title="Svetainės versija (rodoma tik testuojant)">v<?= e(site_version()) ?><?= config('env') === 'local' ? ' · local' : '' ?></span><?php endif; ?></a>
     <ul class="nav-list" id="navList">
-      <!-- Pagrindinio puslapio skiltys: blokai, kuriems adminas įrašė meniu pavadinimą -->
-      <li class="nav-section onpage-section">
-        <ul>
-          <?php $cta = null; $colors = ['nl-gray', 'nl-pink', 'nl-blue']; $n = 0;
-          foreach (home_nav() as [$label, $anchor, $isCta]): if ($isCta) { $cta = [$label, $anchor]; continue; } ?>
-            <li><a class="nav-link <?= $colors[$n++ % 3] ?>" href="<?= $h . e($anchor) ?>"><?= e($label) ?></a></li>
-          <?php endforeach; ?>
-        </ul>
-      </li>
-      <!-- Kiti puslapiai -->
-      <li class="nav-section page-section">
-        <ul>
+      <!-- Vienas meniu: kairėje - pagrindinio puslapio skiltys (blokai su meniu pavadinimu), po skirtuko - kiti puslapiai (su ›) -->
+      <li class="nav-main">
+        <?php $cta = null; $onpage = [];
+        foreach (home_nav() as [$label, $anchor, $isCta]) { $isCta ? $cta = [$label, $anchor] : $onpage[] = [$label, $anchor]; } ?>
+        <?php if ($onpage): ?>
+          <ul class="nav-group nav-onpage" aria-label="Pagrindinis puslapis">
+            <?php foreach ($onpage as [$label, $anchor]): ?><li><a class="nav-link" href="<?= $h . e($anchor) ?>"><?= e($label) ?></a></li><?php endforeach; ?>
+          </ul>
+        <?php endif; ?>
+        <ul class="nav-group nav-pages" aria-label="Puslapiai">
           <li><a class="nav-page<?= $cur('renginiai') ?>" href="<?= url('renginiai.php') ?>">Renginiai<?php if ($a && !is_staff($a) && ($inv = account_pending_invites((int) $a['id']))): ?> <span class="count-badge" title="Treneris kviečia - atsakykite"><?= $inv ?></span><?php endif; ?></a></li>
           <li><a class="nav-page<?= $cur('naujienos') ?>" href="<?= url('naujienos.php') ?>">Naujienos</a></li>
           <?php if ($a && can_see_lessons($a)): ?>
             <li><a class="nav-page<?= $cur('pamokos') ?>" href="<?= url('pamokos.php') ?>">Pamokos</a></li>
           <?php endif; ?>
+        </ul>
+      </li>
+      <!-- Dešinėje: paskyra (ar „Išbandyti“ ir „Prisijungti“) - prisijungus „Išbandyti“ dingsta, meniu nepasislenka -->
+      <li class="nav-account">
+        <ul>
           <?php if ($a && is_staff($a)): ?>
-            <!-- Treneriui vienas mygtukas "Paskyra": trenerio panelė su paskyros nustatymais -->
             <li><a class="nav-login<?= $area === 'admin' ? ' is-current' : '' ?>" href="<?= url('admin/') ?>">Paskyra<?php if ($n = pending_approvals_count() + notification_count((int) $a['id'])): ?> <span class="count-badge" title="Laukia patvirtinimo ar jūsų atsakymo"><?= $n ?></span><?php endif; ?></a></li>
           <?php elseif ($a): ?>
             <li><a class="nav-login<?= $area === 'account' ? ' is-current' : '' ?>" href="<?= url('paskyra.php') ?>">Mano paskyra<?php if ($att = account_attention_count((int) $a['id'])): ?> <span class="count-badge" title="Naujos pastabos ar neatliktos užduotys"><?= $att ?></span><?php endif; ?></a></li>
@@ -384,7 +386,6 @@ function site_header(bool $home = false, ?string $area = null, ?string $tab = nu
               </form>
             </li>
           <?php else: ?>
-            <?php // „Išbandyti“ - šalia „Prisijungti“ (ne pagrindinio meniu kapsulėje), kad prisijungus jam dingus niekas nepasislinktų ?>
             <?php if ($cta): ?><li class="desktop-only"><a class="nav-cta" href="<?= $h . e($cta[1]) ?>"><?= e($cta[0]) ?></a></li><?php endif; ?>
             <li><a class="nav-login" href="<?= url('prisijungti.php') ?>">Prisijungti</a></li>
           <?php endif; ?>
