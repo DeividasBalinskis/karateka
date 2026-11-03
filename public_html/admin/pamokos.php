@@ -3,7 +3,7 @@
 require dirname(__DIR__) . '/app/bootstrap.php';
 require_once APP_DIR . '/images.php';
 $me = require_staff();
-lessons_kyu_setup();
+lessons_belt_folders_setup();
 
 // Pamoka redaguojama pačiame pamokos puslapyje (senos nuorodos ?edit=... nukreipiamos ten)
 if (($edit = (string) get('edit')) !== '') {

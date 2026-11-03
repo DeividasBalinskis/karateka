@@ -264,8 +264,8 @@ foreach ($lessons as $i => [$title, $topic, $belt, $body, $video, $groups]) {
     }
 }
 
-// Pamokų aplankai - pagal kyu (9 kyu ... 1 kyu, diržo spalva). Pamokos su diržu į savo aplanką perkeliamos pirmą kartą
-// atidarius pamokas (app/lessons.php -> lessons_kyu_setup), čia - aplankai ir vienas poaplankio pavyzdys.
+// Pamokų aplankai - pagal diržą (kyu; dan aplankus prideda pati svetainė). Pamokos su diržu į savo aplanką perkeliamos pirmą kartą
+// atidarius pamokas (app/lessons.php -> lessons_belt_folders_setup), čia - aplankai ir vienas poaplankio pavyzdys.
 $out[] = '';
 $out[] = '-- ===== Pamokų aplankai (kyu) =====';
 foreach (range(1, 9) as $b) {

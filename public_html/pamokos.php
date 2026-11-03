@@ -15,7 +15,7 @@ if (!can_see_lessons($a)) {
     exit;
 }
 $isStaff = is_staff($a);
-lessons_kyu_setup();
+lessons_belt_folders_setup();
 
 // „Žiūrėti kaip narys“ (treneriui): ?kaip=narys, ?kaip=0 - baigti
 if ($isStaff && isset($_GET['kaip'])) {
@@ -209,7 +209,7 @@ function folder_tiles(array $list, array $counts, array $v): string
             . ($b ? ' style="--belt:' . BELTS[$b][2] . ';"' : '') . '>'
             . '<span class="kyu-ico">' . folder_icon($f) . '</span>'
             . '<span class="kyu-text"><strong>' . e($f['title']) . '</strong>'
-            . '<span class="kyu-sub">' . ($b && is_kyu_folder($f) ? e(BELTS[$b][1]) . ' diržas · ' : '') . lt_count($counts[$fid] ?? 0, 'pamoka', 'pamokos', 'pamokų') . '</span></span>'
+            . '<span class="kyu-sub">' . ($b && is_belt_folder($f) ? e(BELTS[$b][1]) . ' diržas · ' : '') . lt_count($counts[$fid] ?? 0, 'pamoka', 'pamokos', 'pamokų') . '</span></span>'
             . ($own ? '<span class="kyu-own">' . e(count($v['members']) > 1 ? implode(', ', $v['own'][$b]) : 'Tavo diržas') . '</span>' : '')
             . (!$f['is_published'] ? '<span class="badge badge-warn">nepaskelbtas</span>' : '')
             . '</a>';

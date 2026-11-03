@@ -29,34 +29,52 @@ function lesson_folders(bool $fresh = false): array
     return $cache;
 }
 
-/**
- * Pamokos - aplankuose pagal kyu (9 kyu ... 1 kyu, diržo spalva). Vieną kartą (pirmą kartą atidarius pamokas):
- * sukuriami trūkstami kyu aplankai, seni aplankai ir pamokos su diržu perkeliami į savo kyu aplanką,
- * tušti seni aplankai ištrinami. Pamokos niekur nedingsta; aplankai su pamokomis be diržo lieka po kyu aplankų.
- */
-function lessons_kyu_setup(): void
+/** Pagrindinio lygio diržų aplankai: [diržas => aplanko id]. Trūkstami sukuriami („9 kyu“ ... „9 dan“, diržo ženkliukas). */
+function lesson_belt_root_folders(array $belts): array
 {
-    if (site_setting('pamokos_kyu')) {
+    $map = [];
+    foreach (q_all('SELECT id, belt_level FROM lesson_folders WHERE parent_id IS NULL AND belt_level IS NOT NULL ORDER BY sort_order, id') as $f) {
+        $map[(int) $f['belt_level']] = $map[(int) $f['belt_level']] ?? (int) $f['id'];
+    }
+    foreach ($belts as $b) {
+        if (isset($map[$b])) {
+            q('UPDATE lesson_folders SET sort_order = ?, icon = COALESCE(NULLIF(icon, ""), ?) WHERE id = ?', [$b, 'belt:' . $b, $map[$b]]);
+        } else {
+            q('INSERT INTO lesson_folders (title, icon, belt_level, sort_order) VALUES (?, ?, ?, ?)', [BELTS[$b][0], 'belt:' . $b, $b, $b]);
+            $map[$b] = (int) db()->lastInsertId();
+        }
+    }
+    return $map;
+}
+
+/**
+ * Pamokos - aplankuose pagal diržą: 9 kyu ... 1 kyu ir 1 dan ... 9 dan (diržo spalva). Vieną kartą (pirmą kartą atidarius pamokas):
+ * sukuriami diržų aplankai, seni aplankai ir pamokos su diržu perkeliami į savo diržo aplanką, tušti seni aplankai ištrinami.
+ * Pamokos niekur nedingsta; aplankai su pamokomis be diržo lieka po diržų aplankų.
+ * Kur kyu aplankai jau buvo sukurti (v1.11) - tik pridedami dan aplankai, niekas neperkeliama ir netrinama.
+ */
+function lessons_belt_folders_setup(): void
+{
+    if (site_setting('pamokos_kyu') && site_setting('pamokos_dan')) {
         return;
     }
     try {
         db()->beginTransaction();
-        $kyu = [];
-        foreach (q_all('SELECT id, belt_level FROM lesson_folders WHERE parent_id IS NULL AND belt_level BETWEEN 1 AND 9 ORDER BY sort_order, id') as $f) {
-            $kyu[(int) $f['belt_level']] = $kyu[(int) $f['belt_level']] ?? (int) $f['id'];
+        if (site_setting('pamokos_kyu')) {
+            lesson_belt_root_folders(array_values(array_filter(array_keys(BELTS), function ($b) { return $b >= 10; })));
+            db()->commit();
+            set_site_setting('pamokos_dan', date('Y-m-d H:i'));
+            lesson_folders(true);
+            return;
         }
-        for ($b = 1; $b <= 9; $b++) {
-            if (isset($kyu[$b])) {
-                q('UPDATE lesson_folders SET sort_order = ?, icon = COALESCE(NULLIF(icon, ""), ?) WHERE id = ?', [$b, 'belt:' . $b, $kyu[$b]]);
-            } else {
-                q('INSERT INTO lesson_folders (title, icon, belt_level, sort_order) VALUES (?, ?, ?, ?)', [BELTS[$b][0], 'belt:' . $b, $b, $b]);
-                $kyu[$b] = (int) db()->lastInsertId();
+        $roots = lesson_belt_root_folders(array_keys(BELTS));
+        $rootIds = implode(',', $roots);
+        // Aplankai su diržu (pvz. „Egzaminams › 8 kyu“): to paties pavadinimo - sujungiami su diržo aplanku, kiti - perkeliami į jį
+        foreach (q_all("SELECT * FROM lesson_folders WHERE belt_level IS NOT NULL AND id NOT IN ($rootIds) ORDER BY parent_id IS NULL DESC, id") as $f) {
+            $k = $roots[(int) $f['belt_level']] ?? null;
+            if ($k === null) {
+                continue;
             }
-        }
-        $kyuIds = implode(',', $kyu);
-        // Aplankai su diržu (pvz. „Egzaminams › 8 kyu“): to paties pavadinimo - sujungiami su kyu aplanku, kiti - perkeliami į jį
-        foreach (q_all("SELECT * FROM lesson_folders WHERE belt_level BETWEEN 1 AND 9 AND id NOT IN ($kyuIds) ORDER BY parent_id IS NULL DESC, id") as $f) {
-            $k = $kyu[(int) $f['belt_level']];
             if (mb_strtolower(trim($f['title'])) === mb_strtolower(BELTS[(int) $f['belt_level']][0])) {
                 q('UPDATE lessons SET folder_id = ? WHERE folder_id = ?', [$k, (int) $f['id']]);
                 q('UPDATE lesson_folders SET parent_id = ? WHERE parent_id = ?', [$k, (int) $f['id']]);
@@ -65,40 +83,41 @@ function lessons_kyu_setup(): void
                 q('UPDATE lesson_folders SET parent_id = ? WHERE id = ?', [$k, (int) $f['id']]);
             }
         }
-        // Pamokos su diržu, kurios ne diržo aplanke (ar be aplanko) - į savo kyu aplanką
+        // Pamokos su diržu, kurios ne diržo aplanke (ar be aplanko) - į savo diržo aplanką
         $folders = lesson_folders(true);
-        foreach (q_all('SELECT id, folder_id, belt_level FROM lessons WHERE belt_level BETWEEN 1 AND 9') as $l) {
-            if (folder_belt($folders, $l['folder_id'] !== null ? (int) $l['folder_id'] : null) === null) {
-                q('UPDATE lessons SET folder_id = ? WHERE id = ?', [$kyu[(int) $l['belt_level']], (int) $l['id']]);
+        foreach (q_all('SELECT id, folder_id, belt_level FROM lessons WHERE belt_level IS NOT NULL') as $l) {
+            if (isset($roots[(int) $l['belt_level']]) && folder_belt($folders, $l['folder_id'] !== null ? (int) $l['folder_id'] : null) === null) {
+                q('UPDATE lessons SET folder_id = ? WHERE id = ?', [$roots[(int) $l['belt_level']], (int) $l['id']]);
             }
         }
-        // Tušti aplankai (be pamokų ir poaplankių), išskyrus kyu - ištrinami, kol tokių nebelieka
+        // Tušti aplankai (be pamokų ir poaplankių), išskyrus diržų - ištrinami, kol tokių nebelieka
         do {
             $used = array_map('intval', array_merge(
                 q('SELECT DISTINCT folder_id FROM lessons WHERE folder_id IS NOT NULL')->fetchAll(PDO::FETCH_COLUMN),
                 q('SELECT DISTINCT parent_id FROM lesson_folders WHERE parent_id IS NOT NULL')->fetchAll(PDO::FETCH_COLUMN)));
-            $empty = array_diff(array_map('intval', q('SELECT id FROM lesson_folders')->fetchAll(PDO::FETCH_COLUMN)), $used, array_values($kyu));
+            $empty = array_diff(array_map('intval', q('SELECT id FROM lesson_folders')->fetchAll(PDO::FETCH_COLUMN)), $used, array_values($roots));
             if ($empty) {
                 q('DELETE FROM lesson_folders WHERE id IN (' . implode(',', $empty) . ')');
             }
         } while ($empty);
-        // Likę seni pagrindinio lygio aplankai (su pamokomis be diržo) - po kyu aplankų
-        q("UPDATE lesson_folders SET sort_order = sort_order + 100 WHERE parent_id IS NULL AND id NOT IN ($kyuIds) AND sort_order < 100");
+        // Likę seni pagrindinio lygio aplankai (su pamokomis be diržo) - po diržų aplankų
+        q("UPDATE lesson_folders SET sort_order = sort_order + 100 WHERE parent_id IS NULL AND id NOT IN ($rootIds) AND sort_order < 100");
         db()->commit();
         set_site_setting('pamokos_kyu', date('Y-m-d H:i'));
+        set_site_setting('pamokos_dan', date('Y-m-d H:i'));
         lesson_folders(true);
     } catch (Throwable $ex) {
         if (db()->inTransaction()) {
             db()->rollBack();
         }
-        error_log('lessons_kyu_setup: ' . $ex->getMessage());
+        error_log('lessons_belt_folders_setup: ' . $ex->getMessage());
     }
 }
 
-/** Kyu aplankas (pagrindinio lygio, su diržu) */
-function is_kyu_folder(array $f): bool
+/** Diržo aplankas (pagrindinio lygio, su diržu: „8 kyu“, „1 dan“) */
+function is_belt_folder(array $f): bool
 {
-    return $f['parent_id'] === null && $f['belt_level'] !== null && (int) $f['belt_level'] <= 9;
+    return $f['parent_id'] === null && $f['belt_level'] !== null;
 }
 
 /** Aplanko kelias nuo viršaus: [aplankas, poaplankis, ...] */
