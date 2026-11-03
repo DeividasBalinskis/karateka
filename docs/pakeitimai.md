@@ -4,6 +4,26 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.11 - 2026-11-03 (vientisas meniu, nario profilis, pokalbis su visais nariais, pamokos pagal kyu)
+**Duomenų bazė:** nieko importuoti nereikia.
+
+Meniu:
+- Vienas meniu: pagrindinio puslapio skiltys (Treniruotės, Apie klubą, Kontaktai) ir kiti puslapiai (Renginiai ›, Naujienos ›, Pamokos ›)
+  vienoje kapsulėje, atskirti plonu brūkšniu. Paskyra (ar „Prisijungti“) - dešinėje.
+- „Treneriams“ ir „Mano paskyra“ skirtukai - tų pačių kraštų kaip viršutinė juosta. Telefone - tos pačios grupės viena po kita.
+
+Pokalbiai ir nario profilis:
+- Pokalbio lange skirtukas „Visi nariai“ (pagal grupes) ir paieška pagal vardą, pavardę ar grupę - galima pradėti pokalbį su bet kuriuo nariu.
+- Paspaudus vardą pokalbio viršuje (ar „Profilis“) - nario profilis: amžius, grupė, diržas, lygis, sezono taškai, lankomumas per 30 d.,
+  kito diržo programa, kontaktai (tėvai, el. paštas, telefonas), renginiai, paskutinė pastaba. Iš jo - „Visa kortelė“, „Pokalbis“, „Lankomumas“.
+- Profilis atsidaro ir paspaudus vardą lankomumo, narių ir renginio dalyvių sąrašuose.
+
+Pamokos:
+- Pamokos - aplankuose pagal kyu (9 kyu ... 1 kyu) su diržo spalva. Narys mato savo, žemesnių ir kito diržo aplankus (savo - pažymėtas).
+- Aplanke treneriui: „Pridėti: Tekstas / Nuotrauka / Video / Aplankas“. Pavadinimo įrašyti nebūtina - paimamas iš teksto ar prierašo.
+- Pirmą kartą atidarius pamokas: sukuriami kyu aplankai, pamokos su diržu ir diržo aplankai perkeliami į savo kyu aplanką, tušti seni aplankai ištrinami.
+  Nė viena pamoka nedingsta: aplankai su pamokomis be diržo lieka po kyu aplankų - juos galima perkelti ar ištrinti („✎ Tvarkyti“).
+
 ## v1.10 - 2026-10-28 (atsarginės kopijos, prisijungimas su kodu, atšauktos treniruotės, programėlė telefone, testai)
 **Duomenų bazė:** importuoti `db/023_kodas_atsauktos_treniruotes.sql`. Failą galima importuoti ir antrą kartą.
 **Kompiuteryje:** `tools\lokali-atnaujinti.ps1` - importuoja pats.

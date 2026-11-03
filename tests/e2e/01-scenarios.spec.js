@@ -255,6 +255,24 @@ test('admin: notifications, chat, comments at the post, broadcast, events, atten
   const tabs = await a.locator('.sub-nav a').allTextContents();
   check('admin tabs merged', tabs.some(t => /Nustatymai/.test(t)) && !tabs.some(t => /^\s*Grupės\s*$/.test(t)), tabs.join(','));
   check('dash settings links', await a.locator('#nustatymai a[href*="grupes.php"]').count() === 1 && await a.locator('#nustatymai #paskyra').count() === 1);
+  const edges = await a.evaluate(() => {
+    const r = s => document.querySelector(s).getBoundingClientRect();
+    const tabs = document.querySelectorAll('.sub-nav a');
+    return { logo: Math.round(r('.site-header .logo').left), label: Math.round(r('.sub-nav .sub-label').left),
+      login: Math.round(r('.site-header .nav-login').right), last: Math.round(tabs[tabs.length - 1].getBoundingClientRect().right) };
+  });
+  check('sub-nav aligned with header', Math.abs(edges.logo - edges.label) <= 2 && Math.abs(edges.login - edges.last) <= 14, JSON.stringify(edges));
+  // Pokalbis: „Visi nariai“ pagal grupes, profilis paspaudus vardą
+  await a.click('#chatFab'); await a.waitForTimeout(1000);
+  await a.click('#chatPanel .chat-side-tabs button[data-side=all]'); await a.waitForTimeout(1200);
+  check('all members listed', await a.locator('#chatPanel .chat-person').count() >= 20 && await a.locator('#chatPanel .chat-list-label').count() >= 3);
+  await a.fill('#chatPanel .chat-search', 'Petrauskait'); await a.waitForTimeout(1200);
+  await a.locator('#chatPanel .chat-person', { hasText: 'Austėja' }).first().click(); await a.waitForTimeout(1200);
+  await a.click('#chatPanel .chat-who'); await a.waitForTimeout(1000);
+  check('profile from chat', /Austėja Petrauskaitė/.test(await a.locator('.mp-modal:not([hidden]) .mp-head').textContent()));
+  check('profile has contacts and stats', await a.locator('.mp-modal .mp-contact').count() >= 2 && await a.locator('.mp-modal .mp-stats > div').count() >= 3);
+  await a.keyboard.press('Escape');
+  await a.click('#chatPanel .chat-main .chat-close');
   // Reakcijos: diržų spalvos ir teisėjo vėliavėlės
   await a.goto('admin/naujienos.php?emoji=1');
   check('belt reactions in settings', /Diržai ir teisėjai/.test(await a.content()));
@@ -304,7 +322,7 @@ test('guest: event page, menu, contacts, instructors', async ({ browser }) => {
   const r4 = await g.request.get('pokalbis.php?m=' + I.jonas);
   check('guest chat 403', r4.status() === 403);
   await g.goto('index.php');
-  check('guest trial button', await g.locator('.site-header .page-section .nav-cta').count() === 1);
+  check('guest trial button', await g.locator('.site-header .nav-account .nav-cta').count() === 1);
   // Kontaktai: visa sekcija matoma, blokai vienodo aukščio
   await g.click('.site-header a[href$="#kontaktai"]'); await g.waitForTimeout(1200);
   const top = await g.evaluate(() => document.getElementById('kontaktai').getBoundingClientRect().top);
@@ -316,11 +334,11 @@ test('guest: event page, menu, contacts, instructors', async ({ browser }) => {
   await g.goto('index.php');
   await g.locator('[data-instructor]').first().click(); await g.waitForTimeout(500);
   check('instructor popup', await g.locator('.ins-modal:visible, dialog[open]').count() >= 1);
-  // Be mygtuko „Išbandyk“ neturi likti tuščios vietos: tarpas tarp meniu dalių toks pat
-  const gap = pg => pg.evaluate(() => { const pill = document.querySelector('.onpage-section > ul').getBoundingClientRect(); const next = document.querySelector('.site-header .page-section').getBoundingClientRect(); return Math.round(next.left - pill.right); });
-  const gGap = await gap(g);
+  // Meniu vienoje vietoje: prisijungus („Išbandyk“ dingsta) meniu kapsulė nepasislenka
+  const menuX = pg => pg.evaluate(() => Math.round(document.querySelector('.site-header .nav-main').getBoundingClientRect().left));
+  const gX = await menuX(g);
   await t.goto('index.php');
-  check('no empty space without trial button', await t.locator('.site-header .nav-cta').count() === 0 && Math.abs(gGap - await gap(t)) <= 6, gGap + ' vs ' + await gap(t));
+  check('menu does not move without trial button', await t.locator('.site-header .nav-cta').count() === 0 && Math.abs(gX - await menuX(t)) <= 1, gX + ' vs ' + await menuX(t));
   await g.goto('index.php');
   check('guest main page price', /30 €\/mėn\. testas|45 €/.test(await g.content()));
   noJsErrors(g, t);
