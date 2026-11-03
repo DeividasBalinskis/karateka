@@ -63,6 +63,7 @@ require APP_DIR . '/home.php';
 require APP_DIR . '/notifications.php';
 require APP_DIR . '/xp.php';
 require APP_DIR . '/chat.php';
+require APP_DIR . '/member_profile.php';
 require APP_DIR . '/cleanup.php';
 require APP_DIR . '/backup.php';
 require APP_DIR . '/layout.php';

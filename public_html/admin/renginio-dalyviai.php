@@ -111,7 +111,7 @@ page_start('Dalyviai: ' . $event['title'], ['admin' => true, 'section' => 'rengi
         <?php foreach ($list as $r): $mid = (int) $r['member_id']; $mt = $tags[$mid] ?? []; ?>
           <li class="row">
             <span>
-              <a href="<?= url('admin/nariai.php?id=' . $mid) ?>"><strong><?= e($r['first_name'] . ' ' . $r['last_name']) ?></strong></a><?= $r['role'] === 'referee' ? ' <span class="badge badge-tag">teisėjas</span>' : '' ?>
+              <a href="<?= url('admin/nariai.php?id=' . $mid) ?>" data-member-profile="<?= $mid ?>"><strong><?= e($r['first_name'] . ' ' . $r['last_name']) ?></strong></a><?= $r['role'] === 'referee' ? ' <span class="badge badge-tag">teisėjas</span>' : '' ?>
               <div class="muted"><?= e($r['group_name'] ?: 'be grupės') ?> · <?= age_on($r['birth_date']) ?> m.<?= $r['belt_level'] !== null ? ' · ' . e(belt_label((int) $r['belt_level'])) : '' ?></div>
               <?= participant_extra_info($event, $r) ?>
             </span>

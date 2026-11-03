@@ -105,9 +105,17 @@ if (is_post()) {
 
 // ---------- Skaitymas ----------
 if ($isStaff) {
+    // Apibendrintas nario profilis (langas paspaudus vardą)
+    if ($pid = (int) get('profile')) {
+        $html = member_profile_html($pid);
+        $html === '' ? chat_out(['ok' => false, 'error' => 'Narys nerastas.'], 404) : chat_out(['ok' => true, 'html' => $html]);
+    }
     $out = ['ok' => true];
     if (get('list') !== '') {
         $out += chat_conversations(mb_substr(trim(get('q')), 0, 60));
+    }
+    if (get('all') !== '') {
+        $out['all'] = chat_all_members(mb_substr(trim(get('q')), 0, 60));
     }
     if ($mid = (int) get('m')) {
         $info = chat_member_info($mid);

@@ -83,13 +83,15 @@ function chat_thread(int $memberId, bool $staffView, int $limit = 120): array
 function chat_conversations(string $search = ''): array
 {
     $like = '%' . str_replace(['%', '_'], ['\%', '\_'], $search) . '%';
-    $where = $search !== '' ? ' AND CONCAT(m.first_name, " ", m.last_name) LIKE ?' : '';
+    // Ieškoma pagal vardą ir pavardę (bet kuria tvarka) ar grupę
+    $match = '(CONCAT(m.first_name, " ", m.last_name) LIKE ? OR CONCAT(m.last_name, " ", m.first_name) LIKE ? OR g.name LIKE ?)';
+    $where = $search !== '' ? ' AND ' . $match : '';
     $rows = q_all('SELECT m.id, m.first_name, m.last_name, g.name AS group_name, MAX(mm.created_at) AS last_at,
                           SUM(mm.from_staff = 0 AND mm.read_at IS NULL) AS unread,
                           (SELECT x.body FROM member_messages x WHERE x.member_id = m.id ORDER BY x.created_at DESC, x.id DESC LIMIT 1) AS last_body,
                           (SELECT x.from_staff FROM member_messages x WHERE x.member_id = m.id ORDER BY x.created_at DESC, x.id DESC LIMIT 1) AS last_staff
                      FROM member_messages mm JOIN members m ON m.id = mm.member_id LEFT JOIN training_groups g ON g.id = m.group_id
-                    WHERE 1' . $where . ' GROUP BY m.id ORDER BY last_at DESC LIMIT 200', $search !== '' ? [$like] : []);
+                    WHERE 1' . $where . ' GROUP BY m.id ORDER BY last_at DESC LIMIT 200', $search !== '' ? [$like, $like, $like] : []);
     $out = [];
     foreach ($rows as $r) {
         $out[] = ['id' => (int) $r['id'], 'name' => $r['first_name'] . ' ' . $r['last_name'], 'group' => group_short_name(['name' => (string) $r['group_name']]),
@@ -98,15 +100,32 @@ function chat_conversations(string $search = ''): array
     }
     $start = [];
     if ($search !== '') {
+        // Su kuo dar nesusirašinėta - paspaudus pradedamas pokalbis
         $has = array_column($out, 'id');
         foreach (q_all('SELECT m.id, m.first_name, m.last_name, g.name AS group_name FROM members m LEFT JOIN training_groups g ON g.id = m.group_id
-                         WHERE m.status = "active" AND CONCAT(m.first_name, " ", m.last_name) LIKE ? ORDER BY m.first_name, m.last_name LIMIT 15', [$like]) as $r) {
+                         WHERE m.status = "active" AND ' . $match . ' ORDER BY m.first_name, m.last_name LIMIT 30', [$like, $like, $like]) as $r) {
             if (!in_array((int) $r['id'], $has, true)) {
                 $start[] = ['id' => (int) $r['id'], 'name' => $r['first_name'] . ' ' . $r['last_name'], 'group' => group_short_name(['name' => (string) $r['group_name']])];
             }
         }
     }
     return ['list' => $out, 'start' => $start];
+}
+
+/** Visi aktyvūs nariai pagal grupes (pokalbio skirtukas „Visi nariai“), su paieška */
+function chat_all_members(string $search = ''): array
+{
+    $like = '%' . str_replace(['%', '_'], ['\%', '\_'], $search) . '%';
+    $rows = q_all('SELECT m.id, m.first_name, m.last_name, m.belt_level, g.name AS group_name,
+                          EXISTS (SELECT 1 FROM member_messages mm WHERE mm.member_id = m.id) AS has_chat
+                     FROM members m LEFT JOIN training_groups g ON g.id = m.group_id
+                    WHERE m.status = "active"' . ($search !== '' ? ' AND (CONCAT(m.first_name, " ", m.last_name) LIKE ? OR CONCAT(m.last_name, " ", m.first_name) LIKE ? OR g.name LIKE ?)' : '') . '
+                    ORDER BY g.sort_order IS NULL, g.sort_order, g.name, m.first_name, m.last_name LIMIT 500', $search !== '' ? [$like, $like, $like] : []);
+    return array_map(function ($r) {
+        return ['id' => (int) $r['id'], 'name' => $r['first_name'] . ' ' . $r['last_name'],
+            'group' => $r['group_name'] ? group_short_name(['name' => $r['group_name']]) : 'Be grupės',
+            'belt' => $r['belt_level'] !== null && isset(BELTS[(int) $r['belt_level']]) ? BELTS[(int) $r['belt_level']][0] : '', 'chat' => (bool) $r['has_chat']];
+    }, $rows);
 }
 
 /** Kas rašo nariui (pokalbio antraštei): grupė ir paskyros („Rasa (tėvai)“) */
@@ -218,11 +237,13 @@ function chat_widget_html(): string
             . '<span class="chat-fab-label">Žinutės</span>' . $badge . '</button>'
             . '<div class="chat-panel wide" id="chatPanel" role="dialog" aria-label="Pokalbiai su nariais" hidden>'
             . '<aside class="chat-side"><div class="chat-side-head"><strong>Pokalbiai</strong><button type="button" class="chat-close" aria-label="Uždaryti">×</button></div>'
-            . '<input type="search" class="chat-search" placeholder="Ieškoti žmogaus…" aria-label="Ieškoti žmogaus" autocomplete="off">'
+            . '<input type="search" class="chat-search" placeholder="Ieškoti nario ar grupės…" aria-label="Ieškoti nario ar grupės" autocomplete="off">'
+            . '<div class="chat-side-tabs" role="tablist"><button type="button" role="tab" class="active" data-side="chats" aria-selected="true">Pokalbiai</button>'
+            . '<button type="button" role="tab" data-side="all" aria-selected="false">Visi nariai</button></div>'
             . '<div class="chat-list" role="list"><p class="chat-empty">Kraunama…</p></div></aside>'
             . '<section class="chat-main"><header class="chat-head"><button type="button" class="chat-back" aria-label="Atgal į pokalbius">‹</button>'
-            . '<span class="chat-avatar" aria-hidden="true">?</span><div><strong class="chat-title">Pasirinkite pokalbį</strong><span class="chat-sub"></span></div>'
-            . '<a class="chat-card" href="#" hidden>Kortelė</a><button type="button" class="chat-close" aria-label="Uždaryti">×</button></header>'
+            . '<button type="button" class="chat-who" title="Nario profilis" disabled><span class="chat-avatar" aria-hidden="true">?</span><span class="chat-who-text"><strong class="chat-title">Pasirinkite pokalbį</strong><span class="chat-sub"></span></span></button>'
+            . '<button type="button" class="chat-card" hidden>Profilis</button><button type="button" class="chat-close" aria-label="Uždaryti">×</button></header>'
             . '<div class="chat-thread" aria-live="polite"><p class="chat-empty">Kairėje pasirinkite žmogų arba suraskite paieškoje.</p></div>'
             . '<div class="chat-reply-ctx" hidden><span></span><button type="button" aria-label="Atsakyti bendrai">×</button></div>'
             . $form . '</section></div></div>';

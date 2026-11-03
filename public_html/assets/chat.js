@@ -116,7 +116,7 @@
   }
   fab.addEventListener('click', function () { isOpen() ? close() : open(); });
   panel.querySelectorAll('.chat-close').forEach(function (b) { b.addEventListener('click', close); });
-  document.addEventListener('keydown', function (ev) { if (ev.key === 'Escape' && isOpen()) close(); });
+  document.addEventListener('keydown', function (ev) { if (ev.key === 'Escape' && isOpen() && !profileOpen()) close(); });
   timer = setInterval(checkBadge, SLOW);
 
   // „Atsakyti“, „Žinutės“ ir pan. nuorodos puslapyje atidaro pokalbį (data-member - su kuriuo nariu)
@@ -129,6 +129,35 @@
     open();
   });
 
+  // ---------- Nario profilis (treneriams) ----------
+  var modal = null;
+  function profileOpen() { return modal && !modal.hidden; }
+  function closeProfile() { if (modal) modal.hidden = true; }
+  function openProfile(id) {
+    if (!cfg.staff) return;
+    if (!modal) {
+      modal = el('div', 'mp-modal');
+      modal.hidden = true;
+      modal.innerHTML = '<div class="mp-box" role="dialog" aria-modal="true" aria-labelledby="mpTitle"><button type="button" class="mp-close" aria-label="Uždaryti">×</button><div class="mp-body"></div></div>';
+      document.body.appendChild(modal);
+      modal.addEventListener('click', function (ev) {
+        if (ev.target === modal || ev.target.closest('.mp-close') || ev.target.closest('[data-open-chat]')) closeProfile();
+      });
+      document.addEventListener('keydown', function (ev) { if (ev.key === 'Escape' && profileOpen()) closeProfile(); });
+    }
+    var body = modal.querySelector('.mp-body');
+    body.innerHTML = '<p class="chat-empty">Kraunama…</p>';
+    modal.hidden = false;
+    get({ profile: id }).then(function (d) { body.innerHTML = d.ok ? d.html : '<p class="chat-empty">' + (d.error || 'Nepavyko') + '</p>'; modal.querySelector('.mp-close').focus(); })
+      .catch(function () { body.innerHTML = '<p class="chat-empty">Nepavyko įkelti - patikrinkite ryšį.</p>'; });
+  }
+  document.addEventListener('click', function (ev) {
+    var b = ev.target.closest('[data-member-profile]');
+    if (!b || !cfg.staff) return;
+    ev.preventDefault();
+    openProfile(b.getAttribute('data-member-profile'));
+  });
+
   // ---------- Narys ----------
   var member = cfg.member, memberSel = panel.querySelector('.chat-member select');
   function memberRefresh() {
@@ -137,38 +166,54 @@
   }
 
   // ---------- Treneris ----------
-  var list = panel.querySelector('.chat-list'), search = panel.querySelector('.chat-search'), current = 0, q = '';
+  var list = panel.querySelector('.chat-list'), search = panel.querySelector('.chat-search'), current = 0, q = '', side = 'chats', listKey = '';
+  function initials(name) { return name.split(' ').map(function (w) { return w.charAt(0); }).join('').slice(0, 2); }
+  function row(c, sub, isNew) {
+    var a = el('button', 'chat-person' + (c.id === current ? ' on' : '') + (c.unread ? ' unread' : ''));
+    a.type = 'button';
+    a.setAttribute('role', 'listitem');
+    var tx = el('span', 'chat-person-text');
+    var top = el('span', 'chat-person-top');
+    top.appendChild(el('strong', '', c.name));
+    if (c.when) top.appendChild(el('span', 'chat-when', c.when));
+    tx.appendChild(top);
+    tx.appendChild(el('span', 'chat-person-last' + (isNew ? ' is-new' : ''), sub));
+    a.appendChild(el('span', 'chat-avatar small', initials(c.name)));
+    a.appendChild(tx);
+    if (c.unread) a.appendChild(el('span', 'count-badge', c.unread));
+    a.addEventListener('click', function () { selectMember(c.id); });
+    return a;
+  }
   function renderList(d) {
+    // Perpiešiama tik pasikeitus (kitaip kas 2,5 s nušoktų slinkimas)
+    var key = side + '|' + q + '|' + current + '|' + JSON.stringify(side === 'all' ? d.all : [d.list, d.start]);
+    if (key === listKey) return;
+    listKey = key;
+    var keep = list.scrollTop;
     list.innerHTML = '';
-    var total = 0;
-    function row(c, isNew) {
-      var a = el('button', 'chat-person' + (c.id === current ? ' on' : '') + (c.unread ? ' unread' : ''));
-      a.type = 'button';
-      a.setAttribute('role', 'listitem');
-      var av = el('span', 'chat-avatar small', c.name.split(' ').map(function (w) { return w.charAt(0); }).join('').slice(0, 2));
-      var tx = el('span', 'chat-person-text');
-      var top = el('span', 'chat-person-top');
-      top.appendChild(el('strong', '', c.name));
-      if (c.when) top.appendChild(el('span', 'chat-when', c.when));
-      tx.appendChild(top);
-      tx.appendChild(el('span', 'chat-person-last', isNew ? (c.group ? c.group + ' · ' : '') + 'pradėti pokalbį' : c.last));
-      a.appendChild(av);
-      a.appendChild(tx);
-      if (c.unread) { a.appendChild(el('span', 'count-badge', c.unread)); total += c.unread; }
-      a.addEventListener('click', function () { selectMember(c.id); });
-      list.appendChild(a);
+    if (side === 'all') {
+      var group = null;
+      (d.all || []).forEach(function (c) {
+        if (c.group !== group) { group = c.group; list.appendChild(el('div', 'chat-list-label', group)); }
+        list.appendChild(row(c, (c.belt ? c.belt + ' · ' : '') + (c.chat ? 'yra pokalbis' : 'pradėti pokalbį'), !c.chat));
+      });
+      if (!list.childNodes.length) list.appendChild(el('p', 'chat-empty', q ? 'Nieko nerasta.' : 'Aktyvių narių nėra.'));
+    } else {
+      var total = 0;
+      (d.list || []).forEach(function (c) { total += c.unread; list.appendChild(row(c, c.last, false)); });
+      if ((d.start || []).length) {
+        list.appendChild(el('div', 'chat-list-label', 'Pradėti pokalbį'));
+        d.start.forEach(function (c) { list.appendChild(row(c, (c.group ? c.group + ' · ' : '') + 'pradėti pokalbį', true)); });
+      }
+      if (!list.childNodes.length) list.appendChild(el('p', 'chat-empty', q ? 'Nieko nerasta.' : 'Pokalbių dar nėra. Suraskite narį paieškoje arba skiltyje „Visi nariai“.'));
+      if (!q) setBadge(total);
     }
-    (d.list || []).forEach(function (c) { row(c, false); });
-    if ((d.start || []).length) {
-      list.appendChild(el('div', 'chat-list-label', 'Pradėti pokalbį'));
-      d.start.forEach(function (c) { row(c, true); });
-    }
-    if (!list.childNodes.length) list.appendChild(el('p', 'chat-empty', q ? 'Nieko nerasta.' : 'Pokalbių dar nėra. Suraskite žmogų paieškoje.'));
-    if (!q) setBadge(total);
+    list.scrollTop = keep;
   }
   function staffRefresh() {
     if (document.hidden) return;
-    var params = { list: 1, q: q };
+    var params = { q: q };
+    params[side === 'all' ? 'all' : 'list'] = 1;
     if (current) params.m = current;
     get(params).then(function (d) {
       if (!d.ok) return;
@@ -177,10 +222,9 @@
         var main = panel.querySelector('.chat-main');
         main.querySelector('.chat-title').textContent = d.member.name;
         main.querySelector('.chat-sub').textContent = d.member.sub;
-        main.querySelector('.chat-avatar').textContent = d.member.name.split(' ').map(function (w) { return w.charAt(0); }).join('').slice(0, 2);
-        var card = main.querySelector('.chat-card');
-        card.href = d.member.card;
-        card.hidden = false;
+        main.querySelector('.chat-avatar').textContent = initials(d.member.name);
+        main.querySelector('.chat-who').disabled = false;
+        main.querySelector('.chat-card').hidden = false;
         renderThread(d.messages, true);
       }
     }).catch(function () {});
@@ -214,6 +258,16 @@
     form.querySelector('textarea').disabled = true;
     var t = null;
     search.addEventListener('input', function () { clearTimeout(t); t = setTimeout(function () { q = search.value.trim(); staffRefresh(); }, 250); });
+    // Skirtukai: „Pokalbiai“ (su kuo rašyta) ir „Visi nariai“ (pagal grupes - galima pradėti naują pokalbį)
+    panel.querySelectorAll('.chat-side-tabs button').forEach(function (b) {
+      b.addEventListener('click', function () {
+        side = b.dataset.side;
+        panel.querySelectorAll('.chat-side-tabs button').forEach(function (x) { x.classList.toggle('active', x === b); x.setAttribute('aria-selected', x === b ? 'true' : 'false'); });
+        list.scrollTop = 0;
+        staffRefresh();
+      });
+    });
+    panel.querySelectorAll('.chat-who, .chat-card').forEach(function (b) { b.addEventListener('click', function () { if (current) openProfile(current); }); });
     ctxBox.querySelector('button').addEventListener('click', function () { setReplyCtx('general'); });
     panel.querySelector('.chat-back').addEventListener('click', function () { panel.classList.remove('has-thread'); });
     form.addEventListener('submit', function (ev) {

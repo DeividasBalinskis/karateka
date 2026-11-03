@@ -233,7 +233,7 @@ usort($todayTiles, function ($x, $y) { return strcmp((string) $x['day_time'], (s
     <?php foreach ($members as $m): ?>
       <div class="note-row">
         <div class="note-who" id="who<?= (int) $m['id'] ?>">
-          <strong><?= e($m['first_name'] . ' ' . $m['last_name']) ?></strong>
+          <strong><button type="button" class="profile-link" data-member-profile="<?= (int) $m['id'] ?>"><?= e($m['first_name'] . ' ' . $m['last_name']) ?></button></strong>
           <?php $a1 = $att[$m['id']] ?? null; ?>
           <div class="att" data-member="<?= (int) $m['id'] ?>">
             <?php // „Buvo“ - dešinėje: laikant telefoną dešine ranka, nykščiu lengviau pasiekti ?>

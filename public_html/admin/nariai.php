@@ -411,7 +411,7 @@ page_start('Nariai', ['admin' => true]);
     <tbody>
       <?php foreach ($rows as $r): ?>
         <tr>
-          <td><a href="?id=<?= (int) $r['id'] ?>"><strong><?= e($r['first_name'] . ' ' . $r['last_name']) ?></strong></a><?= tag_badges($allTags[(int) $r['id']] ?? [], (int) $r['id']) ?></td>
+          <td><a href="?id=<?= (int) $r['id'] ?>" data-member-profile="<?= (int) $r['id'] ?>"><strong><?= e($r['first_name'] . ' ' . $r['last_name']) ?></strong></a><?= tag_badges($allTags[(int) $r['id']] ?? [], (int) $r['id']) ?></td>
           <td><?= age_on($r['birth_date']) ?> m.</td>
           <td><?= e($r['group_name'] ?: '—') ?></td>
           <td><?= belt_chip($r['belt_level'] !== null ? (int) $r['belt_level'] : null) ?></td>
