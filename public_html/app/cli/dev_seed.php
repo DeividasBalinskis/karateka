@@ -134,8 +134,9 @@ foreach ($news as [$title, $body, $when, $images, $videos]) {
 }
 
 // Pamokos
-q('INSERT INTO lessons (title, topic, body, videos, author_id) VALUES (?, ?, ?, ?, ?)', ['Heian Shodan žingsnis po žingsnio', 'Kata', "Kartokite kasdien po 10 minučių.", 'dQw4w9WgXcQ', $coach]);
-q('INSERT INTO lessons (title, topic, body, author_id) VALUES (?, ?, ?, ?)', ['Tempimo pratimai vaikams', 'Fizinis pasiruošimas', "1. Atsisėskite, kojos tiesios.
+// 9 kyu (baltas diržas) - pirmą kartą atidarius pamokas jos atsiduria „9 kyu“ aplanke
+q('INSERT INTO lessons (title, topic, belt_level, body, videos, author_id) VALUES (?, ?, 1, ?, ?, ?)', ['Heian Shodan žingsnis po žingsnio', 'Kata', "Kartokite kasdien po 10 minučių.", 'dQw4w9WgXcQ', $coach]);
+q('INSERT INTO lessons (title, topic, belt_level, body, author_id) VALUES (?, ?, 1, ?, ?)', ['Tempimo pratimai vaikams', 'Fizinis pasiruošimas', "1. Atsisėskite, kojos tiesios.
 2. Lėtai lenkitės į priekį.", $coach]);
 q('INSERT INTO lesson_groups (lesson_id, group_id) VALUES (?, 1)', [db()->lastInsertId()]);
 

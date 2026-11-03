@@ -264,28 +264,18 @@ foreach ($lessons as $i => [$title, $topic, $belt, $body, $video, $groups]) {
     }
 }
 
-// Pamokų aplankai (reikia db/016): Kata -> Heian katos / Pažengusiems ir kt.
+// Pamokų aplankai - pagal kyu (9 kyu ... 1 kyu, diržo spalva). Pamokos su diržu į savo aplanką perkeliamos pirmą kartą
+// atidarius pamokas (app/lessons.php -> lessons_kyu_setup), čia - aplankai ir vienas poaplankio pavyzdys.
 $out[] = '';
-$out[] = '-- ===== Pamokų aplankai ir turinys =====';
-$folderDefs = [
-    // [kintamasis, tėvas, pavadinimas, ženkliukas, aprašymas, kam]
-    ['@f1', null, 'Kata', '🥋', 'Katos nuo balto iki juodo diržo. Pradėkite nuo savo diržo katos.', 'karateka'],
-    ['@f2', '@f1', 'Heian katos', '⭐', null, 'karateka'],
-    ['@f3', '@f1', 'Pažengusiems', '🏆', null, 'karateka'],
-    ['@f4', null, 'Kihon', '🥊', 'Pagrindinė technika: stovėsenos, smūgiai, blokai.', 'karateka'],
-    ['@f5', null, 'Kumite', '🦶', null, 'karateka'],
-    ['@f6', null, 'Fizinis pasiruošimas', '💪', null, 'karateka'],
-    ['@f7', null, 'Egzaminai', '📜', null, 'karateka'],
-    ['@f8', null, 'Teisėjams', '⚖️', 'Medžiaga teisėjams - mato tik turintys žymą „Teisėjas“.', 'teisejas'],
-    ['@f9', null, 'Egzaminatoriams', '📝', null, 'egzaminatorius'],
-];
-foreach ($folderDefs as $i => [$var, $parent, $title, $icon, $desc, $aud]) {
-    $out[] = 'INSERT INTO lesson_folders (parent_id, title, icon, description, audience, sort_order, created_at) VALUES ('
-        . ($parent ?? 'NULL') . ', ' . s($title) . ', ' . s($icon) . ', ' . s($desc) . ', ' . s($aud) . ', ' . ($i + 1) . ", '" . SENTINEL . "');";
-    $out[] = "SET $var = LAST_INSERT_ID();";
+$out[] = '-- ===== Pamokų aplankai (kyu) =====';
+foreach (range(1, 9) as $b) {
+    $out[] = 'INSERT INTO lesson_folders (title, icon, belt_level, sort_order, created_at) VALUES (' . s((10 - $b) . ' kyu') . ", 'belt:$b', $b, $b, '" . SENTINEL . "');";
+    $out[] = "SET @k$b = LAST_INSERT_ID();";
 }
-// Pamokos į aplankus (eilės tvarka aplanke)
-foreach ([['@l1', '@f2', 1], ['@l2', '@f2', 2], ['@l3', '@f2', 3], ['@l5', '@f3', 1], ['@l4', '@f5', 1], ['@l6', '@f4', 1], ['@l7', '@f6', 1], ['@l8', '@f7', 1]] as [$l, $f, $n]) {
+$out[] = "INSERT INTO lesson_folders (parent_id, title, icon, sort_order, created_at) VALUES (@k2, 'Kata', '🥋', 1, '" . SENTINEL . "');";
+$out[] = 'SET @kata8 = LAST_INSERT_ID();';
+// Pamokos į aplankus pagal diržą; Heian Nidan - 8 kyu poaplankyje „Kata“
+foreach ([['@l1', '@k1', 1], ['@l6', '@k1', 2], ['@l7', '@k1', 3], ['@l8', '@k1', 4], ['@l2', '@kata8', 1], ['@l3', '@k3', 1], ['@l4', '@k4', 1], ['@l5', '@k7', 1]] as [$l, $f, $n]) {
     $out[] = "UPDATE lessons SET folder_id = $f, sort_order = $n WHERE id = $l;";
 }
 // Viena pamoka - iš blokų: antraštė, tekstas, video, trenerio pastaba, sąrašas
@@ -311,8 +301,6 @@ $out[] = 'INSERT INTO lessons (title, topic, belt_level, audience, body, videos,
     . s("1. Mokinys išlaiko teorijos testą (bent 83 %).\n2. Praktika: kihon, kata, kumite pagal diržo programą.\n3. Rezultatus treneris įveda svetainėje - diržas pakeliamas automatiškai.")
     . ", NULL, 1, @admin, '" . SENTINEL . "');";
 
-$out[] = "UPDATE lessons SET folder_id = @f8 WHERE audience = 'teisejas' AND created_at = '" . SENTINEL . "';";
-$out[] = "UPDATE lessons SET folder_id = @f9 WHERE audience = 'egzaminatorius' AND created_at = '" . SENTINEL . "';";
 
 // ===== Trenerio pastabos ir užduotys =====
 $out[] = '';

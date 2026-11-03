@@ -15,6 +15,7 @@ if (!can_see_lessons($a)) {
     exit;
 }
 $isStaff = is_staff($a);
+lessons_kyu_setup();
 
 // „Žiūrėti kaip narys“ (treneriui): ?kaip=narys, ?kaip=0 - baigti
 if ($isStaff && isset($_GET['kaip'])) {
@@ -48,16 +49,9 @@ $folders = lesson_folders();
 $all = viewer_lessons($v);
 $navOpt = ['noindex' => true, 'section' => 'pamokos'];
 
-// Diržas: narys iš karto mato savo diržo pamokas (kitus galima pasirinkti), treneris - visas
-if (isset($_GET['dirzas'])) {
-    $_SESSION['lesson_belt'] = (int) get('dirzas');
-}
-$want = (int) ($_SESSION['lesson_belt'] ?? 0);
-if ($v['staff']) {
-    $belt = isset(BELTS[$want]) ? $want : null;
-} else {
-    $belt = in_array($want, $v['belts'], true) ? $want : (array_key_first($v['own']) ?? null);
-}
+// Diržas - atidaryto aplanko (kyu aplankai pakeitė atskirą diržo pasirinkimą)
+$cur = (int) get('aplankas') ?: null;
+$belt = $cur !== null && isset($folders[$cur]) ? folder_belt($folders, $cur) : null;
 $editMode = $staffTools && get('tvarkyti') === '1';
 if ($editMode) {
     $belt = null;
@@ -200,6 +194,41 @@ $renderBody = function (int $fid, string $back) use ($folders, $shown, $folderSh
     return $html . '</div>';
 };
 
+/** Aplankų plytelės: kyu aplankai - diržo spalva, nario diržo aplankas pažymėtas */
+function folder_tiles(array $list, array $counts, array $v): string
+{
+    if (!$list) {
+        return '';
+    }
+    $html = '<div class="kyu-grid">';
+    foreach ($list as $f) {
+        $fid = (int) $f['id'];
+        $b = $f['belt_level'] !== null && isset(BELTS[(int) $f['belt_level']]) ? (int) $f['belt_level'] : null;
+        $own = $b !== null && isset($v['own'][$b]);
+        $html .= '<a class="kyu-tile' . ($b ? ' has-belt' : '') . ($b === 1 ? ' belt-light' : '') . ($own ? ' is-own' : '') . '" href="' . e(url('pamokos.php?aplankas=' . $fid)) . '"'
+            . ($b ? ' style="--belt:' . BELTS[$b][2] . ';"' : '') . '>'
+            . '<span class="kyu-ico">' . folder_icon($f) . '</span>'
+            . '<span class="kyu-text"><strong>' . e($f['title']) . '</strong>'
+            . '<span class="kyu-sub">' . ($b && is_kyu_folder($f) ? e(BELTS[$b][1]) . ' diržas · ' : '') . lt_count($counts[$fid] ?? 0, 'pamoka', 'pamokos', 'pamokų') . '</span></span>'
+            . ($own ? '<span class="kyu-own">' . e(count($v['members']) > 1 ? implode(', ', $v['own'][$b]) : 'Tavo diržas') . '</span>' : '')
+            . (!$f['is_published'] ? '<span class="badge badge-warn">nepaskelbtas</span>' : '')
+            . '</a>';
+    }
+    return $html . '</div>';
+}
+
+/** Treneriui aplanke: pridėti tekstą, nuotrauką, video ar poaplankį */
+function folder_add_bar(int $fid, string $back): string
+{
+    $link = function (string $type, string $label) use ($fid) {
+        return '<a class="btn btn-ghost btn-sm" href="' . e(url('pamokos.php?nauja=1&aplankas=' . $fid . '&tipas=' . $type)) . '">' . $label . '</a>';
+    };
+    return '<div class="ls-add-bar"><span class="small muted">Pridėti į šį aplanką:</span>'
+        . $link('text', '¶ Tekstas') . $link('image', '🖼 Nuotrauka') . $link('video', '▶ Video')
+        . '<button type="button" class="btn btn-ghost btn-sm" data-open="nf' . $fid . '">📁 Aplankas</button></div>'
+        . '<div id="nf' . $fid . '" class="ls-new-folder" hidden>' . folder_quick_form($fid, $back, 'Naujo aplanko pavadinimas, pvz. Kata') . '</div>';
+}
+
 /** „Žiūrėti kaip narys“: narių sąrašas pagal grupes */
 function preview_select(?int $current): string
 {
@@ -218,50 +247,6 @@ function preview_select(?int $current): string
     }
     return $html . ($cur !== null ? '</optgroup>' : '') . '</select><noscript><button class="btn btn-ghost btn-sm">Rodyti</button></noscript></form>';
 }
-
-/** Diržo pasirinkimas: narys - savo diržas (ir kiti galimi), treneris - visi arba vienas diržas */
-$beltSwitch = function (?int $cur) use ($v, $belt, $all, $folders) {
-    $used = [];
-    foreach ($all as $l) {
-        if ($l['belt_level'] !== null) {
-            $used[(int) $l['belt_level']] = true;
-        }
-    }
-    foreach ($folders as $f) {
-        if ($f['belt_level'] !== null && viewer_folder_ok($v, $folders, (int) $f['id'])) {
-            $used[(int) $f['belt_level']] = true;
-        }
-    }
-    if (!$used) {
-        return '';
-    }
-    $base = '?' . ($cur ? 'aplankas=' . $cur . '&amp;' : '') . 'dirzas=';
-    $chip = function (int $lvl, string $label, bool $active, string $cls = '') use ($base) {
-        return '<a class="bs-chip ' . $cls . ($active ? ' active' : '') . '" href="' . $base . $lvl . '"><span class="belt-swatch" style="background:' . BELTS[$lvl][2] . '"></span>' . e($label) . '</a>';
-    };
-    $html = '<div class="belt-switch">';
-    if ($v['staff']) {
-        ksort($used);
-        $html .= '<span class="bs-label">Diržas:</span><a class="bs-chip' . ($belt === null ? ' active' : '') . '" href="' . $base . '0">Visi</a>';
-        foreach (array_keys($used) as $lvl) {
-            $html .= $chip($lvl, BELTS[$lvl][0], $belt === $lvl);
-        }
-        return $html . '</div>';
-    }
-    $multi = count($v['members']) > 1;
-    $html .= '<span class="bs-label">' . ($multi ? 'Diržas:' : 'Tavo diržas:') . '</span>';
-    foreach ($v['own'] as $lvl => $names) {
-        $html .= $chip($lvl, BELTS[$lvl][0] . ' · ' . ($multi ? implode(', ', $names) : BELTS[$lvl][1]), $belt === $lvl);
-    }
-    $others = array_values(array_diff($v['belts'], array_keys($v['own'])));
-    if ($others) {
-        $html .= '<span class="bs-label bs-others">Kiti:</span>';
-        foreach ($others as $lvl) {
-            $html .= $chip($lvl, BELTS[$lvl][0], $belt === $lvl, 'small');
-        }
-    }
-    return $html . '</div>';
-};
 
 /** Viršutinė juosta: treneriui - įrankiai, peržiūroje - kaip kas mato */
 $topBar = function (?int $cur) use ($v, $staffTools, $editMode) {
@@ -309,7 +294,8 @@ if ($staffTools && (($id && get('keisti') === '1') || get('nauja') === '1' || $e
         $blocks = $postedBlocks ?? $blocks;
     }
     if (!$blocks && !$l['id']) {
-        $blocks = [['type' => 'text', 'body' => '']];
+        // Iš aplanko „Pridėti: Tekstas / Nuotrauka / Video“ - iš karto tas blokas
+        $blocks = [['type' => in_array(get('tipas'), ['text', 'image', 'video'], true) ? get('tipas') : 'text', 'body' => '']];
     }
     $fid = $l['folder_id'] !== null ? (int) $l['folder_id'] : null;
     $cancel = $l['id'] ? 'pamokos.php?id=' . (int) $l['id'] : ($fid ? 'pamokos.php?aplankas=' . $fid : 'pamokos.php');
@@ -343,7 +329,7 @@ if ($staffTools && (($id && get('keisti') === '1') || get('nauja') === '1' || $e
         </div>
       </details>
       <article class="panel card lesson lesson-edit">
-        <input type="text" class="lesson-title-input" name="title" value="<?= e($l['title']) ?>" maxlength="190" required placeholder="Pamokos pavadinimas, pvz. Heian Shodan" aria-label="Pavadinimas">
+        <input type="text" class="lesson-title-input" name="title" value="<?= e($l['title']) ?>" maxlength="190" placeholder="Pavadinimas, pvz. Heian Shodan (nebūtina - paims iš teksto ar prierašo)" aria-label="Pavadinimas">
         <div id="blocks">
           <?php foreach ($blocks as $i => $b): ?><?= lesson_block_editor($b, 'b' . $i) ?><?php endforeach; ?>
         </div>
@@ -449,7 +435,6 @@ if ($id) {
 }
 
 // ---------- Aplankas / pagrindinis / paieška ----------
-$cur = (int) get('aplankas') ?: null;
 if ($cur !== null && (!isset($folders[$cur]) || !viewer_folder_ok($v, $folders, $cur))) {
     not_found();
 }
@@ -491,7 +476,6 @@ page_start($folder ? $folder['title'] : 'Pamokos', $navOpt);
   <?= $found ? lesson_cards($found, ['folder' => true]) : '<div class="panel card"><p class="muted">Nieko nerasta.</p></div>' ?>
   <p style="margin-top:16px;"><a href="<?= url('pamokos.php') ?>">← Visos pamokos</a></p>
 <?php else: ?>
-  <?= $editMode ? '' : $beltSwitch($cur) ?>
   <?php if (!$v['staff'] && !$cur): ?>
     <a class="panel exam-prep-link" href="<?= url('egzaminas.php') ?>">
       <span class="kicker" style="margin:0;">Pasiruošimas egzaminui</span>
@@ -505,12 +489,29 @@ page_start($folder ? $folder['title'] : 'Pamokos', $navOpt);
     <?php endif; ?>
   <?php endif; ?>
 
-  <?php if ($folder): ?>
+  <?php if ($folder && $editMode): ?>
     <?= $renderBody($cur, $back) ?>
-    <?php if (!$v['staff'] && !($counts[$cur] ?? 0)): ?><div class="panel card"><p class="muted">Šiame aplanke tavo diržui pamokų nėra.</p></div><?php endif; ?>
+  <?php elseif ($folder):
+    $subs = array_values(array_filter(folder_children($folders, $cur), function ($f) use ($folderShown) { return $folderShown((int) $f['id']); }));
+    $here = array_values(array_filter($shown, function ($l) use ($cur) { return $l['folder_id'] !== null && (int) $l['folder_id'] === $cur; })); ?>
+    <?= $staffTools ? folder_add_bar($cur, 'pamokos.php?aplankas=' . $cur) : '' ?>
+    <?= folder_tiles($subs, $counts, $v) ?>
+    <?= $here ? lesson_cards($here) : '' ?>
+    <?php if (!$subs && !$here): ?>
+      <div class="panel card"><p class="muted"><?= $staffTools ? 'Aplankas tuščias - pridėkite tekstą, nuotrauką, video ar aplanką.' : 'Šiame aplanke dar nieko nėra.' ?></p></div>
+    <?php endif; ?>
   <?php else:
     $sections = array_values(array_filter(folder_children($folders, null), function ($f) use ($folderShown) { return $folderShown((int) $f['id']); }));
     $rootLessons = array_values(array_filter($shown, function ($l) { return $l['folder_id'] === null; })); ?>
+    <?php if (!$editMode): ?>
+      <?= folder_tiles($sections, $counts, $v) ?>
+      <?php if ($rootLessons): ?>
+        <h2 class="lessons-heading">Kitos pamokos</h2>
+        <?= lesson_cards($rootLessons) ?>
+      <?php elseif (!$sections): ?>
+        <div class="panel card"><p class="muted">Pamokų dar nėra.</p></div>
+      <?php endif; ?>
+    <?php else: ?>
     <div class="ls-sections" data-kind="folders" data-parent="">
       <?php foreach ($sections as $n => $f): $fid = (int) $f['id']; ?>
         <details class="panel ls-section" data-type="folder" data-id="<?= $fid ?>" id="f<?= $fid ?>" <?= $editMode || $n === 0 ? 'open' : '' ?>>
@@ -523,8 +524,8 @@ page_start($folder ? $folder['title'] : 'Pamokos', $navOpt);
           <div class="ls-body">
             <?php if ($editMode): ?>
               <div class="ls-edit-row">
-                <span class="ls-drag" title="Tempkite skyrių">⠿</span>
-                <button type="button" class="btn btn-ghost btn-sm" data-open="ff<?= $fid ?>">✎ Keisti skyrių</button>
+                <span class="ls-drag" title="Tempkite aplanką">⠿</span>
+                <button type="button" class="btn btn-ghost btn-sm" data-open="ff<?= $fid ?>">✎ Keisti aplanką</button>
                 <a class="btn btn-ghost btn-sm" href="<?= url('pamokos.php?nauja=1&aplankas=' . $fid) ?>">+ Pamoka</a>
                 <?= folder_quick_form($fid, $back, 'Naujas poaplankis, pvz. 8 kyu') ?>
               </div>
@@ -537,13 +538,10 @@ page_start($folder ? $folder['title'] : 'Pamokos', $navOpt);
       <?php endforeach; ?>
     </div>
     <?php if ($editMode): ?>
-      <div class="panel card ls-new"><span class="kicker" style="margin:0;">Naujas skyrius</span><?= folder_quick_form(null, $back, 'pvz. Egzaminams, Teisėjams, Fizinis pasiruošimas') ?></div>
+      <div class="panel card ls-new"><span class="kicker" style="margin:0;">Naujas aplankas</span><?= folder_quick_form(null, $back, 'pvz. Teisėjams') ?></div>
     <?php endif; ?>
-    <?php if ($rootLessons || $editMode): ?>
-      <?php if ($sections || $editMode): ?><h2 class="lessons-heading"><?= $sections ? 'Kitos pamokos' : 'Pamokos' ?></h2><?php endif; ?>
-      <?= lesson_cards($rootLessons, ['edit' => $editMode, 'parent' => null]) ?>
-    <?php elseif (!$sections): ?>
-      <div class="panel card"><p class="muted">Pamokų dar nėra.</p></div>
+    <h2 class="lessons-heading"><?= $sections ? 'Kitos pamokos' : 'Pamokos' ?></h2>
+    <?= lesson_cards($rootLessons, ['edit' => true, 'parent' => null]) ?>
     <?php endif; ?>
   <?php endif; ?>
 <?php endif; ?>

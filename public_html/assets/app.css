@@ -1167,3 +1167,21 @@ span.req-check:hover{transform:none;}
 .app-steps{margin:10px 0 0 18px; display:grid; gap:4px;}
 @media (display-mode: standalone){ .app-card{display:none;} }
 .dash-side .app-card{margin-top:0;}
+
+/* Pamokos: aplankai pagal kyu - diržo spalva (pamokos.php) */
+.kyu-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(210px, 1fr)); gap:14px; margin:6px 0 26px;}
+.kyu-tile{position:relative; display:flex; align-items:center; gap:14px; min-height:84px; padding:16px 16px 16px 14px; border-radius:16px; color:var(--ink);
+  background:#fff; border:1px solid rgba(23,20,15,0.08); box-shadow:0 2px 10px rgba(23,20,15,0.05); text-decoration:none; transition:transform .15s ease, box-shadow .15s ease;}
+.kyu-tile:hover{transform:translateY(-2px); box-shadow:0 10px 24px rgba(23,20,15,0.10); text-decoration:none;}
+.kyu-tile.has-belt{border-left:7px solid var(--belt); background:linear-gradient(120deg, color-mix(in srgb, var(--belt) 20%, #fff) 0%, #fff 72%);}
+.kyu-tile.belt-light{border-left-color:#E3DCCB; background:linear-gradient(120deg, #F4F1EA 0%, #fff 72%);}
+.kyu-ico{flex-shrink:0; width:48px; height:48px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:1.6rem; background:rgba(255,255,255,0.75); box-shadow:inset 0 0 0 1px rgba(23,20,15,0.06);}
+.kyu-ico .ico{width:34px; height:34px;}
+.kyu-text{min-width:0; display:flex; flex-direction:column; gap:2px;}
+.kyu-text strong{font-family:'Space Grotesk', sans-serif; font-size:1.15rem; line-height:1.2;}
+.kyu-sub{font-size:0.8rem; color:var(--muted);}
+.kyu-own{position:absolute; top:8px; right:10px; padding:2px 8px; border-radius:999px; background:var(--accent); color:#fff; font-size:0.68rem; font-weight:700;}
+.kyu-tile .badge-warn{position:absolute; bottom:8px; right:10px;}
+.ls-add-bar{display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin:0 0 16px; padding:10px 12px; border-radius:12px; background:rgba(47,107,90,0.07);}
+.ls-new-folder{margin:-6px 0 16px;}
+@media (max-width:560px){ .kyu-grid{grid-template-columns:1fr 1fr; gap:10px;} .kyu-tile{flex-direction:column; align-items:flex-start; gap:8px; padding:12px;} .kyu-own{position:static;} }
