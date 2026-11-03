@@ -78,15 +78,9 @@
 /* Grupių skaidrės */
 .hb-slide-tools{display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:12px;}
 .hb-slide-tools .hb-opt{color:#D8D2C2; margin:0;}
-.hb-sched-btn{font:inherit; font-size:0.8rem; font-weight:700; padding:6px 12px; border-radius:10px; border:1px solid rgba(247,244,236,0.5); background:rgba(233,116,158,0.25); color:#F7F4EC; cursor:pointer;}
+.hb-sched-btn{display:inline-block; text-decoration:none; font:inherit; font-size:0.8rem; font-weight:700; padding:6px 12px; border-radius:10px; border:1px solid rgba(247,244,236,0.5); background:rgba(233,116,158,0.25); color:#F7F4EC; cursor:pointer;}
 .hb-sched-btn:hover{background:rgba(233,116,158,0.5);}
 .chooser .hb-opt{display:flex; justify-content:center;}
-.hb-sched{width:min(860px, 94vw); max-height:88vh; border:none; border-radius:18px; padding:20px 22px; box-shadow:0 30px 80px rgba(0,0,0,0.35); font-family:'Inter',sans-serif;}
-.hb-sched::backdrop{background:rgba(23,20,15,0.45);}
-.hb-sched-head{display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:6px;}
-.hb-sched .btn{padding:8px 14px; font-size:0.82rem; border-radius:10px; border:1px solid rgba(23,20,15,0.15); background:#fff; cursor:pointer; font-weight:700;}
-.hb-sched .small{font-size:0.85rem;}
-.hb-sched .muted{color:#4A453A;}
 
 /* „Apie“ nuotraukos redaguojant */
 .hb-slides-edit{padding:12px; background:rgba(255,255,255,0.4); min-height:0 !important; overflow:visible !important;}

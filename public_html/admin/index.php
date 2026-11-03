@@ -3,13 +3,6 @@
 require dirname(__DIR__) . '/app/bootstrap.php';
 $me = require_staff();
 
-// Paskyros nustatymai (el. paštas, telefonas, slaptažodis) - šiame puslapyje
-$errors = [];
-if (is_post()) {
-    csrf_check();
-    handle_account_settings($me, 'admin/', $errors);
-}
-$ownMembers = (int) q_value('SELECT COUNT(*) FROM account_members am JOIN members m ON m.id = am.member_id WHERE am.account_id = ? AND m.status = "active"', [(int) $me['id']]);
 
 $today = date('Y-m-d');
 $weekday = (int) date('N');
@@ -58,13 +51,6 @@ $notifs = account_notifications((int) $me['id']);
 $upcoming = q_all('SELECT * FROM events WHERE COALESCE(ends_on, starts_on) >= CURDATE() AND starts_on <= DATE_ADD(CURDATE(), INTERVAL 21 DAY) ORDER BY starts_on, start_time');
 
 page_start('Šiandien', ['admin' => true]);
-// Nustatymai (dešinėje): visi vienoje vietoje, sugrupuoti - meniu juostoje jų nebėra, kad nesikartotų
-$settings = [
-    // Tik tai, ko nėra meniu (Testai, Pranešimai, Varžybos - skirtukuose; pamokų medis - Pamokose; puslapio redagavimas - pagrindiniame puslapyje)
-    'Klubas'                 => [['Grupės ir jų spalvos', 'admin/grupes.php', true], ['Tvarkaraštis ir kainos', 'admin/tvarkarastis.php', true], ['Atšauktos treniruotės ir atostogos', 'admin/atsaukimai.php', true], ['Taškai ir XP', 'admin/taskai.php', true]],
-    'Programa ir svetainė'   => [['Egzaminų programa (XP)', 'admin/programa.php', true], ['Reakcijų emoji', 'admin/naujienos.php?emoji=1', is_admin()]],
-    'Sistema'                => [['Paskyros ir rolės', 'admin/paskyros.php', is_admin()], ['Atsarginės kopijos ir sistema', 'admin/kopijos.php', is_admin()]],
-];
 $todoCount = count($notifs) + count($todo);
 ?>
 <div class="page-head row between" style="align-items:flex-end; flex-wrap:wrap; gap:12px;">
@@ -72,11 +58,16 @@ $todoCount = count($notifs) + count($todo);
     <div class="eyebrow"><?= e(LT_WEEKDAYS[$weekday]) ?>, <?= e(fmt_date($today)) ?></div>
     <h1 class="styled">Labas, <?= e($me['first_name']) ?></h1>
   </div>
+  <!-- Greiti veiksmai - vienintelė vieta, kur kartojasi kitų skilčių mygtukai (patogumui) -->
+  <div class="dash-actions">
+    <a class="btn btn-ghost btn-sm" href="<?= url('admin/naujienos.php?edit=new') ?>">+ Naujiena</a>
+    <a class="btn btn-ghost btn-sm" href="<?= url('admin/renginiai.php?edit=new') ?>">+ Renginys</a>
+    <a class="btn btn-ghost btn-sm" href="<?= url('admin/nariai.php?new=1') ?>">+ Narys</a>
+  </div>
 </div>
-<?= form_errors($errors) ?>
 
 <div class="dash">
-  <!-- Kairėje - tai, ką reikia padaryti šiandien -->
+  <!-- Kairėje - tai, ką reikia padaryti; dešinėje - šiandienos treniruotės ir artimiausi renginiai -->
   <div class="dash-main">
     <section class="panel card important" id="svarbu">
       <div class="row between" style="gap:10px; flex-wrap:wrap;">
@@ -94,7 +85,9 @@ $todoCount = count($notifs) + count($todo);
       <?php endif; ?>
       <?php if (!$todoCount): ?><p class="all-done">✓ Viskas padaryta</p><?php endif; ?>
     </section>
+  </div>
 
+  <div class="dash-side">
     <div class="panel card">
       <div class="kicker">Šiandienos treniruotės</div>
       <?php if ($trainings): ?>
@@ -146,31 +139,6 @@ $todoCount = count($notifs) + count($todo);
     </div>
   </div>
 
-  <!-- Dešinėje - greiti veiksmai ir nustatymai -->
-  <aside class="dash-side" id="nustatymai">
-    <div class="panel card">
-      <div class="kicker">Greiti veiksmai</div>
-      <div class="dash-actions">
-        <a class="btn btn-ghost btn-sm" href="<?= url('admin/naujienos.php?edit=new') ?>">+ Naujiena</a>
-        <a class="btn btn-ghost btn-sm" href="<?= url('admin/renginiai.php?edit=new') ?>">+ Renginys</a>
-        <a class="btn btn-ghost btn-sm" href="<?= url('pamokos.php?nauja=1') ?>">+ Pamoka</a>
-        <a class="btn btn-ghost btn-sm" href="<?= url('admin/nariai.php?new=1') ?>">+ Narys</a>
-      </div>
-    </div>
-    <div class="panel card">
-      <div class="kicker">Nustatymai</div>
-      <?php foreach ($settings as $groupName => $links): $links = array_filter($links, function ($l) { return $l[2]; }); if (!$links) { continue; } ?>
-        <div class="dash-set">
-          <div class="dash-set-title"><?= e($groupName) ?></div>
-          <ul><?php foreach ($links as [$label, $path]): ?><li><a href="<?= url($path) ?>"><?= e($label) ?> →</a></li><?php endforeach; ?></ul>
-        </div>
-      <?php endforeach; ?>
-      <?php if ($ownMembers): ?><p class="small" style="margin-top:12px;"><a href="<?= url('paskyra.php') ?>">Mano šeimos nariai (taškai, pastabos) →</a></p><?php endif; ?>
-    </div>
-    <?= render_account_settings($me, 'paskyra', 'Mano paskyra') ?>
-    <?= render_app_install_card() ?>
-    <form method="post" action="<?= url('atsijungti.php') ?>" class="dash-logout"><?= csrf_field() ?><button type="submit" class="btn btn-ghost btn-sm btn-block">Atsijungti</button></form>
-  </aside>
 </div>
 <?php
 page_end();

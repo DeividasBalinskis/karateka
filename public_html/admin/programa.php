@@ -70,7 +70,7 @@ function req_form(int $belt, ?array $r, array $lessons): string
 
 page_start('Egzaminų programa', ['admin' => true]);
 ?>
-<a class="small" href="<?= url('admin/testai.php') ?>">← Testai</a>
+<a class="small" href="<?= url('admin/nustatymai.php') ?>">← Nustatymai</a>
 <div class="page-head" style="margin-top:8px;">
   <h1 class="styled">Egzaminų programa</h1>
   <p class="muted" style="margin:0;">Ko reikia norint gauti diržą. Nariai mato savo kito diržo programą skiltyje „Egzaminas“ ir žymi „Moku“ -

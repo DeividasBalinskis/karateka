@@ -23,7 +23,7 @@ test.afterAll(() => {
 
 test('enable, trusted device, new device with code, limits, disable', async ({ browser }) => {
   const p = await login(browser, EMAIL);
-  await p.goto('admin/#tfa');
+  await p.goto('admin/nustatymai.php#tfa');
   await p.click('#tfa summary');
   await p.fill('#tfa input[name=current]', 'blogas');
   await nav(p, () => p.click('#tfa button:has-text("Siųsti kodą")'));
@@ -75,7 +75,7 @@ test('enable, trusted device, new device with code, limits, disable', async ({ b
   check('code used once', +sql('SELECT COUNT(*) FROM login_codes WHERE used_at IS NULL AND expires_at > NOW()') === 0);
 
   // Išjungti
-  await q.goto('admin/#tfa');
+  await q.goto('admin/nustatymai.php#tfa');
   await q.click('#tfa summary');
   await q.fill('#tfa input[name=current]', 'testas123');
   await nav(q, () => q.click('#tfa button:has-text("Išjungti")'));

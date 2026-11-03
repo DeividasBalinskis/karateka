@@ -118,16 +118,18 @@ html{scrollbar-gutter:stable;}
     border:7px solid transparent; border-bottom-color:#EFE9F3;}
 }
 .sub-nav{background:linear-gradient(90deg, #F6EEF3 0%, #EFE9F3 60%, #EFE9F3 100%); border-top:1px solid rgba(110,74,134,0.10);}
-.sub-nav .sub-inner{display:flex; align-items:center; gap:4px; max-width:var(--nav-w); margin:0 auto; padding:6px var(--nav-pad); overflow-x:auto; scrollbar-width:none;}
+.sub-nav .sub-inner{display:flex; align-items:center; justify-content:center; gap:4px; max-width:var(--nav-w); margin:0 auto; padding:6px var(--nav-pad); overflow-x:auto; scrollbar-width:none;}
 .sub-nav .sub-inner::-webkit-scrollbar{display:none;}
 .sub-nav a{flex-shrink:0; display:inline-flex; align-items:center; gap:2px; padding:9px 13px; border-radius:10px; font-size:14px; font-weight:600; line-height:1;
   color:#57506A; text-decoration:none; white-space:nowrap; transition:background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;}
 .sub-nav a:hover{background:rgba(255,255,255,0.7); color:#17140F; text-decoration:none;}
 .sub-nav a.active{background:#fff; color:#6E4A86; box-shadow:0 1px 4px rgba(80,50,100,0.14);}
-.sub-nav a.sub-last{margin-left:auto;}
+/* Patvirtinimai ir Nustatymai - po plono skirtuko, kaip meniu kapsulėje */
+.sub-nav a.sub-last{position:relative; margin-left:13px;}
+.sub-nav a.sub-last::before{content:""; position:absolute; left:-9px; top:9px; bottom:9px; width:1px; background:rgba(110,74,134,0.22);}
 .sub-nav a .count-badge{margin-left:4px;}
 @media(max-width:860px){
   .sub-nav .sub-inner{padding:6px 10px;}
   .sub-nav a{padding:9px 11px; font-size:13px;}
-  .sub-nav a.sub-last{margin-left:0;}
+  .sub-nav .sub-inner{justify-content:flex-start;}
 }

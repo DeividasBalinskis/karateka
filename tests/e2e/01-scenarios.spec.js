@@ -249,19 +249,24 @@ test('admin: notifications, chat, comments at the post, broadcast, events, atten
   await a.locator(`textarea[data-member="${mid}"]`).fill('Šaunu šiandien!');
   await a.locator(`textarea[data-member="${mid}"]`).press('Enter'); await a.waitForTimeout(800);
   check('note saved via enter', +sql(`SELECT COUNT(*) FROM coach_notes WHERE member_id=${mid} AND body='Šaunu šiandien!'`) === 1);
-  // Apžvalga: kairėje darbai, dešinėje nustatymai; nustatymų skirtukai sujungti
+  // Šiandien: kairėje darbai, dešinėje treniruotės ir renginiai, viršuje greiti mygtukai. Nustatymai - atskiras puslapis
   await a.goto('admin/');
-  check('dash two columns', await a.locator('.dash .dash-main #svarbu').count() === 1 && await a.locator('.dash aside#nustatymai').count() === 1);
+  check('dash two columns', await a.locator('.dash .dash-main #svarbu').count() === 1 && await a.locator('.dash .dash-side').count() === 1);
+  check('dash quick actions', (await a.locator('.dash-actions a').allTextContents()).join(',') === '+ Naujiena,+ Renginys,+ Narys');
+  check('no settings on dashboard', await a.locator('#paskyra, #tfa, #nustatymai').count() === 0);
   const tabs = await a.locator('.sub-nav a').allTextContents();
   check('admin tabs merged', tabs.some(t => /Nustatymai/.test(t)) && !tabs.some(t => /^\s*Grupės\s*$/.test(t)), tabs.join(','));
-  check('dash settings links', await a.locator('#nustatymai a[href*="grupes.php"]').count() === 1 && await a.locator('#nustatymai #paskyra').count() === 1);
-  const edges = await a.evaluate(() => {
-    const r = s => document.querySelector(s).getBoundingClientRect();
-    const tabs = document.querySelectorAll('.sub-nav a');
-    return { logo: Math.round(r('.site-header .logo').left), first: Math.round(tabs[0].getBoundingClientRect().left),
-      login: Math.round(r('.site-header .nav-login').right), last: Math.round(tabs[tabs.length - 1].getBoundingClientRect().right) };
+  const centre = await a.evaluate(() => {
+    const t = document.querySelectorAll('.sub-nav a');
+    return Math.round((t[0].getBoundingClientRect().left + t[t.length - 1].getBoundingClientRect().right) / 2 - document.documentElement.clientWidth / 2);
   });
-  check('sub-nav aligned with header', Math.abs(edges.logo - edges.first) <= 2 && Math.abs(edges.login - edges.last) <= 2, JSON.stringify(edges));
+  check('sub-nav centered', Math.abs(centre) <= 8, centre);
+  await nav(a, () => a.click('.sub-nav a:has-text("Nustatymai")'));
+  check('settings page', a.url().includes('admin/nustatymai.php') && await a.locator('.sub-nav a.active', { hasText: 'Nustatymai' }).count() === 1);
+  check('settings links and account', await a.locator('.settings-link[href*="grupes.php"]').count() === 1 && await a.locator('.settings-link[href*="kopijos.php"]').count() === 1
+    && await a.locator('#paskyra').count() === 1);
+  await a.goto('admin/programa.php');
+  check('program page under settings tab', await a.locator('.sub-nav a.active', { hasText: 'Nustatymai' }).count() === 1);
   check('no messages tab (chat window instead)', !tabs.some(t => /Žinutės/.test(t)), tabs.join(','));
   // Pokalbis: „Visi nariai“ pagal grupes, profilis paspaudus vardą
   await a.click('#chatFab'); await a.waitForTimeout(1000);

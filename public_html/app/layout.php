@@ -263,7 +263,7 @@ function admin_nav_items(): array
         }
     }
     $items['patvirtinimai'] = ['Patvirtinimai', 'admin/patvirtinimai.php', pending_approvals_count()];
-    $items['nustatymai'] = ['Nustatymai', 'admin/#nustatymai'];
+    $items['nustatymai'] = ['Nustatymai', 'admin/nustatymai.php'];
     return $items;
 }
 
@@ -277,7 +277,7 @@ const ADMIN_NAV_EXTRA = [
 function admin_nav_current(): string
 {
     $file = basename($_SERVER['SCRIPT_NAME'] ?? '', '.php');
-    $map = ['index' => 'siandien', 'renginio-rezultatai' => 'renginiai', 'varzybu-rezultatai' => 'varzybos', 'renginio-dalyviai' => 'renginiai', 'programa' => 'testai',
+    $map = ['index' => 'siandien', 'renginio-rezultatai' => 'renginiai', 'varzybu-rezultatai' => 'varzybos', 'renginio-dalyviai' => 'renginiai', 'programa' => 'nustatymai',
             'varzybos-sso' => 'varzybos', 'varzybu-dalyviai' => 'varzybos', 'sms' => 'pranesimai',
             'grupes' => 'nustatymai', 'tvarkarastis' => 'nustatymai', 'taskai' => 'nustatymai', 'paskyros' => 'nustatymai', 'kopijos' => 'nustatymai', 'atsaukimai' => 'nustatymai',
             'pirmas-adminas' => 'siandien'];

@@ -21,12 +21,6 @@ function json_out(array $data): void
     exit;
 }
 
-// Pagrindiniam puslapiui (redagavimo režime): atnaujinta kaina ir tvarkaraštis
-if (($cat = get('fragment')) !== '' && isset(GROUP_CATEGORIES[$cat])) {
-    json_out(['ok' => true, 'price' => render_price($cat), 'schedule' => $cat === 'vaikai' ? render_kids_locations() : render_category_schedule($cat),
-        'locations' => render_category_locations($cat)]);
-}
-
 if (is_post()) {
     csrf_check();
     if (!$canEdit) {
@@ -98,7 +92,7 @@ foreach ($groups as $g) {
 
 page_start('Tvarkaraštis ir kainos', ['admin' => true]);
 ?>
-<a class="small" href="<?= url('admin/grupes.php') ?>">← Grupės</a>
+<a class="small" href="<?= url('admin/nustatymai.php') ?>">← Nustatymai</a>
 <div class="page-head row between" style="align-items:flex-end; flex-wrap:wrap; gap:12px; margin-top:8px;">
   <div>
     <h1 class="styled">Tvarkaraštis ir kainos</h1>
@@ -107,7 +101,7 @@ page_start('Tvarkaraštis ir kainos', ['admin' => true]);
   <a class="btn btn-ghost btn-sm" href="<?= url('index.php') ?>" target="_blank">Pagrindinis puslapis ↗</a>
 </div>
 <?php foreach (GROUP_CATEGORIES as $cat => $catLabel): ?>
-  <div class="panel card sched-cat">
+  <div class="panel card sched-cat" id="<?= $cat ?>">
     <h2><?= e($catLabel) ?></h2>
     <?php if ($canEdit): ?>
       <?= price_editor($cat) ?>

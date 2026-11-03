@@ -131,20 +131,17 @@ if ($id) {
     <?= form_errors($errors) ?>
     <div class="grid-2">
       <div class="panel card">
-        <div class="row between" style="flex-wrap:wrap; gap:8px;"><h2 style="margin:0;">Tvarkaraštis</h2><a class="small" href="<?= url('admin/tvarkarastis.php') ?>">Visų grupių tvarkaraštis →</a></div>
-        <?php if (is_admin()): ?>
-          <p class="hint" style="margin:6px 0 4px;">Keiskite tiesiog laukeliuose - išsaugoma iš karto (✓).</p>
-          <?= schedule_editor([$g]) ?>
-        <?php else: ?>
-          <?php if (!$slots): ?><p class="muted small">Laikų dar nėra.</p><?php endif; ?>
-          <?php foreach ($slots as $s): ?>
-            <div class="schedule-line">
-              <span><?= e(LT_WEEKDAYS[(int) $s['weekday']]) ?><?= $s['note'] ? ' <span class="muted small">· ' . e($s['note']) . '</span>' : '' ?></span>
-              <span class="schedule-time"><?= $s['start_time'] ? e(fmt_time($s['start_time']) . '–' . fmt_time($s['end_time'])) : '' ?></span>
-            </div>
-          <?php endforeach; ?>
-          <p class="hint">Tvarkaraštį keičia administratorius.</p>
-        <?php endif; ?>
+        <?php // Tvarkaraštis ir kainos keičiami vienoje vietoje - Nustatymai → Tvarkaraštis ir kainos ?>
+        <div class="row between" style="flex-wrap:wrap; gap:8px;"><h2 style="margin:0;">Tvarkaraštis</h2>
+          <?php if (is_admin()): ?><a class="small" href="<?= url('admin/tvarkarastis.php#' . e($g['category'])) ?>">✎ Keisti tvarkaraštį ir kainą</a><?php endif; ?></div>
+        <?php if (!$slots): ?><p class="muted small">Laikų dar nėra.</p><?php endif; ?>
+        <?php foreach ($slots as $s): ?>
+          <div class="schedule-line">
+            <span><?= e(LT_WEEKDAYS[(int) $s['weekday']]) ?><?= $s['note'] ? ' <span class="muted small">· ' . e($s['note']) . '</span>' : '' ?></span>
+            <span class="schedule-time"><?= $s['start_time'] ? e(fmt_time($s['start_time']) . '–' . fmt_time($s['end_time'])) : '' ?></span>
+          </div>
+        <?php endforeach; ?>
+        <?php if (!is_admin()): ?><p class="hint">Tvarkaraštį keičia administratorius.</p><?php endif; ?>
       </div>
       <div class="stack">
         <form method="post" class="panel card form">
@@ -240,16 +237,5 @@ page_start('Grupės', ['admin' => true]);
     <div><button class="btn btn-primary" type="submit">Sukurti</button></div>
   </form>
 </div>
-<?php if (is_admin()): ?>
-<div class="panel card" style="margin-top:20px;">
-  <div class="row between" style="flex-wrap:wrap; gap:8px;"><h2 style="margin:0;">Kainos pagrindiniame puslapyje</h2>
-    <span class="row" style="gap:12px;"><a class="small" href="<?= url('admin/tvarkarastis.php') ?>">Visų grupių tvarkaraštis →</a><a class="small" href="<?= url('index.php') ?>" target="_blank">Pagrindinis puslapis ↗</a></span></div>
-  <p class="hint" style="margin:6px 0 10px;">Išsaugoma iš karto (✓). Tvarkaraštis pagrindiniame puslapyje imamas iš grupių - pakeitus laiką grupėje, jis pasikeičia ir svetainėje.</p>
-  <?php foreach (GROUP_CATEGORIES as $cat => $catLabel): ?>
-    <div class="kicker" style="margin:12px 0 4px;"><?= e($catLabel) ?></div>
-    <?= price_editor($cat) ?>
-  <?php endforeach; ?>
-</div>
-<?php endif; ?>
 <?php
 page_end();

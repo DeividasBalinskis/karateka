@@ -70,7 +70,7 @@
   // Nuorodos ir mygtukai redaguojant neveikia (kad paspaudus tekstą neišeitų iš puslapio)
   root.addEventListener('click', function (ev) {
     var a = ev.target.closest('a[href]');
-    if (a && !ev.target.closest('.hb-bar, .hb-sched')) ev.preventDefault();
+    if (a && !ev.target.closest('.hb-bar, .hb-sched-btn')) ev.preventDefault();
   });
   root.addEventListener('submit', function (ev) { ev.preventDefault(); });
 
@@ -141,19 +141,6 @@
       return;
     }
     if (b.classList.contains('hb-add-cancel')) { addMenu.hidden = true; return; }
-    if (b.classList.contains('hb-sched-btn')) { document.getElementById('sched-' + b.dataset.cat).showModal(); return; }
-    if (b.hasAttribute('data-close-dialog')) { b.closest('dialog').close(); return; }
-  });
-
-  // Kaina ir tvarkaraštis išsaugomi iš karto (schedule-editor.js) - atnaujiname, ką rodo puslapis
-  document.addEventListener('schedule-changed', function () {
-    var dlg = document.querySelector('dialog.hb-sched[open]'); if (!dlg) return;
-    var cat = dlg.id.replace('sched-', '');
-    fetch(api.fragment + cat, { credentials: 'same-origin' }).then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.ok) return;
-      var set = function (key, html) { var el = document.querySelector('[data-live="' + key + '-' + cat + '"]'); if (el) el.innerHTML = html; };
-      set('price', d.price); set('schedule', d.schedule); set('locations', d.locations);
-    });
   });
 
   if (window.Sortable) Sortable.create(root, { handle: '.hb-block-drag', draggable: '[data-block]', animation: 150, onEnd: mark });

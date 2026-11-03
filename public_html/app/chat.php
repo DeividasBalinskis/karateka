@@ -25,7 +25,7 @@ function message_context(array $r, bool $staffView = false): array
 {
     if (!empty($r['note_id'])) {
         return ['key' => 'n' . $r['note_id'], 'label' => 'Atsakymas į trenerio pastabą',
-            'url' => $staffView ? 'admin/zinutes.php?m=' . (int) $r['member_id'] . '#n' . $r['note_id'] : 'paskyra.php?m=' . (int) $r['member_id'] . '#n' . $r['note_id']];
+            'url' => $staffView ? 'admin/nariai.php?id=' . (int) $r['member_id'] : 'paskyra.php?m=' . (int) $r['member_id'] . '#n' . $r['note_id']];
     }
     if (!empty($r['lesson_id'])) {
         return ['key' => 'l' . $r['lesson_id'], 'label' => 'Pamoka: ' . ($r['lesson_title'] ?? ''), 'url' => 'pamokos.php?id=' . (int) $r['lesson_id'] . '#q-' . (int) $r['member_id']];
@@ -178,7 +178,7 @@ function notify_comment(array $member, array $from, int $messageId): void
     $title = ($r['anonymous'] ? 'Anoniminis komentaras' : 'Komentaras') . ($c['key'] !== 'general' ? ' · ' . $c['label'] : ($c['label'] ? ' · ' . str_replace('Parašyta: ', '', $c['label']) : ''));
     try {
         notify_admins('comment', $title, $who . ', ' . notification_when($r['created_at']) . ': ' . mb_strimwidth(preg_replace('~\s+~u', ' ', $r['body']), 0, 220, '…'),
-            $c['url'] ?: 'admin/zinutes.php?m=' . (int) $member['id'], (int) $member['id'], $messageId);
+            $c['url'] ?: 'admin/?pokalbis=' . (int) $member['id'], (int) $member['id'], $messageId);
     } catch (PDOException $ex) {
         // dar neimportuotas db/021
     }

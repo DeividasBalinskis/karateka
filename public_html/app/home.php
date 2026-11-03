@@ -67,7 +67,7 @@ function home_block_defaults(string $type): array
                 'text' => 'Klubo instruktoriai nuolat gilina žinias, dalyvaudami stažuotėse Lietuvoje ir užsienyje — karate, fizioterapijos, psichologijos, sporto, medicinos, masažų, biomechanikos, sporto mitybos, kinesiologijos ir sporto pedagogikos srityse. Tai leidžia mums treniruotes kurti remiantis ne tik karate tradicijomis, bet ir šiuolaikiniais mokslo pasiekimais.',
                 'items' => [
                     ['name' => 'Denis Balinskis', 'rank' => '3 Dan · klubo vadovas', 'photo' => '', 'lead' => true, 'role' => 'Klubo vadovas, vyr. treneris',
-                     'bio' => "[Pavyzdys - pakeiskite] Trumpas pristatymas: kada pradėjo treniruotis karate, kokį diržą turi, kokias grupes treniruoja.\n\n**Pasiekimai:** varžybos, stažuotės, kursai.\n\nTekstą keičia administratorius: ✎ Redaguoti puslapį → instruktoriaus kortelė → „Plačiau“."],
+                     'bio' => ''],
                     ['name' => 'Lukas Čiulkinas', 'rank' => '1 Dan', 'photo' => '', 'lead' => false],
                     ['name' => 'Joris Kėrys', 'rank' => '1 Dan', 'photo' => '', 'lead' => false],
                     ['name' => 'Esmilė Česevičiūtė', 'rank' => '1 Dan', 'photo' => '', 'lead' => false],
@@ -85,7 +85,7 @@ function home_block_defaults(string $type): array
                 ['mark' => '$', 'label' => 'Sąskaita', 'value' => 'LT76 7300 0101 6008 0310'],
             ]];
         case 'trial':
-            return ['title' => 'Išbandyti', 'subtitle' => 'Užpildykite formą ir išbandykite pirmąją treniruotę nemokamai',
+            return ['title' => 'Išbandyti', 'subtitle' => 'Užpildykite formą - pirmos dvi treniruotės nemokamos',
                 'heading' => 'Pradėkite nuo dviejų nemokamų treniruočių', 'text' => 'Užpildykite formą ir susisieksime, kad suderintume laiką jums tinkamiausiai grupei.',
                 'button' => 'Siųsti'];
         case 'partners':
@@ -346,7 +346,6 @@ function home_render_block(array $b): string
             $slides = '';
             $tabs = '';
             $i = 0;
-            $editors = '';
             foreach (HOME_GROUP_SLIDES as $cat => $sid) {
                 $c = $d['cats'][$cat];
                 $facts = $cat === 'vaikai'
@@ -359,26 +358,19 @@ function home_render_block(array $b): string
                 $slides .= '<div class="group-section" id="' . $sid . '" data-obj="' . $cat . '">'
                     . '<div class="group-photo-panel"' . hb_img_attrs('image', $c['image']) . '><img src="' . e(url($c['image'] ?: 'img/vaikai.jpg')) . '" alt="" style="object-position:' . e($c['pos'] ?: '50% 30%') . ';">' . hb_img_tools() . '</div>'
                     . '<div class="group-text-panel"><div class="group-content">'
-                    . ($edit ? '<div class="hb-slide-tools"><input type="hidden" data-f="pos" value="' . e($c['pos']) . '">' . hb_input('tab', $c['tab'], 'Skirtukas:') . '<button type="button" class="hb-sched-btn" data-cat="' . $cat . '">✎ Kaina ir tvarkaraštis</button></div>' : '')
+                    . ($edit ? '<div class="hb-slide-tools"><input type="hidden" data-f="pos" value="' . e($c['pos']) . '">' . hb_input('tab', $c['tab'], 'Skirtukas:') . '<a class="hb-sched-btn" href="' . e(url('admin/tvarkarastis.php#' . $cat)) . '" target="_blank">✎ Kaina ir tvarkaraštis ↗</a></div>' : '')
                     . hb_t('eyebrow', $c['eyebrow'], 'div', 'eyebrow') . hb_t('title', $c['title'], 'h2') . hb_t('text', $c['text'], 'p')
                     . '<div class="group-facts">' . $facts . '</div>'
                     . (home_show_trial() ? '<a href="#registracija" class="btn btn-primary group-cta">' . e($d['cta']) . '</a>' : '')
                     . '</div></div></div>';
                 $tabs .= '<button type="button" data-i="' . $i . '"' . ($i === 0 ? ' class="active"' : '') . ' role="tab">' . e($c['tab']) . '</button>';
                 $i++;
-                if ($edit) {
-                    $groups = q_all('SELECT * FROM training_groups WHERE is_active = 1 AND category = ? ORDER BY sort_order, name', [$cat]);
-                    $editors .= '<dialog class="hb-sched" id="sched-' . $cat . '"><div class="hb-sched-head"><h3>' . e(GROUP_CATEGORIES[$cat]) . ': kaina ir tvarkaraštis</h3>'
-                        . '<button type="button" class="btn btn-ghost btn-sm" data-close-dialog>Uždaryti</button></div>'
-                        . '<p class="small muted">Išsaugoma iš karto (✓) - nereikia spausti „Išsaugoti“. Grupes ir vietas tvarkysite skiltyje <a href="' . e(url('admin/grupes.php')) . '" target="_blank">Grupės</a>.</p>'
-                        . price_editor($cat) . schedule_editor($groups) . '</dialog>';
-                }
             }
             return '<section style="padding:0; position:relative;" id="' . $id . '">'
                 . '<div class="chooser">' . hb_t('title', $d['title'], 'h1', 'chooser-title') . ($edit ? hb_input('cta', $d['cta'], 'Mygtukas:') : '') . '</div>'
                 . '<div class="carousel-wrap"><div class="group-scroll" id="groupScroll" data-obj="cats">' . $slides . '</div>'
                 . '<button class="group-arrow prev" id="groupPrev" aria-label="Ankstesnė grupė">‹</button><button class="group-arrow next" id="groupNext" aria-label="Kita grupė">›</button>'
-                . '<div class="chooser-buttons" id="groupTabs" role="tablist">' . $tabs . '</div></div>' . $editors . '</section>';
+                . '<div class="chooser-buttons" id="groupTabs" role="tablist">' . $tabs . '</div></div></section>';
 
         case 'events':
             $events = public_upcoming_events(3);
@@ -482,17 +474,19 @@ function home_render_block(array $b): string
                 $photo = (string) ($p['photo'] ?? '');
                 $edit = home_edit_mode();
                 $more = '';
-                if (!$edit) {
-                    $bio = trim((string) ($p['bio'] ?? ''));
+                $bio = trim((string) ($p['bio'] ?? ''));
+                // Langas atsidaro tik jei yra ką parodyti (adminui - visada, kad matytų, kur įrašyti)
+                $hasMore = !$edit && ($bio !== '' || trim((string) ($p['role'] ?? '')) !== '' || is_admin());
+                if ($hasMore) {
                     $more = '<template class="ins-more"><div class="ins-pop-photo">' . ($photo ? '<img src="' . e(url($photo)) . '" alt="">' : '<span>' . e(initials((string) $p['name'])) . '</span>') . '</div>'
                         . '<div class="ins-pop-body"><h3 id="insTitle">' . e((string) $p['name']) . '</h3>'
                         . ((string) $p['rank'] !== '' ? '<div class="ins-pop-rank">' . e((string) $p['rank']) . '</div>' : '')
                         . (trim((string) ($p['role'] ?? '')) !== '' ? '<div class="ins-pop-role">' . e((string) $p['role']) . '</div>' : '')
-                        . '<div class="ins-pop-bio">' . ($bio !== '' ? home_text_html($bio) : '<p class="muted">Daugiau informacijos apie instruktorių - netrukus.</p>'
-                            . (is_admin() ? '<p class="ins-pop-hint">Įrašykite tekstą: ✎ Redaguoti puslapį → instruktoriaus kortelė → „Plačiau“.</p>' : '')) . '</div></div></template>';
+                        . '<div class="ins-pop-bio">' . ($bio !== '' ? home_text_html($bio)
+                            : (is_admin() ? '<p class="ins-pop-hint">Lankytojams šis langas neatsidaro, kol nėra teksto. Įrašykite: ✎ Redaguoti puslapį → instruktoriaus kortelė → „Plačiau“.</p>' : '')) . '</div></div></template>';
                 }
                 return '<div class="panel instructor-card' . (!empty($p['lead']) ? ' lead' : '') . ' reveal"' . hb_item()
-                    . (!$edit ? ' role="button" tabindex="0" aria-haspopup="dialog" aria-label="' . e((string) $p['name']) . ' - daugiau informacijos" data-instructor' : '') . '>'
+                    . ($hasMore ? ' role="button" tabindex="0" aria-haspopup="dialog" aria-label="' . e((string) $p['name']) . ' - daugiau informacijos" data-instructor' : '') . '>'
                     . '<div class="avatar' . ($photo ? ' has-photo' : '') . '"' . hb_img_attrs('photo', $photo) . '>'
                     . ($photo || $edit ? '<img src="' . e($photo ? url($photo) : '') . '" alt=""' . ($photo ? '' : ' hidden') . '>' : '')
                     . '<span class="hb-initials"' . ($photo ? ' hidden' : '') . '>' . e(initials((string) $p['name'])) . '</span>'
@@ -500,7 +494,7 @@ function home_render_block(array $b): string
                     . ($edit ? hb_input('lead', !empty($p['lead']), 'Paryškinti')
                         . '<details class="hb-more"' . (trim((string) ($p['bio'] ?? '')) === '' ? '' : ' open') . '><summary>Plačiau (rodoma paspaudus)</summary>'
                         . hb_t('role', (string) ($p['role'] ?? ''), 'div', 'hb-more-role') . hb_t('bio', (string) ($p['bio'] ?? ''), 'div', 'hb-more-bio', true) . '</details>'
-                        : '<span class="ins-open" aria-hidden="true">Plačiau</span>' . $more)
+                        : ($hasMore ? '<span class="ins-open" aria-hidden="true">Plačiau</span>' . $more : ''))
                     . hb_item_tools() . '</div>';
             };
             return '<section id="' . $id . '" class="hb-instructors"><div class="wrap"><div class="about-sub-head about-sub-head-center">' . hb_t('title', $d['title'], 'h3') . '</div>'
@@ -547,6 +541,7 @@ function home_render_block(array $b): string
                 . render_trial_location_options() . '</select><select name="gimimo_metai" id="gimimoMetai" class="is-empty"><option value="" disabled selected>Gimimo metai</option></select>'
                 . '<textarea name="zinute" rows="3" placeholder="Žinutė (nebūtina)"></textarea>'
                 . ($edit ? '<div class="btn btn-primary">' . hb_t('button', $d['button']) . '</div>' : '<button type="submit" class="btn btn-primary">' . e($d['button']) . '</button>')
+                . '<p class="form-note">Duomenis naudosime tik tam, kad susisiektume dėl treniruotės. Plačiau - <a href="' . e(url('privatumas.php')) . '" target="_blank">privatumo politikoje</a>.</p>'
                 . '<div id="formStatus" class="form-status"></div></form></div></div></div></section>';
 
         case 'partners':

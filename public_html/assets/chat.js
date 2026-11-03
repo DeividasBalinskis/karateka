@@ -268,6 +268,9 @@
       });
     });
     panel.querySelectorAll('.chat-who, .chat-card').forEach(function (b) { b.addEventListener('click', function () { if (current) openProfile(current); }); });
+    // Nuoroda iš laiško „Atsakyti“ (admin/?pokalbis=ID) - iš karto atidaro pokalbį su nariu
+    var linked = new URLSearchParams(location.search).get('pokalbis');
+    if (linked) { selectMember(linked); open(); }
     ctxBox.querySelector('button').addEventListener('click', function () { setReplyCtx('general'); });
     panel.querySelector('.chat-back').addEventListener('click', function () { panel.classList.remove('has-thread'); });
     form.addEventListener('submit', function (ev) {

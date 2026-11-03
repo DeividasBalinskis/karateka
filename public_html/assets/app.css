@@ -1117,7 +1117,7 @@ span.req-check:hover{transform:none;}
 .q-publish .inline-form + .inline-form{margin-left:2px;}
 
 /* ===== Trenerio pradžia: kairėje darbai, dešinėje nustatymai ===== */
-.dash{display:grid; grid-template-columns:minmax(0, 1fr) 340px; gap:20px; align-items:start;}
+.dash{display:grid; grid-template-columns:minmax(0, 1.1fr) minmax(0, 1fr); gap:20px; align-items:start;}
 .dash-main > .card, .dash-side > .card{margin-bottom:20px;}
 .dash-side > .card:first-child{margin-top:0;}
 .dash-side #paskyra{margin-top:0;}
@@ -1139,6 +1139,17 @@ span.req-check:hover{transform:none;}
 .hint-box summary{cursor:pointer; font-weight:600; font-size:0.9rem; color:var(--accent);}
 .hint-box ol{margin:8px 0 6px 18px; display:grid; gap:4px;}
 .sys-list{display:grid; grid-template-columns:auto 1fr; gap:8px 16px; margin:6px 0 14px; font-size:0.92rem;}
+.danger-zone{margin-top:20px;}
+.danger-zone summary{cursor:pointer; font-weight:600; color:var(--danger);}
+.danger-zone p{margin:10px 0;}
+.test-data{margin-top:18px;}
+.td-parts{display:grid; gap:8px; margin:12px 0;}
+.td-part{border:1px solid #E6E1EA; border-radius:12px; padding:8px 12px; background:#fff;}
+.td-part summary{display:flex; justify-content:space-between; align-items:center; gap:10px; cursor:pointer; list-style:none;}
+.td-part summary::-webkit-details-marker{display:none;}
+.td-part .check{margin:0;}
+.td-items{margin:8px 0 4px 18px; display:grid; gap:2px; max-height:260px; overflow:auto;}
+.td-kept{margin-bottom:12px; background:#F7FAF6;}
 .sys-list dt{font-weight:600;}
 .sys-list dd{margin:0; min-width:0; overflow-wrap:anywhere;}
 @media (max-width:560px){ .sys-list{grid-template-columns:1fr; gap:2px;} .sys-list dd{margin-bottom:8px;} }
@@ -1185,3 +1196,16 @@ span.req-check:hover{transform:none;}
 .ls-add-bar{display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin:0 0 16px; padding:10px 12px; border-radius:12px; background:rgba(47,107,90,0.07);}
 .ls-new-folder{margin:-6px 0 16px;}
 @media (max-width:560px){ .kyu-grid{grid-template-columns:1fr 1fr; gap:10px;} .kyu-tile{flex-direction:column; align-items:flex-start; gap:8px; padding:12px;} .kyu-own{position:static;} }
+
+/* Nustatymai (admin/nustatymai.php): grupės kairėje, paskyra dešinėje */
+.settings-layout{display:grid; grid-template-columns:minmax(0, 1fr) 380px; gap:20px; align-items:start;}
+.settings-group{margin-bottom:20px;}
+.settings-link{display:flex; flex-direction:column; gap:2px; padding:11px 12px; margin:0 -12px; border-radius:12px; color:var(--ink); text-decoration:none;}
+.settings-link:hover{background:rgba(110,74,134,0.07); text-decoration:none;}
+.settings-link strong{font-size:0.98rem;}
+.settings-link strong::after{content:" →"; color:#A85C7E;}
+.settings-link span{font-size:0.84rem; color:var(--muted);}
+.family-link{margin:20px 0 0; padding:16px 18px;}
+.settings-side .panel:first-child{margin-top:0;}
+.dash-actions{justify-content:flex-end;}
+@media (max-width:960px){ .settings-layout{grid-template-columns:minmax(0, 1fr);} }

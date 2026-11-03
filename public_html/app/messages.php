@@ -326,7 +326,7 @@ function notify_staff_message(array $member, array $from, string $body, ?int $no
     $to = $to ?: config('notify_email');
     if ($to) {
         send_mail($to, 'Žinutė nuo ' . $from['first_name'] . ' (' . $member['first_name'] . ' ' . $member['last_name'] . ')',
-            $from['first_name'] . ' ' . $from['last_name'] . " rašo:\n\n" . $body . "\n\nAtsakyti: " . abs_url('admin/zinutes.php?m=' . (int) $member['id']));
+            $from['first_name'] . ' ' . $from['last_name'] . " rašo:\n\n" . $body . "\n\nAtsakyti: " . abs_url('admin/?pokalbis=' . (int) $member['id']));
     }
 }
 

@@ -90,7 +90,7 @@ $selected = is_post() ? array_map('intval', (array) ($_POST['groups'] ?? [])) : 
 
 page_start('Atšauktos treniruotės', ['admin' => true]);
 ?>
-<a class="small" href="<?= url('admin/#nustatymai') ?>">← Nustatymai</a>
+<a class="small" href="<?= url('admin/nustatymai.php') ?>">← Nustatymai</a>
 <h1 class="styled" style="margin-top:8px;">Atšauktos treniruotės ir atostogos</h1>
 <p class="muted">Pažymėtomis dienomis treniruotė rodoma kaip atšaukta: „Šiandien“, „Treniruotė“, nario tvarkaraštyje ir pagrindiniame puslapyje (3 sav. prieš).</p>
 <?= form_errors($errors) ?>

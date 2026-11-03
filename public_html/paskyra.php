@@ -157,7 +157,6 @@ if ($active) {
     $unreadIds = array_map('intval', array_column(array_filter($notes, function ($n) { return !$n['is_task'] && $n['read_at'] === null; }), 'id'));
     // Žinutės su treneriu: atsakymai po pastabomis, klausimai prie pamokų ir bendros. Atidarius - trenerio atsakymai perskaityti.
     $noteMsgs = note_messages(array_column($notes, 'id'));
-    $threads = member_free_threads((int) $selected['id']);
     // Nauji Denio atsakymai: po vieną (naujausią) kiekvienai temai. Lieka „Svarbu“, kol paspaudžiama „Perskaičiau“ ar atidaromas pokalbis.
     $newReplies = [];
     foreach (message_rows('mm.member_id = ? AND mm.from_staff = 1 AND mm.read_at IS NULL', [(int) $selected['id']]) as $r) {
@@ -300,11 +299,7 @@ page_start($tab === 'nustatymai' ? 'Nustatymai' : 'Mano paskyra', ['noindex' => 
 <?php endif; ?>
 
 <?php if ($isStaff): ?>
-  <!-- Trenerio paskyra: reitingas, renginiai, lankomumas - skiltyje Treneriams; čia tik savo šeima (jei treniruojasi) ir nustatymai -->
-  <div class="panel card row between" style="gap:14px; flex-wrap:wrap;">
-    <p class="muted" style="margin:0;">Tai trenerio paskyra. Reitingas, lankomumas, renginiai, nariai ir paskyros nustatymai - skiltyje <strong>Paskyra</strong>.</p>
-    <a class="btn btn-primary" href="<?= url('admin/') ?>">Į Paskyrą →</a>
-  </div>
+  <!-- Trenerio šeimos nariai (jei treniruojasi): taškai, pastabos, egzaminas - kaip mato narys. Visa kita - „Paskyra“ (Treneriams). -->
   <?php if ($members): ?><h2 style="margin:28px 0 12px;">Nariai mano paskyroje</h2><?php endif; ?>
 <?php endif; ?>
 
@@ -436,23 +431,6 @@ page_start($tab === 'nustatymai' ? 'Nustatymai' : 'Mano paskyra', ['noindex' => 
     </div>
   <?php endif; ?>
 
-  <?php if ($active): ?>
-    <div class="panel card" id="zinutes" style="margin-top:20px;">
-      <div class="kicker">Žinutės Deniui</div>
-      <p class="small muted" style="margin-top:-4px;">Žinutę ar klausimą mato tik Denis (ir kiti treneriai), o atsakymą - tik jūs<?= $selected['relation'] === 'parent' ? ' ir ' . e($selected['first_name']) : '' ?>. Parašyti galima ir bet kuriame puslapyje - mygtukas 💬 apačioje dešinėje.</p>
-      <?php foreach ($threads as $key => $msgs): ?>
-        <div class="msg-topic">
-          <div class="msg-topic-title"><?= message_topic_title($key, $msgs[0]) ?></div>
-          <div class="msg-thread"><?php foreach ($msgs as $r): ?><?= render_message($r, false) ?><?php endforeach; ?></div>
-          <?php if ($key !== 'general'): ?>
-            <details class="msg-reply"><summary>💬 Atsakyti</summary><?= message_form('msg', ['member_id' => (int) $selected['id']] + message_topic_hidden($key), 'Jūsų žinutė', 'Siųsti', url('zinute.php')) ?></details>
-          <?php endif; ?>
-        </div>
-      <?php endforeach; ?>
-      <?= message_form('msg', ['member_id' => (int) $selected['id']], 'Parašykite Deniui' . (count($members) > 1 ? ' (' . $selected['first_name'] . ')' : ''), 'Siųsti Deniui', url('zinute.php')) ?>
-    </div>
-  <?php endif; ?>
-
   <div class="panel card" style="margin-top:20px;">
     <div class="kicker">Istorija</div>
     <?php if (!$active || !$history): ?>
@@ -472,7 +450,6 @@ page_start($tab === 'nustatymai' ? 'Nustatymai' : 'Mano paskyra', ['noindex' => 
     <?php endif; ?>
   </div>
 
-  <p class="small" style="margin-top:18px;"><a href="?skiltis=nustatymai&amp;m=<?= (int) $selected['id'] ?>">Nario duomenys, diržas ir paskyros nustatymai →</a></p>
 <?php endif; ?>
 
 <?php if ($selected && $tab === 'nustatymai'): ?>
@@ -566,7 +543,8 @@ page_start($tab === 'nustatymai' ? 'Nustatymai' : 'Mano paskyra', ['noindex' => 
 <?php endif; ?>
 
 <?php if ($tab === 'nustatymai'): ?>
-  <?= render_account_settings($a) ?>
+  <?php // Treneriui paskyros nustatymai - Treneriams → Nustatymai (kad nesikartotų) ?>
+  <?= is_staff($a) ? '' : render_account_settings($a) ?>
   <?= render_app_install_card() ?>
 <?php endif; ?>
 <?php

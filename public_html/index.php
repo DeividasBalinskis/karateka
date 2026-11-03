@@ -72,7 +72,7 @@ foreach ($visible as $i => $b) {
     <?php endforeach; ?>
     <button type="button" class="hb-add-cancel">Atšaukti</button>
   </div>
-  <script>window.HOME_API = <?= json_encode(['url' => url('admin/puslapis.php'), 'csrf' => csrf_token(), 'fragment' => url('admin/tvarkarastis.php?fragment=')]) ?>;</script>
+  <script>window.HOME_API = <?= json_encode(['url' => url('admin/puslapis.php'), 'csrf' => csrf_token()]) ?>;</script>
   <script src="<?= e(asset_url('assets/vendor/sortable.min.js')) ?>"></script>
   <script src="<?= e(asset_url('assets/home-editor.js')) ?>"></script>
 <?php elseif (is_admin()): ?>

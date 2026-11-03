@@ -264,7 +264,6 @@ page_start('Testai', ['admin' => true]);
     <p class="muted" style="margin:0;">Klausimai parenkami atsitiktinai iš banko. Išlaikius - „Leidžiama laikyti praktiką“ (galioja <?= QUIZ_VALID_MONTHS ?> mėn.).</p>
   </div>
   <div class="row" style="gap:8px;">
-    <a class="btn btn-ghost" href="<?= url('admin/programa.php') ?>">Egzaminų programa</a>
     <a class="btn btn-primary" href="?new=1">+ Naujas testas</a>
   </div>
 </div>
