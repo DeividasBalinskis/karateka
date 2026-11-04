@@ -64,7 +64,7 @@ page_start('Naujienos', ['description' => 'VšĮ Karate Ateitis klubo naujienos:
   <div class="eyebrow">Klubo gyvenimas</div>
   <h1 class="styled">Naujienos</h1>
 </div>
-<?= staff_bar([['+ Nauja naujiena', 'admin/naujienos.php?edit=new', true], ['🙂 Reakcijų emoji', 'admin/naujienos.php?emoji=1']]) ?>
+<?= staff_bar([['+ Nauja naujiena', 'admin/naujienos.php?edit=new', true]]) ?>
 <?php if ($drafts): ?>
   <div class="panel card drafts-box">
     <div class="kicker">Juodraščiai ir suplanuotos - mato tik treneriai</div>
@@ -120,13 +120,14 @@ function news_script(): void
     ?>
 <script>
 (function () {
-  // Kad emoji sąrašas neišlįstų už kortelės ar ekrano krašto (telefone)
+  // Kad emoji sąrašas neišlįstų už ekrano krašto: per siaura - pastumiama kairėn, viršuje nėra vietos - atsidaro žemyn
   function place(box) {
-    var p = box.querySelector('.r-picker'), card = box.closest('.news-card, .card');
+    var p = box.querySelector('.r-picker');
     p.style.left = '';
-    var r = p.getBoundingClientRect(),
-        max = Math.min(document.documentElement.clientWidth, card ? card.getBoundingClientRect().right : 1e9) - 8;
-    if (r.right > max) p.style.left = (max - r.right) + 'px';
+    box.classList.remove('below');
+    var r = p.getBoundingClientRect(), max = document.documentElement.clientWidth - 8;
+    if (r.right > max) p.style.left = Math.max(8 - box.getBoundingClientRect().left, max - r.right) + 'px';
+    if (r.top < 70) box.classList.add('below');
   }
   function closeAll(except) {
     document.querySelectorAll('.r-add.open').forEach(function (b) {
@@ -135,10 +136,6 @@ function news_script(): void
       b.querySelector('.reaction-add').setAttribute('aria-expanded', 'false');
     });
   }
-  document.querySelectorAll('.r-add').forEach(function (box) {
-    box.addEventListener('mouseenter', function () { place(box); });
-    box.addEventListener('mouseleave', function () { box.classList.remove('picked'); });
-  });
   document.addEventListener('click', function (ev) {
     var add = ev.target.closest('.reaction-add');
     if (add) {
@@ -170,7 +167,6 @@ function news_script(): void
     ev.preventDefault();
     var btn = ev.submitter, data = new FormData(form);
     if (btn) data.set('emoji', btn.value);
-    var box = form.querySelector('.r-add');
     fetch(form.action, { method: 'POST', body: data, headers: { 'Accept': 'application/json' }, credentials: 'same-origin' })
       .then(function (r) { return r.json(); })
       .then(function (res) {
@@ -179,7 +175,6 @@ function news_script(): void
         form.querySelector('.r-used').innerHTML = res.chips;
         form.querySelectorAll('.pick').forEach(function (b) { b.classList.toggle('mine', b.value === res.mine); });
         closeAll(null);
-        if (box) box.classList.add('picked');   // kad sąrašas nesimatytų, kol pelė dar virš jo
       })
       .catch(function () { form.submit(); });
   });

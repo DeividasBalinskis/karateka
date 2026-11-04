@@ -12,7 +12,7 @@ const admin = ['admin/', 'admin/nustatymai.php', 'admin/treniruote.php', 'admin/
   'admin/tvarkarastis.php', 'admin/taskai.php', 'admin/varzybos.php', 'admin/testai.php', 'admin/programa.php', 'admin/programa.php?dirzas=2',
   'admin/pranesimai.php', 'admin/sms.php', 'admin/paskyros.php', 'admin/patvirtinimai.php', 'admin/renginiai.php?edit=new', 'admin/renginiai.php?edit=17',
   'admin/renginio-dalyviai.php?id=17', 'admin/renginio-dalyviai.php?id=18', 'admin/renginio-rezultatai.php?id=6', 'admin/naujienos.php?edit=new',
-  'admin/naujienos.php?edit=1', 'admin/naujienos.php?emoji=1', 'admin/pamokos.php', 'admin/kopijos.php', 'admin/atsaukimai.php', 'admin/atsaukimai.php?g=1&d=2030-01-07', 'pamokos.php?tvarkyti=1', 'pamokos.php?nauja=1',
+  'admin/naujienos.php?edit=1', 'admin/testavimas.php', 'admin/pamokos.php', 'admin/kopijos.php', 'admin/atsaukimai.php', 'admin/atsaukimai.php?g=1&d=2030-01-07', 'pamokos.php?tvarkyti=1', 'pamokos.php?nauja=1',
   'pamokos.php?id=1&keisti=1', 'index.php?redaguoti=1', 'admin/puslapis.php', 'pokalbis.php?list=1', 'pokalbis.php?list=1&q=tom', 'pokalbis.php?m=4'];
 const coach = ['admin/', 'admin/nustatymai.php', 'admin/atsaukimai.php', 'admin/treniruote.php?g=12', 'admin/nariai.php', 'admin/nariai.php?id=2', 'admin/taskai.php', 'admin/programa.php', 'pokalbis.php?list=1'];
 

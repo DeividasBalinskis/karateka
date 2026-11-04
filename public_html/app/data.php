@@ -128,11 +128,10 @@ function set_site_setting(string $name, string $value): void
 
 // ---------- Reakcijos į naujienas ----------
 
-/** Emoji, kuriuos nariai gali pasirinkti (nustato adminas) */
+/** Emoji, kuriuos nariai gali pasirinkti - visas sąrašas (REACTION_CHOICES) */
 function allowed_reactions(): array
 {
-    $list = array_values(array_filter(explode(' ', (string) site_setting('reactions', implode(' ', REACTIONS)))));
-    return $list ?: REACTIONS;
+    return array_merge(...array_values(REACTION_CHOICES));
 }
 
 /** Reakcija HTML: emoji arba diržo / teisėjo vėliavėlių ženkliukas ("belt:N", "teisejas") */
@@ -174,9 +173,10 @@ function render_reaction_chips(int $newsId, ?string $mine): string
         $label = reaction_html((string) $emoji) . '<span class="count">' . $count . '</span>';
         if (in_array($emoji, $allowed, true) || $mine === $emoji) {
             $html .= '<button type="submit" name="emoji" value="' . e($emoji) . '" class="reaction' . ($mine === $emoji ? ' mine' : '') . '"'
+                . ($mine === $emoji ? ' title="Jūsų reakcija - paspaudus nuimama"' : '')
                 . ' aria-label="' . e(reaction_label((string) $emoji)) . ' ' . $count . ($mine === $emoji ? ' (jūsų - paspaudus nuimama)' : '') . '">' . $label . '</button>';
         } else {
-            // Adminas šį emoji išjungė: reakcijos lieka matomos, bet naujų pridėti nebegalima
+            // Emoji, kurio nebėra sąraše: reakcijos lieka matomos, bet naujų pridėti nebegalima
             $html .= '<span class="reaction off" title="Šis emoji nebenaudojamas">' . $label . '</span>';
         }
     }
@@ -189,9 +189,13 @@ function render_reactions(int $newsId): string
     $a = current_account();
     $mine = $a ? q_value('SELECT emoji FROM reactions WHERE news_id = ? AND account_id = ?', [$newsId, $a['id']]) : false;
     $mine = $mine === false || $mine === null ? null : (string) $mine;
+    // Visi emoji pagal grupes; paspaudus savo (pažymėtą) - reakcija nuimama
     $picker = '';
-    foreach (allowed_reactions() as $emoji) {
-        $picker .= '<button type="submit" name="emoji" value="' . e($emoji) . '" class="pick' . ($mine === $emoji ? ' mine' : '') . '" role="menuitem" aria-label="Reaguoti: ' . e(reaction_label($emoji)) . '" title="' . e(reaction_label($emoji)) . '">' . reaction_html($emoji) . '</button>';
+    foreach (REACTION_CHOICES as $group => $list) {
+        $picker .= '<span class="r-group" role="presentation">' . e($group) . '</span>';
+        foreach ($list as $emoji) {
+            $picker .= '<button type="submit" name="emoji" value="' . e($emoji) . '" class="pick' . ($mine === $emoji ? ' mine' : '') . '" role="menuitem" aria-label="Reaguoti: ' . e(reaction_label($emoji)) . '" title="' . e(reaction_label($emoji)) . '">' . reaction_html($emoji) . '</button>';
+        }
     }
     return '<form class="reactions" method="post" action="' . url('reakcija.php') . '" data-news="' . $newsId . '">'
         . csrf_field() . '<input type="hidden" name="news_id" value="' . $newsId . '">'
@@ -387,12 +391,28 @@ function render_attendance(int $memberId): string
 
 // ---------- Trenerio „Šiandien“ ----------
 
-/** Papildomi „Reikia padaryti“ punktai iš kitų dalių: [[tekstas, kelias, mygtukas], ...] */
-function admin_today_extra_todo(): array
+/** „Reikia padaryti“ punktai treneriui: [[tekstas, kelias, mygtukas], ...]. Skaičius rodomas ir ant „Paskyra“ mygtuko. */
+function admin_todo_items(): array
 {
+    static $todo = null;
+    if ($todo !== null) {
+        return $todo;
+    }
     $todo = [];
+    if ($n = pending_approvals_count()) {
+        $todo[] = ['Laukia patvirtinimo: ' . $n . ($n === 1 ? ' paskyra ar vaikas' : ' paskyros ar vaikai'), 'admin/patvirtinimai.php', 'Patvirtinti'];
+    }
+    // Praėję renginiai be įvestų rezultatų (paskutinės 30 d.)
+    $types = "'" . implode("','", array_keys(EVENT_RESULTS)) . "'";
+    foreach (q_all("SELECT e.* FROM events e
+                     WHERE e.type IN ($types) AND COALESCE(e.ends_on, e.starts_on) BETWEEN DATE_SUB(CURDATE(), INTERVAL 30 DAY) AND DATE_SUB(CURDATE(), INTERVAL 1 DAY)
+                       AND NOT EXISTS (SELECT 1 FROM point_awards pa WHERE pa.event_id = e.id)
+                     ORDER BY e.starts_on DESC") as $ev) {
+        $todo[] = ['Įvesk rezultatus: ' . $ev['title'] . ' (' . fmt_date($ev['starts_on']) . ')', 'admin/renginio-rezultatai.php?id=' . (int) $ev['id'], 'Rezultatai'];
+    }
+    // Naujos žinutės ir komentarai (prie renginių, naujienų, pamokų) - viena eilutė, atsidaro pokalbis
     if ($n = staff_unread_messages()) {
-        $todo[] = ['Naujos narių žinutės: ' . $n, 'admin/zinutes.php', 'Atsakyti'];
+        $todo[] = ['Naujos žinutės ir komentarai: ' . $n, 'admin/zinutes.php', 'Atsakyti'];
     }
     try {
         if ($n = (int) q_value('SELECT COUNT(*) FROM anon_feedback WHERE read_at IS NULL')) {

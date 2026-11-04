@@ -30,7 +30,7 @@ page_start('Privatumo politika', ['description' => 'Kaip VšĮ Karate Ateitis tv
     <li><strong>Klubo veikla:</strong> lankomumas, dalyvavimas renginiuose, egzaminų ir varžybų rezultatai, taškai ir lygiai, pažymėti egzamino programos punktai, testų rezultatai.</li>
     <li><strong>Trenerio pastabos, užduotys ir žinutės</strong> tarp nario (ar tėvų) ir trenerių.</li>
     <li><strong>Komentarai ir klausimai</strong> prie renginių ir naujienų. Juos gauna treneriai. Treneris gali klausimą su atsakymu paskelbti prie renginio ar naujienos -
-        be vardo arba su vardu ir pavardės pirmąja raide. Parašius anonimiškai, vardas niekada neskelbiamas, bet treneriai mato, kas parašė.</li>
+        be jūsų vardo. Savo komentarą ar žinutę galite ištrinti patys.</li>
     <li><strong>Sutikimai:</strong> ar atsisakyta nuotraukų skelbimo, tėvų patvirtinimas vaiko paskyrai ir kada tai padaryta.</li>
     <li><strong>Reakcijos</strong> į naujienas.</li>
   </ul>

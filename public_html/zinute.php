@@ -52,13 +52,10 @@ if ($body === '') {
     fail('Įrašykite žinutę.', $back, $ajax);
 }
 $msgId = add_member_message($mid, (int) $a['id'], false, $body, $noteId, $lessonId, $eventId, $newsId);
-$anonymous = !empty($_POST['anonymous']);
-if ($anonymous || post('page') !== '') {
-    q('UPDATE member_messages SET anonymous = ?, page = ? WHERE id = ?', [$anonymous ? 1 : 0, mb_substr(preg_replace('~[^\w/.\-?=&%#]~u', '', post('page')), 0, 190) ?: null, $msgId]);
+if (post('page') !== '') {
+    q('UPDATE member_messages SET page = ? WHERE id = ?', [mb_substr(preg_replace('~[^\w/.\-?=&%#]~u', '', post('page')), 0, 190) ?: null, $msgId]);
 }
-if ($lessonId || $eventId || $newsId || $anonymous) {
-    notify_comment($m, $a, $msgId);   // Deniui - pranešimas paskyroje su nuoroda ten, kur paliktas komentaras
-}
+// Deniui atskiro pranešimo nėra: nauja žinutė matoma pokalbio mygtuko skaičiuke ir „Šiandien“ (be to - laiškas, žr. notify_staff_message)
 notify_staff_message($m, $a, $body, $noteId);
 if ($ajax) {
     header('Content-Type: application/json; charset=utf-8');

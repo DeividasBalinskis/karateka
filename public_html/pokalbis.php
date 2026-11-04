@@ -1,5 +1,5 @@
 <?php
-// Pokalbio langelio API (assets/chat.js). Narys: savo pokalbis su Deniu, anoniminis komentaras, užuomina po prisijungimo.
+// Pokalbio langelio API (assets/chat.js). Narys: savo pokalbis su Deniu, užuomina po prisijungimo, savo žinutės ištrynimas.
 // Treneris: pokalbių sąrašas su paieška, vieno nario pokalbis, atsakymas (ir prie renginio / naujienos / pamokos), paviešinimas.
 // Nario žinutė siunčiama per zinute.php (ajax=1). Formos be JS (atsakymas prie įrašo) - grąžinama atgal (back).
 require __DIR__ . '/app/bootstrap.php';
@@ -48,22 +48,18 @@ if (is_post()) {
         chat_out(['ok' => true]);
     }
 
-    // Anoniminis komentaras: Denis mato, kas parašė; paviešinus kitiems vardas nerodomas
-    if ($action === 'anon' && !$isStaff) {
-        $mid = (int) post('member_id');
-        $m = q_one('SELECT * FROM members WHERE id = ? AND status = "active"', [$mid]);
-        $body = trim(str_replace("\r\n", "\n", post('body')));
-        if (!$m || !account_relation($aid, $mid)) {
-            chat_out(['ok' => false, 'error' => 'Narys nerastas.'], 404);
+    // Savo žinutę ar komentarą galima ištrinti (narys ar tėvai - savo, treneris - savo atsakymą)
+    if ($action === 'delete') {
+        $msg = q_one('SELECT * FROM member_messages WHERE id = ? AND author_id = ?', [(int) post('message_id'), $aid]);
+        if (!$msg) {
+            chat_fail($ajax, 'Žinutė nerasta.', $back, 404);
         }
-        if ($body === '') {
-            chat_out(['ok' => false, 'error' => 'Įrašykite komentarą.']);
+        q('DELETE FROM member_messages WHERE id = ?', [(int) $msg['id']]);
+        q('DELETE FROM notifications WHERE type = "comment" AND ref_id = ?', [(int) $msg['id']]);
+        if (!$ajax) {
+            flash('ok', 'Ištrinta.');
+            redirect($back);
         }
-        $page = mb_substr(preg_replace('~[^\w/.\-?=&%#]~u', '', post('page')), 0, 190);
-        $ctx = chat_page_context($page);
-        $id = add_member_message($mid, $aid, false, $body, null, $ctx['lesson_id'] ?? null, $ctx['event_id'] ?? null, $ctx['news_id'] ?? null);
-        q('UPDATE member_messages SET anonymous = 1, page = ? WHERE id = ?', [$page !== '' ? $page : null, $id]);
-        notify_comment($m, $a, $id);
         chat_out(['ok' => true]);
     }
 
@@ -92,8 +88,7 @@ if (is_post()) {
     if ($action === 'publish') {
         $msg = q_one('SELECT * FROM member_messages WHERE id = ? AND member_id = ? AND from_staff = 0', [(int) post('message_id'), $mid]);
         if ($msg) {
-            $field = post('field') === 'show_name' && !$msg['anonymous'] ? 'show_name' : 'is_public';
-            q("UPDATE member_messages SET $field = 1 - $field WHERE id = ?", [(int) $msg['id']]);
+            q('UPDATE member_messages SET is_public = 1 - is_public WHERE id = ?', [(int) $msg['id']]);
         }
         if (!$ajax) {
             redirect($back);

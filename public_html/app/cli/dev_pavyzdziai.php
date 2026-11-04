@@ -82,14 +82,9 @@ if ($upgrade) {
     // Nauji v1.9: anoniminis komentaras su autoriumi ir neatsakytas komentaras prie stovyklos
     $id = add_member_message((int) $tomas['id'], (int) $adult['id'], false, 'TEST: Gal galėtumėte vasarą kartais treniruotis lauke? (anoniminis komentaras - Denis mato, kas parašė, ir gali paviešinti be vardo)');
     q('UPDATE member_messages SET anonymous = 1, page = "/renginiai.php" WHERE id = ?', [$id]);
-    notify_comment($tomas, $adult, $id);
     $camp = q_one('SELECT * FROM events WHERE title = "TEST: Stovykla - registracija vyksta" ORDER BY id DESC LIMIT 1');
     if ($camp && $teen) {
         $id = add_member_message((int) $austeja['id'], (int) $teen['id'], false, 'TEST: Ar stovykloje bus maitinimas?', null, null, (int) $camp['id']);
-        notify_comment($austeja, $teen, $id);
-    }
-    if (site_setting('reactions') === null) {
-        set_site_setting('reactions', '👍 ❤️ 🔥 👏 🥋 belt:2 belt:4 belt:10 teisejas');
     }
     dev_examples_v110($admin, $parent);
     exit("Ankstesni pavyzdžiai pažymėti „TEST:“, pridėti nauji (komentarai, anoniminis komentaras, atšauktos treniruotės).\n");
@@ -165,13 +160,10 @@ $q = $msg($jonas, (int) $parent['id'], false, 'TEST: Ar reikia pasiimti miegmai�
 q('UPDATE member_messages SET is_public = 1, read_at = NOW() WHERE id = ?', [$q]);
 $msg($jonas, $by, true, 'TEST: Taip, miegmaišį ir pagalvę pasiimkite. (paviešintas atsakymas - mato visi nariai)', $ago(100), (int) $camp['id']);
 q('UPDATE member_messages SET read_at = NOW() WHERE member_id = ? AND event_id = ? AND from_staff = 1', [(int) $jonas['id'], (int) $camp['id']]);
-// Anoniminis komentaras: Denis mato, kas parašė (Tomas), paviešinus - be vardo
-$anonId = $msg($tomas, (int) $adult['id'], false, 'TEST: Gal galėtumėte vasarą kartais treniruotis lauke? (anoniminis komentaras - Denis mato, kas parašė, ir gali paviešinti be vardo)', $ago(30));
-q('UPDATE member_messages SET anonymous = 1, page = "/renginiai.php" WHERE id = ?', [$anonId]);
-notify_comment($tomas, $adult, $anonId);
-// Komentaras prie stovyklos, dar neatsakytas - Deniui pranešimas „Komentaras“ su nuoroda į renginį
-$c = $msg($austeja, (int) $teen['id'], false, 'TEST: Ar stovykloje bus maitinimas?', $ago(20), (int) $camp['id']);
-notify_comment($austeja, $teen, $c);
+// Bendras pasiūlymas pokalbyje
+$msg($tomas, (int) $adult['id'], false, 'TEST: Gal galėtumėte vasarą kartais treniruotis lauke?', $ago(30));
+// Komentaras prie stovyklos, dar neatsakytas - matosi pokalbio skaičiuke ir „Šiandien“
+$msg($austeja, (int) $teen['id'], false, 'TEST: Ar stovykloje bus maitinimas?', $ago(20), (int) $camp['id']);
 
 // ---------- Pranešimas visiems (paskyroje) ----------
 $title = 'TEST: Pranešimas nariams';
@@ -195,11 +187,6 @@ q('UPDATE training_groups SET price_note = "30 €/mėn. (1 kartą per savaitę)
 
 // Pokalbio užuomina - visiems po prisijungimo
 q('UPDATE accounts SET chat_hint_at = NULL');
-
-// Reakcijos: ir diržų spalvos bei teisėjo vėliavėlės (jei adminas dar nieko nekeitė)
-if (site_setting('reactions') === null) {
-    set_site_setting('reactions', '👍 ❤️ 🔥 👏 🥋 belt:2 belt:4 belt:10 teisejas');
-}
 
 dev_examples_v110($admin, $parent);
 

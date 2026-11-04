@@ -77,27 +77,28 @@ test('parent: celebration, Svarbu, invitations, exam program, quiz XP, chat, com
   await p.fill('#chatPanel .chat-form textarea', 'Ačiū už atsakymą!');
   await p.click('#chatPanel .chat-form button'); await p.waitForTimeout(900);
   check('chat sent', await p.locator('#chatPanel .chat-msg').count() === before + 1);
-  await p.click('#chatPanel .chat-tabs button[data-tab=anon]');
-  const anon0 = +sql('SELECT COUNT(*) FROM member_messages WHERE anonymous=1');
-  await p.fill('#chatPanel .chat-anon textarea', 'Labai patinka nauja svetainė');
-  await p.click('#chatPanel .chat-anon button'); await p.waitForTimeout(700);
-  check('anon saved', +sql('SELECT COUNT(*) FROM member_messages WHERE anonymous=1') === anon0 + 1);
-  check('anon has author for Denis', +sql("SELECT COUNT(*) FROM member_messages WHERE anonymous=1 AND body='Labai patinka nauja svetainė' AND author_id IS NOT NULL") === 1);
-  check('anon page stored', sql("SELECT page FROM member_messages WHERE body='Labai patinka nauja svetainė'").includes('renginiai'));
-  check('anon notif to admin', +sql("SELECT COUNT(*) FROM notifications WHERE type='comment' AND done_at IS NULL AND title LIKE 'Anoniminis%'") >= 2);
+  check('no anonymous tab', await p.locator('#chatPanel .chat-tabs, #chatPanel .chat-anon').count() === 0);
+  check('chat page stored', sql("SELECT page FROM member_messages WHERE body='Ačiū už atsakymą!'").includes('renginiai'));
+  // Savo žinutę galima ištrinti
+  await p.fill('#chatPanel .chat-form textarea', 'Klaida - ištrinsiu');
+  await p.click('#chatPanel .chat-form button'); await p.waitForTimeout(900);
+  await p.locator('#chatPanel .chat-msg', { hasText: 'Klaida - ištrinsiu' }).locator('.chat-del').click(); await p.waitForTimeout(900);
+  check('own chat message deleted', +sql("SELECT COUNT(*) FROM member_messages WHERE body='Klaida - ištrinsiu'") === 0
+    && await p.locator('#chatPanel .chat-msg', { hasText: 'Klaida - ištrinsiu' }).count() === 0);
+  check('no notification per comment', +sql("SELECT COUNT(*) FROM notifications WHERE type='comment' AND body LIKE '%Ačiū už atsakymą%'") === 0);
   // event page public Q&A + own question
   await p.goto('renginys.php?id=' + camp);
   check('public QA visible', await p.locator('.q-public .q-item').count() >= 1);
   await p.selectOption('#klausimai select[name=member_id]', String(I.austeja));
   await p.fill('#klausimai textarea', 'Ar bus maitinimas?');
-  await nav(p, () => p.click('#klausimai button[type=submit]'));
+  await nav(p, () => p.click('#klausimai .q-form button[type=submit]'));
   check('question saved with event', +sql(`SELECT COUNT(*) FROM member_messages WHERE event_id=${camp} AND body='Ar bus maitinimas?'`) === 1);
-  check('comment notif links to post', sql(`SELECT link FROM notifications WHERE type='comment' AND body LIKE '%Ar bus maitinimas?%' ORDER BY id DESC LIMIT 1`).startsWith(`renginys.php?id=${camp}#q-`));
-  await p.goto('renginys.php?id=' + camp);
-  await p.check('#klausimai input[name=anonymous]');
-  await p.fill('#klausimai textarea', 'Anoniminis klausimas prie renginio');
-  await nav(p, () => p.click('#klausimai button[type=submit]'));
-  check('event anon comment', +sql(`SELECT COUNT(*) FROM member_messages WHERE event_id=${camp} AND anonymous=1 AND body='Anoniminis klausimas prie renginio'`) === 1);
+  check('no anonymous checkbox', await p.locator('#klausimai input[name=anonymous]').count() === 0);
+  // Savo komentarą prie renginio galima ištrinti vietoje
+  await p.fill('#klausimai textarea', 'Netyčia parašiau');
+  await nav(p, () => p.click('#klausimai .q-form button[type=submit]'));
+  await nav(p, () => p.locator('#klausimai .msg', { hasText: 'Netyčia parašiau' }).locator('.msg-del button').click());
+  check('own comment deleted at post', +sql("SELECT COUNT(*) FROM member_messages WHERE body='Netyčia parašiau'") === 0 && p.url().includes('renginys.php?id=' + camp));
   // open event can join, not invited
   await p.goto('renginys.php?id=' + open);
   check('open event join buttons', await p.locator('.ep-reg button', { hasText: 'Dalyvausiu' }).count() === 2);
@@ -134,23 +135,20 @@ test('admin: notifications, chat, comments at the post, broadcast, events, atten
   check('late approved notif member', +sql(`SELECT COUNT(*) FROM notifications WHERE type='late_approved' AND member_id=${I.jonas}`) >= 1);
   await nav(a, () => a.locator('#svarbu .notif.t-exam_registration button').first().click());
   check('exam reg dismissed', await a.locator('#svarbu .notif.t-exam_registration').count() === 0);
-  // Komentarai: pranešimas veda į įrašą; bendras - atidaro pokalbį
-  check('admin has comment', types.includes('t-comment'));
-  const cHref = await a.locator('#svarbu .notif.t-comment', { hasText: 'Ar bus maitinimas?' }).first().locator('a.btn', { hasText: 'Atsakyti' }).getAttribute('href');
-  check('comment Atsakyti -> post', /renginys\.php\?id=\d+#q-\d+/.test(cHref), cHref);
-  const gen = a.locator('#svarbu .notif.t-comment', { hasText: 'vasarą' }).first();
-  check('general comment opens chat', await gen.locator('a.btn[data-open-chat]').count() === 1);
-  await gen.locator('a.btn[data-open-chat]').click(); await a.waitForTimeout(1200);
+  // Komentarai: atskirų pranešimų nėra - viena eilutė „Naujos žinutės ir komentarai“, atidaro pokalbį
+  check('no comment notifications', !types.includes('t-comment'));
+  const msgTodo = a.locator('#svarbu .notif', { hasText: 'Naujos žinutės ir komentarai' });
+  check('one todo line for messages', await msgTodo.count() === 1);
+  await msgTodo.locator('a.btn[data-open-chat]').click(); await a.waitForTimeout(1200);
   check('chat panel opened (no redirect)', await a.locator('#chatPanel').isVisible() && /\/admin\/(#svarbu)?$/.test(a.url()), a.url());
-  check('chat thread shows anon tag', await a.locator('#chatPanel .chat-thread .chat-tag.anon').count() >= 1);
+  await a.fill('#chatPanel .chat-search', 'Tomas'); await a.waitForTimeout(1200);
+  await a.locator('#chatPanel .chat-list .chat-person', { hasText: 'Tomas' }).first().click(); await a.waitForTimeout(1200);
   check('chat title Tomas', /Tomas/.test(await a.locator('#chatPanel .chat-main .chat-title').textContent()));
-  await a.locator('#chatPanel .chat-thread .chat-msg', { hasText: 'vasarą' }).locator('button', { hasText: 'Rodyti visiems' }).click(); await a.waitForTimeout(900);
-  check('anon published', +sql("SELECT is_public FROM member_messages WHERE body LIKE 'TEST: Gal galėtumėte vasarą%'") === 1);
+  await a.fill('#chatPanel .chat-search', ''); await a.waitForTimeout(600);
   await a.fill('#chatPanel .chat-form textarea', 'Žinoma, ateik!');
   await a.click('#chatPanel .chat-form .chat-send'); await a.waitForTimeout(1000);
   check('reply saved', +sql(`SELECT COUNT(*) FROM member_messages WHERE member_id=${I.tomas} AND from_staff=1 AND body='Žinoma, ateik!'`) === 1);
   check('reply shown in chat', await a.locator('#chatPanel .chat-msg.mine', { hasText: 'Žinoma, ateik!' }).count() === 1);
-  check('tomas comment notif resolved', +sql(`SELECT COUNT(*) FROM notifications WHERE type='comment' AND member_id=${I.tomas} AND done_at IS NULL`) === 0);
   // paieška kairėje
   await a.fill('#chatPanel .chat-search', 'Austė'); await a.waitForTimeout(1200);
   const names = await a.locator('#chatPanel .chat-list .chat-person strong').allTextContents();
@@ -158,7 +156,7 @@ test('admin: notifications, chat, comments at the post, broadcast, events, atten
   await a.fill('#chatPanel .chat-search', ''); await a.waitForTimeout(600);
   await a.click('#chatPanel .chat-main .chat-close');
   // Komentaras prie renginio: atsakymas ir paviešinimas čia pat
-  await a.goto(cHref);
+  await a.goto(`renginys.php?id=${camp}#q-${I.austeja}`);
   const th = a.locator('#q-' + I.austeja);
   check('staff sees comment thread at post', await th.count() === 1);
   check('staff sees who and when', /Austėja Petrauskaitė/.test(await th.textContent()) && /šiandien/.test(await th.textContent()));
@@ -279,9 +277,16 @@ test('admin: notifications, chat, comments at the post, broadcast, events, atten
   check('profile has contacts and stats', await a.locator('.mp-modal .mp-contact').count() >= 2 && await a.locator('.mp-modal .mp-stats > div').count() >= 3);
   await a.keyboard.press('Escape');
   await a.click('#chatPanel .chat-main .chat-close');
-  // Reakcijos: diržų spalvos ir teisėjo vėliavėlės
-  await a.goto('admin/naujienos.php?emoji=1');
-  check('belt reactions in settings', /Diržai ir teisėjai/.test(await a.content()));
+  // Reakcijos: visi emoji sąraše (ir diržų spalvos, teisėjo vėliavėlės); savo reakciją galima nuimti; adminas emoji nebeparenka
+  await a.goto('naujienos.php');
+  const card = a.locator('.reactions').first();
+  await card.locator('.reaction-add').click();
+  check('picker has all emoji with groups', await card.locator('.r-picker .pick').count() >= 80 && await card.locator('.r-picker .r-group').count() === 6);
+  await card.locator('.r-picker .pick[value="🐉"]').click(); await a.waitForTimeout(900);
+  check('reacted with any emoji', await card.locator('.reaction.mine', { hasText: '🐉' }).count() === 1);
+  await card.locator('.reaction.mine').click(); await a.waitForTimeout(900);
+  check('own reaction removed', await card.locator('.reaction.mine').count() === 0);
+  check('no emoji settings button', await a.locator('.staff-bar a', { hasText: 'Reakcijų emoji' }).count() === 0);
   // news consent list
   await a.goto('admin/naujienos.php?edit=new');
   check('consent list admin', /Nesutinka/.test(await a.locator('.consent-list').textContent()));

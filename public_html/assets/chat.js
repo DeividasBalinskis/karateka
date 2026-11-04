@@ -1,5 +1,5 @@
 // Pokalbio langelis apačioje dešinėje (app/chat.php, pokalbis.php).
-// Narys: pokalbis su Deniu ir anoniminis komentaras. Treneris: kairėje žmonės su paieška, dešinėje pokalbis (kaip Messenger).
+// Narys: pokalbis su Deniu (savo žinutę galima ištrinti). Treneris: kairėje žmonės su paieška, dešinėje pokalbis (kaip Messenger).
 // Atidarius - naujos žinutės kas 2,5 s; uždarius - skaičiukas tikrinamas kas 20 s.
 (function () {
   'use strict';
@@ -55,8 +55,8 @@
         box.appendChild(c);
       }
       box.appendChild(el('div', 'chat-text', m.body));
+      var tools = el('div', 'chat-tools');
       if (staffView && !m.staff) {
-        var tools = el('div', 'chat-tools');
         if (m.key !== 'general') {
           var r = el('button', 'linklike', '↩ Atsakyti čia');
           r.type = 'button';
@@ -68,15 +68,20 @@
           pub.type = 'button';
           pub.addEventListener('click', function () { publish(m.id, 'is_public'); });
           tools.appendChild(pub);
-          if (m.pub && !m.anon) {
-            var nm = el('button', 'linklike', m.name ? 'be vardo' : 'su vardu');
-            nm.type = 'button';
-            nm.addEventListener('click', function () { publish(m.id, 'show_name'); });
-            tools.appendChild(nm);
-          }
         }
-        if (tools.childNodes.length) box.appendChild(tools);
       }
+      if (m.own) {
+        var del = el('button', 'linklike chat-del', 'Ištrinti');
+        del.type = 'button';
+        del.addEventListener('click', function () {
+          if (!confirm('Ištrinti šią žinutę?')) return;
+          post(cfg.api, { action: 'delete', message_id: m.id })
+            .then(function (d) { if (d.ok) { lastKey = ''; refresh(); } else { alert(d.error || 'Nepavyko.'); } })
+            .catch(function () { alert('Nepavyko - patikrinkite ryšį.'); });
+        });
+        tools.appendChild(del);
+      }
+      if (tools.childNodes.length) box.appendChild(tools);
       thread.appendChild(box);
     });
     if (stick) thread.scrollTop = thread.scrollHeight;
@@ -312,7 +317,7 @@
       .then(function () { btn.disabled = false; });
   });
   var anon = panel.querySelector('.chat-anon');
-  anon.addEventListener('submit', function (ev) {
+  if (anon) anon.addEventListener('submit', function (ev) {
     ev.preventDefault();
     var ta = anon.querySelector('textarea'), btn = anon.querySelector('button'), ok = panel.querySelector('.chat-ok');
     if (!ta.value.trim()) return;

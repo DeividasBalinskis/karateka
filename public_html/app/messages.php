@@ -83,7 +83,7 @@ function mark_staff_messages_read(int $memberId, ?int $refId = null, string $col
 
 /**
  * Viešai parodyti klausimai su atsakymais: [['q' => klausimas, 'answers' => [trenerio atsakymai]], ...].
- * Klausimą viešu padaro Denis; vardas rodomas tik jei jis taip pasirinko (anoniminio - niekada).
+ * Klausimą viešu padaro Denis; klaususiojo vardas nerodomas.
  * $column = null - bendri klausimai (ne prie renginio, naujienos ar pamokos) puslapiui „Klausimai ir atsakymai“.
  */
 function public_questions(?string $column, int $refId = 0): array
@@ -118,8 +118,7 @@ function render_public_questions(array $public): string
     $html = '';
     foreach ($public as $x) {
         $q = $x['q'];
-        $who = !empty($q['show_name']) && empty($q['anonymous']) ? trim($q['member_first'] . ' ' . mb_substr((string) $q['member_last'], 0, 1) . '.') : 'Narys';
-        $html .= '<div class="q-item"><div class="q-q"><span class="q-who">' . e($who) . ' klausė:</span> ' . nl2br(e($q['body'])) . '</div>';
+        $html .= '<div class="q-item"><div class="q-q"><span class="q-who">Narys klausė:</span> ' . nl2br(e($q['body'])) . '</div>';
         foreach ($x['answers'] as $ans) {
             $html .= '<div class="q-a"><span class="q-who">' . e(message_author($ans, false)) . ':</span> ' . nl2br(e($ans['body'])) . '</div>';
         }
@@ -128,12 +127,11 @@ function render_public_questions(array $public): string
     return $html;
 }
 
-/** Treneriui: žinutė su laiku, anoniminio žyma ir mygtukais „Rodyti visiems“ / „su vardu“ */
+/** Treneriui: žinutė su laiku ir mygtuku „Rodyti visiems“ (paviešinta - be vardo); savo atsakymą galima ištrinti */
 function render_staff_comment(array $r, string $back, array $relations): string
 {
     $html = '<div class="msg ' . ($r['from_staff'] ? 'from-staff' : 'from-member') . (!$r['from_staff'] && $r['read_at'] === null ? ' is-new' : '') . '">'
         . '<div class="msg-meta">' . e(chat_author($r, true, $relations)) . ' · ' . e(notification_when($r['created_at']))
-        . (!empty($r['anonymous']) ? ' <span class="badge badge-anon" title="Paviešinus vardas nerodomas">anoniminis</span>' : '')
         . (!$r['from_staff'] && $r['read_at'] === null ? ' <span class="badge badge-new">Nauja</span>' : '') . '</div>'
         . '<div class="msg-body">' . nl2br(e($r['body'])) . '</div>';
     if (!$r['from_staff']) {
@@ -144,10 +142,9 @@ function render_staff_comment(array $r, string $back, array $relations): string
                 . '<input type="hidden" name="back" value="' . e($back) . '"><button class="linklike small" type="submit">' . e($text) . '</button></form>';
         };
         $html .= '<div class="q-publish">' . $form('is_public', !empty($r['is_public']) ? '🔒 Slėpti nuo kitų' : '👁 Rodyti visiems')
-            . (!empty($r['is_public']) && empty($r['anonymous']) ? ' · ' . $form('show_name', !empty($r['show_name']) ? 'be vardo' : 'su vardu') : '')
-            . (!empty($r['is_public']) ? ' <span class="small muted">· matomas visiems ' . (!empty($r['show_name']) && empty($r['anonymous']) ? 'su vardu' : 'be vardo') . '</span>' : '') . '</div>';
+            . (!empty($r['is_public']) ? ' <span class="small muted">· matomas visiems be vardo</span>' : '') . '</div>';
     }
-    return $html . '</div>';
+    return $html . message_delete_form($r, $back) . '</div>';
 }
 
 /**
@@ -207,14 +204,14 @@ function questions_box(string $kind, int $refId, string $back): string
         return $html ? '<div class="panel card q-box" id="klausimai">' . $html . '</div>' : '';
     }
     $html .= '<div class="kicker"' . ($public ? ' style="margin-top:14px;"' : '') . '>💬 Komentaras ar klausimas Deniui</div>'
-        . '<p class="small muted" style="margin-top:-4px;">Mato tik Denis. Atsakymą matysite čia ir pokalbyje.</p>';
+        . '<p class="small muted" style="margin-top:-4px;">Mato tik Denis. Atsakymą matysite čia ir pokalbyje. Jei atsakymas naudingas visiems, Denis gali jį paskelbti - be jūsų vardo.</p>';
     foreach ($members as $m) {
         $rows = message_rows("mm.member_id = ? AND mm.$column = ? AND mm.note_id IS NULL", [(int) $m['id'], $refId]);
         if ($rows) {
             if (count($members) > 1) {
                 $html .= '<div class="msg-topic-title">' . e($m['first_name']) . '</div>';
             }
-            $html .= '<div class="msg-thread">' . implode('', array_map(function ($r) { return render_message($r, false); }, $rows)) . '</div>';
+            $html .= '<div class="msg-thread">' . implode('', array_map(function ($r) use ($back) { return render_message($r, false, $back . '#klausimai'); }, $rows)) . '</div>';
         }
         mark_staff_messages_read((int) $m['id'], $refId, $column);
     }
@@ -230,8 +227,7 @@ function questions_box(string $kind, int $refId, string $back): string
         $form .= '<input type="hidden" name="member_id" value="' . (int) $members[0]['id'] . '">';
     }
     $html .= $form . '<textarea name="body" rows="2" maxlength="' . MESSAGE_MAX . '" placeholder="Jūsų komentaras ar klausimas Deniui" required></textarea>'
-        . '<button class="btn btn-primary btn-sm" type="submit">Siųsti Deniui</button>'
-        . '<label class="check small q-anon"><input type="checkbox" name="anonymous" value="1"><span>Anonimiškai - jei Denis paviešins, mano vardas nebus rodomas</span></label></form>';
+        . '<button class="btn btn-primary btn-sm" type="submit">Siųsti Deniui</button></form>';
     return '<div class="panel card q-box" id="klausimai">' . $html . '</div>';
 }
 
@@ -290,13 +286,26 @@ function message_author(array $r, bool $staffView): string
     return $staffView ? (trim(($r['author_first'] ?? '') . ' ' . ($r['author_last'] ?? '')) ?: 'Narys') : ($r['author_first'] ?: 'Jūs');
 }
 
-function render_message(array $r, bool $staffView): string
+/** Žinutė. $back - kur grįžti ištrynus savo žinutę (tuščia - ištrinti negalima) */
+function render_message(array $r, bool $staffView, string $back = ''): string
 {
     $when = fmt_date(substr($r['created_at'], 0, 10)) . ', ' . substr($r['created_at'], 11, 5);
     $new = ($staffView ? !$r['from_staff'] : $r['from_staff']) && $r['read_at'] === null;
     return '<div class="msg ' . ($r['from_staff'] ? 'from-staff' : 'from-member') . ($new ? ' is-new' : '') . '">'
         . '<div class="msg-meta">' . e(message_author($r, $staffView)) . ' · ' . e($when) . ($new ? ' <span class="badge badge-new">Nauja</span>' : '') . '</div>'
-        . '<div class="msg-body">' . nl2br(e($r['body'])) . '</div></div>';
+        . '<div class="msg-body">' . nl2br(e($r['body'])) . '</div>' . message_delete_form($r, $back) . '</div>';
+}
+
+/** „Ištrinti“ prie savo žinutės (tik autoriui) */
+function message_delete_form(array $r, string $back): string
+{
+    $a = current_account();
+    if ($back === '' || !$a || (int) ($r['author_id'] ?? 0) !== (int) $a['id']) {
+        return '';
+    }
+    return '<form method="post" action="' . e(url('pokalbis.php')) . '" class="inline-form msg-del" onsubmit="return confirm(\'Ištrinti šią žinutę?\')">' . csrf_field()
+        . '<input type="hidden" name="action" value="delete"><input type="hidden" name="message_id" value="' . (int) $r['id'] . '">'
+        . '<input type="hidden" name="back" value="' . e($back) . '"><button class="linklike small" type="submit">Ištrinti</button></form>';
 }
 
 /** Atsakymo forma. $hidden - paslėpti laukai (member_id, note_id, lesson_id...) */

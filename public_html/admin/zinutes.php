@@ -26,14 +26,12 @@ if (get('naujausia') !== '') {
 
 if (is_post() && $member) {
     csrf_check();
-    // Klausimas viešas (rodomas visiems su atsakymu) / su vardu
+    // Klausimas viešas (rodomas visiems su atsakymu, be vardo)
     if (post('action') === 'publish') {
         $msg = q_one('SELECT * FROM member_messages WHERE id = ? AND member_id = ? AND from_staff = 0', [(int) post('message_id'), $mid]);
         if ($msg) {
-            $field = post('field') === 'show_name' ? 'show_name' : 'is_public';
-            q("UPDATE member_messages SET $field = 1 - $field WHERE id = ?", [(int) $msg['id']]);
-            flash('ok', $field === 'is_public' ? ($msg['is_public'] ? 'Klausimas paslėptas - matys tik klausęs.' : 'Klausimas ir atsakymas rodomi visiems prisijungusiems.')
-                : ($msg['show_name'] ? 'Vardas paslėptas.' : 'Rodomas klaususiojo vardas.'));
+            q('UPDATE member_messages SET is_public = 1 - is_public WHERE id = ?', [(int) $msg['id']]);
+            flash('ok', $msg['is_public'] ? 'Klausimas paslėptas - matys tik klausęs.' : 'Klausimas ir atsakymas rodomi visiems prisijungusiems (be vardo).');
         }
         redirect('admin/zinutes.php?m=' . $mid . '#' . preg_replace('~[^a-z0-9]~', '', post('topic')));
     }
@@ -160,8 +158,7 @@ if ($member) {
                 <?= csrf_field() ?><input type="hidden" name="action" value="publish"><input type="hidden" name="member_id" value="<?= $mid ?>">
                 <input type="hidden" name="message_id" value="<?= (int) $r['id'] ?>"><input type="hidden" name="topic" value="<?= e($t['key']) ?>">
                 <button class="linklike small" name="field" value="is_public"><?= !empty($r['is_public']) ? '🔒 Slėpti nuo kitų' : '👁 Rodyti visiems' ?></button>
-                <?php if (!empty($r['is_public'])): ?> · <button class="linklike small" name="field" value="show_name"><?= !empty($r['show_name']) ? 'be vardo' : 'su vardu' ?></button>
-                  <span class="small muted">· dabar rodoma <?= !empty($r['show_name']) ? 'su vardu' : 'be vardo' ?></span><?php endif; ?>
+                <?php if (!empty($r['is_public'])): ?><span class="small muted">· matomas visiems be vardo</span><?php endif; ?>
               </form>
             <?php endif; ?>
           <?php endforeach; ?>

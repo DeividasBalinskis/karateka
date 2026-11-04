@@ -1,8 +1,9 @@
 <?php
 // Pokalbiai su Deniu (langelis apačioje dešinėje, assets/chat.js). Nariui - vienas pokalbis su Deniu (ir treneriais),
 // treneriams - visi pokalbiai: kairėje žmonės su paieška, dešinėje pokalbis. Komentarai prie renginių, naujienų ir pamokų
-// matosi tame pačiame pokalbyje su nuoroda, kur palikti; Denis gauna pranešimą ir gali atsakyti ten pat (prie įrašo) arba pokalbyje.
-// Anoniminis komentaras: Denis mato, kas parašė, bet paviešinus kitiems vardas nerodomas.
+// matosi tame pačiame pokalbyje su nuoroda, kur palikti; Denis atsako ten pat (prie įrašo) arba pokalbyje.
+// Atskiro pranešimo kiekvienam komentarui nėra - nauji matomi pokalbio mygtuko skaičiuke ir „Šiandien“.
+// Paviešinti klausimai rodomi be vardo. Savo žinutę galima ištrinti.
 
 // Puslapių pavadinimai: kur paliktas komentaras iš pokalbio langelio
 const CHAT_PAGE_NAMES = [
@@ -66,7 +67,7 @@ function chat_payload(array $r, bool $staffView, array $relations = []): array
         'url'   => $c['url'] ? url($c['url']) : null,
         'anon'  => !empty($r['anonymous']),
         'pub'   => !empty($r['is_public']),
-        'name'  => !empty($r['show_name']),
+        'own'   => (int) ($r['author_id'] ?? 0) === (int) (current_account()['id'] ?? -1),
         'new'   => ($staffView ? !$r['from_staff'] : (bool) $r['from_staff']) && $r['read_at'] === null,
     ];
 }
@@ -166,24 +167,6 @@ function chat_staff_reply(int $memberId, array $coach, string $body, string $ctx
     return $id;
 }
 
-/** Naujas komentaras prie renginio / naujienos / pamokos (ar anoniminis) - pranešimas Deniui su nuoroda ten, kur paliktas */
-function notify_comment(array $member, array $from, int $messageId): void
-{
-    $r = message_rows('mm.id = ?', [$messageId])[0] ?? null;
-    if (!$r) {
-        return;
-    }
-    $c = message_context($r, true);
-    $who = $from['first_name'] . ' ' . $from['last_name'] . ((int) $from['id'] && account_relation((int) $from['id'], (int) $member['id']) === 'parent' ? ' (' . $member['first_name'] . ' tėvai)' : '');
-    $title = ($r['anonymous'] ? 'Anoniminis komentaras' : 'Komentaras') . ($c['key'] !== 'general' ? ' · ' . $c['label'] : ($c['label'] ? ' · ' . str_replace('Parašyta: ', '', $c['label']) : ''));
-    try {
-        notify_admins('comment', $title, $who . ', ' . notification_when($r['created_at']) . ': ' . mb_strimwidth(preg_replace('~\s+~u', ' ', $r['body']), 0, 220, '…'),
-            $c['url'] ?: 'admin/?pokalbis=' . (int) $member['id'], (int) $member['id'], $messageId);
-    } catch (PDOException $ex) {
-        // dar neimportuotas db/021
-    }
-}
-
 /** Atsakius nariui - jo komentarų pranešimai išsprendžiami */
 function comment_notifications_done(int $memberId): void
 {
@@ -209,7 +192,7 @@ function chat_unread_count(array $a): int
 }
 
 /**
- * Pokalbio langelis apačioje dešinėje. Nariams - pokalbis su Deniu ir anoniminis komentaras,
+ * Pokalbio langelis apačioje dešinėje. Nariams - pokalbis su Deniu,
  * treneriams - visi pokalbiai (Messenger stiliumi). Logika - assets/chat.js.
  */
 function chat_widget_html(): string
@@ -270,15 +253,8 @@ function chat_widget_html(): string
         . '<div class="chat-panel" id="chatPanel" role="dialog" aria-label="Pokalbis su Deniu" hidden>'
         . '<header class="chat-head"><span class="chat-avatar" aria-hidden="true">D</span><div><strong>Denis</strong><span class="chat-sub">Klubo vadovas · atsakys, kai tik galės</span></div>'
         . '<button type="button" class="chat-close" aria-label="Uždaryti">×</button></header>'
-        . '<div class="chat-tabs" role="tablist"><button type="button" role="tab" class="active" data-tab="msg" aria-selected="true">Žinutė</button>'
-        . '<button type="button" role="tab" data-tab="anon" aria-selected="false">Anoniminis komentaras</button></div>'
         . '<div class="chat-pane" data-pane="msg">' . $select
         . '<div class="chat-thread" aria-live="polite"><p class="chat-empty">Parašykite - atsakymas atsiras čia.</p></div>' . $form
         . '<p class="chat-note">Mato tik Denis (ir kiti treneriai).</p></div>'
-        . '<div class="chat-pane" data-pane="anon" hidden><p class="chat-note">Pasiūlymas ar pastaba. Denis matys, kas parašė, ir galės atsakyti. '
-        . 'Jei paviešins - kitiems nariams jūsų vardas nebus rodomas.</p>'
-        . '<form class="chat-anon"><textarea name="body" rows="4" maxlength="' . MESSAGE_MAX . '" placeholder="Jūsų komentaras" required></textarea>'
-        . '<button class="btn btn-primary btn-sm" type="submit">Siųsti anonimiškai</button></form>'
-        . '<p class="chat-ok" hidden>Ačiū! Komentaras išsiųstas - atsakymą matysite pokalbyje.</p></div>'
         . '</div></div>';
 }

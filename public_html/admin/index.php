@@ -2,6 +2,9 @@
 // Trenerio „Šiandien“: tik tai, ką reikia padaryti (meniu skirtukai - viršuje)
 require dirname(__DIR__) . '/app/bootstrap.php';
 $me = require_staff();
+if ($msg = legacy_demo_autopurge($me)) {   // vieną kartą: seni pavyzdiniai duomenys (žr. app/test_data.php)
+    flash('ok', $msg);
+}
 
 
 $today = date('Y-m-d');
@@ -31,20 +34,8 @@ if (!$trainings) {
     }
 }
 
-// Reikia padaryti
-$todo = [];
-if ($n = pending_approvals_count()) {
-    $todo[] = ['Laukia patvirtinimo: ' . $n . ($n === 1 ? ' paskyra ar vaikas' : ' paskyros ar vaikai'), 'admin/patvirtinimai.php', 'Patvirtinti'];
-}
-// Praėję renginiai be įvestų rezultatų (paskutinės 30 d.)
-$types = "'" . implode("','", array_keys(EVENT_RESULTS)) . "'";
-foreach (q_all("SELECT e.* FROM events e
-                 WHERE e.type IN ($types) AND COALESCE(e.ends_on, e.starts_on) BETWEEN DATE_SUB(CURDATE(), INTERVAL 30 DAY) AND DATE_SUB(CURDATE(), INTERVAL 1 DAY)
-                   AND NOT EXISTS (SELECT 1 FROM point_awards pa WHERE pa.event_id = e.id)
-                 ORDER BY e.starts_on DESC") as $ev) {
-    $todo[] = ['Įvesk rezultatus: ' . $ev['title'] . ' (' . fmt_date($ev['starts_on']) . ')', 'admin/renginio-rezultatai.php?id=' . (int) $ev['id'], 'Rezultatai'];
-}
-$todo = array_merge($todo, admin_today_extra_todo());
+// Reikia padaryti (tas pats skaičius - ant „Paskyra“ mygtuko)
+$todo = admin_todo_items();
 // Pranešimai: registracijos į egzaminą, pavėlavusieji, „Moku“ patvirtinimai, atšaukti sutikimai - sprendžiami čia pat
 $notifs = account_notifications((int) $me['id']);
 
