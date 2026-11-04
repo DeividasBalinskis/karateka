@@ -1,11 +1,14 @@
 <?php
-// Testiniai (pavyzdiniai) duomenys ir jų ištrynimas vienu mygtuku (Nustatymai → Atsarginės kopijos ir sistema).
-// Kas laikoma testiniu:
+// Seni pavyzdiniai (demo) duomenys - išvalomi VIENĄ KARTĄ automatiškai, kai adminas atidaro „Šiandien“ ar „Nustatymai“
+// (prieš tai - atsarginė kopija). Kas išvalyta - Nustatymai → Testavimas. Nauji testiniai nariai - app/test_people.php.
+// Kas laikoma senu pavyzdžiu:
 //   - paskyros @demo.karateka.lt (demo) ir @karateka.test (kompiuterio bandomosios), išskyrus adminus;
 //   - nariai, kurie priklauso tik tokioms paskyroms;
 //   - demo renginiai, pamokos, aplankai, egzaminų programa, testai (created_at = 2000-01-01), naujienos (updated_at = 2000-01-01);
-//   - viskas, kas prasideda „TEST:“, ir pamokos / naujienos su senu pavyzdiniu video (ne apie karate).
-// Tikri duomenys - pačių užsiregistravę, Denio pridėti nariai, jo naujienos ir pamokos - lieka.
+//   - viskas, kas prasideda „TEST:“, ir pamokos / naujienos su senu pavyzdiniu video (ne apie karate);
+//   - demo paskyrų reakcijos, komentarai ir kt. (ištrinamos kartu su paskyromis).
+// Tikri duomenys - pačių užsiregistravę, Denio pridėti nariai, jo naujienos, renginiai ir pamokos (ir tai, ką jis pakeitė) - lieka.
+// Egzaminų programa ir testai paliekami, jei tikri nariai juos jau naudojo.
 
 const DEMO_SENTINEL = '2000-01-01 00:00:00';
 const DEMO_VIDEO = 'dQw4w9WgXcQ';
@@ -78,12 +81,15 @@ function test_data_scan(int $meId): array
                                         AND rp.member_id NOT IN (' . (($m = array_column($members, 'id')) ? implode(',', array_map('intval', $m)) : '0') . ')');
         $out['program'] = ['ids' => $ids,
             'items' => array_map(function ($r) { return (BELTS[(int) $r['belt_level']][0] ?? $r['belt_level']) . ': ' . $r['title']; }, $req),
-            'warn' => $realProgress ? 'Šiuos punktus jau pažymėjo ' . $realProgress . ' tikr. nar. - jų pažymėjimai irgi dings. Jei Denis programą jau naudoja, nuimkite varnelę.' : null];
+            'keep' => $realProgress > 0];
     }
 
     $quizzes = q_all('SELECT id, title FROM quizzes WHERE created_at = ? ORDER BY id', [DEMO_SENTINEL]);
     if ($quizzes) {
-        $out['quizzes'] = ['ids' => array_map('intval', array_column($quizzes, 'id')), 'items' => array_column($quizzes, 'title')];
+        $ids = array_map('intval', array_column($quizzes, 'id'));
+        $realAttempts = (int) q_value('SELECT COUNT(*) FROM quiz_attempts WHERE quiz_id IN (' . implode(',', $ids) . ')
+                                        AND member_id NOT IN (' . (($m = array_column($members, 'id')) ? implode(',', array_map('intval', $m)) : '0') . ')');
+        $out['quizzes'] = ['ids' => $ids, 'items' => array_column($quizzes, 'title'), 'keep' => $realAttempts > 0];
     }
 
     $other = [];
@@ -125,17 +131,6 @@ function test_data_scan(int $meId): array
     }
     unset($part);
     return $out;
-}
-
-/** Tikros paskyros ir nariai, kurie lieka (kad būtų matyti, jog niekas tikras nedingsta) */
-function test_data_kept(int $meId): array
-{
-    $members = q_all('SELECT m.first_name, m.last_name FROM members m WHERE NOT (' . test_data_member_sql() . ') ORDER BY m.first_name, m.last_name', [$meId, $meId]);
-    $accounts = q_all('SELECT a.first_name, a.last_name, a.role FROM accounts a WHERE NOT ' . DEMO_ACCOUNT_SQL . ' OR a.id = ? ORDER BY a.first_name, a.last_name', [$meId]);
-    return [
-        'members' => array_map(function ($m) { return trim($m['first_name'] . ' ' . $m['last_name']); }, $members),
-        'accounts' => array_map(function ($a) { return trim($a['first_name'] . ' ' . $a['last_name']) . ($a['role'] !== 'member' ? ' (' . ($a['role'] === 'admin' ? 'adminas' : 'treneris') . ')' : ''); }, $accounts),
-    ];
 }
 
 /** Ištrina pažymėtas dalis. Grąžina [dalis => kiek ištrinta]. Viskas - vienoje transakcijoje. */
@@ -202,6 +197,7 @@ function test_data_delete(int $meId, array $parts): array
                         q('DELETE FROM member_messages WHERE id IN (' . $in($ids['messages']) . ')');
                     }
                     q("DELETE FROM notifications WHERE title LIKE 'TEST:%' OR body LIKE 'TEST:%'");
+                    q("DELETE FROM site_settings WHERE name = 'reactions'");   // reakcijų pasirinkimo nebėra - visi emoji
                     if (!empty($ids['videos'])) {
                         q('UPDATE coach_notes SET youtube_id = NULL WHERE youtube_id = ?', [DEMO_VIDEO]);
                         q('UPDATE belt_requirements SET youtube_id = NULL WHERE youtube_id = ?', [DEMO_VIDEO]);
@@ -235,4 +231,41 @@ function test_data_drop_links(string $pattern, array $ids): void
     if ($ids) {
         q('DELETE FROM notifications WHERE link REGEXP ?', [$pattern . '(' . implode('|', array_map('intval', $ids)) . ')([^0-9]|$)']);
     }
+}
+
+/**
+ * Vieną kartą: seni pavyzdžiai išvalomi automatiškai (tik adminui, ne peržiūros režime). Prieš tai - atsarginė kopija;
+ * jei kopija nepavyksta - niekas netrinama. Rezultatas įrašomas į site_settings 'demo_isvalyta' (JSON) ir rodomas Testavimo puslapyje.
+ * Grąžina trumpą pranešimą (arba null - nieko nedaryta).
+ */
+function legacy_demo_autopurge(array $me): ?string
+{
+    if (!is_admin($me) || !empty($_SESSION['view_admin']) || site_setting('demo_isvalyta')) {
+        return null;
+    }
+    // Nebeliko pranešimų apie kiekvieną komentarą - seni pažymimi atliktais
+    try {
+        q('UPDATE notifications SET done_at = NOW(), read_at = COALESCE(read_at, NOW()) WHERE type = "comment" AND done_at IS NULL');
+    } catch (PDOException $ex) {
+        // dar neimportuotas db/021
+    }
+    $scan = test_data_scan((int) $me['id']);
+    $parts = array_keys(array_filter($scan, function ($p) { return empty($p['keep']); }));
+    if (!$parts) {
+        set_site_setting('demo_isvalyta', json_encode(['date' => date('Y-m-d H:i'), 'parts' => [], 'kept' => array_keys($scan)], JSON_UNESCAPED_UNICODE));
+        return null;
+    }
+    try {
+        $backup = backup_create();
+    } catch (Throwable $ex) {
+        error_log('demo purge: backup failed: ' . $ex->getMessage());
+        return 'Senų pavyzdžių neišvalėme: nepavyko atsarginė kopija (' . $ex->getMessage() . ').';
+    }
+    $done = test_data_delete((int) $me['id'], $parts);
+    $summary = ['date' => date('Y-m-d H:i'), 'backup' => $backup, 'parts' => [], 'kept' => array_keys(array_filter($scan, function ($p) { return !empty($p['keep']); }))];
+    foreach ($done as $k => $n) {
+        $summary['parts'][$k] = ['count' => $n, 'items' => array_slice($scan[$k]['items'], 0, 300)];
+    }
+    set_site_setting('demo_isvalyta', json_encode($summary, JSON_UNESCAPED_UNICODE));
+    return 'Išvalyti seni pavyzdiniai duomenys (' . array_sum($done) . '). Sąrašas - Nustatymai → Testavimas.';
 }

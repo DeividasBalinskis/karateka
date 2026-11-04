@@ -26,6 +26,7 @@ $settings = [
     'Sistema' => [
         ['Paskyros ir rolės', 'admin/paskyros.php', 'Kas yra treneris, kas administratorius.', is_admin()],
         ['Atsarginės kopijos ir sistema', 'admin/kopijos.php', 'Duomenų bazės kopijos, versija, importuoti db failai.', is_admin()],
+        ['Testavimas', 'admin/testavimas.php', 'Testiniai nariai (tėvai, vaikas) ir ką jiems sukurti; peržiūra kaip tėvai ar vaikas.', is_admin()],
     ],
 ];
 

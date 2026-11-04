@@ -31,23 +31,6 @@ if (is_post()) {
             flash('err', 'Kopijos sukurti nepavyko: ' . $ex->getMessage());
         }
     }
-    if (post('action') === 'test_data') {
-        $parts = array_values(array_intersect(array_keys(TEST_DATA_PARTS), (array) ($_POST['parts'] ?? [])));
-        if (!$parts) {
-            flash('err', 'Nepažymėta, ką ištrinti.');
-            redirect('admin/kopijos.php#testiniai');
-        }
-        try {
-            $name = backup_create();   // prieš trinant - kopija, kad būtų galima atkurti
-            $done = test_data_delete((int) $me['id'], $parts);
-            flash('ok', 'Testiniai duomenys ištrinti: ' . implode(', ', array_map(function ($k, $n) { return mb_strtolower(mb_substr(TEST_DATA_PARTS[$k], 0, 1)) . mb_substr(TEST_DATA_PARTS[$k], 1) . ' (' . $n . ')'; }, array_keys($done), $done))
-                . '. Prieš tai sukurta kopija ' . $name . '.');
-        } catch (Throwable $ex) {
-            error_log('test data delete failed: ' . $ex->getMessage());
-            flash('err', 'Ištrinti nepavyko (niekas nepakeista): ' . $ex->getMessage());
-        }
-        redirect('admin/kopijos.php#testiniai');
-    }
     redirect('admin/kopijos.php');
 }
 
@@ -59,8 +42,6 @@ try {
 } catch (PDOException $ex) {
     $dbFiles = null;   // db/022 dar neimportuotas
 }
-$testData = test_data_scan((int) $me['id']);
-$kept = $testData ? test_data_kept((int) $me['id']) : null;
 $dbSize = (int) q_value('SELECT COALESCE(SUM(data_length + index_length), 0) FROM information_schema.TABLES WHERE table_schema = DATABASE()');
 
 function size_label(int $bytes): string
@@ -139,36 +120,5 @@ page_start('Atsarginės kopijos', ['admin' => true]);
   </div>
 </div>
 
-<?php if ($testData): ?>
-<form method="post" class="panel card test-data" id="testiniai" onsubmit="return confirm('Ištrinti pažymėtus testinius duomenis? Prieš tai bus sukurta atsarginė kopija.')">
-  <?= csrf_field() ?>
-  <div class="kicker">Testiniai duomenys</div>
-  <p>Svetainėje yra pavyzdinių duomenų (demo paskyros <code>@demo.karateka.lt</code>, renginiai, naujienos, pamokos, „TEST:“ pavyzdžiai).
-    Ištrynus liks tik tikri: pačių užsiregistravę, Denio pridėti nariai, jo naujienos, renginiai ir pamokos.</p>
-  <div class="td-parts">
-    <?php foreach ($testData as $k => $part): ?>
-      <details class="td-part">
-        <summary>
-          <label class="check" onclick="event.stopPropagation()"><input type="checkbox" name="parts[]" value="<?= e($k) ?>" checked>
-            <span><strong><?= e(TEST_DATA_PARTS[$k]) ?></strong> <span class="badge"><?= e($part['label'] ?? (string) $part['count']) ?></span></span></label>
-          <span class="small muted">rodyti</span>
-        </summary>
-        <?php if (!empty($part['warn'])): ?><div class="flash flash-err small"><?= e($part['warn']) ?></div><?php endif; ?>
-        <ul class="small td-items"><?php foreach ($part['items'] as $item): ?><li><?= e($item) ?></li><?php endforeach; ?></ul>
-      </details>
-    <?php endforeach; ?>
-  </div>
-  <details class="td-part td-kept">
-    <summary><span><strong>Lieka (tikri)</strong> <span class="badge"><?= count($kept['members']) ?> nar. ir <?= count($kept['accounts']) ?> pask.</span></span><span class="small muted">rodyti</span></summary>
-    <div class="grid-2 small">
-      <div><div class="kicker">Nariai</div><?= $kept['members'] ? '<ul class="td-items"><li>' . implode('</li><li>', array_map('e', $kept['members'])) . '</li></ul>' : '<p class="muted">Nėra.</p>' ?></div>
-      <div><div class="kicker">Paskyros</div><?= $kept['accounts'] ? '<ul class="td-items"><li>' . implode('</li><li>', array_map('e', $kept['accounts'])) . '</li></ul>' : '<p class="muted">Nėra.</p>' ?></div>
-    </div>
-    <p class="small muted">Jei čia yra ir bandomųjų (pvz. pačių sukurtų išbandymui) - juos ištrinkite: Nariai → narys → apačioje „Ištrinti narį“.</p>
-  </details>
-  <p class="muted small">Prieš trinant automatiškai sukuriama atsarginė kopija (sąraše viršuje) - jei kas ne taip, galima atkurti.</p>
-  <button class="btn btn-primary btn-sm" name="action" value="test_data">Ištrinti pažymėtus</button>
-</form>
-<?php endif; ?>
 <?php
 page_end();

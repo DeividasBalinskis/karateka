@@ -39,6 +39,12 @@ function mem(string $first, string $last, string $birth, ?int $group, string $st
 $coach = acc('info@karateka.lt', 'Denis', 'Balinskis', 'admin');
 link_member($coach, mem('Denis', 'Balinskis', '1985-04-12', 13), 'self');
 
+// Švari svetainė kompiuteryje (tools\lokali-svetaine.ps1): tik admino paskyra; testiniai nariai - Nustatymai → Testavimas
+if (in_array('--tik-adminas', $argv ?? [], true)) {
+    set_site_setting('demo_isvalyta', json_encode(['date' => date('Y-m-d H:i'), 'parts' => [], 'kept' => []]));
+    exit("Paruošta: info@karateka.lt / " . PW . " (administratorius). Testiniai nariai - Nustatymai → Testavimas.\n");
+}
+
 // Testinė tėvų paskyra, mato viską kaip tėvai (slaptažodis "admin1" - tik lokaliai)
 $admin1 = create_account('admin1@karateka.test', 'admin1', 'Admin', 'Testas', null, 'active');
 q('UPDATE accounts SET email_verified_at = NOW(), approved_at = NOW() WHERE id = ?', [$admin1]);

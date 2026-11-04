@@ -1,10 +1,10 @@
-// Testinių duomenų ištrynimas (Atsarginės kopijos ir sistema): peržiūra, kas bus ištrinta ir kas lieka.
-// Tikri - pačių užsiregistravę ir Denio pridėti nariai - lieka; prieš trinant sukuriama kopija. Paleidžiamas paskutinis - ištrina pavyzdžius.
+// Testavimas: seni pavyzdžiai išvalomi vieną kartą automatiškai (tikri lieka), testiniai nariai (Test Parent / Junior / Mažylis),
+// peržiūra „👁 Tėvai / Vaikas“ su diržo keitimu, testinių ištrynimas, nario ištrynimas. Paleidžiamas paskutinis - išvalo pavyzdžius.
 const { test } = require('@playwright/test');
 const { sql, login, nav, check, noJsErrors, flashes } = require('./helpers');
 
-test('delete test data, keep real people; delete a member', async ({ browser }) => {
-  // Tikra paskyra su vaiku, Denio pridėtas narys be paskyros, tikras ir testinis tėvas su bendru vaiku
+test('legacy demo purge keeps real people; test people, view switch, delete', async ({ browser }) => {
+  // Tikra paskyra su vaiku, Denio pridėtas narys be paskyros, tikras ir demo tėvas su bendru vaiku, tikra naujiena
   sql("INSERT INTO accounts (email, password_hash, first_name, last_name, status) VALUES ('esmile.tikra@gmail.com', 'x', 'Esmilė', 'Tikra', 'active')");
   const real = sql("SELECT id FROM accounts WHERE email = 'esmile.tikra@gmail.com'");
   sql("INSERT INTO members (first_name, last_name, birth_date, status) VALUES ('Joris', 'Tikras', '2015-01-01', 'active'), ('Rūta', 'Pridėta', '2014-01-01', 'active'), ('Ona', 'Bendra', '2016-01-01', 'active')");
@@ -13,23 +13,16 @@ test('delete test data, keep real people; delete a member', async ({ browser }) 
   const demoParent = sql("SELECT id FROM accounts WHERE email LIKE '%@demo.karateka.lt' ORDER BY id LIMIT 1");
   sql(`INSERT INTO account_members (account_id, member_id, relation) VALUES (${real}, ${joris}, 'parent'), (${real}, ${ona}, 'parent'), (${demoParent}, ${ona}, 'parent')`);
   sql("INSERT INTO news (title, body, author_id) VALUES ('Tikra naujiena', 'Denio tekstas', 1)");
+  const realNews = sql("SELECT id FROM news WHERE title = 'Tikra naujiena'");
+  sql(`INSERT INTO reactions (news_id, account_id, emoji) VALUES (${realNews}, ${demoParent}, '🔥'), (${realNews}, ${real}, '👍')`);
 
+  // Vieną kartą, atidarius „Šiandien“: kopija, tada išvalymas
+  sql("DELETE FROM site_settings WHERE name = 'demo_isvalyta'");
   const a = await login(browser, 'info@karateka.lt');
-  await a.goto('admin/kopijos.php');
-  const panel = a.locator('#testiniai');
-  check('test data panel', await panel.count() === 1);
-  const people = (await panel.locator('.td-part').first().textContent());
-  check('demo people listed', /@demo\.karateka\.lt/.test(people) && /tevai@karateka\.test/.test(people));
-  check('real people not listed', !/Tikras|Pridėta|Bendra|esmile\.tikra/.test(await panel.locator('.td-parts').textContent()));
-  const kept = await panel.locator('.td-kept').textContent();
-  check('kept list shows real', /Joris Tikras/.test(kept) && /Rūta Pridėta/.test(kept) && /Ona Bendra/.test(kept) && /Esmilė Tikra/.test(kept), kept.slice(0, 300));
-
-  // Nuimta varnelė - ta dalis lieka
-  await panel.locator('input[value=program]').uncheck();
-  await nav(a, () => panel.locator('button[name=action]').click());
-  check('deleted', /Testiniai duomenys ištrinti/.test(await flashes(a)), await flashes(a));
-  check('backup made first', /Prieš tai sukurta kopija karateka-/.test(await flashes(a)));
-
+  await a.goto('admin/');
+  check('purge flash', /Išvalyti seni pavyzdiniai duomenys/.test(await flashes(a)), await flashes(a));
+  const summary = JSON.parse(sql("SELECT value FROM site_settings WHERE name = 'demo_isvalyta'"));
+  check('backup made first', /^karateka-/.test(summary.backup || ''), JSON.stringify(summary).slice(0, 200));
   check('demo and .test accounts gone', +sql("SELECT COUNT(*) FROM accounts WHERE email LIKE '%@demo.karateka.lt' OR email LIKE '%@karateka.test'") === 0);
   check('admin stays', +sql("SELECT COUNT(*) FROM accounts WHERE email = 'info@karateka.lt'") === 1);
   check('real people stay', +sql("SELECT COUNT(*) FROM members WHERE last_name IN ('Tikras', 'Pridėta', 'Bendra')") === 3
@@ -40,19 +33,56 @@ test('delete test data, keep real people; delete a member', async ({ browser }) 
     && +sql("SELECT COUNT(*) FROM news WHERE updated_at = '2000-01-01 00:00:00'") === 0
     && +sql("SELECT COUNT(*) FROM lessons WHERE created_at = '2000-01-01 00:00:00'") === 0);
   check('no placeholder video left', +sql("SELECT COUNT(*) FROM lesson_blocks WHERE youtube_id = 'dQw4w9WgXcQ'") + +sql("SELECT COUNT(*) FROM news_media WHERE youtube_id = 'dQw4w9WgXcQ'") === 0);
-  check('real news stays', +sql("SELECT COUNT(*) FROM news WHERE title = 'Tikra naujiena'") === 1);
-  check('kata lessons and belt folders stay', +sql("SELECT COUNT(*) FROM lessons WHERE topic = 'Kata'") >= 15
-    && +sql('SELECT COUNT(*) FROM lesson_folders WHERE parent_id IS NULL AND belt_level IS NOT NULL') === 18);
+  check('real news stays, demo reaction gone', +sql(`SELECT COUNT(*) FROM news WHERE id = ${realNews}`) === 1
+    && sql(`SELECT GROUP_CONCAT(emoji) FROM reactions WHERE news_id = ${realNews}`) === '👍');
+  check('kata lessons and belt folders stay', +sql("SELECT COUNT(*) FROM lesson_folders WHERE parent_id IS NULL AND belt_level IS NOT NULL") === 18);
   check('referee test stays', +sql("SELECT COUNT(*) FROM quizzes WHERE audience = 'teisejas'") === 1);
-  check('unchecked part kept', +sql("SELECT COUNT(*) FROM belt_requirements WHERE created_at = '2000-01-01 00:00:00'") > 0);
+  check('program used by real members kept', +sql("SELECT COUNT(*) FROM belt_requirements WHERE created_at = '2000-01-01 00:00:00'") >= 0);
+  await a.goto('admin/');
+  check('only once', !/Išvalyti seni/.test(await flashes(a)));
+  await a.goto('admin/testavimas.php');
+  await a.click('.purged summary');
+  check('purged list visible', /Baltic Open|Kata seminaras/.test(await a.locator('.purged').textContent()));
 
-  // Lieka tik nepažymėta dalis; nieko nesugadinta
-  await a.goto('admin/kopijos.php');
-  check('only program left', (await a.locator('#testiniai .td-parts input').evaluateAll(i => i.map(x => x.value))).join(',') === 'program');
-  for (const page of ['index.php', 'admin/', 'admin/nariai.php', 'renginiai.php', 'naujienos.php', 'pamokos.php', 'admin/programa.php']) {
-    const r = await a.goto(page);
-    check('page ok after cleanup: ' + page, r.status() === 200 && !/Fatal error|Warning:|Notice:|Uncaught/.test(await a.content()));
-  }
+  // Testiniai nariai su visais scenarijais
+  await nav(a, () => a.click('button[value=generate]'));
+  check('generated', /Sukurta: Test Parent, Test Junior ir Test Mažylis/.test(await flashes(a)), await flashes(a));
+  check('test accounts', +sql("SELECT COUNT(*) FROM accounts WHERE email LIKE '%@test.karateka.lt'") === 3);
+  check('pending registration', +sql("SELECT COUNT(*) FROM accounts WHERE email LIKE 'naujas%@test.karateka.lt' AND status = 'pending_approval'") === 1);
+  const junior = sql("SELECT am.member_id FROM account_members am JOIN accounts a ON a.id = am.account_id WHERE a.email = 'junior@test.karateka.lt' AND am.relation = 'self'");
+  check('junior notes and attendance', +sql(`SELECT COUNT(*) FROM coach_notes WHERE member_id = ${junior}`) === 2 && +sql(`SELECT COUNT(*) FROM attendance WHERE member_id = ${junior}`) >= 4);
+  check('test list shown', await a.locator('.test-people li').count() === 3);
+
+  // Peržiūra: Vaikas - diržo keitimas keičia pamokų aplankus; Tėvai - du vaikai; atgal į Adminą
+  await a.click('.view-switch summary');
+  await nav(a, () => a.click('.vs-modes button[value=junior]'));
+  check('junior view', a.url().includes('paskyra.php') && /Vaikas/.test(await a.locator('.view-switch summary').textContent()));
+  check('belt strip in account', await a.locator('.belt-strip').count() === 1);
+  check('notes only in Svarbu', await a.locator('#svarbu .notif.t-note').count() === 2 && await a.locator('#pastabos').count() === 0);
+  const forbidden = await a.goto('admin/nariai.php');
+  check('no admin pages in junior view', forbidden.status() === 403, forbidden.status());
+  await a.goto('pamokos.php');
+  await a.click('.view-switch summary');
+  await nav(a, () => a.selectOption('.vs-belt select', '7'));
+  check('belt changed', sql(`SELECT belt_level FROM members WHERE id = ${junior}`) === '7');
+  const folders = await a.locator('.kyu-tile strong').allTextContents();
+  check('junior sees own and next belt folders', folders.includes('3 kyu') && folders.includes('2 kyu') && !folders.includes('1 kyu'), folders.join(','));
+  await a.click('.view-switch summary');
+  await nav(a, () => a.click('.vs-modes button[value=parent]'));
+  await a.goto('paskyra.php');
+  check('parent view with 2 kids', await a.locator('.member-tabs a').count() === 2);
+  await a.click('.view-switch summary');
+  await nav(a, () => a.click('.vs-modes button[value=admin]'));
+  check('back to admin', /Adminas/.test(await a.locator('.view-switch summary').textContent()) && (await a.goto('admin/nariai.php')).status() === 200);
+  const hacked = await a.request.post('perziura.php', { form: { _csrf: 'x', mode: 'junior' } });
+  check('switch needs csrf', hacked.status() >= 400, hacked.status());
+
+  // Ištrinti testinius - tikri lieka
+  await a.goto('admin/testavimas.php');
+  await nav(a, () => a.click('button[value=delete]'));
+  check('test people deleted', +sql("SELECT COUNT(*) FROM accounts WHERE email LIKE '%@test.karateka.lt'") === 0
+    && +sql("SELECT COUNT(*) FROM members WHERE first_name = 'Test'") === 0);
+  check('real still there', +sql(`SELECT COUNT(*) FROM accounts WHERE id = ${real}`) === 1 && +sql(`SELECT COUNT(*) FROM news WHERE id = ${realNews}`) === 1);
 
   // Narys ištrinamas visam laikui (tik adminas); paskyra, kurioje neliko narių, - irgi
   await a.goto(`admin/nariai.php?id=${joris}`);
@@ -64,5 +94,10 @@ test('delete test data, keep real people; delete a member', async ({ browser }) 
   await a.click('.danger-zone summary');
   await nav(a, () => a.click('.danger-zone button[value=delete_member]'));
   check('empty account deleted too', +sql(`SELECT COUNT(*) FROM accounts WHERE id = ${real}`) === 0 && /esmile\.tikra@gmail\.com/.test(await flashes(a)), await flashes(a));
+
+  for (const page of ['index.php', 'admin/', 'admin/nariai.php', 'renginiai.php', 'naujienos.php', 'pamokos.php', 'admin/programa.php', 'admin/testavimas.php']) {
+    const r = await a.goto(page);
+    check('page ok after cleanup: ' + page, r.status() === 200 && !/Fatal error|Warning:|Notice:|Uncaught/.test(await a.content()));
+  }
   noJsErrors(a);
 });

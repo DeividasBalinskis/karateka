@@ -1,6 +1,7 @@
 ﻿# Lokali svetainė iš naujo: http://localhost:8088
 #   - švari duomenų bazė su VISAIS db\0xx failais (ir naujais, pvz. 011)
-#   - testinės paskyros (slaptažodis testas123) + demo nariai, taškai, renginiai, naujienos
+#   - tik admino paskyra info@karateka.lt (slaptažodis testas123) - svetainė kaip tikra, be pavyzdžių
+#   - testiniai nariai (tėvai, vaikas) - Nustatymai → Testavimas, peržiūra kaip tėvai ar vaikas - viršuje 👁
 #
 # Kada naudoti: tik pirmą kartą arba kai norite pradėti nuo švarios bazės.
 # Atnaujinti NEIŠTRINANT savo duomenų - tools\lokali-atnaujinti.ps1.
@@ -47,31 +48,13 @@ for ($i = 0; $i -lt 60; $i++) {
 }
 if (-not $ready) { Fail 'Duomenų bazė nepasileido per 3 min. Paleiskite šį failą dar kartą.' }
 Write-Host ''
-docker compose exec -T web php app/cli/dev_seed.php
+docker compose exec -T web php app/cli/dev_seed.php --tik-adminas
 
-Write-Host "`n4/4 Įkeliami demo duomenys..." -ForegroundColor Cyan
-New-Item -ItemType Directory -Force 'ikelimui' | Out-Null
-$tmp = 'ikelimui\lokali-demo.sql'   # santykinis kelias - "C:" docker'is palaikytų konteinerio vardu
-docker compose cp 'tools\demo-duomenys.php' web:/tmp/demo-duomenys.php
-docker compose exec -T web sh -c 'php /tmp/demo-duomenys.php > /tmp/demo.sql'
-docker compose cp web:/tmp/demo.sql $tmp
-docker compose cp $tmp db:/tmp/demo.sql
-docker compose exec -T db sh -c 'mariadb -u karateka -p$MARIADB_PASSWORD karateka < /tmp/demo.sql'
-if ($LASTEXITCODE -ne 0) { Write-Host 'Demo duomenų įkelti nepavyko - svetainė veikia ir be jų.' -ForegroundColor Yellow }
-Remove-Item -Force -ErrorAction SilentlyContinue $tmp
-# Naujausių funkcijų TEST pavyzdžiai (pavadinimai prasideda „TEST:“, aprašyme - ką patikrinti)
-docker compose exec -T web php app/cli/dev_pavyzdziai.php
-
-# Demo naujienų nuotraukos (jei yra paruoštas paketas)
-$photos = Join-Path $root 'ikelimui\demo\demo-nuotraukos.zip'
-if (Test-Path $photos) { Expand-Archive -Force $photos (Join-Path $root 'public_html') }
+Write-Host "`n4/4 Testiniai nariai" -ForegroundColor Cyan
+Write-Host 'Prisijunkite kaip adminas: Nustatymai → Testavimas → „Sukurti“. Peržiūra kaip tėvai ar vaikas - viršuje 👁.'
 
 Write-Host "`nParuošta: http://localhost:8088" -ForegroundColor Green
 Write-Host '  info@karateka.lt         / testas123  - administratorius'
-Write-Host '  narys@karateka.test      / testas123  - suaugęs narys su 0 tšk.'
-Write-Host '  treneris@karateka.test   / testas123  - treneris (ne adminas)'
-Write-Host '  tevai@karateka.test      / testas123  - tėvai su 2 vaikais'
-Write-Host '  ...@demo.karateka.lt     / demo12345  - demo nariai'
 Write-Host '  Laiškai: http://localhost:8025   Duomenų bazė: http://localhost:8081'
 Start-Process 'http://localhost:8088'
 Read-Host "`nSpauskite Enter"

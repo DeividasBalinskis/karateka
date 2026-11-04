@@ -52,6 +52,9 @@ html{scrollbar-gutter:stable;}
   border-radius:10px; white-space:nowrap; text-decoration:none; transition:background 0.15s ease;
 }
 .site-header .nav-login:hover{background:#2F6B5A; text-decoration:none;}
+/* Pranešimai ir darbai - raudonas burbuliukas viršutiniame dešiniame mygtuko kampe */
+.site-header .nav-login{position:relative;}
+.site-header .nav-login .nav-bubble{position:absolute; top:-7px; right:-7px; margin:0; box-shadow:0 0 0 2px #F7F4EC; vertical-align:0;}
 .site-header .nav-login.is-current{background:linear-gradient(135deg, #A85C7E 0%, #6E5A9A 100%); box-shadow:0 6px 16px rgba(110,74,134,0.28);}
 .site-header .nav-login.is-current:hover{filter:brightness(1.06);}
 .site-header .nav-cta{
@@ -107,9 +110,6 @@ html{scrollbar-gutter:stable;}
   .site-header .nav-cta{font-size:11px; padding:9px 12px;}
 }
 
-/* Pranešimas apie trenerio pastabas / užduotis - visuose puslapiuose, kol nepažymėta */
-.attention-bar{display:block; position:relative; z-index:90; text-align:center; padding:9px 16px; font-family:'Inter',sans-serif; font-size:14px; color:#9B2C28; background:#FBE9E8; border-bottom:1px solid rgba(217,83,79,0.35); text-decoration:none;}
-.attention-bar:hover{background:#F8DCDA; text-decoration:none;}
 
 /* Skirtukai po viršutine juosta (trenerio / nario paskyra) - „Paskyra“ mygtuko tęsinys: ta pati spalva, tokie pat „lustai“ kaip meniu.
    Kraštai - kaip viršutinės juostos (logotipas ... paskyra). */
@@ -132,4 +132,27 @@ html{scrollbar-gutter:stable;}
   .sub-nav .sub-inner{padding:6px 10px;}
   .sub-nav a{padding:9px 11px; font-size:13px;}
   .sub-nav .sub-inner{justify-content:flex-start;}
+}
+
+/* Peržiūra (tik adminui): 👁 Adminas / Tėvai / Vaikas - persijungimas į testines paskyras */
+.view-switch{position:relative;}
+.view-switch > summary{list-style:none; cursor:pointer; display:inline-flex; align-items:center; gap:6px; padding:10px 12px; border-radius:10px; white-space:nowrap;
+  font:700 13px/1.1 'Inter', sans-serif; color:#17140F; background:rgba(23,20,15,0.06); border:1px solid rgba(23,20,15,0.08);}
+.view-switch > summary::-webkit-details-marker{display:none;}
+.view-switch > summary:hover{background:rgba(23,20,15,0.1);}
+.view-switch.is-test > summary{color:#fff; background:linear-gradient(135deg, #A85C7E 0%, #6E5A9A 100%); border-color:transparent;}
+.vs-eye{font-size:14px;}
+.vs-panel{position:absolute; right:0; top:calc(100% + 8px); z-index:130; width:270px; padding:12px; border-radius:14px; background:#fff;
+  border:1px solid rgba(23,20,15,0.1); box-shadow:0 16px 36px rgba(23,20,15,0.18); font-family:'Inter', sans-serif;}
+.vs-modes{display:flex; gap:4px; padding:4px; border-radius:10px; background:#F3EFF5;}
+.vs-modes button{flex:1; border:0; background:none; padding:8px 6px; border-radius:8px; font:600 13px 'Inter', sans-serif; color:#4A453A; cursor:pointer;}
+.vs-modes button:hover{background:rgba(255,255,255,0.7);}
+.vs-modes button.active{background:#fff; color:#6E4A86; box-shadow:0 2px 6px rgba(23,20,15,0.12);}
+.vs-hint{margin:8px 2px 4px; font-size:12px; line-height:1.4; color:#6B6558;}
+.vs-belt{display:grid; gap:4px; margin-top:8px; font-size:12px; font-weight:600; color:#4A453A;}
+.vs-belt select{padding:7px 8px; border-radius:8px; border:1px solid rgba(23,20,15,0.18); font:500 13px 'Inter', sans-serif; background:#fff;}
+@media (max-width:1100px){
+  .view-switch{display:block; width:100%;}
+  .view-switch > summary{display:flex; justify-content:center;}
+  .vs-panel{position:static; width:auto; margin-top:8px; box-shadow:none;}
 }

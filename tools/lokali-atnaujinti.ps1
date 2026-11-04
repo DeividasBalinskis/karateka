@@ -1,7 +1,7 @@
 ﻿# Lokali svetainė: atnaujinti NEIŠTRINANT duomenų (jūsų įkeltos nuotraukos, tekstai, renginiai lieka).
 #   1. Atsisiunčia naujausią versiją iš GitHub (ta pačia šaka, kurioje esate)
 #   2. Į lokalią duomenų bazę importuoja tik dar neimportuotus db\0xx failus (jie tik prideda lenteles ir stulpelius)
-#   3. Jei norite - prideda TEST pavyzdžius naujoms funkcijoms išbandyti (pavadinimai prasideda „TEST:“)
+#   3. Seni pavyzdiniai (demo) duomenys išvalomi automatiškai, kai atidarote „Šiandien“; testiniai nariai - Nustatymai → Testavimas
 #
 # Svetainė iš naujo su švaria baze - tools\lokali-svetaine.ps1 (tas IŠTRINA lokalius duomenis).
 # Reikia įjungto Docker Desktop. Paleidimas: dešiniu pelės klavišu -> "Run with PowerShell".
@@ -55,11 +55,8 @@ foreach ($f in $newSql) {
     if ($LASTEXITCODE -ne 0) { Fail "Nepavyko importuoti db\$($f.Name). Nukopijuokite klaidą ir parašykite Deividui." }
 }
 
-Write-Host "`n3/3 TEST pavyzdžiai" -ForegroundColor Cyan
-$ans = Read-Host 'Pridėti TEST pavyzdžius naujoms funkcijoms išbandyti? (t/n)'
-if ($ans -match '^[tTyY]') {
-    docker compose exec -T web php app/cli/dev_pavyzdziai.php
-}
+Write-Host "`n3/3 Testiniai nariai" -ForegroundColor Cyan
+Write-Host 'Prisijunkite kaip adminas: Nustatymai → Testavimas → „Sukurti“. Peržiūra kaip tėvai ar vaikas - viršuje 👁.'
 
 Write-Host "`nParuošta: http://localhost:8088 (jūsų duomenys liko)" -ForegroundColor Green
 Start-Process 'http://localhost:8088'

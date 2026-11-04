@@ -17,13 +17,10 @@ if (!can_see_lessons($a)) {
 $isStaff = is_staff($a);
 lessons_belt_folders_setup();
 lessons_kata_seed();
+lessons_kata_update();
 
-// „Žiūrėti kaip narys“ (treneriui): ?kaip=narys, ?kaip=0 - baigti
-if ($isStaff && isset($_GET['kaip'])) {
-    $_SESSION['lesson_preview'] = (int) get('kaip') ?: null;
-    unset($_SESSION['lesson_belt']);
-    redirect('pamokos.php');
-}
+// Kaip pamokas mato narys - viršuje „👁 Peržiūra“ (Vaikas, su diržu); senas pamokų peržiūros režimas išjungiamas
+unset($_SESSION['lesson_preview']);
 
 // Pamokos išsaugojimas (redaguojama pamokos puslapyje)
 $errors = [];
@@ -230,33 +227,8 @@ function folder_add_bar(int $fid, string $back): string
         . '<div id="nf' . $fid . '" class="ls-new-folder" hidden>' . folder_quick_form($fid, $back, 'Naujo aplanko pavadinimas, pvz. Kata') . '</div>';
 }
 
-/** „Žiūrėti kaip narys“: narių sąrašas pagal grupes */
-function preview_select(?int $current): string
-{
-    $html = '<form method="get" action="' . e(url('pamokos.php')) . '" class="preview-pick"><select name="kaip" onchange="this.form.submit()" aria-label="Žiūrėti kaip narys">'
-        . '<option value="">👁 Žiūrėti kaip narys…</option>';
-    $cur = null;
-    foreach (q_all('SELECT m.id, m.first_name, m.last_name, m.belt_level, g.name AS group_name FROM members m LEFT JOIN training_groups g ON g.id = m.group_id
-                     WHERE m.status = "active" ORDER BY g.sort_order IS NULL, g.sort_order, g.name, m.last_name, m.first_name') as $m) {
-        $gn = $m['group_name'] ?: 'Be grupės';
-        if ($gn !== $cur) {
-            $html .= ($cur !== null ? '</optgroup>' : '') . '<optgroup label="' . e($gn) . '">';
-            $cur = $gn;
-        }
-        $html .= '<option value="' . (int) $m['id'] . '"' . ((int) $m['id'] === $current ? ' selected' : '') . '>' . e($m['first_name'] . ' ' . $m['last_name'])
-            . ' · ' . e($m['belt_level'] !== null ? BELTS[(int) $m['belt_level']][0] : 'diržas nenurodytas') . '</option>';
-    }
-    return $html . ($cur !== null ? '</optgroup>' : '') . '</select><noscript><button class="btn btn-ghost btn-sm">Rodyti</button></noscript></form>';
-}
-
 /** Viršutinė juosta: treneriui - įrankiai, peržiūroje - kaip kas mato */
 $topBar = function (?int $cur) use ($v, $staffTools, $editMode) {
-    if ($v['preview']) {
-        $m = $v['preview'];
-        return '<div class="preview-bar"><span>👁 Žiūrite kaip narys: <strong>' . e($m['first_name'] . ' ' . $m['last_name']) . '</strong> · '
-            . e($m['belt_level'] !== null ? BELTS[(int) $m['belt_level']][0] : 'diržas nenurodytas') . ($m['group_name'] ? ' · ' . e($m['group_name']) : '') . '</span>'
-            . preview_select((int) $m['id']) . '<a class="btn btn-ghost btn-sm" href="' . e(url('pamokos.php?kaip=0')) . '">✕ Baigti peržiūrą</a></div>';
-    }
     if (!$staffTools) {
         return '';
     }
@@ -268,8 +240,7 @@ $topBar = function (?int $cur) use ($v, $staffTools, $editMode) {
     } else {
         $html .= '<a class="btn btn-sm btn-primary" href="' . e(url($here . ($cur ? '&' : '?') . 'tvarkyti=1')) . '">✎ Tvarkyti</a>';
     }
-    // Nauja pamoka - aplanke („Pridėti: Tekstas / Nuotrauka / Video“), tvarka - „✎ Tvarkyti“ (atskiro medžio puslapio nebereikia)
-    $html .= preview_select(null);
+    // Nauja pamoka - aplanke („Pridėti: Tekstas / Nuotrauka / Video“), tvarka - „✎ Tvarkyti“; kaip mato narys - viršuje 👁
     return $html . '</div>';
 };
 

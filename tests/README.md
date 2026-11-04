@@ -13,7 +13,7 @@ Browser tests (Playwright) and quick static checks. They run on every push in Gi
 | `e2e/05-lessons.spec.js` | Lessons: kyu and dan folders in belt colors, kata video in each belt folder, photo without a title, subfolders, what a member sees |
 | `e2e/06-app.spec.js` | Installable phone app: manifest, icons, service worker, offline page without personal data |
 | `e2e/07-pages.spec.js` | Every page for every role at desktop and phone width: no PHP/JS errors, no horizontal scroll |
-| `e2e/08-test-data.spec.js` | Deleting demo/test data: preview, real people and content stay, backup first (runs last - it empties the demo data) |
+| `e2e/08-test-data.spec.js` | One-time purge of old demo data (real people and content stay, backup first), test people generator, admin view switch (parent / child, belt), deleting test people and members (runs last) |
 
 ## Running locally
 

@@ -279,7 +279,7 @@ function admin_nav_current(): string
     $file = basename($_SERVER['SCRIPT_NAME'] ?? '', '.php');
     $map = ['index' => 'siandien', 'renginio-rezultatai' => 'renginiai', 'varzybu-rezultatai' => 'varzybos', 'renginio-dalyviai' => 'renginiai', 'programa' => 'nustatymai',
             'varzybos-sso' => 'varzybos', 'varzybu-dalyviai' => 'varzybos', 'sms' => 'pranesimai',
-            'grupes' => 'nustatymai', 'tvarkarastis' => 'nustatymai', 'taskai' => 'nustatymai', 'paskyros' => 'nustatymai', 'kopijos' => 'nustatymai', 'atsaukimai' => 'nustatymai',
+            'grupes' => 'nustatymai', 'tvarkarastis' => 'nustatymai', 'taskai' => 'nustatymai', 'paskyros' => 'nustatymai', 'kopijos' => 'nustatymai', 'atsaukimai' => 'nustatymai', 'testavimas' => 'nustatymai',
             'pirmas-adminas' => 'siandien'];
     return $map[$file] ?? $file;
 }
@@ -372,10 +372,11 @@ function site_header(bool $home = false, ?string $area = null, ?string $tab = nu
       <!-- Dešinėje: paskyra (ar „Išbandyti“ ir „Prisijungti“) - prisijungus „Išbandyti“ dingsta, meniu nepasislenka -->
       <li class="nav-account">
         <ul>
+          <?php if ($a && ($vs = render_view_switch())): ?><li class="vs-li"><?= $vs ?></li><?php endif; ?>
           <?php if ($a && is_staff($a)): ?>
-            <li><a class="nav-login<?= $area === 'admin' ? ' is-current' : '' ?>" href="<?= url('admin/') ?>">Paskyra<?php if ($n = pending_approvals_count() + notification_count((int) $a['id'])): ?> <span class="count-badge" title="Laukia patvirtinimo ar jūsų atsakymo"><?= $n ?></span><?php endif; ?></a></li>
+            <li><a class="nav-login<?= $area === 'admin' ? ' is-current' : '' ?>" href="<?= url('admin/') ?>">Paskyra<?php if ($n = staff_attention_count((int) $a['id'])): ?><span class="count-badge nav-bubble" title="Reikia padaryti: pranešimai, patvirtinimai ir kiti darbai"><?= $n ?></span><?php endif; ?></a></li>
           <?php elseif ($a): ?>
-            <li><a class="nav-login<?= $area === 'account' ? ' is-current' : '' ?>" href="<?= url('paskyra.php') ?>">Mano paskyra<?php if ($att = account_attention_count((int) $a['id'])): ?> <span class="count-badge" title="Naujos pastabos ar neatliktos užduotys"><?= $att ?></span><?php endif; ?></a></li>
+            <li><a class="nav-login<?= $area === 'account' ? ' is-current' : '' ?>" href="<?= url('paskyra.php' . (($am = account_attention_member((int) $a['id'])) ? '?m=' . $am : '')) ?>">Mano paskyra<?php if ($att = account_attention_count((int) $a['id'])): ?><span class="count-badge nav-bubble" title="Nauji pranešimai, pastabos ar neatliktos užduotys"><?= $att ?></span><?php endif; ?></a></li>
           <?php endif; ?>
           <?php if ($a): ?>
             <li class="mobile-only">
@@ -391,20 +392,18 @@ function site_header(bool $home = false, ?string $area = null, ?string $tab = nu
       </li>
     </ul>
     <?php if ($cta): ?><a class="nav-cta mobile-only" href="<?= $h . e($cta[1]) ?>"><?= e($cta[0]) ?></a><?php endif; ?>
-    <button class="burger" id="burgerBtn" type="button" aria-label="Meniu"><span></span><span></span><span></span><?php if ($a && account_attention_count((int) $a['id'])): ?><i class="burger-dot"></i><?php endif; ?></button>
+    <button class="burger" id="burgerBtn" type="button" aria-label="Meniu"><span></span><span></span><span></span><?php if ($a && (is_staff($a) ? staff_attention_count((int) $a['id']) : account_attention_count((int) $a['id']))): ?><i class="burger-dot"></i><?php endif; ?></button>
   </nav>
   <?= $subNav ?>
 </header>
 <?php
-    // Kol yra neperskaitytų trenerio pastabų ar neatliktų užduočių - juosta po meniu visuose puslapiuose
-    // Treneriui - į pranešimus „Paskyra“ puslapyje (jei jų yra), kitiems - į „Svarbu“ paskyroje
-    $script = $_SERVER['SCRIPT_NAME'] ?? '';
-    $staffBar = $a && is_staff($a) && notification_count((int) $a['id']);
-    if ($a && ($att = account_attention_count((int) $a['id'])) && basename($script) !== 'paskyra.php' && !($staffBar && preg_match('~/admin/(index\.php)?$~', $script))):
-        $attMember = $staffBar ? null : account_attention_member((int) $a['id']); ?>
-<a class="attention-bar" href="<?= url($staffBar ? 'admin/' : 'paskyra.php' . ($attMember ? '?m=' . $attMember : '')) ?>#svarbu">❗ Turite <?= $att ?> <?= $att % 10 === 1 && $att % 100 !== 11 ? 'naują pranešimą' : ($att % 10 >= 2 && ($att % 100 < 10 || $att % 100 >= 20) ? 'naujus pranešimus' : 'naujų pranešimų') ?> - <strong>peržiūrėti →</strong></a>
-<?php endif; ?>
-<?php
+    // Pranešimai ir darbai - tik raudonas skaičiukas ant „Paskyra“ (be juostos per ekraną)
+}
+
+/** Treneriui: kiek laukia - pranešimai ir „Reikia padaryti“ punktai (patvirtinimai, rezultatai, žinutės...) */
+function staff_attention_count(int $accountId): int
+{
+    return notification_count($accountId) + count(admin_todo_items());
 }
 
 const LT_MONTHS = [1 => 'sausis', 'vasaris', 'kovas', 'balandis', 'gegužė', 'birželis', 'liepa', 'rugpjūtis', 'rugsėjis', 'spalis', 'lapkritis', 'gruodis'];

@@ -5,6 +5,7 @@ require_once APP_DIR . '/images.php';
 $me = require_staff();
 lessons_belt_folders_setup();
 lessons_kata_seed();
+lessons_kata_update();
 
 // Pamoka redaguojama pačiame pamokos puslapyje (senos nuorodos ?edit=... nukreipiamos ten)
 if (($edit = (string) get('edit')) !== '') {
