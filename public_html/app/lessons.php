@@ -127,8 +127,8 @@ const KATA_VIDEOS = [
     8  => [['Bassai Dai', 'Qpt3W7Y06Kg', '„šturmuoti tvirtovę“: jėga ir ritmas']],
     9  => [['Kanku Dai', '5Hgi2vi9EbA', '„žvilgsnis į dangų“: ilgiausia pagrindinė kata, 65 judesiai']],
     10 => [['Enpi', 'IInNlHZQUrE', '„skrendanti kregždė“: greitis ir šuolis'], ['Jion', 'KErsdtTwqM8', 'tvirti pagrindai ir tikslumas']],
-    11 => [['Tekki Nidan', 'uifXvEXd_NU', 'antroji Tekki kata (video - visos trys Tekki katos)'], ['Hangetsu', 'vOP8dAalfms', '„pusmėnulis“: lėti judesiai su kvėpavimu']],
-    12 => [['Tekki Sandan', 'uifXvEXd_NU', 'trečioji Tekki kata (video - visos trys Tekki katos)'], ['Gankaku', 'OJi3lwnx0jI', '„gervė ant uolos“: pusiausvyra ant vienos kojos']],
+    11 => [['Tekki Nidan', 'ylucjoJdyeM', 'antroji Tekki kata: kiba-dachi, darbas klubais'], ['Hangetsu', 'vOP8dAalfms', '„pusmėnulis“: lėti judesiai su kvėpavimu']],
+    12 => [['Tekki Sandan', 'U4CnF07ueGw', 'trečioji Tekki kata: greiti blokai kiba-dachi stovėsenoje'], ['Gankaku', 'OJi3lwnx0jI', '„gervė ant uolos“: pusiausvyra ant vienos kojos']],
     13 => [['Kanku Sho', 'veaayoYQ9D4', 'mažoji Kanku kata su šuoliu ir apsisukimu'], ['Sochin', 'KqmlVtZZuxY', '„rami jėga“: fudo-dachi stovėsena']],
     14 => [['Nijushiho', 'ZE8EqPvwruE', '„24 žingsniai“'], ['Gojushiho Sho', 'c2qiJNrCYGw', '„54 žingsniai“ (mažoji)']],
     15 => [['Gojushiho Dai', 'qVGcqVEBRRs', '„54 žingsniai“ (didžioji)']],
@@ -177,6 +177,29 @@ function lessons_kata_seed(): void
         }
         error_log('lessons_kata_seed: ' . $ex->getMessage());
     }
+}
+
+/** Vieną kartą: jau sukurtose Tekki Nidan / Sandan pamokose bendras Tekki video pakeičiamas atskiru (jei treneris jo nekeitė) */
+function lessons_kata_update(): void
+{
+    if (site_setting('pamokos_katos_v2') || !site_setting('pamokos_katos')) {
+        return;
+    }
+    foreach ([11 => 'Tekki Nidan', 12 => 'Tekki Sandan'] as $belt => $name) {
+        $new = null;
+        foreach (KATA_VIDEOS[$belt] as $k) {
+            if ($k[0] === $name) {
+                $new = $k;
+            }
+        }
+        foreach (q_all('SELECT l.id FROM lessons l JOIN lesson_blocks b ON b.lesson_id = l.id WHERE l.title = ? AND l.topic = "Kata" AND b.youtube_id = "uifXvEXd_NU"', [$name]) as $l) {
+            q('UPDATE lesson_blocks SET youtube_id = ? WHERE lesson_id = ? AND youtube_id = "uifXvEXd_NU"', [$new[1], (int) $l['id']]);
+            q('UPDATE lesson_blocks SET body = ? WHERE lesson_id = ? AND type = "text" AND body LIKE "%visos trys Tekki katos%"',
+                ['Kata ' . $name . ' - ' . $new[2] . ".\n\nVideo: pirma judesiai po vieną, tada visa kata. Kartokite po truputį kasdien; kaip daroma mūsų klube - parodys treneris.", (int) $l['id']]);
+            q('UPDATE lessons SET videos = REPLACE(videos, "uifXvEXd_NU", ?) WHERE id = ?', [$new[1], (int) $l['id']]);
+        }
+    }
+    set_site_setting('pamokos_katos_v2', date('Y-m-d H:i'));
 }
 
 /** Diržo aplankas (pagrindinio lygio, su diržu: „8 kyu“, „1 dan“) */

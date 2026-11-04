@@ -201,6 +201,7 @@ page_start($tab === 'nustatymai' ? 'Nustatymai' : 'Mano paskyra', ['noindex' => 
   <div>
     <div class="eyebrow"><?= $tab === 'nustatymai' ? 'Nustatymai' : 'Apžvalga' ?></div>
     <div class="hello">Sveiki, <?= e($a['first_name']) ?>!</div>
+    <?= $selected && $active && $tab === 'apzvalga' ? belt_strip_html($selected) : '' ?>
   </div>
   <?php if (count($members) > 1): ?>
     <div class="member-tabs">
@@ -222,7 +223,15 @@ page_start($tab === 'nustatymai' ? 'Nustatymai' : 'Mano paskyra', ['noindex' => 
     $back = 'paskyra.php?m=' . (int) $selected['id']; ?>
   <!-- Svarbu: kas laukia atsakymo ar dėmesio. Pažymėjus „Supratau“ / „Perskaičiau“ - dingsta. -->
   <section class="panel card important" id="svarbu">
-    <div class="kicker">Svarbu<?= count($members) > 1 ? ' · ' . e($selected['first_name']) : '' ?></div>
+    <div class="row between" style="gap:10px; flex-wrap:wrap;">
+      <div class="kicker" style="margin:0;">Svarbu<?= count($members) > 1 ? ' · ' . e($selected['first_name']) : '' ?></div>
+      <?php if (count($unreadIds ?? []) > 1): ?>
+        <form method="post" class="inline-form">
+          <?= csrf_field() ?><input type="hidden" name="action" value="note_read"><input type="hidden" name="member_id" value="<?= (int) $selected['id'] ?>"><input type="hidden" name="note_id" value="all">
+          <button class="btn btn-ghost btn-sm" type="submit">✓ Visas pastabas perskaičiau</button>
+        </form>
+      <?php endif; ?>
+    </div>
     <ul class="notif-list">
       <?php foreach ($invites as $ev): ?>
         <li class="notif is-new t-invite">
@@ -255,7 +264,8 @@ page_start($tab === 'nustatymai' ? 'Nustatymai' : 'Mano paskyra', ['noindex' => 
               <?php if ($isLesson): ?>Treneris atsiuntė pamoką: <a href="<?= url('pamokos.php?id=' . (int) $n['lesson_id']) ?>"><?= e($n['lesson_title']) ?></a>
               <?php else: ?><a href="#n<?= (int) $n['id'] ?>"><?= $n['is_task'] ? 'Užduotis nuo trenerio' : 'Nauja trenerio pastaba' ?></a><?php endif; ?>
             </div>
-            <div class="notif-text"><?= e(mb_strimwidth(trim(preg_replace('~\s+~u', ' ', $n['body'])), 0, 160, '…')) ?></div>
+            <div class="notif-text"><?= text_to_html($n['body']) ?></div>
+            <?php if ($n['youtube_id']): ?><?= youtube_embed($n['youtube_id']) ?><?php endif; ?>
             <div class="notif-meta"><?= e(fmt_date($n['note_date'] ?? substr($n['created_at'], 0, 10))) ?><?= $n['author'] ? ' · ' . e($n['author']) : '' ?></div>
           </div>
           <div class="notif-actions">
@@ -294,9 +304,6 @@ page_start($tab === 'nustatymai' ? 'Nustatymai' : 'Mano paskyra', ['noindex' => 
   </section>
 <?php endif; ?>
 
-<?php if ($active && $tab === 'apzvalga' && varzybos_enabled()): ?>
-  <a class="flash flash-info" style="display:block;" href="<?= url('varzybos.php') ?>">🥋 Registracija į varžybas: <strong>pasirinkti varžybas ir kategorijas →</strong></a>
-<?php endif; ?>
 
 <?php if ($isStaff): ?>
   <!-- Trenerio šeimos nariai (jei treniruojasi): taškai, pastabos, egzaminas - kaip mato narys. Visa kita - „Paskyra“ (Treneriams). -->
@@ -316,7 +323,7 @@ page_start($tab === 'nustatymai' ? 'Nustatymai' : 'Mano paskyra', ['noindex' => 
             </div>
           </div>
         </div>
-        <?= render_xp_card($selected) ?>
+        <?= render_xp_card($selected, false, false) ?>
 
         <div class="top-tabs">
           <?php foreach ($topChoices as $key => $p): ?>
@@ -350,7 +357,6 @@ page_start($tab === 'nustatymai' ? 'Nustatymai' : 'Mano paskyra', ['noindex' => 
         <div class="kicker">Tvarkaraštis <?= $selected['group_id'] ? staff_link('admin/grupes.php?id=' . (int) $selected['group_id'], '✎ Keisti') : '' ?></div>
         <?php if ($active && $selected['group_id']): ?>
           <h2><?= e($selected['group_name']) ?></h2>
-          <div style="margin:-4px 0 10px;"><?= belt_chip($selected['belt_level'] !== null ? (int) $selected['belt_level'] : null) ?></div>
           <?= render_cancellation_notes(cancellations_for_groups([(int) $selected['group_id']], 30)) ?>
           <?= render_schedule_lines(schedule_lines(group_schedule((int) $selected['group_id']))) ?>
           <div class="kicker" style="margin-top:14px;">Lankomumas</div>
@@ -373,23 +379,18 @@ page_start($tab === 'nustatymai' ? 'Nustatymai' : 'Mano paskyra', ['noindex' => 
             <?php foreach ($events as $ev): ?><li><?= render_event($ev) ?></li><?php endforeach; ?>
           </ul>
         <?php endif; ?>
+        <?php if ($active && varzybos_enabled()): ?><a class="card-link" href="<?= url('varzybos.php') ?>">🥋 Registracija į varžybas →</a><?php endif; ?>
       </div>
     </div>
   </div>
 
-  <?php if ($active && $notes): ?>
+  <?php // Naujos pastabos ir neatliktos užduotys - tik „Svarbu“; čia - ankstesnės (perskaitytos, atliktos), su atsakymais
+  $todoIds = array_map('intval', array_column($todoNotes ?? [], 'id'));
+  $pastNotes = array_values(array_filter($notes ?? [], function ($n) use ($todoIds) { return !in_array((int) $n['id'], $todoIds, true); })); ?>
+  <?php if ($active && $pastNotes): ?>
     <div class="panel card" id="pastabos" style="margin-top:20px;">
-      <?php $unreadInfo = array_filter($notes, function ($n) { return !$n['is_task'] && $n['read_at'] === null; }); ?>
-      <div class="row between" style="margin-bottom:4px;">
-        <div class="kicker" style="margin:0;">Trenerio pastabos<?= $unreadIds ? ' <span class="badge badge-new">' . count($unreadIds) . ' nauj.</span>' : '' ?></div>
-        <?php if (count($unreadInfo) > 1): ?>
-          <form method="post" class="inline-form">
-            <?= csrf_field() ?><input type="hidden" name="action" value="note_read"><input type="hidden" name="member_id" value="<?= (int) $selected['id'] ?>"><input type="hidden" name="note_id" value="all">
-            <button class="btn btn-ghost btn-sm" type="submit">✓ Visas perskaičiau</button>
-          </form>
-        <?php endif; ?>
-      </div>
-      <?php foreach ($notes as $n): ?>
+      <div class="kicker">Trenerio pastabos</div>
+      <?php foreach ($pastNotes as $n): ?>
         <?php $openTask = $n['is_task'] && !$n['done_at']; ?>
         <div class="coach-note <?= in_array((int) $n['id'], $unreadIds, true) || $openTask ? 'unread' : '' ?>" id="n<?= (int) $n['id'] ?>">
           <div class="meta">

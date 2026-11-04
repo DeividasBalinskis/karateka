@@ -37,7 +37,7 @@ function xp_check_level_up(int $memberId, int $before): void
 }
 
 /** Lygio kortelė: lygis diržo spalva, XP juosta, kiek trūksta iki kito lygio */
-function render_xp_card(array $member, bool $compact = false): string
+function render_xp_card(array $member, bool $compact = false, bool $showBelt = true): string
 {
     $total = member_points_total((int) $member['id']);
     $l = xp_level($total);
@@ -47,7 +47,7 @@ function render_xp_card(array $member, bool $compact = false): string
         . '<div class="xp-level" title="Lygis"><span class="xp-level-n">' . $l['level'] . '</span><span class="xp-level-l">lygis</span></div>'
         . '<div class="xp-main"><div class="xp-row"><strong>' . $l['xp'] . ' XP</strong><span class="xp-next">iki ' . ($l['level'] + 1) . ' lygio: ' . $l['need'] . ' XP</span></div>'
         . '<div class="xp-bar" role="progressbar" aria-valuemin="0" aria-valuemax="' . $l['per'] . '" aria-valuenow="' . $l['into'] . '"><span style="width:' . $l['pct'] . '%"></span></div>'
-        . '<div class="xp-belt">' . belt_icon_svg($belt) . ' ' . e(BELTS[$belt][0] . ' · ' . $beltName) . '</div></div></div>';
+        . ($showBelt ? '<div class="xp-belt">' . belt_icon_svg($belt) . ' ' . e(BELTS[$belt][0] . ' · ' . $beltName) . '</div>' : '') . '</div></div>';
 }
 
 // ---------- Egzamino programos punktai ----------

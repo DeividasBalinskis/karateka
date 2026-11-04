@@ -51,3 +51,30 @@ function belt_from_post(string $field): ?int
     $v = (int) post($field);
     return isset(BELTS[$v]) ? $v : null;
 }
+
+/** Nario paskyroje (viršuje): diržas - spalvota juostelė su mazgu - ir kelias iki kito diržo (programos punktai) */
+function belt_strip_html(array $m): string
+{
+    $lvl = $m['belt_level'] !== null ? (int) $m['belt_level'] : null;
+    if (!$lvl || !isset(BELTS[$lvl])) {
+        return '';
+    }
+    [$kyu, $name, $color] = BELTS[$lvl];
+    $next = isset(BELTS[$lvl + 1]) ? $lvl + 1 : null;
+    $link = url('egzaminas.php?m=' . (int) $m['id']);
+    $progress = '';
+    if ($next) {
+        $reqs = array_merge([], ...array_values(belt_requirements($next)));
+        if ($reqs) {
+            $done = requirement_done_ids((int) $m['id']);
+            $ok = count(array_filter($reqs, function ($r) use ($done) { return ($done[(int) $r['id']] ?? '') === 'approved'; }));
+            $progress = '<a class="bs-next" href="' . e($link) . '" title="Egzamino programa">Iki ' . e(BELTS[$next][0]) . ': ' . $ok . ' iš ' . count($reqs)
+                . '<span class="bs-bar" aria-hidden="true"><i style="width:' . (int) round(100 * $ok / count($reqs)) . '%; background:' . BELTS[$next][2] . '"></i></span></a>';
+        } else {
+            $progress = '<a class="bs-next" href="' . e($link) . '">Kitas - ' . e(BELTS[$next][0] . ' · ' . BELTS[$next][1]) . ' →</a>';
+        }
+    }
+    return '<div class="belt-strip' . ($lvl === 1 ? ' is-white' : '') . ($lvl >= 10 ? ' is-dan' : '') . '" style="--belt:' . $color . '">'
+        . '<span class="bs-belt" aria-hidden="true"><i></i></span><span class="bs-label"><strong>' . e($kyu) . '</strong> · ' . e($name) . ' diržas</span>'
+        . $progress . '</div>';
+}
