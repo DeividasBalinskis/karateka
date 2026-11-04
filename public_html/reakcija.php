@@ -30,7 +30,7 @@ if (!$a) {
     respond($json, ['login' => url('prisijungti.php?r=' . rawurlencode(url($back)))], $back);
 }
 if (!is_active_account($a)) {
-    respond($json, ['error' => 'Reaguoti galės patvirtinti nariai - jūsų paskyra dar laukia trenerio patvirtinimo.'], $back);
+    respond($json, ['error' => t('Reaguoti galės patvirtinti nariai - jūsų paskyra dar laukia trenerio patvirtinimo.')], $back);
 }
 
 $emoji = post('emoji');
@@ -38,7 +38,7 @@ $current = q_value('SELECT emoji FROM reactions WHERE news_id = ? AND account_id
 // Leidžiami tik adminui pažymėti emoji; savo seną (jau išjungtą) reakciją nuimti galima
 $ok = in_array($emoji, allowed_reactions(), true) || ($current !== false && $current === $emoji);
 if (!$ok || !q_value('SELECT 1 FROM news WHERE id = ? AND is_published = 1 AND ' . visibility_sql() . '', [$newsId])) {
-    respond($json, ['error' => 'Netinkama reakcija.'], $back);
+    respond($json, ['error' => t('Netinkama reakcija.')], $back);
 }
 
 if ($current === $emoji) {

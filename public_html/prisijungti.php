@@ -20,7 +20,7 @@ if (is_post()) {
         if ($a) {
             send_verification_email($a);
         }
-        flash('ok', 'Jei paskyra laukia patvirtinimo, naują nuorodą išsiuntėme el. paštu.');
+        flash('ok', t('Jei paskyra laukia patvirtinimo, naują nuorodą išsiuntėme el. paštu.'));
         redirect('prisijungti.php');
     }
 
@@ -35,11 +35,11 @@ if (is_post()) {
         redirect('kodas.php?r=' . rawurlencode($return));
     }
     $messages = [
-        'throttled'      => 'Per daug nesėkmingų bandymų. Pabandykite po 15 minučių arba atkurkite slaptažodį.',
-        'invalid'        => 'Neteisingas el. paštas arba slaptažodis.',
-        'pending_email'  => 'Pirmiausia patvirtinkite el. paštą: paspauskite nuorodą laiške, kurį išsiuntėme registruojantis.',
-        'pending_parent' => 'Paskyra laukia tėvų sutikimo. Tėvams išsiuntėme laišką su nuoroda.',
-        'disabled'       => 'Ši paskyra išjungta. Susisiekite su klubu: info@karateka.lt',
+        'throttled'      => t('Per daug nesėkmingų bandymų. Pabandykite po 15 minučių arba atkurkite slaptažodį.'),
+        'invalid'        => t('Neteisingas el. paštas arba slaptažodis.'),
+        'pending_email'  => t('Pirmiausia patvirtinkite el. paštą: paspauskite nuorodą laiške, kurį išsiuntėme registruojantis.'),
+        'pending_parent' => t('Paskyra laukia tėvų sutikimo. Tėvams išsiuntėme laišką su nuoroda.'),
+        'disabled'       => t('Ši paskyra išjungta. Susisiekite su klubu: info@karateka.lt'),
     ];
     $error = $messages[$result['error']];
     if ($result['error'] === 'pending_email') {
@@ -47,34 +47,34 @@ if (is_post()) {
     }
 }
 
-page_start('Prisijungti', ['narrow' => true, 'noindex' => true]);
+page_start(t('Prisijungti'), ['narrow' => true, 'noindex' => true]);
 ?>
 <div class="panel card">
-  <h1 class="styled">Prisijungti</h1>
+  <h1 class="styled"><?= te('Prisijungti') ?></h1>
   <?php if ($error): ?><div class="flash flash-err"><?= e($error) ?></div><?php endif; ?>
   <?php if ($resendFor): ?>
     <form method="post" class="form" style="margin-bottom:18px;">
       <?= csrf_field() ?>
       <input type="hidden" name="action" value="resend">
       <input type="hidden" name="email" value="<?= e($resendFor) ?>">
-      <button class="btn btn-ghost btn-sm" type="submit">Siųsti patvirtinimo laišką dar kartą</button>
+      <button class="btn btn-ghost btn-sm" type="submit"><?= te('Siųsti patvirtinimo laišką dar kartą') ?></button>
     </form>
   <?php endif; ?>
   <form method="post" class="form">
     <?= csrf_field() ?>
     <input type="hidden" name="r" value="<?= e($return) ?>">
-    <label>El. paštas
+    <label><?= te('El. paštas') ?>
       <input type="email" name="email" value="<?= e($email) ?>" autocomplete="email" required autofocus>
     </label>
-    <label>Slaptažodis
+    <label><?= te('Slaptažodis') ?>
       <input type="password" name="password" autocomplete="current-password" required>
     </label>
-    <button class="btn btn-primary btn-block" type="submit">Prisijungti</button>
+    <button class="btn btn-primary btn-block" type="submit"><?= te('Prisijungti') ?></button>
   </form>
-  <p class="small" style="margin-top:12px; text-align:center;"><a href="<?= url('slaptazodis.php') ?>">Pamiršote slaptažodį?</a></p>
+  <p class="small" style="margin-top:12px; text-align:center;"><a href="<?= url('slaptazodis.php') ?>"><?= te('Pamiršote slaptažodį?') ?></a></p>
   <hr class="divider">
-  <p class="muted small" style="text-align:center; margin-bottom:10px;">Neturite paskyros?</p>
-  <a class="btn btn-ghost btn-block" href="<?= url('registracija.php') ?>">Sukurti paskyrą</a>
+  <p class="muted small" style="text-align:center; margin-bottom:10px;"><?= te('Neturite paskyros?') ?></p>
+  <a class="btn btn-ghost btn-block" href="<?= url('registracija.php') ?>"><?= te('Sukurti paskyrą') ?></a>
 </div>
 <?php
 page_end();

@@ -17,18 +17,18 @@ $status = post('status');
 $ev = q_one('SELECT * FROM events WHERE id = ? AND ' . visibility_sql(), [$eventId]);
 $m = q_one('SELECT * FROM members WHERE id = ?', [$memberId]);
 if (!$ev || !$m || !account_relation((int) $a['id'], $memberId) || !in_array($status, ['going', 'declined'], true)) {
-    flash('err', 'Nepavyko - renginys ar narys nerastas.');
+    flash('err', t('Nepavyko - renginys ar narys nerastas.'));
     redirect($back);
 }
 if (!is_active_account($a) || !member_can_respond($ev, $m)) {
-    flash('err', 'Į šį renginį registruotis nebegalima. Jei reikia - parašykite treneriui.');
+    flash('err', t('Į šį renginį registruotis nebegalima. Jei reikia - parašykite treneriui.'));
     redirect($back);
 }
 
 // Teisėjauti gali tik žymą „Teisėjas“ turintys ir tik varžybose; dalyvauti - tik jei renginys skirtas nario grupei (ar pakviestas)
 $role = post('role') === 'referee' && member_can_referee($ev, $m) ? 'referee' : 'participant';
 if ($status === 'going' && $role === 'participant' && !event_participant($eventId, $memberId) && !event_targets_member($ev, $m)) {
-    flash('err', 'Šis renginys skirtas kitoms grupėms.');
+    flash('err', t('Šis renginys skirtas kitoms grupėms.'));
     redirect($back);
 }
 $who = $m['first_name'] . ' ' . $m['last_name'];
@@ -54,6 +54,6 @@ if ($status === 'declined') {
     notifications_done('late_request', $eventId, $memberId);
 }
 flash('ok', $status === 'going'
-    ? "{$m['first_name']}: " . ($role === 'referee' ? 'teisėjaus' : 'dalyvaus') . " - {$ev['title']}."
+    ? "{$m['first_name']}: " . ($role === 'referee' ? t('teisėjaus') : 'dalyvaus') . " - {$ev['title']}."
     : "{$m['first_name']}: pažymėta, kad negalės - {$ev['title']}.");
 redirect($back);

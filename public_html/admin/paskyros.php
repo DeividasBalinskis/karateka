@@ -34,24 +34,24 @@ if ($search !== '') {
 $rows = q_all($sql . ' ORDER BY role = "member", last_name, first_name LIMIT 300', $params);
 
 $statusLabel = [
-    'pending_email' => 'laukia el. pašto', 'pending_parent' => 'laukia tėvų', 'pending_approval' => 'laukia patvirtinimo',
-    'active' => 'aktyvi', 'disabled' => 'išjungta',
+    'pending_email' => t('laukia el. pašto'), 'pending_parent' => t('laukia tėvų'), 'pending_approval' => 'laukia patvirtinimo',
+    'active' => 'aktyvi', 'disabled' => t('išjungta'),
 ];
-$roleLabel = ['member' => 'Narys / tėvai', 'coach' => 'Treneris', 'admin' => 'Administratorius'];
+$roleLabel = ['member' => t('Narys / tėvai'), 'coach' => t('Treneris'), 'admin' => t('Administratorius')];
 
-page_start('Paskyros', ['admin' => true]);
+page_start(t('Paskyros'), ['admin' => true]);
 ?>
 <div class="page-head">
-  <h1 class="styled">Paskyros</h1>
-  <p>Treneriai mato trenerio panelę. Administratorius dar gali keisti roles.</p>
+  <h1 class="styled"><?= te('Paskyros') ?></h1>
+  <p><?= te('Treneriai mato trenerio panelę. Administratorius dar gali keisti roles.') ?></p>
 </div>
 <form method="get" class="panel card form inline-fields">
-  <label>Paieška <input type="search" name="q" value="<?= e($search) ?>" placeholder="Vardas arba el. paštas"></label>
-  <button class="btn btn-ghost" type="submit">Ieškoti</button>
+  <label><?= te('Paieška') ?> <input type="search" name="q" value="<?= e($search) ?>" placeholder="<?= te('Vardas arba el. paštas') ?>"></label>
+  <button class="btn btn-ghost" type="submit"><?= te('Ieškoti') ?></button>
 </form>
 <div class="panel card">
   <table class="table cards">
-    <thead><tr><th>Vardas</th><th>Būsena</th><th>Rolė</th><th></th></tr></thead>
+    <thead><tr><th><?= te('Vardas') ?></th><th><?= te('Būsena') ?></th><th><?= te('Rolė') ?></th><th></th></tr></thead>
     <tbody>
       <?php foreach ($rows as $r): $self = (int) $r['id'] === (int) $me['id']; ?>
         <tr>
@@ -59,7 +59,7 @@ page_start('Paskyros', ['admin' => true]);
           <td><span class="badge <?= $r['status'] === 'active' ? 'badge-ok' : 'badge-warn' ?>"><?= $statusLabel[$r['status']] ?></span></td>
           <td>
             <?php if ($self): ?>
-              <?= $roleLabel[$r['role']] ?> <span class="muted small">(jūs)</span>
+              <?= $roleLabel[$r['role']] ?> <span class="muted small"><?= te('(jūs)') ?></span>
             <?php else: ?>
               <form method="post" class="inline-form form">
                 <?= csrf_field() ?><input type="hidden" name="id" value="<?= (int) $r['id'] ?>"><input type="hidden" name="action" value="role">
@@ -74,9 +74,9 @@ page_start('Paskyros', ['admin' => true]);
               <form method="post" class="inline-form">
                 <?= csrf_field() ?><input type="hidden" name="id" value="<?= (int) $r['id'] ?>">
                 <?php if ($r['status'] === 'disabled'): ?>
-                  <button class="btn btn-ghost btn-sm" name="action" value="enable">Įjungti</button>
+                  <button class="btn btn-ghost btn-sm" name="action" value="enable"><?= te('Įjungti') ?></button>
                 <?php else: ?>
-                  <button class="btn btn-danger btn-sm" name="action" value="disable" onclick="return confirm('Išjungti paskyrą? Žmogus nebegalės prisijungti.')">Išjungti</button>
+                  <button class="btn btn-danger btn-sm" name="action" value="disable" onclick="return confirm('Išjungti paskyrą? Žmogus nebegalės prisijungti.')"><?= te('Išjungti') ?></button>
                 <?php endif; ?>
               </form>
             <?php endif; ?>

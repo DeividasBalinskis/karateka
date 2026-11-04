@@ -41,7 +41,7 @@ function message_topic_title(string $key, array $first): string
         case 'w':
             return '📰 Naujiena: <a href="' . e(url('naujienos.php?id=' . (int) substr($key, 1))) . '">' . e($first['news_title'] ?? 'naujiena') . '</a>';
     }
-    return 'Bendros žinutės';
+    return t('Bendros žinutės');
 }
 
 /** Paslėpti laukai atsakymui toje pačioje temoje */
@@ -57,7 +57,7 @@ function note_messages(array $noteIds): array
     $out = [];
     $noteIds = array_map('intval', $noteIds);
     if ($noteIds) {
-        foreach (message_rows('mm.note_id IN (' . implode(',', $noteIds) . ')', []) as $r) {
+        foreach (message_rows(t('mm.note_id IN (') . implode(',', $noteIds) . ')', []) as $r) {
             $out[(int) $r['note_id']][] = $r;
         }
     }
@@ -90,7 +90,7 @@ function public_questions(?string $column, int $refId = 0): array
 {
     try {
         $rows = $column ? message_rows("mm.$column = ? AND mm.note_id IS NULL", [$refId])
-            : message_rows('mm.note_id IS NULL AND mm.lesson_id IS NULL AND mm.event_id IS NULL AND mm.news_id IS NULL', []);
+            : message_rows(t('mm.note_id IS NULL AND mm.lesson_id IS NULL AND mm.event_id IS NULL AND mm.news_id IS NULL'), []);
     } catch (PDOException $ex) {
         return [];   // dar neimportuotas db/021
     }
@@ -118,7 +118,7 @@ function render_public_questions(array $public): string
     $html = '';
     foreach ($public as $x) {
         $q = $x['q'];
-        $html .= '<div class="q-item"><div class="q-q"><span class="q-who">Narys klausė:</span> ' . nl2br(e($q['body'])) . '</div>';
+        $html .= ('<div class="q-item"><div class="q-q"><span class="q-who">' . t('Narys klausė:') . '</span> ') . nl2br(e($q['body'])) . '</div>';
         foreach ($x['answers'] as $ans) {
             $html .= '<div class="q-a"><span class="q-who">' . e(message_author($ans, false)) . ':</span> ' . nl2br(e($ans['body'])) . '</div>';
         }
@@ -132,7 +132,7 @@ function render_staff_comment(array $r, string $back, array $relations): string
 {
     $html = '<div class="msg ' . ($r['from_staff'] ? 'from-staff' : 'from-member') . (!$r['from_staff'] && $r['read_at'] === null ? ' is-new' : '') . '">'
         . '<div class="msg-meta">' . e(chat_author($r, true, $relations)) . ' · ' . e(notification_when($r['created_at']))
-        . (!$r['from_staff'] && $r['read_at'] === null ? ' <span class="badge badge-new">Nauja</span>' : '') . '</div>'
+        . (!$r['from_staff'] && $r['read_at'] === null ? (' <span class="badge badge-new">' . t('Nauja') . '</span>') : '') . '</div>'
         . '<div class="msg-body">' . nl2br(e($r['body'])) . '</div>';
     if (!$r['from_staff']) {
         $form = function (string $field, string $text) use ($r, $back) {
@@ -141,8 +141,8 @@ function render_staff_comment(array $r, string $back, array $relations): string
                 . '<input type="hidden" name="message_id" value="' . (int) $r['id'] . '"><input type="hidden" name="field" value="' . $field . '">'
                 . '<input type="hidden" name="back" value="' . e($back) . '"><button class="linklike small" type="submit">' . e($text) . '</button></form>';
         };
-        $html .= '<div class="q-publish">' . $form('is_public', !empty($r['is_public']) ? '🔒 Slėpti nuo kitų' : '👁 Rodyti visiems')
-            . (!empty($r['is_public']) ? ' <span class="small muted">· matomas visiems be vardo</span>' : '') . '</div>';
+        $html .= '<div class="q-publish">' . $form('is_public', !empty($r['is_public']) ? t('🔒 Slėpti nuo kitų') : t('👁 Rodyti visiems'))
+            . (!empty($r['is_public']) ? (' <span class="small muted">' . t('· matomas visiems be vardo') . '</span>') : '') . '</div>';
     }
     return $html . message_delete_form($r, $back) . '</div>';
 }
@@ -159,14 +159,14 @@ function questions_box(string $kind, int $refId, string $back): string
         return '';
     }
     if (!$a) {
-        return '<div class="panel card q-box" id="klausimai"><div class="kicker">💬 Komentaras ar klausimas Deniui</div><p class="small muted"><a href="'
-            . e(url('prisijungti.php?r=' . rawurlencode(url($back)))) . '">Prisijunkite</a> - komentarą mato tik Denis.</p></div>';
+        return ('<div class="panel card q-box" id="klausimai"><div class="kicker">' . t('💬 Komentaras ar klausimas Deniui') . '</div><p class="small muted"><a href="')
+            . e(url('prisijungti.php?r=' . rawurlencode(url($back)))) . ('">Prisijunkite</a> ' . t('- komentarą mato tik Denis.') . '</p></div>');
     }
     $ctxKey = ['lesson_id' => 'l', 'event_id' => 'e', 'news_id' => 'w'][$column] . $refId;
     $html = '';
     $public = public_questions($column, $refId);
     if ($public) {
-        $html .= '<div class="q-public"><div class="kicker">Klausimai ir atsakymai</div>' . render_public_questions($public) . '</div>';
+        $html .= ('<div class="q-public"><div class="kicker">' . t('Klausimai ir atsakymai') . '</div>') . render_public_questions($public) . '</div>';
     }
 
     if (is_staff($a)) {
@@ -182,7 +182,7 @@ function questions_box(string $kind, int $refId, string $back): string
         }
         $html .= '<div class="kicker" style="margin-top:' . ($public ? '14px' : '0') . ';">Narių komentarai Deniui</div>';
         if (!$byMember) {
-            $html .= '<p class="small muted">Komentarų dar nėra. Nariai juos palieka čia - matote tik jūs (treneriai).</p>';
+            $html .= ('<p class="small muted">' . t('Komentarų dar nėra. Nariai juos palieka čia - matote tik jūs (treneriai).') . '</p>');
         }
         foreach ($byMember as $mid => $list) {
             $rel = q('SELECT account_id, relation FROM account_members WHERE member_id = ?', [$mid])->fetchAll(PDO::FETCH_KEY_PAIR);
@@ -193,7 +193,7 @@ function questions_box(string $kind, int $refId, string $back): string
                 . '<input type="hidden" name="action" value="reply"><input type="hidden" name="member_id" value="' . $mid . '"><input type="hidden" name="ctx" value="' . $ctxKey . '">'
                 . '<input type="hidden" name="back" value="' . e($back . '#q-' . $mid) . '">'
                 . '<textarea name="body" rows="2" maxlength="' . MESSAGE_MAX . '" placeholder="Atsakymas - matys ' . e($list[0]['member_first']) . ' (ir tėvai)" required></textarea>'
-                . '<button class="btn btn-primary btn-sm" type="submit">Atsakyti</button></form></div>';
+                . ('<button class="btn btn-primary btn-sm" type="submit">' . t('Atsakyti') . '</button></form></div>');
             mark_member_messages_read_ctx($mid, $column, $refId);
         }
         return '<div class="panel card q-box" id="klausimai">' . $html . '</div>';
@@ -204,7 +204,7 @@ function questions_box(string $kind, int $refId, string $back): string
         return $html ? '<div class="panel card q-box" id="klausimai">' . $html . '</div>' : '';
     }
     $html .= '<div class="kicker"' . ($public ? ' style="margin-top:14px;"' : '') . '>💬 Komentaras ar klausimas Deniui</div>'
-        . '<p class="small muted" style="margin-top:-4px;">Mato tik Denis. Atsakymą matysite čia ir pokalbyje. Jei atsakymas naudingas visiems, Denis gali jį paskelbti - be jūsų vardo.</p>';
+        . ('<p class="small muted" style="margin-top:-4px;">' . t('Mato tik Denis. Atsakymą matysite čia ir pokalbyje. Jei atsakymas naudingas visiems, Denis gali jį paskelbti - be jūsų vardo.') . '</p>');
     foreach ($members as $m) {
         $rows = message_rows("mm.member_id = ? AND mm.$column = ? AND mm.note_id IS NULL", [(int) $m['id'], $refId]);
         if ($rows) {
@@ -227,7 +227,7 @@ function questions_box(string $kind, int $refId, string $back): string
         $form .= '<input type="hidden" name="member_id" value="' . (int) $members[0]['id'] . '">';
     }
     $html .= $form . '<textarea name="body" rows="2" maxlength="' . MESSAGE_MAX . '" placeholder="Jūsų komentaras ar klausimas Deniui" required></textarea>'
-        . '<button class="btn btn-primary btn-sm" type="submit">Siųsti Deniui</button></form>';
+        . ('<button class="btn btn-primary btn-sm" type="submit">' . t('Siųsti Deniui') . '</button></form>');
     return '<div class="panel card q-box" id="klausimai">' . $html . '</div>';
 }
 
@@ -281,9 +281,9 @@ function account_unread_replies(int $accountId): int
 function message_author(array $r, bool $staffView): string
 {
     if ($r['from_staff']) {
-        return 'Treneris' . ($r['author_first'] ? ' ' . $r['author_first'] : '');
+        return t('Treneris') . ($r['author_first'] ? ' ' . $r['author_first'] : '');
     }
-    return $staffView ? (trim(($r['author_first'] ?? '') . ' ' . ($r['author_last'] ?? '')) ?: 'Narys') : ($r['author_first'] ?: 'Jūs');
+    return $staffView ? (trim(($r['author_first'] ?? '') . ' ' . ($r['author_last'] ?? '')) ?: t('Narys')) : ($r['author_first'] ?: t('Jūs'));
 }
 
 /** Žinutė. $back - kur grįžti ištrynus savo žinutę (tuščia - ištrinti negalima) */
@@ -292,7 +292,7 @@ function render_message(array $r, bool $staffView, string $back = ''): string
     $when = fmt_date(substr($r['created_at'], 0, 10)) . ', ' . substr($r['created_at'], 11, 5);
     $new = ($staffView ? !$r['from_staff'] : $r['from_staff']) && $r['read_at'] === null;
     return '<div class="msg ' . ($r['from_staff'] ? 'from-staff' : 'from-member') . ($new ? ' is-new' : '') . '">'
-        . '<div class="msg-meta">' . e(message_author($r, $staffView)) . ' · ' . e($when) . ($new ? ' <span class="badge badge-new">Nauja</span>' : '') . '</div>'
+        . '<div class="msg-meta">' . e(message_author($r, $staffView)) . ' · ' . e($when) . ($new ? (' <span class="badge badge-new">' . t('Nauja') . '</span>') : '') . '</div>'
         . '<div class="msg-body">' . nl2br(e($r['body'])) . '</div>' . message_delete_form($r, $back) . '</div>';
 }
 
@@ -305,7 +305,7 @@ function message_delete_form(array $r, string $back): string
     }
     return '<form method="post" action="' . e(url('pokalbis.php')) . '" class="inline-form msg-del" onsubmit="return confirm(\'Ištrinti šią žinutę?\')">' . csrf_field()
         . '<input type="hidden" name="action" value="delete"><input type="hidden" name="message_id" value="' . (int) $r['id'] . '">'
-        . '<input type="hidden" name="back" value="' . e($back) . '"><button class="linklike small" type="submit">Ištrinti</button></form>';
+        . '<input type="hidden" name="back" value="' . e($back) . ('"><button class="linklike small" type="submit">' . t('Ištrinti') . '</button></form>');
 }
 
 /** Atsakymo forma. $hidden - paslėpti laukai (member_id, note_id, lesson_id...) */
@@ -355,7 +355,7 @@ function notify_member_reply(array $member, array $coach, string $body): void
 function send_coach_note(array $member, array $coach, string $body, ?int $lessonId, bool $isTask, bool $email): int
 {
     if ($body === '') {
-        $body = $lessonId ? 'Pažiūrėk prisegtą pamoką.' : 'Pastaba.';
+        $body = $lessonId ? t('Pažiūrėk prisegtą pamoką.') : t('Pastaba.');
     }
     q('INSERT INTO coach_notes (member_id, author_id, group_id, note_date, body, lesson_id, is_task) VALUES (?, ?, ?, CURDATE(), ?, ?, ?)',
         [(int) $member['id'], (int) $coach['id'], $member['group_id'] ? (int) $member['group_id'] : null, mb_substr($body, 0, MESSAGE_MAX), $lessonId, $isTask ? 1 : 0]);

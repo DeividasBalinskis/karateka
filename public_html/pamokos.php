@@ -5,10 +5,10 @@ require __DIR__ . '/app/bootstrap.php';
 
 $a = require_login();
 if (!can_see_lessons($a)) {
-    page_start('Pamokos', ['narrow' => true, 'noindex' => true]); ?>
+    page_start(t('Pamokos'), ['narrow' => true, 'noindex' => true]); ?>
     <div class="panel card">
-      <h1>Pamokos</h1>
-      <p class="muted">Pamokos bus matomos, kai treneris patvirtins jūsų paskyrą.</p>
+      <h1><?= te('Pamokos') ?></h1>
+      <p class="muted"><?= te('Pamokos bus matomos, kai treneris patvirtins jūsų paskyrą.') ?></p>
     </div>
 <?php
     page_end();
@@ -34,7 +34,7 @@ if (is_post()) {
     if (post('action') === 'lesson_save') {
         $savedId = lesson_save_from_post($a, $errors, $postedBlocks);
         if ($savedId) {
-            flash('ok', !empty($_POST['is_published']) ? 'Pamoka išsaugota.' : 'Pamoka išsaugota (nepaskelbta - nariai jos nemato).');
+            flash('ok', !empty($_POST['is_published']) ? t('Pamoka išsaugota.') : t('Pamoka išsaugota (nepaskelbta - nariai jos nemato).'));
             redirect('pamokos.php?id=' . $savedId . (post('after') === 'stay' ? '&keisti=1' : ''));
         }
         $editingPost = true;
@@ -94,26 +94,26 @@ function lesson_cards(array $lessons, array $opt = []): string
     $html = '<div class="lessons-grid"' . (array_key_exists('parent', $opt) ? ' data-kind="lessons" data-parent="' . ($opt['parent'] ?? '') . '"' : '') . '>';
     foreach ($lessons as $n => $l) {
         $i = $info[(int) $l['id']];
-        $meta = $i['videos'] ? lt_count($i['videos'], 'video', 'video', 'video') : ($i['images'] ? lt_count($i['images'], 'nuotrauka', 'nuotraukos', 'nuotraukų') : 'Tekstinė pamoka');
+        $meta = $i['videos'] ? lt_count($i['videos'], 'video', 'video', 'video') : ($i['images'] ? lt_count($i['images'], 'nuotrauka', 'nuotraukos', t('nuotraukų')) : t('Tekstinė pamoka'));
         if (!empty($opt['folder']) && $l['folder_id'] !== null && isset($folders[(int) $l['folder_id']])) {
             $meta .= ' · ' . $folders[(int) $l['folder_id']]['title'];
         }
         if (!empty($l['sent_at'])) {
-            $meta = 'Atsiųsta ' . fmt_date(substr($l['sent_at'], 0, 10));
+            $meta = (t('Atsiųsta') . ' ') . fmt_date(substr($l['sent_at'], 0, 10));
         }
         $card = '<a class="panel lesson-card rise" href="' . e(url('pamokos.php?id=' . (int) $l['id'])) . '" style="--i:' . min($n, 8) . ';"><div class="thumb">'
-            . ($i['thumb'] ? '<img src="' . e($i['thumb']) . '" alt="" loading="lazy">' . ($i['video'] ? '<span class="play">▶</span>' : '') : '<span class="text-icon">Aa</span>')
+            . ($i['thumb'] ? '<img src="' . e($i['thumb']) . '" alt="" loading="lazy">' . ($i['video'] ? '<span class="play">▶</span>' : '') : ('<span class="text-icon">' . t('Aa') . '</span>'))
             . '</div><div class="body">'
             . ($l['belt_level'] !== null ? belt_chip((int) $l['belt_level']) : '')
             . ($l['audience'] !== 'karateka' ? ' <span class="badge badge-tag">' . e(QUIZ_AUDIENCE[$l['audience']]) . '</span>' : '')
             . (!$l['is_published'] ? ' <span class="badge badge-warn">nepaskelbta</span>' : '')
-            . (!empty($l['task_open']) ? ' <span class="badge badge-new">užduotis</span>' : '')
+            . (!empty($l['task_open']) ? (' <span class="badge badge-new">' . t('užduotis') . '</span>') : '')
             . '<h3>' . e($l['title']) . '</h3><div class="muted small">' . e($meta) . '</div></div></a>';
         $html .= $edit ? '<div class="lc-wrap" data-type="lesson" data-id="' . (int) $l['id'] . '">' . $card
             . '<span class="lc-tools"><span class="lc-drag" title="Tempkite">⠿</span><a href="' . e(url('pamokos.php?id=' . (int) $l['id'] . '&keisti=1')) . '" title="Keisti">✎</a></span></div>' : $card;
     }
     if ($edit && !$lessons) {
-        $html .= '<p class="ls-empty">Pamokų nėra - nutempkite čia arba pridėkite.</p>';
+        $html .= ('<p class="ls-empty">' . t('Pamokų nėra - nutempkite čia arba pridėkite.') . '</p>');
     }
     return $html . '</div>';
 }
@@ -126,19 +126,19 @@ function folder_inline_form(array $folders, array $f, string $back): string
     $html = '<form method="post" action="' . e(url('admin/pamokos.php')) . '" class="form folder-inline panel" id="ff' . $id . '" hidden>' . csrf_field()
         . '<input type="hidden" name="action" value="folder_save"><input type="hidden" name="id" value="' . $id . '"><input type="hidden" name="back" value="' . e($back) . '">'
         . '<div class="form-row"><label>Pavadinimas <input type="text" name="title" value="' . e($f['title']) . '" maxlength="120" required></label>'
-        . '<label>Kur <select name="parent_id">' . folder_options($folders, $f['parent_id'] !== null ? (int) $f['parent_id'] : null, $exclude) . '</select></label></div>'
+        . ('<label>' . t('Kur') . ' <select name="parent_id">') . folder_options($folders, $f['parent_id'] !== null ? (int) $f['parent_id'] : null, $exclude) . '</select></label></div>'
         . '<label>Ženkliukas <input type="text" name="icon" id="fi' . $id . '" value="' . e((string) $f['icon']) . '" maxlength="8" style="max-width:110px;">' . icon_picker('fi' . $id, $f['icon']) . '</label>'
-        . '<label>Aprašymas <span class="hint">nebūtina; rodomas viršuje</span><textarea name="description" rows="2">' . e((string) $f['description']) . '</textarea></label>'
-        . '<div class="form-row"><label>Diržas <span class="hint">narys mato tik savo diržo aplanką</span><select name="belt_level">'
-        . belt_options($f['belt_level'] !== null ? (int) $f['belt_level'] : null, 'Visiems diržams') . '</select></label><div><div class="kicker" style="margin-bottom:6px;">Kam skirta?</div><div class="seg-choice">';
+        . ('<label>' . t('Aprašymas') . ' <span class="hint">' . t('nebūtina; rodomas viršuje') . '</span><textarea name="description" rows="2">') . e((string) $f['description']) . '</textarea></label>'
+        . ('<div class="form-row"><label>' . t('Diržas') . ' <span class="hint">' . t('narys mato tik savo diržo aplanką') . '</span><select name="belt_level">')
+        . belt_options($f['belt_level'] !== null ? (int) $f['belt_level'] : null, t('Visiems diržams')) . ('</select></label><div><div class="kicker" style="margin-bottom:6px;">' . t('Kam skirta?') . '</div><div class="seg-choice">');
     foreach (QUIZ_AUDIENCE as $k => $label) {
         $html .= '<label class="check"><input type="radio" name="audience" value="' . $k . '"' . ($f['audience'] === $k ? ' checked' : '') . '><span>' . e($label) . '</span></label>';
     }
     return $html . '</div></div></div>'
-        . '<label class="check"><input type="checkbox" name="is_published" value="1"' . ($f['is_published'] ? ' checked' : '') . '><span>Paskelbtas (nariai mato)</span></label>'
-        . '<div class="row" style="gap:8px; flex-wrap:wrap;"><button class="btn btn-primary btn-sm" type="submit">Išsaugoti</button>'
+        . '<label class="check"><input type="checkbox" name="is_published" value="1"' . ($f['is_published'] ? ' checked' : '') . ('><span>' . t('Paskelbtas (nariai mato)') . '</span></label>')
+        . ('<div class="row" style="gap:8px; flex-wrap:wrap;"><button class="btn btn-primary btn-sm" type="submit">' . t('Išsaugoti') . '</button>')
         . '<button class="btn btn-ghost btn-sm" type="button" data-close="ff' . $id . '">Atšaukti</button>'
-        . '<button class="btn btn-danger btn-sm" type="submit" name="action" value="folder_delete" formnovalidate onclick="return confirm(\'Ištrinti aplanką? Jo pamokos ir poaplankiai bus perkelti lygiu aukščiau.\')" style="margin-left:auto;">Ištrinti</button></div></form>';
+        . ('<button class="btn btn-danger btn-sm" type="submit" name="action" value="folder_delete" formnovalidate onclick="return confirm(\'Ištrinti aplanką? Jo pamokos ir poaplankiai bus perkelti lygiu aukščiau.\')" style="margin-left:auto;">' . t('Ištrinti') . '</button></div></form>');
 }
 
 /** Naujas aplankas (tik pavadinimas) */
@@ -146,7 +146,7 @@ function folder_quick_form(?int $parent, string $back, string $placeholder): str
 {
     return '<form method="post" action="' . e(url('admin/pamokos.php')) . '" class="row lt-quick" style="gap:6px;">' . csrf_field()
         . '<input type="hidden" name="action" value="folder_quick"><input type="hidden" name="parent_id" value="' . ($parent ?? '') . '"><input type="hidden" name="back" value="' . e($back) . '">'
-        . '<input type="text" name="title" placeholder="' . e($placeholder) . '" maxlength="120" required><button class="btn btn-ghost btn-sm" type="submit">+ Sukurti</button></form>';
+        . '<input type="text" name="title" placeholder="' . e($placeholder) . ('" maxlength="120" required><button class="btn btn-ghost btn-sm" type="submit">' . t('+ Sukurti') . '</button></form>');
 }
 
 /**
@@ -170,7 +170,7 @@ $renderBody = function (int $fid, string $back) use ($folders, $shown, $folderSh
         $html .= '<section class="ls-sub" data-type="folder" data-id="' . $sid . '" id="f' . $sid . '"><div class="ls-sub-head">'
             . ($editMode ? '<span class="ls-drag" title="Tempkite">⠿</span>' : '')
             . '<a class="ls-sub-title" href="' . e(url('pamokos.php?aplankas=' . $sid)) . '"><span class="ls-icon">' . folder_icon($s) . '</span>' . e($s['title']) . '</a>'
-            . '<span class="small muted">' . lt_count($counts[$sid] ?? 0, 'pamoka', 'pamokos', 'pamokų') . '</span> ' . folder_badges($s)
+            . '<span class="small muted">' . lt_count($counts[$sid] ?? 0, 'pamoka', 'pamokos', t('pamokų')) . '</span> ' . folder_badges($s)
             . ($editMode ? '<span class="ls-tools"><button type="button" class="btn btn-ghost btn-sm" data-open="ff' . $sid . '">✎ Keisti</button>'
                 . '<a class="btn btn-ghost btn-sm" href="' . e(url('pamokos.php?nauja=1&aplankas=' . $sid)) . '">+ Pamoka</a></span>' : '')
             . '</div>' . ($editMode ? folder_inline_form($folders, $s, $back) : '')
@@ -207,8 +207,8 @@ function folder_tiles(array $list, array $counts, array $v): string
             . ($b ? ' style="--belt:' . BELTS[$b][2] . ';"' : '') . '>'
             . '<span class="kyu-ico">' . folder_icon($f) . '</span>'
             . '<span class="kyu-text"><strong>' . e($f['title']) . '</strong>'
-            . '<span class="kyu-sub">' . ($b && is_belt_folder($f) ? e(BELTS[$b][1]) . ' diržas · ' : '') . lt_count($counts[$fid] ?? 0, 'pamoka', 'pamokos', 'pamokų') . '</span></span>'
-            . ($own ? '<span class="kyu-own">' . e(count($v['members']) > 1 ? implode(', ', $v['own'][$b]) : 'Tavo diržas') . '</span>' : '')
+            . '<span class="kyu-sub">' . ($b && is_belt_folder($f) ? e(t(BELTS[$b][1])) . (' ' . t('diržas ·') . ' ') : '') . lt_count($counts[$fid] ?? 0, 'pamoka', 'pamokos', t('pamokų')) . '</span></span>'
+            . ($own ? '<span class="kyu-own">' . e(count($v['members']) > 1 ? implode(', ', $v['own'][$b]) : t('Tavo diržas')) . '</span>' : '')
             . (!$f['is_published'] ? '<span class="badge badge-warn">nepaskelbtas</span>' : '')
             . '</a>';
     }
@@ -221,10 +221,10 @@ function folder_add_bar(int $fid, string $back): string
     $link = function (string $type, string $label) use ($fid) {
         return '<a class="btn btn-ghost btn-sm" href="' . e(url('pamokos.php?nauja=1&aplankas=' . $fid . '&tipas=' . $type)) . '">' . $label . '</a>';
     };
-    return '<div class="ls-add-bar"><span class="small muted">Pridėti į šį aplanką:</span>'
-        . $link('text', '¶ Tekstas') . $link('image', '🖼 Nuotrauka') . $link('video', '▶ Video')
+    return ('<div class="ls-add-bar"><span class="small muted">' . t('Pridėti į šį aplanką:') . '</span>')
+        . $link('text', t('¶ Tekstas')) . $link('image', t('🖼 Nuotrauka')) . $link('video', t('▶ Video'))
         . '<button type="button" class="btn btn-ghost btn-sm" data-open="nf' . $fid . '">📁 Aplankas</button></div>'
-        . '<div id="nf' . $fid . '" class="ls-new-folder" hidden>' . folder_quick_form($fid, $back, 'Naujo aplanko pavadinimas, pvz. Kata') . '</div>';
+        . '<div id="nf' . $fid . '" class="ls-new-folder" hidden>' . folder_quick_form($fid, $back, t('Naujo aplanko pavadinimas, pvz. Kata')) . '</div>';
 }
 
 /** Viršutinė juosta: treneriui - įrankiai, peržiūroje - kaip kas mato */
@@ -233,10 +233,10 @@ $topBar = function (?int $cur) use ($v, $staffTools, $editMode) {
         return '';
     }
     $here = $cur ? 'pamokos.php?aplankas=' . $cur : 'pamokos.php';
-    $html = '<div class="staff-bar"><span class="staff-bar-label">Treneriui</span>';
+    $html = ('<div class="staff-bar"><span class="staff-bar-label">' . t('Treneriui') . '</span>');
     if ($editMode) {
         $html .= '<a class="btn btn-sm btn-primary" href="' . e(url($here)) . '">✓ Baigti tvarkyti</a>'
-            . '<span class="small muted">Tempkite ⠿, kad perstatytumėte; ✎ - pavadinimas, ženkliukas, diržas, kam skirta. Išsaugoma iš karto.</span>';
+            . ('<span class="small muted">' . t('Tempkite ⠿, kad perstatytumėte; ✎ - pavadinimas, ženkliukas, diržas, kam skirta. Išsaugoma iš karto.') . '</span>');
     } else {
         $html .= '<a class="btn btn-sm btn-primary" href="' . e(url($here . ($cur ? '&' : '?') . 'tvarkyti=1')) . '">✎ Tvarkyti</a>';
     }
@@ -270,7 +270,7 @@ if ($staffTools && (($id && get('keisti') === '1') || get('nauja') === '1' || $e
     }
     $fid = $l['folder_id'] !== null ? (int) $l['folder_id'] : null;
     $cancel = $l['id'] ? 'pamokos.php?id=' . (int) $l['id'] : ($fid ? 'pamokos.php?aplankas=' . $fid : 'pamokos.php');
-    page_start($l['id'] ? 'Keisti: ' . $l['title'] : 'Nauja pamoka', $navOpt);
+    page_start($l['id'] ? (t('Keisti:') . ' ') . $l['title'] : t('Nauja pamoka'), $navOpt);
     ?>
     <?= $crumbs($fid) ?>
     <?= form_errors($errors) ?>
@@ -279,17 +279,17 @@ if ($staffTools && (($id && get('keisti') === '1') || get('nauja') === '1' || $e
       <input type="hidden" name="action" value="lesson_save">
       <input type="hidden" name="id" value="<?= (int) $l['id'] ?>">
       <details class="panel lesson-settings-bar" <?= $l['id'] ? '' : 'open' ?>>
-        <summary><span class="kicker" style="margin:0;">⚙ Nustatymai</span>
-          <span class="small muted"><?= e($fid && isset($folders[$fid]) ? folder_icon_text($folders[$fid]) . $folders[$fid]['title'] : 'Be aplanko') ?> · <?php $fb = folder_belt($folders, $fid); ?><?= e($fb ? BELTS[$fb][0] . ' (aplanko)' : ($l['belt_level'] !== null ? BELTS[(int) $l['belt_level']][0] : 'visiems diržams')) ?> · <?= $l['is_published'] ? 'paskelbta' : 'nepaskelbta' ?></span></summary>
+        <summary><span class="kicker" style="margin:0;"><?= te('⚙ Nustatymai') ?></span>
+          <span class="small muted"><?= e($fid && isset($folders[$fid]) ? folder_icon_text($folders[$fid]) . $folders[$fid]['title'] : t('Be aplanko')) ?> · <?php $fb = folder_belt($folders, $fid); ?><?= e($fb ? BELTS[$fb][0] . (' ' . t('(aplanko)')) : ($l['belt_level'] !== null ? BELTS[(int) $l['belt_level']][0] : t('visiems diržams'))) ?> · <?= $l['is_published'] ? 'paskelbta' : 'nepaskelbta' ?></span></summary>
         <div class="lesson-settings-grid">
           <div>
-            <label>Aplankas <select name="folder_id"><?= folder_options($folders, $fid) ?></select></label>
-            <label>Diržas <span class="hint">narys iš karto mato savo diržo pamokas</span>
-              <select name="belt_level"><?= belt_options($l['belt_level'] !== null ? (int) $l['belt_level'] : null, 'Visiems diržams') ?></select></label>
-            <label class="check"><input type="checkbox" name="is_published" value="1" <?= $l['is_published'] ? 'checked' : '' ?>><span>Paskelbta (nariai mato)</span></label>
+            <label><?= te('Aplankas') ?> <select name="folder_id"><?= folder_options($folders, $fid) ?></select></label>
+            <label><?= te('Diržas') ?> <span class="hint"><?= te('narys iš karto mato savo diržo pamokas') ?></span>
+              <select name="belt_level"><?= belt_options($l['belt_level'] !== null ? (int) $l['belt_level'] : null, t('Visiems diržams')) ?></select></label>
+            <label class="check"><input type="checkbox" name="is_published" value="1" <?= $l['is_published'] ? 'checked' : '' ?>><span><?= te('Paskelbta (nariai mato)') ?></span></label>
           </div>
           <div>
-            <div class="kicker">Kam skirta?</div>
+            <div class="kicker"><?= te('Kam skirta?') ?></div>
             <div class="seg-choice">
               <?php foreach (QUIZ_AUDIENCE as $k => $label): ?>
                 <label class="check"><input type="radio" name="audience" value="<?= $k ?>" <?= ($l['audience'] ?? 'karateka') === $k ? 'checked' : '' ?>><span><?= e($label) ?></span></label>
@@ -300,12 +300,12 @@ if ($staffTools && (($id && get('keisti') === '1') || get('nauja') === '1' || $e
         </div>
       </details>
       <article class="panel card lesson lesson-edit">
-        <input type="text" class="lesson-title-input" name="title" value="<?= e($l['title']) ?>" maxlength="190" placeholder="Pavadinimas, pvz. Heian Shodan (nebūtina - paims iš teksto ar prierašo)" aria-label="Pavadinimas">
+        <input type="text" class="lesson-title-input" name="title" value="<?= e($l['title']) ?>" maxlength="190" placeholder="<?= te('Pavadinimas, pvz. Heian Shodan (nebūtina - paims iš teksto ar prierašo)') ?>" aria-label="<?= te('Pavadinimas') ?>">
         <div id="blocks">
           <?php foreach ($blocks as $i => $b): ?><?= lesson_block_editor($b, 'b' . $i) ?><?php endforeach; ?>
         </div>
         <div class="lb-add">
-          <span class="small muted">Pridėti:</span>
+          <span class="small muted"><?= te('Pridėti:') ?></span>
           <?php foreach (LESSON_BLOCK_TYPES as $t => [$label, $sign]): ?>
             <button type="button" class="btn btn-ghost btn-sm" data-add="<?= $t ?>"><?= $sign ?> <?= e($label) ?></button>
           <?php endforeach; ?>
@@ -315,17 +315,17 @@ if ($staffTools && (($id && get('keisti') === '1') || get('nauja') === '1' || $e
         <?php endforeach; ?>
       </article>
       <div class="sticky-save lesson-save">
-        <button class="btn btn-primary" type="submit">Išsaugoti</button>
-        <button class="btn btn-ghost" type="submit" name="after" value="stay">Išsaugoti ir likti</button>
-        <a class="btn btn-ghost" href="<?= e(url($cancel)) ?>">Atšaukti</a>
+        <button class="btn btn-primary" type="submit"><?= te('Išsaugoti') ?></button>
+        <button class="btn btn-ghost" type="submit" name="after" value="stay"><?= te('Išsaugoti ir likti') ?></button>
+        <a class="btn btn-ghost" href="<?= e(url($cancel)) ?>"><?= te('Atšaukti') ?></a>
       </div>
     </form>
     <?php if ($l['id']): ?>
       <div class="row lesson-extra">
-        <a class="btn btn-ghost btn-sm" href="<?= url('admin/pamokos.php?siusti=' . (int) $l['id']) ?>">📨 Siųsti nariams</a>
-        <form method="post" action="<?= url('admin/pamokos.php') ?>"><?= csrf_field() ?><input type="hidden" name="id" value="<?= (int) $l['id'] ?>"><button class="btn btn-ghost btn-sm" name="action" value="lesson_copy">⧉ Kopijuoti pamoką</button></form>
+        <a class="btn btn-ghost btn-sm" href="<?= url('admin/pamokos.php?siusti=' . (int) $l['id']) ?>"><?= te('📨 Siųsti nariams') ?></a>
+        <form method="post" action="<?= url('admin/pamokos.php') ?>"><?= csrf_field() ?><input type="hidden" name="id" value="<?= (int) $l['id'] ?>"><button class="btn btn-ghost btn-sm" name="action" value="lesson_copy"><?= te('⧉ Kopijuoti pamoką') ?></button></form>
         <form method="post" action="<?= url('admin/pamokos.php') ?>" onsubmit="return confirm('Ištrinti pamoką visam laikui?')"><?= csrf_field() ?><input type="hidden" name="id" value="<?= (int) $l['id'] ?>">
-          <input type="hidden" name="back" value="<?= e($fid ? 'pamokos.php?aplankas=' . $fid : 'pamokos.php') ?>"><button class="btn btn-danger btn-sm" name="action" value="delete">Ištrinti pamoką</button></form>
+          <input type="hidden" name="back" value="<?= e($fid ? 'pamokos.php?aplankas=' . $fid : 'pamokos.php') ?>"><button class="btn btn-danger btn-sm" name="action" value="delete"><?= te('Ištrinti pamoką') ?></button></form>
       </div>
     <?php endif; ?>
     <script src="<?= e(asset_url('assets/vendor/sortable.min.js')) ?>"></script>
@@ -370,11 +370,11 @@ if ($id) {
     <?= $crumbs($fid) ?>
     <?php foreach ($v['preview'] ? [] : $sentNotes as $sn): ?>
       <div class="sent-banner">
-        <span>📨 <?= count($v['members']) > 1 ? e($sn['first_name']) . ': ' : '' ?>treneris atsiuntė šią pamoką<?= $sn['body'] && $sn['body'] !== 'Pažiūrėk prisegtą pamoką.' ? ' - „' . e(mb_strimwidth($sn['body'], 0, 160, '…')) . '“' : '' ?><?= $sn['is_task'] ? ' <span class="badge badge-warn">užduotis</span>' : '' ?></span>
+        <span>📨 <?= count($v['members']) > 1 ? e($sn['first_name']) . ': ' : '' ?><?= te('treneris atsiuntė šią pamoką') ?><?= $sn['body'] && $sn['body'] !== 'Pažiūrėk prisegtą pamoką.' ? ' - „' . e(mb_strimwidth($sn['body'], 0, 160, '…')) . '“' : '' ?><?= $sn['is_task'] ? (' <span class="badge badge-warn">' . t('užduotis') . '</span>') : '' ?></span>
         <form method="post" action="<?= url('paskyra.php') ?>" class="inline-form">
           <?= csrf_field() ?><input type="hidden" name="member_id" value="<?= (int) $sn['member_id'] ?>"><input type="hidden" name="note_id" value="<?= (int) $sn['id'] ?>">
           <input type="hidden" name="back" value="pamokos.php?id=<?= (int) $lesson['id'] ?>">
-          <button class="btn btn-primary btn-sm" name="action" value="<?= $sn['is_task'] ? 'task_done' : 'note_read' ?>"><?= $sn['is_task'] ? '✓ Atlikau' : '✓ Peržiūrėjau' ?></button>
+          <button class="btn btn-primary btn-sm" name="action" value="<?= $sn['is_task'] ? 'task_done' : 'note_read' ?>"><?= $sn['is_task'] ? t('✓ Atlikau') : t('✓ Peržiūrėjau') ?></button>
         </form>
       </div>
     <?php endforeach; ?>
@@ -383,7 +383,7 @@ if ($id) {
         <?= $lesson['belt_level'] !== null ? belt_chip((int) $lesson['belt_level']) : '' ?>
         <?= $lesson['audience'] !== 'karateka' ? '<span class="badge badge-tag">' . e(QUIZ_AUDIENCE[$lesson['audience']]) . '</span>' : '' ?>
         <?= !$lesson['is_published'] ? '<span class="badge badge-warn">nepaskelbta</span>' : '' ?>
-        <?php if ($staffTools): ?><a class="btn btn-primary btn-sm lesson-edit-btn" href="<?= url('pamokos.php?id=' . (int) $lesson['id'] . '&keisti=1') ?>">✎ Keisti</a><?php endif; ?>
+        <?php if ($staffTools): ?><a class="btn btn-primary btn-sm lesson-edit-btn" href="<?= url('pamokos.php?id=' . (int) $lesson['id'] . '&keisti=1') ?>"><?= te('✎ Keisti') ?></a><?php endif; ?>
       </div>
       <h1 style="margin-top:10px;"><?= e($lesson['title']) ?></h1>
       <div class="lesson-blocks">
@@ -391,13 +391,13 @@ if ($id) {
       </div>
     </article>
     <?php if ($staffTools): ?>
-      <p class="no-print" style="margin-top:14px;"><a class="btn btn-primary btn-sm" href="<?= url('admin/pamokos.php?siusti=' . (int) $lesson['id']) ?>">📨 Siųsti pamoką nariams</a></p>
+      <p class="no-print" style="margin-top:14px;"><a class="btn btn-primary btn-sm" href="<?= url('admin/pamokos.php?siusti=' . (int) $lesson['id']) ?>"><?= te('📨 Siųsti pamoką nariams') ?></a></p>
     <?php endif; ?>
     <?= $v['preview'] ? '' : questions_box('lesson', (int) $lesson['id'], 'pamokos.php?id=' . (int) $lesson['id']) ?>
     <?php if ($prev || $next): ?>
       <nav class="lesson-pager">
-        <?= $prev ? '<a class="panel" href="' . e(url('pamokos.php?id=' . (int) $prev['id'])) . '"><span class="small muted">← Ankstesnė</span><strong>' . e($prev['title']) . '</strong></a>' : '<span></span>' ?>
-        <?= $next ? '<a class="panel next" href="' . e(url('pamokos.php?id=' . (int) $next['id'])) . '"><span class="small muted">Kita →</span><strong>' . e($next['title']) . '</strong></a>' : '' ?>
+        <?= $prev ? '<a class="panel" href="' . e(url('pamokos.php?id=' . (int) $prev['id'])) . ('"><span class="small muted">' . t('← Ankstesnė') . '</span><strong>') . e($prev['title']) . '</strong></a>' : '<span></span>' ?>
+        <?= $next ? '<a class="panel next" href="' . e(url('pamokos.php?id=' . (int) $next['id'])) . ('"><span class="small muted">' . t('Kita →') . '</span><strong>') . e($next['title']) . '</strong></a>' : '' ?>
       </nav>
     <?php endif; ?>
     <?php
@@ -419,7 +419,7 @@ if ($q !== '') {
 $folder = $cur ? $folders[$cur] : null;
 $back = 'pamokos.php' . ($cur ? '?aplankas=' . $cur . '&tvarkyti=1' : '?tvarkyti=1');
 
-page_start($folder ? $folder['title'] : 'Pamokos', $navOpt);
+page_start($folder ? $folder['title'] : t('Pamokos'), $navOpt);
 ?>
 <?= $topBar($cur) ?>
 <?php if ($folder): ?>
@@ -427,34 +427,34 @@ page_start($folder ? $folder['title'] : 'Pamokos', $navOpt);
 <?php endif; ?>
 <div class="page-head row between" style="align-items:flex-end; flex-wrap:wrap; gap:12px;">
   <div>
-    <?php if (!$folder): ?><div class="eyebrow">Tik nariams</div><?php endif; ?>
-    <h1 class="styled"><?= $folder ? '<span class="ls-icon">' . folder_icon($folder) . '</span> ' . e($folder['title']) : 'Pamokos' ?></h1>
+    <?php if (!$folder): ?><div class="eyebrow"><?= te('Tik nariams') ?></div><?php endif; ?>
+    <h1 class="styled"><?= $folder ? '<span class="ls-icon">' . folder_icon($folder) . '</span> ' . e($folder['title']) : t('Pamokos') ?></h1>
     <?php if ($folder): ?><div class="row" style="gap:6px; flex-wrap:wrap;"><?= folder_badges($folder) ?></div><?php endif; ?>
     <?php if ($folder && $folder['description']): ?><div class="muted" style="max-width:720px;"><?= lesson_text_html($folder['description']) ?></div><?php endif; ?>
   </div>
   <form class="lesson-search" method="get" action="<?= url('pamokos.php') ?>">
-    <input type="search" name="q" value="<?= e($q) ?>" placeholder="Ieškoti pamokų…" aria-label="Ieškoti pamokų">
+    <input type="search" name="q" value="<?= e($q) ?>" placeholder="<?= te('Ieškoti pamokų…') ?>" aria-label="<?= te('Ieškoti pamokų') ?>">
   </form>
 </div>
 <?php if ($folder && $editMode): ?>
-  <div class="row ls-edit-row"><button type="button" class="btn btn-ghost btn-sm" data-open="ff<?= $cur ?>">✎ Keisti šį aplanką</button>
-    <?= folder_quick_form($cur, $back, 'Naujo poaplankio pavadinimas') ?></div>
+  <div class="row ls-edit-row"><button type="button" class="btn btn-ghost btn-sm" data-open="ff<?= $cur ?>"><?= te('✎ Keisti šį aplanką') ?></button>
+    <?= folder_quick_form($cur, $back, t('Naujo poaplankio pavadinimas')) ?></div>
   <?= folder_inline_form($folders, $folder, $back) ?>
 <?php endif; ?>
 
 <?php if ($q !== ''): ?>
-  <h2 style="margin:0 0 12px;">Paieška: „<?= e($q) ?>“ <span class="muted small"><?= lt_count(count($found), 'pamoka', 'pamokos', 'pamokų') ?></span></h2>
-  <?= $found ? lesson_cards($found, ['folder' => true]) : '<div class="panel card"><p class="muted">Nieko nerasta.</p></div>' ?>
-  <p style="margin-top:16px;"><a href="<?= url('pamokos.php') ?>">← Visos pamokos</a></p>
+  <h2 style="margin:0 0 12px;"><?= te('Paieška: „') ?><?= e($q) ?>“ <span class="muted small"><?= lt_count(count($found), 'pamoka', 'pamokos', t('pamokų')) ?></span></h2>
+  <?= $found ? lesson_cards($found, ['folder' => true]) : ('<div class="panel card"><p class="muted">' . t('Nieko nerasta.') . '</p></div>') ?>
+  <p style="margin-top:16px;"><a href="<?= url('pamokos.php') ?>"><?= te('← Visos pamokos') ?></a></p>
 <?php else: ?>
   <?php if (!$v['staff'] && !$cur): ?>
     <a class="panel exam-prep-link" href="<?= url('egzaminas.php') ?>">
-      <span class="kicker" style="margin:0;">Pasiruošimas egzaminui</span>
-      <strong>Kito diržo programa, testas ir egzamino žingsniai →</strong>
+      <span class="kicker" style="margin:0;"><?= te('Pasiruošimas egzaminui') ?></span>
+      <strong><?= te('Kito diržo programa, testas ir egzamino žingsniai →') ?></strong>
     </a>
     <?php $sent = sent_lessons(array_map(function ($m) { return (int) $m['id']; }, $v['members'])); if ($sent): ?>
       <section class="sent-lessons">
-        <h2 class="lessons-heading">📨 Treneris atsiuntė</h2>
+        <h2 class="lessons-heading"><?= te('📨 Treneris atsiuntė') ?></h2>
         <?= lesson_cards($sent) ?>
       </section>
     <?php endif; ?>
@@ -469,7 +469,7 @@ page_start($folder ? $folder['title'] : 'Pamokos', $navOpt);
     <?= folder_tiles($subs, $counts, $v) ?>
     <?= $here ? lesson_cards($here) : '' ?>
     <?php if (!$subs && !$here): ?>
-      <div class="panel card"><p class="muted"><?= $staffTools ? 'Aplankas tuščias - pridėkite tekstą, nuotrauką, video ar aplanką.' : 'Šiame aplanke dar nieko nėra.' ?></p></div>
+      <div class="panel card"><p class="muted"><?= $staffTools ? t('Aplankas tuščias - pridėkite tekstą, nuotrauką, video ar aplanką.') : t('Šiame aplanke dar nieko nėra.') ?></p></div>
     <?php endif; ?>
   <?php else:
     $sections = array_values(array_filter(folder_children($folders, null), function ($f) use ($folderShown) { return $folderShown((int) $f['id']); }));
@@ -477,10 +477,10 @@ page_start($folder ? $folder['title'] : 'Pamokos', $navOpt);
     <?php if (!$editMode): ?>
       <?= folder_tiles($sections, $counts, $v) ?>
       <?php if ($rootLessons): ?>
-        <h2 class="lessons-heading">Kitos pamokos</h2>
+        <h2 class="lessons-heading"><?= te('Kitos pamokos') ?></h2>
         <?= lesson_cards($rootLessons) ?>
       <?php elseif (!$sections): ?>
-        <div class="panel card"><p class="muted">Pamokų dar nėra.</p></div>
+        <div class="panel card"><p class="muted"><?= te('Pamokų dar nėra.') ?></p></div>
       <?php endif; ?>
     <?php else: ?>
     <div class="ls-sections" data-kind="folders" data-parent="">
@@ -489,16 +489,16 @@ page_start($folder ? $folder['title'] : 'Pamokos', $navOpt);
           <summary>
             <span class="ls-icon"><?= folder_icon($f) ?></span>
             <span class="ls-title"><?= e($f['title']) ?></span>
-            <span class="ls-count"><?= lt_count($counts[$fid] ?? 0, 'pamoka', 'pamokos', 'pamokų') ?></span>
+            <span class="ls-count"><?= lt_count($counts[$fid] ?? 0, 'pamoka', 'pamokos', t('pamokų')) ?></span>
             <span class="ls-badges"><?= folder_badges($f) ?></span>
           </summary>
           <div class="ls-body">
             <?php if ($editMode): ?>
               <div class="ls-edit-row">
-                <span class="ls-drag" title="Tempkite aplanką">⠿</span>
-                <button type="button" class="btn btn-ghost btn-sm" data-open="ff<?= $fid ?>">✎ Keisti aplanką</button>
-                <a class="btn btn-ghost btn-sm" href="<?= url('pamokos.php?nauja=1&aplankas=' . $fid) ?>">+ Pamoka</a>
-                <?= folder_quick_form($fid, $back, 'Naujas poaplankis, pvz. 8 kyu') ?>
+                <span class="ls-drag" title="<?= te('Tempkite aplanką') ?>">⠿</span>
+                <button type="button" class="btn btn-ghost btn-sm" data-open="ff<?= $fid ?>"><?= te('✎ Keisti aplanką') ?></button>
+                <a class="btn btn-ghost btn-sm" href="<?= url('pamokos.php?nauja=1&aplankas=' . $fid) ?>"><?= te('+ Pamoka') ?></a>
+                <?= folder_quick_form($fid, $back, t('Naujas poaplankis, pvz. 8 kyu')) ?>
               </div>
               <?= folder_inline_form($folders, $f, $back) ?>
             <?php endif; ?>
@@ -509,9 +509,9 @@ page_start($folder ? $folder['title'] : 'Pamokos', $navOpt);
       <?php endforeach; ?>
     </div>
     <?php if ($editMode): ?>
-      <div class="panel card ls-new"><span class="kicker" style="margin:0;">Naujas aplankas</span><?= folder_quick_form(null, $back, 'pvz. Teisėjams') ?></div>
+      <div class="panel card ls-new"><span class="kicker" style="margin:0;"><?= te('Naujas aplankas') ?></span><?= folder_quick_form(null, $back, t('pvz. Teisėjams')) ?></div>
     <?php endif; ?>
-    <h2 class="lessons-heading"><?= $sections ? 'Kitos pamokos' : 'Pamokos' ?></h2>
+    <h2 class="lessons-heading"><?= $sections ? t('Kitos pamokos') : t('Pamokos') ?></h2>
     <?= lesson_cards($rootLessons, ['edit' => true, 'parent' => null]) ?>
     <?php endif; ?>
   <?php endif; ?>

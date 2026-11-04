@@ -46,7 +46,7 @@ function tag_badges(array $tags, ?int $memberId = null): string
     $html = '';
     foreach ($tags as $t) {
         $q = $memberId ? tag_qualification($memberId, $t) : null;
-        $title = $q ? ' title="Testas išlaikytas ' . e(fmt_date(substr($q['finished_at'], 0, 10))) . ', galioja iki '
+        $title = $q ? ' title="Testas išlaikytas ' . e(fmt_date(substr($q['finished_at'], 0, 10))) . (t(', galioja iki') . ' ')
             . e(fmt_date(date('Y-m-d', strtotime($q['finished_at'] . ' +' . QUIZ_VALID_MONTHS . ' months')))) . '"' : '';
         $html .= ' <span class="badge badge-tag' . ($q ? ' qualified' : '') . '"' . $title . '>' . e(MEMBER_TAGS[$t] ?? $t) . ($q ? ' ✓' : '') . '</span>';
     }
@@ -58,9 +58,9 @@ function tag_qualification_text(int $memberId, string $tag): string
 {
     $q = tag_qualification($memberId, $tag);
     if ($q) {
-        return '✓ testas išlaikytas, galioja iki ' . fmt_date(date('Y-m-d', strtotime($q['finished_at'] . ' +' . QUIZ_VALID_MONTHS . ' months')));
+        return (t('✓ testas išlaikytas, galioja iki') . ' ') . fmt_date(date('Y-m-d', strtotime($q['finished_at'] . ' +' . QUIZ_VALID_MONTHS . ' months')));
     }
-    return q_value('SELECT 1 FROM quizzes WHERE audience = ? AND is_published = 1 LIMIT 1', [$tag]) ? 'testas dar neišlaikytas' : '';
+    return q_value('SELECT 1 FROM quizzes WHERE audience = ? AND is_published = 1 LIMIT 1', [$tag]) ? t('testas dar neišlaikytas') : '';
 }
 
 // ---------- Dalyviai ----------
@@ -104,7 +104,7 @@ function event_deadline_html(array $ev): string
     $deadline = event_deadline($ev);
     $end = strtotime($deadline . ' 23:59:59');
     if (time() > $end) {
-        return '<div class="deadline closed">Registracija baigėsi ' . e(fmt_date($deadline)) . '</div>';
+        return ('<div class="deadline closed">' . t('Registracija baigėsi') . ' ') . e(fmt_date($deadline)) . '</div>';
     }
     return '<div class="deadline" data-deadline="' . date('c', $end) . '">⏳ Registracija iki ' . e(fmt_date($deadline)) . ' · <span class="deadline-left">' . e(time_left_text($end - time())) . '</span></div>';
 }
@@ -113,7 +113,7 @@ function event_deadline_html(array $ev): string
 function time_left_text(int $sec): string
 {
     if ($sec <= 0) {
-        return 'baigėsi';
+        return t('baigėsi');
     }
     $d = intdiv($sec, 86400);
     $h = intdiv($sec % 86400, 3600);
@@ -239,10 +239,10 @@ function render_event_rsvp(array $ev, array $members, string $back): string
         $canChange = $ev['starts_on'] > date('Y-m-d');
         $late = date('Y-m-d') > event_deadline($ev);   // terminas praėjo - „Dalyvausiu“ tampa prašymu Deniui
         $label = count($members) > 1 ? '<span class="rsvp-name">' . e($m['first_name']) . '</span>' : '';
-        $state = $status === 'going' ? '<span class="rsvp-state ok">✓ ' . ($p['role'] === 'referee' ? 'Teisėjaus' : 'Dalyvaus') . '</span>'
-            : ($status === 'late' ? '<span class="rsvp-state late">⏰ Pavėlavo - laukia Denio patvirtinimo</span>'
-            : ($status === 'declined' ? '<span class="rsvp-state no">Negalės</span>'
-            : ($status === 'invited' ? '<span class="rsvp-state inv">Treneris kviečia' . ($p['role'] === 'referee' ? ' teisėjauti' : '') . '</span>' : '')));
+        $state = $status === 'going' ? '<span class="rsvp-state ok">✓ ' . ($p['role'] === 'referee' ? t('Teisėjaus') : t('Dalyvaus')) . '</span>'
+            : ($status === 'late' ? ('<span class="rsvp-state late">' . t('⏰ Pavėlavo - laukia Denio patvirtinimo') . '</span>')
+            : ($status === 'declined' ? ('<span class="rsvp-state no">' . t('Negalės') . '</span>')
+            : ($status === 'invited' ? ('<span class="rsvp-state inv">' . t('Treneris kviečia')) . ($p['role'] === 'referee' ? (' ' . t('teisėjauti')) : '') . '</span>' : '')));
         $form = function (string $value, string $text, string $cls, string $role = '', string $title = '') use ($ev, $m, $back) {
             return '<form method="post" action="' . e(url('renginys-dalyvavimas.php')) . '" class="inline-form">' . csrf_field()
                 . '<input type="hidden" name="event_id" value="' . (int) $ev['id'] . '"><input type="hidden" name="member_id" value="' . (int) $m['id'] . '">'
@@ -255,21 +255,21 @@ function render_event_rsvp(array $ev, array $members, string $back): string
             if ($status !== 'going') {
                 $asRole = $p['role'] ?? 'participant';
                 if ($p || event_targets_member($ev, $m)) {
-                    $buttons .= $form('going', $asRole === 'referee' ? 'Teisėjausiu' : 'Dalyvausiu', 'btn-primary', $asRole);
+                    $buttons .= $form('going', $asRole === 'referee' ? t('Teisėjausiu') : t('Dalyvausiu'), 'btn-primary', $asRole);
                 }
                 if ($asRole !== 'referee' && member_can_referee($ev, $m)) {
-                    $buttons .= $form('going', 'Teisėjausiu', $buttons ? 'btn-ghost' : 'btn-primary', 'referee');
+                    $buttons .= $form('going', t('Teisėjausiu'), $buttons ? 'btn-ghost' : 'btn-primary', 'referee');
                 }
             }
             if ($status === 'going' || $status === 'invited') {
-                $buttons .= $form('declined', $status === 'going' ? 'Atšaukti' : 'Negalėsiu', 'btn-ghost');
+                $buttons .= $form('declined', $status === 'going' ? t('Atšaukti') : t('Negalėsiu'), 'btn-ghost');
             }
         } elseif ($canChange) {
             if ($status === 'going' || $status === 'late') {
-                $buttons .= $form('declined', 'Atšaukti', 'btn-ghost');
+                $buttons .= $form('declined', t('Atšaukti'), 'btn-ghost');
             } elseif ($p || (!empty($ev['registration']) && event_targets_member($ev, $m))) {
                 // Po termino: galima paprašyti - Denis gauna pranešimą ir patvirtina
-                $buttons .= $form('going', 'Noriu dalyvauti (pavėlavau)', 'btn-ghost', '', 'Registracija baigėsi - Denis gaus pranešimą');
+                $buttons .= $form('going', t('Noriu dalyvauti (pavėlavau)'), 'btn-ghost', '', t('Registracija baigėsi - Denis gaus pranešimą'));
                 if ($status === 'invited') {
                     $state = '';   // „Registracija baigėsi“ jau parašyta viršuje
                 }
@@ -291,6 +291,6 @@ function participant_extra_info(array $ev, array $row): string
         return '';
     }
     return $st['passed']
-        ? '<div class="test-ok">✓ Testas išlaikytas · leidžiama laikyti praktiką</div>'
-        : '<div class="test-no">Testas ' . ($st['best'] !== null ? 'neišlaikytas (geriausias ' . $st['best'] . ' %)' : 'dar nelaikytas') . '</div>';
+        ? ('<div class="test-ok">' . t('✓ Testas išlaikytas · leidžiama laikyti praktiką') . '</div>')
+        : ('<div class="test-no">' . t('Testas') . ' ') . ($st['best'] !== null ? (t('neišlaikytas (geriausias') . ' ') . $st['best'] . ' %)' : 'dar nelaikytas') . '</div>';
 }

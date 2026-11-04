@@ -34,26 +34,26 @@ if (!$trainings) {
     }
 }
 
-// Reikia padaryti (tas pats skaičius - ant „Paskyra“ mygtuko)
+// Reikia padaryti (tas pats skaičius - ant „Valdymas“ mygtuko)
 $todo = admin_todo_items();
 // Pranešimai: registracijos į egzaminą, pavėlavusieji, „Moku“ patvirtinimai, atšaukti sutikimai - sprendžiami čia pat
 $notifs = account_notifications((int) $me['id']);
 
 $upcoming = q_all('SELECT * FROM events WHERE COALESCE(ends_on, starts_on) >= CURDATE() AND starts_on <= DATE_ADD(CURDATE(), INTERVAL 21 DAY) ORDER BY starts_on, start_time');
 
-page_start('Šiandien', ['admin' => true]);
+page_start(t('Šiandien'), ['admin' => true]);
 $todoCount = count($notifs) + count($todo);
 ?>
 <div class="page-head row between" style="align-items:flex-end; flex-wrap:wrap; gap:12px;">
   <div>
-    <div class="eyebrow"><?= e(LT_WEEKDAYS[$weekday]) ?>, <?= e(fmt_date($today)) ?></div>
-    <h1 class="styled">Labas, <?= e($me['first_name']) ?></h1>
+    <div class="eyebrow"><?= e(weekday_names()[$weekday]) ?>, <?= e(fmt_date($today)) ?></div>
+    <h1 class="styled"><?= te('Labas,') ?> <?= e($me['first_name']) ?></h1>
   </div>
   <!-- Greiti veiksmai - vienintelė vieta, kur kartojasi kitų skilčių mygtukai (patogumui) -->
   <div class="dash-actions">
-    <a class="btn btn-ghost btn-sm" href="<?= url('admin/naujienos.php?edit=new') ?>">+ Naujiena</a>
-    <a class="btn btn-ghost btn-sm" href="<?= url('admin/renginiai.php?edit=new') ?>">+ Renginys</a>
-    <a class="btn btn-ghost btn-sm" href="<?= url('admin/nariai.php?new=1') ?>">+ Narys</a>
+    <a class="btn btn-ghost btn-sm" href="<?= url('admin/naujienos.php?edit=new') ?>"><?= te('+ Naujiena') ?></a>
+    <a class="btn btn-ghost btn-sm" href="<?= url('admin/renginiai.php?edit=new') ?>"><?= te('+ Renginys') ?></a>
+    <a class="btn btn-ghost btn-sm" href="<?= url('admin/nariai.php?new=1') ?>"><?= te('+ Narys') ?></a>
   </div>
 </div>
 
@@ -62,8 +62,8 @@ $todoCount = count($notifs) + count($todo);
   <div class="dash-main">
     <section class="panel card important" id="svarbu">
       <div class="row between" style="gap:10px; flex-wrap:wrap;">
-        <div class="kicker" style="margin:0;">Reikia padaryti<?= ($nn = notification_count((int) $me['id'])) ? ' <span class="badge badge-new">' . $nn . ' nauj.</span>' : '' ?></div>
-        <?php if ($notifs): ?><span class="small muted">Patvirtinkite čia pat - punktas dings.</span><?php endif; ?>
+        <div class="kicker" style="margin:0;"><?= te('Reikia padaryti') ?><?= ($nn = notification_count((int) $me['id'])) ? ' <span class="badge badge-new">' . $nn . ' nauj.</span>' : '' ?></div>
+        <?php if ($notifs): ?><span class="small muted"><?= te('Patvirtinkite čia pat - punktas dings.') ?></span><?php endif; ?>
       </div>
       <?= render_notifications($notifs, 'admin/#svarbu') ?>
       <?php if ($todo): ?>
@@ -74,13 +74,13 @@ $todoCount = count($notifs) + count($todo);
           <?php endforeach; ?>
         </ul>
       <?php endif; ?>
-      <?php if (!$todoCount): ?><p class="all-done">✓ Viskas padaryta</p><?php endif; ?>
+      <?php if (!$todoCount): ?><p class="all-done"><?= te('✓ Viskas padaryta') ?></p><?php endif; ?>
     </section>
   </div>
 
   <div class="dash-side">
     <div class="panel card">
-      <div class="kicker">Šiandienos treniruotės</div>
+      <div class="kicker"><?= te('Šiandienos treniruotės') ?></div>
       <?php if ($trainings): ?>
         <ul class="list today-list">
           <?php foreach ($trainings as $t): $done = (int) $t['marked'] > 0; $off = training_cancelled((int) $t['group_id'], $today); ?>
@@ -88,35 +88,35 @@ $todoCount = count($notifs) + count($todo);
               <span class="t-time"><?= $t['start_time'] ? e(fmt_time($t['start_time'])) : '–' ?><?= $t['end_time'] ? '<small>' . e(fmt_time($t['end_time'])) . '</small>' : '' ?></span>
               <span>
                 <strong><span class="group-dot" style="background:<?= e(group_color(['id' => $t['group_id'], 'color' => $t['group_color']])) ?>"></span><?= e($t['group_name']) ?></strong>
-                <div class="muted small"><?= e($t['location'] ?: '') ?><?= $t['location'] ? ' · ' : '' ?><?= (int) $t['members_count'] ?> nar.<?= $done ? ' · pažymėta ' . (int) $t['marked'] : '' ?>
-                  <?php if (is_admin() && !$done && !$off): ?> · <a class="cancel-btn" href="<?= url('admin/atsaukimai.php?g=' . (int) $t['group_id'] . '&d=' . $today . '#naujas') ?>">atšaukti</a><?php endif; ?></div>
-                <?php if ($off): ?><div class="cancel-tag">Atšaukta · <?= e($off['reason']) ?></div><?php endif; ?>
+                <div class="muted small"><?= e($t['location'] ?: '') ?><?= $t['location'] ? ' · ' : '' ?><?= (int) $t['members_count'] ?> nar.<?= $done ? (' ' . t('· pažymėta') . ' ') . (int) $t['marked'] : '' ?>
+                  <?php if (is_admin() && !$done && !$off): ?> · <a class="cancel-btn" href="<?= url('admin/atsaukimai.php?g=' . (int) $t['group_id'] . '&d=' . $today . '#naujas') ?>"><?= te('atšaukti') ?></a><?php endif; ?></div>
+                <?php if ($off): ?><div class="cancel-tag"><?= te('Atšaukta ·') ?> <?= e($off['reason']) ?></div><?php endif; ?>
               </span>
               <?php if ($off): ?>
-                <a class="btn btn-sm btn-ghost" href="<?= url('admin/atsaukimai.php') ?>">Atšaukimai</a>
+                <a class="btn btn-sm btn-ghost" href="<?= url('admin/atsaukimai.php') ?>"><?= te('Atšaukimai') ?></a>
               <?php else: ?>
-                <a class="btn btn-sm <?= $done ? 'btn-ghost' : 'btn-primary' ?>" href="<?= url('admin/treniruote.php?g=' . (int) $t['group_id'] . '&d=' . $today) ?>"><?= $done ? 'Pastabos' : 'Lankomumas' ?></a>
+                <a class="btn btn-sm <?= $done ? 'btn-ghost' : 'btn-primary' ?>" href="<?= url('admin/treniruote.php?g=' . (int) $t['group_id'] . '&d=' . $today) ?>"><?= $done ? t('Pastabos') : t('Lankomumas') ?></a>
               <?php endif; ?>
             </li>
           <?php endforeach; ?>
         </ul>
       <?php else: ?>
-        <p class="muted">Šiandien treniruočių nėra.<?php if ($nextDay): ?> Artimiausios - <?= e(mb_strtolower(LT_WEEKDAYS[(int) date('N', strtotime($nextDay))])) ?>, <?= e(fmt_date($nextDay)) ?><?php endif; ?></p>
+        <p class="muted"><?= te('Šiandien treniruočių nėra.') ?><?php if ($nextDay): ?> <?= te('Artimiausios -') ?> <?= e(mb_strtolower(weekday_names()[(int) date('N', strtotime($nextDay))])) ?>, <?= e(fmt_date($nextDay)) ?><?php endif; ?></p>
       <?php endif; ?>
     </div>
 
     <div class="panel card">
       <div class="row between" style="margin-bottom:6px;">
-        <div class="kicker" style="margin:0;">Artimiausi renginiai (3 savaitės)</div>
-        <a class="small" href="<?= url('renginiai.php') ?>">Visi renginiai →</a>
+        <div class="kicker" style="margin:0;"><?= te('Artimiausi renginiai (3 savaitės)') ?></div>
+        <a class="small" href="<?= url('renginiai.php') ?>"><?= te('Visi renginiai →') ?></a>
       </div>
       <?php if (!$upcoming): ?>
-        <p class="muted">Per artimiausias 3 savaites renginių nėra.</p>
+        <p class="muted"><?= te('Per artimiausias 3 savaites renginių nėra.') ?></p>
       <?php else: ?>
         <ul class="list today-list">
           <?php foreach ($upcoming as $ev): ?>
             <li class="row">
-              <span class="t-time"><?= date('j', strtotime($ev['starts_on'])) ?><small><?= e(mb_substr(LT_MONTHS_GEN[(int) date('n', strtotime($ev['starts_on']))], 0, 3)) ?></small></span>
+              <span class="t-time"><?= date('j', strtotime($ev['starts_on'])) ?><small><?= e(mb_substr(month_names_gen()[(int) date('n', strtotime($ev['starts_on']))], 0, 3)) ?></small></span>
               <span>
                 <span class="badge type-badge t-<?= e($ev['type']) ?>"><?= e(EVENT_TYPES[$ev['type']]) ?></span>
                 <strong><?= e($ev['title']) ?></strong>

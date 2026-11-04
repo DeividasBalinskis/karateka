@@ -11,40 +11,40 @@ if ($t !== '') {
         csrf_check();
         $pw = (string) ($_POST['password'] ?? '');
         if (mb_strlen($pw) < MIN_PASSWORD) {
-            $errors[] = 'Slaptažodis turi būti bent ' . MIN_PASSWORD . ' simbolių.';
+            $errors[] = (t('Slaptažodis turi būti bent') . ' ') . MIN_PASSWORD . (' ' . t('simbolių.'));
         } elseif ($pw !== ($_POST['password2'] ?? '')) {
-            $errors[] = 'Slaptažodžiai nesutampa.';
+            $errors[] = t('Slaptažodžiai nesutampa.');
         } else {
             token_use((int) $token['id']);
             q('UPDATE accounts SET password_hash = ? WHERE id = ?', [password_hash($pw, PASSWORD_DEFAULT), $token['account_id']]);
             // Nuoroda laiške patvirtina ir el. paštą
             q('UPDATE accounts SET email_verified_at = COALESCE(email_verified_at, NOW()) WHERE id = ?', [$token['account_id']]);
             advance_account_status((int) $token['account_id']);
-            flash('ok', 'Slaptažodis pakeistas. Galite prisijungti.');
+            flash('ok', t('Slaptažodis pakeistas. Galite prisijungti.'));
             redirect('prisijungti.php');
         }
     }
-    page_start('Naujas slaptažodis', ['narrow' => true, 'noindex' => true]);
+    page_start(t('Naujas slaptažodis'), ['narrow' => true, 'noindex' => true]);
     if (!$token) { ?>
       <div class="panel card">
-        <h1>Nuoroda nebegalioja</h1>
-        <p class="muted">Nuoroda galioja 1 valandą ir tik vieną kartą.</p>
-        <p style="margin-top:16px;"><a class="btn btn-primary" href="<?= url('slaptazodis.php') ?>">Gauti naują nuorodą</a></p>
+        <h1><?= te('Nuoroda nebegalioja') ?></h1>
+        <p class="muted"><?= te('Nuoroda galioja 1 valandą ir tik vieną kartą.') ?></p>
+        <p style="margin-top:16px;"><a class="btn btn-primary" href="<?= url('slaptazodis.php') ?>"><?= te('Gauti naują nuorodą') ?></a></p>
       </div>
     <?php } else { ?>
       <div class="panel card">
-        <h1 class="styled">Naujas slaptažodis</h1>
+        <h1 class="styled"><?= te('Naujas slaptažodis') ?></h1>
         <?= form_errors($errors) ?>
         <form method="post" class="form">
           <?= csrf_field() ?>
           <input type="hidden" name="t" value="<?= e($t) ?>">
-          <label>Naujas slaptažodis <span class="hint">bent <?= MIN_PASSWORD ?> simboliai</span>
+          <label><?= te('Naujas slaptažodis') ?> <span class="hint">bent <?= MIN_PASSWORD ?> simboliai</span>
             <input type="password" name="password" autocomplete="new-password" minlength="<?= MIN_PASSWORD ?>" required>
           </label>
-          <label>Pakartokite slaptažodį
+          <label><?= te('Pakartokite slaptažodį') ?>
             <input type="password" name="password2" autocomplete="new-password" required>
           </label>
-          <button class="btn btn-primary btn-block" type="submit">Išsaugoti</button>
+          <button class="btn btn-primary btn-block" type="submit"><?= te('Išsaugoti') ?></button>
         </form>
       </div>
     <?php }
@@ -65,24 +65,24 @@ if (is_post()) {
             . abs_url('slaptazodis.php?t=' . $token) . "\n\nNuoroda galioja 1 valandą. Jei slaptažodžio nekeitėte, šį laišką ignoruokite.");
     }
     // Atsakymas visada vienodas, kad nebūtų galima tikrinti, kurie el. paštai registruoti
-    flash('ok', 'Jei toks el. paštas registruotas, išsiuntėme nuorodą slaptažodžiui atkurti.');
+    flash('ok', t('Jei toks el. paštas registruotas, išsiuntėme nuorodą slaptažodžiui atkurti.'));
     redirect('slaptazodis.php');
 }
 
-page_start('Slaptažodžio atkūrimas', ['narrow' => true, 'noindex' => true]);
+page_start(t('Slaptažodžio atkūrimas'), ['narrow' => true, 'noindex' => true]);
 ?>
 <div class="panel card">
-  <h1 class="styled">Pamiršote slaptažodį?</h1>
-  <p class="muted" style="margin-bottom:18px;">Įveskite el. paštą - atsiųsime nuorodą naujam slaptažodžiui nustatyti.</p>
+  <h1 class="styled"><?= te('Pamiršote slaptažodį?') ?></h1>
+  <p class="muted" style="margin-bottom:18px;"><?= te('Įveskite el. paštą - atsiųsime nuorodą naujam slaptažodžiui nustatyti.') ?></p>
   <form method="post" class="form">
     <?= csrf_field() ?>
-    <label>El. paštas
+    <label><?= te('El. paštas') ?>
       <input type="email" name="email" autocomplete="email" required autofocus>
     </label>
-    <button class="btn btn-primary btn-block" type="submit">Siųsti nuorodą</button>
+    <button class="btn btn-primary btn-block" type="submit"><?= te('Siųsti nuorodą') ?></button>
   </form>
   <hr class="divider">
-  <a class="small" href="<?= url('prisijungti.php') ?>">← Grįžti į prisijungimą</a>
+  <a class="small" href="<?= url('prisijungti.php') ?>"><?= te('← Grįžti į prisijungimą') ?></a>
 </div>
 <?php
 page_end();

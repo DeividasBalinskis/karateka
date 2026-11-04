@@ -34,7 +34,7 @@ function member_profile_html(int $memberId): string
     if ($m['birth_date']) {
         $facts[] = age_on($m['birth_date']) . ' m.';
     }
-    $facts[] = $m['group_name'] ? group_short_name(['name' => $m['group_name']]) : 'be grupės';
+    $facts[] = $m['group_name'] ? group_short_name(['name' => $m['group_name']]) : t('be grupės');
     if ($m['status'] !== 'active') {
         $facts[] = $m['status'] === 'pending' ? 'laukia patvirtinimo' : 'neaktyvus';
     }
@@ -44,32 +44,32 @@ function member_profile_html(int $memberId): string
         . '<div class="mp-sub">' . e(implode(' · ', $facts)) . '</div>'
         . '<div class="mp-chips">' . belt_chip($belt)
         . implode('', array_map(function ($t) { return ' <span class="badge badge-tag">' . e(MEMBER_TAGS[$t] ?? $t) . '</span>'; }, $tags))
-        . ($m['photo_consent'] ? '' : ' <span class="badge badge-warn" title="Nuotraukų su šiuo nariu neskelbti">📷 nesutinka</span>') . '</div></div></div>';
+        . ($m['photo_consent'] ? '' : (' <span class="badge badge-warn" title="' . e(t('Nuotraukų su šiuo nariu neskelbti')) . '">' . t('📷 nesutinka') . '</span>')) . '</div></div></div>';
 
     $html .= '<div class="mp-stats">'
-        . '<div><strong>' . $lvl['level'] . '</strong><span>lygis · ' . $lvl['xp'] . ' XP</span></div>'
-        . '<div><strong>' . $season . '</strong><span>tšk. šį sezoną</span></div>'
-        . '<div><strong>' . $month['buvo'] . ($month['buvo'] + $month['nebuvo'] ? '/' . ($month['buvo'] + $month['nebuvo']) : '') . '</strong><span>treniruotės per 30 d.</span></div>'
+        . '<div><strong>' . $lvl['level'] . ('</strong><span>' . t('lygis ·') . ' ') . $lvl['xp'] . ' XP</span></div>'
+        . '<div><strong>' . $season . ('</strong><span>' . t('tšk. šį sezoną') . '</span></div>')
+        . '<div><strong>' . $month['buvo'] . ($month['buvo'] + $month['nebuvo'] ? '/' . ($month['buvo'] + $month['nebuvo']) : '') . ('</strong><span>' . t('treniruotės per 30 d.') . '</span></div>')
         . ($next ? '<div><strong>' . $reqDone . '/' . $reqTotal . '</strong><span>' . e(BELTS[$next][0]) . ' programa</span></div>' : '')
         . '</div>';
     if ($last) {
-        $html .= '<p class="mp-line">Paskutinį kartą treniruotėje: <strong>' . e(fmt_date($last)) . '</strong></p>';
+        $html .= ('<p class="mp-line">' . t('Paskutinį kartą treniruotėje:') . ' <strong>') . e(fmt_date($last)) . '</strong></p>';
     }
 
-    $html .= '<div class="mp-sec"><div class="kicker">Kontaktai</div>';
+    $html .= ('<div class="mp-sec"><div class="kicker">' . t('Kontaktai') . '</div>');
     if (!$accounts) {
-        $html .= '<p class="muted small">Paskyros nėra.</p>';
+        $html .= ('<p class="muted small">' . t('Paskyros nėra.') . '</p>');
     }
     foreach ($accounts as $acc) {
-        $html .= '<div class="mp-contact"><strong>' . e($acc['first_name'] . ' ' . $acc['last_name']) . '</strong> <span class="muted small">' . ($acc['relation'] === 'parent' ? 'tėvai' : 'pats')
-            . ($acc['status'] !== 'active' ? ' · paskyra nepatvirtinta' : '') . '</span>'
+        $html .= '<div class="mp-contact"><strong>' . e($acc['first_name'] . ' ' . $acc['last_name']) . '</strong> <span class="muted small">' . ($acc['relation'] === 'parent' ? t('tėvai') : 'pats')
+            . ($acc['status'] !== 'active' ? (' ' . t('· paskyra nepatvirtinta')) : '') . '</span>'
             . '<div class="small"><a href="mailto:' . e($acc['email']) . '">' . e($acc['email']) . '</a>'
             . ($acc['phone'] ? ' · <a href="tel:' . e(preg_replace('/[^\d+]/', '', $acc['phone'])) . '">' . e($acc['phone']) . '</a>' : '') . '</div></div>';
     }
     $html .= '</div>';
 
     if ($events) {
-        $html .= '<div class="mp-sec"><div class="kicker">Renginiai</div><ul class="mp-list">';
+        $html .= ('<div class="mp-sec"><div class="kicker">' . t('Renginiai') . '</div><ul class="mp-list">');
         foreach ($events as $ev) {
             $html .= '<li><a href="' . e(url('renginys.php?id=' . (int) $ev['id'])) . '">' . e($ev['title']) . '</a> <span class="muted small">· ' . e(fmt_date($ev['starts_on']))
                 . ' · ' . e(PARTICIPANT_STATUS[$ev['status']] ?? $ev['status']) . '</span></li>';
@@ -77,7 +77,7 @@ function member_profile_html(int $memberId): string
         $html .= '</ul></div>';
     }
     if ($note) {
-        $html .= '<div class="mp-sec"><div class="kicker">Paskutinė pastaba · ' . e(fmt_date(substr($note['created_at'], 0, 10))) . '</div>'
+        $html .= ('<div class="mp-sec"><div class="kicker">' . t('Paskutinė pastaba ·') . ' ') . e(fmt_date(substr($note['created_at'], 0, 10))) . '</div>'
             . '<p class="small mp-note">' . e(mb_strimwidth(preg_replace('~\s+~u', ' ', $note['body']), 0, 220, '…')) . '</p></div>';
     }
 

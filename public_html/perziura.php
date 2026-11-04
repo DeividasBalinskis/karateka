@@ -34,7 +34,7 @@ if (post('belt') !== '' || array_key_exists('belt', $_POST)) {
     $junior = q_value('SELECT am.member_id FROM account_members am JOIN accounts a ON a.id = am.account_id WHERE a.email = ? AND am.relation = "self" LIMIT 1', [TEST_JUNIOR_EMAIL]);
     if ($junior) {
         q('UPDATE members SET belt_level = ? WHERE id = ?', [$belt, (int) $junior]);
-        flash('ok', 'Test Junior diržas: ' . ($belt ? BELTS[$belt][0] . ' (' . BELTS[$belt][1] . ')' : 'be diržo') . '.');
+        flash('ok', (t('Test Junior diržas:') . ' ') . ($belt ? BELTS[$belt][0] . ' (' . t(BELTS[$belt][1]) . ')' : t('be diržo')) . '.');
     }
 }
 redirect($back !== '' ? $back : 'paskyra.php');

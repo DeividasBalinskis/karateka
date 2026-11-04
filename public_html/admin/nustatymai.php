@@ -15,24 +15,24 @@ $ownMembers = (int) q_value('SELECT COUNT(*) FROM account_members am JOIN member
 // pamokų tvarkymas - Pamokose; pagrindinio puslapio redagavimas - pagrindiniame puslapyje.
 $settings = [
     'Klubas' => [
-        ['Grupės ir jų spalvos', 'admin/grupes.php', 'Pavadinimai, vietos, spalvos, kas kurioje grupėje.', true],
-        ['Tvarkaraštis ir kainos', 'admin/tvarkarastis.php', 'Visų grupių laikai ir kainos - rodoma ir pagrindiniame puslapyje.', true],
-        ['Atšauktos treniruotės ir atostogos', 'admin/atsaukimai.php', 'Dienos be treniruočių, pranešimas nariams.', true],
-        ['Taškai ir XP', 'admin/taskai.php', 'Kiek taškų už ką, kiek XP vienam lygiui.', true],
+        [t('Grupės ir jų spalvos'), 'admin/grupes.php', t('Pavadinimai, vietos, spalvos, kas kurioje grupėje.'), true],
+        [t('Tvarkaraštis ir kainos'), 'admin/tvarkarastis.php', t('Visų grupių laikai ir kainos - rodoma ir pagrindiniame puslapyje.'), true],
+        [t('Atšauktos treniruotės ir atostogos'), 'admin/atsaukimai.php', t('Dienos be treniruočių, pranešimas nariams.'), true],
+        [t('Taškai ir XP'), 'admin/taskai.php', t('Kiek taškų už ką, kiek XP vienam lygiui.'), true],
     ],
     'Egzaminai' => [
-        ['Egzaminų programa', 'admin/programa.php', 'Ką reikia mokėti kiekvienam diržui ir kiek XP už punktą.', true],
+        [t('Egzaminų programa'), 'admin/programa.php', t('Ką reikia mokėti kiekvienam diržui ir kiek XP už punktą.'), true],
     ],
     'Sistema' => [
-        ['Paskyros ir rolės', 'admin/paskyros.php', 'Kas yra treneris, kas administratorius.', is_admin()],
-        ['Atsarginės kopijos ir sistema', 'admin/kopijos.php', 'Duomenų bazės kopijos, versija, importuoti db failai.', is_admin()],
-        ['Testavimas', 'admin/testavimas.php', 'Testiniai nariai (tėvai, vaikas) ir ką jiems sukurti; peržiūra kaip tėvai ar vaikas.', is_admin()],
+        [t('Paskyros ir rolės'), 'admin/paskyros.php', t('Kas yra treneris, kas administratorius.'), is_admin()],
+        [t('Atsarginės kopijos ir sistema'), 'admin/kopijos.php', t('Duomenų bazės kopijos, versija, importuoti db failai.'), is_admin()],
+        [t('Testavimas'), 'admin/testavimas.php', t('Testiniai nariai (tėvai, vaikas) ir ką jiems sukurti; peržiūra kaip tėvai ar vaikas.'), is_admin()],
     ],
 ];
 
-page_start('Nustatymai', ['admin' => true]);
+page_start(t('Nustatymai'), ['admin' => true]);
 ?>
-<h1 class="styled">Nustatymai</h1>
+<h1 class="styled"><?= te('Nustatymai') ?></h1>
 <?= form_errors($errors) ?>
 <div class="settings-layout">
   <div class="settings-groups">
@@ -46,12 +46,12 @@ page_start('Nustatymai', ['admin' => true]);
     <?php endforeach; ?>
   </div>
   <aside class="settings-side">
-    <?= render_account_settings($me, 'paskyra', 'Mano paskyra') ?>
+    <?= render_account_settings($me, 'paskyra', t('Mano paskyra')) ?>
     <?php if ($ownMembers): ?>
-      <a class="panel card settings-link family-link" href="<?= url('paskyra.php') ?>"><strong>Mano šeimos nariai</strong><span>Jūsų ir vaikų taškai, pastabos, egzaminas - kaip mato narys.</span></a>
+      <a class="panel card settings-link family-link" href="<?= url('paskyra.php') ?>"><strong><?= te('Mano šeimos nariai') ?></strong><span><?= te('Jūsų ir vaikų taškai, pastabos, egzaminas - kaip mato narys.') ?></span></a>
     <?php endif; ?>
     <?= render_app_install_card() ?>
-    <form method="post" action="<?= url('atsijungti.php') ?>" class="dash-logout"><?= csrf_field() ?><button type="submit" class="btn btn-ghost btn-sm btn-block">Atsijungti</button></form>
+    <form method="post" action="<?= url('atsijungti.php') ?>" class="dash-logout"><?= csrf_field() ?><button type="submit" class="btn btn-ghost btn-sm btn-block"><?= te('Atsijungti') ?></button></form>
   </aside>
 </div>
 <?php

@@ -22,7 +22,7 @@ if (is_post()) {
                 q('UPDATE members SET gender = ? WHERE id = ?', [$g, (int) $mid]);
             }
         }
-        flash('ok', 'Lytis išsaugota - dabar matysite tinkamas kategorijas.');
+        flash('ok', t('Lytis išsaugota - dabar matysite tinkamas kategorijas.'));
     }
     if (post('action') === 'register') {
         $done = 0;
@@ -48,13 +48,13 @@ if (is_post()) {
             flash('err', implode(' ', $errs));
         }
         if (!$done && !$errs) {
-            flash('err', 'Pažymėkite bent vieną kategoriją.');
+            flash('err', t('Pažymėkite bent vieną kategoriją.'));
         }
     }
     if (post('action') === 'withdraw') {
         try {
             varzybos_api('DELETE', 'registrations', ['tournament_id' => $tid, 'external_id' => (string) (int) post('member_id'), 'category_id' => (int) post('category_id')]);
-            flash('ok', 'Registracija atšaukta.');
+            flash('ok', t('Registracija atšaukta.'));
         } catch (RuntimeException $ex) {
             flash('err', $ex->getMessage());
         }
@@ -103,32 +103,32 @@ if ($tour && $open) {
 }
 $noGender = array_filter($rows, function ($m) { return $m['role'] !== 'referee' && !$m['gender']; });
 
-page_start('Varžybos: ' . $event['title'], ['admin' => true]);
+page_start((t('Varžybos:') . ' ') . $event['title'], ['admin' => true]);
 ?>
-<a class="small" href="<?= url('admin/varzybos.php') ?>">← Varžybos</a> · <a class="small" href="<?= url('admin/renginio-dalyviai.php?id=' . $id) ?>">Pakviesti dalyvius</a> · <a class="small" href="<?= url('admin/varzybu-rezultatai.php?id=' . $id) ?>">Rezultatai</a>
+<a class="small" href="<?= url('admin/varzybos.php') ?>"><?= te('← Varžybos') ?></a> · <a class="small" href="<?= url('admin/renginio-dalyviai.php?id=' . $id) ?>"><?= te('Pakviesti dalyvius') ?></a> · <a class="small" href="<?= url('admin/varzybu-rezultatai.php?id=' . $id) ?>"><?= te('Rezultatai') ?></a>
 <div class="page-head row between" style="margin-top:8px; flex-wrap:wrap; gap:10px; align-items:flex-end;">
   <div>
     <h1 class="styled"><?= e($event['title']) ?></h1>
-    <p class="muted" style="margin:0;"><?= e(fmt_date($event['starts_on'], true)) ?><?= $tour ? ' · varžybų sistemoje: ' . e(VARZYBOS_STATUS[$tour['status']] ?? $tour['status']) . ($open ? '' : ' (registracija uždaryta - keisti gali tik organizatorius)') : '' ?></p>
+    <p class="muted" style="margin:0;"><?= e(fmt_date($event['starts_on'], true)) ?><?= $tour ? (' ' . t('· varžybų sistemoje:') . ' ') . e(VARZYBOS_STATUS[$tour['status']] ?? $tour['status']) . ($open ? '' : (' ' . t('(registracija uždaryta - keisti gali tik organizatorius)'))) : '' ?></p>
   </div>
-  <a class="btn btn-ghost btn-sm" href="<?= url('admin/varzybos-sso.php?to=' . rawurlencode('/admin/t/' . $tid)) ?>" target="_blank" rel="noopener">Valdyti varžybų sistemoje ↗</a>
+  <a class="btn btn-ghost btn-sm" href="<?= url('admin/varzybos-sso.php?to=' . rawurlencode('/admin/t/' . $tid)) ?>" target="_blank" rel="noopener"><?= te('Valdyti varžybų sistemoje ↗') ?></a>
 </div>
 <?php if ($error): ?><div class="flash flash-err"><?= e($error) ?></div><?php endif; ?>
-<?php if ($synced): ?><div class="flash flash-info">Užsiregistravę varžybų sistemoje pažymėti „Dalyvaus“ šiame renginyje: <?= $synced ?>.</div><?php endif; ?>
+<?php if ($synced): ?><div class="flash flash-info"><?= te('Užsiregistravę varžybų sistemoje pažymėti „Dalyvaus“ šiame renginyje:') ?> <?= $synced ?>.</div><?php endif; ?>
 
 <?php if (!$rows): ?>
-  <div class="panel card"><p class="muted">Dar niekas nepažymėtas „Dalyvaus“. <a href="<?= url('admin/renginio-dalyviai.php?id=' . $id) ?>">Pakvieskite narius →</a> arba palaukite, kol užsiregistruos patys.</p></div>
+  <div class="panel card"><p class="muted"><?= te('Dar niekas nepažymėtas „Dalyvaus“.') ?> <a href="<?= url('admin/renginio-dalyviai.php?id=' . $id) ?>"><?= te('Pakvieskite narius →') ?></a> <?= te('arba palaukite, kol užsiregistruos patys.') ?></p></div>
 <?php endif; ?>
 
 <?php if ($noGender && $open): ?>
   <form method="post" class="panel card">
     <?= csrf_field() ?><input type="hidden" name="action" value="gender"><input type="hidden" name="id" value="<?= $id ?>">
-    <div class="kicker">Kategorijoms trūksta lyties</div>
+    <div class="kicker"><?= te('Kategorijoms trūksta lyties') ?></div>
     <?php foreach ($noGender as $m): ?>
       <div class="result-row"><span class="who"><?= e($m['first_name'] . ' ' . $m['last_name']) ?></span>
-        <div class="seg"><label><input type="radio" name="gender[<?= (int) $m['id'] ?>]" value="M"><span>Vaikinas / vyras</span></label><label><input type="radio" name="gender[<?= (int) $m['id'] ?>]" value="F"><span>Mergina / moteris</span></label></div></div>
+        <div class="seg"><label><input type="radio" name="gender[<?= (int) $m['id'] ?>]" value="M"><span><?= te('Vaikinas / vyras') ?></span></label><label><input type="radio" name="gender[<?= (int) $m['id'] ?>]" value="F"><span><?= te('Mergina / moteris') ?></span></label></div></div>
     <?php endforeach; ?>
-    <div style="margin-top:10px;"><button class="btn btn-primary btn-sm" type="submit">Išsaugoti</button></div>
+    <div style="margin-top:10px;"><button class="btn btn-primary btn-sm" type="submit"><?= te('Išsaugoti') ?></button></div>
   </form>
 <?php endif; ?>
 
@@ -136,38 +136,38 @@ page_start('Varžybos: ' . $event['title'], ['admin' => true]);
   <form method="post" class="panel card">
     <?= csrf_field() ?><input type="hidden" name="action" value="register"><input type="hidden" name="id" value="<?= $id ?>">
     <div class="row between" style="flex-wrap:wrap; gap:8px;">
-      <h2 style="margin:0;">Dalyvaus (<?= count($rows) ?>)</h2>
-      <?php if ($open): ?><span class="small muted">Pažymėkite kategorijas ir spauskite „Registruoti“. Jau užregistruoti - žalios.</span><?php endif; ?>
+      <h2 style="margin:0;"><?= te('Dalyvaus (') ?><?= count($rows) ?>)</h2>
+      <?php if ($open): ?><span class="small muted"><?= te('Pažymėkite kategorijas ir spauskite „Registruoti“. Jau užregistruoti - žalios.') ?></span><?php endif; ?>
     </div>
     <table class="table cards" style="margin-top:12px;">
-      <thead><tr><th>Narys</th><th>Užregistruota</th><th><?= $open ? 'Galima registruoti' : '' ?></th></tr></thead>
+      <thead><tr><th><?= te('Narys') ?></th><th><?= te('Užregistruota') ?></th><th><?= $open ? t('Galima registruoti') : '' ?></th></tr></thead>
       <tbody>
       <?php foreach ($rows as $m): $mid = (int) $m['id']; $mine = $regs[$mid] ?? []; $have = array_column($mine, 'category_id'); ?>
         <tr>
           <td><strong><?= e($m['first_name'] . ' ' . $m['last_name']) ?></strong>
             <div class="small muted"><?= e(implode(' · ', array_filter([$m['group_name'], belt_label($m['belt_level'] !== null ? (int) $m['belt_level'] : null), $m['gender'] === 'M' ? 'vyr.' : ($m['gender'] === 'F' ? 'mot.' : '')]))) ?></div>
-            <?= $m['role'] === 'referee' ? '<span class="badge badge-tag">teisėjas</span>' : '' ?></td>
+            <?= $m['role'] === 'referee' ? ('<span class="badge badge-tag">' . t('teisėjas') . '</span>') : '' ?></td>
           <td>
             <?php foreach ($mine as $r): ?>
               <span class="badge badge-ok" style="margin:2px 0;"><?= e($r['category']) ?></span>
-              <?php if (!$r['locked'] && $open): ?><button class="linklike small" style="border:none; color:var(--danger);" type="submit" form="w<?= $mid ?>-<?= (int) $r['category_id'] ?>" title="Atšaukti">✕</button><?php endif; ?>
+              <?php if (!$r['locked'] && $open): ?><button class="linklike small" style="border:none; color:var(--danger);" type="submit" form="w<?= $mid ?>-<?= (int) $r['category_id'] ?>" title="<?= te('Atšaukti') ?>">✕</button><?php endif; ?>
             <?php endforeach; ?>
             <?= !$mine ? '<span class="small muted">-</span>' : '' ?>
           </td>
           <td>
-            <?php if ($m['role'] === 'referee'): ?><span class="small muted">teisėjauja</span>
-            <?php elseif ($open && !$m['gender']): ?><span class="small muted">nurodykite lytį ↑</span>
+            <?php if ($m['role'] === 'referee'): ?><span class="small muted"><?= te('teisėjauja') ?></span>
+            <?php elseif ($open && !$m['gender']): ?><span class="small muted"><?= te('nurodykite lytį ↑') ?></span>
             <?php elseif ($open): $free = array_values(array_filter($eligible[$mid] ?? [], function ($c) use ($have) { return !in_array($c['id'], $have, true); })); ?>
               <?php if ($free): ?>
                 <div class="seg cat-pick"><?php foreach ($free as $c): ?><label><input type="checkbox" name="cats[<?= $mid ?>][]" value="<?= (int) $c['id'] ?>"><span><?= e($c['name']) ?></span></label><?php endforeach; ?></div>
-              <?php else: ?><span class="small muted"><?= $mine ? 'visos tinkamos jau pažymėtos' : 'tinkamų kategorijų nėra' ?></span><?php endif; ?>
+              <?php else: ?><span class="small muted"><?= $mine ? t('visos tinkamos jau pažymėtos') : t('tinkamų kategorijų nėra') ?></span><?php endif; ?>
             <?php endif; ?>
           </td>
         </tr>
       <?php endforeach; ?>
       </tbody>
     </table>
-    <?php if ($open && $eligible): ?><div style="margin-top:12px;"><button class="btn btn-primary" type="submit">Registruoti pažymėtus</button></div><?php endif; ?>
+    <?php if ($open && $eligible): ?><div style="margin-top:12px;"><button class="btn btn-primary" type="submit"><?= te('Registruoti pažymėtus') ?></button></div><?php endif; ?>
   </form>
   <?php foreach ($rows as $m): foreach ($regs[(int) $m['id']] ?? [] as $r): ?>
     <form method="post" id="w<?= (int) $m['id'] ?>-<?= (int) $r['category_id'] ?>" onsubmit="return confirm('Atšaukti registraciją?')" hidden><?= csrf_field() ?><input type="hidden" name="action" value="withdraw"><input type="hidden" name="id" value="<?= $id ?>"><input type="hidden" name="member_id" value="<?= (int) $m['id'] ?>"><input type="hidden" name="category_id" value="<?= (int) $r['category_id'] ?>"></form>

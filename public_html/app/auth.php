@@ -49,8 +49,8 @@ function require_login(): array
 function forbidden(): void
 {
     http_response_code(403);
-    page_start('Nėra prieigos');
-    echo '<div class="panel card"><h1>Nėra prieigos</h1><p class="muted">Šis puslapis skirtas treneriams.</p></div>';
+    page_start(t('Nėra prieigos'));
+    echo ('<div class="panel card"><h1>' . t('Nėra prieigos') . '</h1><p class="muted">' . t('Šis puslapis skirtas treneriams.') . '</p></div>');
     page_end();
     exit;
 }
@@ -289,20 +289,20 @@ function handle_account_settings(array $a, string $back, array &$errors): void
     $action = post('action');
     if ($action === 'profile') {
         q('UPDATE accounts SET phone = ? WHERE id = ?', [post('phone') ?: null, $aid]);
-        flash('ok', 'Duomenys išsaugoti.');
+        flash('ok', t('Duomenys išsaugoti.'));
         redirect($back);
     }
 
     if ($action === 'email') {
         $email = normalize_email(post('email'));
         if (!password_verify((string) ($_POST['current'] ?? ''), $a['password_hash'])) {
-            $errors[] = 'Neteisingas slaptažodis.';
+            $errors[] = t('Neteisingas slaptažodis.');
         } elseif (!valid_email($email)) {
-            $errors[] = 'Įveskite teisingą el. paštą.';
+            $errors[] = t('Įveskite teisingą el. paštą.');
         } elseif ($email === $a['email']) {
-            $errors[] = 'Tai jūsų dabartinis el. paštas.';
+            $errors[] = t('Tai jūsų dabartinis el. paštas.');
         } elseif (q_value('SELECT 1 FROM accounts WHERE email = ?', [$email])) {
-            $errors[] = 'Šis el. paštas jau naudojamas kitos paskyros.';
+            $errors[] = t('Šis el. paštas jau naudojamas kitos paskyros.');
         } else {
             // Pakeičiama tik paspaudus nuorodą naujame pašte - taip įsitikiname, kad adresas tikrai jūsų
             $token = token_create('change_email', $email, $aid);
@@ -317,12 +317,12 @@ function handle_account_settings(array $a, string $back, array &$errors): void
     // Prisijungimas su kodu: įjungiama tik patvirtinus kodą iš el. pašto (taip žinome, kad laiškai ateina)
     if ($action === 'tfa_start') {
         if (!password_verify((string) ($_POST['current'] ?? ''), $a['password_hash'])) {
-            $errors[] = 'Neteisingas slaptažodis.';
+            $errors[] = t('Neteisingas slaptažodis.');
         } elseif ($err = login_code_send($a, 'enable')) {
             $errors[] = $err;
         } else {
             $_SESSION['tfa_enable'] = time();
-            flash('ok', 'Išsiuntėme kodą į ' . masked_email($a['email']) . ' - įveskite jį žemiau.');
+            flash('ok', (t('Išsiuntėme kodą į') . ' ') . masked_email($a['email']) . (' ' . t('- įveskite jį žemiau.')));
             redirect($back . '#tfa');
         }
     }
@@ -332,10 +332,10 @@ function handle_account_settings(array $a, string $back, array &$errors): void
             q('UPDATE accounts SET two_factor = 1 WHERE id = ?', [$aid]);
             unset($_SESSION['tfa_enable']);
             trust_device($aid);
-            flash('ok', 'Prisijungimas su kodu įjungtas. Šiame įrenginyje kodo neprašysime ' . TRUSTED_DEVICE_DAYS . ' dienų.');
+            flash('ok', (t('Prisijungimas su kodu įjungtas. Šiame įrenginyje kodo neprašysime') . ' ') . TRUSTED_DEVICE_DAYS . (' ' . t('dienų.')));
             redirect($back . '#tfa');
         }
-        $errors[] = $res === 'invalid' ? 'Neteisingas kodas. Liko bandymų: ' . login_code_attempts_left($aid, 'enable') . '.' : 'Kodas nebegalioja - paspauskite „Siųsti kodą“ dar kartą.';
+        $errors[] = $res === 'invalid' ? (t('Neteisingas kodas. Liko bandymų:') . ' ') . login_code_attempts_left($aid, 'enable') . '.' : t('Kodas nebegalioja - paspauskite „Siųsti kodą“ dar kartą.');
         if ($res === 'expired') {
             unset($_SESSION['tfa_enable']);
         }
@@ -346,16 +346,16 @@ function handle_account_settings(array $a, string $back, array &$errors): void
     }
     if ($action === 'tfa_forget') {
         forget_devices($aid);
-        flash('ok', 'Visi įrenginiai pamiršti - kitą kartą prisijungiant reikės kodo.');
+        flash('ok', t('Visi įrenginiai pamiršti - kitą kartą prisijungiant reikės kodo.'));
         redirect($back . '#tfa');
     }
     if ($action === 'tfa_off') {
         if (!password_verify((string) ($_POST['current'] ?? ''), $a['password_hash'])) {
-            $errors[] = 'Neteisingas slaptažodis.';
+            $errors[] = t('Neteisingas slaptažodis.');
         } else {
             q('UPDATE accounts SET two_factor = 0 WHERE id = ?', [$aid]);
             forget_devices($aid);
-            flash('ok', 'Prisijungimas su kodu išjungtas.');
+            flash('ok', t('Prisijungimas su kodu išjungtas.'));
             redirect($back . '#tfa');
         }
     }
@@ -363,13 +363,13 @@ function handle_account_settings(array $a, string $back, array &$errors): void
     if ($action === 'password') {
         $pw = (string) ($_POST['password'] ?? '');
         if (!password_verify((string) ($_POST['current'] ?? ''), $a['password_hash'])) {
-            $errors[] = 'Neteisingas dabartinis slaptažodis.';
+            $errors[] = t('Neteisingas dabartinis slaptažodis.');
         } elseif (mb_strlen($pw) < MIN_PASSWORD) {
-            $errors[] = 'Naujas slaptažodis turi būti bent ' . MIN_PASSWORD . ' simbolių.';
+            $errors[] = (t('Naujas slaptažodis turi būti bent') . ' ') . MIN_PASSWORD . (' ' . t('simbolių.'));
         } else {
             q('UPDATE accounts SET password_hash = ? WHERE id = ?', [password_hash($pw, PASSWORD_DEFAULT), $aid]);
             session_regenerate_id(true);
-            flash('ok', 'Slaptažodis pakeistas.');
+            flash('ok', t('Slaptažodis pakeistas.'));
             redirect($back);
         }
     }

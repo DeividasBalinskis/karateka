@@ -34,7 +34,7 @@ function fail(string $msg, string $back, bool $ajax): void
 
 $m = q_one('SELECT * FROM members WHERE id = ? AND status = "active"', [$mid]);
 if (!$m || !account_relation((int) $a['id'], $mid) || !is_active_account($a)) {
-    fail('Žinutės išsiųsti nepavyko.', 'paskyra.php', $ajax);
+    fail(t('Žinutės išsiųsti nepavyko.'), 'paskyra.php', $ajax);
 }
 if ($noteId && !q_value('SELECT 1 FROM coach_notes WHERE id = ? AND member_id = ?', [$noteId, $mid])) {
     $noteId = null;
@@ -49,7 +49,7 @@ if ($newsId && !q_value('SELECT 1 FROM news WHERE id = ?', [$newsId])) {
     $newsId = null;
 }
 if ($body === '') {
-    fail('Įrašykite žinutę.', $back, $ajax);
+    fail(t('Įrašykite žinutę.'), $back, $ajax);
 }
 $msgId = add_member_message($mid, (int) $a['id'], false, $body, $noteId, $lessonId, $eventId, $newsId);
 if (post('page') !== '') {
@@ -61,5 +61,5 @@ if ($ajax) {
     header('Content-Type: application/json; charset=utf-8');
     exit(json_encode(['ok' => true, 'id' => $msgId]));
 }
-flash('ok', 'Išsiųsta Deniui. Atsakymą matysite čia ir paskyroje.');
+flash('ok', t('Išsiųsta Deniui. Atsakymą matysite čia ir paskyroje.'));
 redirect($back);

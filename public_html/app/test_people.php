@@ -29,7 +29,7 @@ function is_test_account(?array $a): bool
 function test_member_sql(): string
 {
     $link = 'SELECT 1 FROM account_members am JOIN accounts a ON a.id = am.account_id WHERE am.member_id = m.id AND ';
-    return '(EXISTS (' . $link . TEST_ACCOUNT_SQL . ') AND NOT EXISTS (' . $link . 'NOT ' . TEST_ACCOUNT_SQL . '))';
+    return t('(EXISTS (') . $link . TEST_ACCOUNT_SQL . t(') AND NOT EXISTS (') . $link . 'NOT ' . TEST_ACCOUNT_SQL . '))';
 }
 
 /** Grupė testiniam nariui pagal kategoriją ('vaikai', 'jaunimas'); jei tokios nėra - pirmoji aktyvi */
@@ -97,14 +97,14 @@ function test_people_generate(array $scenarios, array $admin): array
                 $n = (int) q_value('SELECT COUNT(*) FROM accounts WHERE email LIKE "naujas%@test.karateka.lt"') + 1;
                 $acc = test_account('naujas' . $n . '@' . TEST_DOMAIN, 'Test', 'Naujokas ' . $n, 'pending_approval');
                 link_member($acc, test_member('Test', 'Naujokėlis ' . $n, 9, 'vaikai', 1, 'pending'), 'parent');
-                $done[] = 'nauja registracija (laukia patvirtinimo)';
+                $done[] = t('nauja registracija (laukia patvirtinimo)');
                 break;
             case 'invites':
                 $events = q_all('SELECT * FROM events WHERE starts_on >= CURDATE() ORDER BY starts_on LIMIT 3');
                 foreach ($events as $ev) {
                     invite_members($ev, [(int) $junior['id'], (int) $kid['id']], $aid, false);
                 }
-                $done[] = $events ? 'kvietimai į ' . count($events) . ' renginius' : 'kvietimų nėra - nėra artėjančių renginių (sukurkite renginį)';
+                $done[] = $events ? (t('kvietimai į') . ' ') . count($events) . ' renginius' : t('kvietimų nėra - nėra artėjančių renginių (sukurkite renginį)');
                 break;
             case 'comments':
                 add_member_message((int) $junior['id'], (int) $juniorAcc['id'], false, 'Testinis klausimas: ar šeštadienį treniruotė vyks?');
@@ -114,14 +114,14 @@ function test_people_generate(array $scenarios, array $admin): array
                 if ($ev = q_one('SELECT id FROM events WHERE starts_on >= CURDATE() ORDER BY starts_on LIMIT 1')) {
                     add_member_message((int) $junior['id'], (int) $juniorAcc['id'], false, 'Testinis klausimas prie renginio: ką reikia pasiimti?', null, null, (int) $ev['id']);
                 }
-                $done[] = 'komentarai ir žinutės Deniui';
+                $done[] = t('komentarai ir žinutės Deniui');
                 break;
             case 'skills':
                 $reqs = q_all('SELECT * FROM belt_requirements WHERE belt_level = ? ORDER BY sort_order LIMIT 2', [(int) $junior['belt_level'] + 1]);
                 foreach ($reqs as $r) {
                     request_skill($junior, $r, $juniorAcc);
                 }
-                $done[] = $reqs ? '„Moku“ prašymai: ' . count($reqs) : '„Moku“ - kitam diržui programa nesurašyta (Nustatymai → Egzaminų programa)';
+                $done[] = $reqs ? (t('„Moku“ prašymai:') . ' ') . count($reqs) : t('„Moku“ - kitam diržui programa nesurašyta (Nustatymai → Egzaminų programa)');
                 break;
             case 'attendance':
                 foreach ([$junior, $kid] as $m) {
@@ -138,25 +138,25 @@ function test_people_generate(array $scenarios, array $admin): array
                     }
                 }
                 award_points((int) $junior['id'], category_by_code('seminar'), date('Y-m-d', strtotime('-3 days')), null, 'Testas: seminaras', $aid);
-                $done[] = 'lankomumas (4 sav.) ir taškai';
+                $done[] = t('lankomumas (4 sav.) ir taškai');
                 break;
             case 'notes':
                 $lesson = q_value('SELECT id FROM lessons WHERE is_published = 1 AND belt_level = ? ORDER BY sort_order, id LIMIT 1', [(int) $junior['belt_level'] + 1]);
                 send_coach_note($junior, $admin, 'Testinė pastaba: šiandien puikiai dirbai, toliau taip!', null, false, false);
                 send_coach_note($junior, $admin, 'Testinė užduotis: iki kitos treniruotės pakartok katą 5 kartus.', $lesson ? (int) $lesson : null, true, false);
-                $done[] = 'trenerio pastaba ir užduotis';
+                $done[] = t('trenerio pastaba ir užduotis');
                 break;
             case 'reaction':
                 if ($news = q_value('SELECT id FROM news WHERE is_published = 1 ORDER BY published_at DESC LIMIT 1')) {
                     q('INSERT IGNORE INTO reactions (news_id, account_id, emoji) VALUES (?, ?, "👍")', [(int) $news, (int) $parentAcc['id']]);
                 }
-                $done[] = 'reakcija į naujieną';
+                $done[] = t('reakcija į naujieną');
                 break;
             case 'consent':
                 q('UPDATE members SET photo_consent = 0 WHERE id = ?', [(int) $kid['id']]);
                 notify_admins('consent_withdrawn', 'Atšauktas sutikimas dėl nuotraukų: Test Mažylis',
                     'Atšaukė Test Parent. Naujose nuotraukose šio nario neskelbkite.', 'admin/nariai.php?id=' . (int) $kid['id'], (int) $kid['id']);
-                $done[] = 'atšauktas sutikimas dėl nuotraukų';
+                $done[] = t('atšauktas sutikimas dėl nuotraukų');
                 break;
         }
     }
@@ -170,7 +170,7 @@ function test_people_list(): array
     foreach (q_all('SELECT a.* FROM accounts a WHERE ' . TEST_ACCOUNT_SQL . ' ORDER BY a.id') as $a) {
         $kids = q_all('SELECT m.first_name, m.last_name, m.belt_level, am.relation FROM members m JOIN account_members am ON am.member_id = m.id WHERE am.account_id = ? ORDER BY m.birth_date', [(int) $a['id']]);
         $out[] = ['name' => $a['first_name'] . ' ' . $a['last_name'], 'email' => $a['email'], 'status' => $a['status'],
-            'kids' => array_map(function ($k) { return $k['first_name'] . ' ' . $k['last_name'] . ($k['relation'] === 'self' ? ' (pats)' : '') . ($k['belt_level'] ? ' · ' . BELTS[(int) $k['belt_level']][0] : ''); }, $kids)];
+            'kids' => array_map(function ($k) { return $k['first_name'] . ' ' . $k['last_name'] . ($k['relation'] === 'self' ? (' ' . t('(pats)')) : '') . ($k['belt_level'] ? ' · ' . BELTS[(int) $k['belt_level']][0] : ''); }, $kids)];
     }
     return $out;
 }
@@ -253,7 +253,7 @@ function render_view_switch(): string
         $belt = q_value('SELECT m.belt_level FROM members m JOIN account_members am ON am.member_id = m.id JOIN accounts a ON a.id = am.account_id
                           WHERE a.email = ? AND am.relation = "self" LIMIT 1', [TEST_JUNIOR_EMAIL]);
     }
-    $labels = ['admin' => 'Adminas', 'parent' => 'Tėvai', 'junior' => 'Vaikas'];
+    $labels = ['admin' => t('Adminas'), 'parent' => t('Tėvai'), 'junior' => t('Vaikas')];
     $back = e($_SERVER['REQUEST_URI'] ?? '');
     $html = '<details class="view-switch' . ($mode !== 'admin' ? ' is-test' : '') . '"><summary title="Peržiūrėti svetainę kaip tėvai ar vaikas (testinės paskyros)">'
         . '<span class="vs-eye" aria-hidden="true">👁</span> ' . e($labels[$mode]) . ($belt ? ' · ' . e(BELTS[(int) $belt][0]) : '') . '</summary>'
@@ -262,10 +262,10 @@ function render_view_switch(): string
     foreach ($labels as $k => $label) {
         $html .= '<button type="submit" name="mode" value="' . $k . '"' . ($k === $mode ? ' class="active" aria-pressed="true"' : '') . '>' . e($label) . '</button>';
     }
-    $html .= '</div><p class="vs-hint">Tėvai - Test Parent (2 vaikai), Vaikas - Test Junior (15 m., savo paskyra).</p>';
+    $html .= ('</div><p class="vs-hint">' . t('Tėvai - Test Parent (2 vaikai), Vaikas - Test Junior (15 m., savo paskyra).') . '</p>');
     if ($mode !== 'admin') {
-        $html .= '<label class="vs-belt">Test Junior diržas<select name="belt" onchange="this.form.requestSubmit ? this.form.requestSubmit() : this.form.submit()">'
-            . belt_options($belt !== null && $belt !== false ? (int) $belt : null, '— be diržo —') . '</select></label>';
+        $html .= ('<label class="vs-belt">' . t('Test Junior diržas') . '<select name="belt" onchange="this.form.requestSubmit ? this.form.requestSubmit() : this.form.submit()">')
+            . belt_options($belt !== null && $belt !== false ? (int) $belt : null, t('— be diržo —')) . '</select></label>';
     }
     return $html . '</form></details>';
 }

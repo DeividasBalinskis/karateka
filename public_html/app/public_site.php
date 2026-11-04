@@ -9,7 +9,6 @@ const PLACE_TYPES = [
 ];
 
 /** "Pirmadieniais" ... "Sekmadieniais" */
-const LT_WEEKDAYS_PLURAL = [1 => 'pirmadieniais', 'antradieniais', 'trečiadieniais', 'ketvirtadieniais', 'penktadieniais', 'šeštadieniais', 'sekmadieniais'];
 
 function category_price(string $category): array
 {
@@ -41,7 +40,7 @@ function schedule_lines(array $slots, ?string $label = null): array
 
     $lines = [];
     foreach ($byTime as $t) {
-        $days = array_map(function ($d) { return LT_WEEKDAYS_PLURAL[$d]; }, $t['days']);
+        $days = array_map(function ($d) { return weekday_names_plural()[$d]; }, $t['days']);
         $dayText = implode(', ', $days);
         $dayText = mb_strtoupper(mb_substr($dayText, 0, 1)) . mb_substr($dayText, 1);
         if ($label) {
@@ -60,7 +59,7 @@ function schedule_lines(array $slots, ?string $label = null): array
 function render_schedule_lines(array $lines): string
 {
     if (!$lines) {
-        return '<p class="schedule-placeholder" style="font-style:normal;">Tvarkaraštis tikslinamas.</p>';
+        return ('<p class="schedule-placeholder" style="font-style:normal;">' . t('Tvarkaraštis tikslinamas.') . '</p>');
     }
     $html = '';
     foreach ($lines as [$day, $time]) {
@@ -99,7 +98,7 @@ function render_category_locations(string $category): string
 {
     $locs = array_unique(array_filter(array_column(public_groups($category), 'location')));
     if (!$locs) {
-        return '<p class="muted">Tikslinama.</p>';
+        return ('<p class="muted">' . t('Tikslinama.') . '</p>');
     }
     $html = '<ul class="loc-list">';
     foreach ($locs as $l) {
@@ -135,7 +134,7 @@ function render_kids_locations(): string
             // "Sporto centras Viršuliškės (...)" -> sąraše užtenka "Viršuliškės (...)"
             $short = $type === 'sporto_centras' ? preg_replace('/^Sporto centras\s+/u', '', $loc) : $loc;
             // Atskira grupės kaina (pvz. mokykloje) - po tvarkaraščiu
-            $priceHtml = $prices ? '<div class="schedule-line schedule-price"><span class="schedule-day">Kaina</span><span class="schedule-time">' . e(implode(' · ', array_unique($prices))) . '</span></div>' : '';
+            $priceHtml = $prices ? ('<div class="schedule-line schedule-price"><span class="schedule-day">' . t('Kaina') . '</span><span class="schedule-time">') . e(implode(' · ', array_unique($prices))) . '</span></div>' : '';
             $notes = render_cancellation_notes(cancellations_for_groups(array_column($groups, 'id'), 21));
             $html .= '<li data-name="' . e($loc) . '" data-schedule="' . e($notes . render_schedule_lines($lines) . $priceHtml) . '">' . e($short) . '</li>';
         }
@@ -169,7 +168,7 @@ function render_trial_location_options(): string
 function schedule_row_editor(array $s): string
 {
     $html = '<div class="sl-row" data-id="' . (int) ($s['id'] ?? 0) . '"><select class="sl-day" aria-label="Diena">';
-    foreach (LT_WEEKDAYS as $n => $day) {
+    foreach (weekday_names() as $n => $day) {
         $html .= '<option value="' . $n . '"' . ((int) ($s['weekday'] ?? 1) === $n ? ' selected' : '') . '>' . e($day) . '</option>';
     }
     return $html . '</select>'
@@ -191,7 +190,7 @@ function schedule_editor(array $groups): string
         foreach (group_schedule((int) $g['id']) as $s) {
             $html .= schedule_row_editor($s);
         }
-        $html .= '</div><button type="button" class="btn btn-ghost btn-sm sl-add">+ Pridėti laiką</button></div>';
+        $html .= ('</div><button type="button" class="btn btn-ghost btn-sm sl-add">' . t('+ Pridėti laiką') . '</button></div>');
     }
     return $html . '<template class="sl-tpl">' . schedule_row_editor(['id' => 0, 'weekday' => 1, 'start_time' => null, 'end_time' => null, 'note' => '']) . '</template></div>'
         . schedule_editor_script();

@@ -15,7 +15,7 @@ function season_bounds(?string $date = null): array
     $ts = strtotime($date ?? 'today');
     $y = (int) date('Y', $ts);
     $startYear = (int) date('n', $ts) >= 9 ? $y : $y - 1;
-    return ["$startYear-09-01", ($startYear + 1) . '-08-31', $startYear . '–' . ($startYear + 1) . ' m. sezonas'];
+    return ["$startYear-09-01", ($startYear + 1) . '-08-31', $startYear . '–' . ($startYear + 1) . (' ' . t('m. sezonas'))];
 }
 
 /** Kaip dalijamas reitingas: 'category' (vaikai/jaunimas/suaugę), 'group' arba 'club' */
@@ -34,7 +34,7 @@ function ranking_partition(array $member): ?array
     $g = q_one('SELECT * FROM training_groups WHERE id = ?', [$member['group_id']]);
     switch (ranking_scope()) {
         case 'club':
-            return ['club', null, 'Visas klubas'];
+            return ['club', null, t('Visas klubas')];
         case 'group':
             return ['group', (int) $g['id'], $g['name']];
         default:
@@ -261,22 +261,22 @@ function render_staff_ranking(): string
             $choices[$key] = ['category', $key, $name];
         }
     }
-    $choices['klubas'] = ['club', null, 'Visas klubas'];
+    $choices['klubas'] = ['club', null, t('Visas klubas')];
     $current = isset($choices[get('rt')]) ? get('rt') : array_key_first($choices);
     $rows = ranking($choices[$current], $from, $to);
     ob_start();
     ?>
 <div class="panel card points-card">
-  <div class="kicker">Reitingas · <?= e($label) ?></div>
+  <div class="kicker"><?= te('Reitingas ·') ?> <?= e($label) ?></div>
   <div class="top-tabs">
     <?php foreach ($choices as $key => $p): ?>
       <a href="?rt=<?= e($key) ?>" class="<?= $key === $current ? 'active' : '' ?>"><?= e($p[2]) ?></a>
     <?php endforeach; ?>
   </div>
   <?php if (!$rows): ?>
-    <p class="muted">Šį sezoną taškų dar niekas neturi.</p>
+    <p class="muted"><?= te('Šį sezoną taškų dar niekas neturi.') ?></p>
   <?php else: ?>
-    <input type="search" class="rank-search" id="rankSearch" placeholder="Ieškoti pagal vardą ar pavardę" aria-label="Ieškoti reitinge">
+    <input type="search" class="rank-search" id="rankSearch" placeholder="<?= te('Ieškoti pagal vardą ar pavardę') ?>" aria-label="<?= te('Ieškoti reitinge') ?>">
     <ol class="ranking ranking-all" id="rankAll">
       <?php foreach ($rows as $r): ?>
         <li data-name="<?= e(mb_strtolower($r['first_name'] . ' ' . $r['last_name'])) ?>" class="<?= $r['rank'] <= 5 ? 'top5' : '' ?>">
@@ -284,8 +284,8 @@ function render_staff_ranking(): string
         </li>
       <?php endforeach; ?>
     </ol>
-    <p class="hint" id="rankEmpty" style="display:none;">Nieko nerasta.</p>
-    <p class="hint" style="margin-top:8px;">Su taškais: <?= count($rows) ?>. Paspaudę vardą atidarysite nario puslapį.</p>
+    <p class="hint" id="rankEmpty" style="display:none;"><?= te('Nieko nerasta.') ?></p>
+    <p class="hint" style="margin-top:8px;"><?= te('Su taškais:') ?> <?= count($rows) ?>. Paspaudę vardą atidarysite nario puslapį.</p>
     <script>
     (function () {
       // Paieška be lietuviškų raidžių skirtumo: "austeja" randa "Austėja"

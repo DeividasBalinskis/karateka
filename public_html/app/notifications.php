@@ -106,7 +106,7 @@ function notification_mark(int $id, int $accountId, bool $done): void
 function notification_when(string $dt): string
 {
     $d = substr($dt, 0, 10);
-    return ($d === date('Y-m-d') ? 'šiandien' : fmt_date($d)) . ', ' . substr($dt, 11, 5);
+    return ($d === date('Y-m-d') ? t('šiandien') : fmt_date($d)) . ', ' . substr($dt, 11, 5);
 }
 
 /** Mygtukas pranešimo veiksmui (pranesimas.php) */
@@ -134,25 +134,25 @@ function render_notifications(array $list, string $back): string
         $chatAttr = $inChat ? ' data-open-chat data-member="' . (int) $n['member_id'] . '"' : '';
         switch ($n['type']) {
             case 'skill_request':
-                $actions = notification_button($n, 'skill_approve', '✓ Patvirtinti', 'btn-primary', $back)
-                    . notification_button($n, 'skill_reject', 'Dar ne', 'btn-ghost', $back);
+                $actions = notification_button($n, 'skill_approve', t('✓ Patvirtinti'), 'btn-primary', $back)
+                    . notification_button($n, 'skill_reject', t('Dar ne'), 'btn-ghost', $back);
                 break;
             case 'comment':
                 // Komentaras prie renginio / naujienos / pamokos - atsakoma ten, kur paliktas
                 $actions = ($n['link'] ? '<a class="btn btn-sm btn-primary" href="' . e(url($n['link'])) . '"' . $chatAttr . '>Atsakyti</a>' : '')
-                    . notification_button($n, 'done', 'Supratau', 'btn-ghost', $back);
+                    . notification_button($n, 'done', t('Supratau'), 'btn-ghost', $back);
                 break;
             case 'late_request':
-                $actions = notification_button($n, 'late_approve', '✓ Patvirtinti dalyvavimą', 'btn-primary', $back)
-                    . notification_button($n, 'done', 'Palikti „vėlavo“', 'btn-ghost', $back);
+                $actions = notification_button($n, 'late_approve', t('✓ Patvirtinti dalyvavimą'), 'btn-primary', $back)
+                    . notification_button($n, 'done', t('Palikti „vėlavo“'), 'btn-ghost', $back);
                 break;
             default:
-                $actions = notification_button($n, 'done', $n['read_at'] ? 'Paslėpti' : 'Supratau', 'btn-ghost', $back);
+                $actions = notification_button($n, 'done', $n['read_at'] ? t('Paslėpti') : t('Supratau'), 'btn-ghost', $back);
         }
         $new = !$n['read_at'] && $n['important'];
         $html .= '<li class="notif' . ($new ? ' is-new' : '') . ' t-' . e($n['type']) . '"><span class="notif-icon" aria-hidden="true">' . (NOTIFY_ICONS[$n['type']] ?? '🔔') . '</span>'
             . '<div class="notif-body"><div class="notif-title">' . ($n['link'] ? '<a href="' . e(url($n['link'])) . '"' . $chatAttr . '>' . e($n['title']) . '</a>' : e($n['title']))
-            . ($new ? ' <span class="badge badge-new">Nauja</span>' : '') . '</div>'
+            . ($new ? (' <span class="badge badge-new">' . t('Nauja') . '</span>') : '') . '</div>'
             . ($n['body'] ? '<div class="notif-text">' . nl2br(e($n['body'])) . '</div>' : '')
             . '<div class="notif-meta">' . e(notification_when($n['created_at'])) . '</div></div>'
             . '<div class="notif-actions">' . $actions . '</div></li>';
@@ -186,14 +186,14 @@ function celebration_html(): string
     $level = $member ? xp_level(member_points_total((int) $member['id'])) : null;
     return '<div class="celebrate" id="celebrate" role="dialog" aria-modal="true" aria-labelledby="celebrateTitle" style="--belt:' . e($color) . ';">'
         . '<div class="celebrate-card"><div class="celebrate-burst" aria-hidden="true"></div>'
-        . '<div class="celebrate-kicker">' . ($isExam ? 'Egzaminas išlaikytas' : 'Naujas lygis') . '</div>'
-        . '<div class="celebrate-big" id="celebrateTitle">' . ($isExam ? e($belt ? BELTS[$belt][0] : 'Sveikiname!') : 'Lygis ' . (int) ($level['level'] ?? $n['ref_id'])) . '</div>'
-        . ($isExam && $belt ? '<div class="celebrate-belt">' . belt_icon_svg($belt) . '<span>' . e(BELTS[$belt][1]) . ' diržas</span></div>' : '')
+        . '<div class="celebrate-kicker">' . ($isExam ? t('Egzaminas išlaikytas') : t('Naujas lygis')) . '</div>'
+        . '<div class="celebrate-big" id="celebrateTitle">' . ($isExam ? e($belt ? BELTS[$belt][0] : t('Sveikiname!')) : (t('Lygis') . ' ') . (int) ($level['level'] ?? $n['ref_id'])) . '</div>'
+        . ($isExam && $belt ? '<div class="celebrate-belt">' . belt_icon_svg($belt) . '<span>' . e(t(BELTS[$belt][1])) . (' ' . t('diržas') . '</span></div>') : '')
         . '<p class="celebrate-text">' . e($n['title']) . ($n['body'] ? '<br><span>' . e($n['body']) . '</span>' : '') . '</p>'
         . '<form method="post" action="' . e(url('pranesimas.php')) . '" id="celebrateForm">' . csrf_field()
         . '<input type="hidden" name="id" value="' . (int) $n['id'] . '"><input type="hidden" name="action" value="read">'
         . '<input type="hidden" name="back" value="paskyra.php">'
-        . '<button class="btn btn-primary" type="submit">Valio! 🥋</button></form></div></div>'
+        . ('<button class="btn btn-primary" type="submit">' . t('Valio! 🥋') . '</button></form></div></div>')
         . '<script>' . confetti_js() . '
 (function () {
   var f = document.getElementById("celebrateForm");
@@ -226,13 +226,13 @@ function no_photo_consent_html(): string
     $rows = q_all('SELECT m.id, m.first_name, m.last_name, g.name AS group_name FROM members m LEFT JOIN training_groups g ON g.id = m.group_id
                     WHERE m.status = "active" AND m.photo_consent = 0 ORDER BY g.sort_order, m.last_name, m.first_name');
     if (!$rows) {
-        return '<p class="consent-list ok small">✓ Visi aktyvūs nariai sutinka, kad būtų skelbiamos jų nuotraukos.</p>';
+        return ('<p class="consent-list ok small">' . t('✓ Visi aktyvūs nariai sutinka, kad būtų skelbiamos jų nuotraukos.') . '</p>');
     }
     $by = [];
     foreach ($rows as $r) {
-        $by[$r['group_name'] ?: 'Be grupės'][] = '<a href="' . e(url('admin/nariai.php?id=' . (int) $r['id'])) . '">' . e($r['first_name'] . ' ' . $r['last_name']) . '</a>';
+        $by[$r['group_name'] ?: t('Be grupės')][] = '<a href="' . e(url('admin/nariai.php?id=' . (int) $r['id'])) . '">' . e($r['first_name'] . ' ' . $r['last_name']) . '</a>';
     }
-    $html = '<details class="consent-list"><summary>📷 Nesutinka, kad būtų skelbiamos nuotraukos: <strong>' . count($rows) . '</strong> <span class="hint">(mato tik administratorius)</span></summary><ul>';
+    $html = ('<details class="consent-list"><summary>' . t('📷 Nesutinka, kad būtų skelbiamos nuotraukos:') . ' <strong>') . count($rows) . ('</strong> <span class="hint">' . t('(mato tik administratorius)') . '</span></summary><ul>');
     foreach ($by as $group => $names) {
         $html .= '<li><span class="muted">' . e($group) . ':</span> ' . implode(', ', $names) . '</li>';
     }

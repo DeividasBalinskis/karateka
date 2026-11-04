@@ -62,7 +62,7 @@ function quiz_questions_full(int $quizId, ?array $onlyIds = null): array
 {
     $sql = 'SELECT * FROM quiz_questions WHERE quiz_id = ?';
     if ($onlyIds !== null) {
-        $sql .= $onlyIds ? ' AND id IN (' . implode(',', array_map('intval', $onlyIds)) . ')' : ' AND 0';
+        $sql .= $onlyIds ? (' ' . t('AND id IN (')) . implode(',', array_map('intval', $onlyIds)) . ')' : (' ' . t('AND 0'));
     }
     $qs = [];
     foreach (q_all($sql . ' ORDER BY sort_order, id', [$quizId]) as $row) {

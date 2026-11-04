@@ -185,7 +185,7 @@ function lessons_kata_update(): void
     if (site_setting('pamokos_katos_v2') || !site_setting('pamokos_katos')) {
         return;
     }
-    foreach ([11 => 'Tekki Nidan', 12 => 'Tekki Sandan'] as $belt => $name) {
+    foreach ([11 => t('Tekki Nidan'), 12 => t('Tekki Sandan')] as $belt => $name) {
         $new = null;
         foreach (KATA_VIDEOS[$belt] as $k) {
             if ($k[0] === $name) {
@@ -310,7 +310,7 @@ function icon_picker(string $inputId, ?string $current = null): string
 {
     $html = '<span class="icon-pick" data-for="' . e($inputId) . '"><span class="icon-now" title="Dabar">' . icon_html($current) . '</span>';
     foreach (FOLDER_BELT_ICONS as $lvl) {
-        $html .= '<button type="button" data-icon="belt:' . $lvl . '" title="' . e(BELTS[$lvl][1]) . ' diržas">' . belt_icon_svg($lvl) . '</button>';
+        $html .= '<button type="button" data-icon="belt:' . $lvl . '" title="' . e(t(BELTS[$lvl][1])) . ' diržas">' . belt_icon_svg($lvl) . '</button>';
     }
     $html .= '<button type="button" data-icon="teisejas" title="Teisėjams">' . referee_icon_svg() . '</button>';
     foreach (FOLDER_ICONS as $ic) {
@@ -540,7 +540,7 @@ function render_lesson_block(array $b): string
             return $b['image'] ? '<figure class="lb-image"><a href="' . e(lesson_image_url($b['image'])) . '" target="_blank"><img src="'
                 . e(lesson_image_url($b['image'])) . '" alt="' . e((string) $b['caption']) . '" loading="lazy"></a>' . $cap . '</figure>' : '';
         case 'note':
-            return '<aside class="lb-note"><div class="lb-note-label">💬 Trenerio pastaba</div>' . lesson_text_html((string) $b['body']) . '</aside>';
+            return ('<aside class="lb-note"><div class="lb-note-label">' . t('💬 Trenerio pastaba') . '</div>') . lesson_text_html((string) $b['body']) . '</aside>';
         case 'link':
             return $b['url'] ? '<p class="lb-link"><a href="' . e($b['url']) . '" target="_blank" rel="noopener">↗ ' . e($b['body'] ?: $b['url']) . '</a></p>' : '';
     }
@@ -623,7 +623,7 @@ function lesson_blocks_from_post(array &$errors): array
                 }
                 $row['youtube_id'] = youtube_id($row['raw_url']);
                 if (!$row['youtube_id']) {
-                    $errors[] = 'Neatpažinta YouTube nuoroda: ' . $row['raw_url'];
+                    $errors[] = (t('Neatpažinta YouTube nuoroda:') . ' ') . $row['raw_url'];
                 }
                 break;
             case 'image':
@@ -647,7 +647,7 @@ function lesson_blocks_from_post(array &$errors): array
                     continue 2;
                 }
                 if (!preg_match('~^https?://~i', $row['raw_url'])) {
-                    $errors[] = 'Nuoroda turi prasidėti http:// arba https:// - ' . $row['raw_url'];
+                    $errors[] = (t('Nuoroda turi prasidėti http:// arba https:// -') . ' ') . $row['raw_url'];
                 }
                 $row['url'] = $row['raw_url'];
                 $row['body'] = $body !== '' ? $body : null;
@@ -689,13 +689,13 @@ function lesson_save_from_post(array $me, array &$errors, ?array &$posted): ?int
         $title = lesson_auto_title($blocks);
     }
     if ($title === '') {
-        $errors[] = 'Įveskite pavadinimą arba pridėkite tekstą, nuotrauką ar video.';
+        $errors[] = t('Įveskite pavadinimą arba pridėkite tekstą, nuotrauką ar video.');
     }
     if ($folderId !== null && !isset($folders[$folderId])) {
         $folderId = null;
     }
     if (!$blocks && $published) {
-        $errors[] = 'Pamokoje dar nieko nėra - pridėkite tekstą, video ar nuotrauką (arba išsaugokite nepaskelbtą).';
+        $errors[] = t('Pamokoje dar nieko nėra - pridėkite tekstą, video ar nuotrauką (arba išsaugokite nepaskelbtą).');
     }
     if ($errors) {
         return null;
@@ -725,7 +725,7 @@ function lesson_save_from_post(array $me, array &$errors, ?array &$posted): ?int
 function lesson_block_editor(array $b, string $key): string
 {
     [$label, $sign] = LESSON_BLOCK_TYPES[$b['type']];
-    $n = 'blocks[' . $key . ']';
+    $n = t('blocks[') . $key . ']';
     $h = '<div class="lblock lb-' . $b['type'] . '" data-key="' . e($key) . '">'
         . '<div class="lblock-head"><span class="lb-drag" title="Tempkite">⠿</span><span class="lb-sign">' . $sign . '</span><strong>' . e($label) . '</strong>'
         . '<span class="lblock-tools"><button type="button" class="lb-up" title="Aukštyn">↑</button><button type="button" class="lb-down" title="Žemyn">↓</button>'
@@ -738,8 +738,8 @@ function lesson_block_editor(array $b, string $key): string
             break;
         case 'text':
         case 'note':
-            $h .= '<div class="lb-toolbar"><button type="button" data-fmt="bold"><b>B</b> paryškinti</button><button type="button" data-fmt="list">• sąrašas</button><button type="button" data-fmt="num">1. sąrašas</button></div>'
-                . '<textarea class="lb-grow" name="' . $n . '[body]" rows="' . ($b['type'] === 'note' ? 2 : 4) . '" placeholder="' . ($b['type'] === 'note' ? 'pvz. Atkreipkite dėmesį į kvėpavimą' : 'Tekstas. Tuščia eilutė - nauja pastraipa.') . '">' . $body . '</textarea>';
+            $h .= ('<div class="lb-toolbar"><button type="button" data-fmt="bold"><b>B</b> ' . t('paryškinti') . '</button><button type="button" data-fmt="list">' . t('• sąrašas') . '</button><button type="button" data-fmt="num">' . t('1. sąrašas') . '</button></div>')
+                . '<textarea class="lb-grow" name="' . $n . '[body]" rows="' . ($b['type'] === 'note' ? 2 : 4) . '" placeholder="' . ($b['type'] === 'note' ? t('pvz. Atkreipkite dėmesį į kvėpavimą') : t('Tekstas. Tuščia eilutė - nauja pastraipa.')) . '">' . $body . '</textarea>';
             break;
         case 'video':
             $url = $b['raw_url'] ?? (!empty($b['youtube_id']) ? 'https://youtu.be/' . $b['youtube_id'] : '');

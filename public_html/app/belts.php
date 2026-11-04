@@ -24,16 +24,17 @@ const BELTS = [
 
 function belt_label(?int $level): string
 {
-    return $level && isset(BELTS[$level]) ? BELTS[$level][0] . ' · ' . BELTS[$level][1] : 'Diržas nenurodytas';
+    return $level && isset(BELTS[$level]) ? BELTS[$level][0] . ' · ' . t(BELTS[$level][1]) : t('Diržas nenurodytas');
 }
 
 /** Spalvotas diržo ženkliukas */
 function belt_chip(?int $level): string
 {
     if (!$level || !isset(BELTS[$level])) {
-        return '<span class="belt-chip belt-none">diržas nenurodytas</span>';
+        return ('<span class="belt-chip belt-none">' . t('diržas nenurodytas') . '</span>');
     }
     [$kyu, $name, $color] = BELTS[$level];
+    $name = t($name);
     return '<span class="belt-chip"><span class="belt-swatch" style="background:' . $color . '"></span>' . e($kyu) . ' · ' . e($name) . '</span>';
 }
 
@@ -41,7 +42,7 @@ function belt_options(?int $selected, string $emptyLabel = '— nenurodytas —'
 {
     $html = '<option value="">' . e($emptyLabel) . '</option>';
     foreach (BELTS as $lvl => [$kyu, $name]) {
-        $html .= '<option value="' . $lvl . '"' . ($lvl === $selected ? ' selected' : '') . '>' . e("$kyu · $name") . '</option>';
+        $html .= '<option value="' . $lvl . '"' . ($lvl === $selected ? ' selected' : '') . '>' . e($kyu . ' · ' . t($name)) . '</option>';
     }
     return $html;
 }
@@ -60,6 +61,7 @@ function belt_strip_html(array $m): string
         return '';
     }
     [$kyu, $name, $color] = BELTS[$lvl];
+    $name = t($name);
     $next = isset(BELTS[$lvl + 1]) ? $lvl + 1 : null;
     $link = url('egzaminas.php?m=' . (int) $m['id']);
     $progress = '';
@@ -68,13 +70,13 @@ function belt_strip_html(array $m): string
         if ($reqs) {
             $done = requirement_done_ids((int) $m['id']);
             $ok = count(array_filter($reqs, function ($r) use ($done) { return ($done[(int) $r['id']] ?? '') === 'approved'; }));
-            $progress = '<a class="bs-next" href="' . e($link) . '" title="Egzamino programa">Iki ' . e(BELTS[$next][0]) . ': ' . $ok . ' iš ' . count($reqs)
-                . '<span class="bs-bar" aria-hidden="true"><i style="width:' . (int) round(100 * $ok / count($reqs)) . '%; background:' . BELTS[$next][2] . '"></i></span></a>';
+            $progress = '<a class="bs-next" href="' . e($link) . '" title="Egzamino programa">Iki ' . e(BELTS[$next][0]) . ': ' . $ok . (' ' . t('iš') . ' ') . count($reqs)
+                . '<span class="bs-bar" aria-hidden="true"><i style="width:' . (int) round(100 * $ok / count($reqs)) . t('%; background:') . BELTS[$next][2] . '"></i></span></a>';
         } else {
-            $progress = '<a class="bs-next" href="' . e($link) . '">Kitas - ' . e(BELTS[$next][0] . ' · ' . BELTS[$next][1]) . ' →</a>';
+            $progress = '<a class="bs-next" href="' . e($link) . '">Kitas - ' . e(BELTS[$next][0] . ' · ' . t(BELTS[$next][1])) . ' →</a>';
         }
     }
     return '<div class="belt-strip' . ($lvl === 1 ? ' is-white' : '') . ($lvl >= 10 ? ' is-dan' : '') . '" style="--belt:' . $color . '">'
-        . '<span class="bs-belt" aria-hidden="true"><i></i></span><span class="bs-label"><strong>' . e($kyu) . '</strong> · ' . e($name) . ' diržas</span>'
+        . '<span class="bs-belt" aria-hidden="true"><i></i></span><span class="bs-label"><strong>' . e($kyu) . '</strong> · ' . e($name) . (' ' . t('diržas') . '</span>')
         . $progress . '</div>';
 }

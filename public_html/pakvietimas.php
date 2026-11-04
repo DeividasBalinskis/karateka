@@ -9,11 +9,11 @@ $taken = $member && q_value('SELECT 1 FROM account_members WHERE member_id = ? A
 $emailTaken = $token && q_value('SELECT 1 FROM accounts WHERE email = ?', [$token['email']]);
 
 if (!$token || !$member || $taken || $emailTaken) {
-    page_start('Kvietimas', ['narrow' => true, 'noindex' => true]); ?>
+    page_start(t('Kvietimas'), ['narrow' => true, 'noindex' => true]); ?>
     <div class="panel card">
-      <h1>Kvietimas nebegalioja</h1>
-      <p class="muted">Kvietimas jau panaudotas, pasibaigė arba šis el. paštas jau turi paskyrą. Paprašyk tėvų išsiųsti naują kvietimą.</p>
-      <p style="margin-top:18px;"><a class="btn btn-primary" href="<?= url('prisijungti.php') ?>">Prisijungti</a></p>
+      <h1><?= te('Kvietimas nebegalioja') ?></h1>
+      <p class="muted"><?= te('Kvietimas jau panaudotas, pasibaigė arba šis el. paštas jau turi paskyrą. Paprašyk tėvų išsiųsti naują kvietimą.') ?></p>
+      <p style="margin-top:18px;"><a class="btn btn-primary" href="<?= url('prisijungti.php') ?>"><?= te('Prisijungti') ?></a></p>
     </div>
 <?php
     page_end();
@@ -25,9 +25,9 @@ if (is_post()) {
     csrf_check();
     $pw = (string) ($_POST['password'] ?? '');
     if (mb_strlen($pw) < MIN_PASSWORD) {
-        $errors[] = 'Slaptažodis turi būti bent ' . MIN_PASSWORD . ' simbolių.';
+        $errors[] = (t('Slaptažodis turi būti bent') . ' ') . MIN_PASSWORD . (' ' . t('simbolių.'));
     } elseif ($pw !== ($_POST['password2'] ?? '')) {
-        $errors[] = 'Slaptažodžiai nesutampa.';
+        $errors[] = t('Slaptažodžiai nesutampa.');
     } else {
         db()->beginTransaction();
         try {
@@ -42,26 +42,26 @@ if (is_post()) {
         }
         notify_coach_pending(q_one('SELECT * FROM accounts WHERE id = ?', [$id]));
         login_account($id);
-        flash('ok', 'Paskyra sukurta! Kai treneris ją patvirtins, matysi savo tvarkaraštį ir renginius.');
+        flash('ok', t('Paskyra sukurta! Kai treneris ją patvirtins, matysi savo tvarkaraštį ir renginius.'));
         redirect('paskyra.php');
     }
 }
 
-page_start('Kvietimas', ['narrow' => true, 'noindex' => true]);
+page_start(t('Kvietimas'), ['narrow' => true, 'noindex' => true]);
 ?>
 <div class="panel card">
-  <div class="eyebrow">Kvietimas</div>
-  <h1 class="styled">Sveikas (-a), <?= e($member['first_name']) ?>!</h1>
-  <p class="muted" style="margin-bottom:18px;">Susikurk slaptažodį - prisijungsi el. paštu <strong><?= e($token['email']) ?></strong>.</p>
+  <div class="eyebrow"><?= te('Kvietimas') ?></div>
+  <h1 class="styled"><?= te('Sveikas (-a),') ?> <?= e($member['first_name']) ?>!</h1>
+  <p class="muted" style="margin-bottom:18px;"><?= te('Susikurk slaptažodį - prisijungsi el. paštu') ?> <strong><?= e($token['email']) ?></strong>.</p>
   <?= form_errors($errors) ?>
   <form method="post" class="form">
     <?= csrf_field() ?>
     <input type="hidden" name="t" value="<?= e($t) ?>">
-    <label>Slaptažodis <span class="hint">bent <?= MIN_PASSWORD ?> simboliai</span>
+    <label><?= te('Slaptažodis') ?> <span class="hint">bent <?= MIN_PASSWORD ?> simboliai</span>
       <input type="password" name="password" autocomplete="new-password" minlength="<?= MIN_PASSWORD ?>" required autofocus></label>
-    <label>Pakartok slaptažodį
+    <label><?= te('Pakartok slaptažodį') ?>
       <input type="password" name="password2" autocomplete="new-password" required></label>
-    <button class="btn btn-primary btn-block" type="submit">Sukurti paskyrą</button>
+    <button class="btn btn-primary btn-block" type="submit"><?= te('Sukurti paskyrą') ?></button>
   </form>
 </div>
 <?php

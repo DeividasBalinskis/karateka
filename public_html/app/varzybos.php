@@ -22,7 +22,7 @@ function varzybos_enabled(): bool
 function varzybos_api(string $method, string $route, ?array $body = null, array $query = []): array
 {
     if (!varzybos_enabled()) {
-        throw new RuntimeException('Varžybų sistema neprijungta (config.php: varzybos).');
+        throw new RuntimeException(t('Varžybų sistema neprijungta (config.php: varzybos).'));
     }
     $url = rtrim((string) varzybos_config('url'), '/') . '/api.php?r=v1/' . $route . ($query ? '&' . http_build_query($query) : '');
     $headers = ['Accept: application/json', 'X-Api-Key: ' . varzybos_config('key')];
@@ -52,14 +52,14 @@ function varzybos_api(string $method, string $route, ?array $body = null, array 
         $status = isset($http_response_header[0]) && preg_match('/\s(\d{3})\s/', $http_response_header[0], $m) ? (int) $m[1] : 0;
     }
     if ($raw === false || $status === 0) {
-        throw new RuntimeException('Varžybų sistema šiuo metu nepasiekiama. Bandykite vėliau.');
+        throw new RuntimeException(t('Varžybų sistema šiuo metu nepasiekiama. Bandykite vėliau.'));
     }
     $data = json_decode((string) $raw, true);
     if (!is_array($data)) {
-        throw new RuntimeException('Varžybų sistema grąžino netinkamą atsakymą.');
+        throw new RuntimeException(t('Varžybų sistema grąžino netinkamą atsakymą.'));
     }
     if ($status >= 400) {
-        throw new RuntimeException($data['error'] ?? 'Varžybų sistemos klaida (' . $status . ').');
+        throw new RuntimeException($data['error'] ?? t('Varžybų sistemos klaida (') . $status . ').');
     }
     return $data;
 }

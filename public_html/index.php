@@ -6,12 +6,12 @@ $edit = home_edit_mode();
 $page = home_page();
 ?>
 <!DOCTYPE html>
-<html lang="lt">
+<html lang="<?= current_lang() ?>">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="VšĮ Karate Ateitis — tradicinio karate-do klubas Vilniuje. Treniruotės vaikams, jaunimui ir suaugusiems: kainos, tvarkaraščiai, vietos ir registracija. Pirmos dvi treniruotės nemokamos.">
-<title>Karateka — VšĮ Karate Ateitis</title>
+<meta name="description" content="<?= te('VšĮ Karate Ateitis — tradicinio karate-do klubas Vilniuje. Treniruotės vaikams, jaunimui ir suaugusiems: kainos, tvarkaraščiai, vietos ir registracija. Pirmos dvi treniruotės nemokamos.') ?>">
+<title><?= te('Karateka — VšĮ Karate Ateitis') ?></title>
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=2">
 <link rel="icon" type="image/png" sizes="192x192" href="favicon-192.png?v=2">
 <link rel="apple-touch-icon" href="apple-touch-icon.png?v=2">
@@ -22,6 +22,7 @@ $page = home_page();
 <link rel="stylesheet" href="<?= e(asset_url('assets/header.css')) ?>">
 <link rel="stylesheet" href="<?= e(asset_url('assets/widgets.css')) ?>">
 <script>document.documentElement.classList.add('js');</script>
+<?= i18n_js() ?>
 <link rel="stylesheet" href="<?= e(asset_url('assets/home.css')) ?>">
 <?php if ($edit): ?><link rel="stylesheet" href="<?= e(asset_url('assets/home-edit.css')) ?>"><?php endif; ?>
 </head>
@@ -31,12 +32,12 @@ $page = home_page();
 
 <?php if ($edit): ?>
 <div class="hb-toolbar" id="hbToolbar">
-  <strong>✎ Redaguojate pagrindinį puslapį</strong>
-  <span class="small">Spauskite ant teksto ir rašykite. Blokus tempkite ⠿.</span>
+  <strong><?= te('✎ Redaguojate pagrindinį puslapį') ?></strong>
+  <span class="small"><?= te('Spauskite ant teksto ir rašykite. Blokus tempkite ⠿.') ?></span>
   <span class="hb-toolbar-btns">
-    <button type="button" class="btn btn-primary btn-sm" id="hbSave">Išsaugoti</button>
-    <a class="btn btn-ghost btn-sm" href="<?= url('index.php') ?>" id="hbExit">Baigti</a>
-    <button type="button" class="btn btn-ghost btn-sm" id="hbUndo" title="Grąžinti prieš paskutinį išsaugojimą buvusį puslapį">↶ Ankstesnė versija</button>
+    <button type="button" class="btn btn-primary btn-sm" id="hbSave"><?= te('Išsaugoti') ?></button>
+    <a class="btn btn-ghost btn-sm" href="<?= url('index.php') ?>" id="hbExit"><?= te('Baigti') ?></a>
+    <button type="button" class="btn btn-ghost btn-sm" id="hbUndo" title="<?= te('Grąžinti prieš paskutinį išsaugojimą buvusį puslapį') ?>"><?= te('↶ Ankstesnė versija') ?></button>
   </span>
   <span class="hb-status" id="hbStatus"></span>
 </div>
@@ -64,26 +65,26 @@ foreach ($visible as $i => $b) {
     // Nauji blokai: šablonai (vieno egzemplioriaus blokai - tik jei jų puslapyje nėra)
     $present = array_column($page, 'type'); ?>
   <div class="hb-add-menu" id="hbAddMenu" hidden>
-    <div class="hb-add-title">Kokį bloką pridėti?</div>
+    <div class="hb-add-title"><?= te('Kokį bloką pridėti?') ?></div>
     <?php foreach (HOME_BLOCK_TYPES as $type => [$label, $multi]): if (!$multi && in_array($type, $present, true)) { continue; } ?>
       <button type="button" data-add-block="<?= $type ?>"<?= $multi ? '' : ' data-single="1"' ?>><?= e($label) ?></button>
       <template data-block-tpl="<?= $type ?>"><?= home_block_wrap(['id' => '', 'type' => $type, 'menu' => '', 'hidden' => false, 'd' => home_block_defaults($type)],
           home_render_block(['id' => '', 'type' => $type, 'menu' => '', 'hidden' => false, 'd' => home_block_defaults($type)])) ?></template>
     <?php endforeach; ?>
-    <button type="button" class="hb-add-cancel">Atšaukti</button>
+    <button type="button" class="hb-add-cancel"><?= te('Atšaukti') ?></button>
   </div>
   <script>window.HOME_API = <?= json_encode(['url' => url('admin/puslapis.php'), 'csrf' => csrf_token()]) ?>;</script>
   <script src="<?= e(asset_url('assets/vendor/sortable.min.js')) ?>"></script>
   <script src="<?= e(asset_url('assets/home-editor.js')) ?>"></script>
 <?php elseif (is_admin()): ?>
-  <a class="hb-fab" href="<?= url('index.php?redaguoti=1') ?>">✎ Redaguoti puslapį</a>
+  <a class="hb-fab" href="<?= url('index.php?redaguoti=1') ?>"><?= te('✎ Redaguoti puslapį') ?></a>
 <?php endif; ?>
 
 <footer>
   <div class="wrap">
     <div class="footer-bottom">
-      <span>© <?= date('Y') ?> VšĮ Karate Ateitis. Visos teisės saugomos. · <a href="privatumas.php" style="color:inherit; text-decoration:underline;">Privatumo politika</a></span>
-      <span>Nuo balto iki juodo diržo.</span>
+      <span>© <?= date('Y') ?> <?= te('VšĮ Karate Ateitis. Visos teisės saugomos. ·') ?> <a href="privatumas.php" style="color:inherit; text-decoration:underline;"><?= te('Privatumo politika') ?></a></span>
+      <span><?= te('Nuo balto iki juodo diržo.') ?></span>
     </div>
   </div>
 </footer>

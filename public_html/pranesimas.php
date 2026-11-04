@@ -30,10 +30,10 @@ switch (post('action')) {
             forbidden();
         }
         if (post('action') === 'skill_approve') {
-            flash('ok', approve_skill((int) $n['member_id'], (int) $n['ref_id'], (int) $a['id']) ? 'Patvirtinta, XP skirti.' : 'Jau buvo patvirtinta.');
+            flash('ok', approve_skill((int) $n['member_id'], (int) $n['ref_id'], (int) $a['id']) ? t('Patvirtinta, XP skirti.') : t('Jau buvo patvirtinta.'));
         } else {
             reject_skill((int) $n['member_id'], (int) $n['ref_id']);
-            flash('ok', 'Grąžinta - narys galės pažymėti dar kartą.');
+            flash('ok', t('Grąžinta - narys galės pažymėti dar kartą.'));
         }
         break;
     case 'late_approve':
@@ -45,7 +45,7 @@ switch (post('action')) {
             set_participation((int) $ev['id'], (int) $n['member_id'], 'going', (int) $a['id']);
             notify_member((int) $n['member_id'], 'late_approved', 'Dalyvavimas patvirtintas: ' . $ev['title'],
                 'Denis patvirtino - lauksime ' . fmt_date($ev['starts_on'], true), 'renginys.php?id=' . (int) $ev['id'], (int) $ev['id'], false);
-            flash('ok', 'Dalyvavimas patvirtintas.');
+            flash('ok', t('Dalyvavimas patvirtintas.'));
         }
         notifications_done('late_request', (int) $n['ref_id'], (int) $n['member_id']);
         break;

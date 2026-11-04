@@ -16,7 +16,7 @@ function sms_selected_members(array &$labelParts): array
         $in = implode(',', $groups);
         $ids = array_merge($ids, q("SELECT id FROM members WHERE status = 'active' AND group_id IN ($in)")->fetchAll(PDO::FETCH_COLUMN));
         $names = q("SELECT name FROM training_groups WHERE id IN ($in) ORDER BY sort_order, name")->fetchAll(PDO::FETCH_COLUMN);
-        $labelParts[] = 'Grupės: ' . implode(', ', $names);
+        $labelParts[] = (t('Grupės:') . ' ') . implode(', ', $names);
     }
     $eventId = (int) post('event_id');
     $statuses = array_values(array_intersect(['going', 'invited'], (array) ($_POST['ev_status'] ?? [])));
@@ -26,7 +26,7 @@ function sms_selected_members(array &$labelParts): array
             $ids = array_merge($ids, q("SELECT ep.member_id FROM event_participants ep JOIN members m ON m.id = ep.member_id
                                          WHERE ep.event_id = ? AND m.status = 'active' AND ep.status IN ('" . implode("','", $statuses) . "')", [$eventId])
                 ->fetchAll(PDO::FETCH_COLUMN));
-            $labelParts[] = 'Renginys: ' . $ev['title'] . ' (' . implode(', ', array_map(function ($s) { return $s === 'going' ? 'dalyvaus' : 'pakviesti'; }, $statuses)) . ')';
+            $labelParts[] = (t('Renginys:') . ' ') . $ev['title'] . ' (' . implode(', ', array_map(function ($s) { return $s === 'going' ? 'dalyvaus' : 'pakviesti'; }, $statuses)) . ')';
         }
     }
     $people = member_tree_from_post()['members'];   // atskirai pažymėti (ne visa grupė)
@@ -44,9 +44,9 @@ if (is_post()) {
         $body = sms_transliterate($body);
     }
     if ($body === '') {
-        $errors[] = 'Įrašykite žinutės tekstą.';
+        $errors[] = t('Įrašykite žinutės tekstą.');
     } elseif (mb_strlen($body) > SMS_MAX_CHARS) {
-        $errors[] = 'Žinutė per ilga (daugiausia ' . SMS_MAX_CHARS . ' simbolių).';
+        $errors[] = (t('Žinutė per ilga (daugiausia') . ' ') . SMS_MAX_CHARS . (' ' . t('simbolių).'));
     }
 
     if (post('action') === 'send') {
@@ -54,17 +54,17 @@ if (is_post()) {
         $memberIds = array_map('intval', array_filter(explode(',', post('member_ids'))));
         $res = sms_recipients_for_members($memberIds);
         if (!$res['recipients']) {
-            $errors[] = 'Nėra gavėjų su telefono numeriu.';
+            $errors[] = t('Nėra gavėjų su telefono numeriu.');
         }
         if (!$errors) {
             $msgId = sms_send_message($body, array_values($res['recipients']), post('label'), (int) $me['id']);
             $msg = q_one('SELECT * FROM sms_messages WHERE id = ?', [$msgId]);
             if (!sms_live()) {
-                flash('ok', 'Bandomasis režimas: SMS neišsiųstos, tik įrašytos į istoriją (' . (int) $msg['sent_count'] . ' gavėjai).');
+                flash('ok', t('Bandomasis režimas: SMS neišsiųstos, tik įrašytos į istoriją (') . (int) $msg['sent_count'] . (' ' . t('gavėjai).')));
             } elseif ($msg['failed_count']) {
-                flash('err', 'Išsiųsta: ' . (int) $msg['sent_count'] . ', nepavyko: ' . (int) $msg['failed_count'] . '. Žr. sąrašą žemiau.');
+                flash('err', (t('Išsiųsta:') . ' ') . (int) $msg['sent_count'] . (t(', nepavyko:') . ' ') . (int) $msg['failed_count'] . '. Žr. sąrašą žemiau.');
             } else {
-                flash('ok', 'SMS išsiųsta: ' . (int) $msg['sent_count'] . ' gavėjams.');
+                flash('ok', (t('SMS išsiųsta:') . ' ') . (int) $msg['sent_count'] . (' ' . t('gavėjams.')));
             }
             redirect('admin/sms.php?id=' . $msgId);
         }
@@ -72,7 +72,7 @@ if (is_post()) {
         $labelParts = [];
         $memberIds = sms_selected_members($labelParts);
         if (!$memberIds) {
-            $errors[] = 'Pasirinkite gavėjus: grupę, renginio dalyvius arba konkrečius žmones.';
+            $errors[] = t('Pasirinkite gavėjus: grupę, renginio dalyvius arba konkrečius žmones.');
         }
         if (!$errors) {
             $res = sms_recipients_for_members($memberIds);
@@ -95,17 +95,17 @@ $selGroups = array_map('intval', (array) ($_POST['groups'] ?? []));
 $selMembers = array_map('intval', (array) ($_POST['members'] ?? []));
 $selStatuses = is_post() ? (array) ($_POST['ev_status'] ?? []) : ['going'];
 
-page_start('SMS žinutės', ['admin' => true]);
+page_start(t('SMS žinutės'), ['admin' => true]);
 ?>
-<a class="small" href="<?= url('admin/pranesimai.php') ?>">← Pranešimas nariams (paskyroje, el. paštu, SMS)</a>
+<a class="small" href="<?= url('admin/pranesimai.php') ?>"><?= te('← Pranešimas nariams (paskyroje, el. paštu, SMS)') ?></a>
 <div class="page-head" style="margin-top:8px;">
-  <h1 class="styled">SMS žinutės</h1>
-  <p class="muted" style="margin:0;">Trumpi pranešimai telefonu, pvz. „Šiandien treniruotės nebus“. Vaikams SMS gauna tėvai, suaugusieji - patys. Numeriai imami iš paskyrų.</p>
+  <h1 class="styled"><?= te('SMS žinutės') ?></h1>
+  <p class="muted" style="margin:0;"><?= te('Trumpi pranešimai telefonu, pvz. „Šiandien treniruotės nebus“. Vaikams SMS gauna tėvai, suaugusieji - patys. Numeriai imami iš paskyrų.') ?></p>
 </div>
 <?php if (!sms_live()): ?>
   <div class="notice-test panel">
-    <strong>Bandomasis režimas.</strong> SMS niekam nesiunčiamos - tik parodoma, kas jas gautų, ir įrašoma į istoriją.
-    Tikram siuntimui reikia SMS teikėjo paskyros ir nustatymų faile <code>config.php</code> (<code>sms</code>).
+    <strong><?= te('Bandomasis režimas.') ?></strong> <?= te('SMS niekam nesiunčiamos - tik parodoma, kas jas gautų, ir įrašoma į istoriją.
+    Tikram siuntimui reikia SMS teikėjo paskyros ir nustatymų faile') ?> <code>config.php</code> (<code>sms</code>).
   </div>
 <?php endif; ?>
 <?= form_errors($errors) ?>
@@ -118,21 +118,21 @@ page_start('SMS žinutės', ['admin' => true]);
         <p class="sms-bubble"><?= nl2br(e($detail['body'])) ?></p>
         <p class="small muted"><?= e($detail['label'] ?? '') ?></p>
       </div>
-      <a class="small" href="<?= url('admin/sms.php') ?>">Uždaryti ✕</a>
+      <a class="small" href="<?= url('admin/sms.php') ?>"><?= te('Uždaryti ✕') ?></a>
     </div>
     <p class="small">
       <?= $detail['provider'] === 'log' ? '<span class="badge">bandomasis</span> ' : '' ?>
-      Gavėjų: <strong><?= (int) $detail['sent_count'] + (int) $detail['failed_count'] ?></strong>
+      <?= te('Gavėjų:') ?> <strong><?= (int) $detail['sent_count'] + (int) $detail['failed_count'] ?></strong>
       <?= $detail['failed_count'] ? ' · <span class="test-no">nepavyko: ' . (int) $detail['failed_count'] . '</span>' : '' ?>
-      · <?= (int) $detail['parts'] ?> SMS dal<?= (int) $detail['parts'] === 1 ? 'is' : 'ys' ?> kiekvienam
+      · <?= (int) $detail['parts'] ?> <?= te('SMS dal') ?><?= (int) $detail['parts'] === 1 ? 'is' : 'ys' ?> kiekvienam
       <?= $detail['cost_eur'] !== null ? ' · ~' . number_format((float) $detail['cost_eur'], 2, ',', ' ') . ' €' : '' ?>
     </p>
     <ul class="list sms-list">
       <?php foreach ($detailRecipients as $r): ?>
         <li class="row between">
-          <span><strong><?= e($r['name']) ?></strong> <span class="muted small"><?= e($r['phone']) ?><?= $r['for_members'] ? ' · dėl: ' . e($r['for_members']) : '' ?></span>
+          <span><strong><?= e($r['name']) ?></strong> <span class="muted small"><?= e($r['phone']) ?><?= $r['for_members'] ? (' ' . t('· dėl:') . ' ') . e($r['for_members']) : '' ?></span>
             <?php if ($r['error']): ?><div class="small test-no"><?= e($r['error']) ?></div><?php endif; ?></span>
-          <span class="badge <?= $r['status'] === 'failed' ? 'badge-warn' : '' ?>"><?= ['sent' => '✓ išsiųsta', 'failed' => 'nepavyko', 'test' => 'bandomasis'][$r['status']] ?></span>
+          <span class="badge <?= $r['status'] === 'failed' ? 'badge-warn' : '' ?>"><?= ['sent' => t('✓ išsiųsta'), 'failed' => 'nepavyko', 'test' => 'bandomasis'][$r['status']] ?></span>
         </li>
       <?php endforeach; ?>
     </ul>
@@ -141,20 +141,20 @@ page_start('SMS žinutės', ['admin' => true]);
 
 <?php if ($preview): ?>
   <div class="panel card sms-preview">
-    <h2>Patikrinkite prieš siunčiant</h2>
+    <h2><?= te('Patikrinkite prieš siunčiant') ?></h2>
     <p class="sms-bubble"><?= nl2br(e($preview['body'])) ?></p>
-    <p class="small muted"><?= mb_strlen($preview['body']) ?> simb. · <?= $preview['parts'] ?> SMS dal<?= $preview['parts'] === 1 ? 'is' : 'ys' ?> vienam gavėjui · <?= e($preview['label']) ?></p>
+    <p class="small muted"><?= mb_strlen($preview['body']) ?> <?= te('simb. ·') ?> <?= $preview['parts'] ?> <?= te('SMS dal') ?><?= $preview['parts'] === 1 ? 'is' : 'ys' ?> <?= te('vienam gavėjui ·') ?> <?= e($preview['label']) ?></p>
     <?php $n = count($preview['recipients']); $price = config('sms.price_eur'); ?>
-    <p><strong><?= $n ?> gavėj<?= $n === 1 ? 'as' : 'ai' ?></strong><?= $price !== null && $n ? ' · apie ' . number_format($n * $preview['parts'] * (float) $price, 2, ',', ' ') . ' €' : '' ?></p>
+    <p><strong><?= $n ?> <?= te('gavėj') ?><?= $n === 1 ? 'as' : 'ai' ?></strong><?= $price !== null && $n ? (' ' . t('· apie') . ' ') . number_format($n * $preview['parts'] * (float) $price, 2, ',', ' ') . ' €' : '' ?></p>
     <?php if ($preview['missing']): ?>
-      <p class="small test-no">Be telefono numerio (negaus): <?= e(implode(', ', $preview['missing'])) ?>. Numerį galima įrašyti paskyros nustatymuose.</p>
+      <p class="small test-no"><?= te('Be telefono numerio (negaus):') ?> <?= e(implode(', ', $preview['missing'])) ?>. Numerį galima įrašyti paskyros nustatymuose.</p>
     <?php endif; ?>
     <?php if ($n): ?>
       <details class="sms-recipients">
-        <summary class="small">Rodyti gavėjus</summary>
+        <summary class="small"><?= te('Rodyti gavėjus') ?></summary>
         <ul class="list sms-list">
           <?php foreach ($preview['recipients'] as $r): ?>
-            <li><strong><?= e($r['name']) ?></strong> <span class="muted small"><?= e($r['phone']) ?> · dėl: <?= e(implode(', ', $r['for'])) ?></span></li>
+            <li><strong><?= e($r['name']) ?></strong> <span class="muted small"><?= e($r['phone']) ?> <?= te('· dėl:') ?> <?= e(implode(', ', $r['for'])) ?></span></li>
           <?php endforeach; ?>
         </ul>
       </details>
@@ -164,8 +164,8 @@ page_start('SMS žinutės', ['admin' => true]);
         <input type="hidden" name="body" value="<?= e($preview['body']) ?>">
         <input type="hidden" name="label" value="<?= e($preview['label']) ?>">
         <input type="hidden" name="member_ids" value="<?= e(implode(',', $preview['members'])) ?>">
-        <button class="btn btn-primary" type="submit"><?= sms_live() ? 'Siųsti ' . $n . ' SMS' : 'Išbandyti (nesiunčiama)' ?></button>
-        <span class="small muted">arba pakeiskite žemiau ir peržiūrėkite dar kartą</span>
+        <button class="btn btn-primary" type="submit"><?= sms_live() ? (t('Siųsti') . ' ') . $n . ' SMS' : t('Išbandyti (nesiunčiama)') ?></button>
+        <span class="small muted"><?= te('arba pakeiskite žemiau ir peržiūrėkite dar kartą') ?></span>
       </form>
     <?php endif; ?>
   </div>
@@ -175,24 +175,24 @@ page_start('SMS žinutės', ['admin' => true]);
   <?= csrf_field() ?>
   <input type="hidden" name="action" value="preview">
   <div class="panel card">
-    <h2>Žinutė</h2>
-    <label>Tekstas
-      <textarea name="body" id="smsBody" rows="4" maxlength="<?= SMS_MAX_CHARS ?>" placeholder="pvz. Šiandien treniruotės nebus. Treneris Denis" required><?= e((string) ($_POST['body'] ?? '')) ?></textarea></label>
+    <h2><?= te('Žinutė') ?></h2>
+    <label><?= te('Tekstas') ?>
+      <textarea name="body" id="smsBody" rows="4" maxlength="<?= SMS_MAX_CHARS ?>" placeholder="<?= te('pvz. Šiandien treniruotės nebus. Treneris Denis') ?>" required><?= e((string) ($_POST['body'] ?? '')) ?></textarea></label>
     <div class="row between" style="flex-wrap:wrap; gap:8px;">
-      <label class="check" style="margin:0;"><input type="checkbox" name="translit" id="smsTranslit" value="1" <?= !empty($_POST['translit']) ? 'checked' : '' ?>><span>Be lietuviškų raidžių (ą → a): pigiau, 160 simbolių vietoj 70</span></label>
+      <label class="check" style="margin:0;"><input type="checkbox" name="translit" id="smsTranslit" value="1" <?= !empty($_POST['translit']) ? 'checked' : '' ?>><span><?= te('Be lietuviškų raidžių (ą → a): pigiau, 160 simbolių vietoj 70') ?></span></label>
       <span class="small muted" id="smsCount"></span>
     </div>
   </div>
   <div class="panel card">
-    <h2>Kam siųsti?</h2>
-    <p class="hint">Galima derinti: pvz. grupė ir dar keli žmonės. Tas pats numeris gaus vieną SMS.</p>
+    <h2><?= te('Kam siųsti?') ?></h2>
+    <p class="hint"><?= te('Galima derinti: pvz. grupė ir dar keli žmonės. Tas pats numeris gaus vieną SMS.') ?></p>
     <div class="grid-2 sms-to" style="margin-top:6px;">
       <div>
-        <div class="kicker">Grupės ir žmonės</div>
-        <?= member_tree_field($selGroups, $selMembers, ['hint' => 'Pažymėkite visą grupę arba išskleiskite ▸ ir pasirinkite tik norimus vaikus.']) ?>
+        <div class="kicker"><?= te('Grupės ir žmonės') ?></div>
+        <?= member_tree_field($selGroups, $selMembers, ['hint' => t('Pažymėkite visą grupę arba išskleiskite ▸ ir pasirinkite tik norimus vaikus.')]) ?>
       </div>
       <div>
-        <div class="kicker">Renginio dalyviai</div>
+        <div class="kicker"><?= te('Renginio dalyviai') ?></div>
         <select name="event_id">
           <option value="">-</option>
           <?php foreach ($events as $ev): ?>
@@ -200,18 +200,18 @@ page_start('SMS žinutės', ['admin' => true]);
           <?php endforeach; ?>
         </select>
         <div class="seg-choice" style="margin-top:8px;">
-          <label class="check"><input type="checkbox" name="ev_status[]" value="going" <?= in_array('going', $selStatuses, true) ? 'checked' : '' ?>><span>Dalyvaus</span></label>
-          <label class="check"><input type="checkbox" name="ev_status[]" value="invited" <?= in_array('invited', $selStatuses, true) ? 'checked' : '' ?>><span>Pakviesti, neatsakė</span></label>
+          <label class="check"><input type="checkbox" name="ev_status[]" value="going" <?= in_array('going', $selStatuses, true) ? 'checked' : '' ?>><span><?= te('Dalyvaus') ?></span></label>
+          <label class="check"><input type="checkbox" name="ev_status[]" value="invited" <?= in_array('invited', $selStatuses, true) ? 'checked' : '' ?>><span><?= te('Pakviesti, neatsakė') ?></span></label>
         </div>
       </div>
     </div>
-    <div style="margin-top:16px;"><button class="btn btn-primary" type="submit">Peržiūrėti gavėjus →</button></div>
+    <div style="margin-top:16px;"><button class="btn btn-primary" type="submit"><?= te('Peržiūrėti gavėjus →') ?></button></div>
   </div>
 </form>
 
 <div class="panel card">
-  <h2>Istorija</h2>
-  <?php if (!$history): ?><p class="muted">Dar nesiųsta nė vienos žinutės.</p><?php endif; ?>
+  <h2><?= te('Istorija') ?></h2>
+  <?php if (!$history): ?><p class="muted"><?= te('Dar nesiųsta nė vienos žinutės.') ?></p><?php endif; ?>
   <ul class="list sms-list">
     <?php foreach ($history as $h): ?>
       <li class="row between">

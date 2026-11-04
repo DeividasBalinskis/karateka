@@ -25,7 +25,7 @@ if (is_post()) {
     if (post('action') === 'req' && $req && account_relation((int) $a['id'], $mid)) {
         if (post('done') === '1') {
             request_skill($selected, $req, $a);
-            flash('ok', 'Pažymėta! Kai treneris patvirtins, gausi' . ((int) $req['xp'] > 0 ? ' +' . (int) $req['xp'] . ' XP' : ' žvaigždutę') . '.');
+            flash('ok', t('Pažymėta! Kai treneris patvirtins, gausi') . ((int) $req['xp'] > 0 ? ' +' . (int) $req['xp'] . ' XP' : (' ' . t('žvaigždutę'))) . '.');
         } else {
             cancel_skill($mid, (int) $req['id']);
         }
@@ -55,17 +55,17 @@ $quizzes = quizzes_for_member($selected, $tags);
 $examTest = exam_test_status($selected);
 $exam = member_upcoming_exam($selected);
 
-page_start('Egzaminas', ['noindex' => true, 'account' => 'egzaminas']);
+page_start(t('Egzaminas'), ['noindex' => true, 'account' => 'egzaminas']);
 ?>
 <div class="account-top">
   <div>
-    <div class="eyebrow">Egzaminas</div>
-    <div class="hello"><?= $next ? 'Kelias iki ' . e(BELTS[$next][0]) . ' (' . e(BELTS[$next][1]) . ' diržas)' : 'Aukščiausias diržas' ?></div>
+    <div class="eyebrow"><?= te('Egzaminas') ?></div>
+    <div class="hello"><?= $next ? (t('Kelias iki') . ' ') . e(BELTS[$next][0]) . ' (' . e(t(BELTS[$next][1])) . (' ' . t('diržas)')) : t('Aukščiausias diržas') ?></div>
   </div>
   <?php if (count($members) > 1): ?>
     <div class="member-tabs">
       <?php foreach ($members as $m): ?>
-        <a href="?m=<?= (int) $m['id'] ?>" class="<?= (int) $m['id'] === $mid ? 'active' : '' ?>"><?= e($m['first_name']) ?><?= $m['relation'] === 'self' ? ' (aš)' : '' ?></a>
+        <a href="?m=<?= (int) $m['id'] ?>" class="<?= (int) $m['id'] === $mid ? 'active' : '' ?>"><?= e($m['first_name']) ?><?= $m['relation'] === 'self' ? (' ' . t('(aš)')) : '' ?></a>
       <?php endforeach; ?>
     </div>
   <?php endif; ?>
@@ -75,8 +75,8 @@ page_start('Egzaminas', ['noindex' => true, 'account' => 'egzaminas']);
 <div class="panel card belt-path-card <?= $isKid ? 'kid' : '' ?>">
   <div class="row between" style="align-items:flex-start;">
     <div>
-      <div class="kicker">Diržų kelias</div>
-      <p class="muted small" style="margin:0;"><?= $belt ? 'Dabar: ' . e(belt_label($belt)) : 'Diržas nenurodytas - laikome, kad baltas. Pakeisti galima Nustatymuose.' ?></p>
+      <div class="kicker"><?= te('Diržų kelias') ?></div>
+      <p class="muted small" style="margin:0;"><?= $belt ? (t('Dabar:') . ' ') . e(belt_label($belt)) : t('Diržas nenurodytas - laikome, kad baltas. Pakeisti galima Nustatymuose.') ?></p>
     </div>
     <?= render_xp_card($selected, true) ?>
   </div>
@@ -96,40 +96,40 @@ page_start('Egzaminas', ['noindex' => true, 'account' => 'egzaminas']);
   <!-- Artėjantis egzaminas: 3 žingsniai -->
   <div class="panel card exam-card <?= $isKid ? 'kid' : '' ?>">
     <div class="exam-head">
-      <div class="exam-count"><span><?= $days ?></span><small><?= $days === 1 ? 'diena' : (($days % 10 === 0 || ($days % 100 > 10 && $days % 100 < 20)) ? 'dienų' : ($days % 10 === 1 ? 'diena' : 'dienos')) ?></small></div>
+      <div class="exam-count"><span><?= $days ?></span><small><?= $days === 1 ? 'diena' : (($days % 10 === 0 || ($days % 100 > 10 && $days % 100 < 20)) ? t('dienų') : ($days % 10 === 1 ? 'diena' : 'dienos')) ?></small></div>
       <div>
-        <div class="kicker">Tavo egzaminas<?= $days === 0 ? ' - šiandien!' : '' ?></div>
+        <div class="kicker"><?= te('Tavo egzaminas') ?><?= $days === 0 ? (' ' . t('- šiandien!')) : '' ?></div>
         <h2 style="margin:0;"><?= e($exam['title']) ?></h2>
         <div class="muted small"><?= e(fmt_date($exam['starts_on'], true)) ?><?= $exam['start_time'] ? ', ' . e(fmt_time($exam['start_time'])) : '' ?><?= $exam['location'] ? ' · ' . e($exam['location']) : '' ?></div>
       </div>
     </div>
     <ol class="exam-steps">
       <li class="<?= $reqTotal && $reqDone === $reqTotal ? 'ok' : '' ?>">
-        <strong>Peržiūrėk programą</strong>
+        <strong><?= te('Peržiūrėk programą') ?></strong>
         <?php if ($reqTotal): ?>
           <div class="progress"><span style="width:<?= (int) round(100 * $reqDone / $reqTotal) ?>%"></span></div>
-          <span class="small muted">Moku <?= $reqDone ?> iš <?= $reqTotal ?><?= $reqPending ? ' · ' . $reqPending . ' laukia trenerio' : '' ?></span>
+          <span class="small muted"><?= te('Moku') ?> <?= $reqDone ?> <?= te('iš') ?> <?= $reqTotal ?><?= $reqPending ? ' · ' . $reqPending . ' laukia trenerio' : '' ?></span>
         <?php else: ?>
-          <span class="small muted">Programą treneris dar įkels.</span>
+          <span class="small muted"><?= te('Programą treneris dar įkels.') ?></span>
         <?php endif; ?>
       </li>
       <li class="<?= $examTest && $examTest['passed'] ? 'ok' : '' ?>">
-        <strong>Išlaikyk testą</strong>
+        <strong><?= te('Išlaikyk testą') ?></strong>
         <?php if (!$examTest): ?>
-          <span class="small muted">Šiam diržui testo nėra - šį žingsnį gali praleisti.</span>
+          <span class="small muted"><?= te('Šiam diržui testo nėra - šį žingsnį gali praleisti.') ?></span>
         <?php elseif ($examTest['passed']): ?>
-          <span class="small">✓ Išlaikytas - leidžiama laikyti praktiką</span>
+          <span class="small"><?= te('✓ Išlaikytas - leidžiama laikyti praktiką') ?></span>
         <?php else: ?>
-          <span class="small muted">Reikia surinkti bent <?= (int) $examTest['quiz']['pass_percent'] ?> %<?= $examTest['best'] !== null ? ' (geriausias: ' . $examTest['best'] . ' %)' : '' ?></span>
-          <a class="btn btn-primary btn-sm" href="<?= url('testas.php?q=' . (int) $examTest['quiz']['id'] . '&m=' . $mid) ?>">Laikyti testą</a>
+          <span class="small muted"><?= te('Reikia surinkti bent') ?> <?= (int) $examTest['quiz']['pass_percent'] ?> %<?= $examTest['best'] !== null ? (' ' . t('(geriausias:') . ' ') . $examTest['best'] . ' %)' : '' ?></span>
+          <a class="btn btn-primary btn-sm" href="<?= url('testas.php?q=' . (int) $examTest['quiz']['id'] . '&m=' . $mid) ?>"><?= te('Laikyti testą') ?></a>
         <?php endif; ?>
       </li>
       <li class="<?= $exam['p_status'] === 'going' ? 'ok' : '' ?>">
-        <strong>Atvyk į praktiką</strong>
+        <strong><?= te('Atvyk į praktiką') ?></strong>
         <?php if ($exam['p_status'] === 'going'): ?>
-          <span class="small">✓ Užsiregistravai. Atsinešk diržą ir kimono.</span>
+          <span class="small"><?= te('✓ Užsiregistravai. Atsinešk diržą ir kimono.') ?></span>
         <?php else: ?>
-          <span class="small muted"><?= $exam['p_status'] === 'invited' ? 'Treneris kviečia - patvirtink:' : 'Užsiregistruok:' ?></span>
+          <span class="small muted"><?= $exam['p_status'] === 'invited' ? t('Treneris kviečia - patvirtink:') : t('Užsiregistruok:') ?></span>
           <?= render_event_rsvp($exam, [$selected], 'egzaminas.php?m=' . $mid) ?>
         <?php endif; ?>
       </li>
@@ -142,25 +142,25 @@ page_start('Egzaminas', ['noindex' => true, 'account' => 'egzaminas']);
   <div class="panel card program-card">
     <div class="row between" style="align-items:flex-end;">
       <div>
-        <div class="kicker">Egzamino programa</div>
-        <h2 style="margin:0;"><?= $showBelt ? e(belt_label($showBelt)) : 'Programa' ?></h2>
+        <div class="kicker"><?= te('Egzamino programa') ?></div>
+        <h2 style="margin:0;"><?= $showBelt ? e(belt_label($showBelt)) : t('Programa') ?></h2>
       </div>
       <form method="get" class="inline-form">
         <input type="hidden" name="m" value="<?= $mid ?>">
-        <select name="dirzas" onchange="this.form.submit()" aria-label="Kito diržo programa" class="small-select">
+        <select name="dirzas" onchange="this.form.submit()" aria-label="<?= te('Kito diržo programa') ?>" class="small-select">
           <?php foreach (BELTS as $lvl => [$kyu, $name]): if ($lvl === 1) { continue; } ?>
-            <option value="<?= $lvl ?>" <?= $lvl === $showBelt ? 'selected' : '' ?>><?= e("$kyu · $name") ?><?= $lvl === $next ? ' (kitas)' : '' ?></option>
+            <option value="<?= $lvl ?>" <?= $lvl === $showBelt ? 'selected' : '' ?>><?= e("$kyu · $name") ?><?= $lvl === $next ? (' ' . t('(kitas)')) : '' ?></option>
           <?php endforeach; ?>
         </select>
       </form>
     </div>
     <?php if ($reqTotal): ?>
       <div class="progress big" title="Moku <?= $reqDone ?> iš <?= $reqTotal ?>"><span style="width:<?= (int) round(100 * $reqDone / $reqTotal) ?>%"></span></div>
-      <p class="small muted" style="margin:4px 0 0;">Moku <?= $reqDone ?> iš <?= $reqTotal ?><?= $reqPending ? ' · ' . $reqPending . ' laukia trenerio patvirtinimo' : '' ?><?= $reqDone === $reqTotal ? ' - puiku, esi pasiruošęs (-usi)! 🎉' : '' ?></p>
-      <p class="small muted" style="margin:2px 0 0;">Paspausk ☆, kai moki. Treneris patvirtins - ir gausi XP.</p>
+      <p class="small muted" style="margin:4px 0 0;"><?= te('Moku') ?> <?= $reqDone ?> <?= te('iš') ?> <?= $reqTotal ?><?= $reqPending ? ' · ' . $reqPending . ' laukia trenerio patvirtinimo' : '' ?><?= $reqDone === $reqTotal ? (' ' . t('- puiku, esi pasiruošęs (-usi)! 🎉')) : '' ?></p>
+      <p class="small muted" style="margin:2px 0 0;"><?= te('Paspausk ☆, kai moki. Treneris patvirtins - ir gausi XP.') ?></p>
     <?php endif; ?>
     <?php if (!$reqs): ?>
-      <p class="muted" style="margin-top:14px;">Šio diržo programos treneris dar neįkėlė.</p>
+      <p class="muted" style="margin-top:14px;"><?= te('Šio diržo programos treneris dar neįkėlė.') ?></p>
     <?php endif; ?>
     <?php foreach ($reqs as $section => $items): ?>
       <h3 class="req-section"><?= e(REQ_SECTIONS[$section]) ?></h3>
@@ -168,13 +168,13 @@ page_start('Egzaminas', ['noindex' => true, 'account' => 'egzaminas']);
         <?php foreach ($items as $r): $st = $done[(int) $r['id']] ?? null; $xp = (int) ($r['xp'] ?? 0); ?>
           <li id="r<?= (int) $r['id'] ?>" class="<?= $st === 'approved' ? 'done' : ($st === 'pending' ? 'pending' : '') ?>">
             <?php if ($st === 'approved'): ?>
-              <span class="req-check" title="Treneris patvirtino">★</span>
+              <span class="req-check" title="<?= te('Treneris patvirtino') ?>">★</span>
             <?php else: ?>
               <form method="post" class="inline-form">
                 <?= csrf_field() ?>
                 <input type="hidden" name="action" value="req"><input type="hidden" name="member_id" value="<?= $mid ?>">
                 <input type="hidden" name="req_id" value="<?= (int) $r['id'] ?>"><input type="hidden" name="done" value="<?= $st ? '0' : '1' ?>">
-                <button class="req-check" type="submit" aria-label="<?= $st ? 'Laukia trenerio patvirtinimo - atšaukti' : 'Pažymėti, kad moku' ?>" title="<?= $st ? 'Laukia trenerio patvirtinimo. Paspaudus - atšaukti.' : 'Moku' ?>"><?= $st ? '⏳' : '☆' ?></button>
+                <button class="req-check" type="submit" aria-label="<?= $st ? t('Laukia trenerio patvirtinimo - atšaukti') : t('Pažymėti, kad moku') ?>" title="<?= $st ? t('Laukia trenerio patvirtinimo. Paspaudus - atšaukti.') : t('Moku') ?>"><?= $st ? '⏳' : '☆' ?></button>
               </form>
             <?php endif; ?>
             <div class="req-body">
@@ -183,9 +183,9 @@ page_start('Egzaminas', ['noindex' => true, 'account' => 'egzaminas']);
                 <?php if ($st === 'pending'): ?><span class="req-wait">laukia trenerio</span><?php endif; ?>
               </div>
               <?php if ($r['body']): ?><div class="small"><?= text_to_html($r['body']) ?></div><?php endif; ?>
-              <?php if ($r['lesson_id']): ?><a class="small" href="<?= url('pamokos.php?id=' . (int) $r['lesson_id']) ?>">Pamoka: <?= e($r['lesson_title']) ?> →</a><?php endif; ?>
+              <?php if ($r['lesson_id']): ?><a class="small" href="<?= url('pamokos.php?id=' . (int) $r['lesson_id']) ?>"><?= te('Pamoka:') ?> <?= e($r['lesson_title']) ?> →</a><?php endif; ?>
               <?php if ($r['youtube_id']): ?>
-                <details class="req-video"><summary class="small">▶ Žiūrėti video</summary><?= youtube_embed($r['youtube_id']) ?></details>
+                <details class="req-video"><summary class="small"><?= te('▶ Žiūrėti video') ?></summary><?= youtube_embed($r['youtube_id']) ?></details>
               <?php endif; ?>
             </div>
           </li>
@@ -196,9 +196,9 @@ page_start('Egzaminas', ['noindex' => true, 'account' => 'egzaminas']);
 
   <!-- Testai -->
   <div class="panel card">
-    <div class="kicker">Testai</div>
+    <div class="kicker"><?= te('Testai') ?></div>
     <?php if (!$quizzes): ?>
-      <p class="muted">Testų tavo diržui dar nėra.</p>
+      <p class="muted"><?= te('Testų tavo diržui dar nėra.') ?></p>
     <?php endif; ?>
     <ul class="list quiz-list">
       <?php foreach ($quizzes as $qz): $best = quiz_best_attempt($mid, (int) $qz['id']); $ok = quiz_passed_recently($mid, (int) $qz['id']); ?>
@@ -207,22 +207,22 @@ page_start('Egzaminas', ['noindex' => true, 'account' => 'egzaminas']);
             <span>
               <?php if ($qz['audience'] !== 'karateka'): ?><span class="badge badge-tag"><?= e(QUIZ_AUDIENCE[$qz['audience']]) ?></span><?php endif; ?>
               <strong><?= e($qz['title']) ?></strong>
-              <div class="muted small"><?= min((int) $qz['question_count'], (int) $qz['questions_total']) ?> klausimų · reikia ≥ <?= (int) $qz['pass_percent'] ?> %<?= !empty($qz['time_limit']) ? ' · ' . (int) $qz['time_limit'] . ' min.' : '' ?></div>
+              <div class="muted small"><?= min((int) $qz['question_count'], (int) $qz['questions_total']) ?> <?= te('klausimų · reikia ≥') ?> <?= (int) $qz['pass_percent'] ?> %<?= !empty($qz['time_limit']) ? ' · ' . (int) $qz['time_limit'] . ' min.' : '' ?></div>
             </span>
-            <?php if ($ok): ?><span class="badge badge-ok">✓ Išlaikytas</span><?php elseif ($best): ?><span class="badge">geriausias <?= attempt_percent($best) ?> %</span><?php endif; ?>
+            <?php if ($ok): ?><span class="badge badge-ok"><?= te('✓ Išlaikytas') ?></span><?php elseif ($best): ?><span class="badge">geriausias <?= attempt_percent($best) ?> %</span><?php endif; ?>
           </div>
           <?php if ($qz['description']): ?><p class="small muted" style="margin:6px 0 0;"><?= e($qz['description']) ?></p><?php endif; ?>
           <div class="row" style="gap:8px; margin-top:10px;">
-            <a class="btn btn-ghost btn-sm" href="<?= url('testas.php?q=' . (int) $qz['id'] . '&m=' . $mid . '&rezimas=treniruote') ?>">Treniruotis</a>
-            <a class="btn btn-primary btn-sm" href="<?= url('testas.php?q=' . (int) $qz['id'] . '&m=' . $mid) ?>"><?= $ok ? 'Laikyti dar kartą' : 'Laikyti testą' ?></a>
+            <a class="btn btn-ghost btn-sm" href="<?= url('testas.php?q=' . (int) $qz['id'] . '&m=' . $mid . '&rezimas=treniruote') ?>"><?= te('Treniruotis') ?></a>
+            <a class="btn btn-primary btn-sm" href="<?= url('testas.php?q=' . (int) $qz['id'] . '&m=' . $mid) ?>"><?= $ok ? t('Laikyti dar kartą') : t('Laikyti testą') ?></a>
           </div>
         </li>
       <?php endforeach; ?>
     </ul>
     <?php foreach ($tags as $tag): $qual = tag_qualification($mid, $tag); ?>
-      <p class="small qual <?= $qual ? 'ok' : '' ?>"><?= e(MEMBER_TAGS[$tag]) ?>: <?= $qual ? '✓ kvalifikacija galioja iki ' . e(fmt_date(date('Y-m-d', strtotime($qual['finished_at'] . ' +' . QUIZ_VALID_MONTHS . ' months')), true)) : 'testas dar neišlaikytas' ?></p>
+      <p class="small qual <?= $qual ? 'ok' : '' ?>"><?= e(MEMBER_TAGS[$tag]) ?>: <?= $qual ? (t('✓ kvalifikacija galioja iki') . ' ') . e(fmt_date(date('Y-m-d', strtotime($qual['finished_at'] . ' +' . QUIZ_VALID_MONTHS . ' months')), true)) : t('testas dar neišlaikytas') ?></p>
     <?php endforeach; ?>
-    <p class="small muted" style="margin-top:12px;">Treniruotės režime iš karto matai teisingą atsakymą ir rezultatas nesaugomas. „Laikyti testą“ - kaip tikras egzaminas.</p>
+    <p class="small muted" style="margin-top:12px;"><?= te('Treniruotės režime iš karto matai teisingą atsakymą ir rezultatas nesaugomas. „Laikyti testą“ - kaip tikras egzaminas.') ?></p>
   </div>
 </div>
 <?php

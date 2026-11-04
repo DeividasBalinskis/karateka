@@ -111,22 +111,7 @@ function not_found(): void
 
 // ---------- Datos ir amžius ----------
 
-const LT_WEEKDAYS = [1 => 'Pirmadienis', 'Antradienis', 'Trečiadienis', 'Ketvirtadienis', 'Penktadienis', 'Šeštadienis', 'Sekmadienis'];
-const LT_MONTHS_GEN = [1 => 'sausio', 'vasario', 'kovo', 'balandžio', 'gegužės', 'birželio', 'liepos', 'rugpjūčio', 'rugsėjo', 'spalio', 'lapkričio', 'gruodžio'];
-
-/** "spalio 6 d." arba "2027 m. sausio 3 d." */
-function fmt_date(?string $date, bool $forceYear = false): string
-{
-    if (!$date) {
-        return '';
-    }
-    $ts = strtotime($date);
-    $s = LT_MONTHS_GEN[(int) date('n', $ts)] . ' ' . date('j', $ts) . ' d.';
-    if ($forceYear || date('Y', $ts) !== date('Y')) {
-        $s = date('Y', $ts) . ' m. ' . $s;
-    }
-    return $s;
-}
+// Savaitės dienos, mėnesiai ir fmt_date() - app/i18n.php (pagal pasirinktą kalbą)
 
 function fmt_time(?string $time): string
 {

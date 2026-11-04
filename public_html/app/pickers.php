@@ -29,10 +29,10 @@ function member_tree_field(array $selGroups, array $selMembers, array $opt = [])
         $age = $m['birth_date'] ? (int) date_diff(date_create($m['birth_date']), date_create('today'))->y . ' m.' : '';
         $belt = $m['belt_level'] !== null && isset(BELTS[(int) $m['belt_level']]) ? BELTS[(int) $m['belt_level']][0] : '';
         return '<label class="check mt-member' . ($isLocked ? ' locked' : '') . '" data-name="' . e(mb_strtolower($m['first_name'] . ' ' . $m['last_name'])) . '"'
-            . ($isLocked ? ' title="' . e($opt['locked_title'] ?? 'Jau sąraše') . '"' : '') . '>'
+            . ($isLocked ? ' title="' . e($opt['locked_title'] ?? t('Jau sąraše')) . '"' : '') . '>'
             . '<input type="checkbox" name="members[]" value="' . $id . '" data-mt="member"' . ($on ? ' checked' : '') . ($isLocked ? ' disabled' : '') . '>'
             . '<span>' . e($m['first_name'] . ' ' . $m['last_name']) . ' <span class="muted small">' . e(implode(' · ', array_filter([$age, $belt]))) . '</span>'
-            . ($isLocked ? ' <span class="badge">' . e($opt['locked_title'] ?? 'jau sąraše') . '</span>' : '') . '</span></label>';
+            . ($isLocked ? ' <span class="badge">' . e($opt['locked_title'] ?? t('jau sąraše')) . '</span>' : '') . '</span></label>';
     };
     $groupHtml = function (array $g, string $label) use ($byGroup, $selGroups, $selMembers, $locked, $memberHtml): string {
         $gid = (int) $g['id'];
@@ -60,8 +60,8 @@ function member_tree_field(array $selGroups, array $selMembers, array $opt = [])
 
     $html = '<div class="mtree" data-mtree>'
         . '<div class="mt-top"><input type="search" class="mt-search" placeholder="Ieškoti vaiko ar nario…" autocomplete="off" aria-label="Ieškoti">'
-        . '<span class="mt-total small">Pažymėta: <b>0</b></span></div>'
-        . '<label class="check mt-all"><input type="checkbox" data-mt="all"><span>' . e($opt['all_label'] ?? 'Visos grupės') . '</span></label>';
+        . ('<span class="mt-total small">' . t('Pažymėta:') . ' <b>0</b></span></div>')
+        . '<label class="check mt-all"><input type="checkbox" data-mt="all"><span>' . e($opt['all_label'] ?? t('Visos grupės')) . '</span></label>';
     foreach (GROUP_CATEGORIES as $cat => $catLabel) {
         if (empty($byCat[$cat])) {
             continue;
@@ -73,14 +73,14 @@ function member_tree_field(array $selGroups, array $selMembers, array $opt = [])
             continue;
         }
         $html .= '<div class="mt-cat"><div class="mt-row mt-cat-row"><label class="check"><input type="checkbox" data-mt="cat"><span><strong>' . e($catLabel)
-            . '</strong> <span class="muted">(visos ' . count($list) . ')</span></span></label></div><div class="mt-children">';
+            . ('</strong> <span class="muted">' . t('(visos') . ' ') . count($list) . ')</span></span></label></div><div class="mt-children">';
         foreach ($list as $g) {
             $html .= $groupHtml($g, preg_replace('/^' . preg_quote($catLabel, '/') . ':\s*/u', '', $g['name']));
         }
         $html .= '</div></div>';
     }
     if (!empty($byGroup[0])) {
-        $html .= '<div class="mt-cat single"><div class="mt-group"><div class="mt-row"><button type="button" class="mt-toggle">▸</button><span class="muted">Be grupės</span><span class="mt-count"></span></div><div class="mt-members">';
+        $html .= ('<div class="mt-cat single"><div class="mt-group"><div class="mt-row"><button type="button" class="mt-toggle">▸</button><span class="muted">' . t('Be grupės') . '</span><span class="mt-count"></span></div><div class="mt-members">');
         foreach ($byGroup[0] as $m) {
             $html .= $memberHtml($m, false);
         }

@@ -23,7 +23,7 @@ function note_lesson_id($raw): ?int
 function save_coach_note(array $m, array $me, string $date, string $text, ?string $yt, ?int $lessonId, bool $isTask, ?int $groupId = null, ?int $eventId = null): void
 {
     if ($text === '') {
-        $text = $lessonId ? 'Pažiūrėk prisegtą pamoką.' : 'Pažiūrėk video.';
+        $text = $lessonId ? t('Pažiūrėk prisegtą pamoką.') : t('Pažiūrėk video.');
     }
     q('INSERT INTO coach_notes (member_id, author_id, group_id, event_id, note_date, body, youtube_id, lesson_id, is_task) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
         [$m['id'], $me['id'], $groupId, $eventId, $date, $text, $yt, $lessonId, $isTask ? 1 : 0]);
@@ -45,7 +45,7 @@ if (is_post()) {
 
     if (post('action') === 'delete') {
         q('DELETE FROM coach_notes WHERE id = ?', [(int) post('note_id')]);
-        flash('ok', 'Pastaba ištrinta.');
+        flash('ok', t('Pastaba ištrinta.'));
         redirect('admin/treniruote.php?g=' . $groupId . '&d=' . $date);
     }
 
@@ -136,16 +136,16 @@ if (is_post()) {
             }
         }
         if ($badLinks) {
-            flash('err', 'Neatpažintos YouTube nuorodos (pastabos išsaugotos be video): ' . implode(', ', $badLinks));
+            flash('err', (t('Neatpažintos YouTube nuorodos (pastabos išsaugotos be video):') . ' ') . implode(', ', $badLinks));
         }
-        flash('ok', $saved ? "Išsaugota pastabų: $saved" : 'Nieko neįrašyta.');
+        flash('ok', $saved ? "Išsaugota pastabų: $saved" : t('Nieko neįrašyta.'));
         redirect('admin/treniruote.php?g=' . $groupId . '&d=' . $date);
     }
 }
 
 $members = $group ? q_all('SELECT * FROM members WHERE group_id = ? AND status = "active" ORDER BY last_name, first_name', [$groupId]) : [];
 // Pamokos prisegimui (pagal diržą)
-$lessonOptions = '<option value="">+ Prisegti pamoką</option>';
+$lessonOptions = ('<option value="">' . t('+ Prisegti pamoką') . '</option>');
 foreach (q_all('SELECT id, title, belt_level FROM lessons ORDER BY belt_level IS NOT NULL, belt_level, title') as $ls) {
     $lessonOptions .= '<option value="' . (int) $ls['id'] . '">' . e(($ls['belt_level'] ? BELTS[(int) $ls['belt_level']][0] . ' · ' : '') . $ls['title']) . '</option>';
 }
@@ -163,11 +163,11 @@ if ($group) {
 $recent = $group ? q_all('SELECT cn.*, m.first_name, m.last_name, a.first_name AS author FROM coach_notes cn JOIN members m ON m.id = cn.member_id LEFT JOIN accounts a ON a.id = cn.author_id
                            WHERE m.group_id = ? AND cn.note_date <> ? ORDER BY cn.note_date DESC, cn.id DESC LIMIT 20', [$groupId, $date]) : [];
 
-page_start('Treniruotė', ['admin' => true]);
+page_start(t('Treniruotė'), ['admin' => true]);
 ?>
 <div class="page-head">
-  <h1 class="styled">Treniruotė</h1>
-  <p>Pažymėkite, kas buvo treniruotėje, ir, jei reikia, parašykite pastabą vaikui.</p>
+  <h1 class="styled"><?= te('Treniruotė') ?></h1>
+  <p><?= te('Pažymėkite, kas buvo treniruotėje, ir, jei reikia, parašykite pastabą vaikui.') ?></p>
 </div>
 
 <?php
@@ -180,7 +180,7 @@ $tile = function (array $g) use ($group, $date): string {
     return '<a class="group-tile' . ($on ? ' on' : '') . '" style="--gc:' . e(group_color($g)) . '" href="' . e(url('admin/treniruote.php?g=' . (int) $g['id'] . '&d=' . $date)) . '"'
         . ($on ? ' aria-current="true"' : '') . '><span class="gt-name">' . e(group_short_name($g)) . '</span>'
         . '<span class="gt-meta">' . ($g['day_time'] ? '<b>' . e(fmt_time($g['day_time'])) . '</b> · ' : '') . (int) $g['members_count'] . ' nar.</span>'
-        . (training_cancelled((int) $g['id'], $date) ? '<span class="gt-off">atšaukta</span>' : '') . '</a>';
+        . (training_cancelled((int) $g['id'], $date) ? ('<span class="gt-off">' . t('atšaukta') . '</span>') : '') . '</a>';
 };
 $todayTiles = array_filter($tileGroups, function ($g) { return $g['day_time'] !== null; });
 usort($todayTiles, function ($x, $y) { return strcmp((string) $x['day_time'], (string) $y['day_time']); });
@@ -189,20 +189,20 @@ usort($todayTiles, function ($x, $y) { return strcmp((string) $x['day_time'], (s
   <summary>
     <?php if ($group): ?>
       <span class="gp-current"><span class="group-dot" style="background:<?= e(group_color($group)) ?>"></span><strong><?= e($group['name']) ?></strong>
-        <?php if ($off = training_cancelled((int) $group['id'], $date)): ?><span class="cancel-tag">atšaukta · <?= e($off['reason']) ?></span><?php endif; ?></span>
-      <span class="btn btn-ghost btn-sm">Keisti grupę</span>
+        <?php if ($off = training_cancelled((int) $group['id'], $date)): ?><span class="cancel-tag"><?= te('atšaukta ·') ?> <?= e($off['reason']) ?></span><?php endif; ?></span>
+      <span class="btn btn-ghost btn-sm"><?= te('Keisti grupę') ?></span>
     <?php else: ?>
-      <strong>Pasirinkite grupę</strong>
+      <strong><?= te('Pasirinkite grupę') ?></strong>
     <?php endif; ?>
   </summary>
   <form method="get" class="gp-date">
     <?php if ($group): ?><input type="hidden" name="g" value="<?= (int) $group['id'] ?>"><?php endif; ?>
-    <label>Data <input type="date" name="d" value="<?= e($date) ?>" onchange="this.form.submit()"></label>
-    <?php if ($date !== date('Y-m-d')): ?><a class="small" href="<?= url('admin/treniruote.php' . ($group ? '?g=' . (int) $group['id'] : '')) ?>">Šiandien</a><?php endif; ?>
-    <?php if (is_admin()): ?><a class="small gp-edit" href="<?= url('admin/grupes.php') ?>">✎ Grupių pavadinimai ir spalvos</a><?php endif; ?>
+    <label><?= te('Data') ?> <input type="date" name="d" value="<?= e($date) ?>" onchange="this.form.submit()"></label>
+    <?php if ($date !== date('Y-m-d')): ?><a class="small" href="<?= url('admin/treniruote.php' . ($group ? '?g=' . (int) $group['id'] : '')) ?>"><?= te('Šiandien') ?></a><?php endif; ?>
+    <?php if (is_admin()): ?><a class="small gp-edit" href="<?= url('admin/grupes.php') ?>"><?= te('✎ Grupių pavadinimai ir spalvos') ?></a><?php endif; ?>
   </form>
   <?php if ($todayTiles): ?>
-    <div class="kicker"><?= $date === date('Y-m-d') ? 'Šiandien treniruojasi' : 'Treniruojasi ' . e(mb_strtolower(LT_WEEKDAYS[(int) date('N', strtotime($date))])) ?></div>
+    <div class="kicker"><?= $date === date('Y-m-d') ? t('Šiandien treniruojasi') : (t('Treniruojasi') . ' ') . e(mb_strtolower(weekday_names()[(int) date('N', strtotime($date))])) ?></div>
     <div class="group-tiles"><?php foreach ($todayTiles as $g) { echo $tile($g); } ?></div>
   <?php endif; ?>
   <?php foreach (GROUP_CATEGORIES as $cat => $catLabel): $list = array_filter($tileGroups, function ($g) use ($cat) { return $g['category'] === $cat; }); if (!$list) { continue; } ?>
@@ -212,7 +212,7 @@ usort($todayTiles, function ($x, $y) { return strcmp((string) $x['day_time'], (s
 </details>
 
 <?php if ($group && !$members): ?>
-  <div class="panel card"><p class="muted">Šioje grupėje aktyvių narių nėra.</p></div>
+  <div class="panel card"><p class="muted"><?= te('Šioje grupėje aktyvių narių nėra.') ?></p></div>
 <?php endif; ?>
 
 <?php if ($members): ?>
@@ -223,12 +223,12 @@ usort($todayTiles, function ($x, $y) { return strcmp((string) $x['day_time'], (s
     <input type="hidden" name="d" value="<?= e($date) ?>">
     <h2><?= e($group['name']) ?> · <?= e(fmt_date($date, true)) ?></h2>
     <div class="att-bar">
-      <span>Buvo: <strong id="attPresent"><?= count(array_filter($att)) ?></strong> iš <?= count($members) ?></span>
-      <button type="button" class="btn btn-primary btn-sm" id="attAll">✓ Visi buvo</button>
-      <?php if (!$hasTraining && !training_cancelled($groupId, $date)): ?><span class="hint">Pagal tvarkaraštį šią dieną šios grupės treniruotės nėra - patikrinkite datą.</span><?php endif; ?>
+      <span><?= te('Buvo:') ?> <strong id="attPresent"><?= count(array_filter($att)) ?></strong> <?= te('iš') ?> <?= count($members) ?></span>
+      <button type="button" class="btn btn-primary btn-sm" id="attAll"><?= te('✓ Visi buvo') ?></button>
+      <?php if (!$hasTraining && !training_cancelled($groupId, $date)): ?><span class="hint"><?= te('Pagal tvarkaraštį šią dieną šios grupės treniruotės nėra - patikrinkite datą.') ?></span><?php endif; ?>
     </div>
-    <p class="hint" style="margin-bottom:10px;">Lankomumas išsaugomas iškart paspaudus „Nebuvo“ / „Buvo“ (paspaudus dar kartą - žyma nuimama). Pastaba: parašykite ir spauskite <strong>Enter</strong> -
-      vaikas ir tėvai ją iškart mato paskyroje („Svarbu“). „Užduotis“ - vaikas pažymės „Atlikau“.</p>
+    <p class="hint" style="margin-bottom:10px;"><?= te('Lankomumas išsaugomas iškart paspaudus „Nebuvo“ / „Buvo“ (paspaudus dar kartą - žyma nuimama). Pastaba: parašykite ir spauskite') ?> <strong><?= te('Enter') ?></strong> <?= te('-
+      vaikas ir tėvai ją iškart mato paskyroje („Svarbu“). „Užduotis“ - vaikas pažymės „Atlikau“.') ?></p>
 
     <?php foreach ($members as $m): ?>
       <div class="note-row">
@@ -237,31 +237,31 @@ usort($todayTiles, function ($x, $y) { return strcmp((string) $x['day_time'], (s
           <?php $a1 = $att[$m['id']] ?? null; ?>
           <div class="att" data-member="<?= (int) $m['id'] ?>">
             <?php // „Buvo“ - dešinėje: laikant telefoną dešine ranka, nykščiu lengviau pasiekti ?>
-            <button type="button" class="att-btn no<?= $a1 === 0 || $a1 === '0' ? ' on' : '' ?>" data-v="0">✗ Nebuvo</button>
-            <button type="button" class="att-btn yes<?= $a1 === 1 || $a1 === '1' ? ' on' : '' ?>" data-v="1">✓ Buvo</button>
+            <button type="button" class="att-btn no<?= $a1 === 0 || $a1 === '0' ? ' on' : '' ?>" data-v="0"><?= te('✗ Nebuvo') ?></button>
+            <button type="button" class="att-btn yes<?= $a1 === 1 || $a1 === '1' ? ' on' : '' ?>" data-v="1"><?= te('✓ Buvo') ?></button>
           </div>
           <?php foreach ($todayNotes[$m['id']] ?? [] as $n): ?>
             <div class="note-existing">
-              <span>✓ <?= e(mb_strimwidth($n['body'], 0, 120, '…')) ?><?= $n['youtube_id'] ? ' ▶' : '' ?><?= $n['lesson_id'] ? ' · pamoka' : '' ?><?= $n['is_task'] ? ($n['done_at'] ? ' · užduotis ✓' : ' · užduotis') : '' ?></span>
-              <button class="linklike danger-link" type="submit" form="del<?= (int) $n['id'] ?>" onclick="return confirm('Ištrinti šią pastabą?')">ištrinti</button>
+              <span>✓ <?= e(mb_strimwidth($n['body'], 0, 120, '…')) ?><?= $n['youtube_id'] ? ' ▶' : '' ?><?= $n['lesson_id'] ? (' ' . t('· pamoka')) : '' ?><?= $n['is_task'] ? ($n['done_at'] ? (' ' . t('· užduotis ✓')) : (' ' . t('· užduotis'))) : '' ?></span>
+              <button class="linklike danger-link" type="submit" form="del<?= (int) $n['id'] ?>" onclick="return confirm('Ištrinti šią pastabą?')"><?= te('ištrinti') ?></button>
             </div>
           <?php endforeach; ?>
         </div>
-        <textarea name="note[<?= (int) $m['id'] ?>]" data-member="<?= (int) $m['id'] ?>" rows="2" enterkeyhint="send" placeholder="Parašykite ir spauskite Enter"></textarea>
+        <textarea name="note[<?= (int) $m['id'] ?>]" data-member="<?= (int) $m['id'] ?>" rows="2" enterkeyhint="send" placeholder="<?= te('Parašykite ir spauskite Enter') ?>"></textarea>
         <div class="note-extras">
-          <select name="lesson[<?= (int) $m['id'] ?>]" aria-label="Prisegti pamoką"><?= $lessonOptions ?></select>
-          <label class="note-task" title="Tai užduotis: narys paskyroje matys mygtuką „Atlikau“ ir pažymės, kai atliks"><input type="checkbox" name="task[<?= (int) $m['id'] ?>]" value="1"> Užduotis</label>
+          <select name="lesson[<?= (int) $m['id'] ?>]" aria-label="<?= te('Prisegti pamoką') ?>"><?= $lessonOptions ?></select>
+          <label class="note-task" title="<?= te('Tai užduotis: narys paskyroje matys mygtuką „Atlikau“ ir pažymės, kai atliks') ?>"><input type="checkbox" name="task[<?= (int) $m['id'] ?>]" value="1"> <?= te('Užduotis') ?></label>
           <details class="note-video">
-            <summary>+ YouTube nuoroda</summary>
+            <summary><?= te('+ YouTube nuoroda') ?></summary>
             <input type="url" name="video[<?= (int) $m['id'] ?>]" placeholder="https://youtu.be/...">
           </details>
         </div>
       </div>
     <?php endforeach; ?>
 
-    <label class="check small notify"><input type="checkbox" name="notify" value="1"><span>Taip pat išsiųsti el. laišką (vaikui / tėvams)</span></label>
+    <label class="check small notify"><input type="checkbox" name="notify" value="1"><span><?= te('Taip pat išsiųsti el. laišką (vaikui / tėvams)') ?></span></label>
     <div class="sticky-save">
-      <button class="btn btn-primary btn-block" type="submit">Išsaugoti pastabas</button>
+      <button class="btn btn-primary btn-block" type="submit"><?= te('Išsaugoti pastabas') ?></button>
     </div>
   </form>
 
@@ -275,20 +275,20 @@ usort($todayTiles, function ($x, $y) { return strcmp((string) $x['day_time'], (s
 
 <?php if ($recent): ?>
   <div class="panel card">
-    <h2>Ankstesnės pastabos šiai grupei</h2>
+    <h2><?= te('Ankstesnės pastabos šiai grupei') ?></h2>
     <ul class="list small">
       <?php foreach ($recent as $n): ?>
         <li class="row between">
           <span>
             <strong><?= e($n['first_name'] . ' ' . $n['last_name']) ?></strong> · <?= e(fmt_date($n['note_date'], true)) ?>
             <?= $n['read_at'] ? '<span class="badge badge-ok">perskaityta</span>' : '<span class="badge">neperskaityta</span>' ?>
-            <?php if ($n['is_task']): ?><?= $n['done_at'] ? '<span class="badge badge-ok">✓ atlikta</span>' : '<span class="badge badge-warn">užduotis neatlikta</span>' ?><?php endif; ?>
-            <div class="muted"><?= e($n['body']) ?><?= $n['youtube_id'] ? ' ▶ video' : '' ?></div>
+            <?php if ($n['is_task']): ?><?= $n['done_at'] ? ('<span class="badge badge-ok">' . t('✓ atlikta') . '</span>') : ('<span class="badge badge-warn">' . t('užduotis neatlikta') . '</span>') ?><?php endif; ?>
+            <div class="muted"><?= e($n['body']) ?><?= $n['youtube_id'] ? (' ' . t('▶ video')) : '' ?></div>
           </span>
           <form method="post" class="inline-form" onsubmit="return confirm('Ištrinti šią pastabą?')">
             <?= csrf_field() ?><input type="hidden" name="action" value="delete"><input type="hidden" name="note_id" value="<?= (int) $n['id'] ?>">
             <input type="hidden" name="g" value="<?= (int) $groupId ?>"><input type="hidden" name="d" value="<?= e($date) ?>">
-            <button class="btn btn-danger btn-sm" type="submit" aria-label="Ištrinti">✕</button>
+            <button class="btn btn-danger btn-sm" type="submit" aria-label="<?= te('Ištrinti') ?>">✕</button>
           </form>
         </li>
       <?php endforeach; ?>

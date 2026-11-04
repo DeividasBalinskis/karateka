@@ -26,7 +26,7 @@ if (is_post()) {
 
     if (post('action') === 'delete' && $id) {
         q('DELETE FROM events WHERE id = ?', [$id]);
-        flash('ok', 'Renginys ištrintas.');
+        flash('ok', t('Renginys ištrintas.'));
         back_after_save($back, $backPages);
     }
 
@@ -50,20 +50,20 @@ if (is_post()) {
     $_POST['location'] = $ev['location'];   // kad klaidos atveju forma išlaikytų pasirinkimą
 
     if (!isset(EVENT_TYPES[$ev['type']])) {
-        $errors[] = 'Pasirinkite renginio tipą.';
+        $errors[] = t('Pasirinkite renginio tipą.');
     }
     if ($ev['title'] === '') {
-        $errors[] = 'Įveskite pavadinimą.';
+        $errors[] = t('Įveskite pavadinimą.');
     }
     if (!DateTime::createFromFormat('!Y-m-d', $ev['starts_on'])) {
-        $errors[] = 'Įveskite datą.';
+        $errors[] = t('Įveskite datą.');
     } elseif ($ev['ends_on'] && $ev['ends_on'] < $ev['starts_on']) {
-        $errors[] = 'Pabaigos data negali būti ankstesnė už pradžią.';
+        $errors[] = t('Pabaigos data negali būti ankstesnė už pradžią.');
     }
     if ($ev['registration_until'] && !DateTime::createFromFormat('!Y-m-d', $ev['registration_until'])) {
-        $errors[] = 'Netinkama registracijos pabaigos data.';
+        $errors[] = t('Netinkama registracijos pabaigos data.');
     } elseif ($ev['registration_until'] && !$errors && $ev['registration_until'] >= $ev['starts_on']) {
-        $errors[] = 'Registracija turi baigtis bent dieną prieš renginį (renginio dieną registruotis nebegalima).';
+        $errors[] = t('Registracija turi baigtis bent dieną prieš renginį (renginio dieną registruotis nebegalima).');
     }
 
     if (!$errors) {
@@ -90,8 +90,8 @@ if (is_post()) {
         $sendEmail = !empty($_POST['invite_email']);
         $sendSms = !empty($_POST['invite_sms']) && is_admin();
         $invited = $inviteIds ? invite_members(q_one('SELECT * FROM events WHERE id = ?', [$id]), $inviteIds, (int) $me['id'], $sendEmail, $sendSms) : 0;
-        $how = array_filter(['svetainėje', $sendEmail ? 'el. paštu' : '', $sendSms ? 'SMS' : '']);
-        flash('ok', 'Renginys išsaugotas.' . ($invited ? " Pakviesta: $invited (" . implode(', ', $how) . ').' : (!$inviteIds ? ' Atviras renginys - kvietimai nesiųsti, prisijungti gali visi.' : '')));
+        $how = array_filter([t('svetainėje'), $sendEmail ? t('el. paštu') : '', $sendSms ? 'SMS' : '']);
+        flash('ok', t('Renginys išsaugotas.') . ($invited ? " Pakviesta: $invited (" . implode(', ', $how) . ').' : (!$inviteIds ? (' ' . t('Atviras renginys - kvietimai nesiųsti, prisijungti gali visi.')) : '')));
         back_after_save($back, $backPages, $id);
     }
 }
@@ -115,10 +115,10 @@ if ($edit !== '') {
     }
     $allGroups = q_all('SELECT * FROM training_groups WHERE is_active = 1 ORDER BY sort_order, name');
 
-    page_start($ev['id'] ? 'Redaguoti renginį' : 'Naujas renginys', ['admin' => true, 'section' => 'renginiai']);
+    page_start($ev['id'] ? t('Redaguoti renginį') : t('Naujas renginys'), ['admin' => true, 'section' => 'renginiai']);
     ?>
-    <a class="small" href="<?= url($backPages[$back] ?? 'renginiai.php') ?>">← <?= $back === 'index' ? 'Atgal į pagrindinį puslapį' : ($back ? 'Atgal į renginius' : 'Visi renginiai') ?></a>
-    <h1 class="styled" style="margin-top:8px;"><?= $ev['id'] ? 'Redaguoti renginį' : 'Naujas renginys' ?></h1>
+    <a class="small" href="<?= url($backPages[$back] ?? 'renginiai.php') ?>">← <?= $back === 'index' ? t('Atgal į pagrindinį puslapį') : ($back ? t('Atgal į renginius') : t('Visi renginiai')) ?></a>
+    <h1 class="styled" style="margin-top:8px;"><?= $ev['id'] ? t('Redaguoti renginį') : t('Naujas renginys') ?></h1>
     <?= form_errors($errors) ?>
     <form method="post" class="form">
       <?= csrf_field() ?>
@@ -128,50 +128,50 @@ if ($edit !== '') {
       <div class="grid-2 event-form">
         <div class="stack">
           <div class="panel card form">
-            <h2 class="ef-step"><span>1</span> Renginys</h2>
+            <h2 class="ef-step"><span>1</span> <?= te('Renginys') ?></h2>
             <div class="form-row">
-              <label>Tipas
+              <label><?= te('Tipas') ?>
                 <select name="type">
                   <?php foreach (EVENT_TYPES as $k => $label): ?>
                     <option value="<?= $k ?>" <?= $ev['type'] === $k ? 'selected' : '' ?>><?= $label ?></option>
                   <?php endforeach; ?>
                 </select>
               </label>
-              <label>Pavadinimas <input type="text" name="title" value="<?= e($ev['title']) ?>" required></label>
+              <label><?= te('Pavadinimas') ?> <input type="text" name="title" value="<?= e($ev['title']) ?>" required></label>
             </div>
-            <label>Trumpai <span class="hint">rodoma renginių sąraše, iki 300 simbolių</span>
-              <textarea name="summary" rows="2" maxlength="300" placeholder="pvz. Kyu egzaminas visoms grupėms. Reikia išlaikyti testą."><?= e((string) ($ev['summary'] ?? '')) ?></textarea></label>
-            <label>Plačiau <span class="hint">rodoma atidarius renginį</span><textarea name="description" rows="6"><?= e((string) $ev['description']) ?></textarea></label>
-            <label class="check"><input type="checkbox" name="members_only" value="1" <?= !empty($ev['members_only']) ? 'checked' : '' ?>><span>Tik nariams (neprisijungusiems nerodomas)</span></label>
+            <label><?= te('Trumpai') ?> <span class="hint"><?= te('rodoma renginių sąraše, iki 300 simbolių') ?></span>
+              <textarea name="summary" rows="2" maxlength="300" placeholder="<?= te('pvz. Kyu egzaminas visoms grupėms. Reikia išlaikyti testą.') ?>"><?= e((string) ($ev['summary'] ?? '')) ?></textarea></label>
+            <label><?= te('Plačiau') ?> <span class="hint"><?= te('rodoma atidarius renginį') ?></span><textarea name="description" rows="6"><?= e((string) $ev['description']) ?></textarea></label>
+            <label class="check"><input type="checkbox" name="members_only" value="1" <?= !empty($ev['members_only']) ? 'checked' : '' ?>><span><?= te('Tik nariams (neprisijungusiems nerodomas)') ?></span></label>
           </div>
           <div class="panel card form ef-place">
-            <h2 class="ef-step"><span>2</span> Kada ir kur vyksta</h2>
+            <h2 class="ef-step"><span>2</span> <?= te('Kada ir kur vyksta') ?></h2>
             <div class="form-row three">
-              <label>Data <input type="date" name="starts_on" id="evStart" value="<?= e($ev['starts_on']) ?>" required></label>
-              <label>Iki <span class="hint">nebūtina</span><input type="date" name="ends_on" value="<?= e((string) $ev['ends_on']) ?>"></label>
-              <label>Laikas <input type="time" name="start_time" value="<?= e(fmt_time($ev['start_time'])) ?>"></label>
+              <label><?= te('Data') ?> <input type="date" name="starts_on" id="evStart" value="<?= e($ev['starts_on']) ?>" required></label>
+              <label><?= te('Iki') ?> <span class="hint"><?= te('nebūtina') ?></span><input type="date" name="ends_on" value="<?= e((string) $ev['ends_on']) ?>"></label>
+              <label><?= te('Laikas') ?> <input type="time" name="start_time" value="<?= e(fmt_time($ev['start_time'])) ?>"></label>
             </div>
             <?= location_field('location', $ev['location']) ?>
-            <label class="check"><input type="checkbox" name="is_abroad" value="1" <?= !empty($ev['is_abroad']) ? 'checked' : '' ?>><span>Vyksta užsienyje (varžyboms skiriama daugiau taškų)</span></label>
+            <label class="check"><input type="checkbox" name="is_abroad" value="1" <?= !empty($ev['is_abroad']) ? 'checked' : '' ?>><span><?= te('Vyksta užsienyje (varžyboms skiriama daugiau taškų)') ?></span></label>
           </div>
         </div>
         <div class="stack">
           <div class="panel card form">
-            <h2 class="ef-step"><span>3</span> Kas kviečiami</h2>
+            <h2 class="ef-step"><span>3</span> <?= te('Kas kviečiami') ?></h2>
             <?= member_tree_field(array_map('intval', (array) $selectedGroups), $selectedMembers, [
-                'locked' => $participantIds, 'locked_title' => 'jau sąraše',
-                'hint' => 'Pažymėti gaus kvietimą ir atsakys „Dalyvausiu“ arba „Negalėsiu“. Išskleiskite grupę ▸, kad pakviestumėte tik kelis vaikus. Nieko nepažymėjus - atviras renginys: kvietimų nėra, prisijungti gali visi.']) ?>
+                'locked' => $participantIds, 'locked_title' => t('jau sąraše'),
+                'hint' => t('Pažymėti gaus kvietimą ir atsakys „Dalyvausiu“ arba „Negalėsiu“. Išskleiskite grupę ▸, kad pakviestumėte tik kelis vaikus. Nieko nepažymėjus - atviras renginys: kvietimų nėra, prisijungti gali visi.')]) ?>
           </div>
           <div class="panel card form">
-            <h2 class="ef-step"><span>4</span> Registracija ir pranešimai</h2>
-            <label class="check"><input type="checkbox" name="registration" value="1" <?= !empty($ev['registration']) ? 'checked' : '' ?>><span>Nariai gali registruotis patys („Dalyvausiu“)</span></label>
-            <label>Registracija iki <span class="hint">numatyta - diena prieš renginį; po termino Denis gauna prašymą</span>
+            <h2 class="ef-step"><span>4</span> <?= te('Registracija ir pranešimai') ?></h2>
+            <label class="check"><input type="checkbox" name="registration" value="1" <?= !empty($ev['registration']) ? 'checked' : '' ?>><span><?= te('Nariai gali registruotis patys („Dalyvausiu“)') ?></span></label>
+            <label><?= te('Registracija iki') ?> <span class="hint"><?= te('numatyta - diena prieš renginį; po termino Denis gauna prašymą') ?></span>
               <input type="date" name="registration_until" id="evUntil" value="<?= e((string) ($ev['registration_until'] ?? '')) ?>"></label>
-            <div class="kicker" style="margin-top:6px;">Kaip pranešti pakviestiems</div>
-            <label class="check"><input type="checkbox" checked disabled><span>Svetainėje (Renginiai ir Mano paskyra) - visada</span></label>
-            <label class="check"><input type="checkbox" name="invite_email" value="1" <?= !empty($_POST['invite_email']) ? 'checked' : '' ?>><span>El. paštu</span></label>
-            <?php if (is_admin()): ?><label class="check"><input type="checkbox" name="invite_sms" value="1" <?= !empty($_POST['invite_sms']) ? 'checked' : '' ?>><span>SMS tėvams<?= sms_live() ? '' : ' <span class="hint">(bandomasis režimas - SMS nesiunčiamos)</span>' ?></span></label><?php endif; ?>
-            <?php if ($ev['id']): ?><p class="hint"><a href="<?= url('admin/renginio-dalyviai.php?id=' . (int) $ev['id']) ?>">Dalyvių sąrašas →</a></p><?php endif; ?>
+            <div class="kicker" style="margin-top:6px;"><?= te('Kaip pranešti pakviestiems') ?></div>
+            <label class="check"><input type="checkbox" checked disabled><span><?= te('Svetainėje (Renginiai ir Mano paskyra) - visada') ?></span></label>
+            <label class="check"><input type="checkbox" name="invite_email" value="1" <?= !empty($_POST['invite_email']) ? 'checked' : '' ?>><span><?= te('El. paštu') ?></span></label>
+            <?php if (is_admin()): ?><label class="check"><input type="checkbox" name="invite_sms" value="1" <?= !empty($_POST['invite_sms']) ? 'checked' : '' ?>><span><?= te('SMS tėvams') ?><?= sms_live() ? '' : (' <span class="hint">' . t('(bandomasis režimas - SMS nesiunčiamos)') . '</span>') ?></span></label><?php endif; ?>
+            <?php if ($ev['id']): ?><p class="hint"><a href="<?= url('admin/renginio-dalyviai.php?id=' . (int) $ev['id']) ?>"><?= te('Dalyvių sąrašas →') ?></a></p><?php endif; ?>
           </div>
         </div>
       </div>
@@ -188,9 +188,9 @@ if ($edit !== '') {
       })();
       </script>
       <div class="row" style="margin-top:20px;">
-        <button class="btn btn-primary" type="submit">Išsaugoti</button>
+        <button class="btn btn-primary" type="submit"><?= te('Išsaugoti') ?></button>
         <?php if ($ev['id']): ?>
-          <button class="btn btn-danger" type="submit" name="action" value="delete" formnovalidate onclick="return confirm('Ištrinti renginį?')">Ištrinti</button>
+          <button class="btn btn-danger" type="submit" name="action" value="delete" formnovalidate onclick="return confirm('Ištrinti renginį?')"><?= te('Ištrinti') ?></button>
         <?php endif; ?>
       </div>
     </form>

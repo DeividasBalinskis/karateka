@@ -3,7 +3,7 @@
 require dirname(__DIR__) . '/app/bootstrap.php';
 $me = require_staff();
 if (!varzybos_enabled()) {
-    flash('err', 'Varžybų sistema neprijungta (config.php: varzybos).');
+    flash('err', t('Varžybų sistema neprijungta (config.php: varzybos).'));
     redirect('admin/varzybos.php');
 }
 $to = (string) get('to');

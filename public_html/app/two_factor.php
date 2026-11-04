@@ -34,10 +34,10 @@ function login_code_send(array $a, string $purpose, bool $resend = false): ?stri
         return null;
     }
     if ((int) $recent['c'] >= 5) {
-        return 'Per daug kodų per trumpą laiką. Pabandykite po 15 minučių.';
+        return t('Per daug kodų per trumpą laiką. Pabandykite po 15 minučių.');
     }
     if ($justSent) {
-        return 'Kodą ką tik išsiuntėme - patikrinkite el. paštą (ir „Spam“). Naują galima prašyti po minutės.';
+        return t('Kodą ką tik išsiuntėme - patikrinkite el. paštą (ir „Spam“). Naują galima prašyti po minutės.');
     }
     q('UPDATE login_codes SET used_at = NOW() WHERE account_id = ? AND purpose = ? AND used_at IS NULL', [$aid, $purpose]);
     $code = sprintf('%06d', random_int(0, 999999));
@@ -46,12 +46,12 @@ function login_code_send(array $a, string $purpose, bool $resend = false): ?stri
     if (config('env') === 'local') {
         $_SESSION['dev_login_code'] = $code;
     }
-    $what = $purpose === 'enable' ? 'prisijungimo su kodu įjungimo' : 'prisijungimo';
+    $what = $purpose === 'enable' ? t('prisijungimo su kodu įjungimo') : 'prisijungimo';
     $sent = send_mail($a['email'], "Kodas: $code — Karateka",
         "Sveiki, {$a['first_name']},\n\njūsų karateka.lt $what kodas:\n\n    $code\n\nKodas galioja " . LOGIN_CODE_MINUTES . " minučių.\n"
         . "Jei prisijungti bandote ne jūs - nedelsdami pakeiskite slaptažodį.");
     if (!$sent && config('env') !== 'local') {
-        return 'Nepavyko išsiųsti kodo. Pabandykite po minutės arba parašykite info@karateka.lt.';
+        return t('Nepavyko išsiųsti kodo. Pabandykite po minutės arba parašykite info@karateka.lt.');
     }
     return null;
 }
@@ -96,7 +96,7 @@ function trusted_cookie(int $accountId): string
 
 function cookie_options(int $expires): array
 {
-    return ['expires' => $expires, 'path' => (config('base_path') ?: '') . '/', 'secure' => (bool) config('force_https'), 'httponly' => true, 'samesite' => 'Lax'];
+    return ['expires' => $expires, 'path' => (config('base_path') ?: '') . '/', 'secure' => (bool) config('force_https'), 'httponly' => true, 'samesite' => t('Lax')];
 }
 
 function device_trusted(int $accountId): bool
@@ -136,9 +136,9 @@ function trusted_devices(int $accountId): array
 function device_label(): string
 {
     $ua = (string) ($_SERVER['HTTP_USER_AGENT'] ?? '');
-    $browser = preg_match('/Edg\//', $ua) ? 'Edge' : (preg_match('/OPR\/|Opera/', $ua) ? 'Opera' : (preg_match('/Firefox\//', $ua) ? 'Firefox'
-        : (preg_match('/Chrome\//', $ua) ? 'Chrome' : (preg_match('/Safari\//', $ua) ? 'Safari' : 'Naršyklė'))));
-    $os = preg_match('/iPhone|iPad/', $ua) ? 'iPhone / iPad' : (preg_match('/Android/', $ua) ? 'Android' : (preg_match('/Windows/', $ua) ? 'Windows'
-        : (preg_match('/Mac OS X|Macintosh/', $ua) ? 'Mac' : (preg_match('/Linux/', $ua) ? 'Linux' : ''))));
+    $browser = preg_match('/Edg\//', $ua) ? t('Edge') : (preg_match('/OPR\/|Opera/', $ua) ? t('Opera') : (preg_match('/Firefox\//', $ua) ? t('Firefox')
+        : (preg_match('/Chrome\//', $ua) ? 'Chrome' : (preg_match('/Safari\//', $ua) ? 'Safari' : t('Naršyklė')))));
+    $os = preg_match('/iPhone|iPad/', $ua) ? t('iPhone / iPad') : (preg_match('/Android/', $ua) ? 'Android' : (preg_match('/Windows/', $ua) ? t('Windows')
+        : (preg_match('/Mac OS X|Macintosh/', $ua) ? t('Mac') : (preg_match('/Linux/', $ua) ? t('Linux') : ''))));
     return $browser . ($os !== '' ? ' · ' . $os : '');
 }

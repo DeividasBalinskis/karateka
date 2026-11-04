@@ -25,9 +25,9 @@ function check_password(array &$errors): string
 {
     $pw = (string) ($_POST['password'] ?? '');
     if (mb_strlen($pw) < MIN_PASSWORD) {
-        $errors[] = 'Slaptažodis turi būti bent ' . MIN_PASSWORD . ' simbolių.';
+        $errors[] = (t('Slaptažodis turi būti bent') . ' ') . MIN_PASSWORD . (' ' . t('simbolių.'));
     } elseif ($pw !== ($_POST['password2'] ?? '')) {
-        $errors[] = 'Slaptažodžiai nesutampa.';
+        $errors[] = t('Slaptažodžiai nesutampa.');
     }
     return $pw;
 }
@@ -45,20 +45,20 @@ if (is_post() && in_array($type, ['tevai', 'pats'], true)) {
     $last = post('last_name');
     $phone = post('phone');
 
-    check_person($first, $last, $type === 'tevai' ? 'Tėvai' : 'Narys', $errors);
+    check_person($first, $last, $type === 'tevai' ? t('Tėvai') : t('Narys'), $errors);
     if (!valid_email($email)) {
-        $errors[] = 'Įveskite teisingą el. paštą.';
+        $errors[] = t('Įveskite teisingą el. paštą.');
     } elseif (q_value('SELECT 1 FROM accounts WHERE email = ?', [$email])) {
-        $errors[] = 'Šis el. paštas jau registruotas. Prisijunkite arba atkurkite slaptažodį.';
+        $errors[] = t('Šis el. paštas jau registruotas. Prisijunkite arba atkurkite slaptažodį.');
     }
     $password = check_password($errors);
     if (empty($_POST['data_consent'])) {
-        $errors[] = 'Pažymėkite, kad susipažinote su privatumo politika.';
+        $errors[] = t('Pažymėkite, kad susipažinote su privatumo politika.');
     }
 
     if ($type === 'tevai') {
         if ($phone === '') {
-            $errors[] = 'Įveskite telefono numerį.';
+            $errors[] = t('Įveskite telefono numerį.');
         }
         $kids = [];
         foreach (array_slice((array) ($_POST['kids'] ?? []), 0, MAX_KIDS) as $i => $k) {
@@ -79,22 +79,22 @@ if (is_post() && in_array($type, ['tevai', 'pats'], true)) {
             $kids[] = $k;
         }
         if (!$kids) {
-            $errors[] = 'Pridėkite bent vieną vaiką.';
+            $errors[] = t('Pridėkite bent vieną vaiką.');
         }
     } else {
         $birth = date_from_input($_POST['birth_date'] ?? '');
         $parentEmail = normalize_email(post('parent_email'));
         $under14 = valid_birth_date($birth) && age_on($birth) < CONSENT_AGE;
         if (!valid_birth_date($birth)) {
-            $errors[] = 'Įveskite gimimo datą.';
+            $errors[] = t('Įveskite gimimo datą.');
         } elseif ($under14) {
             if (!valid_email($parentEmail)) {
-                $errors[] = 'Jaunesniems nei 14 metų reikia tėvų el. pašto - tėvai turės patvirtinti registraciją.';
+                $errors[] = t('Jaunesniems nei 14 metų reikia tėvų el. pašto - tėvai turės patvirtinti registraciją.');
             } elseif ($parentEmail === $email) {
-                $errors[] = 'Tėvų el. paštas turi skirtis nuo tavo el. pašto.';
+                $errors[] = t('Tėvų el. paštas turi skirtis nuo tavo el. pašto.');
             }
         } elseif (!in_array(post('photo_consent'), ['0', '1'], true)) {
-            $errors[] = 'Pasirink, ar sutinki dėl nuotraukų.';
+            $errors[] = t('Pasirink, ar sutinki dėl nuotraukų.');
         }
     }
 
@@ -131,20 +131,20 @@ if (is_post() && in_array($type, ['tevai', 'pats'], true)) {
     }
 }
 
-page_start('Registracija', ['narrow' => $type === '', 'noindex' => true,
-    'description' => 'Susikurkite VšĮ Karate Ateitis nario arba tėvų paskyrą.']);
+page_start(t('Registracija'), ['narrow' => $type === '', 'noindex' => true,
+    'description' => t('Susikurkite VšĮ Karate Ateitis nario arba tėvų paskyrą.')]);
 
 // ---------- Sėkmė ----------
 if (get('ok') !== '') { ?>
   <div class="panel card">
-    <h1 class="styled">Beveik baigta!</h1>
-    <p>Išsiuntėme laišką su nuoroda - <strong>patvirtinkite savo el. paštą</strong>.</p>
+    <h1 class="styled"><?= te('Beveik baigta!') ?></h1>
+    <p><?= te('Išsiuntėme laišką su nuoroda -') ?> <strong><?= te('patvirtinkite savo el. paštą') ?></strong>.</p>
     <?php if (get('ok') === '2'): ?>
-      <p>Taip pat išsiuntėme laišką tavo tėvams: kai jie patvirtins, paskyrą peržiūrės treneris.</p>
+      <p><?= te('Taip pat išsiuntėme laišką tavo tėvams: kai jie patvirtins, paskyrą peržiūrės treneris.') ?></p>
     <?php else: ?>
-      <p>Po to paskyrą peržiūrės treneris ir priskirs grupę. Apie patvirtinimą pranešime el. paštu.</p>
+      <p><?= te('Po to paskyrą peržiūrės treneris ir priskirs grupę. Apie patvirtinimą pranešime el. paštu.') ?></p>
     <?php endif; ?>
-    <p class="muted small" style="margin-top:14px;">Laiško nematote? Patikrinkite „Spam“ / „Reklamos“ aplanką.</p>
+    <p class="muted small" style="margin-top:14px;"><?= te('Laiško nematote? Patikrinkite „Spam“ / „Reklamos“ aplanką.') ?></p>
   </div>
 <?php
     page_end();
@@ -154,20 +154,20 @@ if (get('ok') !== '') { ?>
 // ---------- Pasirinkimas ----------
 if (!in_array($type, ['tevai', 'pats'], true)) { ?>
   <div class="panel card">
-    <h1 class="styled">Registracija</h1>
-    <p class="muted" style="margin-bottom:20px;">Narių paskyroje matysite savo grupės tvarkaraštį, artėjančius egzaminus ir varžybas.</p>
+    <h1 class="styled"><?= te('Registracija') ?></h1>
+    <p class="muted" style="margin-bottom:20px;"><?= te('Narių paskyroje matysite savo grupės tvarkaraštį, artėjančius egzaminus ir varžybas.') ?></p>
     <div class="choice-cards">
       <a class="choice-card" href="?tipas=tevai">
-        <strong>Esu tėvai / globėjai</strong>
-        <span>Užregistruosiu vieną ar kelis vaikus</span>
+        <strong><?= te('Esu tėvai / globėjai') ?></strong>
+        <span><?= te('Užregistruosiu vieną ar kelis vaikus') ?></span>
       </a>
       <a class="choice-card" href="?tipas=pats">
-        <strong>Registruojuosi pats</strong>
-        <span>Treniruojuosi pats (-i). Jaunesniems nei 14 m. reikės tėvų sutikimo</span>
+        <strong><?= te('Registruojuosi pats') ?></strong>
+        <span><?= te('Treniruojuosi pats (-i). Jaunesniems nei 14 m. reikės tėvų sutikimo') ?></span>
       </a>
     </div>
     <hr class="divider">
-    <p class="small">Jau turite paskyrą? <a href="<?= url('prisijungti.php') ?>">Prisijunkite</a></p>
+    <p class="small"><?= te('Jau turite paskyrą?') ?> <a href="<?= url('prisijungti.php') ?>"><?= te('Prisijunkite') ?></a></p>
   </div>
 <?php
     page_end();
@@ -177,8 +177,8 @@ if (!in_array($type, ['tevai', 'pats'], true)) { ?>
 $kidsInput = array_values((array) ($v['kids'] ?? [[]])) ?: [[]];
 ?>
 <div class="page-head">
-  <a class="small" href="<?= url('registracija.php') ?>">← Atgal</a>
-  <h1 class="styled" style="margin-top:8px;"><?= $type === 'tevai' ? 'Tėvų registracija' : 'Nario registracija' ?></h1>
+  <a class="small" href="<?= url('registracija.php') ?>"><?= te('← Atgal') ?></a>
+  <h1 class="styled" style="margin-top:8px;"><?= $type === 'tevai' ? t('Tėvų registracija') : t('Nario registracija') ?></h1>
 </div>
 <?= form_errors($errors) ?>
 
@@ -189,31 +189,31 @@ $kidsInput = array_values((array) ($v['kids'] ?? [[]])) ?: [[]];
 
   <div class="grid-2">
     <div class="panel card">
-      <h2><?= $type === 'tevai' ? 'Jūsų duomenys' : 'Tavo duomenys' ?></h2>
+      <h2><?= $type === 'tevai' ? t('Jūsų duomenys') : t('Tavo duomenys') ?></h2>
       <div class="form">
         <div class="form-row">
-          <label>Vardas <input type="text" name="first_name" value="<?= e($v['first_name'] ?? '') ?>" autocomplete="given-name" required></label>
-          <label>Pavardė <input type="text" name="last_name" value="<?= e($v['last_name'] ?? '') ?>" autocomplete="family-name" required></label>
+          <label><?= te('Vardas') ?> <input type="text" name="first_name" value="<?= e($v['first_name'] ?? '') ?>" autocomplete="given-name" required></label>
+          <label><?= te('Pavardė') ?> <input type="text" name="last_name" value="<?= e($v['last_name'] ?? '') ?>" autocomplete="family-name" required></label>
         </div>
         <?php if ($type === 'pats'): ?>
-          <label>Gimimo data
+          <label><?= te('Gimimo data') ?>
             <?= date_parts_field('birth_date', $v['birth_date'] ?? null) ?>
           </label>
-          <label>Diržas <span class="hint">nežinai ar dar neturi - palik tuščią, treneris nurodys</span>
-            <select name="belt_level"><?= belt_options(!empty($v['belt_level']) ? (int) $v['belt_level'] : null, '— nežinau / dar neturiu —') ?></select>
+          <label><?= te('Diržas') ?> <span class="hint"><?= te('nežinai ar dar neturi - palik tuščią, treneris nurodys') ?></span>
+            <select name="belt_level"><?= belt_options(!empty($v['belt_level']) ? (int) $v['belt_level'] : null, t('— nežinau / dar neturiu —')) ?></select>
           </label>
         <?php endif; ?>
-        <label>El. paštas <span class="hint">juo prisijungsite</span>
+        <label><?= te('El. paštas') ?> <span class="hint">juo prisijungsite</span>
           <input type="email" name="email" value="<?= e($v['email'] ?? '') ?>" autocomplete="email" required>
         </label>
-        <label>Telefonas <?= $type === 'pats' ? '<span class="hint">nebūtina</span>' : '' ?>
+        <label><?= te('Telefonas') ?> <?= $type === 'pats' ? ('<span class="hint">' . t('nebūtina') . '</span>') : '' ?>
           <input type="tel" name="phone" value="<?= e($v['phone'] ?? '') ?>" autocomplete="tel" <?= $type === 'tevai' ? 'required' : '' ?>>
         </label>
         <div class="form-row">
-          <label>Slaptažodis <span class="hint">bent <?= MIN_PASSWORD ?> simboliai</span>
+          <label><?= te('Slaptažodis') ?> <span class="hint">bent <?= MIN_PASSWORD ?> simboliai</span>
             <input type="password" name="password" autocomplete="new-password" minlength="<?= MIN_PASSWORD ?>" required>
           </label>
-          <label>Pakartokite
+          <label><?= te('Pakartokite') ?>
             <input type="password" name="password2" autocomplete="new-password" required>
           </label>
         </div>
@@ -222,41 +222,41 @@ $kidsInput = array_values((array) ($v['kids'] ?? [[]])) ?: [[]];
 
     <div class="panel card">
       <?php if ($type === 'tevai'): ?>
-        <h2>Vaikai</h2>
+        <h2><?= te('Vaikai') ?></h2>
         <div id="kids" class="form">
           <?php foreach ($kidsInput as $i => $k): ?>
             <fieldset class="kid">
-              <legend>Vaikas</legend>
+              <legend><?= te('Vaikas') ?></legend>
               <div class="form-row">
-                <label>Vardas <input type="text" name="kids[<?= $i ?>][first_name]" value="<?= e($k['first_name'] ?? '') ?>"></label>
-                <label>Pavardė <input type="text" name="kids[<?= $i ?>][last_name]" value="<?= e($k['last_name'] ?? '') ?>"></label>
+                <label><?= te('Vardas') ?> <input type="text" name="kids[<?= $i ?>][first_name]" value="<?= e($k['first_name'] ?? '') ?>"></label>
+                <label><?= te('Pavardė') ?> <input type="text" name="kids[<?= $i ?>][last_name]" value="<?= e($k['last_name'] ?? '') ?>"></label>
               </div>
-              <label>Gimimo data <?= date_parts_field("kids[$i][birth_date]", $k['birth_date'] ?? null, false) ?></label>
-              <label>Diržas <span class="hint">nežinote - palikite tuščią</span><select name="kids[<?= $i ?>][belt_level]"><?= belt_options(!empty($k['belt_level']) ? (int) $k['belt_level'] : null, '— nežinau / dar neturi —') ?></select></label>
-              <?= photo_consent_choice("kids[$i][photo_consent]", $k['photo_consent'] ?? null, 'Ar sutinkate, kad klubas skelbtų vaiko nuotraukas ir vaizdo įrašus iš treniruočių ir renginių (svetainėje, socialiniuose tinkluose)?') ?>
+              <label><?= te('Gimimo data') ?> <?= date_parts_field("kids[$i][birth_date]", $k['birth_date'] ?? null, false) ?></label>
+              <label><?= te('Diržas') ?> <span class="hint"><?= te('nežinote - palikite tuščią') ?></span><select name="kids[<?= $i ?>][belt_level]"><?= belt_options(!empty($k['belt_level']) ? (int) $k['belt_level'] : null, t('— nežinau / dar neturi —')) ?></select></label>
+              <?= photo_consent_choice("kids[$i][photo_consent]", $k['photo_consent'] ?? null, t('Ar sutinkate, kad klubas skelbtų vaiko nuotraukas ir vaizdo įrašus iš treniruočių ir renginių (svetainėje, socialiniuose tinkluose)?')) ?>
             </fieldset>
           <?php endforeach; ?>
         </div>
-        <button type="button" class="btn btn-ghost btn-sm" id="addKid" style="margin-top:14px;">+ Pridėti dar vieną vaiką</button>
+        <button type="button" class="btn btn-ghost btn-sm" id="addKid" style="margin-top:14px;"><?= te('+ Pridėti dar vieną vaiką') ?></button>
       <?php else: ?>
-        <h2>Sutikimai</h2>
+        <h2><?= te('Sutikimai') ?></h2>
         <div class="form">
           <div id="under14" class="flash flash-info" style="display:none; margin:0;">
-            Kadangi tau dar nėra 14 metų, registraciją turi patvirtinti tėvai. Įvesk jų el. paštą - išsiųsime jiems laišką.
-            Sutikimą dėl nuotraukų skelbimo duos tėvai.
+            <?= te('Kadangi tau dar nėra 14 metų, registraciją turi patvirtinti tėvai. Įvesk jų el. paštą - išsiųsime jiems laišką.
+            Sutikimą dėl nuotraukų skelbimo duos tėvai.') ?>
           </div>
-          <label id="parentEmailWrap" style="display:none;">Tėvų / globėjų el. paštas
+          <label id="parentEmailWrap" style="display:none;"><?= te('Tėvų / globėjų el. paštas') ?>
             <input type="email" name="parent_email" value="<?= e($v['parent_email'] ?? '') ?>">
           </label>
-          <div id="photoWrap"><?= photo_consent_choice('photo_consent', $v['photo_consent'] ?? null, 'Ar sutinki, kad klubas skelbtų tavo nuotraukas ir vaizdo įrašus iš treniruočių ir renginių?') ?></div>
-          <p class="hint">Neturi savo el. pašto? Tegul tėvai tave užregistruoja per <a href="?tipas=tevai">tėvų registraciją</a> - vėliau jie galės pakviesti tave prisijungti.</p>
+          <div id="photoWrap"><?= photo_consent_choice('photo_consent', $v['photo_consent'] ?? null, t('Ar sutinki, kad klubas skelbtų tavo nuotraukas ir vaizdo įrašus iš treniruočių ir renginių?')) ?></div>
+          <p class="hint"><?= te('Neturi savo el. pašto? Tegul tėvai tave užregistruoja per') ?> <a href="?tipas=tevai"><?= te('tėvų registraciją') ?></a> <?= te('- vėliau jie galės pakviesti tave prisijungti.') ?></p>
         </div>
       <?php endif; ?>
       <hr class="divider">
       <label class="check"><input type="checkbox" name="data_consent" value="1" required <?= !empty($v['data_consent']) ? 'checked' : '' ?>>
-        <span>Susipažinau su <a href="<?= url('privatumas.php') ?>" target="_blank">privatumo politika</a> - kaip klubas tvarko pateiktus duomenis.</span></label>
-      <button class="btn btn-primary btn-block" type="submit" style="margin-top:18px;">Registruotis</button>
-      <p class="hint" style="margin-top:10px;">Paskyrą patvirtins treneris ir priskirs grupę.</p>
+        <span><?= te('Susipažinau su') ?> <a href="<?= url('privatumas.php') ?>" target="_blank">privatumo politika</a> <?= te('- kaip klubas tvarko pateiktus duomenis.') ?></span></label>
+      <button class="btn btn-primary btn-block" type="submit" style="margin-top:18px;"><?= te('Registruotis') ?></button>
+      <p class="hint" style="margin-top:10px;"><?= te('Paskyrą patvirtins treneris ir priskirs grupę.') ?></p>
     </div>
   </div>
 </form>

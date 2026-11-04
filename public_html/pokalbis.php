@@ -28,7 +28,7 @@ function chat_fail(bool $ajax, string $msg, string $back, int $code = 400): void
 
 $a = current_account();
 if (!$a || !is_active_account($a)) {
-    $ajax ? chat_out(['ok' => false, 'error' => 'Prisijunkite.'], 403) : redirect('prisijungti.php');
+    $ajax ? chat_out(['ok' => false, 'error' => t('Prisijunkite.')], 403) : redirect('prisijungti.php');
 }
 $aid = (int) $a['id'];
 $isStaff = is_staff($a);
@@ -52,35 +52,35 @@ if (is_post()) {
     if ($action === 'delete') {
         $msg = q_one('SELECT * FROM member_messages WHERE id = ? AND author_id = ?', [(int) post('message_id'), $aid]);
         if (!$msg) {
-            chat_fail($ajax, 'Žinutė nerasta.', $back, 404);
+            chat_fail($ajax, t('Žinutė nerasta.'), $back, 404);
         }
         q('DELETE FROM member_messages WHERE id = ?', [(int) $msg['id']]);
         q('DELETE FROM notifications WHERE type = "comment" AND ref_id = ?', [(int) $msg['id']]);
         if (!$ajax) {
-            flash('ok', 'Ištrinta.');
+            flash('ok', t('Ištrinta.'));
             redirect($back);
         }
         chat_out(['ok' => true]);
     }
 
     if (!$isStaff) {
-        chat_out(['ok' => false, 'error' => 'Nežinomas veiksmas.'], 400);
+        chat_out(['ok' => false, 'error' => t('Nežinomas veiksmas.')], 400);
     }
 
     // ---------- Treneris ----------
     $mid = (int) post('member_id');
     $member = $mid ? q_one('SELECT * FROM members WHERE id = ?', [$mid]) : null;
     if (!$member) {
-        chat_fail($ajax, 'Narys nerastas.', $back, 404);
+        chat_fail($ajax, t('Narys nerastas.'), $back, 404);
     }
     if ($action === 'reply') {
         $body = trim(str_replace("\r\n", "\n", post('body')));
         if ($body === '') {
-            chat_fail($ajax, 'Įrašykite atsakymą.', $back);
+            chat_fail($ajax, t('Įrašykite atsakymą.'), $back);
         }
         chat_staff_reply($mid, $a, $body, post('ctx'));
         if (!$ajax) {
-            flash('ok', 'Atsakyta - ' . $member['first_name'] . ' matys atsakymą čia ir pokalbyje.');
+            flash('ok', (t('Atsakyta -') . ' ') . $member['first_name'] . (' ' . t('matys atsakymą čia ir pokalbyje.')));
             redirect($back);
         }
         chat_out(['ok' => true]);
@@ -95,7 +95,7 @@ if (is_post()) {
         }
         chat_out(['ok' => true]);
     }
-    chat_out(['ok' => false, 'error' => 'Nežinomas veiksmas.'], 400);
+    chat_out(['ok' => false, 'error' => t('Nežinomas veiksmas.')], 400);
 }
 
 // ---------- Skaitymas ----------
@@ -103,7 +103,7 @@ if ($isStaff) {
     // Apibendrintas nario profilis (langas paspaudus vardą)
     if ($pid = (int) get('profile')) {
         $html = member_profile_html($pid);
-        $html === '' ? chat_out(['ok' => false, 'error' => 'Narys nerastas.'], 404) : chat_out(['ok' => true, 'html' => $html]);
+        $html === '' ? chat_out(['ok' => false, 'error' => t('Narys nerastas.')], 404) : chat_out(['ok' => true, 'html' => $html]);
     }
     $out = ['ok' => true];
     if (get('list') !== '') {
@@ -115,7 +115,7 @@ if ($isStaff) {
     if ($mid = (int) get('m')) {
         $info = chat_member_info($mid);
         if (!$info) {
-            chat_out(['ok' => false, 'error' => 'Narys nerastas.'], 404);
+            chat_out(['ok' => false, 'error' => t('Narys nerastas.')], 404);
         }
         mark_member_messages_read($mid);
         $out['member'] = $info;
@@ -126,7 +126,7 @@ if ($isStaff) {
 
 $mid = (int) get('m');
 if (!$mid || !account_relation($aid, $mid)) {
-    chat_out(['ok' => false, 'error' => 'Narys nerastas.'], 404);
+    chat_out(['ok' => false, 'error' => t('Narys nerastas.')], 404);
 }
 $messages = chat_thread($mid, false);
 q('UPDATE member_messages SET read_at = NOW() WHERE member_id = ? AND from_staff = 1 AND read_at IS NULL', [$mid]);

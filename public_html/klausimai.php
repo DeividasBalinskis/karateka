@@ -4,15 +4,15 @@ require __DIR__ . '/app/bootstrap.php';
 
 $a = require_login();
 $public = public_questions(null);
-page_start('Klausimai ir atsakymai', ['noindex' => true]);
+page_start(t('Klausimai ir atsakymai'), ['noindex' => true]);
 ?>
 <div class="page-head">
-  <h1 class="styled">Klausimai ir atsakymai</h1>
-  <p>Narių klausimai Deniui ir jo atsakymai, kuriuos jis paviešino. Klaususiojo vardas rodomas tik jei jis to norėjo.</p>
+  <h1 class="styled"><?= te('Klausimai ir atsakymai') ?></h1>
+  <p><?= te('Narių klausimai Deniui ir jo atsakymai, kuriuos jis paviešino. Klaususiojo vardas rodomas tik jei jis to norėjo.') ?></p>
 </div>
 <div class="panel card q-box">
   <?php if (!$public): ?>
-    <p class="muted">Paviešintų klausimų dar nėra. Savo klausimą galite parašyti Deniui - mygtukas apačioje dešinėje.</p>
+    <p class="muted"><?= te('Paviešintų klausimų dar nėra. Savo klausimą galite parašyti Deniui - mygtukas apačioje dešinėje.') ?></p>
   <?php else: ?>
     <?= render_public_questions(array_reverse($public)) ?>
   <?php endif; ?>

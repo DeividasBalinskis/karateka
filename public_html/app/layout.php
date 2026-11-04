@@ -9,16 +9,16 @@ function page_start(string $title, array $opt = []): void
     $css = url('assets/app.css') . '?v=' . @filemtime(PUBLIC_DIR . '/assets/app.css');
     ?>
 <!DOCTYPE html>
-<html lang="lt">
+<html lang="<?= current_lang() ?>">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title><?= e($title) ?> — Karateka</title>
+<title><?= e(t($title)) ?> <?= te('— Karateka') ?></title>
 <?php if (!empty($opt['description'])): ?><meta name="description" content="<?= e($opt['description']) ?>">
 <?php endif; ?>
 <?php if (!empty($opt['og'])): /* Facebook / Messenger nuorodos peržiūra */ ?>
 <meta property="og:site_name" content="Karate Ateitis">
-<meta property="og:locale" content="lt_LT">
+<meta property="og:locale" content="<?= ['lt' => t('lt_LT'), 'en' => t('en_GB'), 'ru' => t('ru_RU')][current_lang()] ?>">
 <?php foreach ($opt['og'] as $k => $v): if ($v): ?><meta property="og:<?= e($k) ?>" content="<?= e($v) ?>">
 <?php endif; endforeach; ?>
 <?php endif; ?>
@@ -33,6 +33,7 @@ function page_start(string $title, array $opt = []): void
 <link rel="stylesheet" href="<?= e(asset_url('assets/header.css')) ?>">
 <link rel="stylesheet" href="<?= e($css) ?>">
 <link rel="stylesheet" href="<?= e(asset_url('assets/widgets.css')) ?>">
+<?= i18n_js() ?>
 </head>
 <body class="<?= $admin ? 'is-admin' : '' ?>">
 <?php
@@ -41,7 +42,7 @@ function page_start(string $title, array $opt = []): void
     site_header(false, $admin && !$section ? 'admin' : (!empty($opt['account']) ? 'account' : null), $opt['account'] ?? null, $section); ?>
 <main class="page <?= !empty($opt['narrow']) ? 'narrow' : '' ?>">
 <?php foreach ($flashes as $f): ?>
-  <div class="flash flash-<?= e($f['type']) ?>"><?= e($f['message']) ?></div>
+  <div class="flash flash-<?= e($f['type']) ?>"><?= e(t($f['message'])) ?></div>
 <?php endforeach; ?>
 <?php
 }
@@ -52,8 +53,8 @@ function page_end(): void
 </main>
 <footer class="site-footer">
   <div class="footer-bottom">
-    <span>© <?= date('Y') ?> VšĮ Karate Ateitis · <a href="<?= url('privatumas.php') ?>">Privatumo politika</a><?= current_account() ? ' · <a href="' . url('klausimai.php') . '">Klausimai ir atsakymai</a>' : '' ?></span>
-    <span>Nuo balto iki juodo diržo.</span>
+    <span>© <?= date('Y') ?> <?= te('VšĮ Karate Ateitis ·') ?> <a href="<?= url('privatumas.php') ?>"><?= te('Privatumo politika') ?></a><?= current_account() ? ' · <a href="' . url('klausimai.php') . '">' . te('Klausimai ir atsakymai') . '</a>' : '' ?></span>
+    <span><?= te('Nuo balto iki juodo diržo.') ?></span>
   </div>
 </footer>
 <?= page_widgets() ?>
@@ -71,7 +72,7 @@ function form_errors(array $errors): string
     }
     $html = '<div class="flash flash-err"><ul>';
     foreach ($errors as $err) {
-        $html .= '<li>' . e($err) . '</li>';
+        $html .= '<li>' . e(t($err)) . '</li>';
     }
     return $html . '</ul></div>';
 }
@@ -79,7 +80,7 @@ function form_errors(array $errors): string
 /** <option> sąrašas grupėms */
 function group_options(?int $selected, bool $withEmpty = true): string
 {
-    $html = $withEmpty ? '<option value="">— pasirinkite grupę —</option>' : '';
+    $html = $withEmpty ? ('<option value="">' . t('— pasirinkite grupę —') . '</option>') : '';
     $current = null;
     foreach (q_all('SELECT * FROM training_groups WHERE is_active = 1 ORDER BY sort_order, name') as $g) {
         if ($g['category'] !== $current) {
@@ -118,7 +119,7 @@ function staff_link(string $path, string $label = '✎ Redaguoti'): string
     if (!is_staff()) {
         return '';
     }
-    return '<a class="staff-link" href="' . e(url($path)) . '">' . e($label) . '</a>';
+    return '<a class="staff-link" href="' . e(url($path)) . '">' . e(t($label)) . '</a>';
 }
 
 /**
@@ -152,7 +153,7 @@ function audience_field(array $selected, string $allLabel = 'Visos grupės', boo
             continue;
         }
         $html .= '<label class="check aud-cat"><input type="checkbox" data-aud="cat" data-cat="' . e($cat) . '"><span>' . e($catLabel)
-            . ' <span class="muted">(visos ' . count($list) . ')</span></span></label><div class="aud-sub">';
+            . (' <span class="muted">' . t('(visos') . ' ') . count($list) . ')</span></span></label><div class="aud-sub">';
         foreach ($list as $g) {
             // "Vaikai: Viršuliškės" -> "Viršuliškės" (kategorija jau parašyta virš sąrašo)
             $label = preg_replace('/^' . preg_quote($catLabel, '/') . ':\s*/u', '', $g['name']);
@@ -160,7 +161,7 @@ function audience_field(array $selected, string $allLabel = 'Visos grupės', boo
         }
         $html .= '</div>';
     }
-    $html .= ($emptyMeansAll ? '<p class="hint" style="margin-top:6px;">Nieko nepažymėjus - visiems.</p>' : '') . '</div>';
+    $html .= ($emptyMeansAll ? ('<p class="hint" style="margin-top:6px;">' . t('Nieko nepažymėjus - visiems.') . '</p>') : '') . '</div>';
     static $js = false;
     if (!$js) {
         $js = true;
@@ -212,7 +213,7 @@ function location_field(string $name, ?string $value, bool $required = false): s
     $isOther = $value !== null && $value !== '' && !in_array($value, $locations, true);
     $id = 'loc_' . $name;
     $html = '<label>Vieta <select name="' . e($name) . '_pick" id="' . $id . '" ' . ($required ? 'required' : '') . '>'
-        . '<option value="">— pasirinkite vietą —</option>';
+        . ('<option value="">' . t('— pasirinkite vietą —') . '</option>');
     foreach ($locations as $loc) {
         $html .= '<option value="' . e($loc) . '"' . ($loc === $value ? ' selected' : '') . '>' . e($loc) . '</option>';
     }
@@ -239,31 +240,31 @@ function asset_url(string $path): string
 /** Kaip įsidiegti svetainę telefone kaip programėlę (įdiegus - nerodoma) */
 function render_app_install_card(): string
 {
-    return '<div class="panel card app-card" id="programele"><div class="kicker">Programėlė telefone</div>'
-        . '<p class="small">Karateka gali atsidaryti kaip programėlė - su ikona telefono ekrane, be naršyklės juostos.</p>'
-        . '<button type="button" class="btn btn-primary btn-sm" data-install-app hidden>Įdiegti programėlę</button>'
-        . '<ul class="app-steps small muted"><li><strong>Android (Chrome):</strong> meniu ⋮ → „Įdiegti programą“ (ar „Pridėti prie pradžios ekrano“).</li>'
-        . '<li><strong>iPhone (Safari):</strong> „Bendrinti“ → „Į pradžios ekraną“.</li></ul></div>';
+    return ('<div class="panel card app-card" id="programele"><div class="kicker">' . t('Programėlė telefone') . '</div>')
+        . ('<p class="small">' . t('Karateka gali atsidaryti kaip programėlė - su ikona telefono ekrane, be naršyklės juostos.') . '</p>')
+        . ('<button type="button" class="btn btn-primary btn-sm" data-install-app hidden>' . t('Įdiegti programėlę') . '</button>')
+        . ('<ul class="app-steps small muted"><li><strong>' . t('Android (Chrome):') . '</strong> ' . t('meniu ⋮ → „Įdiegti programą“ (ar „Pridėti prie pradžios ekrano“).') . '</li>')
+        . ('<li><strong>' . t('iPhone (Safari):') . '</strong> ' . t('„Bendrinti“ → „Į pradžios ekraną“.') . '</li></ul></div>');
 }
 
 /** Treneriams: skirtukai po viršutine juosta [raktas => [pavadinimas, kelias, skaičiukas]] */
 function admin_nav_items(): array
 {
     $items = [
-        'siandien'   => ['Šiandien', 'admin/'],
-        'treniruote' => ['Treniruotė', 'admin/treniruote.php'],
-        'nariai'     => ['Nariai', 'admin/nariai.php'],
+        'siandien'   => [t('Šiandien'), 'admin/'],
+        'treniruote' => [t('Treniruotė'), 'admin/treniruote.php'],
+        'nariai'     => [t('Nariai'), 'admin/nariai.php'],
         // Žinutės - tik pokalbio lange (mygtukas apačioje dešinėje); grupės, tvarkaraštis, taškai, paskyros - „Nustatymai“
     ];
-    $items['varzybos'] = ['Varžybos', 'admin/varzybos.php'];   // ir kai sistema dar neprijungta - puslapis paaiškina
+    $items['varzybos'] = [t('Varžybos'), 'admin/varzybos.php'];   // ir kai sistema dar neprijungta - puslapis paaiškina
     // Renginiai, naujienos ir pamokos tvarkomi savo skiltyse (viršutinėje juostoje), čia nedubliuojama
     foreach (ADMIN_NAV_EXTRA as $key => $item) {
         if (empty($item[2]) || is_admin()) {
             $items[$key] = [$item[0], $item[1]];
         }
     }
-    $items['patvirtinimai'] = ['Patvirtinimai', 'admin/patvirtinimai.php', pending_approvals_count()];
-    $items['nustatymai'] = ['Nustatymai', 'admin/nustatymai.php'];
+    $items['patvirtinimai'] = [t('Patvirtinimai'), 'admin/patvirtinimai.php', pending_approvals_count()];
+    $items['nustatymai'] = [t('Nustatymai'), 'admin/nustatymai.php'];
     return $items;
 }
 
@@ -287,13 +288,13 @@ function admin_nav_current(): string
 /** Nario paskyros skirtukai */
 function account_nav_items(array $a): array
 {
-    $items = ['apzvalga' => ['Apžvalga', 'paskyra.php', account_attention_count((int) $a['id'])]];
+    $items = ['apzvalga' => [t('Apžvalga'), 'paskyra.php', account_attention_count((int) $a['id'])]];
     if ($a['status'] === 'active') {
         foreach (account_nav_extra($a) as $key => $item) {
             $items[$key] = $item;
         }
     }
-    $items['nustatymai'] = ['Nustatymai', 'paskyra.php?skiltis=nustatymai'];
+    $items['nustatymai'] = [t('Nustatymai'), 'paskyra.php?skiltis=nustatymai'];
     return $items;
 }
 
@@ -301,7 +302,7 @@ function account_nav_items(array $a): array
 function account_nav_extra(array $a): array
 {
     return [
-        'egzaminas' => ['Egzaminas', 'egzaminas.php'],
+        'egzaminas' => [t('Egzaminas'), 'egzaminas.php'],
     ];
 }
 
@@ -311,9 +312,9 @@ function staff_bar(array $links): string
     if (!is_staff()) {
         return '';
     }
-    $html = '<div class="staff-bar"><span class="staff-bar-label">Treneriui</span>';
+    $html = ('<div class="staff-bar"><span class="staff-bar-label">' . t('Treneriui') . '</span>');
     foreach ($links as $l) {
-        $html .= '<a class="btn btn-sm ' . (!empty($l[2]) ? 'btn-primary' : 'btn-ghost') . '" href="' . e(url($l[1])) . '">' . e($l[0]) . '</a>';
+        $html .= '<a class="btn btn-sm ' . (!empty($l[2]) ? 'btn-primary' : 'btn-ghost') . '" href="' . e(url($l[1])) . '">' . e(t($l[0])) . '</a>';
     }
     return $html . '</div>';
 }
@@ -325,7 +326,7 @@ function render_sub_nav(string $label, array $items, string $current): string
     foreach ($items as $key => $it) {
         $badge = !empty($it[2]) ? ' <span class="count-badge">' . (int) $it[2] . '</span>' : '';
         $cls = ($key === $current ? 'active' : '') . ($key === 'patvirtinimai' ? ' sub-last' : '');
-        $html .= '<a href="' . e(url($it[1])) . '" class="' . trim($cls) . '"' . ($key === $current ? ' aria-current="page"' : '') . '>' . e($it[0]) . $badge . '</a>';
+        $html .= '<a href="' . e(url($it[1])) . '" class="' . trim($cls) . '"' . ($key === $current ? ' aria-current="page"' : '') . '>' . e(t($it[0])) . $badge . '</a>';
     }
     return $html . '</div></div>';
 }
@@ -342,62 +343,63 @@ function site_header(bool $home = false, ?string $area = null, ?string $tab = nu
     $h = $home ? '' : url('index.php');
     $subNav = '';
     if ($a && $area === 'admin' && is_staff($a)) {
-        $subNav = render_sub_nav('Treneriams', admin_nav_items(), admin_nav_current());
+        $subNav = render_sub_nav(t('Treneriams'), admin_nav_items(), admin_nav_current());
     } elseif ($a && $area === 'account') {
-        $subNav = render_sub_nav('Mano paskyra', account_nav_items($a), (string) $tab);
+        $subNav = render_sub_nav(t('Mano paskyra'), account_nav_items($a), (string) $tab);
     }
     ?>
 <div class="progress-wrap"><div class="progress-bar" id="progressBar"></div></div>
 <header class="site-header">
   <nav>
-    <a class="logo" href="<?= $home ? '#' : url('index.php') ?>"><img src="<?= url('img/logo.png') ?>" alt="Karateka logotipas"><?php if (config('env') !== 'live'): ?><span class="ver-tag" title="Svetainės versija (rodoma tik testuojant)">v<?= e(site_version()) ?><?= config('env') === 'local' ? ' · local' : '' ?></span><?php endif; ?></a>
+    <a class="logo" href="<?= $home ? '#' : url('index.php') ?>"><img src="<?= url('img/logo.png') ?>" alt="<?= te('Karateka logotipas') ?>"><?php if (config('env') !== 'live'): ?><span class="ver-tag" title="<?= te('Svetainės versija (rodoma tik testuojant)') ?>">v<?= e(site_version()) ?><?= config('env') === 'local' ? (' ' . t('· local')) : '' ?></span><?php endif; ?></a>
     <ul class="nav-list" id="navList">
       <!-- Vienas meniu: kairėje - pagrindinio puslapio skiltys (blokai su meniu pavadinimu), po skirtuko - kiti puslapiai (su ›) -->
       <li class="nav-main">
         <?php $cta = null; $onpage = [];
         foreach (home_nav() as [$label, $anchor, $isCta]) { $isCta ? $cta = [$label, $anchor] : $onpage[] = [$label, $anchor]; } ?>
         <?php if ($onpage): ?>
-          <ul class="nav-group nav-onpage" aria-label="Pagrindinis puslapis">
-            <?php foreach ($onpage as [$label, $anchor]): ?><li><a class="nav-link" href="<?= $h . e($anchor) ?>"><?= e($label) ?></a></li><?php endforeach; ?>
+          <ul class="nav-group nav-onpage" aria-label="<?= te('Pagrindinis puslapis') ?>">
+            <?php foreach ($onpage as [$label, $anchor]): ?><li><a class="nav-link" href="<?= $h . e($anchor) ?>"><?= e(t($label)) ?></a></li><?php endforeach; ?>
           </ul>
         <?php endif; ?>
-        <ul class="nav-group nav-pages" aria-label="Puslapiai">
-          <li><a class="nav-page<?= $cur('renginiai') ?>" href="<?= url('renginiai.php') ?>">Renginiai<?php if ($a && !is_staff($a) && ($inv = account_pending_invites((int) $a['id']))): ?> <span class="count-badge" title="Treneris kviečia - atsakykite"><?= $inv ?></span><?php endif; ?></a></li>
-          <li><a class="nav-page<?= $cur('naujienos') ?>" href="<?= url('naujienos.php') ?>">Naujienos</a></li>
+        <ul class="nav-group nav-pages" aria-label="<?= te('Puslapiai') ?>">
+          <li><a class="nav-page<?= $cur('renginiai') ?>" href="<?= url('renginiai.php') ?>"><?= te('Renginiai') ?><?php if ($a && !is_staff($a) && ($inv = account_pending_invites((int) $a['id']))): ?> <span class="count-badge" title="<?= te('Treneris kviečia - atsakykite') ?>"><?= $inv ?></span><?php endif; ?></a></li>
+          <li><a class="nav-page<?= $cur('naujienos') ?>" href="<?= url('naujienos.php') ?>"><?= te('Naujienos') ?></a></li>
           <?php if ($a && can_see_lessons($a)): ?>
-            <li><a class="nav-page<?= $cur('pamokos') ?>" href="<?= url('pamokos.php') ?>">Pamokos</a></li>
+            <li><a class="nav-page<?= $cur('pamokos') ?>" href="<?= url('pamokos.php') ?>"><?= te('Pamokos') ?></a></li>
           <?php endif; ?>
         </ul>
       </li>
       <!-- Dešinėje: paskyra (ar „Išbandyti“ ir „Prisijungti“) - prisijungus „Išbandyti“ dingsta, meniu nepasislenka -->
       <li class="nav-account">
         <ul>
+          <li class="lang-li"><?= render_lang_switch() ?></li>
           <?php if ($a && ($vs = render_view_switch())): ?><li class="vs-li"><?= $vs ?></li><?php endif; ?>
           <?php if ($a && is_staff($a)): ?>
-            <li><a class="nav-login<?= $area === 'admin' ? ' is-current' : '' ?>" href="<?= url('admin/') ?>">Paskyra<?php if ($n = staff_attention_count((int) $a['id'])): ?><span class="count-badge nav-bubble" title="Reikia padaryti: pranešimai, patvirtinimai ir kiti darbai"><?= $n ?></span><?php endif; ?></a></li>
+            <li><a class="nav-login<?= $area === 'admin' ? ' is-current' : '' ?>" href="<?= url('admin/') ?>"><?= te('Valdymas') ?><?php if ($n = staff_attention_count((int) $a['id'])): ?><span class="count-badge nav-bubble" title="<?= te('Reikia padaryti: pranešimai, patvirtinimai ir kiti darbai') ?>"><?= $n ?></span><?php endif; ?></a></li>
           <?php elseif ($a): ?>
-            <li><a class="nav-login<?= $area === 'account' ? ' is-current' : '' ?>" href="<?= url('paskyra.php' . (($am = account_attention_member((int) $a['id'])) ? '?m=' . $am : '')) ?>">Mano paskyra<?php if ($att = account_attention_count((int) $a['id'])): ?><span class="count-badge nav-bubble" title="Nauji pranešimai, pastabos ar neatliktos užduotys"><?= $att ?></span><?php endif; ?></a></li>
+            <li><a class="nav-login<?= $area === 'account' ? ' is-current' : '' ?>" href="<?= url('paskyra.php' . (($am = account_attention_member((int) $a['id'])) ? '?m=' . $am : '')) ?>"><?= te('Mano paskyra') ?><?php if ($att = account_attention_count((int) $a['id'])): ?><span class="count-badge nav-bubble" title="<?= te('Nauji pranešimai, pastabos ar neatliktos užduotys') ?>"><?= $att ?></span><?php endif; ?></a></li>
           <?php endif; ?>
           <?php if ($a): ?>
             <li class="mobile-only">
               <form method="post" action="<?= url('atsijungti.php') ?>" class="inline-form"><?= csrf_field() ?>
-                <button type="submit" class="logout-btn">Atsijungti</button>
+                <button type="submit" class="logout-btn"><?= te('Atsijungti') ?></button>
               </form>
             </li>
           <?php else: ?>
-            <?php if ($cta): ?><li class="desktop-only"><a class="nav-cta" href="<?= $h . e($cta[1]) ?>"><?= e($cta[0]) ?></a></li><?php endif; ?>
-            <li><a class="nav-login" href="<?= url('prisijungti.php') ?>">Prisijungti</a></li>
+            <?php if ($cta): ?><li class="desktop-only"><a class="nav-cta" href="<?= $h . e($cta[1]) ?>"><?= e(t($cta[0])) ?></a></li><?php endif; ?>
+            <li><a class="nav-login" href="<?= url('prisijungti.php') ?>"><?= te('Prisijungti') ?></a></li>
           <?php endif; ?>
         </ul>
       </li>
     </ul>
-    <?php if ($cta): ?><a class="nav-cta mobile-only" href="<?= $h . e($cta[1]) ?>"><?= e($cta[0]) ?></a><?php endif; ?>
-    <button class="burger" id="burgerBtn" type="button" aria-label="Meniu"><span></span><span></span><span></span><?php if ($a && (is_staff($a) ? staff_attention_count((int) $a['id']) : account_attention_count((int) $a['id']))): ?><i class="burger-dot"></i><?php endif; ?></button>
+    <?php if ($cta): ?><a class="nav-cta mobile-only" href="<?= $h . e($cta[1]) ?>"><?= e(t($cta[0])) ?></a><?php endif; ?>
+    <button class="burger" id="burgerBtn" type="button" aria-label="<?= te('Meniu') ?>"><span></span><span></span><span></span><?php if ($a && (is_staff($a) ? staff_attention_count((int) $a['id']) : account_attention_count((int) $a['id']))): ?><i class="burger-dot"></i><?php endif; ?></button>
   </nav>
   <?= $subNav ?>
 </header>
 <?php
-    // Pranešimai ir darbai - tik raudonas skaičiukas ant „Paskyra“ (be juostos per ekraną)
+    // Pranešimai ir darbai - tik raudonas skaičiukas ant „Valdymas“ (be juostos per ekraną)
 }
 
 /** Treneriui: kiek laukia - pranešimai ir „Reikia padaryti“ punktai (patvirtinimai, rezultatai, žinutės...) */
@@ -406,7 +408,6 @@ function staff_attention_count(int $accountId): int
     return notification_count($accountId) + count(admin_todo_items());
 }
 
-const LT_MONTHS = [1 => 'sausis', 'vasaris', 'kovas', 'balandis', 'gegužė', 'birželis', 'liepa', 'rugpjūtis', 'rugsėjis', 'spalis', 'lapkritis', 'gruodis'];
 
 /**
  * Sutikimas dėl nuotraukų: aiškus pasirinkimas "Taip / Ne" (privaloma pasirinkti).
@@ -415,7 +416,7 @@ const LT_MONTHS = [1 => 'sausis', 'vasaris', 'kovas', 'balandis', 'gegužė', 'b
 function photo_consent_choice(string $name, $current, string $label): string
 {
     $html = '<div class="consent-choice"><span class="consent-label">' . e($label) . '</span><div class="seg">';
-    foreach (['1' => 'Taip, sutinku', '0' => 'Ne'] as $v => $text) {
+    foreach (['1' => t('Taip, sutinku'), '0' => t('Ne')] as $v => $text) {
         $html .= '<label><input type="radio" name="' . e($name) . '" value="' . $v . '"' . ((string) $current === (string) $v ? ' checked' : '') . ' required><span>' . $text . '</span></label>';
     }
     return $html . '</div></div>';
@@ -435,15 +436,15 @@ function date_parts_field(string $name, $value, bool $required = true): string
         [$y, $m, $d] = [0, 0, 0];
     }
     $req = $required ? ' required' : '';
-    $html = '<div class="date-parts"><select name="' . e($name) . '[y]" aria-label="Metai"' . $req . '><option value="">Metai</option>';
+    $html = '<div class="date-parts"><select name="' . e($name) . '[y]" aria-label="Metai"' . $req . ('><option value="">' . t('Metai') . '</option>');
     for ($i = (int) date('Y'); $i >= 1930; $i--) {
         $html .= '<option value="' . $i . '"' . ($i === $y ? ' selected' : '') . '>' . $i . '</option>';
     }
-    $html .= '</select><select name="' . e($name) . '[m]" aria-label="Mėnuo"' . $req . '><option value="">Mėnuo</option>';
-    foreach (LT_MONTHS as $i => $label) {
+    $html .= '</select><select name="' . e($name) . '[m]" aria-label="Mėnuo"' . $req . ('><option value="">' . t('Mėnuo') . '</option>');
+    foreach (month_names() as $i => $label) {
         $html .= '<option value="' . $i . '"' . ($i === $m ? ' selected' : '') . '>' . $label . '</option>';
     }
-    $html .= '</select><select name="' . e($name) . '[d]" aria-label="Diena"' . $req . '><option value="">Diena</option>';
+    $html .= '</select><select name="' . e($name) . '[d]" aria-label="Diena"' . $req . ('><option value="">' . t('Diena') . '</option>');
     for ($i = 1; $i <= 31; $i++) {
         $html .= '<option value="' . $i . '"' . ($i === $d ? ' selected' : '') . '>' . $i . '</option>';
     }
@@ -478,83 +479,83 @@ function render_account_settings(array $a, string $id = 'nustatymai', string $ti
   <p class="muted small"><?= e($a['first_name'] . ' ' . $a['last_name']) ?></p>
 
   <details class="setting" <?= $openSetting === 'email' ? 'open' : '' ?>>
-    <summary><span class="setting-label">El. paštas</span><span class="setting-value"><?= e($a['email']) ?></span><span class="setting-btn">Keisti</span></summary>
+    <summary><span class="setting-label"><?= te('El. paštas') ?></span><span class="setting-value"><?= e($a['email']) ?></span><span class="setting-btn"><?= te('Keisti') ?></span></summary>
     <form method="post" class="form setting-form">
       <?= csrf_field() ?>
       <input type="hidden" name="action" value="email">
       <div class="form-row">
-        <label>Naujas el. paštas <input type="email" name="email" value="<?= $openSetting === 'email' ? e(post('email')) : '' ?>" autocomplete="email" required></label>
-        <label>Slaptažodis <span class="hint">patvirtinimui</span><input type="password" name="current" autocomplete="current-password" required></label>
+        <label><?= te('Naujas el. paštas') ?> <input type="email" name="email" value="<?= $openSetting === 'email' ? e(post('email')) : '' ?>" autocomplete="email" required></label>
+        <label><?= te('Slaptažodis') ?> <span class="hint">patvirtinimui</span><input type="password" name="current" autocomplete="current-password" required></label>
       </div>
-      <p class="hint">Į naują adresą atsiųsime nuorodą. El. paštas pasikeis tik ją paspaudus.</p>
-      <div><button class="btn btn-primary btn-sm" type="submit">Keisti el. paštą</button></div>
+      <p class="hint"><?= te('Į naują adresą atsiųsime nuorodą. El. paštas pasikeis tik ją paspaudus.') ?></p>
+      <div><button class="btn btn-primary btn-sm" type="submit"><?= te('Keisti el. paštą') ?></button></div>
     </form>
   </details>
 
   <details class="setting" <?= $openSetting === 'profile' ? 'open' : '' ?>>
-    <summary><span class="setting-label">Telefonas</span><span class="setting-value"><?= $a['phone'] ? e($a['phone']) : '<span class="muted">nenurodytas</span>' ?></span><span class="setting-btn">Keisti</span></summary>
+    <summary><span class="setting-label"><?= te('Telefonas') ?></span><span class="setting-value"><?= $a['phone'] ? e($a['phone']) : '<span class="muted">nenurodytas</span>' ?></span><span class="setting-btn"><?= te('Keisti') ?></span></summary>
     <form method="post" class="form setting-form">
       <?= csrf_field() ?>
       <input type="hidden" name="action" value="profile">
-      <label>Telefonas <input type="tel" name="phone" value="<?= e($a['phone']) ?>" autocomplete="tel"></label>
-      <div><button class="btn btn-primary btn-sm" type="submit">Išsaugoti</button></div>
+      <label><?= te('Telefonas') ?> <input type="tel" name="phone" value="<?= e($a['phone']) ?>" autocomplete="tel"></label>
+      <div><button class="btn btn-primary btn-sm" type="submit"><?= te('Išsaugoti') ?></button></div>
     </form>
   </details>
 
   <details class="setting" <?= $openSetting === 'password' ? 'open' : '' ?>>
-    <summary><span class="setting-label">Slaptažodis</span><span class="setting-value">••••••••</span><span class="setting-btn">Keisti</span></summary>
+    <summary><span class="setting-label"><?= te('Slaptažodis') ?></span><span class="setting-value">••••••••</span><span class="setting-btn"><?= te('Keisti') ?></span></summary>
     <form method="post" class="form setting-form">
       <?= csrf_field() ?>
       <input type="hidden" name="action" value="password">
       <div class="form-row">
-        <label>Dabartinis slaptažodis <input type="password" name="current" autocomplete="current-password" required></label>
-        <label>Naujas slaptažodis <span class="hint">bent <?= MIN_PASSWORD ?> simboliai</span><input type="password" name="password" autocomplete="new-password" minlength="<?= MIN_PASSWORD ?>" required></label>
+        <label><?= te('Dabartinis slaptažodis') ?> <input type="password" name="current" autocomplete="current-password" required></label>
+        <label><?= te('Naujas slaptažodis') ?> <span class="hint">bent <?= MIN_PASSWORD ?> simboliai</span><input type="password" name="password" autocomplete="new-password" minlength="<?= MIN_PASSWORD ?>" required></label>
       </div>
-      <div><button class="btn btn-primary btn-sm" type="submit">Keisti slaptažodį</button></div>
+      <div><button class="btn btn-primary btn-sm" type="submit"><?= te('Keisti slaptažodį') ?></button></div>
     </form>
   </details>
 
   <?php if ($devices !== null): ?>
   <details class="setting" id="tfa" <?= $openSetting === 'tfa' ? 'open' : '' ?>>
-    <summary><span class="setting-label">Kodas el. paštu</span><span class="setting-value"><?= two_factor_on($a) ? 'Įjungtas' : '<span class="muted">išjungtas</span>' ?></span><span class="setting-btn">Keisti</span></summary>
+    <summary><span class="setting-label"><?= te('Kodas el. paštu') ?></span><span class="setting-value"><?= two_factor_on($a) ? t('Įjungtas') : ('<span class="muted">' . t('išjungtas') . '</span>') ?></span><span class="setting-btn"><?= te('Keisti') ?></span></summary>
     <div class="setting-form">
       <?php if (two_factor_on($a)): ?>
-        <p class="hint">Prisijungiant naujame įrenginyje, be slaptažodžio, reikia kodo iš el. pašto. Patikimuose įrenginiuose kodo neprašoma <?= TRUSTED_DEVICE_DAYS ?> dienų.</p>
+        <p class="hint"><?= te('Prisijungiant naujame įrenginyje, be slaptažodžio, reikia kodo iš el. pašto. Patikimuose įrenginiuose kodo neprašoma') ?> <?= TRUSTED_DEVICE_DAYS ?> <?= te('dienų.') ?></p>
         <?php if ($devices): ?>
           <ul class="device-list">
             <?php foreach ($devices as $d): ?>
-              <li><strong><?= e($d['label'] ?: 'Įrenginys') ?></strong> <span class="muted small">· paskutinį kartą <?= e(notification_when($d['last_used_at'] ?: $d['created_at'])) ?></span></li>
+              <li><strong><?= e($d['label'] ?: t('Įrenginys')) ?></strong> <span class="muted small"><?= te('· paskutinį kartą') ?> <?= e(notification_when($d['last_used_at'] ?: $d['created_at'])) ?></span></li>
             <?php endforeach; ?>
           </ul>
           <form method="post" class="inline-form" style="margin-bottom:12px;"><?= csrf_field() ?>
-            <button class="btn btn-ghost btn-sm" name="action" value="tfa_forget">Pamiršti visus įrenginius</button></form>
+            <button class="btn btn-ghost btn-sm" name="action" value="tfa_forget"><?= te('Pamiršti visus įrenginius') ?></button></form>
         <?php endif; ?>
         <form method="post" class="form">
           <?= csrf_field() ?>
           <input type="hidden" name="action" value="tfa_off">
-          <label>Slaptažodis <span class="hint">išjungimui</span><input type="password" name="current" autocomplete="current-password" required></label>
-          <div><button class="btn btn-ghost btn-sm" type="submit">Išjungti</button></div>
+          <label><?= te('Slaptažodis') ?> <span class="hint"><?= te('išjungimui') ?></span><input type="password" name="current" autocomplete="current-password" required></label>
+          <div><button class="btn btn-ghost btn-sm" type="submit"><?= te('Išjungti') ?></button></div>
         </form>
       <?php elseif (!empty($_SESSION['tfa_enable'])): ?>
-        <p class="hint">Išsiuntėme kodą į <strong><?= e(masked_email($a['email'])) ?></strong>.</p>
+        <p class="hint"><?= te('Išsiuntėme kodą į') ?> <strong><?= e(masked_email($a['email'])) ?></strong>.</p>
         <?php if (config('env') === 'local' && !empty($_SESSION['dev_login_code'])): ?>
-          <p class="hint">Kompiuteryje laiškai nesiunčiami - kodas: <code class="dev-code"><?= e($_SESSION['dev_login_code']) ?></code></p>
+          <p class="hint"><?= te('Kompiuteryje laiškai nesiunčiami - kodas:') ?> <code class="dev-code"><?= e($_SESSION['dev_login_code']) ?></code></p>
         <?php endif; ?>
         <form method="post" class="form">
           <?= csrf_field() ?>
           <input type="hidden" name="action" value="tfa_confirm">
-          <label>Kodas iš laiško <input class="code-input" type="text" name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="7" required></label>
-          <div class="row" style="gap:10px;"><button class="btn btn-primary btn-sm" type="submit">Patvirtinti ir įjungti</button>
-            <button class="btn btn-ghost btn-sm" type="submit" name="action" value="tfa_cancel" formnovalidate>Atšaukti</button></div>
+          <label><?= te('Kodas iš laiško') ?> <input class="code-input" type="text" name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="7" required></label>
+          <div class="row" style="gap:10px;"><button class="btn btn-primary btn-sm" type="submit"><?= te('Patvirtinti ir įjungti') ?></button>
+            <button class="btn btn-ghost btn-sm" type="submit" name="action" value="tfa_cancel" formnovalidate><?= te('Atšaukti') ?></button></div>
         </form>
       <?php else: ?>
-        <p class="hint">Papildoma apsauga: prisijungiant naujame įrenginyje, be slaptažodžio, reikės kodo, kurį atsiųsime el. paštu.
-          <?= is_staff($a) ? 'Rekomenduojama - jūsų paskyra mato narių duomenis.' : '' ?> Pirma atsiųsime kodą, kad įsitikintume, jog laiškai ateina.</p>
+        <p class="hint"><?= te('Papildoma apsauga: prisijungiant naujame įrenginyje, be slaptažodžio, reikės kodo, kurį atsiųsime el. paštu.') ?>
+          <?= is_staff($a) ? t('Rekomenduojama - jūsų paskyra mato narių duomenis.') : '' ?> <?= te('Pirma atsiųsime kodą, kad įsitikintume, jog laiškai ateina.') ?></p>
         <form method="post" class="form">
           <?= csrf_field() ?>
           <input type="hidden" name="action" value="tfa_start">
-          <label>Slaptažodis <span class="hint">patvirtinimui</span><input type="password" name="current" autocomplete="current-password" required></label>
-          <div><button class="btn btn-primary btn-sm" type="submit">Siųsti kodą</button></div>
+          <label><?= te('Slaptažodis') ?> <span class="hint">patvirtinimui</span><input type="password" name="current" autocomplete="current-password" required></label>
+          <div><button class="btn btn-primary btn-sm" type="submit"><?= te('Siųsti kodą') ?></button></div>
         </form>
       <?php endif; ?>
     </div>

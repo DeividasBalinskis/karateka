@@ -20,28 +20,28 @@ if ($resId = (int) get('rezultatas')) {
         $chosen[(int) $r['question_id']] = $r;
     }
     $pct = attempt_percent($att);
-    page_start('Testo rezultatas', ['noindex' => true, 'narrow' => true, 'account' => $isStaff ? null : 'egzaminas']);
+    page_start(t('Testo rezultatas'), ['noindex' => true, 'narrow' => true, 'account' => $isStaff ? null : 'egzaminas']);
     ?>
     <div class="panel card result-card <?= $att['passed'] ? 'passed' : 'failed' ?> <?= $quiz['kids_mode'] ? 'kid' : '' ?>">
       <div class="kicker"><?= e($quiz['title']) ?> · <?= e($member['first_name']) ?></div>
       <div class="result-big"><?= $pct ?> %</div>
       <p class="result-msg"><?= $att['passed']
-          ? ($quiz['kids_mode'] ? '🎉 Šaunuolis! Testas išlaikytas!' : '✓ Testas išlaikytas. Leidžiama laikyti praktinę dalį.')
-          : ($quiz['kids_mode'] ? '💪 Beveik! Pasikartok ir pabandyk dar kartą.' : 'Testas neišlaikytas: reikia bent ' . (int) $quiz['pass_percent'] . ' %. Pasikartokite ir bandykite dar kartą.') ?></p>
-      <p class="muted small">Teisingai <?= (int) $att['score'] ?> iš <?= (int) $att['total'] ?></p>
+          ? ($quiz['kids_mode'] ? t('🎉 Šaunuolis! Testas išlaikytas!') : t('✓ Testas išlaikytas. Leidžiama laikyti praktinę dalį.'))
+          : ($quiz['kids_mode'] ? t('💪 Beveik! Pasikartok ir pabandyk dar kartą.') : (t('Testas neišlaikytas: reikia bent') . ' ') . (int) $quiz['pass_percent'] . (' ' . t('%. Pasikartokite ir bandykite dar kartą.'))) ?></p>
+      <p class="muted small"><?= te('Teisingai') ?> <?= (int) $att['score'] ?> <?= te('iš') ?> <?= (int) $att['total'] ?></p>
       <div class="row" style="gap:8px; justify-content:center; margin-top:10px;">
-        <a class="btn btn-primary" href="<?= url('egzaminas.php?m=' . (int) $member['id']) ?>">← Į egzamino puslapį</a>
-        <?php if (!$att['passed']): ?><a class="btn btn-ghost" href="<?= url('testas.php?q=' . (int) $quiz['id'] . '&m=' . (int) $member['id'] . '&rezimas=treniruote') ?>">Treniruotis</a><?php endif; ?>
+        <a class="btn btn-primary" href="<?= url('egzaminas.php?m=' . (int) $member['id']) ?>"><?= te('← Į egzamino puslapį') ?></a>
+        <?php if (!$att['passed']): ?><a class="btn btn-ghost" href="<?= url('testas.php?q=' . (int) $quiz['id'] . '&m=' . (int) $member['id'] . '&rezimas=treniruote') ?>"><?= te('Treniruotis') ?></a><?php endif; ?>
       </div>
     </div>
-    <h2 style="margin:24px 0 12px;">Atsakymai</h2>
+    <h2 style="margin:24px 0 12px;"><?= te('Atsakymai') ?></h2>
     <?php $n = 0; foreach ($ids as $qid): if (!isset($qs[$qid])) { continue; } $q = $qs[$qid]; $ch = $chosen[$qid] ?? null; $n++; ?>
       <div class="panel card review <?= $ch && $ch['is_correct'] ? 'ok' : 'bad' ?>">
-        <div class="kicker"><?= $n ?> klausimas · <?= $ch && $ch['is_correct'] ? '✓ teisingai' : '✕ neteisingai' ?></div>
+        <div class="kicker"><?= $n ?> <?= te('klausimas ·') ?> <?= $ch && $ch['is_correct'] ? t('✓ teisingai') : t('✕ neteisingai') ?></div>
         <p><strong><?= nl2br(e($q['body'])) ?></strong></p>
         <ul class="review-answers">
           <?php foreach ($q['answers'] as $ans): $mine = $ch && (int) $ch['answer_id'] === (int) $ans['id']; ?>
-            <li class="<?= $ans['is_correct'] ? 'correct' : '' ?> <?= $mine ? 'mine' : '' ?>"><?= e($ans['body']) ?><?= $mine ? ' <span class="small">(tavo)</span>' : '' ?></li>
+            <li class="<?= $ans['is_correct'] ? 'correct' : '' ?> <?= $mine ? 'mine' : '' ?>"><?= e($ans['body']) ?><?= $mine ? (' <span class="small">' . t('(tavo)') . '</span>') : '' ?></li>
           <?php endforeach; ?>
         </ul>
         <?php if ($q['explanation']): ?><p class="small muted"><?= nl2br(e($q['explanation'])) ?></p><?php endif; ?>
@@ -68,7 +68,7 @@ if (!$isStaff || $member) {
     }
     $visible = array_map('intval', array_column(quizzes_for_member($member, member_tags($mid)), 'id'));
     if (!in_array((int) $quiz['id'], $visible, true) && !$isStaff) {
-        flash('err', 'Šis testas skirtas kitam diržui ar grupei.');
+        flash('err', t('Šis testas skirtas kitam diržui ar grupei.'));
         redirect('egzaminas.php?m=' . $mid);
     }
 } elseif (!$practice) {
@@ -87,23 +87,23 @@ if ($practice) {
             'answers' => array_map(function ($an) { return ['t' => $an['body'], 'ok' => (bool) $an['is_correct']]; }, $q['answers']),
         ];
     }, $qs);
-    page_start('Treniruotė: ' . $quiz['title'], ['noindex' => true, 'narrow' => true, 'account' => $isStaff ? null : 'egzaminas']);
+    page_start((t('Treniruotė:') . ' ') . $quiz['title'], ['noindex' => true, 'narrow' => true, 'account' => $isStaff ? null : 'egzaminas']);
     ?>
-    <a class="small" href="<?= url($member ? 'egzaminas.php?m=' . $mid : 'admin/testai.php?id=' . (int) $quiz['id']) ?>">← Atgal</a>
+    <a class="small" href="<?= url($member ? 'egzaminas.php?m=' . $mid : 'admin/testai.php?id=' . (int) $quiz['id']) ?>"><?= te('← Atgal') ?></a>
     <div class="page-head" style="margin-top:8px;">
-      <div class="eyebrow">Treniruotė · rezultatas nesaugomas</div>
+      <div class="eyebrow"><?= te('Treniruotė · rezultatas nesaugomas') ?></div>
       <h1 class="styled"><?= e($quiz['title']) ?></h1>
     </div>
     <?php if (!$data): ?>
-      <div class="panel card"><p class="muted">Šiame teste dar nėra klausimų.</p></div>
+      <div class="panel card"><p class="muted"><?= te('Šiame teste dar nėra klausimų.') ?></p></div>
     <?php else: ?>
       <div class="panel card quiz-box <?= $kid ? 'kid' : '' ?>" id="practice">
-        <div class="quiz-progress"><span id="pNum">1</span> / <?= count($data) ?> · teisingai <span id="pOk">0</span></div>
+        <div class="quiz-progress"><span id="pNum">1</span> / <?= count($data) ?> <?= te('· teisingai') ?> <span id="pOk">0</span></div>
         <img id="pImg" class="q-image" alt="" hidden>
         <p class="q-body" id="pBody"></p>
         <div class="q-answers" id="pAnswers"></div>
         <p class="q-feedback" id="pFeedback" hidden></p>
-        <button class="btn btn-primary" id="pNext" hidden type="button">Toliau →</button>
+        <button class="btn btn-primary" id="pNext" hidden type="button"><?= te('Toliau →') ?></button>
       </div>
       <script>
       (function () {
@@ -161,13 +161,13 @@ if (is_post()) {
     csrf_check();
     $att = q_one('SELECT * FROM quiz_attempts WHERE id = ? AND member_id = ? AND quiz_id = ? AND finished_at IS NULL', [(int) post('attempt'), $mid, (int) $quiz['id']]);
     if (!$att) {
-        flash('err', 'Testas jau baigtas arba nebegalioja. Pradėkite iš naujo.');
+        flash('err', t('Testas jau baigtas arba nebegalioja. Pradėkite iš naujo.'));
         redirect('egzaminas.php?m=' . $mid);
     }
     $answers = [];
     $late = quiz_time_is_up($att);
     if ($late) {
-        flash('err', 'Laikas baigėsi - atsakymai pateikti per vėlai ir neįskaityti.');
+        flash('err', t('Laikas baigėsi - atsakymai pateikti per vėlai ir neįskaityti.'));
     } else {
         foreach ((array) ($_POST['a'] ?? []) as $qid => $aid) {
             $answers[(int) $qid] = (int) $aid;
@@ -176,7 +176,7 @@ if (is_post()) {
     $res = grade_quiz_attempt($att, $quiz, $answers);
     // XP: už pirmą bandymą ir pirmą išlaikymą per sezoną (kiek - Treneriams -> Taškai)
     if (!$late && ($xp = award_quiz_points($res, $quiz, (int) $a['id']))) {
-        flash('ok', '+' . $xp . ' XP už testą!');
+        flash('ok', '+' . $xp . (' ' . t('XP už testą!')));
     }
     redirect('testas.php?rezultatas=' . (int) $res['id']);
 }
@@ -187,12 +187,12 @@ $att = q_one('SELECT * FROM quiz_attempts WHERE member_id = ? AND quiz_id = ? AN
 if ($att && quiz_time_is_up($att)) {
     // Pradėtas, bet nebaigtas laiku - įvertinamas be atsakymų
     $res = grade_quiz_attempt($att, $quiz, []);
-    flash('err', 'Ankstesnio testo laikas baigėsi - jis įvertintas be atsakymų. Galite laikyti iš naujo.');
+    flash('err', t('Ankstesnio testo laikas baigėsi - jis įvertintas be atsakymų. Galite laikyti iš naujo.'));
     redirect('testas.php?rezultatas=' . (int) $res['id']);
 }
 if (!$att) {
     if (!quiz_questions_full((int) $quiz['id'])) {
-        flash('err', 'Šiame teste dar nėra klausimų.');
+        flash('err', t('Šiame teste dar nėra klausimų.'));
         redirect('egzaminas.php?m=' . $mid);
     }
     $att = q_one('SELECT * FROM quiz_attempts WHERE id = ?', [start_quiz_attempt($quiz, $mid, (int) $a['id'])]);
@@ -201,15 +201,15 @@ $ids = array_map('intval', array_filter(explode(',', $att['question_ids'])));
 $qs = quiz_questions_full((int) $quiz['id'], $ids);
 $left = !empty($att['deadline_at']) ? max(0, strtotime($att['deadline_at']) - time()) : null;
 
-page_start('Testas: ' . $quiz['title'], ['noindex' => true, 'narrow' => true, 'account' => 'egzaminas']);
+page_start((t('Testas:') . ' ') . $quiz['title'], ['noindex' => true, 'narrow' => true, 'account' => 'egzaminas']);
 ?>
 <div class="page-head">
-  <div class="eyebrow">Testas · <?= e($member['first_name']) ?></div>
+  <div class="eyebrow"><?= te('Testas ·') ?> <?= e($member['first_name']) ?></div>
   <h1 class="styled"><?= e($quiz['title']) ?></h1>
-  <p class="muted"><?= count($ids) ?> klausimų. Kad išlaikytum, reikia bent <?= (int) $quiz['pass_percent'] ?> % teisingų atsakymų. Atsakymus pamatysi pabaigoje.<?php if ($left !== null): ?>
-    Laikas: <?= (int) round((strtotime($att['deadline_at']) - strtotime($att['started_at'])) / 60) ?> min. - pasibaigus testas išsiunčiamas automatiškai.<?php endif; ?></p>
+  <p class="muted"><?= count($ids) ?> <?= te('klausimų. Kad išlaikytum, reikia bent') ?> <?= (int) $quiz['pass_percent'] ?> <?= te('% teisingų atsakymų. Atsakymus pamatysi pabaigoje.') ?><?php if ($left !== null): ?>
+    <?= te('Laikas:') ?> <?= (int) round((strtotime($att['deadline_at']) - strtotime($att['started_at'])) / 60) ?> <?= te('min. - pasibaigus testas išsiunčiamas automatiškai.') ?><?php endif; ?></p>
 </div>
-<?php if ($left !== null): ?><div class="quiz-timer" id="quizTimer" data-left="<?= $left ?>" title="Liko laiko">⏱ <?= sprintf('%d:%02d', intdiv($left, 60), $left % 60) ?></div><?php endif; ?>
+<?php if ($left !== null): ?><div class="quiz-timer" id="quizTimer" data-left="<?= $left ?>" title="<?= te('Liko laiko') ?>">⏱ <?= sprintf('%d:%02d', intdiv($left, 60), $left % 60) ?></div><?php endif; ?>
 <form method="post" class="quiz-form <?= $kid ? 'kid' : '' ?>" id="quizForm">
   <?= csrf_field() ?>
   <input type="hidden" name="q" value="<?= (int) $quiz['id'] ?>"><input type="hidden" name="m" value="<?= $mid ?>"><input type="hidden" name="attempt" value="<?= (int) $att['id'] ?>">
@@ -228,7 +228,7 @@ page_start('Testas: ' . $quiz['title'], ['noindex' => true, 'narrow' => true, 'a
   <?php endforeach; ?>
   <div class="row" style="justify-content:space-between; align-items:center;">
     <span class="small muted" id="answered"></span>
-    <button class="btn btn-primary" type="submit">Baigti testą</button>
+    <button class="btn btn-primary" type="submit"><?= te('Baigti testą') ?></button>
   </div>
 </form>
 <script>

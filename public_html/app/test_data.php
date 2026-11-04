@@ -31,8 +31,8 @@ const TEST_DATA_PARTS = [
 function test_data_member_sql(): string
 {
     $link = 'SELECT 1 FROM account_members am JOIN accounts a ON a.id = am.account_id WHERE am.member_id = m.id AND ';
-    return '((EXISTS (' . $link . DEMO_ACCOUNT_SQL . ' AND a.id <> ?) OR m.created_at = "' . DEMO_SENTINEL . '")
-             AND NOT EXISTS (' . $link . '(NOT ' . DEMO_ACCOUNT_SQL . ' OR a.id = ?)))';
+    return t('((EXISTS (') . $link . DEMO_ACCOUNT_SQL . (' ' . t('AND a.id') . ' <> ?) OR m.created_at = "') . DEMO_SENTINEL . '")
+             AND NOT EXISTS (' . $link . (t('(NOT') . ' ') . DEMO_ACCOUNT_SQL . ' OR a.id = ?)))';
 }
 
 /** Kas būtų ištrinta: [dalis => ['count' => n, 'items' => [tekstas, ...], 'ids' => [...], 'warn' => ?string]] (tik netuščios dalys) */
@@ -44,14 +44,14 @@ function test_data_scan(int $meId): array
     if ($accounts || $members) {
         $items = [];
         foreach ($members as $m) {
-            $items[] = 'Narys: ' . $m['first_name'] . ' ' . $m['last_name'] . ($m['status'] === 'pending' ? ' (laukė patvirtinimo)' : '');
+            $items[] = (t('Narys:') . ' ') . $m['first_name'] . ' ' . $m['last_name'] . ($m['status'] === 'pending' ? (' ' . t('(laukė patvirtinimo)')) : '');
         }
         foreach ($accounts as $a) {
-            $items[] = 'Paskyra: ' . $a['first_name'] . ' ' . $a['last_name'] . ' · ' . $a['email'];
+            $items[] = (t('Paskyra:') . ' ') . $a['first_name'] . ' ' . $a['last_name'] . ' · ' . $a['email'];
         }
         $out['people'] = ['count' => count($members) + count($accounts), 'items' => $items,
             'ids' => ['accounts' => array_map('intval', array_column($accounts, 'id')), 'members' => array_map('intval', array_column($members, 'id'))],
-            'label' => count($members) . ' nar. ir ' . count($accounts) . ' pask.'];
+            'label' => count($members) . (' ' . t('nar. ir') . ' ') . count($accounts) . ' pask.'];
     }
 
     $events = q_all("SELECT id, title, starts_on FROM events WHERE created_at = ? OR title LIKE 'TEST:%' ORDER BY starts_on", [DEMO_SENTINEL]);
@@ -71,7 +71,7 @@ function test_data_scan(int $meId): array
     $folders = q_all('SELECT id, title FROM lesson_folders WHERE created_at = ? AND NOT (parent_id IS NULL AND belt_level IS NOT NULL) ORDER BY id', [DEMO_SENTINEL]);
     if ($lessons || $folders) {
         $out['lessons'] = ['ids' => ['lessons' => array_map('intval', array_column($lessons, 'id')), 'folders' => array_map('intval', array_column($folders, 'id'))],
-            'items' => array_merge(array_column($lessons, 'title'), array_map(function ($f) { return 'Aplankas: ' . $f['title']; }, $folders))];
+            'items' => array_merge(array_column($lessons, 'title'), array_map(function ($f) { return (t('Aplankas:') . ' ') . $f['title']; }, $folders))];
     }
 
     $req = q_all('SELECT id, belt_level, title FROM belt_requirements WHERE created_at = ? ORDER BY belt_level, sort_order', [DEMO_SENTINEL]);
@@ -96,31 +96,31 @@ function test_data_scan(int $meId): array
     try {
         foreach (q_all("SELECT id, reason FROM training_cancellations WHERE reason LIKE 'TEST:%'") as $r) {
             $other['cancellations'][] = (int) $r['id'];
-            $other['items'][] = 'Atšaukta treniruotė: ' . $r['reason'];
+            $other['items'][] = (t('Atšaukta treniruotė:') . ' ') . $r['reason'];
         }
     } catch (PDOException $ex) {
         // dar neimportuotas db/023
     }
     foreach (q_all("SELECT id, title FROM broadcasts WHERE title LIKE 'TEST:%'") as $r) {
         $other['broadcasts'][] = (int) $r['id'];
-        $other['items'][] = 'Pranešimas nariams: ' . $r['title'];
+        $other['items'][] = (t('Pranešimas nariams:') . ' ') . $r['title'];
     }
     foreach (q_all("SELECT id, body FROM member_messages WHERE body LIKE 'TEST:%'") as $r) {
         $other['messages'][] = (int) $r['id'];
-        $other['items'][] = 'Žinutė: ' . mb_strimwidth($r['body'], 0, 80, '…');
+        $other['items'][] = (t('Žinutė:') . ' ') . mb_strimwidth($r['body'], 0, 80, '…');
     }
     if ($n = (int) q_value("SELECT COUNT(*) FROM notifications WHERE title LIKE 'TEST:%'")) {
-        $other['items'][] = 'Pranešimai „TEST:“ paskyrose: ' . $n;
+        $other['items'][] = (t('Pranešimai „TEST:“ paskyrose:') . ' ') . $n;
     }
     $videos = (int) q_value('SELECT COUNT(*) FROM coach_notes WHERE youtube_id = ?', [DEMO_VIDEO])
             + (int) q_value('SELECT COUNT(*) FROM belt_requirements WHERE youtube_id = ? AND created_at <> ?', [DEMO_VIDEO, DEMO_SENTINEL]);
     if ($videos) {
         $other['videos'] = true;
-        $other['items'][] = 'Pavyzdinis video (ne apie karate) pašalinamas iš trenerio pastabų ir programos: ' . $videos;
+        $other['items'][] = (t('Pavyzdinis video (ne apie karate) pašalinamas iš trenerio pastabų ir programos:') . ' ') . $videos;
     }
     if (strpos((string) site_setting('home_page', ''), DEMO_TEXT) !== false) {
         $other['home'] = true;
-        $other['items'][] = 'Pagrindinis puslapis: pavyzdinis instruktoriaus aprašymas „' . DEMO_TEXT . ' …“ (bus tuščias)';
+        $other['items'][] = t('Pagrindinis puslapis: pavyzdinis instruktoriaus aprašymas „') . DEMO_TEXT . (' ' . t('…“ (bus tuščias)'));
     }
     if (!empty($other['items'])) {
         $out['other'] = ['ids' => $other, 'items' => $other['items']];
@@ -259,7 +259,7 @@ function legacy_demo_autopurge(array $me): ?string
         $backup = backup_create();
     } catch (Throwable $ex) {
         error_log('demo purge: backup failed: ' . $ex->getMessage());
-        return 'Senų pavyzdžių neišvalėme: nepavyko atsarginė kopija (' . $ex->getMessage() . ').';
+        return t('Senų pavyzdžių neišvalėme: nepavyko atsarginė kopija (') . $ex->getMessage() . ').';
     }
     $done = test_data_delete((int) $me['id'], $parts);
     $summary = ['date' => date('Y-m-d H:i'), 'backup' => $backup, 'parts' => [], 'kept' => array_keys(array_filter($scan, function ($p) { return !empty($p['keep']); }))];
@@ -267,5 +267,5 @@ function legacy_demo_autopurge(array $me): ?string
         $summary['parts'][$k] = ['count' => $n, 'items' => array_slice($scan[$k]['items'], 0, 300)];
     }
     set_site_setting('demo_isvalyta', json_encode($summary, JSON_UNESCAPED_UNICODE));
-    return 'Išvalyti seni pavyzdiniai duomenys (' . array_sum($done) . '). Sąrašas - Nustatymai → Testavimas.';
+    return t('Išvalyti seni pavyzdiniai duomenys (') . array_sum($done) . t('). Sąrašas - Nustatymai → Testavimas.');
 }

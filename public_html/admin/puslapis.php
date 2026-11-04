@@ -22,7 +22,7 @@ $action = post('action');
 if ($action === 'save') {
     $blocks = json_decode((string) ($_POST['page'] ?? ''), true);
     if (!is_array($blocks) || !$blocks) {
-        out(['ok' => false, 'error' => 'Nepavyko perskaityti puslapio - atnaujinkite ir bandykite dar kartą.']);
+        out(['ok' => false, 'error' => t('Nepavyko perskaityti puslapio - atnaujinkite ir bandykite dar kartą.')]);
     }
     home_save($blocks);
     out(['ok' => true]);
@@ -41,7 +41,7 @@ if ($action === 'undo') {
     $prev = (string) site_setting('home_page_prev', '');
     $cur = (string) site_setting('home_page', '');
     if ($prev === '' && $cur === '') {
-        out(['ok' => false, 'error' => 'Ankstesnės versijos nėra.']);
+        out(['ok' => false, 'error' => t('Ankstesnės versijos nėra.')]);
     }
     // Sukeičiama: dabartinė tampa „ankstesne“, todėl paspaudus dar kartą grįžtama atgal
     set_site_setting('home_page', $prev);
@@ -60,10 +60,10 @@ if ($action === 'reset_block') {
     }
     unset($b);
     if (!$found) {
-        out(['ok' => false, 'error' => 'Blokas nerastas - pirmiausia išsaugokite puslapį.']);
+        out(['ok' => false, 'error' => t('Blokas nerastas - pirmiausia išsaugokite puslapį.')]);
     }
     home_save($page);
     out(['ok' => true]);
 }
 
-out(['ok' => false, 'error' => 'Nežinomas veiksmas.']);
+out(['ok' => false, 'error' => t('Nežinomas veiksmas.')]);

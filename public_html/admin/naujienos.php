@@ -27,7 +27,7 @@ if (is_post()) {
             }
         }
         q('DELETE FROM news WHERE id = ?', [$id]);
-        flash('ok', 'Naujiena ištrinta.');
+        flash('ok', t('Naujiena ištrinta.'));
         redirect('naujienos.php');
     }
 
@@ -39,7 +39,7 @@ if (is_post()) {
             }
             q('DELETE FROM news_media WHERE id = ?', [$m['id']]);
         }
-        flash('ok', 'Pašalinta.');
+        flash('ok', t('Pašalinta.'));
         redirect('admin/naujienos.php?edit=' . $id);
     }
 
@@ -64,10 +64,10 @@ if (is_post()) {
         }
     }
     if ($title === '') {
-        $errors[] = 'Įveskite pavadinimą.';
+        $errors[] = t('Įveskite pavadinimą.');
     }
     if ($body === '') {
-        $errors[] = 'Įveskite tekstą.';
+        $errors[] = t('Įveskite tekstą.');
     }
 
     if (!$errors) {
@@ -91,9 +91,9 @@ if (is_post()) {
             }
         }
         if ($uploadErrors) {
-            flash('err', 'Naujiena išsaugota, bet kai kurių nuotraukų įkelti nepavyko. ' . implode(' ', $uploadErrors));
+            flash('err', (t('Naujiena išsaugota, bet kai kurių nuotraukų įkelti nepavyko.') . ' ') . implode(' ', $uploadErrors));
         } else {
-            flash('ok', $published ? 'Naujiena paskelbta.' : 'Juodraštis išsaugotas.');
+            flash('ok', $published ? t('Naujiena paskelbta.') : t('Juodraštis išsaugotas.'));
         }
         redirect('admin/naujienos.php?edit=' . $id);
     }
@@ -111,34 +111,34 @@ if ($edit !== '') {
     }
     $media = $n['id'] ? news_media((int) $n['id']) : [];
 
-    page_start($n['id'] ? 'Redaguoti naujieną' : 'Nauja naujiena', ['admin' => true, 'section' => 'naujienos']);
+    page_start($n['id'] ? t('Redaguoti naujieną') : t('Nauja naujiena'), ['admin' => true, 'section' => 'naujienos']);
     ?>
-    <a class="small" href="<?= url('naujienos.php') ?>">← Visos naujienos</a><?php if ($n['id'] && $n['is_published']): ?> · <a class="small" href="<?= url('naujienos.php?id=' . (int) $n['id']) ?>">👁 Peržiūrėti</a><?php endif; ?>
-    <h1 class="styled" style="margin-top:8px;"><?= $n['id'] ? 'Redaguoti naujieną' : 'Nauja naujiena' ?></h1>
+    <a class="small" href="<?= url('naujienos.php') ?>"><?= te('← Visos naujienos') ?></a><?php if ($n['id'] && $n['is_published']): ?> · <a class="small" href="<?= url('naujienos.php?id=' . (int) $n['id']) ?>"><?= te('👁 Peržiūrėti') ?></a><?php endif; ?>
+    <h1 class="styled" style="margin-top:8px;"><?= $n['id'] ? t('Redaguoti naujieną') : t('Nauja naujiena') ?></h1>
     <?= form_errors($errors) ?>
     <form method="post" enctype="multipart/form-data" class="form" id="newsForm">
       <?= csrf_field() ?>
       <input type="hidden" name="id" value="<?= (int) $n['id'] ?>">
       <input type="hidden" name="edit" value="<?= e($edit) ?>">
       <div class="panel card form">
-        <label>Pavadinimas <input type="text" name="title" value="<?= e($n['title']) ?>" maxlength="190" required></label>
-        <label>Tekstas <span class="hint">tuščia eilutė - nauja pastraipa; nuorodos tampa paspaudžiamos</span>
+        <label><?= te('Pavadinimas') ?> <input type="text" name="title" value="<?= e($n['title']) ?>" maxlength="190" required></label>
+        <label><?= te('Tekstas') ?> <span class="hint"><?= te('tuščia eilutė - nauja pastraipa; nuorodos tampa paspaudžiamos') ?></span>
           <textarea name="body" rows="10" required><?= e($n['body']) ?></textarea></label>
-        <label>Nuotraukos <span class="hint">galima pasirinkti kelias; sumažinamos automatiškai</span>
+        <label><?= te('Nuotraukos') ?> <span class="hint"><?= te('galima pasirinkti kelias; sumažinamos automatiškai') ?></span>
           <input type="file" name="images[]" accept="image/jpeg,image/png,image/webp" multiple></label>
         <?= no_photo_consent_html() ?>
-        <label>YouTube nuorodos <span class="hint">po vieną eilutėje</span>
+        <label><?= te('YouTube nuorodos') ?> <span class="hint"><?= te('po vieną eilutėje') ?></span>
           <textarea name="youtube" rows="2" placeholder="https://www.youtube.com/watch?v=..." style="min-height:70px;"><?= e(post('youtube')) ?></textarea></label>
         <div class="form-row">
-          <label>Paskelbimo data <input type="datetime-local" name="published_at" value="<?= e(date('Y-m-d\TH:i', strtotime($n['published_at']))) ?>"></label>
-          <label class="check" style="align-self:end; padding-bottom:12px;"><input type="checkbox" name="is_published" value="1" <?= $n['is_published'] ? 'checked' : '' ?>><span>Paskelbta</span></label>
-          <label class="check"><input type="checkbox" name="members_only" value="1" <?= !empty($n['members_only']) ? 'checked' : '' ?>><span>Tik nariams (matys tik prisijungę nariai)</span></label>
+          <label><?= te('Paskelbimo data') ?> <input type="datetime-local" name="published_at" value="<?= e(date('Y-m-d\TH:i', strtotime($n['published_at']))) ?>"></label>
+          <label class="check" style="align-self:end; padding-bottom:12px;"><input type="checkbox" name="is_published" value="1" <?= $n['is_published'] ? 'checked' : '' ?>><span><?= te('Paskelbta') ?></span></label>
+          <label class="check"><input type="checkbox" name="members_only" value="1" <?= !empty($n['members_only']) ? 'checked' : '' ?>><span><?= te('Tik nariams (matys tik prisijungę nariai)') ?></span></label>
         </div>
         <div class="row">
-          <button class="btn btn-primary" type="submit" id="saveBtn">Išsaugoti</button>
+          <button class="btn btn-primary" type="submit" id="saveBtn"><?= te('Išsaugoti') ?></button>
           <?php if ($n['id']): ?>
-            <a class="btn btn-ghost" href="<?= url('naujienos.php?id=' . (int) $n['id']) ?>" target="_blank">Peržiūrėti</a>
-            <button class="btn btn-danger" type="submit" name="action" value="delete" formnovalidate onclick="return confirm('Ištrinti naujieną kartu su nuotraukomis?')">Ištrinti</button>
+            <a class="btn btn-ghost" href="<?= url('naujienos.php?id=' . (int) $n['id']) ?>" target="_blank"><?= te('Peržiūrėti') ?></a>
+            <button class="btn btn-danger" type="submit" name="action" value="delete" formnovalidate onclick="return confirm('Ištrinti naujieną kartu su nuotraukomis?')"><?= te('Ištrinti') ?></button>
           <?php endif; ?>
         </div>
       </div>
@@ -146,21 +146,21 @@ if ($edit !== '') {
 
     <?php if ($media): ?>
       <div class="panel card">
-        <h2>Nuotraukos ir video</h2>
+        <h2><?= te('Nuotraukos ir video') ?></h2>
         <div class="media-admin">
           <?php foreach ($media as $m): ?>
             <div class="item">
               <?php if ($m['type'] === 'image'): ?>
                 <img src="<?= e(news_image_url($m['file'], true)) ?>" alt="">
               <?php else: ?>
-                <div class="yt">▶ YouTube<br><?= e($m['youtube_id']) ?></div>
+                <div class="yt"><?= te('▶ YouTube') ?><br><?= e($m['youtube_id']) ?></div>
               <?php endif; ?>
               <form method="post" onsubmit="return confirm('Pašalinti?')">
                 <?= csrf_field() ?>
                 <input type="hidden" name="id" value="<?= (int) $n['id'] ?>">
                 <input type="hidden" name="action" value="delete_media">
                 <input type="hidden" name="media_id" value="<?= (int) $m['id'] ?>">
-                <button class="btn btn-danger btn-sm" style="background:#fff;" type="submit" aria-label="Pašalinti">✕</button>
+                <button class="btn btn-danger btn-sm" style="background:#fff;" type="submit" aria-label="<?= te('Pašalinti') ?>">✕</button>
               </form>
             </div>
           <?php endforeach; ?>

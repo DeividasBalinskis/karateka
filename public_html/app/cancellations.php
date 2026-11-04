@@ -77,7 +77,7 @@ function render_cancellation_notes(array $list): string
     $html = '';
     foreach ($list as $c) {
         $dates = cancellation_dates($c);
-        $html .= '<div class="cancel-note"><span aria-hidden="true">⚠</span> <span><strong>' . e(mb_strtoupper(mb_substr($dates, 0, 1)) . mb_substr($dates, 1)) . '</strong> treniruočių nebus'
+        $html .= '<div class="cancel-note"><span aria-hidden="true">⚠</span> <span><strong>' . e(mb_strtoupper(mb_substr($dates, 0, 1)) . mb_substr($dates, 1)) . ('</strong> ' . t('treniruočių nebus'))
             . ($c['reason'] !== '' ? ' · ' . e($c['reason']) : '') . '</span></div>';
     }
     return $html;

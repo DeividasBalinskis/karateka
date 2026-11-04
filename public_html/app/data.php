@@ -36,12 +36,12 @@ function event_audience_label(array $ev): string
 function render_schedule(array $rows): string
 {
     if (!$rows) {
-        return '<p class="muted">Tvarkaraštis dar nesudarytas.</p>';
+        return ('<p class="muted">' . t('Tvarkaraštis dar nesudarytas.') . '</p>');
     }
     $html = '';
     foreach ($rows as $r) {
         $time = $r['start_time'] ? fmt_time($r['start_time']) . '–' . fmt_time($r['end_time']) : '';
-        $html .= '<div class="schedule-line"><span>' . e(LT_WEEKDAYS[(int) $r['weekday']])
+        $html .= '<div class="schedule-line"><span>' . e(weekday_names()[(int) $r['weekday']])
             . ($r['note'] ? ' <span class="muted small">· ' . e($r['note']) . '</span>' : '')
             . '</span><span class="schedule-time">' . e($time) . '</span></div>';
     }
@@ -66,7 +66,7 @@ function render_event(array $ev): string
     }
     $link = url('renginys.php?id=' . (int) $ev['id']);
     return '<div class="event">'
-        . '<div class="event-date"><span class="d">' . date('j', $ts) . '</span><span class="m">' . e(mb_substr(LT_MONTHS_GEN[(int) date('n', $ts)], 0, 3)) . '</span></div>'
+        . '<div class="event-date"><span class="d">' . date('j', $ts) . '</span><span class="m">' . e(mb_substr(month_names_gen()[(int) date('n', $ts)], 0, 3)) . '</span></div>'
         . '<div><span class="badge type-badge t-' . e($ev['type']) . '">' . e(EVENT_TYPES[$ev['type']]) . '</span>'
         . '<h3 style="margin-top:6px;"><a class="event-title" href="' . e($link) . '">' . e($ev['title']) . '</a></h3>'
         . '<div class="muted small">' . e($when) . ($ev['location'] ? ' · ' . e($ev['location']) : '') . '</div>'
@@ -96,7 +96,7 @@ function event_staff_actions(array $ev, string $back): string
         . '<a class="btn btn-ghost btn-sm" href="' . e(url('admin/renginio-dalyviai.php?id=' . $id)) . '">Dalyviai' . ($pc['going'] || $pc['invited'] ? ' ' . $pc['going'] . '/' . ($pc['going'] + $pc['invited']) : '') . '</a>';
     if ($ev['type'] === 'competition' && varzybos_enabled()) {
         $html .= '<a class="btn btn-ghost btn-sm" href="' . e(url(!empty($ev['tournament_id']) ? 'admin/varzybu-dalyviai.php?id=' . $id : 'admin/varzybu-rezultatai.php?id=' . $id)) . '">'
-            . (!empty($ev['tournament_id']) ? '🥋 Varžybų sistema' : '🔗 Susieti su varžybomis') . '</a>';
+            . (!empty($ev['tournament_id']) ? t('🥋 Varžybų sistema') : t('🔗 Susieti su varžybomis')) . '</a>';
     }
     if (isset(EVENT_RESULTS[$ev['type']]) && $ev['starts_on'] <= date('Y-m-d')) {
         $html .= '<a class="btn btn-primary btn-sm" href="' . e(url('admin/renginio-rezultatai.php?id=' . $id)) . '">Rezultatai</a>';
@@ -144,9 +144,9 @@ function reaction_html(string $emoji): string
 function reaction_label(string $emoji): string
 {
     if (preg_match('/^belt:(\d+)$/', $emoji, $m) && isset(BELTS[(int) $m[1]])) {
-        return BELTS[(int) $m[1]][1] . ' diržas';
+        return t(BELTS[(int) $m[1]][1]) . (' ' . t('diržas'));
     }
-    return $emoji === 'teisejas' ? 'teisėjo vėliavėlės' : $emoji;
+    return $emoji === 'teisejas' ? t('teisėjo vėliavėlės') : $emoji;
 }
 
 /** Panaudoti emoji su skaičiais: [emoji => count], daugiausiai paspaustas pirmas. Rodomi ir vėliau išjungti emoji. */
@@ -174,7 +174,7 @@ function render_reaction_chips(int $newsId, ?string $mine): string
         if (in_array($emoji, $allowed, true) || $mine === $emoji) {
             $html .= '<button type="submit" name="emoji" value="' . e($emoji) . '" class="reaction' . ($mine === $emoji ? ' mine' : '') . '"'
                 . ($mine === $emoji ? ' title="Jūsų reakcija - paspaudus nuimama"' : '')
-                . ' aria-label="' . e(reaction_label((string) $emoji)) . ' ' . $count . ($mine === $emoji ? ' (jūsų - paspaudus nuimama)' : '') . '">' . $label . '</button>';
+                . ' aria-label="' . e(reaction_label((string) $emoji)) . ' ' . $count . ($mine === $emoji ? (' ' . t('(jūsų - paspaudus nuimama)')) : '') . '">' . $label . '</button>';
         } else {
             // Emoji, kurio nebėra sąraše: reakcijos lieka matomos, bet naujų pridėti nebegalima
             $html .= '<span class="reaction off" title="Šis emoji nebenaudojamas">' . $label . '</span>';
@@ -223,7 +223,7 @@ function share_button(array $n): string
     return '<a class="share-btn" href="https://www.facebook.com/sharer/sharer.php?u=' . rawurlencode($link) . '" target="_blank" rel="noopener"'
         . ' data-share-url="' . e($link) . '" data-share-title="' . e($n['title']) . '" title="Dalintis Facebook\'e ar kitur">'
         . '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M12 3v12M7.5 7.5 12 3l4.5 4.5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
-        . 'Dalintis</a>';
+        . (t('Dalintis') . '</a>');
 }
 
 /** Naujienos viršelis: pirma nuotrauka arba YouTube paveikslėlis ($absolute - pilnas adresas Facebook'ui) */
@@ -267,10 +267,10 @@ function note_source(array $n): string
 {
     $date = fmt_date($n['note_date'], true);
     if (!empty($n['source_event'])) {
-        return 'Renginys: ' . e($n['source_event']) . ' · ' . e($date);
+        return (t('Renginys:') . ' ') . e($n['source_event']) . ' · ' . e($date);
     }
     if (!empty($n['source_group'])) {
-        return 'Treniruotė ' . e($date) . ' · ' . e($n['source_group']);
+        return (t('Treniruotė') . ' ') . e($date) . ' · ' . e($n['source_group']);
     }
     return e($date);
 }
@@ -316,7 +316,7 @@ function public_upcoming_events(int $limit = 4): array
 
 function members_only_badge(array $row): string
 {
-    return !empty($row['members_only']) ? ' <span class="badge badge-members">Tik nariams</span>' : '';
+    return !empty($row['members_only']) ? (' <span class="badge badge-members">' . t('Tik nariams') . '</span>') : '';
 }
 
 // ---------- Pranešimai apie pastabas ir užduotis ----------
@@ -380,18 +380,18 @@ function render_attendance(int $memberId): string
     $m = member_attendance($memberId, date('Y-m-01'), date('Y-m-t'));
     $s = member_attendance($memberId, $sFrom, $sTo);
     if (!$s['buvo'] && !$s['nebuvo']) {
-        return '<p class="muted small">Lankomumas dar nežymėtas.</p>';
+        return ('<p class="muted small">' . t('Lankomumas dar nežymėtas.') . '</p>');
     }
     $n = $m['buvo'] % 100;
-    $word = ($n % 10 === 0 || ($n > 10 && $n < 20)) ? 'treniruočių' : ($n % 10 === 1 ? 'treniruotė' : 'treniruotės');
-    return '<div class="att-summary"><span><strong>' . $m['buvo'] . '</strong> ' . $word . ' šį mėnesį'
-        . ($m['nebuvo'] ? ' <span class="muted">(praleista ' . $m['nebuvo'] . ')</span>' : '') . '</span>'
-        . '<span class="muted">Sezone: ' . $s['buvo'] . ' iš ' . ($s['buvo'] + $s['nebuvo']) . '</span></div>';
+    $word = ($n % 10 === 0 || ($n > 10 && $n < 20)) ? t('treniruočių') : ($n % 10 === 1 ? t('treniruotė') : t('treniruotės'));
+    return '<div class="att-summary"><span><strong>' . $m['buvo'] . '</strong> ' . $word . (' ' . t('šį mėnesį'))
+        . ($m['nebuvo'] ? (' <span class="muted">' . t('(praleista') . ' ') . $m['nebuvo'] . ')</span>' : '') . '</span>'
+        . ('<span class="muted">' . t('Sezone:') . ' ') . $s['buvo'] . (' ' . t('iš') . ' ') . ($s['buvo'] + $s['nebuvo']) . '</span></div>';
 }
 
 // ---------- Trenerio „Šiandien“ ----------
 
-/** „Reikia padaryti“ punktai treneriui: [[tekstas, kelias, mygtukas], ...]. Skaičius rodomas ir ant „Paskyra“ mygtuko. */
+/** „Reikia padaryti“ punktai treneriui: [[tekstas, kelias, mygtukas], ...]. Skaičius rodomas ir ant „Valdymas“ mygtuko. */
 function admin_todo_items(): array
 {
     static $todo = null;
@@ -400,7 +400,7 @@ function admin_todo_items(): array
     }
     $todo = [];
     if ($n = pending_approvals_count()) {
-        $todo[] = ['Laukia patvirtinimo: ' . $n . ($n === 1 ? ' paskyra ar vaikas' : ' paskyros ar vaikai'), 'admin/patvirtinimai.php', 'Patvirtinti'];
+        $todo[] = [(t('Laukia patvirtinimo:') . ' ') . $n . ($n === 1 ? ' paskyra ar vaikas' : ' paskyros ar vaikai'), 'admin/patvirtinimai.php', t('Patvirtinti')];
     }
     // Praėję renginiai be įvestų rezultatų (paskutinės 30 d.)
     $types = "'" . implode("','", array_keys(EVENT_RESULTS)) . "'";
@@ -408,15 +408,15 @@ function admin_todo_items(): array
                      WHERE e.type IN ($types) AND COALESCE(e.ends_on, e.starts_on) BETWEEN DATE_SUB(CURDATE(), INTERVAL 30 DAY) AND DATE_SUB(CURDATE(), INTERVAL 1 DAY)
                        AND NOT EXISTS (SELECT 1 FROM point_awards pa WHERE pa.event_id = e.id)
                      ORDER BY e.starts_on DESC") as $ev) {
-        $todo[] = ['Įvesk rezultatus: ' . $ev['title'] . ' (' . fmt_date($ev['starts_on']) . ')', 'admin/renginio-rezultatai.php?id=' . (int) $ev['id'], 'Rezultatai'];
+        $todo[] = [(t('Įvesk rezultatus:') . ' ') . $ev['title'] . ' (' . fmt_date($ev['starts_on']) . ')', 'admin/renginio-rezultatai.php?id=' . (int) $ev['id'], t('Rezultatai')];
     }
     // Naujos žinutės ir komentarai (prie renginių, naujienų, pamokų) - viena eilutė, atsidaro pokalbis
     if ($n = staff_unread_messages()) {
-        $todo[] = ['Naujos žinutės ir komentarai: ' . $n, 'admin/zinutes.php', 'Atsakyti'];
+        $todo[] = [(t('Naujos žinutės ir komentarai:') . ' ') . $n, 'admin/zinutes.php', t('Atsakyti')];
     }
     try {
         if ($n = (int) q_value('SELECT COUNT(*) FROM anon_feedback WHERE read_at IS NULL')) {
-            $todo[] = ['Nauji anoniminiai komentarai: ' . $n, 'admin/zinutes.php#anoniminiai', 'Skaityti'];
+            $todo[] = [(t('Nauji anoniminiai komentarai:') . ' ') . $n, 'admin/zinutes.php#anoniminiai', t('Skaityti')];
         }
     } catch (PDOException $ex) {
         // dar neimportuotas db/021
@@ -426,13 +426,13 @@ function admin_todo_items(): array
         $last = backup_last_time();
         $tried = @filemtime(backup_dir() . '/.bandyta');   // pirmą kartą kopija daroma dabar - nerodoma
         if (backup_error() || ($last && $last < time() - 2 * 86400) || (!$last && $tried && $tried < time() - 3600)) {
-            $todo[] = [backup_error() ? 'Atsarginė duomenų bazės kopija nepavyko' : 'Atsarginė duomenų bazės kopija nedaryta ' . ($last ? 'nuo ' . fmt_date(date('Y-m-d', $last)) : 'nė karto'), 'admin/kopijos.php', 'Peržiūrėti'];
+            $todo[] = [backup_error() ? t('Atsarginė duomenų bazės kopija nepavyko') : (t('Atsarginė duomenų bazės kopija nedaryta') . ' ') . ($last ? 'nuo ' . fmt_date(date('Y-m-d', $last)) : t('nė karto')), 'admin/kopijos.php', t('Peržiūrėti')];
         }
     }
     // Nauji testų rezultatai per savaitę
     $r = q_one('SELECT COUNT(*) c, COALESCE(SUM(passed), 0) p FROM quiz_attempts WHERE finished_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)');
     if ($r && (int) $r['c']) {
-        $todo[] = ['Nauji testų rezultatai per savaitę: ' . (int) $r['c'] . ' (išlaikė ' . (int) $r['p'] . ')', 'admin/testai.php', 'Peržiūrėti'];
+        $todo[] = [(t('Nauji testų rezultatai per savaitę:') . ' ') . (int) $r['c'] . (' ' . t('(išlaikė') . ' ') . (int) $r['p'] . ')', 'admin/testai.php', t('Peržiūrėti')];
     }
     return $todo;
 }
@@ -453,6 +453,6 @@ function admin_event_link(array $ev): string
 function admin_event_link_label(array $ev): string
 {
     $c = event_participant_counts((int) $ev['id']);
-    return 'Dalyviai' . ($c['going'] || $c['invited'] ? ' ' . $c['going'] . '/' . ($c['going'] + $c['invited']) : '');
+    return t('Dalyviai') . ($c['going'] || $c['invited'] ? ' ' . $c['going'] . '/' . ($c['going'] + $c['invited']) : '');
 }
 

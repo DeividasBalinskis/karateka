@@ -20,10 +20,10 @@ function group_from_post(array &$errors): array
         'color'      => preg_match('/^#[0-9a-fA-F]{6}$/', post('color')) && !post('color_auto') ? strtoupper(post('color')) : null,
     ];
     if ($g['name'] === '') {
-        $errors[] = 'Įveskite grupės pavadinimą.';
+        $errors[] = t('Įveskite grupės pavadinimą.');
     }
     if (!isset(GROUP_CATEGORIES[$g['category']])) {
-        $errors[] = 'Pasirinkite kategoriją.';
+        $errors[] = t('Pasirinkite kategoriją.');
     }
     $_POST['location'] = $g['location'];   // kad klaidos atveju forma išlaikytų pasirinkimą
     return $g;
@@ -37,7 +37,7 @@ if (is_post()) {
         $g = group_from_post($errors);
         if (!$errors) {
             q('INSERT INTO training_groups (name, category, location, sort_order, is_active, place_type, label, price_note, color) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', array_values($g));
-            flash('ok', 'Grupė sukurta. Pridėkite tvarkaraštį.');
+            flash('ok', t('Grupė sukurta. Pridėkite tvarkaraštį.'));
             redirect('admin/grupes.php?id=' . db()->lastInsertId());
         }
     }
@@ -45,7 +45,7 @@ if (is_post()) {
         $g = group_from_post($errors);
         if (!$errors) {
             q('UPDATE training_groups SET name = ?, category = ?, location = ?, sort_order = ?, is_active = ?, place_type = ?, label = ?, price_note = ?, color = ? WHERE id = ?', array_merge(array_values($g), [$id]));
-            flash('ok', 'Išsaugota.');
+            flash('ok', t('Išsaugota.'));
             redirect('admin/grupes.php?id=' . $id);
         }
     }
@@ -53,27 +53,27 @@ if (is_post()) {
         $target = (int) post('target');
         $ids = array_map('intval', (array) ($_POST['members'] ?? []));
         if (!$ids || !q_value('SELECT 1 FROM training_groups WHERE id = ?', [$target])) {
-            flash('err', 'Pažymėkite narius ir pasirinkite grupę.');
+            flash('err', t('Pažymėkite narius ir pasirinkite grupę.'));
         } else {
             foreach ($ids as $mid) {
                 q('UPDATE members SET group_id = ? WHERE id = ? AND group_id = ?', [$target, $mid, $id]);
             }
-            flash('ok', 'Perkelta narių: ' . count($ids));
+            flash('ok', (t('Perkelta narių:') . ' ') . count($ids));
         }
         redirect('admin/grupes.php?id=' . $id);
     }
     if ($action === 'add_member' && $id) {
         q('UPDATE members SET group_id = ? WHERE id = ? AND status = "active"', [$id, (int) post('member_id')]);
-        flash('ok', 'Narys pridėtas į grupę.');
+        flash('ok', t('Narys pridėtas į grupę.'));
         redirect('admin/grupes.php?id=' . $id);
     }
     if ($action === 'delete_group' && $id) {
         if (q_value('SELECT 1 FROM members WHERE group_id = ? AND status <> "inactive" LIMIT 1', [$id])) {
-            flash('err', 'Grupėje yra narių - pirmiausia perkelkite juos į kitą grupę.');
+            flash('err', t('Grupėje yra narių - pirmiausia perkelkite juos į kitą grupę.'));
             redirect('admin/grupes.php?id=' . $id);
         }
         q('DELETE FROM training_groups WHERE id = ?', [$id]);
-        flash('ok', 'Grupė ištrinta.');
+        flash('ok', t('Grupė ištrinta.'));
         redirect('admin/grupes.php');
     }
 }
@@ -81,36 +81,36 @@ if (is_post()) {
 function group_form(array $g, string $action): void
 { ?>
     <input type="hidden" name="action" value="<?= $action ?>">
-    <label>Pavadinimas <input type="text" name="name" value="<?= e($g['name'] ?? '') ?>" required></label>
+    <label><?= te('Pavadinimas') ?> <input type="text" name="name" value="<?= e($g['name'] ?? '') ?>" required></label>
     <div class="form-row">
-      <label>Kategorija
+      <label><?= te('Kategorija') ?>
         <select name="category" required>
           <?php foreach (GROUP_CATEGORIES as $k => $label): ?>
             <option value="<?= $k ?>" <?= ($g['category'] ?? '') === $k ? 'selected' : '' ?>><?= $label ?></option>
           <?php endforeach; ?>
         </select>
       </label>
-      <label>Eiliškumas <span class="hint">mažesnis - aukščiau</span><input type="number" name="sort_order" value="<?= (int) ($g['sort_order'] ?? 0) ?>"></label>
+      <label><?= te('Eiliškumas') ?> <span class="hint"><?= te('mažesnis - aukščiau') ?></span><input type="number" name="sort_order" value="<?= (int) ($g['sort_order'] ?? 0) ?>"></label>
     </div>
     <?= location_field('location', $g['location'] ?? null) ?>
     <div class="form-row">
-      <label>Vietos tipas <span class="hint">pagrindinio puslapio sąrašui</span>
+      <label><?= te('Vietos tipas') ?> <span class="hint"><?= te('pagrindinio puslapio sąrašui') ?></span>
         <select name="place_type">
           <?php foreach (PLACE_TYPES as $k => $pl): ?><option value="<?= $k ?>" <?= ($g['place_type'] ?? 'kita') === $k ? 'selected' : '' ?>><?= $pl ?></option><?php endforeach; ?>
         </select>
       </label>
-      <label>Žymė svetainėje <span class="hint">nebūtina, pvz. „pažengę“</span><input type="text" name="label" value="<?= e($g['label'] ?? '') ?>" maxlength="60"></label>
+      <label><?= te('Žymė svetainėje') ?> <span class="hint"><?= te('nebūtina, pvz. „pažengę“') ?></span><input type="text" name="label" value="<?= e($g['label'] ?? '') ?>" maxlength="60"></label>
     </div>
-    <label>Šios grupės kaina <span class="hint">nebūtina - jei kitokia nei kategorijos (pvz. mokykloje), rodoma prie vietos tvarkaraščio</span>
-      <input type="text" name="price_note" value="<?= e($g['price_note'] ?? '') ?>" maxlength="120" placeholder="pvz. 45 €/mėn. (1 kartą per savaitę)"></label>
+    <label><?= te('Šios grupės kaina') ?> <span class="hint"><?= te('nebūtina - jei kitokia nei kategorijos (pvz. mokykloje), rodoma prie vietos tvarkaraščio') ?></span>
+      <input type="text" name="price_note" value="<?= e($g['price_note'] ?? '') ?>" maxlength="120" placeholder="<?= te('pvz. 45 €/mėn. (1 kartą per savaitę)') ?>"></label>
     <div class="color-field">
-      <label>Spalva <span class="hint">grupės kvadratas „Treniruotė“ puslapyje</span>
+      <label><?= te('Spalva') ?> <span class="hint"><?= te('grupės kvadratas „Treniruotė“ puslapyje') ?></span>
         <input type="color" name="color" value="<?= e(isset($g['id']) ? group_color($g) : '#2F6B5A') ?>"></label>
       <div class="color-swatches" aria-hidden="true"><?php foreach (GROUP_COLORS as $c): ?><button type="button" style="background:<?= $c ?>" data-color="<?= $c ?>" title="<?= $c ?>"></button><?php endforeach; ?></div>
-      <label class="check small"><input type="checkbox" name="color_auto" value="1" <?= empty($g['color']) ? 'checked' : '' ?>><span>Parinkti automatiškai</span></label>
+      <label class="check small"><input type="checkbox" name="color_auto" value="1" <?= empty($g['color']) ? 'checked' : '' ?>><span><?= te('Parinkti automatiškai') ?></span></label>
     </div>
     <script>document.querySelectorAll('.color-swatches').forEach(function (s) { s.addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; var f = s.closest('.color-field'); f.querySelector('input[type=color]').value = b.dataset.color; f.querySelector('input[name=color_auto]').checked = false; }); });</script>
-    <label class="check"><input type="checkbox" name="is_active" value="1" <?= ($g['is_active'] ?? 1) ? 'checked' : '' ?>><span>Aktyvi grupė</span></label>
+    <label class="check"><input type="checkbox" name="is_active" value="1" <?= ($g['is_active'] ?? 1) ? 'checked' : '' ?>><span><?= te('Aktyvi grupė') ?></span></label>
 <?php }
 
 if ($id) {
@@ -126,47 +126,47 @@ if ($id) {
 
     page_start($g['name'], ['admin' => true]);
     ?>
-    <a class="small" href="<?= url('admin/grupes.php') ?>">← Visos grupės</a>
+    <a class="small" href="<?= url('admin/grupes.php') ?>"><?= te('← Visos grupės') ?></a>
     <h1 class="styled" style="margin-top:8px;"><?= e($g['name']) ?></h1>
     <?= form_errors($errors) ?>
     <div class="grid-2">
       <div class="panel card">
         <?php // Tvarkaraštis ir kainos keičiami vienoje vietoje - Nustatymai → Tvarkaraštis ir kainos ?>
-        <div class="row between" style="flex-wrap:wrap; gap:8px;"><h2 style="margin:0;">Tvarkaraštis</h2>
-          <?php if (is_admin()): ?><a class="small" href="<?= url('admin/tvarkarastis.php#' . e($g['category'])) ?>">✎ Keisti tvarkaraštį ir kainą</a><?php endif; ?></div>
-        <?php if (!$slots): ?><p class="muted small">Laikų dar nėra.</p><?php endif; ?>
+        <div class="row between" style="flex-wrap:wrap; gap:8px;"><h2 style="margin:0;"><?= te('Tvarkaraštis') ?></h2>
+          <?php if (is_admin()): ?><a class="small" href="<?= url('admin/tvarkarastis.php#' . e($g['category'])) ?>"><?= te('✎ Keisti tvarkaraštį ir kainą') ?></a><?php endif; ?></div>
+        <?php if (!$slots): ?><p class="muted small"><?= te('Laikų dar nėra.') ?></p><?php endif; ?>
         <?php foreach ($slots as $s): ?>
           <div class="schedule-line">
-            <span><?= e(LT_WEEKDAYS[(int) $s['weekday']]) ?><?= $s['note'] ? ' <span class="muted small">· ' . e($s['note']) . '</span>' : '' ?></span>
+            <span><?= e(weekday_names()[(int) $s['weekday']]) ?><?= $s['note'] ? ' <span class="muted small">· ' . e($s['note']) . '</span>' : '' ?></span>
             <span class="schedule-time"><?= $s['start_time'] ? e(fmt_time($s['start_time']) . '–' . fmt_time($s['end_time'])) : '' ?></span>
           </div>
         <?php endforeach; ?>
-        <?php if (!is_admin()): ?><p class="hint">Tvarkaraštį keičia administratorius.</p><?php endif; ?>
+        <?php if (!is_admin()): ?><p class="hint"><?= te('Tvarkaraštį keičia administratorius.') ?></p><?php endif; ?>
       </div>
       <div class="stack">
         <form method="post" class="panel card form">
           <?= csrf_field() ?>
           <input type="hidden" name="id" value="<?= $id ?>">
-          <h2>Grupės duomenys</h2>
+          <h2><?= te('Grupės duomenys') ?></h2>
           <?php group_form($g, 'update'); ?>
           <div class="row">
-            <button class="btn btn-ghost" type="submit">Išsaugoti</button>
+            <button class="btn btn-ghost" type="submit"><?= te('Išsaugoti') ?></button>
             <?php if (!$members): ?>
-              <button class="btn btn-danger" type="submit" name="action" value="delete_group" formnovalidate onclick="return confirm('Ištrinti grupę kartu su jos tvarkaraščiu?')">Ištrinti grupę</button>
+              <button class="btn btn-danger" type="submit" name="action" value="delete_group" formnovalidate onclick="return confirm('Ištrinti grupę kartu su jos tvarkaraščiu?')"><?= te('Ištrinti grupę') ?></button>
             <?php else: ?>
-              <span class="hint">Grupės su nariais ištrinti negalima - perkelkite narius arba išjunkite grupę.</span>
+              <span class="hint"><?= te('Grupės su nariais ištrinti negalima - perkelkite narius arba išjunkite grupę.') ?></span>
             <?php endif; ?>
           </div>
         </form>
         <div class="panel card">
-          <h2>Nariai (<?= count($members) ?>)</h2>
-          <?php if (!$members): ?><p class="muted small">Aktyvių narių nėra.</p><?php endif; ?>
+          <h2><?= te('Nariai (') ?><?= count($members) ?>)</h2>
+          <?php if (!$members): ?><p class="muted small"><?= te('Aktyvių narių nėra.') ?></p><?php endif; ?>
           <?php if ($members): ?>
             <form method="post" class="form" id="moveForm">
               <?= csrf_field() ?>
               <input type="hidden" name="id" value="<?= $id ?>">
               <input type="hidden" name="action" value="move_members">
-              <label class="check small" style="font-weight:600;"><input type="checkbox" onclick="document.querySelectorAll('#moveForm .pick').forEach(function(c){c.checked=this.checked}.bind(this))"><span>Pažymėti visus</span></label>
+              <label class="check small" style="font-weight:600;"><input type="checkbox" onclick="document.querySelectorAll('#moveForm .pick').forEach(function(c){c.checked=this.checked}.bind(this))"><span><?= te('Pažymėti visus') ?></span></label>
               <ul class="list small">
                 <?php foreach ($members as $m): ?>
                   <li class="row" style="gap:10px;">
@@ -175,10 +175,10 @@ if ($id) {
                   </li>
                 <?php endforeach; ?>
               </ul>
-              <label>Perkelti pažymėtus į
+              <label><?= te('Perkelti pažymėtus į') ?>
                 <select name="target" required><?= group_options(null) ?></select>
               </label>
-              <div><button class="btn btn-primary" type="submit">Perkelti</button></div>
+              <div><button class="btn btn-primary" type="submit"><?= te('Perkelti') ?></button></div>
             </form>
           <?php endif; ?>
           <?php $others = q_all('SELECT m.id, m.first_name, m.last_name, g.name AS group_name FROM members m LEFT JOIN training_groups g ON g.id = m.group_id
@@ -189,15 +189,15 @@ if ($id) {
               <?= csrf_field() ?>
               <input type="hidden" name="id" value="<?= $id ?>">
               <input type="hidden" name="action" value="add_member">
-              <label>Pridėti narį į šią grupę
+              <label><?= te('Pridėti narį į šią grupę') ?>
                 <select name="member_id" required>
-                  <option value="">— pasirinkite narį —</option>
+                  <option value=""><?= te('— pasirinkite narį —') ?></option>
                   <?php foreach ($others as $o): ?>
-                    <option value="<?= (int) $o['id'] ?>"><?= e($o['last_name'] . ' ' . $o['first_name']) ?> (<?= e($o['group_name'] ?: 'be grupės') ?>)</option>
+                    <option value="<?= (int) $o['id'] ?>"><?= e($o['last_name'] . ' ' . $o['first_name']) ?> (<?= e($o['group_name'] ?: t('be grupės')) ?>)</option>
                   <?php endforeach; ?>
                 </select>
               </label>
-              <div><button class="btn btn-ghost" type="submit">Pridėti</button></div>
+              <div><button class="btn btn-ghost" type="submit"><?= te('Pridėti') ?></button></div>
             </form>
           <?php endif; ?>
         </div>
@@ -211,9 +211,9 @@ if ($id) {
 $groups = q_all('SELECT g.*, (SELECT COUNT(*) FROM members m WHERE m.group_id = g.id AND m.status = "active") AS members
                    FROM training_groups g ORDER BY g.is_active DESC, g.sort_order, g.name');
 
-page_start('Grupės', ['admin' => true]);
+page_start(t('Grupės'), ['admin' => true]);
 ?>
-<div class="page-head"><h1 class="styled">Grupės ir tvarkaraštis</h1></div>
+<div class="page-head"><h1 class="styled"><?= te('Grupės ir tvarkaraštis') ?></h1></div>
 <?= form_errors($errors) ?>
 <div class="grid-2">
   <div class="panel card">
@@ -232,9 +232,9 @@ page_start('Grupės', ['admin' => true]);
   </div>
   <form method="post" class="panel card form">
     <?= csrf_field() ?>
-    <h2>Nauja grupė</h2>
+    <h2><?= te('Nauja grupė') ?></h2>
     <?php group_form(post('action') === 'create' ? $_POST : [], 'create'); ?>
-    <div><button class="btn btn-primary" type="submit">Sukurti</button></div>
+    <div><button class="btn btn-primary" type="submit"><?= te('Sukurti') ?></button></div>
   </form>
 </div>
 <?php

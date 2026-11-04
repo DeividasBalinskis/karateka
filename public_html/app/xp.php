@@ -43,6 +43,7 @@ function render_xp_card(array $member, bool $compact = false, bool $showBelt = t
     $l = xp_level($total);
     $belt = current_belt($member['belt_level'] !== null ? (int) $member['belt_level'] : null);
     [, $beltName, $color] = BELTS[$belt];
+    $beltName = t($beltName);
     return '<div class="xp-card' . ($compact ? ' compact' : '') . ($belt === 1 ? ' belt-light' : '') . '" style="--belt:' . e($color) . ';">'
         . '<div class="xp-level" title="Lygis"><span class="xp-level-n">' . $l['level'] . '</span><span class="xp-level-l">lygis</span></div>'
         . '<div class="xp-main"><div class="xp-row"><strong>' . $l['xp'] . ' XP</strong><span class="xp-next">iki ' . ($l['level'] + 1) . ' lygio: ' . $l['need'] . ' XP</span></div>'

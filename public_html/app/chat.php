@@ -25,21 +25,21 @@ function chat_page_context(string $page): array
 function message_context(array $r, bool $staffView = false): array
 {
     if (!empty($r['note_id'])) {
-        return ['key' => 'n' . $r['note_id'], 'label' => 'Atsakymas į trenerio pastabą',
+        return ['key' => 'n' . $r['note_id'], 'label' => t('Atsakymas į trenerio pastabą'),
             'url' => $staffView ? 'admin/nariai.php?id=' . (int) $r['member_id'] : 'paskyra.php?m=' . (int) $r['member_id'] . '#n' . $r['note_id']];
     }
     if (!empty($r['lesson_id'])) {
-        return ['key' => 'l' . $r['lesson_id'], 'label' => 'Pamoka: ' . ($r['lesson_title'] ?? ''), 'url' => 'pamokos.php?id=' . (int) $r['lesson_id'] . '#q-' . (int) $r['member_id']];
+        return ['key' => 'l' . $r['lesson_id'], 'label' => (t('Pamoka:') . ' ') . ($r['lesson_title'] ?? ''), 'url' => 'pamokos.php?id=' . (int) $r['lesson_id'] . '#q-' . (int) $r['member_id']];
     }
     if (!empty($r['event_id'])) {
-        return ['key' => 'e' . $r['event_id'], 'label' => 'Renginys: ' . ($r['event_title'] ?? ''), 'url' => 'renginys.php?id=' . (int) $r['event_id'] . '#q-' . (int) $r['member_id']];
+        return ['key' => 'e' . $r['event_id'], 'label' => (t('Renginys:') . ' ') . ($r['event_title'] ?? ''), 'url' => 'renginys.php?id=' . (int) $r['event_id'] . '#q-' . (int) $r['member_id']];
     }
     if (!empty($r['news_id'])) {
-        return ['key' => 'w' . $r['news_id'], 'label' => 'Naujiena: ' . ($r['news_title'] ?? ''), 'url' => 'naujienos.php?id=' . (int) $r['news_id'] . '#q-' . (int) $r['member_id']];
+        return ['key' => 'w' . $r['news_id'], 'label' => (t('Naujiena:') . ' ') . ($r['news_title'] ?? ''), 'url' => 'naujienos.php?id=' . (int) $r['news_id'] . '#q-' . (int) $r['member_id']];
     }
     $page = (string) ($r['page'] ?? '');
     $file = basename((string) parse_url($page, PHP_URL_PATH)) ?: 'index.php';
-    return ['key' => 'general', 'label' => $page !== '' ? 'Parašyta: ' . (CHAT_PAGE_NAMES[$file] ?? $file) : '', 'url' => null];
+    return ['key' => 'general', 'label' => $page !== '' ? (t('Parašyta:') . ' ') . (CHAT_PAGE_NAMES[$file] ?? $file) : '', 'url' => null];
 }
 
 /** Kas rašė: treneriui - vardas, pavardė ir ryšys su nariu („tėvai“), nariui - „Jūs“ / vardas */
@@ -47,7 +47,7 @@ function chat_author(array $r, bool $staffView, array $relations = []): string
 {
     $who = message_author($r, $staffView);
     if ($staffView && !$r['from_staff'] && ($relations[(int) $r['author_id']] ?? '') === 'parent') {
-        $who .= ' (tėvai)';
+        $who .= (' ' . t('(tėvai)'));
     }
     return $who;
 }
@@ -96,7 +96,7 @@ function chat_conversations(string $search = ''): array
     $out = [];
     foreach ($rows as $r) {
         $out[] = ['id' => (int) $r['id'], 'name' => $r['first_name'] . ' ' . $r['last_name'], 'group' => group_short_name(['name' => (string) $r['group_name']]),
-            'last' => ($r['last_staff'] ? 'Jūs: ' : '') . mb_strimwidth(preg_replace('~\s+~u', ' ', (string) $r['last_body']), 0, 70, '…'),
+            'last' => ($r['last_staff'] ? (t('Jūs:') . ' ') : '') . mb_strimwidth(preg_replace('~\s+~u', ' ', (string) $r['last_body']), 0, 70, '…'),
             'when' => notification_when($r['last_at']), 'unread' => (int) $r['unread']];
     }
     $start = [];
@@ -124,7 +124,7 @@ function chat_all_members(string $search = ''): array
                     ORDER BY g.sort_order IS NULL, g.sort_order, g.name, m.first_name, m.last_name LIMIT 500', $search !== '' ? [$like, $like, $like] : []);
     return array_map(function ($r) {
         return ['id' => (int) $r['id'], 'name' => $r['first_name'] . ' ' . $r['last_name'],
-            'group' => $r['group_name'] ? group_short_name(['name' => $r['group_name']]) : 'Be grupės',
+            'group' => $r['group_name'] ? group_short_name(['name' => $r['group_name']]) : t('Be grupės'),
             'belt' => $r['belt_level'] !== null && isset(BELTS[(int) $r['belt_level']]) ? BELTS[(int) $r['belt_level']][0] : '', 'chat' => (bool) $r['has_chat']];
     }, $rows);
 }
@@ -136,9 +136,9 @@ function chat_member_info(int $memberId): array
     if (!$m) {
         return [];
     }
-    $accs = array_map(function ($a) { return $a['first_name'] . ($a['relation'] === 'parent' ? ' (tėvai)' : ''); },
+    $accs = array_map(function ($a) { return $a['first_name'] . ($a['relation'] === 'parent' ? (' ' . t('(tėvai)')) : ''); },
         q_all('SELECT a.first_name, am.relation FROM account_members am JOIN accounts a ON a.id = am.account_id WHERE am.member_id = ? AND a.status = "active"', [$memberId]));
-    $parts = [$m['group_name'] ? group_short_name(['name' => $m['group_name']]) : 'be grupės', $accs ? 'rašo: ' . implode(', ', $accs) : 'paskyros nėra'];
+    $parts = [$m['group_name'] ? group_short_name(['name' => $m['group_name']]) : t('be grupės'), $accs ? (t('rašo:') . ' ') . implode(', ', $accs) : t('paskyros nėra')];
     return ['id' => (int) $m['id'], 'name' => $m['first_name'] . ' ' . $m['last_name'], 'sub' => implode(' · ', $parts),
         'card' => url('admin/nariai.php?id=' . (int) $m['id'])];
 }
@@ -217,17 +217,17 @@ function chat_widget_html(): string
         $cfg = ['api' => url('pokalbis.php'), 'csrf' => csrf_token(), 'staff' => true, 'pages' => url('klausimai.php')];
         return '<div class="chat staff" id="chat" data-chat="' . e(json_encode($cfg)) . '">'
             . '<button type="button" class="chat-fab" id="chatFab" aria-expanded="false" aria-controls="chatPanel" title="Pokalbiai su nariais">' . $icon
-            . '<span class="chat-fab-label">Žinutės</span>' . $badge . '</button>'
+            . ('<span class="chat-fab-label">' . t('Žinutės') . '</span>') . $badge . '</button>'
             . '<div class="chat-panel wide" id="chatPanel" role="dialog" aria-label="Pokalbiai su nariais" hidden>'
-            . '<aside class="chat-side"><div class="chat-side-head"><strong>Pokalbiai</strong><button type="button" class="chat-close" aria-label="Uždaryti">×</button></div>'
+            . ('<aside class="chat-side"><div class="chat-side-head"><strong>' . t('Pokalbiai') . '</strong><button type="button" class="chat-close" aria-label="' . e(t('Uždaryti')) . '">×</button></div>')
             . '<input type="search" class="chat-search" placeholder="Ieškoti nario ar grupės…" aria-label="Ieškoti nario ar grupės" autocomplete="off">'
-            . '<div class="chat-side-tabs" role="tablist"><button type="button" role="tab" class="active" data-side="chats" aria-selected="true">Pokalbiai</button>'
-            . '<button type="button" role="tab" data-side="all" aria-selected="false">Visi nariai</button></div>'
-            . '<div class="chat-list" role="list"><p class="chat-empty">Kraunama…</p></div></aside>'
+            . ('<div class="chat-side-tabs" role="tablist"><button type="button" role="tab" class="active" data-side="chats" aria-selected="true">' . t('Pokalbiai') . '</button>')
+            . ('<button type="button" role="tab" data-side="all" aria-selected="false">' . t('Visi nariai') . '</button></div>')
+            . ('<div class="chat-list" role="list"><p class="chat-empty">' . t('Kraunama…') . '</p></div></aside>')
             . '<section class="chat-main"><header class="chat-head"><button type="button" class="chat-back" aria-label="Atgal į pokalbius">‹</button>'
-            . '<button type="button" class="chat-who" title="Nario profilis" disabled><span class="chat-avatar" aria-hidden="true">?</span><span class="chat-who-text"><strong class="chat-title">Pasirinkite pokalbį</strong><span class="chat-sub"></span></span></button>'
-            . '<button type="button" class="chat-card" hidden>Profilis</button><button type="button" class="chat-close" aria-label="Uždaryti">×</button></header>'
-            . '<div class="chat-thread" aria-live="polite"><p class="chat-empty">Kairėje pasirinkite žmogų arba suraskite paieškoje.</p></div>'
+            . ('<button type="button" class="chat-who" title="' . e(t('Nario profilis')) . '" disabled><span class="chat-avatar" aria-hidden="true">?</span><span class="chat-who-text"><strong class="chat-title">' . t('Pasirinkite pokalbį') . '</strong><span class="chat-sub"></span></span></button>')
+            . ('<button type="button" class="chat-card" hidden>' . t('Profilis') . '</button><button type="button" class="chat-close" aria-label="' . e(t('Uždaryti')) . '">×</button></header>')
+            . ('<div class="chat-thread" aria-live="polite"><p class="chat-empty">' . t('Kairėje pasirinkite žmogų arba suraskite paieškoje.') . '</p></div>')
             . '<div class="chat-reply-ctx" hidden><span></span><button type="button" aria-label="Atsakyti bendrai">×</button></div>'
             . $form . '</section></div></div>';
     }
@@ -238,23 +238,23 @@ function chat_widget_html(): string
     }
     $select = '';
     if (count($members) > 1) {
-        $select = '<label class="chat-member">Dėl <select>';
+        $select = ('<label class="chat-member">' . t('Dėl') . ' <select>');
         foreach ($members as $m) {
-            $select .= '<option value="' . (int) $m['id'] . '">' . e($m['first_name']) . ($m['relation'] === 'self' ? ' (aš)' : '') . '</option>';
+            $select .= '<option value="' . (int) $m['id'] . '">' . e($m['first_name']) . ($m['relation'] === 'self' ? (' ' . t('(aš)')) : '') . '</option>';
         }
         $select .= '</select></label>';
     }
     $cfg = ['api' => url('pokalbis.php'), 'send' => url('zinute.php'), 'csrf' => csrf_token(), 'member' => (int) $members[0]['id'], 'hint' => empty($a['chat_hint_at'])];
     return '<div class="chat" id="chat" data-chat="' . e(json_encode($cfg)) . '">'
         . '<button type="button" class="chat-fab" id="chatFab" aria-expanded="false" aria-controls="chatPanel" title="Parašyti Deniui">' . $icon
-        . '<span class="chat-fab-label">Rašyti Deniui</span>' . $badge . '</button>'
-        . '<div class="chat-hint" id="chatHint" hidden><span>👋 Turite klausimą? Čia galite parašyti Deniui - jis atsakys čia pat.</span>'
+        . ('<span class="chat-fab-label">' . t('Rašyti Deniui') . '</span>') . $badge . '</button>'
+        . ('<div class="chat-hint" id="chatHint" hidden><span>' . t('👋 Turite klausimą? Čia galite parašyti Deniui - jis atsakys čia pat.') . '</span>')
         . '<button type="button" class="chat-hint-x" aria-label="Uždaryti">×</button></div>'
         . '<div class="chat-panel" id="chatPanel" role="dialog" aria-label="Pokalbis su Deniu" hidden>'
-        . '<header class="chat-head"><span class="chat-avatar" aria-hidden="true">D</span><div><strong>Denis</strong><span class="chat-sub">Klubo vadovas · atsakys, kai tik galės</span></div>'
+        . ('<header class="chat-head"><span class="chat-avatar" aria-hidden="true">D</span><div><strong>' . t('Denis') . '</strong><span class="chat-sub">' . t('Klubo vadovas · atsakys, kai tik galės') . '</span></div>')
         . '<button type="button" class="chat-close" aria-label="Uždaryti">×</button></header>'
         . '<div class="chat-pane" data-pane="msg">' . $select
-        . '<div class="chat-thread" aria-live="polite"><p class="chat-empty">Parašykite - atsakymas atsiras čia.</p></div>' . $form
-        . '<p class="chat-note">Mato tik Denis (ir kiti treneriai).</p></div>'
+        . ('<div class="chat-thread" aria-live="polite"><p class="chat-empty">' . t('Parašykite - atsakymas atsiras čia.') . '</p></div>') . $form
+        . ('<p class="chat-note">' . t('Mato tik Denis (ir kiti treneriai).') . '</p></div>')
         . '</div></div>';
 }

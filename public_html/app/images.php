@@ -10,22 +10,22 @@ const IMAGE_MAX_BYTES = 15 * 1024 * 1024;
 function save_uploaded_image(array $file, string $dir): string
 {
     if (($file['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
-        throw new RuntimeException('Nepavyko įkelti failo' . ($file['error'] === UPLOAD_ERR_INI_SIZE ? ' - per didelis.' : '.'));
+        throw new RuntimeException(t('Nepavyko įkelti failo') . ($file['error'] === UPLOAD_ERR_INI_SIZE ? (' ' . t('- per didelis.')) : '.'));
     }
     if ($file['size'] > IMAGE_MAX_BYTES) {
-        throw new RuntimeException('Nuotrauka per didelė (daugiausia 15 MB).');
+        throw new RuntimeException(t('Nuotrauka per didelė (daugiausia 15 MB).'));
     }
     $info = @getimagesize($file['tmp_name']);
     $types = [IMAGETYPE_JPEG => 'imagecreatefromjpeg', IMAGETYPE_PNG => 'imagecreatefrompng', IMAGETYPE_WEBP => 'imagecreatefromwebp'];
     if (!$info || !isset($types[$info[2]])) {
-        throw new RuntimeException('Netinkamas formatas: tinka JPG, PNG arba WEBP.');
+        throw new RuntimeException(t('Netinkamas formatas: tinka JPG, PNG arba WEBP.'));
     }
     if ($info[0] * $info[1] > 50000000) {
-        throw new RuntimeException('Nuotraukos raiška per didelė.');
+        throw new RuntimeException(t('Nuotraukos raiška per didelė.'));
     }
     $src = @$types[$info[2]]($file['tmp_name']);
     if (!$src) {
-        throw new RuntimeException('Nepavyko nuskaityti nuotraukos.');
+        throw new RuntimeException(t('Nepavyko nuskaityti nuotraukos.'));
     }
 
     // Telefonų nuotraukos dažnai būna pasuktos tik EXIF žyma
@@ -38,7 +38,7 @@ function save_uploaded_image(array $file, string $dir): string
     }
 
     if (!is_dir($dir) && !mkdir($dir, 0755, true)) {
-        throw new RuntimeException('Nepavyko sukurti aplanko nuotraukoms.');
+        throw new RuntimeException(t('Nepavyko sukurti aplanko nuotraukoms.'));
     }
     $name = bin2hex(random_bytes(12)) . '.jpg';
     write_resized_jpeg($src, IMAGE_MAX, $dir . '/' . $name, 82);
@@ -60,7 +60,7 @@ function write_resized_jpeg($src, int $max, string $path, int $quality): void
     imagecopyresampled($dst, $src, 0, 0, 0, 0, $nw, $nh, $w, $h);
     imageinterlace($dst, true);
     if (!imagejpeg($dst, $path, $quality)) {
-        throw new RuntimeException('Nepavyko išsaugoti nuotraukos.');
+        throw new RuntimeException(t('Nepavyko išsaugoti nuotraukos.'));
     }
     imagedestroy($dst);
 }

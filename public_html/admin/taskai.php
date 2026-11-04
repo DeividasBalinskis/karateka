@@ -19,17 +19,17 @@ if (is_post()) {
         if (post('xp_per_level') !== '') {
             set_site_setting('xp_per_level', (string) max(10, min(10000, (int) post('xp_per_level'))));
         }
-        flash('ok', 'Taškų vertės išsaugotos. Jos galioja naujiems skyrimams.');
+        flash('ok', t('Taškų vertės išsaugotos. Jos galioja naujiems skyrimams.'));
     }
 
     if ($action === 'add_category' && is_admin() && post('new_name') !== '') {
         q('INSERT INTO point_categories (name, points, sort_order) VALUES (?, ?, 100)', [post('new_name'), (int) post('new_points')]);
-        flash('ok', 'Kategorija pridėta.');
+        flash('ok', t('Kategorija pridėta.'));
     }
 
     if ($action === 'delete_award') {
         q('DELETE FROM point_awards WHERE id = ?', [(int) post('award_id')]);
-        flash('ok', 'Taškai pašalinti.');
+        flash('ok', t('Taškai pašalinti.'));
     }
     redirect('admin/taskai.php');
 }
@@ -45,10 +45,10 @@ $recent = q_all('SELECT pa.*, pc.name AS category_name, m.first_name, m.last_nam
                   WHERE pc.code IS NULL OR pc.code <> "attendance"
                   ORDER BY pa.created_at DESC, pa.id DESC LIMIT 30');
 
-page_start('Taškai', ['admin' => true]);
+page_start(t('Taškai'), ['admin' => true]);
 ?>
 <div class="page-head">
-  <h1 class="styled">Taškai ir reitingas</h1>
+  <h1 class="styled"><?= te('Taškai ir reitingas') ?></h1>
   <p><?= e($seasonLabel) ?> (<?= e(fmt_date($from, true)) ?> – <?= e(fmt_date($to, true)) ?>)</p>
 </div>
 
@@ -59,20 +59,20 @@ page_start('Taškai', ['admin' => true]);
     <form method="post" class="panel card form">
       <?= csrf_field() ?>
       <input type="hidden" name="action" value="save_categories">
-      <h2>Už ką skiriami taškai (XP)</h2>
-      <p class="hint">Taškai ir XP - tas pats: iš sezono taškų skaičiuojamas reitingas, iš visų kada nors surinktų - nario paskyros lygis.
-        Pakeista vertė galioja tik naujiems skyrimams - anksčiau skirti taškai nesikeičia.<?= is_admin() ? '' : ' Keisti gali administratorius.' ?></p>
-      <label class="xp-setting">Vienam lygiui reikia
+      <h2><?= te('Už ką skiriami taškai (XP)') ?></h2>
+      <p class="hint"><?= te('Taškai ir XP - tas pats: iš sezono taškų skaičiuojamas reitingas, iš visų kada nors surinktų - nario paskyros lygis.
+        Pakeista vertė galioja tik naujiems skyrimams - anksčiau skirti taškai nesikeičia.') ?><?= is_admin() ? '' : (' ' . t('Keisti gali administratorius.')) ?></p>
+      <label class="xp-setting"><?= te('Vienam lygiui reikia') ?>
         <input type="number" name="xp_per_level" min="10" max="10000" value="<?= xp_per_level() ?>" <?= is_admin() ? '' : 'disabled' ?>> XP
       </label>
       <table class="table">
-        <thead><tr><th>Kategorija</th><th style="width:80px;">Taškai</th><th style="width:40px;" title="Aktyvi">✓</th></tr></thead>
+        <thead><tr><th><?= te('Kategorija') ?></th><th style="width:80px;"><?= te('Taškai') ?></th><th style="width:40px;" title="<?= te('Aktyvi') ?>">✓</th></tr></thead>
         <tbody>
           <?php foreach ($categories as $c): ?>
             <tr>
               <td><input type="text" name="name[<?= (int) $c['id'] ?>]" value="<?= e($c['name']) ?>" style="padding:8px 10px; font-size:14px;" <?= is_admin() ? '' : 'disabled' ?>></td>
               <?php if ($c['code'] === 'skill'): ?>
-                <td><input type="hidden" name="points[<?= (int) $c['id'] ?>]" value="0"><a class="small" href="<?= url('admin/programa.php') ?>" title="Kiekvienas programos punktas turi savo XP">prie punkto</a></td>
+                <td><input type="hidden" name="points[<?= (int) $c['id'] ?>]" value="0"><a class="small" href="<?= url('admin/programa.php') ?>" title="<?= te('Kiekvienas programos punktas turi savo XP') ?>">prie punkto</a></td>
               <?php else: ?>
                 <td><input type="number" name="points[<?= (int) $c['id'] ?>]" value="<?= (int) $c['points'] ?>" style="padding:8px 10px; font-size:14px;" <?= is_admin() ? '' : 'disabled' ?>></td>
               <?php endif; ?>
@@ -81,25 +81,25 @@ page_start('Taškai', ['admin' => true]);
           <?php endforeach; ?>
         </tbody>
       </table>
-      <?php if (is_admin()): ?><div><button class="btn btn-primary" type="submit">Išsaugoti vertes</button></div><?php endif; ?>
+      <?php if (is_admin()): ?><div><button class="btn btn-primary" type="submit"><?= te('Išsaugoti vertes') ?></button></div><?php endif; ?>
     </form>
 
     <?php if (is_admin()): ?>
       <form method="post" class="panel card form">
         <?= csrf_field() ?>
         <input type="hidden" name="action" value="add_category">
-        <h2>Nauja kategorija</h2>
+        <h2><?= te('Nauja kategorija') ?></h2>
         <div class="form-row" style="grid-template-columns:2fr 1fr;">
-          <label>Pavadinimas <input type="text" name="new_name" required></label>
-          <label>Taškai <input type="number" name="new_points" value="5" required></label>
+          <label><?= te('Pavadinimas') ?> <input type="text" name="new_name" required></label>
+          <label><?= te('Taškai') ?> <input type="number" name="new_points" value="5" required></label>
         </div>
-        <div><button class="btn btn-ghost" type="submit">Pridėti</button></div>
+        <div><button class="btn btn-ghost" type="submit"><?= te('Pridėti') ?></button></div>
       </form>
     <?php endif; ?>
 
     <div class="panel card">
-      <h2>Paskutiniai skyrimai</h2>
-      <?php if (!$recent): ?><p class="muted small">Taškų dar neskirta.</p><?php endif; ?>
+      <h2><?= te('Paskutiniai skyrimai') ?></h2>
+      <?php if (!$recent): ?><p class="muted small"><?= te('Taškų dar neskirta.') ?></p><?php endif; ?>
       <ul class="list small">
         <?php foreach ($recent as $r): ?>
           <li class="row between">
@@ -109,7 +109,7 @@ page_start('Taškai', ['admin' => true]);
             </span>
             <form method="post" class="inline-form" onsubmit="return confirm('Pašalinti šiuos taškus?')">
               <?= csrf_field() ?><input type="hidden" name="action" value="delete_award"><input type="hidden" name="award_id" value="<?= (int) $r['id'] ?>">
-              <button class="btn btn-danger btn-sm" type="submit" aria-label="Pašalinti">✕</button>
+              <button class="btn btn-danger btn-sm" type="submit" aria-label="<?= te('Pašalinti') ?>">✕</button>
             </form>
           </li>
         <?php endforeach; ?>
