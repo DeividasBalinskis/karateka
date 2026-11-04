@@ -26,9 +26,11 @@ if ($changes) {
     Fail 'Pirma juos išsaugokite (git commit) arba parašykite Deividui.'
 }
 
-Write-Host "`n1/3 Atsisiunčiama iš GitHub..." -ForegroundColor Cyan
-git pull --ff-only
-if ($LASTEXITCODE -ne 0) { Fail 'Nepavyko atsisiųsti (git pull). Nukopijuokite klaidą ir parašykite Deividui.' }
+Write-Host "`n1/3 Atsisiunčiama iš GitHub (main)..." -ForegroundColor Cyan
+git fetch origin main
+if ($LASTEXITCODE -ne 0) { Fail 'Nepavyko prisijungti prie GitHub. Patikrinkite internetą ir paleiskite dar kartą.' }
+git checkout -B main origin/main    # aplankas = lygiai tokia versija, kaip GitHub main
+if ($LASTEXITCODE -ne 0) { Fail 'Nepavyko paimti main versijos. Nukopijuokite klaida ir parasykite Deividui.' }
 
 docker compose up -d
 if ($LASTEXITCODE -ne 0) { Fail 'Nepavyko paleisti (docker compose up).' }

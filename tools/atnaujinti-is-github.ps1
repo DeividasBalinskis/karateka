@@ -15,22 +15,22 @@ function Stop-WithMessage($msg) {
     exit 1
 }
 
-if (-not (Get-Command git -ErrorAction SilentlyContinue)) { Stop-WithMessage 'Nerastas git. Įdiekite „Git for Windows“ ir paleiskite dar kartą.' }
-
-$branch = (git rev-parse --abbrev-ref HEAD).Trim()
-if ($branch -ne 'main') { Stop-WithMessage "Aplankas ne „main“ šakoje (dabar: $branch). Parašykite Deividui." }
+if (-not (Get-Command git -ErrorAction SilentlyContinue)) { Stop-WithMessage 'Nerastas git. Įdiekite Git for Windows ir paleiskite dar kartą.' }
 
 $changes = git status --porcelain
 if ($changes) {
     Write-Host 'Šiame aplanke yra pakeitimų, kurių nėra GitHub:' -ForegroundColor Yellow
     $changes | ForEach-Object { Write-Host "  $_" }
-    Stop-WithMessage "Pirma juos įkelkite į GitHub:`n  git add -A`n  git commit -m `"Pakeitimai`"`n  git push origin main`narba parašykite Deividui."
+    Stop-WithMessage 'Šiame aplanke kažkas pakeista ranka. Parašykite Deividui (arba: git stash).'
 }
 
+# Visada imama oficiali versija - main šaka (jei aplankas kitoje šakoje, persijungiama)
 Write-Host '1/2 Atsisiunčiama iš GitHub...' -ForegroundColor Cyan
+git fetch origin main
+if ($LASTEXITCODE -ne 0) { Stop-WithMessage 'Nepavyko prisijungti prie GitHub. Patikrinkite internetą ir paleiskite dar kartą.' }
 $before = (git rev-parse HEAD).Trim()
-git pull --ff-only origin main
-if ($LASTEXITCODE -ne 0) { Stop-WithMessage 'Nepavyko atsisiųsti (git pull). Nukopijuokite klaidą ir parašykite Deividui.' }
+git checkout -B main origin/main    # aplankas = lygiai tokia versija, kaip GitHub main
+if ($LASTEXITCODE -ne 0) { Stop-WithMessage 'Nepavyko paimti main versijos. Nukopijuokite klaida ir parasykite Deividui.' }
 $after = (git rev-parse HEAD).Trim()
 
 Write-Host "`n2/2 Ruošiamas įkėlimo paketas..." -ForegroundColor Cyan
@@ -38,17 +38,13 @@ Write-Host "`n2/2 Ruošiamas įkėlimo paketas..." -ForegroundColor Cyan
 if (-not $? -or $LASTEXITCODE -ne 0) { Stop-WithMessage 'Nepavyko paruošti zip (klaida parašyta aukščiau).' }
 
 if ($before -eq $after) {
-    Write-Host "`nNaujų pakeitimų GitHub'e nebuvo - zip ta pati versija." -ForegroundColor Yellow
-} else {
-    # Ką importuoti: nauji db\0xx failai nuo praeito atnaujinimo
-    $newSql = @(git diff --name-only --diff-filter=A $before $after -- db | Where-Object { $_ -match '^db/\d{3}_.*\.sql$' })
-    if ($newSql.Count) {
-        Write-Host "`nDuomenų bazė: phpMyAdmin -> aus15792_test -> Import, po vieną iš eilės:" -ForegroundColor Green
-        $newSql | Sort-Object | ForEach-Object { Write-Host ('  ' + ($_ -replace '/', '\')) -ForegroundColor Green }
-    } else {
-        Write-Host "`nDuomenų bazės keisti nereikia." -ForegroundColor Green
-    }
+    Write-Host "`nNaujų pakeitimų GitHub'e nebuvo - paketas ta pati versija." -ForegroundColor Yellow
 }
+# Duomenų bazė: kurių db failų trūksta, rodo pati svetainė (Nustatymai -> Atsarginės kopijos ir sistema -> Importuoti db failai)
+Write-Host "`nDuomenų bazė (phpMyAdmin -> aus15792_test -> Import): importuokite tuos, kurių dar neimportavote, po vieną iš eilės:" -ForegroundColor Green
+Get-ChildItem (Join-Path $root 'db') -Filter '0*.sql' | Where-Object { $_.Name -match '^(\d{3})_' -and [int]$Matches[1] -ge 22 } | Sort-Object Name |
+    ForEach-Object { Write-Host ('  db\' + $_.Name) -ForegroundColor Green }
+Write-Host '  (svetainėje: Nustatymai -> Atsarginės kopijos ir sistema parodo, kurių trūksta; importuoti antrą kartą nekenkia)'
 
 # Kas nauja - viršutinis įrašas iš docs\pakeitimai.md
 $log = Get-Content -Encoding UTF8 (Join-Path $root 'docs\pakeitimai.md')
@@ -60,5 +56,5 @@ if ($start) {
     $log[($start - 1)..$end] | ForEach-Object { Write-Host "  $_" }
 }
 
-Write-Host "`nToliau: įkelkite ikelimui\svetaine-v*.zip į test serverį ir išarchyvuokite." -ForegroundColor Cyan
+Write-Host "`nToliau: įkelkite į test serverį ikelimui\svetaine-v*.zip (ir išarchyvuokite) ARBA visą aplanko ikelimui\svetaine turinį (FileZilla - nutempti į serverio aplanką)." -ForegroundColor Cyan
 Read-Host 'Spauskite Enter'

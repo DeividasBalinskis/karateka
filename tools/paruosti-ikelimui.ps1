@@ -42,12 +42,15 @@ $zip = Join-Path $out "svetaine-v$version.zip"
 Push-Location $stage
 & "$env:WINDIR\System32\tar.exe" -a -c -f $zip *
 Pop-Location
-Remove-Item -Recurse -Force $stage
+# Tas pats ir aplanku - galima įkelti per FileZilla (nutempti visą turinį į serverio aplanką)
+$folder = Join-Path $out 'svetaine'
+if (Test-Path $folder) { Remove-Item -Recurse -Force $folder }
+Move-Item $stage $folder
 
 Get-ChildItem (Join-Path $root 'db') -Filter '0*.sql' | Sort-Object Name |
     ForEach-Object { Get-Content -Raw -Encoding UTF8 $_.FullName } |
     Set-Content -Encoding UTF8 (Join-Path $out 'duomenu-baze.sql')
 
 Write-Host "OK: $out  (versija v$version)"
-Write-Host "Paruošta: ikelimui\svetaine-v$version.zip" -ForegroundColor Green
+Write-Host "Paruošta: ikelimui\svetaine-v$version.zip ir aplankas ikelimui\svetaine" -ForegroundColor Green
 if (-not $NoPause) { Read-Host 'Spauskite Enter' }
