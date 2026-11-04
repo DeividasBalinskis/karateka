@@ -4,6 +4,40 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.18 - 2026-11-04 (varžybų sistema „Taikai“, atsiliepimai, LTKF su tikrais duomenimis)
+**Duomenų bazė:** importuoti `db/025_varzybos_atsiliepimai.sql` (galima importuoti ir antrą kartą).
+
+Atsiliepimai:
+- Visuose puslapiuose apačioje kairėje - mygtukas **„💡 Atsiliepimas“**: „Palikite komentarą - pataisysime“. Rašyti gali nariai, treneriai ir lankytojai;
+  automatiškai įrašoma, kuriame puslapyje parašyta. Prisijungęs mato savo atsiliepimus ir atsakymus.
+- Valdymas → **Atsiliepimai** (tik adminui): visi atsiliepimai, būsena (naujas / bus pataisyta / pataisyta / nedarysime), atsakymas autoriui (gauna pranešimą),
+  „📋 Kopijuoti neišspręstus“ - visas sąrašas vienu paspaudimu. Naujų skaičius - raudonas burbuliukas ir eilutė „Šiandien“.
+- Kam rodomas mygtukas - ten pat: visiems / tik prisijungusiems / niekam. Test svetainėje numatyta - visiems, oficialioje - prisijungusiems.
+
+Varžybos (Valdymas → **Varžybos**, sistema pavadinta „Taikai“ - japoniškai „turnyras“; pavadinimą pakeisti - viena eilutė `app/tournaments.php`):
+- Tikra varžybų sistema svetainėje (vietoj prototipo): **Dalyviai, Klubai, Komandos, Kategorijos, Lentelės, Tvarkaraštis, Rezultatai**. Viskas išsaugoma automatiškai.
+- **+ Karateka nariai**: nariai pridedami iš sąrašo (su gimimo metais, lytimi ir diržu), grupės filtras. Kiti klubai - iš LTKF klubų sąrašo.
+- **⚡ Automatiškai**: kategorijos pagal rungtį, lytį, amžių (gimimo metus) ir diržą; mažos sujungiamos su artimiausiomis (kaip Budo Cup).
+- Kategorijoje paspaudus pasirenkama **rungtis** (kata, kumite, fukugo, kihon, enbu, komandinė) ir **sistema** kortelėmis:
+  olimpinė + paguoda, olimpinė + kova dėl 3 vietos, olimpinė su 2 bronzomis, **ratų sistema** (visi su visais), **balai** (3/5/7 teisėjai, kraštinių atmetimas, 1 ar 2 ratai su finalu).
+- **Kriterijai** (lytis, gimimo metai nuo-iki, diržas nuo-iki, svoris): „Pridėti tinkamus“, netinkantys pažymimi, pavadinimas sugeneruojamas.
+- **Tempimas**: dalyviai iš dešinės į kategoriją, iš kategorijos į kitą (su Ctrl - nukopijuoti), atgal - pašalinti; lentelės pirmame rate dalyvius galima sukeisti tempiant.
+- Kovose galima įrašyti **balus** (pvz. 3:1 ar vėliavėlės 2:1). Valdymas per visą ekraną.
+- **🎲 Sukurti test varžybas**: Karateka nariai + kitų klubų išgalvoti dalyviai, komandos, kategorijos ir dalis įvykusių kovų. „🎲 Sužaisti kategoriją“ / „Užbaigti visas kovas“.
+  **🗑 Ištrinti visas test varžybas** - tikros lieka. Test varžybų rezultatai į narių taškus neperkeliami.
+- Tikros varžybos: „Rodyti nariams Renginiuose“ sukuria renginį; „🏅 Rezultatai → narių taškai“ - vietos ir dalyvavimas į narių istoriją ir taškus.
+- Viešas rezultatų puslapis `varzybu-rezultatai.php`: klubų medaliai ir prizininkai; vaikų ir jaunių - vardas ir pavardės raidė. Vykstant atsinaujina kas minutę.
+- Jei du žmonės redaguoja vienu metu - antrasis įspėjamas perkrauti (vienas kito neperrašo).
+
+LTKF svetainė (test: `/ltkf/`):
+- Karateka - tikri klubo duomenys (treneris, kontaktai, nuo 2017 m.) ir gyvai: aktyvių narių, grupių ir treniruočių vietų skaičius.
+- Kalendoriuje ir rezultatuose - varžybos iš varžybų sistemos; pradžioje - „Naujausi rezultatai“ (klubų medaliai).
+- **Partneriai** (tie patys, kaip karateka.lt apačioje, plius Karateka) - kiekvieno puslapio apačioje.
+- Oficialesnis vaizdas: gilesnės spalvos, šešėliai, aiškesnės antraštės.
+
+Karateka svetainė:
+- Apačioje - nuorodos į **LTKF** ir **Varžybų rezultatus**; LTKF logotipas partneriuose veda į LTKF svetainę (oficialioje - kai `config.php` bus `ltkf_url`).
+
 ## v1.17 - 2026-11-04 (seni kompiuterio pavyzdžiai)
 **Duomenų bazė:** nieko importuoti nereikia.
 

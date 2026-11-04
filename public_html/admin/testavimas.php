@@ -72,6 +72,16 @@ page_start(t('Testavimas'), ['admin' => true]);
   </div>
 </div>
 
+<?php $testTournaments = tournaments_ready() ? (int) q_value('SELECT COUNT(*) FROM tournaments WHERE is_test = 1') : 0; ?>
+<div class="panel card">
+  <div class="kicker"><?= te('Test varžybos') ?></div>
+  <p class="small" style="margin:0 0 10px;"><?= te('Varžybos su Karateka nariais ir kitų klubų išgalvotais dalyviais, kategorijomis ir dalimi įvykusių kovų - kad greitai pamatytumėte lenteles, tvarkaraštį, rezultatus ir LTKF puslapį. Į narių taškus neperkeliamos.') ?></p>
+  <div class="row" style="gap:8px; flex-wrap:wrap; align-items:center;">
+    <a class="btn btn-primary btn-sm" href="<?= url('admin/varzybos.php') ?>"><?= te('Varžybos →') ?></a>
+    <span class="small muted"><?= te('Dabar test varžybų:') ?> <?= $testTournaments ?></span>
+  </div>
+</div>
+
 <?php if ($purged && !empty($purged['parts'])): ?>
   <details class="panel card td-part purged">
     <summary><span><strong><?= te('Seni pavyzdžiai išvalyti') ?></strong> <span class="badge"><?= e($purged['date']) ?></span></span><span class="small muted">rodyti</span></summary>

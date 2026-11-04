@@ -16,6 +16,9 @@ return [
     // Susikurti: deepl.com → API → „DeepL API Free“ (500 000 simbolių per mėn. nemokamai) → API Keys. Tuščia - vertimai tik ranka.
     'translate' => ['key' => ''],
 
+    // Federacijos (LTKF) svetainė - nuoroda apačioje ir prie LTKF logotipo. Tuščia: test svetainėje - juodraštis /ltkf/, oficialioje - be nuorodos.
+    'ltkf_url' => '',
+
     // "2 treniruotės nemokamai" formai (uzklausa.php)
     'smtp' => [
         'host' => 'smtp.example.com',

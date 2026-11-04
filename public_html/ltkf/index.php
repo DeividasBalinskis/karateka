@@ -5,6 +5,8 @@ $busimi = busimi_renginiai();
 $artimiausias = $busimi[0] ?? null;
 $klubai = turinys('klubai');
 $naujienos = array_slice(turinys('naujienos'), 0, 3);
+$paskutiniai = karateka_rezultatai();   // naujausios varžybos iš varžybų sistemos
+$paskutiniai = $paskutiniai ? [array_key_first($paskutiniai), reset($paskutiniai)] : null;
 
 puslapis_pradzia('', 'index');
 ?>
@@ -45,6 +47,25 @@ puslapis_pradzia('', 'index');
     <?php foreach (array_slice($busimi, 0, 4) as $r): ?><?= renginio_kortele($r) ?><?php endforeach; ?>
   </div>
 </section>
+
+<?php if ($paskutiniai): [$rk, $rz] = $paskutiniai; ?>
+<section class="wrap section">
+  <div class="section-head"><h2>Naujausi rezultatai</h2><a href="rezultatai.php?renginys=<?= e(urlencode($rk)) ?>">Visi rezultatai →</a></div>
+  <div class="latest-results">
+    <div class="latest-head">
+      <span class="eyebrow"><?= e(data_lt($rz['data'])) ?><?= !empty($rz['vyksta']) ? ' · vyksta' : '' ?></span>
+      <h3><?= e($rz['pavadinimas']) ?><?= pavyzdys($rz) ?></h3>
+      <span class="chip chip-sys">Iš varžybų sistemos</span>
+    </div>
+    <ol class="latest-podium">
+      <?php foreach (array_slice($rz['klubai'], 0, 5) as $i => $k): ?>
+        <li class="lp<?= $i < 3 ? $i + 1 : '' ?>"><span class="lp-n"><?= $i + 1 ?></span><b><?= e($k['klubas']) ?></b>
+          <span class="lp-m"><span class="m-g"><?= (int) $k['a'] ?></span><span class="m-s"><?= (int) $k['s'] ?></span><span class="m-b"><?= (int) $k['b'] ?></span></span></li>
+      <?php endforeach; ?>
+    </ol>
+  </div>
+</section>
+<?php endif; ?>
 
 <section class="wrap section two-col">
   <div>

@@ -2,6 +2,7 @@
 require __DIR__ . '/inc/isdestymas.php';
 
 $klubai = turinys('klubai');
+$gyvai = karateka_klubas();   // Karateka: nariai ir treniruočių vietos iš karateka.lt
 usort($klubai, function ($a, $b) { return strcmp($a['pavadinimas'], $b['pavadinimas']); });
 $miestai = array_values(array_unique(array_filter(array_map(function ($k) { return $k['miestas']; }, $klubai), function ($m) { return $m[0] !== '['; })));
 sort($miestai);
@@ -34,7 +35,12 @@ puslapis_pradzia('Klubai', 'klubai', ['head' =>
           <span class="club-initials" aria-hidden="true"><?= e(mb_strtoupper(mb_substr($k['pavadinimas'], 0, 2))) ?></span>
           <span class="club-body">
             <b><?= e($k['pavadinimas']) ?></b>
-            <span class="muted"><?= e($k['miestas']) ?> · Treneris: <?= e($k['treneris']) ?></span>
+            <span class="muted"><?= e($k['miestas']) ?> · Treneris: <?= e($k['treneris']) ?><?= !empty($k['nuo']) ? ' · nuo ' . (int) $k['nuo'] . ' m.' : '' ?></span>
+            <?php if ($k['id'] === 'karateka' && $gyvai): ?>
+              <span class="club-live"><b><?= (int) $gyvai['nariai'] ?></b> aktyvūs nariai · <b><?= (int) $gyvai['grupes'] ?></b> grupės<?= $gyvai['vietos'] ? ' · <span title="' . e(implode(', ', $gyvai['vietos'])) . '"><b>' . count($gyvai['vietos']) . '</b> treniruočių vietos Vilniuje</span>' : '' ?>
+                <span class="chip chip-sys" title="Atnaujinama automatiškai">gyvai iš karateka.lt</span></span>
+            <?php endif; ?>
+            <?php if (!empty($k['el_pastas'])): ?><span class="muted small"><?= e($k['el_pastas']) ?><?= !empty($k['telefonas']) ? ' · ' . e($k['telefonas']) : '' ?><?= !empty($k['juridinis']) ? ' · ' . e($k['juridinis']) : '' ?></span><?php endif; ?>
           </span>
           <?php if ($k['svetaine']): ?><a class="club-link" href="<?= e($k['svetaine']) ?>" target="_blank" rel="noopener">Svetainė ↗</a><?php endif; ?>
         </li>

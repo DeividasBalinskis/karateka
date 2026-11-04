@@ -57,7 +57,7 @@ function puslapis_pradzia(string $title, string $active = '', array $opt = []): 
 .karateka-bar a:hover{background:rgba(255,255,255,0.22);}
 .karateka-bar span{opacity:.75; font-weight:500;}
 </style>
-<div class="karateka-bar"><a href="../admin/nustatymai.php">← Atgal į Karateka</a><span>LTKF svetainė - juodraštis, matomas tik test svetainėje</span></div>
+<div class="karateka-bar"><a href="../index.php">← karateka.lt</a><span>LTKF svetainė - juodraštis, matomas tik test svetainėje</span></div>
 <div class="tricolor" aria-hidden="true"><span></span><span></span><span></span></div>
 <?php if (n('demo')): ?>
 <div class="demo-bar">Juodraštis susitikimui. Vietos, pažymėtos <span class="chip chip-demo">Pavyzdys</span> ar [laužtiniuose skliaustuose], laukia tikrų duomenų.</div>
@@ -82,6 +82,18 @@ function puslapis_pabaiga(): void
 {
     ?>
 </main>
+<?php if ($partneriai = partneriai()): ?>
+<section class="partners-band" aria-labelledby="partneriai-h">
+  <div class="wrap">
+    <div class="partners-head"><p class="eyebrow" id="partneriai-h">Partneriai</p><span class="partners-rule" aria-hidden="true"></span></div>
+    <div class="partners-grid">
+      <?php foreach ($partneriai as [$vardas, $logo, $nuoroda]): $inner = '<img src="' . e($logo) . '" alt="' . e($vardas) . '" loading="lazy"><span>' . e($vardas) . '</span>'; ?>
+        <?= $nuoroda ? '<a class="partner-card" href="' . e($nuoroda) . '"' . (preg_match('~^https?:~', $nuoroda) ? ' target="_blank" rel="noopener"' : '') . '>' . $inner . '</a>' : '<div class="partner-card">' . $inner . '</div>' ?>
+      <?php endforeach; ?>
+    </div>
+  </div>
+</section>
+<?php endif; ?>
 <footer class="site-footer">
   <div class="wrap footer-grid">
     <div class="footer-brand"><?= logotipas(40) ?><div><b><?= e(n('pavadinimas')) ?></b><p>Vienija tradicinio karatė klubus Lietuvoje: varžybos, teisėjai, egzaminai, rinktinė.</p></div></div>

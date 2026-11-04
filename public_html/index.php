@@ -87,7 +87,7 @@ foreach ($visible as $i => $b) {
 <footer>
   <div class="wrap">
     <div class="footer-bottom">
-      <span>© <?= date('Y') ?> <?= te('VšĮ Karate Ateitis. Visos teisės saugomos. ·') ?> <a href="privatumas.php" style="color:inherit; text-decoration:underline;"><?= te('Privatumo politika') ?></a></span>
+      <span>© <?= date('Y') ?> <?= te('VšĮ Karate Ateitis. Visos teisės saugomos. ·') ?> <a href="privatumas.php" style="color:inherit; text-decoration:underline;"><?= te('Privatumo politika') ?></a><?= footer_links_html() ?></span>
       <span><?= te('Nuo balto iki juodo diržo.') ?></span>
     </div>
   </div>

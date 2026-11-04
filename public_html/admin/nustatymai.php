@@ -32,7 +32,7 @@ $settings = [
     // Juodraščiai - tik test svetainėje ir kompiuteryje; vėliau - atskiri subdomenai
     'Projektai (juodraščiai)' => [
         [t('LTKF svetainė'), 'ltkf/', t('Federacijos svetainės juodraštis: klubai, kalendorius, rezultatai, teisėjai, dokumentai.'), is_admin() && config('env') !== 'live'],
-        [t('Varžybų sistemos prototipas'), 'varzybos-prototipas/', t('Kaip atrodys varžybų valdymas: klubai, dalyviai, kategorijos, lentelės, tvarkaraštis, rezultatai.'), is_admin() && config('env') !== 'live'],
+        [t('Varžybų rezultatai (viešai)'), 'varzybu-rezultatai.php', t('Kaip varžybų rezultatus mato lankytojai ir LTKF. Varžybos tvarkomos skirtuke „Varžybos“.'), is_admin() && config('env') !== 'live'],
     ],
 ];
 

@@ -421,6 +421,9 @@ function admin_todo_items(): array
     } catch (PDOException $ex) {
         // dar neimportuotas db/021
     }
+    if (is_admin() && ($n = feedback_new_count())) {
+        $todo[] = [(t('Nauji atsiliepimai apie svetainę:') . ' ') . $n, 'admin/atsiliepimai.php', t('Peržiūrėti')];
+    }
     // Atsarginė kopija: nepavyko arba nedaryta ilgiau nei 2 d.
     if (is_admin() && backup_auto()) {
         $last = backup_last_time();

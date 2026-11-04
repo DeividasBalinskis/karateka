@@ -53,7 +53,7 @@ function page_end(): void
 </main>
 <footer class="site-footer">
   <div class="footer-bottom">
-    <span>© <?= date('Y') ?> <?= te('VšĮ Karate Ateitis ·') ?> <a href="<?= url('privatumas.php') ?>"><?= te('Privatumo politika') ?></a><?= current_account() ? ' · <a href="' . url('klausimai.php') . '">' . te('Klausimai ir atsakymai') . '</a>' : '' ?></span>
+    <span>© <?= date('Y') ?> <?= te('VšĮ Karate Ateitis ·') ?> <a href="<?= url('privatumas.php') ?>"><?= te('Privatumo politika') ?></a><?= current_account() ? ' · <a href="' . url('klausimai.php') . '">' . te('Klausimai ir atsakymai') . '</a>' : '' ?><?= footer_links_html() ?></span>
     <span><?= te('Nuo balto iki juodo diržo.') ?></span>
   </div>
 </footer>
@@ -264,6 +264,9 @@ function admin_nav_items(): array
         }
     }
     $items['patvirtinimai'] = [t('Patvirtinimai'), 'admin/patvirtinimai.php', pending_approvals_count()];
+    if (is_admin()) {
+        $items['atsiliepimai'] = [t('Atsiliepimai'), 'admin/atsiliepimai.php', feedback_new_count()];
+    }
     $items['nustatymai'] = [t('Nustatymai'), 'admin/nustatymai.php'];
     return $items;
 }
@@ -279,7 +282,7 @@ function admin_nav_current(): string
 {
     $file = basename($_SERVER['SCRIPT_NAME'] ?? '', '.php');
     $map = ['index' => 'siandien', 'renginio-rezultatai' => 'renginiai', 'varzybu-rezultatai' => 'varzybos', 'renginio-dalyviai' => 'renginiai', 'programa' => 'nustatymai',
-            'varzybos-sso' => 'varzybos', 'varzybu-dalyviai' => 'varzybos', 'sms' => 'pranesimai',
+            'varzybos-sso' => 'varzybos', 'varzybos-isorine' => 'varzybos', 'varzybu-dalyviai' => 'varzybos', 'varzybu-sistema' => 'varzybos', 'sms' => 'pranesimai',
             'grupes' => 'nustatymai', 'tvarkarastis' => 'nustatymai', 'taskai' => 'nustatymai', 'paskyros' => 'nustatymai', 'kopijos' => 'nustatymai', 'atsaukimai' => 'nustatymai', 'testavimas' => 'nustatymai', 'vertimai' => 'nustatymai',
             'pirmas-adminas' => 'siandien'];
     return $map[$file] ?? $file;

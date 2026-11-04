@@ -562,6 +562,9 @@ function home_render_block(array $b): string
                     return '';
                 }
                 $inner = '<div class="partner-logo">' . $img . '</div>';
+                if (!$p['url'] && strpos((string) $p['image'], 'ltkf') !== false) {
+                    $p['url'] = ltkf_url();   // federacijos svetainė
+                }
                 return $p['url'] ? '<a class="partner" href="' . e($p['url']) . '" target="_blank" rel="noopener" title="' . e((string) $p['name']) . '">' . $inner . '</a>'
                     : '<div class="partner" title="' . e((string) $p['name']) . '">' . $inner . '</div>';
             };

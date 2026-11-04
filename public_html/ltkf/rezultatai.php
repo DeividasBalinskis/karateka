@@ -1,10 +1,10 @@
 <?php
 require __DIR__ . '/inc/isdestymas.php';
 
-$archyvas = turinys('rezultatai');
+// Pirmiausia - varžybos iš varžybų sistemos (karateka.lt „Taikai“), tada archyvas iš turinio failo
+$archyvas = karateka_rezultatai() + turinys('rezultatai');
 $sel = (string) ($_GET['renginys'] ?? array_key_first($archyvas));
 $rez = $archyvas[$sel] ?? null;
-$sistemos = array_values(array_filter(varzybos_renginiai(), function ($r) { return ($r['iki'] ?: $r['nuo']) < date('Y-m-d'); }));
 
 puslapis_pradzia('Rezultatai', 'rezultatai');
 ?>
@@ -15,11 +15,6 @@ puslapis_pradzia('Rezultatai', 'rezultatai');
 </div></section>
 
 <section class="wrap section">
-  <?php if ($sistemos): ?>
-    <h2>Iš varžybų sistemos</h2>
-    <div class="event-list"><?php foreach (array_reverse($sistemos) as $r): ?><?= renginio_kortele($r) ?><?php endforeach; ?></div>
-  <?php endif; ?>
-
   <?php if (count($archyvas) > 1): ?>
   <form class="filters" method="get"><label>Renginys <select name="renginys" onchange="this.form.submit()">
     <?php foreach ($archyvas as $k => $a): ?><option value="<?= e($k) ?>"<?= $k === $sel ? ' selected' : '' ?>><?= e($a['pavadinimas']) ?> (<?= e(substr($a['data'], 0, 4)) ?>)</option><?php endforeach; ?>
@@ -28,8 +23,8 @@ puslapis_pradzia('Rezultatai', 'rezultatai');
 
   <?php if ($rez): ?>
     <div class="results-head">
-      <h2><?= e($rez['pavadinimas']) ?><?= pavyzdys($rez) ?></h2>
-      <p class="muted"><?= e(data_lt($rez['data'])) ?></p>
+      <h2><?= e($rez['pavadinimas']) ?><?= pavyzdys($rez) ?><?= !empty($rez['is_sistemos']) ? ' <span class="chip chip-sys">Iš varžybų sistemos</span>' : '' ?><?= !empty($rez['vyksta']) ? ' <span class="chip chip-live">Vyksta</span>' : '' ?></h2>
+      <p class="muted"><?= e(data_lt($rez['data'])) ?><?= !empty($rez['nuoroda']) ? ' · <a href="' . e($rez['nuoroda']) . '" target="_blank" rel="noopener">Visi rezultatai ↗</a>' : '' ?></p>
     </div>
     <div class="results-grid">
       <div class="tbl-wrap">
@@ -48,7 +43,7 @@ puslapis_pradzia('Rezultatai', 'rezultatai');
         <div class="cat-card">
           <h3><?= e($c['pavadinimas']) ?></h3>
           <ol class="podium">
-            <?php foreach ($c['vietos'] as $i => [$vardas, $klubas]): $vieta = $i < 2 ? $i + 1 : 3; ?>
+            <?php foreach ($c['vietos'] as $i => $v): [$vardas, $klubas] = $v; $vieta = (int) ($v[2] ?? ($i < 2 ? $i + 1 : 3)); ?>
               <li class="p<?= $vieta ?>"><span class="place"><?= $vieta ?></span><span><b><?= e($vardas) ?></b><?= $klubas ? ' <span class="muted">' . e($klubas) . '</span>' : '' ?></span></li>
             <?php endforeach; ?>
           </ol>

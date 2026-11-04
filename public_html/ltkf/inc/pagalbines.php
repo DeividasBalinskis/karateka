@@ -100,11 +100,156 @@ function varzybos_api(string $route): ?array
     return $ok ? $data : null;
 }
 
+// ---------- Karateka svetainės duomenys (tas pats serveris): klubas, varžybos ir rezultatai iš varžybų sistemos „Taikai“ ----------
+
+/** Karateka config.php (env, db) arba [] */
+function karateka_config(): array
+{
+    static $c = null;
+    if ($c === null) {
+        $c = @include dirname(__DIR__, 2) . '/config.php';
+        $c = is_array($c) ? $c : [];
+    }
+    return $c;
+}
+
+/** Karateka duomenų bazė arba null (tada rodomi tik turinio failai) */
+function karateka_db(): ?PDO
+{
+    static $pdo = false;
+    if ($pdo === false) {
+        $pdo = null;
+        $d = karateka_config()['db'] ?? null;
+        if (is_array($d)) {
+            try {
+                $pdo = new PDO('mysql:host=' . $d['host'] . ';dbname=' . $d['name'] . ';charset=utf8mb4', $d['user'], $d['pass'],
+                    [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC, PDO::ATTR_TIMEOUT => 2]);
+            } catch (Throwable $ex) {
+                $pdo = null;
+            }
+        }
+    }
+    return $pdo;
+}
+
+/** Viešos varžybos iš Karateka varžybų sistemos (test - tik test svetainėje) */
+function karateka_turnyrai(): array
+{
+    static $rows = null;
+    if ($rows === null) {
+        $rows = [];
+        if ($db = karateka_db()) {
+            try {
+                $live = (karateka_config()['env'] ?? 'live') === 'live';
+                $rows = $db->query('SELECT id, title, starts_on, ends_on, location, status, is_test, results FROM tournaments WHERE is_public = 1'
+                    . ($live ? ' AND is_test = 0' : '') . ' ORDER BY starts_on DESC, id DESC')->fetchAll();
+            } catch (Throwable $ex) {
+                $rows = [];   // karateka dar be db/025
+            }
+        }
+    }
+    return $rows;
+}
+
+/** Vaikų ir jaunių vardai viešai: „Vardas P.“ */
+function trumpas_vardas(string $name, bool $minor): string
+{
+    $parts = preg_split('/\s+/u', trim($name));
+    return $minor && count($parts) > 1 ? $parts[0] . ' ' . mb_substr(end($parts), 0, 1) . '.' : $name;
+}
+
+/** Karateka varžybų rezultatai rezultatų puslapio formatu [raktas => [pavadinimas, data, klubai, kategorijos]] */
+function karateka_rezultatai(): array
+{
+    $out = [];
+    foreach (karateka_turnyrai() as $t) {
+        $r = json_decode((string) $t['results'], true);
+        if (!is_array($r) || empty($r['medals'])) {
+            continue;
+        }
+        $cats = [];
+        foreach ((array) ($r['categories'] ?? []) as $c) {
+            if (empty($c['places'])) {
+                continue;
+            }
+            $cats[] = ['pavadinimas' => $c['name'], 'baigta' => !empty($c['finished']),
+                'vietos' => array_map(function ($p) { return [trumpas_vardas((string) $p['name'], !empty($p['minor'])), (string) $p['club'], (int) $p['place']]; }, $c['places'])];
+        }
+        $out['k' . $t['id']] = [
+            'pavadinimas' => $t['title'] . ((int) $t['is_test'] ? ' (TEST)' : ''), 'data' => $t['starts_on'], 'pavyzdys' => (int) $t['is_test'] === 1, 'is_sistemos' => true,
+            'nuoroda' => '../varzybu-rezultatai.php?id=' . (int) $t['id'], 'vyksta' => $t['status'] !== 'finished',
+            'klubai' => array_map(function ($m) { return ['klubas' => $m['club'], 'a' => (int) $m['g'], 's' => (int) $m['s'], 'b' => (int) $m['b']]; }, $r['medals']),
+            'kategorijos' => $cats,
+        ];
+    }
+    return $out;
+}
+
+/**
+ * Partneriai - tie patys, kaip karateka.lt apačioje (redaguojami Karateka pagrindiniame puslapyje), be pačios LTKF; pirmas - Karateka.
+ * [['vardas', 'logo' (kelias nuo LTKF aplanko), 'nuoroda'], ...]
+ */
+function partneriai(): array
+{
+    $items = [];
+    if ($db = karateka_db()) {
+        try {
+            $page = json_decode((string) $db->query("SELECT value FROM site_settings WHERE name = 'home_page'")->fetchColumn(), true);
+            foreach ((array) $page as $b) {
+                if (($b['type'] ?? '') === 'partners' && empty($b['hidden'])) {
+                    $items = (array) ($b['d']['items'] ?? []);
+                }
+            }
+        } catch (Throwable $ex) {
+            $items = [];
+        }
+    }
+    if (!$items) {   // numatytieji (kaip karateka.lt)
+        foreach (['ltkf' => 'Lietuvos tradicinio karate-do federacija', 'sanrei' => 'Sanrei karate klubas', 'vilniaus-karate-mokykla' => 'Vilniaus karate mokykla',
+                  'karate-akademija' => 'Karate akademija', 'takami' => 'Takami tradicinio karate-do klubas', 'budo-cup' => 'Budo Cup Open'] as $f => $n) {
+            $items[] = ['image' => 'img/partneriai/' . $f . '.jpg', 'name' => $n, 'url' => ''];
+        }
+    }
+    $out = [['Karateka (VšĮ Karate Ateitis)', '../img/logo.png', '../index.php']];
+    foreach ($items as $it) {
+        if (empty($it['image']) || strpos((string) $it['image'], 'ltkf') !== false || preg_match('~^(https?:|/)~', (string) $it['image'])) {
+            continue;
+        }
+        $out[] = [(string) ($it['name'] ?? ''), '../' . ltrim((string) $it['image'], '/'), (string) ($it['url'] ?? '')];
+    }
+    return $out;
+}
+
+/** Karateka klubo gyvi duomenys: aktyvių narių skaičius ir treniruočių vietos */
+function karateka_klubas(): ?array
+{
+    $db = karateka_db();
+    if (!$db) {
+        return null;
+    }
+    try {
+        return [
+            'nariai' => (int) $db->query('SELECT COUNT(*) FROM members WHERE status = "active"')->fetchColumn(),
+            'vietos' => $db->query('SELECT DISTINCT location FROM training_groups WHERE is_active = 1 AND location IS NOT NULL AND location <> "" ORDER BY location')->fetchAll(PDO::FETCH_COLUMN),
+            'grupes' => (int) $db->query('SELECT COUNT(*) FROM training_groups WHERE is_active = 1')->fetchColumn(),
+        ];
+    } catch (Throwable $ex) {
+        return null;
+    }
+}
+
 /** Varžybos iš varžybų sistemos kalendoriaus formatu (tušti, jei sistema nepasiekiama) */
 function varzybos_renginiai(): array
 {
-    $data = varzybos_api('tournaments');
     $out = [];
+    foreach (karateka_turnyrai() as $t) {
+        $out[] = [
+            'id' => 'k' . (int) $t['id'], 'pavadinimas' => (string) $t['title'], 'nuo' => (string) $t['starts_on'], 'iki' => $t['ends_on'] ?: null,
+            'vieta' => (string) $t['location'], 'tipas' => 'varzybos', 'registracija' => $t['status'] === 'registration', 'is_sistemos' => true,
+            'pavyzdys' => (int) $t['is_test'] === 1, 'nuoroda' => '../varzybu-rezultatai.php?id=' . (int) $t['id'],
+        ];
+    }
+    $data = varzybos_api('tournaments');
     foreach (($data['tournaments'] ?? []) as $t) {
         if (empty($t['starts_on']) || empty($t['title'])) {
             continue;

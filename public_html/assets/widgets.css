@@ -170,3 +170,53 @@ span.chat-ctx{text-decoration:none;}
 /* Vardas, atidarantis profilį */
 .profile-link{background:none; border:none; padding:0; font:inherit; font-weight:inherit; color:inherit; cursor:pointer; text-align:left; text-decoration:underline; text-decoration-color:rgba(47,107,90,0.35); text-underline-offset:3px;}
 .profile-link:hover{text-decoration-color:#2F6B5A;}
+
+/* ---------- Atsiliepimas (apačioje kairėje, visuose puslapiuose) ---------- */
+.fb{--f-bg:#FBFAF6; --f-ink:#17140F; --f-muted:#5A5448; --f-line:rgba(23,20,15,0.1); --f-accent:#A85C7E;}
+.fb-fab{
+  position:fixed; left:max(18px, env(safe-area-inset-left)); bottom:max(18px, env(safe-area-inset-bottom)); z-index:940;
+  display:inline-flex; align-items:center; gap:7px; height:42px; padding:0 16px 0 12px; border-radius:21px; cursor:pointer;
+  background:#FBFAF6; color:#17140F; border:1px solid rgba(23,20,15,0.14); font:600 14px/1 'Inter',sans-serif;
+  box-shadow:0 8px 24px rgba(23,20,15,0.14); transition:transform .15s, box-shadow .15s, background .15s;
+}
+.fb-fab svg{color:#C99A2E;}
+.fb-fab:hover{transform:translateY(-2px); box-shadow:0 12px 28px rgba(23,20,15,0.2); background:#fff;}
+.fb-fab:focus-visible{outline:3px solid #A85C7E; outline-offset:3px;}
+.fb.open .fb-fab{background:#17140F; color:#F7F4EC; border-color:#17140F;}
+.fb-panel{
+  position:fixed; left:max(18px, env(safe-area-inset-left)); bottom:calc(max(18px, env(safe-area-inset-bottom)) + 54px); z-index:961;
+  width:min(370px, calc(100vw - 36px)); max-height:min(620px, calc(100vh - 100px)); display:flex; flex-direction:column;
+  background:var(--f-bg); color:var(--f-ink); border-radius:20px; overflow:hidden; font:14.5px/1.5 'Inter',sans-serif;
+  box-shadow:0 24px 60px rgba(23,20,15,0.26), 0 0 0 1px rgba(23,20,15,0.06); animation:chatIn .22s ease-out;
+}
+.fb-panel[hidden]{display:none;}
+.fb-head{display:flex; justify-content:space-between; align-items:center; padding:14px 16px 10px 18px; border-bottom:1px solid var(--f-line);}
+.fb-head strong{font:700 16px/1.2 'Inter',sans-serif;}
+.fb-close{border:none; background:none; font-size:26px; line-height:1; color:var(--f-muted); cursor:pointer; padding:0 4px;}
+.fb-scroll{overflow:auto; padding:12px 18px 16px;}
+.fb-lead{margin:0 0 10px; color:var(--f-muted);}
+.fb-form{display:grid; gap:8px;}
+.fb-form textarea, .fb-form input[type=text]{width:100%; box-sizing:border-box; border:1px solid var(--f-line); border-radius:12px; padding:10px 12px; font:inherit; background:#fff; color:inherit; resize:vertical;}
+.fb-form textarea:focus, .fb-form input[type=text]:focus{outline:2px solid #2F6B5A; outline-offset:0; border-color:transparent;}
+.fb-hp{position:absolute !important; left:-9999px !important; width:1px !important; height:1px !important; opacity:0;}
+.fb-actions{display:flex; justify-content:space-between; align-items:center; gap:10px;}
+.fb-page{font-size:12px; color:var(--f-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0;}
+.fb-msg{margin:2px 0 0; padding:8px 12px; border-radius:10px; background:#E3F1EA; color:#204B3F; font-size:13.5px;}
+.fb-msg.err{background:#FBE7E5; color:#8E1F18;}
+.fb-msg[hidden]{display:none;}
+.fb-mine{margin-top:16px; padding-top:12px; border-top:1px solid var(--f-line);}
+.fb-mine[hidden]{display:none;}
+.fb-mine-title{font:700 11px/1 'Inter',sans-serif; letter-spacing:.08em; text-transform:uppercase; color:var(--f-muted); margin-bottom:8px;}
+.fb-list{list-style:none; margin:0; padding:0; display:grid; gap:8px;}
+.fb-item{background:#fff; border:1px solid var(--f-line); border-radius:12px; padding:8px 10px; font-size:13.5px;}
+.fb-item-top{display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:4px;}
+.fb-when{font-size:12px; color:var(--f-muted);}
+.fb-reply{margin-top:6px; padding:6px 8px; border-radius:8px; background:#F1EEE6; font-size:13px;}
+.fb-admin{display:block; margin-top:12px; font-weight:600; font-size:13.5px;}
+@media (max-width:700px){
+  .fb-fab{height:46px; width:46px; padding:0; justify-content:center; border-radius:50%;}
+  .fb-fab-label{display:none;}
+  .fb-panel{left:0; right:0; bottom:0; width:100%; max-height:88vh; border-radius:20px 20px 0 0;}
+  .fb.open .fb-fab{display:none;}
+}
+@media print{ .fb-fab, .fb-panel{display:none !important;} }
