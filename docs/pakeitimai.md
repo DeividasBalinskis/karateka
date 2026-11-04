@@ -4,6 +4,38 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.14 - 2026-11-04 (testavimas, peržiūra kaip tėvai ar vaikas, švari svetainė, reakcijos, komentarai)
+**Duomenų bazė:** nieko importuoti nereikia.
+
+Švari svetainė:
+- Seni pavyzdiniai (demo) duomenys išvalomi **vieną kartą automatiškai**, kai adminas atidaro „Šiandien“ (prieš tai - atsarginė kopija):
+  demo paskyros ir jų vaikai, demo renginiai, naujienos, pamokos, „TEST:“ pavyzdžiai, demo reakcijos, senas pavyzdinis video.
+  Tikri žmonės ir tai, ką sukūrė ar pakeitė Denis, lieka. Egzaminų programa ir testai paliekami, jei tikri nariai juos jau naudojo.
+  Kas išvalyta - Nustatymai → Testavimas („Seni pavyzdžiai išvalyti“).
+- Kompiuteryje `tools\lokali-svetaine.ps1` sukuria švarią svetainę tik su admino paskyra.
+
+Testavimas (Nustatymai → Testavimas, tik adminui):
+- „Sukurti“: Test Parent (tėvai su 2 vaikais), Test Junior (15 m., savo paskyra), Test Mažylis (8 m.) ir pažymėti scenarijai:
+  nauja registracija, kvietimai, komentarai, „Moku“, lankomumas ir taškai, trenerio pastaba ir užduotis, reakcija, atšauktas sutikimas.
+- „Ištrinti visus testinius“ - tik testinės paskyros (@test.karateka.lt) su viskuo, ką jos sukūrė ar gavo.
+- Viršuje, šalia „Paskyra“ - **👁 Peržiūra: Adminas / Tėvai / Vaikas**. Svetainė rodoma taip, kaip ją mato tėvai ar vaikas
+  (galima komentuoti, reaguoti, atsakyti į kvietimą). Vaiko režime - diržo keitimas: keičiasi pamokų aplankai, programa, diržo spalva.
+  Pamokų „Žiūrėti kaip narys“ nebėra - tą daro peržiūra.
+
+Naujienos ir komentarai:
+- Reakcijoms - visi emoji (ir diržų spalvos, teisėjo vėliavėlės), sugrupuoti. Admino „Reakcijų emoji“ pasirinkimo nebėra. Savo reakciją - paspaudus dar kartą nuimama.
+- Savo komentarą ar žinutę galima ištrinti vietoje (prie renginio, naujienos ir pokalbyje).
+- „Anonimiškai“ nebėra (Denis vis tiek matė, kas parašė): paviešinti klausimai visada rodomi be vardo.
+- Atskiro pranešimo apie kiekvieną komentarą nebėra: nauji - pokalbio mygtuko skaičiuke ir viena eilute „Šiandien“.
+
+Paskyra:
+- Pranešimai ir darbai - tik raudonas skaičiukas ant „Paskyra“ / „Mano paskyra“ (be juostos per ekraną). Treneriui jame - ir patvirtinimai, rezultatai, žinutės.
+- Nario apžvalgoje - diržo juostelė (diržo spalva su mazgu) ir kiek liko iki kito diržo pagal programą. Diržas rodomas vienoje vietoje.
+- Naujos pastabos ir neatliktos užduotys - tik „Svarbu“ (pilnu tekstu, su video); „Trenerio pastabos“ - ankstesnės.
+- Registracija į varžybas - nuoroda renginių kortelėje (ne juosta).
+- Pamokose: Tekki Nidan ir Tekki Sandan - atskiri mokomieji video.
+- Nustatymų puslapio kolonos - viename lygyje.
+
 ## v1.13 - 2026-11-03 (testinių duomenų ištrynimas, katos pamokose, Nustatymai atskirai, be dublių)
 **Duomenų bazė:** nieko importuoti nereikia.
 
