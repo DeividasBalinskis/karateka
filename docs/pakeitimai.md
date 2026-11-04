@@ -4,7 +4,7 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
-## v1.18 - 2026-11-04 (varžybų sistema „Taikai“, atsiliepimai, LTKF su tikrais duomenimis)
+## v1.18 - 2026-11-04 (varžybų sistema „Taika“, atsiliepimai, LTKF su tikrais duomenimis)
 **Duomenų bazė:** importuoti `db/025_varzybos_atsiliepimai.sql` (galima importuoti ir antrą kartą).
 
 Atsiliepimai:
@@ -14,7 +14,7 @@ Atsiliepimai:
   „📋 Kopijuoti neišspręstus“ - visas sąrašas vienu paspaudimu. Naujų skaičius - raudonas burbuliukas ir eilutė „Šiandien“.
 - Kam rodomas mygtukas - ten pat: visiems / tik prisijungusiems / niekam. Test svetainėje numatyta - visiems, oficialioje - prisijungusiems.
 
-Varžybos (Valdymas → **Varžybos**, sistema pavadinta „Taikai“ - japoniškai „turnyras“; pavadinimą pakeisti - viena eilutė `app/tournaments.php`):
+Varžybos (Valdymas → **Varžybos**, sistema pavadinta „Taika“; pavadinimą pakeisti - viena eilutė `app/tournaments.php`):
 - Tikra varžybų sistema svetainėje (vietoj prototipo): **Dalyviai, Klubai, Komandos, Kategorijos, Lentelės, Tvarkaraštis, Rezultatai**. Viskas išsaugoma automatiškai.
 - **+ Karateka nariai**: nariai pridedami iš sąrašo (su gimimo metais, lytimi ir diržu), grupės filtras. Kiti klubai - iš LTKF klubų sąrašo.
 - **⚡ Automatiškai**: kategorijos pagal rungtį, lytį, amžių (gimimo metus) ir diržą; mažos sujungiamos su artimiausiomis (kaip Budo Cup).

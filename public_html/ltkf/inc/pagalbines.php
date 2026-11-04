@@ -100,7 +100,7 @@ function varzybos_api(string $route): ?array
     return $ok ? $data : null;
 }
 
-// ---------- Karateka svetainės duomenys (tas pats serveris): klubas, varžybos ir rezultatai iš varžybų sistemos „Taikai“ ----------
+// ---------- Karateka svetainės duomenys (tas pats serveris): klubas, varžybos ir rezultatai iš varžybų sistemos „Taika“ ----------
 
 /** Karateka config.php (env, db) arba [] */
 function karateka_config(): array

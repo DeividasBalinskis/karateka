@@ -1,7 +1,7 @@
 <?php
 require __DIR__ . '/inc/isdestymas.php';
 
-// Pirmiausia - varžybos iš varžybų sistemos (karateka.lt „Taikai“), tada archyvas iš turinio failo
+// Pirmiausia - varžybos iš varžybų sistemos (karateka.lt „Taika“), tada archyvas iš turinio failo
 $archyvas = karateka_rezultatai() + turinys('rezultatai');
 $sel = (string) ($_GET['renginys'] ?? array_key_first($archyvas));
 $rez = $archyvas[$sel] ?? null;

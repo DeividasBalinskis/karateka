@@ -4,7 +4,7 @@
 // Rezultatai (tournaments.results) - prizininkai ir klubų medaliai: iš jų narių taškai karateka.lt ir LTKF svetainės rezultatai.
 // Test varžybos (is_test): sugeneruojamos vienu mygtuku iš Karateka narių ir kitų LTKF klubų išgalvotų dalyvių, ištrinamos vienu mygtuku.
 
-const VARZ_NAME = 'Taikai';   // sistemos pavadinimas (japoniškai 大会 - varžybos, turnyras); pakeisti - tik čia
+const VARZ_NAME = 'Taika';    // varžybų sistemos pavadinimas; pakeisti - tik čia
 const VARZ_HOME_CLUB = 'Karateka';
 const TOURNAMENT_STATUS = [
     'draft'        => 'Ruošiamos',
