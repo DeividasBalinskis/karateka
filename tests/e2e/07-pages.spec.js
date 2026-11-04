@@ -25,7 +25,8 @@ const roles = [
   [null, 'guest', common],
 ];
 const PHP_ERROR = /Fatal error|Warning:|Notice:|Deprecated:|Uncaught|Įvyko klaida|Duomenų bazė neatnaujinta/;
-const IGNORED_CONSOLE = /favicon|ERR_|youtube|google|Failed to load resource/i;
+// Trečiųjų šalių (YouTube grotuvo) pranešimai - ne mūsų klaidos
+const IGNORED_CONSOLE = /favicon|ERR_|youtube|google|Failed to load resource|Permissions policy violation/i;
 
 // Lietuviškai - kompiuterio ir telefono pločiu; angliškai ir rusiškai - kompiuterio (ilgesni žodžiai, kirilica)
 const runs = [['lt', 1280], ['lt', 390], ['en', 1280], ['ru', 1280], ['ru', 390]];
