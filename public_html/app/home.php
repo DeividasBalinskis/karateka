@@ -20,6 +20,9 @@ const HOME_BLOCK_TYPES = [
 ];
 
 // Grupių skaidrės: kategorija => skaidrės id (nuorodos #vaikams ir pan.)
+// Denio aprašymas instruktorių bloke (numatytas; Denis gali pakeisti: ✎ Redaguoti puslapį → kortelė → „Plačiau“)
+const HOME_DENIS_BIO = "Karate treniruojasi nuo 5 metų. 3 Dan, klubo „Karateka“ (VšĮ Karate Ateitis) įkūrėjas ir vyriausiasis treneris, daugkartinis Lietuvos ir tarptautinių varžybų prizininkas.\n\nNuo 2013 m. treniravosi Tradicinio karate-do klubo „Sanrei“ komandoje, o 2017 m. įkūrė savarankišką klubą. Šiandien treniruoja vaikus, jaunimą ir suaugusiuosius - nuo 2 iki 54 metų.\n\n**Treniruotėse svarbiausia:** disciplina, pagarba ir tai, kad kiekvienas augtų savo tempu.";
+
 const HOME_GROUP_SLIDES = ['vaikai' => 'vaikams', 'jaunimas' => 'jaunimui', 'suauge' => 'suaugusiems'];
 
 /** Numatytasis bloko turinys (dabartiniai pagrindinio puslapio tekstai) */
@@ -67,7 +70,7 @@ function home_block_defaults(string $type): array
                 'text' => t('Klubo instruktoriai nuolat gilina žinias, dalyvaudami stažuotėse Lietuvoje ir užsienyje — karate, fizioterapijos, psichologijos, sporto, medicinos, masažų, biomechanikos, sporto mitybos, kinesiologijos ir sporto pedagogikos srityse. Tai leidžia mums treniruotes kurti remiantis ne tik karate tradicijomis, bet ir šiuolaikiniais mokslo pasiekimais.'),
                 'items' => [
                     ['name' => t('Denis Balinskis'), 'rank' => t('3 Dan · klubo vadovas'), 'photo' => '', 'lead' => true, 'role' => t('Klubo vadovas, vyr. treneris'),
-                     'bio' => ''],
+                     'bio' => t(HOME_DENIS_BIO)],
                     ['name' => t('Lukas Čiulkinas'), 'rank' => t('1 Dan'), 'photo' => '', 'lead' => false],
                     ['name' => t('Joris Kėrys'), 'rank' => t('1 Dan'), 'photo' => '', 'lead' => false],
                     ['name' => t('Esmilė Česevičiūtė'), 'rank' => t('1 Dan'), 'photo' => '', 'lead' => false],
@@ -229,6 +232,7 @@ function home_save(array $blocks): void
     }
     set_site_setting('home_page_prev', (string) site_setting('home_page', ''));
     set_site_setting('home_page', json_encode($page, JSON_UNESCAPED_UNICODE));
+    tr_auto_entity('home', 0);   // jei įjungtas automatinis vertimas - nauji tekstai išverčiami
 }
 
 // ---------- Atvaizdavimas (su redagavimo žymėmis adminui) ----------
@@ -253,7 +257,8 @@ function hb_t(string $f, string $value, string $tag = 'span', string $class = ''
     $cls = $class !== '' ? ' class="' . e($class) . '"' : '';
     if (!home_edit_mode()) {
         // Numatyti tekstai (ir nepakeisti Denio) - pagal žodyną; Denio parašyti - kaip parašyta (ar jų vertimas, app/translations.php)
-        $value = t($value);
+        $tv = t($value);
+        $value = $tv !== $value ? $tv : tr_text($value);
         return '<' . $tag . $cls . '>' . ($multi ? home_text_html($value, $strong) : e($value)) . '</' . $tag . '>';
     }
     return '<' . $tag . ' class="' . e(trim($class . ' hb-edit' . ($multi ? ' hb-ml' : ''))) . '" data-f="' . e($f) . '" contenteditable="true" spellcheck="true">'
@@ -385,7 +390,7 @@ function home_render_block(array $b): string
                 $ts = strtotime($ev['starts_on']);
                 $html .= '<div class="he-wrap reveal"><a class="panel home-event" href="renginys.php?id=' . (int) $ev['id'] . '">'
                     . '<div class="he-date"><span class="d">' . date('j', $ts) . '</span><span class="m">' . e(mb_substr(month_names_gen()[(int) date('n', $ts)], 0, 3)) . '</span></div>'
-                    . '<div class="he-body"><span class="he-type t-' . e($ev['type']) . '">' . e(t(EVENT_TYPES[$ev['type']])) . '</span><h3>' . e($ev['title']) . '</h3>'
+                    . '<div class="he-body"><span class="he-type t-' . e($ev['type']) . '">' . e(t(EVENT_TYPES[$ev['type']])) . '</span><h3>' . e(tr_text($ev['title'])) . '</h3>'
                     . '<div class="he-meta">' . e(fmt_date($ev['starts_on'])) . ($ev['ends_on'] && $ev['ends_on'] !== $ev['starts_on'] ? ' – ' . e(fmt_date($ev['ends_on'])) : '')
                     . ($ev['start_time'] ? ', ' . e(fmt_time($ev['start_time'])) : '') . ($ev['location'] ? ' · ' . e($ev['location']) : '') . '</div></div></a>'
                     . (!$edit ? event_edit_link((int) $ev['id'], 'index') : '') . '</div>';
@@ -407,7 +412,7 @@ function home_render_block(array $b): string
                 $body = trim(preg_replace('/\s+/', ' ', $n['body']));
                 $html .= '<a class="panel home-news reveal" href="naujienos.php?id=' . (int) $n['id'] . '"><div class="hn-cover' . ($cover ? '' : ' empty') . '">'
                     . ($cover ? '<img src="' . e($cover) . '" alt="" loading="lazy">' : '<img class="hn-logo" src="img/logo.png" alt="">') . '</div>'
-                    . '<div class="hn-body"><div class="hn-date">' . e(fmt_date($n['published_at'])) . '</div><h3>' . e($n['title']) . '</h3>'
+                    . '<div class="hn-body"><div class="hn-date">' . e(fmt_date($n['published_at'])) . '</div><h3>' . e(tr_text($n['title'])) . '</h3>'
                     . '<p>' . e(mb_strlen($body) > 160 ? mb_substr($body, 0, 160) . '…' : $body) . '</p></div></a>';
             }
             if (!$news) {

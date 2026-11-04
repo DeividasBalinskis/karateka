@@ -20,7 +20,7 @@ $when = fmt_date($ev['starts_on'], true) . ($ev['ends_on'] && $ev['ends_on'] !==
 $past = ($ev['ends_on'] ?: $ev['starts_on']) < date('Y-m-d');
 $back = 'renginys.php?id=' . $id;
 
-page_start($ev['title'], ['section' => 'renginiai', 'description' => $ev['summary'] ?: mb_strimwidth((string) $ev['description'], 0, 160, '…'),
+page_start(tr_text($ev['title']), ['section' => 'renginiai', 'description' => $ev['summary'] ?: mb_strimwidth((string) $ev['description'], 0, 160, '…'),
     'og' => $ev['members_only'] ? null : ['type' => 'website', 'title' => $ev['title'], 'description' => $ev['summary'] ?: mb_strimwidth((string) $ev['description'], 0, 160, '…'),
         'url' => abs_url('renginys.php?id=' . $id), 'image' => abs_url('img/apie-1.jpg')]]);
 ?>
@@ -30,7 +30,7 @@ page_start($ev['title'], ['section' => 'renginiai', 'description' => $ev['summar
     <div class="ep-date"><span class="d"><?= date('j', $ts) ?></span><span class="m"><?= e(mb_substr(month_names_gen()[(int) date('n', $ts)], 0, 3)) ?></span></div>
     <div class="ep-title">
       <div class="row" style="gap:6px; flex-wrap:wrap;"><span class="badge type-badge t-<?= e($ev['type']) ?>"><?= e(t(EVENT_TYPES[$ev['type']])) ?></span><?= members_only_badge($ev) ?><?= $past ? (' <span class="badge">' . t('įvyko') . '</span>') : '' ?></div>
-      <h1><?= e($ev['title']) ?></h1>
+      <h1><?= e(tr_text($ev['title'])) ?></h1>
       <div class="muted"><?= e($when) ?><?= $ev['location'] ? ' · ' . e($ev['location']) : '' ?></div>
       <div class="small muted" style="margin-top:4px;"><?= te('Kam:') ?> <?= e(event_audience_label($ev)) ?><?= !$past && $going ? (' ' . t('· Dalyvauja:') . ' <strong>') . (int) $going . '</strong>' : '' ?></div>
     </div>
@@ -41,7 +41,7 @@ page_start($ev['title'], ['section' => 'renginiai', 'description' => $ev['summar
       <div class="panel card">
         <?php if ($ev['summary']): ?><p class="ep-summary"><?= e($ev['summary']) ?></p><?php endif; ?>
         <?php if ($ev['description']): ?>
-          <div class="news-body"><?= text_to_html($ev['description']) ?></div>
+          <div class="news-body"><?= text_to_html(tr_text($ev['description'])) ?></div>
         <?php elseif (!$ev['summary']): ?>
           <p class="muted"><?= te('Daugiau informacijos - netrukus.') ?></p>
         <?php endif; ?>

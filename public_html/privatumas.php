@@ -54,7 +54,8 @@ page_start(t('Privatumo politika'), ['description' => t('Kaip VšĮ Karate Ateit
         Varžybų lentelėse ir rezultatuose viešai rodomas dalyvio vardas, pavardė, klubas ir kategorija, kaip įprasta varžybose.
         Varžybų sistemą prižiūri Deividas Balinskis. Ja gali naudotis ir kiti klubai: kurti ir vesti varžybas, gauti rezultatus.') ?></li>
     <li><strong><?= te('Paslaugų teikėjai.') ?></strong> <?= te('Svetainę ir el. paštą talpina domenai.lt (Lietuva). Narystės sutartys pasirašomos per Edufi. Jie duomenų nenaudoja savo tikslais.
-        SMS žinučių kol kas nesiunčiame - pasirinkus SMS teikėją, jis bus nurodytas čia.') ?></li>
+        SMS žinučių kol kas nesiunčiame - pasirinkus SMS teikėją, jis bus nurodytas čia.') ?>
+        <?= te('Klubo naujienas, renginius ir pamokas į anglų ir rusų kalbas automatiškai verčia DeepL (Vokietija) - jam perduodamas tik viešas klubo tekstas, ne narių duomenys.') ?></li>
   </ul>
   <p><?= te('Duomenų neparduodame ir neperduodame reklamos tikslais.') ?></p>
 

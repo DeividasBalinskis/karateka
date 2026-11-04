@@ -4,6 +4,21 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.16 - 2026-11-04 (Denio tekstų vertimai, Denio aprašymas)
+**Duomenų bazė:** importuoti `db/024_vertimai.sql` (galima importuoti ir antrą kartą).
+
+Vertimai:
+- Nustatymai → **Vertimai (EN / RU)**: naujienos, renginiai, pamokos ir pagrindinis puslapis - lietuviškas tekstas ir laukeliai anglų bei rusų kalboms.
+  Prie naujienos, renginio, pamokos ir pagrindinio puslapio redagavimo - mygtukas „🌐 Vertimai“.
+- **Automatiškai ir nemokamai (DeepL API Free, 500 000 simbolių per mėn.):** įrašius raktą į `config.php` (`'translate' => ['key' => '...']`),
+  išsaugojus naujieną, renginį, pamoką ar pagrindinį puslapį vertimai atsiranda patys. Denis gali juos pataisyti.
+- Be rakto - vertimus galima įklijuoti ranka („📋 Kopijuoti tekstus vertimui“ → ChatGPT / Claude → įklijuoti). Kol vertimo nėra - rodoma lietuviškai.
+- Pakeitus lietuvišką tekstą, senas vertimas nebetinka (rodoma lietuviškai, kol išversite iš naujo).
+- Privatumo politikoje - DeepL kaip paslaugų teikėjas (tik viešas klubo tekstas).
+
+Pagrindinis puslapis:
+- Denio aprašymas instruktorių bloke (nuo 5 metų, 3 Dan, „Sanrei“, klubas nuo 2017 m.) - lietuvių, anglų ir rusų kalbomis. Denis gali pakeisti.
+
 ## v1.15 - 2026-11-04 (lietuvių, anglų ir rusų kalbos; LTKF ir varžybų juodraščiai)
 **Duomenų bazė:** nieko importuoti nereikia.
 

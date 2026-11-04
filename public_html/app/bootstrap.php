@@ -13,6 +13,7 @@ mb_internal_encoding('UTF-8');
 
 require APP_DIR . '/helpers.php';
 require APP_DIR . '/i18n.php';
+require APP_DIR . '/translations.php';
 
 // Klaida vietoj tuščio puslapio. Dažniausia - neimportuotas DB atnaujinimas (trūksta lentelės ar stulpelio).
 set_exception_handler(function (Throwable $ex) {

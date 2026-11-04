@@ -528,6 +528,9 @@ function lesson_image_url(string $file, bool $thumb = false): string
 
 function render_lesson_block(array $b): string
 {
+    // Rodoma pasirinkta kalba, jei Denis įrašė vertimą (app/translations.php)
+    $b['body'] = tr_text($b['body'] ?? '');
+    $b['caption'] = tr_text($b['caption'] ?? '');
     $cap = !empty($b['caption']) ? '<figcaption>' . e($b['caption']) . '</figcaption>' : '';
     switch ($b['type']) {
         case 'heading':

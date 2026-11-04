@@ -408,6 +408,7 @@ return [
     'Jūsų ir vaikų taškai, pastabos, egzaminas - kaip mato narys.' => 'Баллы, заметки и экзамены ваши и детей - так, как видит участник.',
     'Jūsų komentaras ar klausimas Deniui' => 'Ваш комментарий или вопрос Денису',
     'Jūsų reakcija - paspaudus nuimama' => 'Ваша реакция - нажмите, чтобы убрать',
+    'Jūsų tekstai anglų ir rusų kalbomis: naujienos, renginiai, pamokos, pagrindinis puslapis.' => 'Ваши тексты на английском и русском: новости, мероприятия, уроки, главная страница.',
     'Kada ir kur vyksta' => 'Когда и где',
     'Kadangi tau dar nėra 14 metų, registraciją turi patvirtinti tėvai. Įvesk jų el. paštą - išsiųsime jiems laišką.
             Sutikimą dėl nuotraukų skelbimo duos tėvai.' => 'Поскольку тебе ещё нет 14 лет, регистрацию должны подтвердить родители. Введи их эл. почту - мы отправим им письмо. Согласие на публикацию фото дадут родители.',
@@ -427,6 +428,15 @@ return [
     'Kam siųsti?' => 'Кому отправить?',
     'Kam skirta?' => 'Для кого?',
     'Kam:' => 'Кому:',
+    'Karate treniruojasi nuo 5 metų. 3 Dan, klubo „Karateka“ (VšĮ Karate Ateitis) įkūrėjas ir vyriausiasis treneris, daugkartinis Lietuvos ir tarptautinių varžybų prizininkas.
+
+Nuo 2013 m. treniravosi Tradicinio karate-do klubo „Sanrei“ komandoje, o 2017 m. įkūrė savarankišką klubą. Šiandien treniruoja vaikus, jaunimą ir suaugusiuosius - nuo 2 iki 54 metų.
+
+**Treniruotėse svarbiausia:** disciplina, pagarba ir tai, kad kiekvienas augtų savo tempu.' => 'Занимается карате с 5 лет. 3 дан, основатель и главный тренер клуба «Karateka» (VšĮ Karate Ateitis), многократный призёр соревнований Литвы и международных турниров.
+
+С 2013 года тренировался в команде клуба традиционного каратэ-до «Sanrei», а в 2017 году основал собственный клуб. Сегодня тренирует детей, подростков и взрослых - от 2 до 54 лет.
+
+**Главное на тренировках:** дисциплина, уважение и то, чтобы каждый рос в своём темпе.',
     'Karateka - visi nariai; žymos atveria papildomą medžiagą ir testus' => 'Karateka - все участники; метки открывают дополнительные материалы и тесты',
     'Karateka gali atsidaryti kaip programėlė - su ikona telefono ekrane, be naršyklės juostos.' => 'Karateka может открываться как приложение - со значком на экране телефона, без панели браузера.',
     'Karateka logotipas' => 'Логотип Karateka',
@@ -482,6 +492,7 @@ return [
     'Klubo gyvenimas' => 'Жизнь клуба',
     'Klubo instruktoriai nuolat gilina žinias, dalyvaudami stažuotėse Lietuvoje ir užsienyje — karate, fizioterapijos, psichologijos, sporto, medicinos, masažų, biomechanikos, sporto mitybos, kinesiologijos ir sporto pedagogikos srityse. Tai leidžia mums treniruotes kurti remiantis ne tik karate tradicijomis, bet ir šiuolaikiniais mokslo pasiekimais.' => 'Инструкторы клуба постоянно углубляют знания на стажировках в Литве и за рубежом - в карате, физиотерапии, психологии, спорте, медицине, массаже, биомеханике, спортивном питании, кинезиологии и спортивной педагогике. Это позволяет строить тренировки не только на традициях карате, но и на современных достижениях науки.',
     'Klubo narių šiose varžybose nėra.' => 'В этих соревнованиях нет участников клуба.',
+    'Klubo naujienas, renginius ir pamokas į anglų ir rusų kalbas automatiškai verčia DeepL (Vokietija) - jam perduodamas tik viešas klubo tekstas, ne narių duomenys.' => 'Новости, мероприятия и уроки клуба на английский и русский автоматически переводит DeepL (Германия) - ему передаётся только публичный текст клуба, а не данные участников.',
     'Klubo treneriai' => 'Тренеры клуба',
     'Klubo vadovas · atsakys, kai tik galės' => 'Руководитель клуба · ответит, как только сможет',
     'Klubo vadovas, vyr. treneris' => 'Руководитель клуба, главный тренер',
@@ -1264,11 +1275,14 @@ return [
     'Varžybų sistemos klaida (' => 'Ошибка системы соревнований (',
     'Varžybų sistemos prototipas' => 'Прототип системы соревнований',
     'Veidai' => 'Лица',
+    'Vertimai' => 'Переводы',
+    'Vertimai (EN / RU)' => 'Переводы (EN / RU)',
     'Video' => 'Видео',
     'Vidinė pusiausvyra' => 'Внутреннее равновесие',
     'Vienam lygiui reikia' => 'Для одного уровня нужно',
     'Vienas tekstas pasirinktiems nariams ir jų tėvams: paskyroje (skiltyje „Svarbu“), el. paštu ir (ar) SMS.
     Tik SMS su peržiūra, kaina ir istorija -' => 'Один текст для выбранных участников и их родителей: в аккаунте (раздел «Важно»), по эл. почте и (или) SMS. Только SMS с предпросмотром, ценой и историей -',
+    'Vieta' => 'Место',
     'Vietos nerodomos.' => 'Места не показываются.',
     'Vietos tipas' => 'Тип места',
     'Viešas puslapis ↗' => 'Публичная страница ↗',
@@ -1446,6 +1460,7 @@ return [
     'prašyti ištrinti duomenis, pavyzdžiui, nutraukus narystę;' => 'просить удалить данные, например при прекращении членства;',
     'prie renginių ir naujienų. Juos gauna treneriai. Treneris gali klausimą su atsakymu paskelbti prie renginio ar naujienos -
         be jūsų vardo. Savo komentarą ar žinutę galite ištrinti patys.' => 'к мероприятиям и новостям. Их получают тренеры. Тренер может опубликовать вопрос с ответом у мероприятия или новости - без вашего имени. Свой комментарий или сообщение вы можете удалить сами.',
+    'prierašas' => 'подпись',
     'prisijungimo su kodu įjungimo' => 'включения входа с кодом',
     'privatumo politikoje' => 'в политике конфиденциальности',
     'pvz. 45 €/mėn. (1 kartą per savaitę)' => 'напр. 45 €/мес. (раз в неделю)',
@@ -1668,6 +1683,7 @@ return [
     '„Moku“ prašymai:' => 'Запросы «Умею»:',
     '„Teisėjams“ / „Egzaminatoriams“ - visą aplanką mato tik su ta žyma.' => '«Судьям» / «Экзаменаторам» - всю папку видно только с этой меткой.',
     '• sąrašas' => '• список',
+    '…“ (bus pakeistas Denio aprašymu)' => '…» (будет заменено описанием Дениса)',
     '…“ (bus tuščias)' => '…» (будет пусто)',
     '← Ankstesnė' => '← Предыдущая',
     '← Atgal' => '← Назад',
@@ -1733,6 +1749,8 @@ return [
     '✕ neteisingai' => '✕ неправильно',
     '✗ Nebuvo' => '✗ Не был',
     '⧉ Kopijuoti pamoką' => '⧉ Копировать урок',
+    '🌐 Vertimai' => '🌐 Переводы',
+    '🌐 Vertimai (EN / RU)' => '🌐 Переводы (EN / RU)',
     '🎉 Šaunuolis! Testas išlaikytas!' => '🎉 Молодец! Тест сдан!',
     '👁 Adminas' => '👁 Админ',
     '👁 Peržiūrėti' => '👁 Просмотреть',

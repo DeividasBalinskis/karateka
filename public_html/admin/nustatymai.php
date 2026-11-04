@@ -18,6 +18,7 @@ $settings = [
         [t('Grupės ir jų spalvos'), 'admin/grupes.php', t('Pavadinimai, vietos, spalvos, kas kurioje grupėje.'), true],
         [t('Tvarkaraštis ir kainos'), 'admin/tvarkarastis.php', t('Visų grupių laikai ir kainos - rodoma ir pagrindiniame puslapyje.'), true],
         [t('Atšauktos treniruotės ir atostogos'), 'admin/atsaukimai.php', t('Dienos be treniruočių, pranešimas nariams.'), true],
+        [t('Vertimai (EN / RU)'), 'admin/vertimai.php', t('Jūsų tekstai anglų ir rusų kalbomis: naujienos, renginiai, pamokos, pagrindinis puslapis.'), true],
         [t('Taškai ir XP'), 'admin/taskai.php', t('Kiek taškų už ką, kiek XP vienam lygiui.'), true],
     ],
     'Egzaminai' => [

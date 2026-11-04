@@ -95,6 +95,7 @@ if (is_post()) {
         } else {
             flash('ok', $published ? t('Naujiena paskelbta.') : t('Juodraštis išsaugotas.'));
         }
+        tr_auto_entity('news', (int) $id);   // jei įjungtas automatinis vertimas - EN / RU atsiranda patys
         redirect('admin/naujienos.php?edit=' . $id);
     }
 }
@@ -115,6 +116,7 @@ if ($edit !== '') {
     ?>
     <a class="small" href="<?= url('naujienos.php') ?>"><?= te('← Visos naujienos') ?></a><?php if ($n['id'] && $n['is_published']): ?> · <a class="small" href="<?= url('naujienos.php?id=' . (int) $n['id']) ?>"><?= te('👁 Peržiūrėti') ?></a><?php endif; ?>
     <h1 class="styled" style="margin-top:8px;"><?= $n['id'] ? t('Redaguoti naujieną') : t('Nauja naujiena') ?></h1>
+    <?php if ($n['id']): ?><a class="btn btn-ghost btn-sm tr-link" href="<?= url('admin/vertimai.php?e=news&id=' . (int) $n['id']) ?>"><?= te('🌐 Vertimai (EN / RU)') ?></a><?php endif; ?>
     <?= form_errors($errors) ?>
     <form method="post" enctype="multipart/form-data" class="form" id="newsForm">
       <?= csrf_field() ?>

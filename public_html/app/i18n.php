@@ -19,11 +19,11 @@ function current_lang(?string $force = null): string
     return $lang;
 }
 
-/** Vertimų žodynas dabartine kalba: [lietuviškas tekstas => vertimas] */
-function lang_dict(): array
+/** Vertimų žodynas dabartine (ar nurodyta) kalba: [lietuviškas tekstas => vertimas] */
+function lang_dict(?string $lang = null): array
 {
     static $dicts = [];
-    $l = current_lang();
+    $l = $lang ?? current_lang();
     if (!isset($dicts[$l])) {
         $file = APP_DIR . '/lang/' . $l . '.php';
         $dicts[$l] = $l !== 'lt' && is_file($file) ? (require $file) : [];
@@ -43,6 +43,12 @@ function t(string $lt, array $vars = []): string
         $s = strtr($s, $map);
     }
     return $s;
+}
+
+/** Sąsajos teksto vertimas nurodyta kalba (null - jei žodyne nėra) */
+function t_in(string $lang, string $lt): ?string
+{
+    return lang_dict($lang)[$lt] ?? null;
 }
 
 /** t() HTML'ui (su e()) */

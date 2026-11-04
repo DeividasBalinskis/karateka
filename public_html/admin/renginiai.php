@@ -91,6 +91,7 @@ if (is_post()) {
         $sendSms = !empty($_POST['invite_sms']) && is_admin();
         $invited = $inviteIds ? invite_members(q_one('SELECT * FROM events WHERE id = ?', [$id]), $inviteIds, (int) $me['id'], $sendEmail, $sendSms) : 0;
         $how = array_filter([t('svetainėje'), $sendEmail ? t('el. paštu') : '', $sendSms ? 'SMS' : '']);
+        tr_auto_entity('event', (int) $id);
         flash('ok', t('Renginys išsaugotas.') . ($invited ? " Pakviesta: $invited (" . implode(', ', $how) . ').' : (!$inviteIds ? (' ' . t('Atviras renginys - kvietimai nesiųsti, prisijungti gali visi.')) : '')));
         back_after_save($back, $backPages, $id);
     }
@@ -119,6 +120,7 @@ if ($edit !== '') {
     ?>
     <a class="small" href="<?= url($backPages[$back] ?? 'renginiai.php') ?>">← <?= $back === 'index' ? t('Atgal į pagrindinį puslapį') : ($back ? t('Atgal į renginius') : t('Visi renginiai')) ?></a>
     <h1 class="styled" style="margin-top:8px;"><?= $ev['id'] ? t('Redaguoti renginį') : t('Naujas renginys') ?></h1>
+    <?php if ($ev['id']): ?><a class="btn btn-ghost btn-sm tr-link" href="<?= url('admin/vertimai.php?e=event&id=' . (int) $ev['id']) ?>"><?= te('🌐 Vertimai (EN / RU)') ?></a><?php endif; ?>
     <?= form_errors($errors) ?>
     <form method="post" class="form">
       <?= csrf_field() ?>

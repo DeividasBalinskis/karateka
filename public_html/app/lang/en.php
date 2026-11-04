@@ -408,6 +408,7 @@ return [
     'Jūsų ir vaikų taškai, pastabos, egzaminas - kaip mato narys.' => 'Points, notes and exams of you and your children - as the member sees them.',
     'Jūsų komentaras ar klausimas Deniui' => 'Your comment or question to Denis',
     'Jūsų reakcija - paspaudus nuimama' => 'Your reaction - click to remove',
+    'Jūsų tekstai anglų ir rusų kalbomis: naujienos, renginiai, pamokos, pagrindinis puslapis.' => 'Your texts in English and Russian: news, events, lessons, home page.',
     'Kada ir kur vyksta' => 'When and where',
     'Kadangi tau dar nėra 14 metų, registraciją turi patvirtinti tėvai. Įvesk jų el. paštą - išsiųsime jiems laišką.
             Sutikimą dėl nuotraukų skelbimo duos tėvai.' => 'Since you are not yet 14, your parents must confirm the registration. Enter their e-mail - we will send them an e-mail. Consent to publishing photos will be given by your parents.',
@@ -427,6 +428,15 @@ return [
     'Kam siųsti?' => 'Send to whom?',
     'Kam skirta?' => 'Intended for?',
     'Kam:' => 'To:',
+    'Karate treniruojasi nuo 5 metų. 3 Dan, klubo „Karateka“ (VšĮ Karate Ateitis) įkūrėjas ir vyriausiasis treneris, daugkartinis Lietuvos ir tarptautinių varžybų prizininkas.
+
+Nuo 2013 m. treniravosi Tradicinio karate-do klubo „Sanrei“ komandoje, o 2017 m. įkūrė savarankišką klubą. Šiandien treniruoja vaikus, jaunimą ir suaugusiuosius - nuo 2 iki 54 metų.
+
+**Treniruotėse svarbiausia:** disciplina, pagarba ir tai, kad kiekvienas augtų savo tempu.' => 'Has trained karate since the age of 5. 3rd Dan, founder and head coach of the "Karateka" club (VšĮ Karate Ateitis), multiple medallist at Lithuanian and international competitions.
+
+From 2013 he trained with the team of the traditional karate-do club "Sanrei", and in 2017 founded his own club. Today he coaches children, teenagers and adults - from 2 to 54 years old.
+
+**Most important in training:** discipline, respect and letting everyone grow at their own pace.',
     'Karateka - visi nariai; žymos atveria papildomą medžiagą ir testus' => 'Karateka - all members; tags unlock additional material and tests',
     'Karateka gali atsidaryti kaip programėlė - su ikona telefono ekrane, be naršyklės juostos.' => 'Karateka can open as an app - with an icon on the phone screen, without the browser bar.',
     'Karateka logotipas' => 'Karateka logo',
@@ -482,6 +492,7 @@ return [
     'Klubo gyvenimas' => 'Club life',
     'Klubo instruktoriai nuolat gilina žinias, dalyvaudami stažuotėse Lietuvoje ir užsienyje — karate, fizioterapijos, psichologijos, sporto, medicinos, masažų, biomechanikos, sporto mitybos, kinesiologijos ir sporto pedagogikos srityse. Tai leidžia mums treniruotes kurti remiantis ne tik karate tradicijomis, bet ir šiuolaikiniais mokslo pasiekimais.' => 'The club instructors keep deepening their knowledge through internships in Lithuania and abroad - in karate, physiotherapy, psychology, sports, medicine, massage, biomechanics, sports nutrition, kinesiology and sports pedagogy. This lets us build trainings not only on karate traditions but also on modern science.',
     'Klubo narių šiose varžybose nėra.' => 'No club members in this competition.',
+    'Klubo naujienas, renginius ir pamokas į anglų ir rusų kalbas automatiškai verčia DeepL (Vokietija) - jam perduodamas tik viešas klubo tekstas, ne narių duomenys.' => 'Club news, events and lessons are translated into English and Russian automatically by DeepL (Germany) - only public club text is sent to it, not members\' data.',
     'Klubo treneriai' => 'Club coaches',
     'Klubo vadovas · atsakys, kai tik galės' => 'Head of the club · will reply as soon as possible',
     'Klubo vadovas, vyr. treneris' => 'Head of the club, head coach',
@@ -1264,11 +1275,14 @@ return [
     'Varžybų sistemos klaida (' => 'Competition system error (',
     'Varžybų sistemos prototipas' => 'Competition system prototype',
     'Veidai' => 'Faces',
+    'Vertimai' => 'Translations',
+    'Vertimai (EN / RU)' => 'Translations (EN / RU)',
     'Video' => 'Video',
     'Vidinė pusiausvyra' => 'Inner balance',
     'Vienam lygiui reikia' => 'One level requires',
     'Vienas tekstas pasirinktiems nariams ir jų tėvams: paskyroje (skiltyje „Svarbu“), el. paštu ir (ar) SMS.
     Tik SMS su peržiūra, kaina ir istorija -' => 'One text for selected members and their parents: in the account ("Important"), by e-mail and/or SMS. SMS only, with preview, price and history -',
+    'Vieta' => 'Location',
     'Vietos nerodomos.' => 'Places are not shown.',
     'Vietos tipas' => 'Place type',
     'Viešas puslapis ↗' => 'Public page ↗',
@@ -1446,6 +1460,7 @@ return [
     'prašyti ištrinti duomenis, pavyzdžiui, nutraukus narystę;' => 'ask to delete the data, for example when membership ends;',
     'prie renginių ir naujienų. Juos gauna treneriai. Treneris gali klausimą su atsakymu paskelbti prie renginio ar naujienos -
         be jūsų vardo. Savo komentarą ar žinutę galite ištrinti patys.' => 'about events and news. They go to the coaches. A coach may publish a question with the answer at the event or news - without your name. You can delete your own comment or message yourself.',
+    'prierašas' => 'caption',
     'prisijungimo su kodu įjungimo' => 'turning on login with a code',
     'privatumo politikoje' => 'in the privacy policy',
     'pvz. 45 €/mėn. (1 kartą per savaitę)' => 'e.g. 45 €/month (once a week)',
@@ -1668,6 +1683,7 @@ return [
     '„Moku“ prašymai:' => '"I can do it" requests:',
     '„Teisėjams“ / „Egzaminatoriams“ - visą aplanką mato tik su ta žyma.' => '"For referees" / "For examiners" - the whole folder is visible only with that tag.',
     '• sąrašas' => '• list',
+    '…“ (bus pakeistas Denio aprašymu)' => '…" (will be replaced with Denis\'s description)',
     '…“ (bus tuščias)' => '…" (will be empty)',
     '← Ankstesnė' => '← Previous',
     '← Atgal' => '← Back',
@@ -1733,6 +1749,8 @@ return [
     '✕ neteisingai' => '✕ incorrect',
     '✗ Nebuvo' => '✗ Absent',
     '⧉ Kopijuoti pamoką' => '⧉ Copy the lesson',
+    '🌐 Vertimai' => '🌐 Translations',
+    '🌐 Vertimai (EN / RU)' => '🌐 Translations (EN / RU)',
     '🎉 Šaunuolis! Testas išlaikytas!' => '🎉 Well done! Test passed!',
     '👁 Adminas' => '👁 Admin',
     '👁 Peržiūrėti' => '👁 View',

@@ -280,7 +280,7 @@ function admin_nav_current(): string
     $file = basename($_SERVER['SCRIPT_NAME'] ?? '', '.php');
     $map = ['index' => 'siandien', 'renginio-rezultatai' => 'renginiai', 'varzybu-rezultatai' => 'varzybos', 'renginio-dalyviai' => 'renginiai', 'programa' => 'nustatymai',
             'varzybos-sso' => 'varzybos', 'varzybu-dalyviai' => 'varzybos', 'sms' => 'pranesimai',
-            'grupes' => 'nustatymai', 'tvarkarastis' => 'nustatymai', 'taskai' => 'nustatymai', 'paskyros' => 'nustatymai', 'kopijos' => 'nustatymai', 'atsaukimai' => 'nustatymai', 'testavimas' => 'nustatymai',
+            'grupes' => 'nustatymai', 'tvarkarastis' => 'nustatymai', 'taskai' => 'nustatymai', 'paskyros' => 'nustatymai', 'kopijos' => 'nustatymai', 'atsaukimai' => 'nustatymai', 'testavimas' => 'nustatymai', 'vertimai' => 'nustatymai',
             'pirmas-adminas' => 'siandien'];
     return $map[$file] ?? $file;
 }

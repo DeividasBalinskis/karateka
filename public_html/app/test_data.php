@@ -120,7 +120,7 @@ function test_data_scan(int $meId): array
     }
     if (strpos((string) site_setting('home_page', ''), DEMO_TEXT) !== false) {
         $other['home'] = true;
-        $other['items'][] = t('Pagrindinis puslapis: pavyzdinis instruktoriaus aprašymas „') . DEMO_TEXT . (' ' . t('…“ (bus tuščias)'));
+        $other['items'][] = t('Pagrindinis puslapis: pavyzdinis instruktoriaus aprašymas „') . DEMO_TEXT . (' ' . t('…“ (bus pakeistas Denio aprašymu)'));
     }
     if (!empty($other['items'])) {
         $out['other'] = ['ids' => $other, 'items' => $other['items']];
@@ -207,7 +207,7 @@ function test_data_delete(int $meId, array $parts): array
                         if (is_array($page)) {
                             array_walk_recursive($page, function (&$v) {
                                 if (is_string($v) && strpos($v, DEMO_TEXT) === 0) {
-                                    $v = '';
+                                    $v = HOME_DENIS_BIO;   // pavyzdinis tekstas -> Denio aprašymas
                                 }
                             });
                             set_site_setting('home_page', json_encode($page, JSON_UNESCAPED_UNICODE));

@@ -40,6 +40,7 @@ $page = home_page();
   <span class="hb-toolbar-btns">
     <button type="button" class="btn btn-primary btn-sm" id="hbSave"><?= te('Išsaugoti') ?></button>
     <a class="btn btn-ghost btn-sm" href="<?= url('index.php') ?>" id="hbExit"><?= te('Baigti') ?></a>
+    <a class="btn btn-ghost btn-sm" href="<?= url('admin/vertimai.php?e=home') ?>"><?= te('🌐 Vertimai') ?></a>
     <button type="button" class="btn btn-ghost btn-sm" id="hbUndo" title="<?= te('Grąžinti prieš paskutinį išsaugojimą buvusį puslapį') ?>"><?= te('↶ Ankstesnė versija') ?></button>
   </span>
   <span class="hb-status" id="hbStatus"></span>

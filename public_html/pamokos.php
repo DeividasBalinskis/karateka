@@ -34,6 +34,7 @@ if (is_post()) {
     if (post('action') === 'lesson_save') {
         $savedId = lesson_save_from_post($a, $errors, $postedBlocks);
         if ($savedId) {
+            tr_auto_entity('lesson', (int) $savedId);
             flash('ok', !empty($_POST['is_published']) ? t('Pamoka išsaugota.') : t('Pamoka išsaugota (nepaskelbta - nariai jos nemato).'));
             redirect('pamokos.php?id=' . $savedId . (post('after') === 'stay' ? '&keisti=1' : ''));
         }
@@ -108,7 +109,7 @@ function lesson_cards(array $lessons, array $opt = []): string
             . ($l['audience'] !== 'karateka' ? ' <span class="badge badge-tag">' . e(t(QUIZ_AUDIENCE[$l['audience']])) . '</span>' : '')
             . (!$l['is_published'] ? ' <span class="badge badge-warn">nepaskelbta</span>' : '')
             . (!empty($l['task_open']) ? (' <span class="badge badge-new">' . t('užduotis') . '</span>') : '')
-            . '<h3>' . e($l['title']) . '</h3><div class="muted small">' . e($meta) . '</div></div></a>';
+            . '<h3>' . e(tr_text($l['title'])) . '</h3><div class="muted small">' . e($meta) . '</div></div></a>';
         $html .= $edit ? '<div class="lc-wrap" data-type="lesson" data-id="' . (int) $l['id'] . '">' . $card
             . '<span class="lc-tools"><span class="lc-drag" title="' . e(t('Tempkite')) . '">⠿</span><a href="' . e(url('pamokos.php?id=' . (int) $l['id'] . '&keisti=1')) . '" title="' . e(t('Keisti')) . '">✎</a></span></div>' : $card;
     }
@@ -383,9 +384,10 @@ if ($id) {
         <?= $lesson['belt_level'] !== null ? belt_chip((int) $lesson['belt_level']) : '' ?>
         <?= $lesson['audience'] !== 'karateka' ? '<span class="badge badge-tag">' . e(t(QUIZ_AUDIENCE[$lesson['audience']])) . '</span>' : '' ?>
         <?= !$lesson['is_published'] ? '<span class="badge badge-warn">nepaskelbta</span>' : '' ?>
-        <?php if ($staffTools): ?><a class="btn btn-primary btn-sm lesson-edit-btn" href="<?= url('pamokos.php?id=' . (int) $lesson['id'] . '&keisti=1') ?>"><?= te('✎ Keisti') ?></a><?php endif; ?>
+        <?php if ($staffTools): ?><a class="btn btn-primary btn-sm lesson-edit-btn" href="<?= url('pamokos.php?id=' . (int) $lesson['id'] . '&keisti=1') ?>"><?= te('✎ Keisti') ?></a>
+          <a class="btn btn-ghost btn-sm" href="<?= url('admin/vertimai.php?e=lesson&id=' . (int) $lesson['id']) ?>"><?= te('🌐 Vertimai') ?></a><?php endif; ?>
       </div>
-      <h1 style="margin-top:10px;"><?= e($lesson['title']) ?></h1>
+      <h1 style="margin-top:10px;"><?= e(tr_text($lesson['title'])) ?></h1>
       <div class="lesson-blocks">
         <?php foreach (lesson_blocks($lesson) as $b): ?><?= render_lesson_block($b) ?><?php endforeach; ?>
       </div>

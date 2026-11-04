@@ -2,7 +2,7 @@
 // Duomenų bazė (PDO, tik paruošti užklausos sakiniai)
 
 // Naujausias db/ failas, kurio reikia šiai svetainės versijai (pridėjus naują - pakeisti; tai tikrina ir testai)
-const DB_REQUIRED = '023_kodas_atsauktos_treniruotes.sql';
+const DB_REQUIRED = '024_vertimai.sql';
 
 function db(): PDO
 {

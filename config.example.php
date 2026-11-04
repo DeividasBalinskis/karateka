@@ -12,6 +12,10 @@ return [
     'retention'   => ['unfinished_days' => 30],    // nebaigtos registracijos ištrinamos po N dienų
     'ranking'     => ['scope' => 'category'],     // reitingas: category (vaikai/jaunimas/suaugę) | group | club
 
+    // Automatinis Denio tekstų vertimas į EN / RU (nemokamai): DeepL API Free raktas (baigiasi ":fx").
+    // Susikurti: deepl.com → API → „DeepL API Free“ (500 000 simbolių per mėn. nemokamai) → API Keys. Tuščia - vertimai tik ranka.
+    'translate' => ['key' => ''],
+
     // "2 treniruotės nemokamai" formai (uzklausa.php)
     'smtp' => [
         'host' => 'smtp.example.com',

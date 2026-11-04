@@ -59,17 +59,17 @@ function render_event(array $ev): string
         $when .= ', ' . fmt_time($ev['start_time']);
     }
     // Sąraše - trumpas tekstas (arba aprašymo pradžia), visas aprašymas - atidarius renginį
-    $short = trim((string) ($ev['summary'] ?? ''));
+    $short = trim(tr_text($ev['summary'] ?? ''));
     if ($short === '' && $ev['description']) {
-        $plain = trim(preg_replace('/\s+/u', ' ', $ev['description']));
+        $plain = trim(preg_replace('/\s+/u', ' ', tr_text($ev['description'])));
         $short = mb_strlen($plain) > 220 ? mb_substr($plain, 0, 220) . '…' : $plain;
     }
     $link = url('renginys.php?id=' . (int) $ev['id']);
     return '<div class="event">'
         . '<div class="event-date"><span class="d">' . date('j', $ts) . '</span><span class="m">' . e(mb_substr(month_names_gen()[(int) date('n', $ts)], 0, 3)) . '</span></div>'
         . '<div><span class="badge type-badge t-' . e($ev['type']) . '">' . e(t(EVENT_TYPES[$ev['type']])) . '</span>'
-        . '<h3 style="margin-top:6px;"><a class="event-title" href="' . e($link) . '">' . e($ev['title']) . '</a></h3>'
-        . '<div class="muted small">' . e($when) . ($ev['location'] ? ' · ' . e($ev['location']) : '') . '</div>'
+        . '<h3 style="margin-top:6px;"><a class="event-title" href="' . e($link) . '">' . e(tr_text($ev['title'])) . '</a></h3>'
+        . '<div class="muted small">' . e($when) . ($ev['location'] ? ' · ' . e(tr_text($ev['location'])) : '') . '</div>'
         . ($short !== '' ? '<div class="small" style="margin-top:6px;">' . e($short) . '</div>' : '')
         . '<a class="small event-more" href="' . e($link) . '">' . e(t('Plačiau →')) . '</a>'
         . '</div></div>';

@@ -29,8 +29,8 @@ if ($id) {
     <?php if (!$n['is_published']): ?> <span class="badge badge-warn"><?= te('juodraštis - nariai nemato') ?></span><?php elseif ($n['published_at'] > date('Y-m-d H:i:s')): ?> <span class="badge">suplanuota</span><?php endif; ?>
     <article class="panel card" style="margin-top:12px;">
       <div class="news-meta"><?= e(fmt_date($n['published_at'], true)) ?><?= members_only_badge($n) ?></div>
-      <h1><?= e($n['title']) ?></h1>
-      <div class="news-body"><?= text_to_html($n['body']) ?></div>
+      <h1><?= e(tr_text($n['title'])) ?></h1>
+      <div class="news-body"><?= text_to_html(tr_text($n['body'])) ?></div>
       <?php $images = array_filter($media, function ($m) { return $m['type'] === 'image'; }); ?>
       <?php if ($images): ?>
         <div class="gallery">
@@ -86,13 +86,14 @@ page_start(t('Naujienos'), ['description' => t('VšĮ Karate Ateitis klubo nauji
   <?php foreach ($items as $i => $n):
       $cover = news_cover((int) $n['id']);
       $link = url('naujienos.php?id=' . (int) $n['id']);
-      $excerpt = mb_strlen($n['body']) > 280 ? mb_substr($n['body'], 0, 280) . '…' : $n['body'];
+      $body = tr_text($n['body']);
+      $excerpt = mb_strlen($body) > 280 ? mb_substr($body, 0, 280) . '…' : $body;
   ?>
     <article class="panel news-card rise<?= $cover ? '' : ' no-cover' ?>" style="--i:<?= min($i, 8) ?>;">
       <?php if ($cover): ?><a class="cover" href="<?= $link ?>" style="display:block;"><img src="<?= e($cover) ?>" alt="" loading="lazy"></a><?php endif; ?>
       <div class="body">
         <div class="news-meta"><?= e(fmt_date($n['published_at'], true)) ?><?= members_only_badge($n) ?><?= staff_link('admin/naujienos.php?edit=' . (int) $n['id']) ?></div>
-        <h2><a href="<?= $link ?>"><?= e($n['title']) ?></a></h2>
+        <h2><a href="<?= $link ?>"><?= e(tr_text($n['title'])) ?></a></h2>
         <div class="news-body muted"><?= text_to_html($excerpt) ?></div>
         <a href="<?= $link ?>" class="small"><?= te('Skaityti daugiau →') ?></a>
         <div class="news-actions"><?= render_reactions((int) $n['id']) ?><?= share_button($n) ?></div>
