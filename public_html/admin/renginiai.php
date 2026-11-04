@@ -132,7 +132,7 @@ if ($edit !== '') {
             <div class="form-row">
               <label><?= te('Tipas') ?>
                 <select name="type">
-                  <?php foreach (EVENT_TYPES as $k => $label): ?>
+                  <?php foreach (array_map('t', EVENT_TYPES) as $k => $label): ?>
                     <option value="<?= $k ?>" <?= $ev['type'] === $k ? 'selected' : '' ?>><?= $label ?></option>
                   <?php endforeach; ?>
                 </select>

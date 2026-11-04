@@ -3,6 +3,9 @@
 // Adminas viską keičia čia pat: index.php?redaguoti=1
 require __DIR__ . '/app/bootstrap.php';
 $edit = home_edit_mode();
+if ($edit) {
+    current_lang('lt');   // turinys rašomas lietuviškai; vertimai - atskirai
+}
 $page = home_page();
 ?>
 <!DOCTYPE html>

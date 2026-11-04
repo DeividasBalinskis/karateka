@@ -45,7 +45,7 @@ function member_tree_field(array $selGroups, array $selMembers, array $opt = [])
             }
         }
         $html = '<div class="mt-group' . (!$groupOn && $some ? ' open' : '') . '">'
-            . '<div class="mt-row">' . ($members ? '<button type="button" class="mt-toggle" aria-label="Rodyti narius">▸</button>' : '<span class="mt-toggle-space"></span>')
+            . '<div class="mt-row">' . ($members ? '<button type="button" class="mt-toggle" aria-label="' . e(t('Rodyti narius')) . '">▸</button>' : '<span class="mt-toggle-space"></span>')
             . '<label class="check"><input type="checkbox" name="groups[]" value="' . $gid . '" data-mt="group"' . ($groupOn ? ' checked' : '') . '><span>' . e($label) . '</span></label>'
             . '<span class="mt-count"></span></div>';
         if ($members) {
@@ -59,10 +59,10 @@ function member_tree_field(array $selGroups, array $selMembers, array $opt = [])
     };
 
     $html = '<div class="mtree" data-mtree>'
-        . '<div class="mt-top"><input type="search" class="mt-search" placeholder="Ieškoti vaiko ar nario…" autocomplete="off" aria-label="Ieškoti">'
+        . '<div class="mt-top"><input type="search" class="mt-search" placeholder="' . e(t('Ieškoti vaiko ar nario…')) . '" autocomplete="off" aria-label="' . e(t('Ieškoti')) . '">'
         . ('<span class="mt-total small">' . t('Pažymėta:') . ' <b>0</b></span></div>')
         . '<label class="check mt-all"><input type="checkbox" data-mt="all"><span>' . e($opt['all_label'] ?? t('Visos grupės')) . '</span></label>';
-    foreach (GROUP_CATEGORIES as $cat => $catLabel) {
+    foreach (array_map('t', GROUP_CATEGORIES) as $cat => $catLabel) {
         if (empty($byCat[$cat])) {
             continue;
         }

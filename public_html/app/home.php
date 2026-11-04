@@ -252,6 +252,8 @@ function hb_t(string $f, string $value, string $tag = 'span', string $class = ''
 {
     $cls = $class !== '' ? ' class="' . e($class) . '"' : '';
     if (!home_edit_mode()) {
+        // Numatyti tekstai (ir nepakeisti Denio) - pagal žodyną; Denio parašyti - kaip parašyta (ar jų vertimas, app/translations.php)
+        $value = t($value);
         return '<' . $tag . $cls . '>' . ($multi ? home_text_html($value, $strong) : e($value)) . '</' . $tag . '>';
     }
     return '<' . $tag . ' class="' . e(trim($class . ' hb-edit' . ($multi ? ' hb-ml' : ''))) . '" data-f="' . e($f) . '" contenteditable="true" spellcheck="true">'
@@ -267,7 +269,7 @@ function hb_img_attrs(string $f, string $value): string
 function hb_img_tools(bool $clearable = false): string
 {
     return home_edit_mode() ? ('<span class="hb-img-tools"><button type="button" class="hb-img-btn" title="' . e(t('Keisti nuotrauką')) . '">' . t('📷 Keisti') . '</button>')
-        . ($clearable ? '<button type="button" class="hb-img-clear" title="Be nuotraukos">✕</button>' : '') . '</span>' : '';
+        . ($clearable ? '<button type="button" class="hb-img-clear" title="' . e(t('Be nuotraukos')) . '">✕</button>' : '') . '</span>' : '';
 }
 
 /** Sąrašo atributai, elemento įrankiai ir „+ Pridėti“ */
@@ -283,7 +285,7 @@ function hb_item(): string
 
 function hb_item_tools(): string
 {
-    return home_edit_mode() ? '<span class="hb-item-tools"><span class="hb-drag" title="Tempkite">⠿</span><button type="button" class="hb-item-del" title="Pašalinti">✕</button></span>' : '';
+    return home_edit_mode() ? '<span class="hb-item-tools"><span class="hb-drag" title="' . e(t('Tempkite')) . '">⠿</span><button type="button" class="hb-item-del" title="' . e(t('Pašalinti')) . '">✕</button></span>' : '';
 }
 
 /** Redagavimo laukelis (taip/ne, pasirinkimas ar trumpas tekstas) - rodomas tik redaguojant */
@@ -369,7 +371,7 @@ function home_render_block(array $b): string
             return '<section style="padding:0; position:relative;" id="' . $id . '">'
                 . '<div class="chooser">' . hb_t('title', $d['title'], 'h1', 'chooser-title') . ($edit ? hb_input('cta', $d['cta'], t('Mygtukas:')) : '') . '</div>'
                 . '<div class="carousel-wrap"><div class="group-scroll" id="groupScroll" data-obj="cats">' . $slides . '</div>'
-                . '<button class="group-arrow prev" id="groupPrev" aria-label="Ankstesnė grupė">‹</button><button class="group-arrow next" id="groupNext" aria-label="Kita grupė">›</button>'
+                . '<button class="group-arrow prev" id="groupPrev" aria-label="' . e(t('Ankstesnė grupė')) . '">‹</button><button class="group-arrow next" id="groupNext" aria-label="' . e(t('Kita grupė')) . '">›</button>'
                 . '<div class="chooser-buttons" id="groupTabs" role="tablist">' . $tabs . '</div></div></section>';
 
         case 'events':
@@ -383,7 +385,7 @@ function home_render_block(array $b): string
                 $ts = strtotime($ev['starts_on']);
                 $html .= '<div class="he-wrap reveal"><a class="panel home-event" href="renginys.php?id=' . (int) $ev['id'] . '">'
                     . '<div class="he-date"><span class="d">' . date('j', $ts) . '</span><span class="m">' . e(mb_substr(month_names_gen()[(int) date('n', $ts)], 0, 3)) . '</span></div>'
-                    . '<div class="he-body"><span class="he-type t-' . e($ev['type']) . '">' . e(EVENT_TYPES[$ev['type']]) . '</span><h3>' . e($ev['title']) . '</h3>'
+                    . '<div class="he-body"><span class="he-type t-' . e($ev['type']) . '">' . e(t(EVENT_TYPES[$ev['type']])) . '</span><h3>' . e($ev['title']) . '</h3>'
                     . '<div class="he-meta">' . e(fmt_date($ev['starts_on'])) . ($ev['ends_on'] && $ev['ends_on'] !== $ev['starts_on'] ? ' – ' . e(fmt_date($ev['ends_on'])) : '')
                     . ($ev['start_time'] ? ', ' . e(fmt_time($ev['start_time'])) : '') . ($ev['location'] ? ' · ' . e($ev['location']) : '') . '</div></div></a>'
                     . (!$edit ? event_edit_link((int) $ev['id'], 'index') : '') . '</div>';
@@ -511,7 +513,7 @@ function home_render_block(array $b): string
             };
             $locs = '';
             if ($d['locations']) {
-                foreach (GROUP_CATEGORIES as $cat => $catLabel) {
+                foreach (array_map('t', GROUP_CATEGORIES) as $cat => $catLabel) {
                     $list = array_unique(array_filter(array_column(public_groups($cat), 'location')));
                     if ($list) {
                         $locs .= '<div class="contact-locs-cat"><strong>' . e($catLabel) . '</strong><ul>';
@@ -536,10 +538,10 @@ function home_render_block(array $b): string
             return '<section class="contact" id="' . $id . '"><div class="wrap"><div class="section-head reveal">' . hb_t('title', $d['title'], 'h2', 'styled') . hb_t('subtitle', $d['subtitle'], 'p') . '</div>'
                 . '<div class="panel registration-grid reveal"><div class="registration-panel">' . hb_t('heading', $d['heading'], 'h3', 'registration-title') . hb_t('text', $d['text'], 'p') . '</div>'
                 . '<div class="registration-panel"><form class="contact-form" id="registrationForm">'
-                . '<input type="text" name="vardas" placeholder="Mokinio vardas, pavardė" required><input type="email" name="email" placeholder="El. paštas" required>'
+                . '<input type="text" name="vardas" placeholder="' . e(t('Mokinio vardas, pavardė')) . '" required><input type="email" name="email" placeholder="' . e(t('El. paštas')) . '" required>'
                 . ('<input type="tel" name="telefonas" placeholder="' . e(t('Telefono numeris')) . '" required><select name="lokacija" required><option value="" disabled selected>' . t('Pasirinkite lokaciją') . '</option>')
                 . render_trial_location_options() . ('</select><select name="gimimo_metai" id="gimimoMetai" class="is-empty"><option value="" disabled selected>' . t('Gimimo metai') . '</option></select>')
-                . '<textarea name="zinute" rows="3" placeholder="Žinutė (nebūtina)"></textarea>'
+                . '<textarea name="zinute" rows="3" placeholder="' . e(t('Žinutė (nebūtina)')) . '"></textarea>'
                 . ($edit ? '<div class="btn btn-primary">' . hb_t('button', $d['button']) . '</div>' : '<button type="submit" class="btn btn-primary">' . e($d['button']) . '</button>')
                 . '<p class="form-note">Duomenis naudosime tik tam, kad susisiektume dėl treniruotės. Plačiau - <a href="' . e(url('privatumas.php')) . '" target="_blank">privatumo politikoje</a>.</p>'
                 . '<div id="formStatus" class="form-status"></div></form></div></div></div></section>';
@@ -573,12 +575,12 @@ function home_block_wrap(array $b, string $html): string
     }
     [$label] = HOME_BLOCK_TYPES[$b['type']];
     return '<div class="hb' . ($b['hidden'] ? ' is-hidden' : '') . '" data-block data-id="' . e($b['id']) . '" data-type="' . e($b['type']) . '">'
-        . '<div class="hb-bar"><span class="hb-block-drag" title="Tempkite">⠿</span><strong>' . e($label) . '</strong>'
-        . '<button type="button" class="hb-up" title="Aukštyn">↑</button><button type="button" class="hb-down" title="Žemyn">↓</button>'
+        . '<div class="hb-bar"><span class="hb-block-drag" title="' . e(t('Tempkite')) . '">⠿</span><strong>' . e($label) . '</strong>'
+        . '<button type="button" class="hb-up" title="' . e(t('Aukštyn')) . '">↑</button><button type="button" class="hb-down" title="' . e(t('Žemyn')) . '">↓</button>'
         . ('<label class="hb-menu" title="' . e(t('Jei įrašyta - rodoma viršutiniame meniu')) . '">Meniu: <input type="text" class="hb-menu-input" value="') . e($b['menu']) . '" maxlength="40" placeholder="nerodoma"></label>'
         . '<button type="button" class="hb-hide">' . ($b['hidden'] ? t('👁 Rodyti') : t('🙈 Slėpti')) . '</button>'
         . ('<button type="button" class="hb-reset" title="' . e(t('Grąžinti pradinį šio bloko turinį')) . '">' . t('↺ Pradinis') . '</button>')
-        . '<button type="button" class="hb-del" title="Ištrinti bloką">✕</button>'
+        . '<button type="button" class="hb-del" title="' . e(t('Ištrinti bloką')) . '">✕</button>'
         . ('<button type="button" class="hb-insert" title="' . e(t('Pridėti bloką po šiuo')) . '">' . t('+ Blokas po šiuo') . '</button></div>')
         . $html . '</div>';
 }
@@ -587,7 +589,7 @@ function home_block_wrap(array $b, string $html): string
 function instructor_modal(): string
 {
     return '<div class="ins-modal" id="insModal" hidden role="dialog" aria-modal="true" aria-labelledby="insTitle"><div class="ins-pop">'
-        . '<button type="button" class="ins-close" aria-label="Uždaryti">×</button><div class="ins-pop-in"></div></div></div>'
+        . '<button type="button" class="ins-close" aria-label="' . e(t('Uždaryti')) . '">×</button><div class="ins-pop-in"></div></div></div>'
         . '<script>(function () {
   var m = document.getElementById("insModal"), box = m.querySelector(".ins-pop-in"), last = null;
   function open(card) { last = card; box.innerHTML = ""; box.appendChild(card.querySelector("template.ins-more").content.cloneNode(true)); m.hidden = false; document.body.classList.add("ins-lock"); m.querySelector(".ins-close").focus(); }

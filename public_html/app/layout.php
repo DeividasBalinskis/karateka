@@ -84,7 +84,7 @@ function group_options(?int $selected, bool $withEmpty = true): string
     $current = null;
     foreach (q_all('SELECT * FROM training_groups WHERE is_active = 1 ORDER BY sort_order, name') as $g) {
         if ($g['category'] !== $current) {
-            $html .= ($current !== null ? '</optgroup>' : '') . '<optgroup label="' . e(GROUP_CATEGORIES[$g['category']]) . '">';
+            $html .= ($current !== null ? '</optgroup>' : '') . '<optgroup label="' . e(t(GROUP_CATEGORIES[$g['category']])) . '">';
             $current = $g['category'];
         }
         $html .= '<option value="' . (int) $g['id'] . '"' . ((int) $g['id'] === $selected ? ' selected' : '') . '>' . e($g['name']) . '</option>';
@@ -142,7 +142,7 @@ function audience_field(array $selected, string $allLabel = 'Visos grupės', boo
     };
     $html = '<div class="audience">'
         . '<label class="check aud-all"><input type="checkbox" data-aud="all"' . ($all ? ' checked' : '') . '><span>' . e($allLabel) . '</span></label>';
-    foreach (GROUP_CATEGORIES as $cat => $catLabel) {
+    foreach (array_map('t', GROUP_CATEGORIES) as $cat => $catLabel) {
         if (empty($byCat[$cat])) {
             continue;
         }
@@ -218,7 +218,7 @@ function location_field(string $name, ?string $value, bool $required = false): s
         $html .= '<option value="' . e($loc) . '"' . ($loc === $value ? ' selected' : '') . '>' . e($loc) . '</option>';
     }
     $html .= '<option value="__other"' . ($isOther ? ' selected' : '') . '>Kita vieta…</option></select></label>'
-        . '<label id="' . $id . '_other" ' . ($isOther ? '' : 'style="display:none;"') . '>Kita vieta <input type="text" name="' . e($name) . '_other" value="' . ($isOther ? e($value) : '') . '" placeholder="pvz. Kaunas, Žalgirio arena"></label>'
+        . '<label id="' . $id . '_other" ' . ($isOther ? '' : 'style="display:none;"') . '>Kita vieta <input type="text" name="' . e($name) . '_other" value="' . ($isOther ? e($value) : '') . '" placeholder="' . e(t('pvz. Kaunas, Žalgirio arena')) . '"></label>'
         . '<script>(function(){var s=document.getElementById("' . $id . '"),o=document.getElementById("' . $id . '_other");'
         . 's.addEventListener("change",function(){o.style.display=s.value==="__other"?"":"none";if(s.value==="__other")o.querySelector("input").focus();});})();</script>';
     return $html;
@@ -436,15 +436,15 @@ function date_parts_field(string $name, $value, bool $required = true): string
         [$y, $m, $d] = [0, 0, 0];
     }
     $req = $required ? ' required' : '';
-    $html = '<div class="date-parts"><select name="' . e($name) . '[y]" aria-label="Metai"' . $req . ('><option value="">' . t('Metai') . '</option>');
+    $html = '<div class="date-parts"><select name="' . e($name) . '[y]" aria-label="' . e(t('Metai')) . '"' . $req . ('><option value="">' . t('Metai') . '</option>');
     for ($i = (int) date('Y'); $i >= 1930; $i--) {
         $html .= '<option value="' . $i . '"' . ($i === $y ? ' selected' : '') . '>' . $i . '</option>';
     }
-    $html .= '</select><select name="' . e($name) . '[m]" aria-label="Mėnuo"' . $req . ('><option value="">' . t('Mėnuo') . '</option>');
+    $html .= '</select><select name="' . e($name) . '[m]" aria-label="' . e(t('Mėnuo')) . '"' . $req . ('><option value="">' . t('Mėnuo') . '</option>');
     foreach (month_names() as $i => $label) {
         $html .= '<option value="' . $i . '"' . ($i === $m ? ' selected' : '') . '>' . $label . '</option>';
     }
-    $html .= '</select><select name="' . e($name) . '[d]" aria-label="Diena"' . $req . ('><option value="">' . t('Diena') . '</option>');
+    $html .= '</select><select name="' . e($name) . '[d]" aria-label="' . e(t('Diena')) . '"' . $req . ('><option value="">' . t('Diena') . '</option>');
     for ($i = 1; $i <= 31; $i++) {
         $html .= '<option value="' . $i . '"' . ($i === $d ? ' selected' : '') . '>' . $i . '</option>';
     }

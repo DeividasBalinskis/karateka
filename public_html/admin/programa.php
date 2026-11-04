@@ -52,10 +52,10 @@ function req_form(int $belt, ?array $r, array $lessons): string
     $html = '<form method="post" class="form req-form">' . csrf_field()
         . '<input type="hidden" name="dirzas" value="' . $belt . '"><input type="hidden" name="rid" value="' . (int) ($r['id'] ?? 0) . '">'
         . '<div class="form-row ' . ($r ? 'four' : 'three') . ('"><label>' . t('Dalis') . ' <select name="section">');
-    foreach (REQ_SECTIONS as $k => $label) {
+    foreach (array_map('t', REQ_SECTIONS) as $k => $label) {
         $html .= '<option value="' . $k . '"' . (($r['section'] ?? 'kihon') === $k ? ' selected' : '') . '>' . e($label) . '</option>';
     }
-    $html .= '</select></label><label>Ko reikia <input type="text" name="title" value="' . e($r['title'] ?? '') . '" placeholder="pvz. Heian Shodan" required></label>'
+    $html .= '</select></label><label>Ko reikia <input type="text" name="title" value="' . e($r['title'] ?? '') . '" placeholder="' . e(t('pvz. Heian Shodan')) . '" required></label>'
         . '<label>XP <span class="hint">patvirtinus</span><input type="number" name="xp" min="0" max="1000" value="' . (int) ($r['xp'] ?? 20) . '"></label>'
         . ($r ? '<label>Eilė <input type="number" name="sort_order" value="' . (int) $r['sort_order'] . '"></label>' : '') . '</div>'
         . ('<label>' . t('Paaiškinimas') . ' <span class="hint">' . t('nebūtina') . '</span><textarea name="body" rows="2">') . e($r['body'] ?? '') . '</textarea></label>'
@@ -86,7 +86,7 @@ page_start(t('Egzaminų programa'), ['admin' => true]);
   <h2><?= e(belt_label($belt)) ?></h2>
   <?php if (!$reqs): ?><p class="muted"><?= te('Šiam diržui programos dar nėra.') ?></p><?php endif; ?>
   <?php foreach ($reqs as $section => $items): ?>
-    <h3 class="req-section"><?= e(REQ_SECTIONS[$section]) ?></h3>
+    <h3 class="req-section"><?= e(t(REQ_SECTIONS[$section])) ?></h3>
     <?php foreach ($items as $r): ?>
       <details class="req-admin">
         <summary><strong><?= e($r['title']) ?></strong> <span class="xp-chip">+<?= (int) $r['xp'] ?> XP</span><?= $r['youtube_id'] ? ' <span class="badge">video</span>' : '' ?><?= $r['lesson_id'] ? ' <span class="badge">pamoka</span>' : '' ?>

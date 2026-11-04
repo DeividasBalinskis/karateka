@@ -270,14 +270,14 @@ if ($folderEdit !== '') {
       </div>
       <label><?= te('Ženkliukas') ?>
         <input type="text" name="icon" id="folderIcon" value="<?= e((string) $f['icon']) ?>" maxlength="8" style="max-width:90px;">
-        <?= icon_picker(t('folderIcon'), $f['icon']) ?>
+        <?= icon_picker('folderIcon', $f['icon']) ?>
       </label>
       <label><?= te('Diržas') ?> <span class="hint"><?= te('pvz. Egzaminams → „8 kyu“: narys iš karto mato tik savo diržo aplanką') ?></span>
         <select name="belt_level" style="max-width:320px;"><?= belt_options($f['belt_level'] !== null ? (int) $f['belt_level'] : null, t('Visiems diržams')) ?></select></label>
       <label><?= te('Aprašymas') ?> <span class="hint"><?= te('nebūtina; rodomas aplanko viršuje') ?></span>
         <textarea name="description" rows="3"><?= e((string) $f['description']) ?></textarea></label>
       <div class="seg-choice">
-        <?php foreach (QUIZ_AUDIENCE as $k => $label): ?>
+        <?php foreach (array_map('t', QUIZ_AUDIENCE) as $k => $label): ?>
           <label class="check"><input type="radio" name="audience" value="<?= $k ?>" <?= $f['audience'] === $k ? 'checked' : '' ?>><span><?= e($label) ?></span></label>
         <?php endforeach; ?>
       </div>
@@ -319,16 +319,16 @@ function render_lesson_tree(?int $parent, array $folders, array $byFolder, array
         }
         $fid = (int) $f['id'];
         $html .= '<li class="lt-folder" data-type="folder" data-id="' . $fid . '" id="f' . $fid . '"><div class="lt-row">'
-            . '<span class="lt-drag" title="Tempkite">⠿</span><button type="button" class="lt-toggle" aria-label="Išskleisti / suskleisti">▾</button>'
+            . '<span class="lt-drag" title="' . e(t('Tempkite')) . '">⠿</span><button type="button" class="lt-toggle" aria-label="' . e(t('Išskleisti / suskleisti')) . '">▾</button>'
             . '<span class="lt-icon">' . folder_icon($f) . '</span>'
             . '<a class="lt-title" href="?folder=' . $fid . '">' . e($f['title']) . '</a>'
             . '<span class="lt-meta">' . ($counts[$fid] ?? 0) . ' pam.</span>'
             . ($f['belt_level'] !== null ? belt_chip((int) $f['belt_level']) : '')
-            . ($f['audience'] !== 'karateka' ? '<span class="badge badge-tag">' . e(QUIZ_AUDIENCE[$f['audience']]) . '</span>' : '')
+            . ($f['audience'] !== 'karateka' ? '<span class="badge badge-tag">' . e(t(QUIZ_AUDIENCE[$f['audience']])) . '</span>' : '')
             . (!$f['is_published'] ? '<span class="badge badge-warn">nepaskelbtas</span>' : '')
             . '<span class="lt-actions"><a class="btn btn-ghost btn-sm" href="' . e(url('pamokos.php?nauja=1&aplankas=' . $fid)) . '">+ Pamoka</a>'
             . '<a class="btn btn-ghost btn-sm" href="?folder=new&amp;parent=' . $fid . '">+ Aplankas</a>'
-            . '<button type="button" class="lt-up" title="Aukštyn">↑</button><button type="button" class="lt-down" title="Žemyn">↓</button></span></div>'
+            . '<button type="button" class="lt-up" title="' . e(t('Aukštyn')) . '">↑</button><button type="button" class="lt-down" title="' . e(t('Žemyn')) . '">↓</button></span></div>'
             . render_lesson_tree($fid, $folders, $byFolder, $info, $counts) . '</li>';
     }
     foreach ($byFolder[$parent ?? 0] ?? [] as $l) {
@@ -337,16 +337,16 @@ function render_lesson_tree(?int $parent, array $folders, array $byFolder, array
         $meta = array_filter([$i['videos'] ? '▶ ' . $i['videos'] : '', $i['images'] ? '🖼 ' . $i['images'] : '',
             $groups ? 'tik: ' . (count($groups) > 2 ? count($groups) . (' ' . t('grupėms')) : implode(', ', $groups)) : '']);
         $html .= '<li class="lt-lesson" data-type="lesson" data-id="' . (int) $l['id'] . '" id="l' . (int) $l['id'] . '"><div class="lt-row">'
-            . '<span class="lt-drag" title="Tempkite">⠿</span><span class="lt-icon">' . ($i['video'] ? '▶' : '📄') . '</span>'
+            . '<span class="lt-drag" title="' . e(t('Tempkite')) . '">⠿</span><span class="lt-icon">' . ($i['video'] ? '▶' : '📄') . '</span>'
             . '<a class="lt-title" href="' . e(url('pamokos.php?id=' . (int) $l['id'] . '&keisti=1')) . '">' . e($l['title']) . '</a>'
             . ($l['belt_level'] !== null ? belt_chip((int) $l['belt_level']) : '')
-            . ($l['audience'] !== 'karateka' ? '<span class="badge badge-tag">' . e(QUIZ_AUDIENCE[$l['audience']]) . '</span>' : '')
+            . ($l['audience'] !== 'karateka' ? '<span class="badge badge-tag">' . e(t(QUIZ_AUDIENCE[$l['audience']])) . '</span>' : '')
             . (!$l['is_published'] ? '<span class="badge badge-warn">nepaskelbta</span>' : '')
             . ($meta ? '<span class="lt-meta">' . e(implode(' · ', $meta)) . '</span>' : '')
-            . '<span class="lt-actions"><a class="btn btn-ghost btn-sm" href="?siusti=' . (int) $l['id'] . '" title="Siųsti nariams su komentaru">📨</a>'
-            . '<a class="btn btn-ghost btn-sm" href="' . e(url('pamokos.php?id=' . (int) $l['id'])) . '" target="_blank" title="Peržiūrėti kaip narys">👁</a>'
+            . '<span class="lt-actions"><a class="btn btn-ghost btn-sm" href="?siusti=' . (int) $l['id'] . '" title="' . e(t('Siųsti nariams su komentaru')) . '">📨</a>'
+            . '<a class="btn btn-ghost btn-sm" href="' . e(url('pamokos.php?id=' . (int) $l['id'])) . '" target="_blank" title="' . e(t('Peržiūrėti kaip narys')) . '">👁</a>'
             . '<a class="btn btn-ghost btn-sm" href="' . e(url('pamokos.php?id=' . (int) $l['id'] . '&keisti=1')) . '">✎ Keisti</a>'
-            . '<button type="button" class="lt-up" title="Aukštyn">↑</button><button type="button" class="lt-down" title="Žemyn">↓</button></span></div></li>';
+            . '<button type="button" class="lt-up" title="' . e(t('Aukštyn')) . '">↑</button><button type="button" class="lt-down" title="' . e(t('Žemyn')) . '">↓</button></span></div></li>';
     }
     return $html . '</ul>';
 }

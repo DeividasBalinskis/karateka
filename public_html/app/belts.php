@@ -70,10 +70,10 @@ function belt_strip_html(array $m): string
         if ($reqs) {
             $done = requirement_done_ids((int) $m['id']);
             $ok = count(array_filter($reqs, function ($r) use ($done) { return ($done[(int) $r['id']] ?? '') === 'approved'; }));
-            $progress = '<a class="bs-next" href="' . e($link) . '" title="Egzamino programa">Iki ' . e(BELTS[$next][0]) . ': ' . $ok . (' ' . t('iš') . ' ') . count($reqs)
-                . '<span class="bs-bar" aria-hidden="true"><i style="width:' . (int) round(100 * $ok / count($reqs)) . t('%; background:') . BELTS[$next][2] . '"></i></span></a>';
+            $progress = '<a class="bs-next" href="' . e($link) . '" title="' . e(t('Egzamino programa')) . '">' . e(t('Iki {belt}: {ok} iš {all}', ['belt' => BELTS[$next][0], 'ok' => $ok, 'all' => count($reqs)]))
+                . '<span class="bs-bar" aria-hidden="true"><i style="width:' . (int) round(100 * $ok / count($reqs)) . '%; background:' . BELTS[$next][2] . '"></i></span></a>';
         } else {
-            $progress = '<a class="bs-next" href="' . e($link) . '">Kitas - ' . e(BELTS[$next][0] . ' · ' . t(BELTS[$next][1])) . ' →</a>';
+            $progress = '<a class="bs-next" href="' . e($link) . '">' . e(t('Kitas -') . ' ' . BELTS[$next][0] . ' · ' . t(BELTS[$next][1])) . ' →</a>';
         }
     }
     return '<div class="belt-strip' . ($lvl === 1 ? ' is-white' : '') . ($lvl >= 10 ? ' is-dan' : '') . '" style="--belt:' . $color . '">'

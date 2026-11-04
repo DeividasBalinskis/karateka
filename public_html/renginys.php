@@ -29,7 +29,7 @@ page_start($ev['title'], ['section' => 'renginiai', 'description' => $ev['summar
   <header class="panel card ep-head">
     <div class="ep-date"><span class="d"><?= date('j', $ts) ?></span><span class="m"><?= e(mb_substr(month_names_gen()[(int) date('n', $ts)], 0, 3)) ?></span></div>
     <div class="ep-title">
-      <div class="row" style="gap:6px; flex-wrap:wrap;"><span class="badge type-badge t-<?= e($ev['type']) ?>"><?= e(EVENT_TYPES[$ev['type']]) ?></span><?= members_only_badge($ev) ?><?= $past ? (' <span class="badge">' . t('įvyko') . '</span>') : '' ?></div>
+      <div class="row" style="gap:6px; flex-wrap:wrap;"><span class="badge type-badge t-<?= e($ev['type']) ?>"><?= e(t(EVENT_TYPES[$ev['type']])) ?></span><?= members_only_badge($ev) ?><?= $past ? (' <span class="badge">' . t('įvyko') . '</span>') : '' ?></div>
       <h1><?= e($ev['title']) ?></h1>
       <div class="muted"><?= e($when) ?><?= $ev['location'] ? ' · ' . e($ev['location']) : '' ?></div>
       <div class="small muted" style="margin-top:4px;"><?= te('Kam:') ?> <?= e(event_audience_label($ev)) ?><?= !$past && $going ? (' ' . t('· Dalyvauja:') . ' <strong>') . (int) $going . '</strong>' : '' ?></div>

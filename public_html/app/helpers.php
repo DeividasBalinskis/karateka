@@ -153,7 +153,7 @@ function youtube_id(string $url): ?string
 function youtube_embed(string $id): string
 {
     return '<div class="video"><iframe src="https://www.youtube-nocookie.com/embed/' . e($id)
-        . '" title="YouTube video" loading="lazy" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture; fullscreen" allowfullscreen></iframe></div>';
+        . '" title="' . e(t('YouTube video')) . '" loading="lazy" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture; fullscreen" allowfullscreen></iframe></div>';
 }
 
 /** Paprastas tekstas -> HTML pastraipos su nuorodomis */

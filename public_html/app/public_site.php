@@ -117,7 +117,7 @@ function render_kids_locations(): string
     }
     $html = '';
     $first = true;
-    foreach (PLACE_TYPES as $type => $typeLabel) {
+    foreach (array_map('t', PLACE_TYPES) as $type => $typeLabel) {
         if (empty($byType[$type])) {
             continue;
         }
@@ -148,7 +148,7 @@ function render_kids_locations(): string
 function render_trial_location_options(): string
 {
     $html = '';
-    foreach (GROUP_CATEGORIES as $cat => $catLabel) {
+    foreach (array_map('t', GROUP_CATEGORIES) as $cat => $catLabel) {
         $locs = array_unique(array_filter(array_column(public_groups($cat), 'location')));
         if (!$locs) {
             continue;
@@ -167,16 +167,16 @@ function render_trial_location_options(): string
 /** Viena tvarkaraščio eilutė: diena, nuo, iki, pastaba */
 function schedule_row_editor(array $s): string
 {
-    $html = '<div class="sl-row" data-id="' . (int) ($s['id'] ?? 0) . '"><select class="sl-day" aria-label="Diena">';
+    $html = '<div class="sl-row" data-id="' . (int) ($s['id'] ?? 0) . '"><select class="sl-day" aria-label="' . e(t('Diena')) . '">';
     foreach (weekday_names() as $n => $day) {
         $html .= '<option value="' . $n . '"' . ((int) ($s['weekday'] ?? 1) === $n ? ' selected' : '') . '>' . e($day) . '</option>';
     }
     return $html . '</select>'
-        . '<span class="sl-time"><input type="time" class="sl-start" value="' . e($s['start_time'] ? fmt_time($s['start_time']) : '') . '" aria-label="Nuo">'
-        . '<span>–</span><input type="time" class="sl-end" value="' . e($s['end_time'] ? fmt_time($s['end_time']) : '') . '" aria-label="Iki"></span>'
-        . '<input type="text" class="sl-note" value="' . e((string) ($s['note'] ?? '')) . '" maxlength="190" placeholder="Pastaba, pvz. pažengę" aria-label="Pastaba">'
+        . '<span class="sl-time"><input type="time" class="sl-start" value="' . e($s['start_time'] ? fmt_time($s['start_time']) : '') . '" aria-label="' . e(t('Nuo')) . '">'
+        . '<span>–</span><input type="time" class="sl-end" value="' . e($s['end_time'] ? fmt_time($s['end_time']) : '') . '" aria-label="' . e(t('Iki')) . '"></span>'
+        . '<input type="text" class="sl-note" value="' . e((string) ($s['note'] ?? '')) . '" maxlength="190" placeholder="' . e(t('Pastaba, pvz. pažengę')) . '" aria-label="' . e(t('Pastaba')) . '">'
         . '<span class="sl-state" aria-live="polite"></span>'
-        . '<button type="button" class="sl-copy" title="Kopijuoti į kitą dieną">⧉</button><button type="button" class="sl-del" title="Ištrinti laiką">✕</button></div>';
+        . '<button type="button" class="sl-copy" title="' . e(t('Kopijuoti į kitą dieną')) . '">⧉</button><button type="button" class="sl-del" title="' . e(t('Ištrinti laiką')) . '">✕</button></div>';
 }
 
 /** Grupių tvarkaraščiai redagavimui */
@@ -213,8 +213,8 @@ function price_editor(string $category): string
 {
     $p = category_price($category);
     return '<div class="pr-edit" data-cat="' . e($category) . '">'
-        . '<label>Kaina <input type="text" class="pr-main" value="' . e($p['price_main']) . '" placeholder="60€/mėn" maxlength="40"></label>'
-        . '<label>Sąlyga <input type="text" class="pr-note" value="' . e((string) $p['price_note']) . '" placeholder="(pasirašius metinę sutartį)" maxlength="120"></label>'
-        . '<label>Kita kaina <input type="text" class="pr-alt" value="' . e((string) $p['price_alt']) . '" placeholder="90€/mėn be sutarties" maxlength="120"></label>'
+        . '<label>Kaina <input type="text" class="pr-main" value="' . e($p['price_main']) . '" placeholder="' . e(t('60€/mėn')) . '" maxlength="40"></label>'
+        . '<label>Sąlyga <input type="text" class="pr-note" value="' . e((string) $p['price_note']) . '" placeholder="' . e(t('(pasirašius metinę sutartį)')) . '" maxlength="120"></label>'
+        . '<label>Kita kaina <input type="text" class="pr-alt" value="' . e((string) $p['price_alt']) . '" placeholder="' . e(t('90€/mėn be sutarties')) . '" maxlength="120"></label>'
         . '<span class="sl-state" aria-live="polite"></span></div>' . schedule_editor_script();
 }

@@ -85,7 +85,7 @@ function group_form(array $g, string $action): void
     <div class="form-row">
       <label><?= te('Kategorija') ?>
         <select name="category" required>
-          <?php foreach (GROUP_CATEGORIES as $k => $label): ?>
+          <?php foreach (array_map('t', GROUP_CATEGORIES) as $k => $label): ?>
             <option value="<?= $k ?>" <?= ($g['category'] ?? '') === $k ? 'selected' : '' ?>><?= $label ?></option>
           <?php endforeach; ?>
         </select>
@@ -96,7 +96,7 @@ function group_form(array $g, string $action): void
     <div class="form-row">
       <label><?= te('Vietos tipas') ?> <span class="hint"><?= te('pagrindinio puslapio sąrašui') ?></span>
         <select name="place_type">
-          <?php foreach (PLACE_TYPES as $k => $pl): ?><option value="<?= $k ?>" <?= ($g['place_type'] ?? 'kita') === $k ? 'selected' : '' ?>><?= $pl ?></option><?php endforeach; ?>
+          <?php foreach (array_map('t', PLACE_TYPES) as $k => $pl): ?><option value="<?= $k ?>" <?= ($g['place_type'] ?? 'kita') === $k ? 'selected' : '' ?>><?= $pl ?></option><?php endforeach; ?>
         </select>
       </label>
       <label><?= te('Žymė svetainėje') ?> <span class="hint"><?= te('nebūtina, pvz. „pažengę“') ?></span><input type="text" name="label" value="<?= e($g['label'] ?? '') ?>" maxlength="60"></label>

@@ -236,7 +236,7 @@ if ($id) {
           <span><?= te('Sutikimas skelbti nuotraukas') ?></span></label>
         <fieldset class="tags-field">
           <legend><?= te('Žymos') ?> <span class="hint"><?= te('Karateka - visi nariai; žymos atveria papildomą medžiagą ir testus') ?></span></legend>
-          <?php $mTags = member_tags($id); foreach (MEMBER_TAGS as $k => $label): ?>
+          <?php $mTags = member_tags($id); foreach (array_map('t', MEMBER_TAGS) as $k => $label): ?>
             <?php $qt = in_array($k, $mTags, true) ? tag_qualification_text($id, $k) : ''; ?>
             <label class="check"><input type="checkbox" name="tags[]" value="<?= $k ?>" <?= in_array($k, $mTags, true) ? 'checked' : '' ?>><span><?= e($label) ?><?= $qt ? ' <span class="small ' . (strpos($qt, '✓') === 0 ? 'test-ok' : 'muted') . '">' . e($qt) . '</span>' : '' ?></span></label>
           <?php endforeach; ?>
@@ -357,7 +357,7 @@ if ($id) {
         <h2><?= te('Egzamino programa') ?><?= $nextBelt ? ' · ' . e(belt_label($nextBelt)) : '' ?></h2>
         <?php if (!$reqs): ?><p class="muted small"><?= $nextBelt ? t('Šio diržo programos dar nėra.') : t('Aukščiausias diržas.') ?> <a href="<?= url('admin/programa.php' . ($nextBelt ? '?dirzas=' . $nextBelt : '')) ?>"><?= te('Egzaminų programa →') ?></a></p><?php endif; ?>
         <?php foreach ($reqs as $section => $items): ?>
-          <h3 class="req-section"><?= e(REQ_SECTIONS[$section]) ?></h3>
+          <h3 class="req-section"><?= e(t(REQ_SECTIONS[$section])) ?></h3>
           <ul class="list small req-admin-list">
             <?php foreach ($items as $r): $st = $progress[(int) $r['id']] ?? null; ?>
               <li class="row between">

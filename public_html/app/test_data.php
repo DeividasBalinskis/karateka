@@ -31,8 +31,8 @@ const TEST_DATA_PARTS = [
 function test_data_member_sql(): string
 {
     $link = 'SELECT 1 FROM account_members am JOIN accounts a ON a.id = am.account_id WHERE am.member_id = m.id AND ';
-    return t('((EXISTS (') . $link . DEMO_ACCOUNT_SQL . (' ' . t('AND a.id') . ' <> ?) OR m.created_at = "') . DEMO_SENTINEL . '")
-             AND NOT EXISTS (' . $link . (t('(NOT') . ' ') . DEMO_ACCOUNT_SQL . ' OR a.id = ?)))';
+    return '((EXISTS (' . $link . DEMO_ACCOUNT_SQL . (' ' . 'AND a.id' . ' <> ?) OR m.created_at = "') . DEMO_SENTINEL . '")
+             AND NOT EXISTS (' . $link . ('(NOT' . ' ') . DEMO_ACCOUNT_SQL . ' OR a.id = ?)))';
 }
 
 /** Kas būtų ištrinta: [dalis => ['count' => n, 'items' => [tekstas, ...], 'ids' => [...], 'warn' => ?string]] (tik netuščios dalys) */

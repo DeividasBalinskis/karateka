@@ -34,8 +34,9 @@ function ids() {
  * Naujas naršyklės kontekstas (ir prisijungimas, jei nurodytas el. paštas).
  * JS klaidos puslapyje surenkamos į page.jsErrors - testas jas patikrina pabaigoje (noJsErrors).
  */
-async function login(browser, email, width = 1280, height = 900, password = PASSWORD) {
+async function login(browser, email, width = 1280, height = 900, password = PASSWORD, lang = 'lt') {
   const ctx = await browser.newContext({ baseURL: BASE_URL, viewport: { width, height } });
+  if (lang !== 'lt') await ctx.addCookies([{ name: 'kalba', value: lang, url: BASE_URL }]);
   const page = await ctx.newPage();
   page.jsErrors = [];
   page.on('pageerror', e => page.jsErrors.push(e.message));

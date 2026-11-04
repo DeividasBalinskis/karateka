@@ -118,7 +118,7 @@ $todoCount = count($notifs) + count($todo);
             <li class="row">
               <span class="t-time"><?= date('j', strtotime($ev['starts_on'])) ?><small><?= e(mb_substr(month_names_gen()[(int) date('n', strtotime($ev['starts_on']))], 0, 3)) ?></small></span>
               <span>
-                <span class="badge type-badge t-<?= e($ev['type']) ?>"><?= e(EVENT_TYPES[$ev['type']]) ?></span>
+                <span class="badge type-badge t-<?= e($ev['type']) ?>"><?= e(t(EVENT_TYPES[$ev['type']])) ?></span>
                 <strong><?= e($ev['title']) ?></strong>
                 <div class="muted small"><?= admin_event_summary($ev) ?></div>
               </span>

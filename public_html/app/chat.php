@@ -210,25 +210,25 @@ function chat_widget_html(): string
     }
     $icon = '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M4 4h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H9l-4.6 3.6A.9.9 0 0 1 3 20.9V6a2 2 0 0 1 1-2Zm3 6.2a1.3 1.3 0 1 0 0 2.6 1.3 1.3 0 0 0 0-2.6Zm5 0a1.3 1.3 0 1 0 0 2.6 1.3 1.3 0 0 0 0-2.6Zm5 0a1.3 1.3 0 1 0 0 2.6 1.3 1.3 0 0 0 0-2.6Z"/></svg>';
     $badge = '<span class="count-badge"' . ($unread ? '' : ' hidden') . '>' . $unread . '</span>';
-    $form = '<form class="chat-form"><textarea name="body" rows="1" maxlength="' . MESSAGE_MAX . '" placeholder="Rašykite žinutę…" required></textarea>'
-        . '<button class="chat-send" type="submit" aria-label="Siųsti"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M3.4 20.4 21 12 3.4 3.6 3.3 10l12.6 2-12.6 2z"/></svg></button></form>';
+    $form = '<form class="chat-form"><textarea name="body" rows="1" maxlength="' . MESSAGE_MAX . '" placeholder="' . e(t('Rašykite žinutę…')) . '" required></textarea>'
+        . '<button class="chat-send" type="submit" aria-label="' . e(t('Siųsti')) . '"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M3.4 20.4 21 12 3.4 3.6 3.3 10l12.6 2-12.6 2z"/></svg></button></form>';
 
     if (is_staff($a)) {
         $cfg = ['api' => url('pokalbis.php'), 'csrf' => csrf_token(), 'staff' => true, 'pages' => url('klausimai.php')];
         return '<div class="chat staff" id="chat" data-chat="' . e(json_encode($cfg)) . '">'
-            . '<button type="button" class="chat-fab" id="chatFab" aria-expanded="false" aria-controls="chatPanel" title="Pokalbiai su nariais">' . $icon
+            . '<button type="button" class="chat-fab" id="chatFab" aria-expanded="false" aria-controls="chatPanel" title="' . e(t('Pokalbiai su nariais')) . '">' . $icon
             . ('<span class="chat-fab-label">' . t('Žinutės') . '</span>') . $badge . '</button>'
-            . '<div class="chat-panel wide" id="chatPanel" role="dialog" aria-label="Pokalbiai su nariais" hidden>'
+            . '<div class="chat-panel wide" id="chatPanel" role="dialog" aria-label="' . e(t('Pokalbiai su nariais')) . '" hidden>'
             . ('<aside class="chat-side"><div class="chat-side-head"><strong>' . t('Pokalbiai') . '</strong><button type="button" class="chat-close" aria-label="' . e(t('Uždaryti')) . '">×</button></div>')
-            . '<input type="search" class="chat-search" placeholder="Ieškoti nario ar grupės…" aria-label="Ieškoti nario ar grupės" autocomplete="off">'
+            . '<input type="search" class="chat-search" placeholder="' . e(t('Ieškoti nario ar grupės…')) . '" aria-label="' . e(t('Ieškoti nario ar grupės')) . '" autocomplete="off">'
             . ('<div class="chat-side-tabs" role="tablist"><button type="button" role="tab" class="active" data-side="chats" aria-selected="true">' . t('Pokalbiai') . '</button>')
             . ('<button type="button" role="tab" data-side="all" aria-selected="false">' . t('Visi nariai') . '</button></div>')
             . ('<div class="chat-list" role="list"><p class="chat-empty">' . t('Kraunama…') . '</p></div></aside>')
-            . '<section class="chat-main"><header class="chat-head"><button type="button" class="chat-back" aria-label="Atgal į pokalbius">‹</button>'
+            . '<section class="chat-main"><header class="chat-head"><button type="button" class="chat-back" aria-label="' . e(t('Atgal į pokalbius')) . '">‹</button>'
             . ('<button type="button" class="chat-who" title="' . e(t('Nario profilis')) . '" disabled><span class="chat-avatar" aria-hidden="true">?</span><span class="chat-who-text"><strong class="chat-title">' . t('Pasirinkite pokalbį') . '</strong><span class="chat-sub"></span></span></button>')
             . ('<button type="button" class="chat-card" hidden>' . t('Profilis') . '</button><button type="button" class="chat-close" aria-label="' . e(t('Uždaryti')) . '">×</button></header>')
             . ('<div class="chat-thread" aria-live="polite"><p class="chat-empty">' . t('Kairėje pasirinkite žmogų arba suraskite paieškoje.') . '</p></div>')
-            . '<div class="chat-reply-ctx" hidden><span></span><button type="button" aria-label="Atsakyti bendrai">×</button></div>'
+            . '<div class="chat-reply-ctx" hidden><span></span><button type="button" aria-label="' . e(t('Atsakyti bendrai')) . '">×</button></div>'
             . $form . '</section></div></div>';
     }
 
@@ -246,13 +246,13 @@ function chat_widget_html(): string
     }
     $cfg = ['api' => url('pokalbis.php'), 'send' => url('zinute.php'), 'csrf' => csrf_token(), 'member' => (int) $members[0]['id'], 'hint' => empty($a['chat_hint_at'])];
     return '<div class="chat" id="chat" data-chat="' . e(json_encode($cfg)) . '">'
-        . '<button type="button" class="chat-fab" id="chatFab" aria-expanded="false" aria-controls="chatPanel" title="Parašyti Deniui">' . $icon
+        . '<button type="button" class="chat-fab" id="chatFab" aria-expanded="false" aria-controls="chatPanel" title="' . e(t('Parašyti Deniui')) . '">' . $icon
         . ('<span class="chat-fab-label">' . t('Rašyti Deniui') . '</span>') . $badge . '</button>'
         . ('<div class="chat-hint" id="chatHint" hidden><span>' . t('👋 Turite klausimą? Čia galite parašyti Deniui - jis atsakys čia pat.') . '</span>')
-        . '<button type="button" class="chat-hint-x" aria-label="Uždaryti">×</button></div>'
-        . '<div class="chat-panel" id="chatPanel" role="dialog" aria-label="Pokalbis su Deniu" hidden>'
+        . '<button type="button" class="chat-hint-x" aria-label="' . e(t('Uždaryti')) . '">×</button></div>'
+        . '<div class="chat-panel" id="chatPanel" role="dialog" aria-label="' . e(t('Pokalbis su Deniu')) . '" hidden>'
         . ('<header class="chat-head"><span class="chat-avatar" aria-hidden="true">D</span><div><strong>' . t('Denis') . '</strong><span class="chat-sub">' . t('Klubo vadovas · atsakys, kai tik galės') . '</span></div>')
-        . '<button type="button" class="chat-close" aria-label="Uždaryti">×</button></header>'
+        . '<button type="button" class="chat-close" aria-label="' . e(t('Uždaryti')) . '">×</button></header>'
         . '<div class="chat-pane" data-pane="msg">' . $select
         . ('<div class="chat-thread" aria-live="polite"><p class="chat-empty">' . t('Parašykite - atsakymas atsiras čia.') . '</p></div>') . $form
         . ('<p class="chat-note">' . t('Mato tik Denis (ir kiti treneriai).') . '</p></div>')

@@ -45,8 +45,8 @@ function render_xp_card(array $member, bool $compact = false, bool $showBelt = t
     [, $beltName, $color] = BELTS[$belt];
     $beltName = t($beltName);
     return '<div class="xp-card' . ($compact ? ' compact' : '') . ($belt === 1 ? ' belt-light' : '') . '" style="--belt:' . e($color) . ';">'
-        . '<div class="xp-level" title="Lygis"><span class="xp-level-n">' . $l['level'] . '</span><span class="xp-level-l">lygis</span></div>'
-        . '<div class="xp-main"><div class="xp-row"><strong>' . $l['xp'] . ' XP</strong><span class="xp-next">iki ' . ($l['level'] + 1) . ' lygio: ' . $l['need'] . ' XP</span></div>'
+        . '<div class="xp-level" title="' . e(t('Lygis')) . '"><span class="xp-level-n">' . $l['level'] . '</span><span class="xp-level-l">' . e(t('lygis')) . '</span></div>'
+        . '<div class="xp-main"><div class="xp-row"><strong>' . $l['xp'] . ' XP</strong><span class="xp-next">' . e(t('iki {n} lygio: {xp} XP', ['n' => $l['level'] + 1, 'xp' => $l['need']])) . '</span></div>'
         . '<div class="xp-bar" role="progressbar" aria-valuemin="0" aria-valuemax="' . $l['per'] . '" aria-valuenow="' . $l['into'] . '"><span style="width:' . $l['pct'] . '%"></span></div>'
         . ($showBelt ? '<div class="xp-belt">' . belt_icon_svg($belt) . ' ' . e(BELTS[$belt][0] . ' · ' . $beltName) . '</div>' : '') . '</div></div>';
 }

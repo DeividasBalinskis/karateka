@@ -308,11 +308,11 @@ function folder_icon_text(array $f): string
 /** Ženkliuko pasirinkimo mygtukai (įrašo reikšmę į laukelį $inputId); pirmas - dabartinis ženkliukas */
 function icon_picker(string $inputId, ?string $current = null): string
 {
-    $html = '<span class="icon-pick" data-for="' . e($inputId) . '"><span class="icon-now" title="Dabar">' . icon_html($current) . '</span>';
+    $html = '<span class="icon-pick" data-for="' . e($inputId) . '"><span class="icon-now" title="' . e(t('Dabar')) . '">' . icon_html($current) . '</span>';
     foreach (FOLDER_BELT_ICONS as $lvl) {
         $html .= '<button type="button" data-icon="belt:' . $lvl . '" title="' . e(t(BELTS[$lvl][1])) . ' diržas">' . belt_icon_svg($lvl) . '</button>';
     }
-    $html .= '<button type="button" data-icon="teisejas" title="Teisėjams">' . referee_icon_svg() . '</button>';
+    $html .= '<button type="button" data-icon="teisejas" title="' . e(t('Teisėjams')) . '">' . referee_icon_svg() . '</button>';
     foreach (FOLDER_ICONS as $ic) {
         $html .= '<button type="button" data-icon="' . $ic . '">' . $ic . '</button>';
     }
@@ -668,7 +668,7 @@ function lesson_auto_title(array $blocks): string
             return mb_strimwidth($line, 0, 80, '…');
         }
     }
-    return $blocks ? LESSON_BLOCK_TYPES[$blocks[0]['type']][0] . ' · ' . fmt_date(date('Y-m-d')) : '';
+    return $blocks ? t(LESSON_BLOCK_TYPES[$blocks[0]['type']][0]) . ' · ' . fmt_date(date('Y-m-d')) : '';
 }
 
 /**
@@ -725,16 +725,16 @@ function lesson_save_from_post(array $me, array &$errors, ?array &$posted): ?int
 function lesson_block_editor(array $b, string $key): string
 {
     [$label, $sign] = LESSON_BLOCK_TYPES[$b['type']];
-    $n = t('blocks[') . $key . ']';
+    $n = 'blocks[' . $key . ']';
     $h = '<div class="lblock lb-' . $b['type'] . '" data-key="' . e($key) . '">'
-        . '<div class="lblock-head"><span class="lb-drag" title="Tempkite">⠿</span><span class="lb-sign">' . $sign . '</span><strong>' . e($label) . '</strong>'
-        . '<span class="lblock-tools"><button type="button" class="lb-up" title="Aukštyn">↑</button><button type="button" class="lb-down" title="Žemyn">↓</button>'
-        . '<button type="button" class="lb-del" title="Pašalinti">✕</button></span></div>'
+        . '<div class="lblock-head"><span class="lb-drag" title="' . e(t('Tempkite')) . '">⠿</span><span class="lb-sign">' . $sign . '</span><strong>' . e($label) . '</strong>'
+        . '<span class="lblock-tools"><button type="button" class="lb-up" title="' . e(t('Aukštyn')) . '">↑</button><button type="button" class="lb-down" title="' . e(t('Žemyn')) . '">↓</button>'
+        . '<button type="button" class="lb-del" title="' . e(t('Pašalinti')) . '">✕</button></span></div>'
         . '<input type="hidden" name="' . $n . '[type]" value="' . $b['type'] . '">';
     $body = e((string) ($b['body'] ?? ''));
     switch ($b['type']) {
         case 'heading':
-            $h .= '<input type="text" class="lb-heading-input" name="' . $n . '[body]" value="' . $body . '" placeholder="pvz. Pagrindiniai judesiai" maxlength="190">';
+            $h .= '<input type="text" class="lb-heading-input" name="' . $n . '[body]" value="' . $body . '" placeholder="' . e(t('pvz. Pagrindiniai judesiai')) . '" maxlength="190">';
             break;
         case 'text':
         case 'note':
@@ -743,19 +743,19 @@ function lesson_block_editor(array $b, string $key): string
             break;
         case 'video':
             $url = $b['raw_url'] ?? (!empty($b['youtube_id']) ? 'https://youtu.be/' . $b['youtube_id'] : '');
-            $h .= '<div class="lb-media"><div class="lb-fields"><input type="text" class="lb-yt" name="' . $n . '[url]" value="' . e($url) . '" placeholder="YouTube nuoroda, pvz. https://youtu.be/...">'
-                . '<input type="text" name="' . $n . '[caption]" value="' . e((string) ($b['caption'] ?? '')) . '" placeholder="Prierašas po video (nebūtina)" maxlength="255"></div>'
+            $h .= '<div class="lb-media"><div class="lb-fields"><input type="text" class="lb-yt" name="' . $n . '[url]" value="' . e($url) . '" placeholder="' . e(t('YouTube nuoroda, pvz. https://youtu.be/...')) . '">'
+                . '<input type="text" name="' . $n . '[caption]" value="' . e((string) ($b['caption'] ?? '')) . '" placeholder="' . e(t('Prierašas po video (nebūtina)')) . '" maxlength="255"></div>'
                 . '<img class="lb-preview" alt="" ' . (!empty($b['youtube_id']) ? 'src="https://i.ytimg.com/vi/' . e($b['youtube_id']) . '/hqdefault.jpg"' : 'hidden') . '></div>';
             break;
         case 'image':
             $h .= '<div class="lb-media"><div class="lb-fields"><input type="file" name="block_image[' . e($key) . ']" accept="image/jpeg,image/png,image/webp">'
                 . '<input type="hidden" name="' . $n . '[image]" value="' . e((string) ($b['image'] ?? '')) . '">'
-                . '<input type="text" name="' . $n . '[caption]" value="' . e((string) ($b['caption'] ?? '')) . '" placeholder="Prierašas po nuotrauka (nebūtina)" maxlength="255"></div>'
+                . '<input type="text" name="' . $n . '[caption]" value="' . e((string) ($b['caption'] ?? '')) . '" placeholder="' . e(t('Prierašas po nuotrauka (nebūtina)')) . '" maxlength="255"></div>'
                 . '<img class="lb-preview" alt="" ' . (!empty($b['image']) ? 'src="' . e(lesson_image_url($b['image'])) . '"' : 'hidden') . '></div>';
             break;
         case 'link':
-            $h .= '<div class="form-row"><input type="text" name="' . $n . '[url]" value="' . e($b['raw_url'] ?? (string) ($b['url'] ?? '')) . '" placeholder="https://...">'
-                . '<input type="text" name="' . $n . '[body]" value="' . $body . '" placeholder="Nuorodos tekstas, pvz. WKF taisyklės (PDF)"></div>';
+            $h .= '<div class="form-row"><input type="text" name="' . $n . '[url]" value="' . e($b['raw_url'] ?? (string) ($b['url'] ?? '')) . '" placeholder="' . e(t('https://...')) . '">'
+                . '<input type="text" name="' . $n . '[body]" value="' . $body . '" placeholder="' . e(t('Nuorodos tekstas, pvz. WKF taisyklės (PDF)')) . '"></div>';
             break;
     }
     return $h . '</div>';

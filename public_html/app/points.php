@@ -38,7 +38,7 @@ function ranking_partition(array $member): ?array
         case 'group':
             return ['group', (int) $g['id'], $g['name']];
         default:
-            return ['category', $g['category'], GROUP_CATEGORIES[$g['category']]];
+            return ['category', $g['category'], t(GROUP_CATEGORIES[$g['category']])];
     }
 }
 
@@ -257,7 +257,7 @@ function render_staff_ranking(): string
             $choices['g' . $g['id']] = ['group', (int) $g['id'], $g['name']];
         }
     } elseif (ranking_scope() === 'category') {
-        foreach (GROUP_CATEGORIES as $key => $name) {
+        foreach (array_map('t', GROUP_CATEGORIES) as $key => $name) {
             $choices[$key] = ['category', $key, $name];
         }
     }

@@ -29,7 +29,7 @@ function is_test_account(?array $a): bool
 function test_member_sql(): string
 {
     $link = 'SELECT 1 FROM account_members am JOIN accounts a ON a.id = am.account_id WHERE am.member_id = m.id AND ';
-    return t('(EXISTS (') . $link . TEST_ACCOUNT_SQL . t(') AND NOT EXISTS (') . $link . 'NOT ' . TEST_ACCOUNT_SQL . '))';
+    return '(EXISTS (' . $link . TEST_ACCOUNT_SQL . ') AND NOT EXISTS (' . $link . 'NOT ' . TEST_ACCOUNT_SQL . '))';
 }
 
 /** Grupė testiniam nariui pagal kategoriją ('vaikai', 'jaunimas'); jei tokios nėra - pirmoji aktyvi */
@@ -255,7 +255,7 @@ function render_view_switch(): string
     }
     $labels = ['admin' => t('Adminas'), 'parent' => t('Tėvai'), 'junior' => t('Vaikas')];
     $back = e($_SERVER['REQUEST_URI'] ?? '');
-    $html = '<details class="view-switch' . ($mode !== 'admin' ? ' is-test' : '') . '"><summary title="Peržiūrėti svetainę kaip tėvai ar vaikas (testinės paskyros)">'
+    $html = '<details class="view-switch' . ($mode !== 'admin' ? ' is-test' : '') . '"><summary title="' . e(t('Peržiūrėti svetainę kaip tėvai ar vaikas (testinės paskyros)')) . '">'
         . '<span class="vs-eye" aria-hidden="true">👁</span> ' . e($labels[$mode]) . ($belt ? ' · ' . e(BELTS[(int) $belt][0]) : '') . '</summary>'
         . '<form method="post" action="' . e(url('perziura.php')) . '" class="vs-panel">' . csrf_field() . '<input type="hidden" name="back" value="' . $back . '">'
         . '<div class="vs-modes">';

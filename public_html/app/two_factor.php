@@ -96,7 +96,7 @@ function trusted_cookie(int $accountId): string
 
 function cookie_options(int $expires): array
 {
-    return ['expires' => $expires, 'path' => (config('base_path') ?: '') . '/', 'secure' => (bool) config('force_https'), 'httponly' => true, 'samesite' => t('Lax')];
+    return ['expires' => $expires, 'path' => (config('base_path') ?: '') . '/', 'secure' => (bool) config('force_https'), 'httponly' => true, 'samesite' => 'Lax'];
 }
 
 function device_trusted(int $accountId): bool

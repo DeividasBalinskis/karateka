@@ -104,8 +104,8 @@ if (is_post()) {
         $topic = post('topic');
         if (account_relation($aid, $mid) && preg_match('~^(general|[nlew]\d+)$~', $topic)) {
             $cols = ['n' => 'note_id', 'l' => 'lesson_id', 'e' => 'event_id', 'w' => 'news_id'];
-            $where = $topic === 'general' ? t('note_id IS NULL AND lesson_id IS NULL AND event_id IS NULL AND news_id IS NULL')
-                : $cols[$topic[0]] . ' = ' . (int) substr($topic, 1) . ($topic[0] !== 'n' ? (' ' . t('AND note_id IS NULL')) : '');
+            $where = $topic === 'general' ? 'note_id IS NULL AND lesson_id IS NULL AND event_id IS NULL AND news_id IS NULL'
+                : $cols[$topic[0]] . ' = ' . (int) substr($topic, 1) . ($topic[0] !== 'n' ? (' ' . 'AND note_id IS NULL') : '');
             q("UPDATE member_messages SET read_at = NOW() WHERE member_id = ? AND from_staff = 1 AND read_at IS NULL AND $where", [$mid]);
         }
         redirect('paskyra.php?m=' . $mid . '#svarbu');
@@ -178,7 +178,7 @@ if ($active) {
     if ($ownPartition) {
         $topChoices['mano'] = $ownPartition;
     }
-    foreach (GROUP_CATEGORIES as $key => $label) {
+    foreach (array_map('t', GROUP_CATEGORIES) as $key => $label) {
         if (!$ownPartition || $ownPartition[0] !== 'category' || $ownPartition[1] !== $key) {
             $topChoices[$key] = ['category', $key, $label];
         }
@@ -441,8 +441,8 @@ page_start($tab === 'nustatymai' ? t('Nustatymai') : t('Mano paskyra'), ['noinde
         <?php foreach (array_slice($history, 0, 20) as $h): ?>
           <li class="row between">
             <span>
-              <strong><?= e($h['event_title'] ?: $h['category_name']) ?></strong>
-              <div class="muted"><?= $h['event_title'] ? e($h['category_name']) . ' · ' : '' ?><?= e(fmt_date($h['awarded_on'], true)) ?><?= $h['note'] ? ' · ' . e($h['note']) : '' ?></div>
+              <strong><?= e($h['event_title'] ?: t($h['category_name'])) ?></strong>
+              <div class="muted"><?= $h['event_title'] ? e(t($h['category_name'])) . ' · ' : '' ?><?= e(fmt_date($h['awarded_on'], true)) ?><?= $h['note'] ? ' · ' . e($h['note']) : '' ?></div>
             </span>
             <span class="badge badge-ok">+<?= (int) $h['points'] ?></span>
           </li>

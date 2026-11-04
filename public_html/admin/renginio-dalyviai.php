@@ -89,7 +89,7 @@ page_start((t('Dalyviai:') . ' ') . $event['title'], ['admin' => true, 'section'
 <a class="small no-print" href="<?= url('renginiai.php#e' . $id) ?>"><?= te('← Renginiai') ?></a>
 <div class="page-head row between" style="margin-top:8px; align-items:flex-end;">
   <div>
-    <div><span class="badge type-badge t-<?= e($event['type']) ?>"><?= e(EVENT_TYPES[$event['type']]) ?></span></div>
+    <div><span class="badge type-badge t-<?= e($event['type']) ?>"><?= e(t(EVENT_TYPES[$event['type']])) ?></span></div>
     <h1 class="styled" style="margin-top:8px;"><?= e($event['title']) ?></h1>
     <p><?= e(fmt_date($event['starts_on'], true)) ?><?= $event['start_time'] ? ', ' . e(fmt_time($event['start_time'])) : '' ?><?= $event['location'] ? ' · ' . e($event['location']) : '' ?></p>
     <p class="small muted no-print"><?= !empty($event['registration']) ? (t('Nariai gali registruotis patys iki') . ' ') . e(fmt_date(event_deadline($event))) : (t('Nariai patys registruotis negali - tik pagal kvietimą (atsakyti iki') . ' ') . e(fmt_date(event_deadline($event))) . ').' ?>
@@ -105,7 +105,7 @@ page_start((t('Dalyviai:') . ' ') . $event['title'], ['admin' => true, 'section'
 <div class="participants-grid">
   <?php foreach ($byStatus as $status => $list): if ($status === 'late' && !$list) { continue; } ?>
     <div class="panel card p-col p-<?= $status ?>">
-      <div class="kicker"><?= e(PARTICIPANT_STATUS[$status]) ?> · <?= count($list) ?></div>
+      <div class="kicker"><?= e(t(PARTICIPANT_STATUS[$status])) ?> · <?= count($list) ?></div>
       <?php if (!$list): ?><p class="muted small"><?= $status === 'going' ? t('Dar niekas.') : '-' ?></p><?php endif; ?>
       <ul class="list small">
         <?php foreach ($list as $r): $mid = (int) $r['member_id']; $mt = $tags[$mid] ?? []; ?>

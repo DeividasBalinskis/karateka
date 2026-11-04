@@ -67,11 +67,11 @@ function render_event(array $ev): string
     $link = url('renginys.php?id=' . (int) $ev['id']);
     return '<div class="event">'
         . '<div class="event-date"><span class="d">' . date('j', $ts) . '</span><span class="m">' . e(mb_substr(month_names_gen()[(int) date('n', $ts)], 0, 3)) . '</span></div>'
-        . '<div><span class="badge type-badge t-' . e($ev['type']) . '">' . e(EVENT_TYPES[$ev['type']]) . '</span>'
+        . '<div><span class="badge type-badge t-' . e($ev['type']) . '">' . e(t(EVENT_TYPES[$ev['type']])) . '</span>'
         . '<h3 style="margin-top:6px;"><a class="event-title" href="' . e($link) . '">' . e($ev['title']) . '</a></h3>'
         . '<div class="muted small">' . e($when) . ($ev['location'] ? ' · ' . e($ev['location']) : '') . '</div>'
         . ($short !== '' ? '<div class="small" style="margin-top:6px;">' . e($short) . '</div>' : '')
-        . '<a class="small event-more" href="' . e($link) . '">Plačiau →</a>'
+        . '<a class="small event-more" href="' . e($link) . '">' . e(t('Plačiau →')) . '</a>'
         . '</div></div>';
 }
 
@@ -173,11 +173,11 @@ function render_reaction_chips(int $newsId, ?string $mine): string
         $label = reaction_html((string) $emoji) . '<span class="count">' . $count . '</span>';
         if (in_array($emoji, $allowed, true) || $mine === $emoji) {
             $html .= '<button type="submit" name="emoji" value="' . e($emoji) . '" class="reaction' . ($mine === $emoji ? ' mine' : '') . '"'
-                . ($mine === $emoji ? ' title="Jūsų reakcija - paspaudus nuimama"' : '')
+                . ($mine === $emoji ? ' title="' . e(t('Jūsų reakcija - paspaudus nuimama')) . '"' : '')
                 . ' aria-label="' . e(reaction_label((string) $emoji)) . ' ' . $count . ($mine === $emoji ? (' ' . t('(jūsų - paspaudus nuimama)')) : '') . '">' . $label . '</button>';
         } else {
             // Emoji, kurio nebėra sąraše: reakcijos lieka matomos, bet naujų pridėti nebegalima
-            $html .= '<span class="reaction off" title="Šis emoji nebenaudojamas">' . $label . '</span>';
+            $html .= '<span class="reaction off" title="' . e(t('Šis emoji nebenaudojamas')) . '">' . $label . '</span>';
         }
     }
     return $html;
@@ -201,7 +201,7 @@ function render_reactions(int $newsId): string
         . csrf_field() . '<input type="hidden" name="news_id" value="' . $newsId . '">'
         . '<span class="r-used">' . render_reaction_chips($newsId, $mine) . '</span>'
         . '<span class="r-add">'
-        . '<button type="button" class="reaction-add" aria-haspopup="true" aria-expanded="false" aria-label="Pridėti reakciją" title="Pridėti reakciją">'
+        . '<button type="button" class="reaction-add" aria-haspopup="true" aria-expanded="false" aria-label="' . e(t('Pridėti reakciją')) . '" title="' . e(t('Pridėti reakciją')) . '">'
         . '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/>'
         . '<circle cx="9" cy="10" r="1.2" fill="currentColor"/><circle cx="15" cy="10" r="1.2" fill="currentColor"/>'
         . '<path d="M8.5 14.5c1 1.2 2.1 1.8 3.5 1.8s2.5-.6 3.5-1.8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>'

@@ -100,7 +100,7 @@ page_start(t('Tvarkaraštis ir kainos'), ['admin' => true]);
   </div>
   <a class="btn btn-ghost btn-sm" href="<?= url('index.php') ?>" target="_blank"><?= te('Pagrindinis puslapis ↗') ?></a>
 </div>
-<?php foreach (GROUP_CATEGORIES as $cat => $catLabel): ?>
+<?php foreach (array_map('t', GROUP_CATEGORIES) as $cat => $catLabel): ?>
   <div class="panel card sched-cat" id="<?= $cat ?>">
     <h2><?= e($catLabel) ?></h2>
     <?php if ($canEdit): ?>

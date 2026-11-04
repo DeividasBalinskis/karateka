@@ -28,5 +28,8 @@ done
 # config.php su slaptažodžiais niekada nekeliamas
 if git ls-files --error-unmatch public_html/config.php >/dev/null 2>&1; then err "public_html/config.php įkeltas į git"; fi
 
+# Vertimai (LT/EN/RU): tik praneša, kurių naujų tekstų dar neišversta
+php tests/i18n-keys.php public_html | head -8
+
 [ $fail -eq 0 ] && echo "Patikros: viskas gerai"
 exit $fail

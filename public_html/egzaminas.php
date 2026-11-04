@@ -163,7 +163,7 @@ page_start(t('Egzaminas'), ['noindex' => true, 'account' => 'egzaminas']);
       <p class="muted" style="margin-top:14px;"><?= te('Šio diržo programos treneris dar neįkėlė.') ?></p>
     <?php endif; ?>
     <?php foreach ($reqs as $section => $items): ?>
-      <h3 class="req-section"><?= e(REQ_SECTIONS[$section]) ?></h3>
+      <h3 class="req-section"><?= e(t(REQ_SECTIONS[$section])) ?></h3>
       <ul class="req-list">
         <?php foreach ($items as $r): $st = $done[(int) $r['id']] ?? null; $xp = (int) ($r['xp'] ?? 0); ?>
           <li id="r<?= (int) $r['id'] ?>" class="<?= $st === 'approved' ? 'done' : ($st === 'pending' ? 'pending' : '') ?>">
@@ -205,7 +205,7 @@ page_start(t('Egzaminas'), ['noindex' => true, 'account' => 'egzaminas']);
         <li>
           <div class="row between" style="align-items:flex-start;">
             <span>
-              <?php if ($qz['audience'] !== 'karateka'): ?><span class="badge badge-tag"><?= e(QUIZ_AUDIENCE[$qz['audience']]) ?></span><?php endif; ?>
+              <?php if ($qz['audience'] !== 'karateka'): ?><span class="badge badge-tag"><?= e(t(QUIZ_AUDIENCE[$qz['audience']])) ?></span><?php endif; ?>
               <strong><?= e($qz['title']) ?></strong>
               <div class="muted small"><?= min((int) $qz['question_count'], (int) $qz['questions_total']) ?> <?= te('klausimų · reikia ≥') ?> <?= (int) $qz['pass_percent'] ?> %<?= !empty($qz['time_limit']) ? ' · ' . (int) $qz['time_limit'] . ' min.' : '' ?></div>
             </span>
@@ -220,7 +220,7 @@ page_start(t('Egzaminas'), ['noindex' => true, 'account' => 'egzaminas']);
       <?php endforeach; ?>
     </ul>
     <?php foreach ($tags as $tag): $qual = tag_qualification($mid, $tag); ?>
-      <p class="small qual <?= $qual ? 'ok' : '' ?>"><?= e(MEMBER_TAGS[$tag]) ?>: <?= $qual ? (t('✓ kvalifikacija galioja iki') . ' ') . e(fmt_date(date('Y-m-d', strtotime($qual['finished_at'] . ' +' . QUIZ_VALID_MONTHS . ' months')), true)) : t('testas dar neišlaikytas') ?></p>
+      <p class="small qual <?= $qual ? 'ok' : '' ?>"><?= e(t(MEMBER_TAGS[$tag])) ?>: <?= $qual ? (t('✓ kvalifikacija galioja iki') . ' ') . e(fmt_date(date('Y-m-d', strtotime($qual['finished_at'] . ' +' . QUIZ_VALID_MONTHS . ' months')), true)) : t('testas dar neišlaikytas') ?></p>
     <?php endforeach; ?>
     <p class="small muted" style="margin-top:12px;"><?= te('Treniruotės režime iš karto matai teisingą atsakymą ir rezultatas nesaugomas. „Laikyti testą“ - kaip tikras egzaminas.') ?></p>
   </div>

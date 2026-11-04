@@ -86,7 +86,7 @@ function question_form(int $quizId, ?array $q): string
         . ('<label>' . t('Klausimas') . ' <textarea name="body" rows="2" required>') . e($q['body'] ?? '') . '</textarea></label>'
         . ('<div class="q-answers-edit"><span class="hint">' . t('Atsakymai (užtenka 2; pažymėkite teisingą)') . '</span>');
     foreach (array_slice($answers, 0, 4) as $i => $an) {
-        $html .= '<div class="ans-row"><input type="radio" name="correct" value="' . $i . '" ' . ($an['is_correct'] ? 'checked' : '') . ' aria-label="Teisingas">'
+        $html .= '<div class="ans-row"><input type="radio" name="correct" value="' . $i . '" ' . ($an['is_correct'] ? 'checked' : '') . ' aria-label="' . e(t('Teisingas')) . '">'
             . '<input type="hidden" name="ans_id[' . $i . ']" value="' . (int) $an['id'] . '">'
             . '<input type="text" name="ans_body[' . $i . ']" value="' . e($an['body']) . '" placeholder="' . ($i + 1) . ' atsakymas"></div>';
     }
@@ -189,7 +189,7 @@ if ($id || get('id') === 'new' || get('new')) {
       <label><?= te('Pavadinimas') ?> <input type="text" name="title" value="<?= e($quiz['title']) ?>" placeholder="<?= te('pvz. Teorija geltonam diržui') ?>" required></label>
       <div class="form-row three">
         <label><?= te('Kam') ?> <select name="audience" id="qAudience">
-          <?php foreach (QUIZ_AUDIENCE as $k => $label): ?><option value="<?= $k ?>" <?= $quiz['audience'] === $k ? 'selected' : '' ?>><?= e($label) ?></option><?php endforeach; ?>
+          <?php foreach (array_map('t', QUIZ_AUDIENCE) as $k => $label): ?><option value="<?= $k ?>" <?= $quiz['audience'] === $k ? 'selected' : '' ?>><?= e($label) ?></option><?php endforeach; ?>
         </select></label>
         <label id="qBelt"><?= te('Kuriam diržui') ?> <span class="hint"><?= te('kurį gaus išlaikęs') ?></span><select name="belt_level"><?= belt_options($quiz['belt_level'] !== null ? (int) $quiz['belt_level'] : null, t('Visiems diržams')) ?></select></label>
         <label><?= te('Klausimų teste') ?> <span class="hint"><?= te('atsitiktinai iš banko') ?><?= $id ? (' ' . t('(skirtingų:') . ' ') . $distinct . ')' : '' ?></span><input type="number" name="question_count" id="qCount" min="1" max="100" value="<?= (int) $quiz['question_count'] ?>"></label>
@@ -273,7 +273,7 @@ page_start(t('Testai'), ['admin' => true]);
     <?php foreach ($quizzes as $qz): ?>
       <li class="row between">
         <span>
-          <span class="badge <?= $qz['audience'] === 'karateka' ? 'badge-pink' : 'badge-tag' ?>"><?= e(QUIZ_AUDIENCE[$qz['audience']]) ?></span>
+          <span class="badge <?= $qz['audience'] === 'karateka' ? 'badge-pink' : 'badge-tag' ?>"><?= e(t(QUIZ_AUDIENCE[$qz['audience']])) ?></span>
           <?= $qz['belt_level'] ? belt_chip((int) $qz['belt_level']) : '' ?>
           <?php if (!$qz['is_published']): ?><span class="badge badge-warn">nepaskelbtas</span><?php endif; ?>
           <a href="?id=<?= (int) $qz['id'] ?>"><strong><?= e($qz['title']) ?></strong></a>

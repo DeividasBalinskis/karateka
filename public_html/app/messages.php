@@ -57,7 +57,7 @@ function note_messages(array $noteIds): array
     $out = [];
     $noteIds = array_map('intval', $noteIds);
     if ($noteIds) {
-        foreach (message_rows(t('mm.note_id IN (') . implode(',', $noteIds) . ')', []) as $r) {
+        foreach (message_rows('mm.note_id IN (' . implode(',', $noteIds) . ')', []) as $r) {
             $out[(int) $r['note_id']][] = $r;
         }
     }
@@ -90,7 +90,7 @@ function public_questions(?string $column, int $refId = 0): array
 {
     try {
         $rows = $column ? message_rows("mm.$column = ? AND mm.note_id IS NULL", [$refId])
-            : message_rows(t('mm.note_id IS NULL AND mm.lesson_id IS NULL AND mm.event_id IS NULL AND mm.news_id IS NULL'), []);
+            : message_rows('mm.note_id IS NULL AND mm.lesson_id IS NULL AND mm.event_id IS NULL AND mm.news_id IS NULL', []);
     } catch (PDOException $ex) {
         return [];   // dar neimportuotas db/021
     }
@@ -218,7 +218,7 @@ function questions_box(string $kind, int $refId, string $back): string
     $form = '<form method="post" action="' . e(url('zinute.php')) . '" class="msg-form q-form">' . csrf_field()
         . '<input type="hidden" name="' . $column . '" value="' . $refId . '"><input type="hidden" name="back" value="' . e($back) . '">';
     if (count($members) > 1) {
-        $form .= '<select name="member_id" aria-label="Kieno vardu">';
+        $form .= '<select name="member_id" aria-label="' . e(t('Kieno vardu')) . '">';
         foreach ($members as $m) {
             $form .= '<option value="' . (int) $m['id'] . '">' . e($m['first_name']) . '</option>';
         }
@@ -226,7 +226,7 @@ function questions_box(string $kind, int $refId, string $back): string
     } else {
         $form .= '<input type="hidden" name="member_id" value="' . (int) $members[0]['id'] . '">';
     }
-    $html .= $form . '<textarea name="body" rows="2" maxlength="' . MESSAGE_MAX . '" placeholder="Jūsų komentaras ar klausimas Deniui" required></textarea>'
+    $html .= $form . '<textarea name="body" rows="2" maxlength="' . MESSAGE_MAX . '" placeholder="' . e(t('Jūsų komentaras ar klausimas Deniui')) . '" required></textarea>'
         . ('<button class="btn btn-primary btn-sm" type="submit">' . t('Siųsti Deniui') . '</button></form>');
     return '<div class="panel card q-box" id="klausimai">' . $html . '</div>';
 }

@@ -112,7 +112,7 @@ page_start(t('Atšauktos treniruotės'), ['admin' => true]);
     <fieldset class="cancel-groups">
       <legend><?= te('Grupės') ?></legend>
       <label class="check"><input type="checkbox" name="all" value="1" id="cgAll" <?= count(array_intersect($selected, $groupIds)) === count($groupIds) ? 'checked' : '' ?>><span><strong><?= te('Visos grupės') ?></strong></span></label>
-      <?php foreach (GROUP_CATEGORIES as $cat => $catLabel): if (empty($byCat[$cat])) { continue; } ?>
+      <?php foreach (array_map('t', GROUP_CATEGORIES) as $cat => $catLabel): if (empty($byCat[$cat])) { continue; } ?>
         <div class="kicker" style="margin-top:10px;"><?= e($catLabel) ?></div>
         <div class="cg-list">
           <?php foreach ($byCat[$cat] as $g): ?>

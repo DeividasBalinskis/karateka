@@ -106,7 +106,7 @@ function event_deadline_html(array $ev): string
     if (time() > $end) {
         return ('<div class="deadline closed">' . t('Registracija baigėsi') . ' ') . e(fmt_date($deadline)) . '</div>';
     }
-    return '<div class="deadline" data-deadline="' . date('c', $end) . '">⏳ Registracija iki ' . e(fmt_date($deadline)) . ' · <span class="deadline-left">' . e(time_left_text($end - time())) . '</span></div>';
+    return '<div class="deadline" data-deadline="' . date('c', $end) . '">⏳ ' . e(t('Registracija iki')) . ' ' . e(fmt_date($deadline)) . ' · <span class="deadline-left">' . e(time_left_text($end - time())) . '</span></div>';
 }
 
 /** „liko 2 d. 5 val.“, „liko 3 val. 20 min.“ */
@@ -118,7 +118,7 @@ function time_left_text(int $sec): string
     $d = intdiv($sec, 86400);
     $h = intdiv($sec % 86400, 3600);
     $m = intdiv($sec % 3600, 60);
-    return 'liko ' . ($d ? $d . ' d. ' . $h . ' val.' : ($h ? $h . ' val. ' . $m . ' min.' : max(1, $m) . ' min.'));
+    return $d ? t('liko {d} d. {h} val.', ['d' => $d, 'h' => $h]) : ($h ? t('liko {h} val. {m} min.', ['h' => $h, 'm' => $m]) : t('liko {m} min.', ['m' => max(1, $m)]));
 }
 
 function event_participant(int $eventId, int $memberId): ?array

@@ -27,10 +27,13 @@ const roles = [
 const PHP_ERROR = /Fatal error|Warning:|Notice:|Deprecated:|Uncaught|Įvyko klaida|Duomenų bazė neatnaujinta/;
 const IGNORED_CONSOLE = /favicon|ERR_|youtube|google|Failed to load resource/i;
 
-for (const width of [1280, 390]) {
+// Lietuviškai - kompiuterio ir telefono pločiu; angliškai ir rusiškai - kompiuterio (ilgesni žodžiai, kirilica)
+const runs = [['lt', 1280], ['lt', 390], ['en', 1280], ['ru', 1280], ['ru', 390]];
+for (const [lang, width] of runs) {
   for (const [email, role, pages] of roles) {
-    test(`${role} pages at ${width}px`, async ({ browser }) => {
-      const page = await login(browser, email, width);
+    if (lang !== 'lt' && role === 'teen') continue;
+    test(`${role} pages at ${width}px${lang !== 'lt' ? ' (' + lang + ')' : ''}`, async ({ browser }) => {
+      const page = await login(browser, email, width, 900, undefined, lang);
       const consoleErrors = [];
       page.on('console', m => { if (m.type() === 'error' && !IGNORED_CONSOLE.test(m.text())) consoleErrors.push(m.text()); });
       const problems = [];

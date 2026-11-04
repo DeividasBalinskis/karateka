@@ -5,9 +5,13 @@
 
 const LANGS = ['lt' => 'Lietuvių', 'en' => 'English', 'ru' => 'Русский'];
 
-function current_lang(): string
+/** Dabartinė kalba. current_lang('lt') - šiai užklausai priverstinai lietuvių (pvz. redaguojant turinį) */
+function current_lang(?string $force = null): string
 {
     static $lang = null;
+    if ($force !== null && isset(LANGS[$force])) {
+        $lang = $force;
+    }
     if ($lang === null) {
         $c = (string) ($_COOKIE['kalba'] ?? '');
         $lang = isset(LANGS[$c]) ? $c : 'lt';
@@ -18,13 +22,13 @@ function current_lang(): string
 /** Vertimų žodynas dabartine kalba: [lietuviškas tekstas => vertimas] */
 function lang_dict(): array
 {
-    static $dict = null;
-    if ($dict === null) {
-        $l = current_lang();
+    static $dicts = [];
+    $l = current_lang();
+    if (!isset($dicts[$l])) {
         $file = APP_DIR . '/lang/' . $l . '.php';
-        $dict = $l !== 'lt' && is_file($file) ? (require $file) : [];
+        $dicts[$l] = $l !== 'lt' && is_file($file) ? (require $file) : [];
     }
-    return $dict;
+    return $dicts[$l];
 }
 
 /** Sąsajos tekstas dabartine kalba. {vardas} pakeičiamas iš $vars: t('Sveiki, {name}!', ['name' => $a['first_name']]) */

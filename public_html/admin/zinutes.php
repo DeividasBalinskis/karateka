@@ -102,7 +102,7 @@ if ($member) {
         return '<form method="post" class="msg-form">' . csrf_field()
             . '<input type="hidden" name="action" value="reply"><input type="hidden" name="member_id" value="' . $mid . '">'
             . '<input type="hidden" name="note_id" value="' . (int) $noteId . '">' . $hidden
-            . '<textarea name="body" rows="2" maxlength="' . MESSAGE_MAX . '" placeholder="Atsakymas - matys tik šis narys" required></textarea>'
+            . '<textarea name="body" rows="2" maxlength="' . MESSAGE_MAX . '" placeholder="' . e(t('Atsakymas - matys tik šis narys')) . '" required></textarea>'
             . ('<label class="check small"><input type="checkbox" name="email" value="1" checked><span>' . t('ir laiškas') . '</span></label>')
             . ('<button class="btn btn-primary btn-sm" type="submit">' . t('Atsakyti') . '</button></form>');
     };

@@ -60,11 +60,11 @@ $current = event_results($event);
 $going = array_map('intval', q('SELECT member_id FROM event_participants WHERE event_id = ? AND status IN ("going", "late")', [$id])->fetchAll(PDO::FETCH_COLUMN));
 $onlyGoing = $going && !get('visi');
 $where = $onlyGoing
-    ? t('m.id IN (') . implode(',', $going) . ')'
-    : '(m.status = "active"' . ($groupIds ? (' ' . t('AND m.group_id IN (')) . implode(',', array_map('intval', $groupIds)) . ')' : '') . ')';
+    ? 'm.id IN (' . implode(',', $going) . ')'
+    : '(m.status = "active"' . ($groupIds ? (' ' . 'AND m.group_id IN (') . implode(',', array_map('intval', $groupIds)) . ')' : '') . ')';
 $sql = 'SELECT m.*, g.name AS group_name, g.sort_order FROM members m LEFT JOIN training_groups g ON g.id = m.group_id
          WHERE ' . $where
-     . ($current ? (' ' . t('OR m.id IN (')) . implode(',', array_map('intval', array_keys($current))) . ')' : '')
+     . ($current ? (' ' . 'OR m.id IN (') . implode(',', array_map('intval', array_keys($current))) . ')' : '')
      . ' ORDER BY g.sort_order, m.last_name, m.first_name';
 $members = q_all($sql);
 
@@ -77,7 +77,7 @@ page_start((t('Rezultatai:') . ' ') . $event['title'], ['admin' => true, 'sectio
 ?>
 <a class="small" href="<?= url('renginiai.php#e' . $id) ?>"><?= te('← Renginiai') ?></a> · <a class="small" href="<?= url('admin/renginio-dalyviai.php?id=' . $id) ?>"><?= te('Dalyviai') ?></a>
 <div class="page-head" style="margin-top:8px;">
-  <div><span class="badge badge-pink"><?= e(EVENT_TYPES[$event['type']]) ?><?= $event['type'] === 'competition' ? ($event['is_abroad'] ? (' ' . t('· užsienyje')) : (' ' . t('· Lietuvoje'))) : '' ?></span></div>
+  <div><span class="badge badge-pink"><?= e(t(EVENT_TYPES[$event['type']])) ?><?= $event['type'] === 'competition' ? ($event['is_abroad'] ? (' ' . t('· užsienyje')) : (' ' . t('· Lietuvoje'))) : '' ?></span></div>
   <h1 class="styled" style="margin-top:8px;"><?= e($event['title']) ?></h1>
   <p><?= e(fmt_date($event['starts_on'], true)) ?><?= $event['location'] ? ' · ' . e($event['location']) : '' ?></p>
 </div>

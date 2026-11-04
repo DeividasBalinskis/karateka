@@ -205,7 +205,7 @@ usort($todayTiles, function ($x, $y) { return strcmp((string) $x['day_time'], (s
     <div class="kicker"><?= $date === date('Y-m-d') ? t('Šiandien treniruojasi') : (t('Treniruojasi') . ' ') . e(mb_strtolower(weekday_names()[(int) date('N', strtotime($date))])) ?></div>
     <div class="group-tiles"><?php foreach ($todayTiles as $g) { echo $tile($g); } ?></div>
   <?php endif; ?>
-  <?php foreach (GROUP_CATEGORIES as $cat => $catLabel): $list = array_filter($tileGroups, function ($g) use ($cat) { return $g['category'] === $cat; }); if (!$list) { continue; } ?>
+  <?php foreach (array_map('t', GROUP_CATEGORIES) as $cat => $catLabel): $list = array_filter($tileGroups, function ($g) use ($cat) { return $g['category'] === $cat; }); if (!$list) { continue; } ?>
     <div class="kicker"><?= e($catLabel) ?></div>
     <div class="group-tiles"><?php foreach ($list as $g) { echo $tile($g); } ?></div>
   <?php endforeach; ?>
