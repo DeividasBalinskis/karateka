@@ -7,7 +7,7 @@ const common = ['index.php', 'renginiai.php', 'renginiai.php?tipas=egzaminai', '
   'varzybos.php', 'prisijungti.php', 'registracija.php', 'uzklausa.php', 'mano-renginiai.php', 'kodas.php', 'offline.html'];
 const member = ['paskyra.php', 'paskyra.php?m=2', 'paskyra.php?m=3', 'paskyra.php?skiltis=nustatymai', 'egzaminas.php', 'egzaminas.php?m=2', 'egzaminas.php?m=3',
   'testas.php?q=1', 'testas.php?q=1&rezimas=treniruote', 'klausimai.php'];
-const admin = ['admin/', 'admin/nustatymai.php', 'admin/treniruote.php', 'admin/treniruote.php?g=12', 'admin/zinutes.php', 'admin/zinutes.php?m=2', 'admin/zinutes.php?m=4',
+const admin = ['admin/', 'admin/nustatymai.php', 'ltkf/', 'ltkf/klubai.php', 'ltkf/kalendorius.php', 'varzybos-prototipas/', 'admin/treniruote.php', 'admin/treniruote.php?g=12', 'admin/zinutes.php', 'admin/zinutes.php?m=2', 'admin/zinutes.php?m=4',
   'admin/nariai.php', 'admin/nariai.php?id=2', 'admin/nariai.php?id=4', 'admin/nariai.php?new=1', 'admin/grupes.php', 'admin/grupes.php?id=4',
   'admin/tvarkarastis.php', 'admin/taskai.php', 'admin/varzybos.php', 'admin/testai.php', 'admin/programa.php', 'admin/programa.php?dirzas=2',
   'admin/pranesimai.php', 'admin/sms.php', 'admin/paskyros.php', 'admin/patvirtinimai.php', 'admin/renginiai.php?edit=new', 'admin/renginiai.php?edit=17',

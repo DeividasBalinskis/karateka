@@ -4,6 +4,25 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.15 - 2026-11-04 (lietuvių, anglų ir rusų kalbos; LTKF ir varžybų juodraščiai)
+**Duomenų bazė:** nieko importuoti nereikia.
+
+Kalbos:
+- Viršuje, šalia „Valdymas“ / „Mano paskyra“ - **LT ▾**: lietuvių, English, Русский. Pasirinkimas įsimenamas (slapukas „kalba“, 1 metai).
+- Išversta visa sąsaja (ir trenerio / admino dalis): meniu, mygtukai, formos, pranešimai, datos, diržų spalvos, renginių tipai.
+- Denio rašomas turinys (naujienos, renginių aprašymai, pamokos, grupių pavadinimai) kol kas rodomas taip, kaip parašytas.
+  Pagrindinio puslapio numatyti tekstai išversti; jei Denis tekstą pakeičia - rodomas jo tekstas.
+- Redaguojant pagrindinį puslapį visada rodoma lietuviškai (turinys saugomas lietuviškai).
+- Vertimai - `app/lang/en.php` ir `ru.php`. `tests/checks.sh` praneša, kuriems naujiems tekstams vertimo dar nėra.
+
+Pavadinimai:
+- Trenerio mygtukas viršuje - **„Valdymas“** (vietoj „Paskyra“); nariams - „Mano paskyra“.
+
+Juodraščiai (tik test svetainėje ir kompiuteryje):
+- Nustatymai → **Projektai (juodraščiai)**: **LTKF svetainė** (`/ltkf/`) ir **Varžybų sistemos prototipas** (`/varzybos-prototipas/`).
+  Viršuje juosta „← Atgal į Karateka“. Oficialioje svetainėje (env = live) šie puslapiai neatsidaro.
+  Vėliau - atskiri subdomenai.
+
 ## v1.14 - 2026-11-04 (testavimas, peržiūra kaip tėvai ar vaikas, švari svetainė, reakcijos, komentarai)
 **Duomenų bazė:** nieko importuoti nereikia.
 

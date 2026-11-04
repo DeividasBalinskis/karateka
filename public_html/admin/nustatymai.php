@@ -28,6 +28,11 @@ $settings = [
         [t('Atsarginės kopijos ir sistema'), 'admin/kopijos.php', t('Duomenų bazės kopijos, versija, importuoti db failai.'), is_admin()],
         [t('Testavimas'), 'admin/testavimas.php', t('Testiniai nariai (tėvai, vaikas) ir ką jiems sukurti; peržiūra kaip tėvai ar vaikas.'), is_admin()],
     ],
+    // Juodraščiai - tik test svetainėje ir kompiuteryje; vėliau - atskiri subdomenai
+    'Projektai (juodraščiai)' => [
+        [t('LTKF svetainė'), 'ltkf/', t('Federacijos svetainės juodraštis: klubai, kalendorius, rezultatai, teisėjai, dokumentai.'), is_admin() && config('env') !== 'live'],
+        [t('Varžybų sistemos prototipas'), 'varzybos-prototipas/', t('Kaip atrodys varžybų valdymas: klubai, dalyviai, kategorijos, lentelės, tvarkaraštis, rezultatai.'), is_admin() && config('env') !== 'live'],
+    ],
 ];
 
 page_start(t('Nustatymai'), ['admin' => true]);
@@ -38,7 +43,7 @@ page_start(t('Nustatymai'), ['admin' => true]);
   <div class="settings-groups">
     <?php foreach ($settings as $groupName => $links): $links = array_filter($links, function ($l) { return $l[3]; }); if (!$links) { continue; } ?>
       <section class="panel card settings-group">
-        <div class="kicker"><?= e($groupName) ?></div>
+        <div class="kicker"><?= e(t($groupName)) ?></div>
         <?php foreach ($links as [$label, $path, $desc]): ?>
           <a class="settings-link" href="<?= url($path) ?>"><strong><?= e($label) ?></strong><span><?= e($desc) ?></span></a>
         <?php endforeach; ?>

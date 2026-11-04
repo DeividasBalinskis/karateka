@@ -72,6 +72,7 @@ page_start(t('Privatumo politika'), ['description' => t('Kaip VšĮ Karate Ateit
   <h2><?= te('6. Slapukai ir trečiųjų šalių turinys') ?></h2>
   <p><?= te('Naudojame tik būtinus slapukus: prisijungimo sesijai išlaikyti ir, jei įjungėte prisijungimą su kodu ir pažymėjote „Pasitikėti šiuo įrenginiu“,
      kad tame įrenginyje') ?> <?= (int) TRUSTED_DEVICE_DAYS ?> <?= te('dienų nereikėtų kodo. Reklamos ar sekimo slapukų nenaudojame.') ?></p>
+  <p><?= te('Pasirinkta svetainės kalba (LT / EN / RU) įsimenama slapuke „kalba“ 1 metams.') ?></p>
   <p><?= te('Įdiegus svetainę kaip programėlę telefone, naršyklė įsimena tik svetainės dizaino failus (be jūsų duomenų), kad ji greičiau atsidarytų.') ?></p>
   <p><?= te('Svetainės šriftai įkeliami iš „Google Fonts“, o vaizdo įrašai rodomi per „YouTube“ privatumo režimu (youtube-nocookie.com).
      Įkeliant šį turinį jūsų naršyklė susisiekia su „Google“ serveriais ir perduoda jūsų IP adresą.') ?></p>
