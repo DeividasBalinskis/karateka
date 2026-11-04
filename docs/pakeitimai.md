@@ -4,6 +4,14 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.17 - 2026-11-04 (seni kompiuterio pavyzdžiai)
+**Duomenų bazė:** nieko importuoti nereikia.
+
+- Kompiuteryje po išvalymo galėjo likti seni pavyzdžiai, kurių senesnė pavyzdžių versija nepažymėjo
+  (naujiena „Rudens sezonas prasidėjo!“, renginiai „Kyu egzaminas“, „Lietuvos karate taurė“, „Sakura Cup“ ir kt., pamoka „Tempimo pratimai vaikams“,
+  nariai Lukas Vaitkus, Gabija Stankevičiūtė ir kt.). Dabar jie išsivalo patys, kai adminas atidaro „Šiandien“ (prieš tai - atsarginė kopija).
+- Atpažįstami tik pagal tikslius pavadinimus, vietas, vardus ir gimimo datas ir tik ten, kur yra tų pavyzdžių vaikai - test ir tikroje svetainėje nieko nepaliečia.
+
 ## v1.16 - 2026-11-04 (Denio tekstų vertimai, Denio aprašymas)
 **Duomenų bazė:** importuoti `db/024_vertimai.sql` (galima importuoti ir antrą kartą).
 

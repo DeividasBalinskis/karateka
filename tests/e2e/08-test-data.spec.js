@@ -40,6 +40,25 @@ test('legacy demo purge keeps real people; test people, view switch, delete', as
   check('program used by real members kept', +sql("SELECT COUNT(*) FROM belt_requirements WHERE created_at = '2000-01-01 00:00:00'") >= 0);
   await a.goto('admin/');
   check('only once', !/Išvalyti seni/.test(await flashes(a)));
+
+  // Seni kompiuterio pavyzdžiai be žymės (dev_seed iki 2026-11-03) - atpažįstami tik kartu su tų pavyzdžių vaikais
+  sql("INSERT INTO members (first_name, last_name, birth_date, status) VALUES ('Lukas', 'Vaitkus', '2009-01-10', 'active'), ('Gabija', 'Stankevičiūtė', '2010-02-11', 'active'), ('Lukas', 'Vaitkus', '2015-05-05', 'active')");
+  sql("INSERT INTO events (type, title, starts_on, location) VALUES ('competition', 'Lietuvos karate taurė', CURDATE(), 'Kaunas, Žalgirio arena'), ('competition', 'Lietuvos karate taurė', CURDATE(), 'Kaunas')");
+  sql("INSERT INTO news (title, body, author_id) VALUES ('Rudens sezonas prasidėjo!', 'Sveiki sugrįžę į salę! Treniruotės vyksta pagal įprastą tvarkaraštį.', 1), ('Rudens sezonas prasidėjo!', 'Denio tekstas apie sezoną', 1)");
+  sql("INSERT INTO lessons (title, topic, body, author_id) VALUES ('Tempimo pratimai vaikams', 'Fizinis pasiruošimas', '1. Atsisėskite, kojos tiesios.', 1)");
+  await a.goto('admin/');
+  check('old samples need their kids (2 of 3 - nothing)', !/Išvalyti seni/.test(await flashes(a)) && +sql("SELECT COUNT(*) FROM news WHERE title = 'Rudens sezonas prasidėjo!'") === 2);
+  sql("INSERT INTO members (first_name, last_name, birth_date, status) VALUES ('Matas', 'Žukauskas', '2011-03-12', 'active')");
+  await a.goto('admin/');
+  check('old samples purged', /Išvalyti seni pavyzdiniai duomenys \(6\)/.test(await flashes(a)), await flashes(a));
+  check('old samples gone, look-alikes stay', +sql("SELECT COUNT(*) FROM members WHERE last_name = 'Vaitkus'") === 1
+    && sql("SELECT birth_date FROM members WHERE last_name = 'Vaitkus'") === '2015-05-05'
+    && sql("SELECT GROUP_CONCAT(location) FROM events WHERE title = 'Lietuvos karate taurė'") === 'Kaunas'
+    && sql("SELECT GROUP_CONCAT(body) FROM news WHERE title = 'Rudens sezonas prasidėjo!'") === 'Denio tekstas apie sezoną'
+    && +sql("SELECT COUNT(*) FROM lessons WHERE title = 'Tempimo pratimai vaikams'") === 0);
+  check('added to purged list', JSON.parse(sql("SELECT value FROM site_settings WHERE name = 'demo_isvalyta'")).parts.news.items.includes('Rudens sezonas prasidėjo!'));
+  await a.goto('admin/');
+  check('old samples only once', !/Išvalyti seni/.test(await flashes(a)));
   await a.goto('admin/testavimas.php');
   await a.click('.purged summary');
   check('purged list visible', /Baltic Open|Kata seminaras/.test(await a.locator('.purged').textContent()));

@@ -9,6 +9,8 @@
 //   - demo paskyrų reakcijos, komentarai ir kt. (ištrinamos kartu su paskyromis).
 // Tikri duomenys - pačių užsiregistravę, Denio pridėti nariai, jo naujienos, renginiai ir pamokos (ir tai, ką jis pakeitė) - lieka.
 // Egzaminų programa ir testai paliekami, jei tikri nariai juos jau naudojo.
+// Seni kompiuterio pavyzdžiai (app/cli/dev_seed.php iki 2026-11-03) dar nebuvo pažymėti - jie atpažįstami pagal tikslius
+// pavadinimus ir vietas (old_seed_scan), bet tik ten, kur yra tų pavyzdžių vaikai (tikslūs vardai ir gimimo datos), t.y. tik kompiuteryje.
 
 const DEMO_SENTINEL = '2000-01-01 00:00:00';
 const DEMO_VIDEO = 'dQw4w9WgXcQ';
@@ -16,6 +18,17 @@ const DEMO_TEXT = '[Pavyzdys - pakeiskite]';   // senas pavyzdinis instruktoriau
 const DEMO_ACCOUNT_SQL = "((a.email LIKE '%@demo.karateka.lt' OR a.email LIKE '%@karateka.test') AND a.role <> 'admin')";
 const DEMO_LESSON_SQL = "l.created_at = '2000-01-01 00:00:00' OR l.title LIKE 'TEST:%' OR l.videos LIKE '%dQw4w9WgXcQ%'
                          OR EXISTS (SELECT 1 FROM lesson_blocks db WHERE db.lesson_id = l.id AND db.youtube_id = 'dQw4w9WgXcQ')";
+
+// Seni kompiuterio pavyzdžiai (be žymės): vaikai [vardas, pavardė, gimimo data], renginiai [tipas, pavadinimas, vieta],
+// naujienos ir pamokos [pavadinimas, teksto pradžia]
+const OLD_SEED_MEMBERS = [['Lukas', 'Vaitkus', '2009-01-10'], ['Gabija', 'Stankevičiūtė', '2010-02-11'], ['Matas', 'Žukauskas', '2011-03-12'],
+    ['Emilija', 'Paulauskaitė', '2012-04-13'], ['Dovydas', 'Urbonas', '2009-05-14'], ['Kamilė', 'Rimkutė', '2010-06-15']];
+const OLD_SEED_EVENTS = [['exam', 'Kyu egzaminas', 'Sporto centras Viršuliškės'], ['competition', 'Lietuvos karate taurė', 'Kaunas, Žalgirio arena'],
+    ['seminar', 'Seminaras su svečiu iš Japonijos', 'Vilnius'], ['competition', 'Rudenėlio taurė', 'Vilnius'], ['competition', 'Sakura Cup', 'Ryga'],
+    ['exam', 'Pavasario kyu egzaminas', 'Viršuliškės'], ['camp', 'Rudens atostogų stovykla', 'Trakai, poilsio namai „Ežerėlis“'],
+    ['seminar', 'Heian kata seminaras', 'Sporto centras Viršuliškės'], ['other', 'Atvira treniruotė parke', 'Vingio parkas']];
+const OLD_SEED_NEWS = [['Rudens sezonas prasidėjo!', 'Sveiki sugrįžę į salę!'], ['Puikūs rezultatai varžybose', 'Mūsų sportininkai parvežė 3 aukso ir 2 sidabro']];
+const OLD_SEED_LESSONS = [['Tempimo pratimai vaikams', '1. Atsisėskite, kojos tiesios.'], ['Heian Shodan žingsnis po žingsnio', 'Kartokite kasdien po 10 minučių.']];
 
 const TEST_DATA_PARTS = [
     'people'  => 'Testinės paskyros ir nariai',
@@ -35,12 +48,79 @@ function test_data_member_sql(): string
              AND NOT EXISTS (' . $link . ('(NOT' . ' ') . DEMO_ACCOUNT_SQL . ' OR a.id = ?)))';
 }
 
+/**
+ * Seni kompiuterio pavyzdžiai be žymės: ['members' => [id...], 'events' => [...], 'news' => [...], 'lessons' => [...]].
+ * Tušti, jei nėra bent 3 tų pavyzdžių vaikų (test ir tikroje svetainėje jų nėra).
+ */
+function old_seed_ids(): array
+{
+    $ids = ['members' => [], 'events' => [], 'news' => [], 'lessons' => []];
+    $pick = function (string $sql, array $rows, int $cols) {
+        $where = implode(' OR ', array_fill(0, count($rows), $sql));
+        $params = [];
+        foreach ($rows as $r) {
+            array_push($params, ...array_slice($r, 0, $cols));
+        }
+        return [$where, $params];
+    };
+    [$w, $p] = $pick('(first_name = ? AND last_name = ? AND birth_date = ?)', OLD_SEED_MEMBERS, 3);
+    $ids['members'] = array_map('intval', q('SELECT id FROM members WHERE created_at <> ? AND (' . $w . ')', array_merge([DEMO_SENTINEL], $p))->fetchAll(PDO::FETCH_COLUMN));
+    if (count($ids['members']) < 3) {
+        return ['members' => [], 'events' => [], 'news' => [], 'lessons' => []];
+    }
+    [$w, $p] = $pick('(type = ? AND title = ? AND location = ?)', OLD_SEED_EVENTS, 3);
+    $ids['events'] = array_map('intval', q('SELECT id FROM events WHERE created_at <> ? AND (' . $w . ')', array_merge([DEMO_SENTINEL], $p))->fetchAll(PDO::FETCH_COLUMN));
+    $like = function (array $rows) {
+        return array_map(function ($r) { return [$r[0], str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $r[1]) . '%']; }, $rows);
+    };
+    [$w, $p] = $pick('(title = ? AND body LIKE ?)', $like(OLD_SEED_NEWS), 2);
+    $ids['news'] = array_map('intval', q('SELECT id FROM news WHERE (updated_at IS NULL OR updated_at <> ?) AND (' . $w . ')', array_merge([DEMO_SENTINEL], $p))->fetchAll(PDO::FETCH_COLUMN));
+    [$w, $p] = $pick('(title = ? AND body LIKE ?)', $like(OLD_SEED_LESSONS), 2);
+    $ids['lessons'] = array_map('intval', q('SELECT id FROM lessons WHERE created_at <> ? AND (' . $w . ')', array_merge([DEMO_SENTINEL], $p))->fetchAll(PDO::FETCH_COLUMN));
+    return $ids;
+}
+
+/** Tik seni kompiuterio pavyzdžiai - ta pačia forma kaip test_data_scan() */
+function old_seed_scan(): array
+{
+    $old = old_seed_ids();
+    $out = [];
+    $list = function (string $sql, array $ids) {
+        return $ids ? q_all($sql . ' WHERE id IN (' . implode(',', $ids) . ') ORDER BY id') : [];
+    };
+    if ($old['members']) {
+        $out['people'] = ['ids' => ['accounts' => [], 'members' => $old['members']],
+            'items' => array_map(function ($m) { return (t('Narys:') . ' ') . $m['first_name'] . ' ' . $m['last_name']; },
+                $list('SELECT first_name, last_name FROM members', $old['members']))];
+    }
+    if ($old['events']) {
+        $out['events'] = ['ids' => $old['events'], 'items' => array_map(function ($e) { return $e['title'] . ' · ' . fmt_date($e['starts_on']); },
+            $list('SELECT title, starts_on FROM events', $old['events']))];
+    }
+    if ($old['news']) {
+        $out['news'] = ['ids' => $old['news'], 'items' => array_column($list('SELECT title FROM news', $old['news']), 'title')];
+    }
+    if ($old['lessons']) {
+        $out['lessons'] = ['ids' => ['lessons' => $old['lessons'], 'folders' => []], 'items' => array_column($list('SELECT title FROM lessons', $old['lessons']), 'title')];
+    }
+    foreach ($out as $k => &$part) {
+        $part['count'] = count($part['items']);
+    }
+    unset($part);
+    return $out;
+}
+
 /** Kas būtų ištrinta: [dalis => ['count' => n, 'items' => [tekstas, ...], 'ids' => [...], 'warn' => ?string]] (tik netuščios dalys) */
 function test_data_scan(int $meId): array
 {
     $out = [];
+    $old = old_seed_ids();
+    $orIn = function (string $col, array $ids): string {
+        return $ids ? ' OR ' . $col . ' IN (' . implode(',', $ids) . ')' : '';
+    };
     $accounts = q_all('SELECT a.id, a.email, a.first_name, a.last_name FROM accounts a WHERE ' . DEMO_ACCOUNT_SQL . ' AND a.id <> ? ORDER BY a.last_name, a.first_name', [$meId]);
-    $members = q_all('SELECT m.id, m.first_name, m.last_name, m.status FROM members m WHERE ' . test_data_member_sql() . ' ORDER BY m.last_name, m.first_name', [$meId, $meId]);
+    $members = q_all('SELECT m.id, m.first_name, m.last_name, m.status FROM members m WHERE ' . test_data_member_sql() . $orIn('m.id', $old['members'])
+                     . ' ORDER BY m.last_name, m.first_name', [$meId, $meId]);
     if ($accounts || $members) {
         $items = [];
         foreach ($members as $m) {
@@ -54,19 +134,19 @@ function test_data_scan(int $meId): array
             'label' => count($members) . (' ' . t('nar. ir') . ' ') . count($accounts) . ' pask.'];
     }
 
-    $events = q_all("SELECT id, title, starts_on FROM events WHERE created_at = ? OR title LIKE 'TEST:%' ORDER BY starts_on", [DEMO_SENTINEL]);
+    $events = q_all("SELECT id, title, starts_on FROM events WHERE created_at = ? OR title LIKE 'TEST:%'" . $orIn('id', $old['events']) . ' ORDER BY starts_on', [DEMO_SENTINEL]);
     if ($events) {
         $out['events'] = ['ids' => array_map('intval', array_column($events, 'id')),
             'items' => array_map(function ($e) { return $e['title'] . ' · ' . fmt_date($e['starts_on']); }, $events)];
     }
 
     $news = q_all("SELECT id, title FROM news n WHERE n.updated_at = ? OR n.title LIKE 'TEST:%'
-                    OR EXISTS (SELECT 1 FROM news_media nm WHERE nm.news_id = n.id AND nm.youtube_id = ?) ORDER BY n.id", [DEMO_SENTINEL, DEMO_VIDEO]);
+                    OR EXISTS (SELECT 1 FROM news_media nm WHERE nm.news_id = n.id AND nm.youtube_id = ?)" . $orIn('n.id', $old['news']) . ' ORDER BY n.id', [DEMO_SENTINEL, DEMO_VIDEO]);
     if ($news) {
         $out['news'] = ['ids' => array_map('intval', array_column($news, 'id')), 'items' => array_column($news, 'title')];
     }
 
-    $lessons = q_all('SELECT l.id, l.title FROM lessons l WHERE ' . DEMO_LESSON_SQL . ' ORDER BY l.belt_level, l.title');
+    $lessons = q_all('SELECT l.id, l.title FROM lessons l WHERE ' . DEMO_LESSON_SQL . $orIn('l.id', $old['lessons']) . ' ORDER BY l.belt_level, l.title');
     // Demo aplankai (ne diržų - tie lieka): jų turinys, jei tikras, perkeliamas aukštyn
     $folders = q_all('SELECT id, title FROM lesson_folders WHERE created_at = ? AND NOT (parent_id IS NULL AND belt_level IS NOT NULL) ORDER BY id', [DEMO_SENTINEL]);
     if ($lessons || $folders) {
@@ -133,10 +213,10 @@ function test_data_scan(int $meId): array
     return $out;
 }
 
-/** Ištrina pažymėtas dalis. Grąžina [dalis => kiek ištrinta]. Viskas - vienoje transakcijoje. */
-function test_data_delete(int $meId, array $parts): array
+/** Ištrina pažymėtas dalis ($scan - kas rasta; numatyta - test_data_scan). Grąžina [dalis => kiek ištrinta]. Viskas - vienoje transakcijoje. */
+function test_data_delete(int $meId, array $parts, ?array $scan = null): array
 {
-    $scan = test_data_scan($meId);
+    $scan = $scan ?? test_data_scan($meId);
     $done = [];
     $in = function (array $ids): string {
         return implode(',', array_map('intval', $ids)) ?: '0';
@@ -240,8 +320,11 @@ function test_data_drop_links(string $pattern, array $ids): void
  */
 function legacy_demo_autopurge(array $me): ?string
 {
-    if (!is_admin($me) || !empty($_SESSION['view_admin']) || site_setting('demo_isvalyta')) {
+    if (!is_admin($me) || !empty($_SESSION['view_admin'])) {
         return null;
+    }
+    if ($prev = site_setting('demo_isvalyta')) {
+        return old_seed_autopurge($me, (string) $prev);
     }
     // Nebeliko pranešimų apie kiekvieną komentarą - seni pažymimi atliktais
     try {
@@ -265,6 +348,37 @@ function legacy_demo_autopurge(array $me): ?string
     $summary = ['date' => date('Y-m-d H:i'), 'backup' => $backup, 'parts' => [], 'kept' => array_keys(array_filter($scan, function ($p) { return !empty($p['keep']); }))];
     foreach ($done as $k => $n) {
         $summary['parts'][$k] = ['count' => $n, 'items' => array_slice($scan[$k]['items'], 0, 300)];
+    }
+    set_site_setting('demo_isvalyta', json_encode($summary, JSON_UNESCAPED_UNICODE));
+    return t('Išvalyti seni pavyzdiniai duomenys (') . array_sum($done) . t('). Sąrašas - Nustatymai → Testavimas.');
+}
+
+/**
+ * Jei po išvalymo liko senų kompiuterio pavyzdžių be žymės (tik kompiuteryje) - išvalomi ir jie, irgi su atsargine kopija.
+ * Kas išvalyta, pridedama prie 'demo_isvalyta' sąrašo.
+ */
+function old_seed_autopurge(array $me, string $prev): ?string
+{
+    $scan = old_seed_scan();
+    if (!$scan) {
+        return null;
+    }
+    try {
+        $backup = backup_create();
+    } catch (Throwable $ex) {
+        error_log('old seed purge: backup failed: ' . $ex->getMessage());
+        return null;
+    }
+    $done = test_data_delete((int) $me['id'], array_keys($scan), $scan);
+    $summary = json_decode($prev, true);
+    if (!is_array($summary)) {
+        $summary = ['parts' => [], 'kept' => []];
+    }
+    $summary['date'] = date('Y-m-d H:i');
+    $summary['backup'] = $backup;
+    foreach ($done as $k => $n) {
+        $summary['parts'][$k]['count'] = (int) ($summary['parts'][$k]['count'] ?? 0) + $n;
+        $summary['parts'][$k]['items'] = array_merge($summary['parts'][$k]['items'] ?? [], $scan[$k]['items']);
     }
     set_site_setting('demo_isvalyta', json_encode($summary, JSON_UNESCAPED_UNICODE));
     return t('Išvalyti seni pavyzdiniai duomenys (') . array_sum($done) . t('). Sąrašas - Nustatymai → Testavimas.');
