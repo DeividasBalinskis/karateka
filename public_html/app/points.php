@@ -274,7 +274,7 @@ function render_staff_ranking(): string
     <?php endforeach; ?>
   </div>
   <?php if (!$rows): ?>
-    <p class="muted"><?= te('Šį sezoną taškų dar niekas neturi.') ?></p>
+    <p class="muted"><?= te('Šį sezoną XP dar niekas neturi.') ?></p>
   <?php else: ?>
     <input type="search" class="rank-search" id="rankSearch" placeholder="<?= te('Ieškoti pagal vardą ar pavardę') ?>" aria-label="<?= te('Ieškoti reitinge') ?>">
     <ol class="ranking ranking-all" id="rankAll">
@@ -285,7 +285,7 @@ function render_staff_ranking(): string
       <?php endforeach; ?>
     </ol>
     <p class="hint" id="rankEmpty" style="display:none;"><?= te('Nieko nerasta.') ?></p>
-    <p class="hint" style="margin-top:8px;"><?= te('Su taškais:') ?> <?= count($rows) ?>. Paspaudę vardą atidarysite nario puslapį.</p>
+    <p class="hint" style="margin-top:8px;"><?= te('Su XP:') ?> <?= count($rows) ?>. Paspaudę vardą atidarysite nario puslapį.</p>
     <script>
     (function () {
       // Paieška be lietuviškų raidžių skirtumo: "austeja" randa "Austėja"
@@ -306,4 +306,93 @@ function render_staff_ranking(): string
 </div>
     <?php
     return ob_get_clean();
+}
+
+// ---------- XP: kas skiriama automatiškai ir ką skiria treneris ----------
+
+/** Automatinės XP kategorijos: kodas => kada skiriama (rodoma Valdymas → XP). Kitos kategorijos - skiria treneris. */
+const XP_AUTO_RULES = [
+    'attendance'    => 'Pažymėjus „Buvo“ treniruotėje (kartą per dieną)',
+    'event_other'   => 'Pažymėjus „Buvo“ renginyje (tipas „Kita“)',
+    'seminar'       => 'Pažymėjus „Buvo“ seminare ar stovykloje',
+    'comp_lt'       => 'Varžybos Lietuvoje: pažymėjus „Buvo“ arba įvedus rezultatus',
+    'comp_abroad'   => 'Varžybos užsienyje: pažymėjus „Buvo“ arba įvedus rezultatus',
+    'place1_lt'     => 'Įvedus varžybų rezultatus (prie dalyvavimo XP)',
+    'place2_lt'     => 'Įvedus varžybų rezultatus (prie dalyvavimo XP)',
+    'place3_lt'     => 'Įvedus varžybų rezultatus (prie dalyvavimo XP)',
+    'place1_abroad' => 'Įvedus varžybų rezultatus (prie dalyvavimo XP)',
+    'place2_abroad' => 'Įvedus varžybų rezultatus (prie dalyvavimo XP)',
+    'place3_abroad' => 'Įvedus varžybų rezultatus (prie dalyvavimo XP)',
+    'exam'          => 'Renginio rezultatuose pažymėjus „Išlaikė“',
+    'skill'         => 'Treneriui patvirtinus „Moku“ - XP nurodytas prie kiekvieno punkto',
+    'test_attempt'  => 'Pirmas testo bandymas per sezoną',
+    'test_pass'     => 'Pirmą kartą per sezoną išlaikius testą',
+];
+
+/** Kategorijos, kurias treneris skiria pats (ne automatinės), aktyvios */
+function manual_xp_categories(): array
+{
+    return array_values(array_filter(q_all('SELECT * FROM point_categories WHERE is_active = 1 ORDER BY sort_order, id'),
+        function ($c) { return !isset(XP_AUTO_RULES[(string) $c['code']]); }));
+}
+
+/**
+ * Treneris skiria XP keliems nariams iš karto. Kiekvienas gauna pranešimą paskyroje (be raudono skaičiuko).
+ * Grąžina, kiek narių gavo XP.
+ */
+function award_xp_to_members(array $memberIds, array $category, int $points, string $date, ?string $note, int $by): int
+{
+    $n = 0;
+    foreach (array_unique(array_map('intval', $memberIds)) as $mid) {
+        if (!q_value('SELECT 1 FROM members WHERE id = ? AND status = "active"', [$mid])) {
+            continue;
+        }
+        award_points($mid, $category, $date, null, $note, $by, $points);
+        notify_member($mid, 'xp_award', '+' . $points . ' XP: ' . $category['name'], $note ?: null, 'paskyra.php?m=' . $mid, null, false);
+        $n++;
+    }
+    return $n;
+}
+
+// ---------- Renginio lankomumas (db/026) ----------
+
+/**
+ * „Buvo“ (1), „Nebuvo“ (0) arba nuimta žyma (null). Žmogus, kurio nebuvo dalyvių sąraše, pridedamas kaip dalyvaujantis.
+ * XP: seminaras, stovykla, kita - dalyvavimas; varžybos - dalyvavimas (vietos lieka, kaip įvestos). Egzaminas - XP tik už „Išlaikė“ (Rezultatai).
+ */
+function set_event_attendance(array $event, int $memberId, ?int $present, int $by): void
+{
+    $eventId = (int) $event['id'];
+    $p = event_participant($eventId, $memberId);
+    if (!$p && $present === null) {
+        return;
+    }
+    if (!$p || ($present === 1 && $p['status'] !== 'going')) {
+        set_participation($eventId, $memberId, 'going', $by);
+    }
+    q('UPDATE event_participants SET attended = ? WHERE event_id = ? AND member_id = ?', [$present, $eventId, $memberId]);
+    if ($event['type'] === 'exam') {
+        return;
+    }
+    $current = event_results($event)[$memberId] ?? '';
+    if ($present === 1 && $current === '') {
+        save_event_results($event, [$memberId => $event['type'] === 'competition' ? 'part' : 'yes'], $by);
+    } elseif ($present !== 1 && $current !== '') {
+        save_event_results($event, [$memberId => ''], $by);
+    }
+}
+
+/** Renginiai, vykę ar vykstantys tą dieną (Treniruotės puslapiui) */
+function events_on_date(string $date): array
+{
+    return q_all('SELECT * FROM events WHERE ? BETWEEN starts_on AND COALESCE(ends_on, starts_on) ORDER BY start_time, title', [$date]);
+}
+
+/** Neseniai (per 14 d.) vykę renginiai su dalyviais, kurių lankomumas dar nepažymėtas visiems */
+function events_to_mark(): array
+{
+    return q_all('SELECT e.*, SUM(ep.attended IS NULL) AS unmarked, COUNT(ep.member_id) AS total
+                    FROM events e JOIN event_participants ep ON ep.event_id = e.id AND ep.status IN ("going", "late")
+                   WHERE COALESCE(e.ends_on, e.starts_on) BETWEEN CURDATE() - INTERVAL 14 DAY AND CURDATE()
+                   GROUP BY e.id HAVING unmarked > 0 ORDER BY e.starts_on DESC');
 }

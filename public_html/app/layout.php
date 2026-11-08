@@ -254,6 +254,7 @@ function admin_nav_items(): array
         'siandien'   => [t('Šiandien'), 'admin/'],
         'treniruote' => [t('Treniruotė'), 'admin/treniruote.php'],
         'nariai'     => [t('Nariai'), 'admin/nariai.php'],
+        'xp'         => [t('XP'), 'admin/taskai.php'],
         // Žinutės - tik pokalbio lange (mygtukas apačioje dešinėje); grupės, tvarkaraštis, taškai, paskyros - „Nustatymai“
     ];
     $items['varzybos'] = [t('Varžybos'), 'admin/varzybos.php'];   // ir kai sistema dar neprijungta - puslapis paaiškina
@@ -283,7 +284,7 @@ function admin_nav_current(): string
     $file = basename($_SERVER['SCRIPT_NAME'] ?? '', '.php');
     $map = ['index' => 'siandien', 'renginio-rezultatai' => 'renginiai', 'varzybu-rezultatai' => 'varzybos', 'renginio-dalyviai' => 'renginiai', 'programa' => 'nustatymai',
             'varzybos-sso' => 'varzybos', 'varzybos-isorine' => 'varzybos', 'varzybu-dalyviai' => 'varzybos', 'varzybu-sistema' => 'varzybos', 'sms' => 'pranesimai',
-            'grupes' => 'nustatymai', 'tvarkarastis' => 'nustatymai', 'taskai' => 'nustatymai', 'paskyros' => 'nustatymai', 'kopijos' => 'nustatymai', 'atsaukimai' => 'nustatymai', 'testavimas' => 'nustatymai', 'vertimai' => 'nustatymai',
+            'grupes' => 'nustatymai', 'tvarkarastis' => 'nustatymai', 'taskai' => 'xp', 'paskyros' => 'nustatymai', 'kopijos' => 'nustatymai', 'atsaukimai' => 'nustatymai', 'testavimas' => 'nustatymai', 'vertimai' => 'nustatymai',
             'pirmas-adminas' => 'siandien'];
     return $map[$file] ?? $file;
 }

@@ -141,13 +141,13 @@ if ($id) {
             $date = post('awarded_on');
             if ($cat && DateTime::createFromFormat('!Y-m-d', $date)) {
                 award_points($id, $cat, $date, null, post('note'), (int) $me['id']);
-                flash('ok', "Skirta +{$cat['points']} tšk.: {$cat['name']}");
+                flash('ok', "Skirta +{$cat['points']} XP: {$cat['name']}");
             } else {
                 flash('err', t('Pasirinkite kategoriją ir datą.'));
             }
         } else {
             q('DELETE FROM point_awards WHERE id = ? AND member_id = ?', [(int) post('award_id'), $id]);
-            flash('ok', t('Taškai pašalinti.'));
+            flash('ok', t('XP pašalinti.'));
         }
         redirect('admin/nariai.php?id=' . $id . '#taskai');
     }
@@ -297,7 +297,7 @@ if ($id) {
         <h2><?= te('Lankomumas') ?></h2>
         <?= render_attendance($id) ?>
         <hr class="divider">
-        <h2><?= te('Taškai ir lygis') ?></h2>
+        <h2><?= te('XP ir lygis') ?></h2>
         <?= render_xp_card($m) ?>
         <p class="small muted"><?= e($seasonLabel) ?>: <strong><?= member_points_total($id, $from, $to) ?></strong> <?= te('· iš viso (XP):') ?> <strong><?= member_points_total($id) ?></strong></p>
         <?php if (!$history): ?><p class="muted small" style="margin-top:8px;"><?= te('Taškų dar nėra.') ?></p><?php endif; ?>

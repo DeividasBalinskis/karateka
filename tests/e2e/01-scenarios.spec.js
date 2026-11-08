@@ -202,7 +202,7 @@ test('admin: notifications, chat, comments at the post, broadcast, events, atten
   await a.goto('admin/renginiai.php?edit=new');
   await a.fill('input[name=title]', 'Testas blogas terminas'); await a.fill('#evStart', day(5)); await a.fill('#evUntil', day(6));
   await nav(a, () => a.click('button.btn-primary[type=submit]'));
-  check('deadline validation', /Registracija turi baigtis/.test(await a.content()));
+  check('deadline validation', /Registracija negali baigtis/.test(await a.content()));
   // Results -> exam passed celebration for Tomas
   const pastExam = +sql("SELECT id FROM events WHERE type='exam' AND starts_on < CURDATE() ORDER BY starts_on DESC LIMIT 1");
   await a.goto(`admin/renginio-rezultatai.php?id=${pastExam}&visi=1`);

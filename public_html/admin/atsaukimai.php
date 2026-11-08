@@ -31,9 +31,8 @@ if (is_post()) {
         $errors[] = t('Įveskite datą.');
     } elseif ($to < $from) {
         $errors[] = t('Pabaiga negali būti anksčiau nei pradžia.');
-    } elseif ($to < date('Y-m-d')) {
-        $errors[] = t('Ši data jau praėjo.');
     }
+    $pastOnly = !$errors && $to < date('Y-m-d');   // praėjusios dienos - tik įrašoma (lankomumui), nariams nepranešama
     if ($reason === '') {
         $errors[] = t('Įrašykite priežastį (pvz. „Mokyklinės atostogos“) - ją matys nariai.');
     }
@@ -51,7 +50,7 @@ if (is_post()) {
         }
         $c = ['starts_on' => $from, 'ends_on' => $to, 'reason' => $reason];
         $sent = 0;
-        if (post('notify') === '1' || post('email') === '1') {
+        if (!$pastOnly && (post('notify') === '1' || post('email') === '1')) {
             // Kiekviena paskyra - vieną kartą, nors ir keli vaikai atšauktose grupėse
             $accounts = q_all('SELECT a.id, a.email, a.first_name, GROUP_CONCAT(DISTINCT m.first_name ORDER BY m.first_name SEPARATOR ", ") AS kids
                                  FROM accounts a JOIN account_members am ON am.account_id = a.id JOIN members m ON m.id = am.member_id

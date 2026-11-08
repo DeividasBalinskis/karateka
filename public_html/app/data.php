@@ -98,8 +98,12 @@ function event_staff_actions(array $ev, string $back): string
         $html .= '<a class="btn btn-ghost btn-sm" href="' . e(url(!empty($ev['tournament_id']) ? 'admin/varzybu-dalyviai.php?id=' . $id : 'admin/varzybu-rezultatai.php?id=' . $id)) . '">'
             . (!empty($ev['tournament_id']) ? t('🥋 Varžybų sistema') : t('🔗 Susieti su varžybomis')) . '</a>';
     }
-    if (isset(EVENT_RESULTS[$ev['type']]) && $ev['starts_on'] <= date('Y-m-d')) {
-        $html .= '<a class="btn btn-primary btn-sm" href="' . e(url('admin/renginio-rezultatai.php?id=' . $id)) . '">Rezultatai</a>';
+    if ($ev['starts_on'] <= date('Y-m-d')) {
+        // Prasidėjęs ar praėjęs renginys: kas buvo (Treniruotės puslapyje); egzaminams ir varžyboms - ir rezultatai
+        $html .= '<a class="btn btn-ghost btn-sm" href="' . e(url('admin/treniruote.php?e=' . $id)) . '">' . e(t('✓ Kas buvo')) . '</a>';
+        if (in_array($ev['type'], ['exam', 'competition'], true)) {
+            $html .= '<a class="btn btn-primary btn-sm" href="' . e(url('admin/renginio-rezultatai.php?id=' . $id)) . '">' . e(t('Rezultatai')) . '</a>';
+        }
     }
     return $html . '</div>';
 }
@@ -402,13 +406,20 @@ function admin_todo_items(): array
     if ($n = pending_approvals_count()) {
         $todo[] = [(t('Laukia patvirtinimo:') . ' ') . $n . ($n === 1 ? ' paskyra ar vaikas' : ' paskyros ar vaikai'), 'admin/patvirtinimai.php', t('Patvirtinti')];
     }
-    // Praėję renginiai be įvestų rezultatų (paskutinės 30 d.)
+    // Praėję renginiai (paskutinės 30 d.): egzaminams ir varžyboms - rezultatai, kitiems - kas buvo (Treniruotė)
     $types = "'" . implode("','", array_keys(EVENT_RESULTS)) . "'";
-    foreach (q_all("SELECT e.* FROM events e
-                     WHERE e.type IN ($types) AND COALESCE(e.ends_on, e.starts_on) BETWEEN DATE_SUB(CURDATE(), INTERVAL 30 DAY) AND DATE_SUB(CURDATE(), INTERVAL 1 DAY)
-                       AND NOT EXISTS (SELECT 1 FROM point_awards pa WHERE pa.event_id = e.id)
-                     ORDER BY e.starts_on DESC") as $ev) {
-        $todo[] = [(t('Įvesk rezultatus:') . ' ') . $ev['title'] . ' (' . fmt_date($ev['starts_on']) . ')', 'admin/renginio-rezultatai.php?id=' . (int) $ev['id'], t('Rezultatai')];
+    $sql = "SELECT e.* FROM events e
+             WHERE e.type IN ($types) AND COALESCE(e.ends_on, e.starts_on) BETWEEN DATE_SUB(CURDATE(), INTERVAL 30 DAY) AND DATE_SUB(CURDATE(), INTERVAL 1 DAY)
+               AND NOT EXISTS (SELECT 1 FROM point_awards pa WHERE pa.event_id = e.id)";
+    try {
+        $past = q_all($sql . ' AND NOT EXISTS (SELECT 1 FROM event_participants ep WHERE ep.event_id = e.id AND ep.attended IS NOT NULL) ORDER BY e.starts_on DESC');
+    } catch (PDOException $ex) {
+        $past = q_all($sql . ' ORDER BY e.starts_on DESC');   // dar neimportuotas db/026
+    }
+    foreach ($past as $ev) {
+        $todo[] = in_array($ev['type'], ['exam', 'competition'], true)
+            ? [(t('Įvesk rezultatus:') . ' ') . $ev['title'] . ' (' . fmt_date($ev['starts_on']) . ')', 'admin/renginio-rezultatai.php?id=' . (int) $ev['id'], t('Rezultatai')]
+            : [(t('Pažymėk, kas buvo:') . ' ') . $ev['title'] . ' (' . fmt_date($ev['starts_on']) . ')', 'admin/treniruote.php?e=' . (int) $ev['id'], t('Kas buvo')];
     }
     // Naujos žinutės ir komentarai (prie renginių, naujienų, pamokų) - viena eilutė, atsidaro pokalbis
     if ($n = staff_unread_messages()) {

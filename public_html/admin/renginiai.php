@@ -62,8 +62,8 @@ if (is_post()) {
     }
     if ($ev['registration_until'] && !DateTime::createFromFormat('!Y-m-d', $ev['registration_until'])) {
         $errors[] = t('Netinkama registracijos pabaigos data.');
-    } elseif ($ev['registration_until'] && !$errors && $ev['registration_until'] >= $ev['starts_on']) {
-        $errors[] = t('Registracija turi baigtis bent dieną prieš renginį (renginio dieną registruotis nebegalima).');
+    } elseif ($ev['registration_until'] && !$errors && $ev['registration_until'] > $ev['starts_on']) {
+        $errors[] = t('Registracija negali baigtis vėliau, nei prasideda renginys.');
     }
 
     if (!$errors) {
@@ -167,7 +167,7 @@ if ($edit !== '') {
           <div class="panel card form">
             <h2 class="ef-step"><span>4</span> <?= te('Registracija ir pranešimai') ?></h2>
             <label class="check"><input type="checkbox" name="registration" value="1" <?= !empty($ev['registration']) ? 'checked' : '' ?>><span><?= te('Nariai gali registruotis patys („Dalyvausiu“)') ?></span></label>
-            <label><?= te('Registracija iki') ?> <span class="hint"><?= te('numatyta - diena prieš renginį; po termino Denis gauna prašymą') ?></span>
+            <label><?= te('Registracija iki') ?> <span class="hint"><?= te('numatyta - diena prieš renginį (galima ir renginio diena); po termino Denis gauna prašymą') ?></span>
               <input type="date" name="registration_until" id="evUntil" value="<?= e((string) ($ev['registration_until'] ?? '')) ?>"></label>
             <div class="kicker" style="margin-top:6px;"><?= te('Kaip pranešti pakviestiems') ?></div>
             <label class="check"><input type="checkbox" checked disabled><span><?= te('Svetainėje (Renginiai ir Mano paskyra) - visada') ?></span></label>

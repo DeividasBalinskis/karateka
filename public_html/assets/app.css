@@ -1058,7 +1058,7 @@ span.req-check:hover{transform:none;}
 
 /* ===== Treniruotė: plačiame ekrane vienas vaikas - viena eilutė (vardas | buvo / nebuvo | pastaba | pamoka, užduotis, video) ===== */
 @media (min-width:1000px){
-  .note-row{grid-template-columns:180px 200px minmax(0, 1fr) 250px; gap:6px 12px; align-items:center; padding:10px 0;}
+  .note-row{grid-template-columns:180px 250px minmax(0, 1fr) 250px; gap:6px 12px; align-items:center; padding:10px 0;}
   .note-row .note-who{display:contents;}
   .note-row .note-who > strong{grid-row:1; grid-column:1; line-height:1.3;}
   .note-row .att{grid-row:1; grid-column:2; margin:0;}
@@ -1067,6 +1067,7 @@ span.req-check:hover{transform:none;}
   .note-row .note-extras{grid-row:1; grid-column:4; gap:4px 12px;}
   .note-row .note-extras select{width:100%; max-width:100%;}
   .note-row .note-existing{grid-column:1 / -1; margin:0; padding-left:2px;}
+  .note-row .xp-quick{grid-column:1 / -1;}
 }
 
 /* ===== Treniruotė: grupės - spalvoti kvadratai ===== */
@@ -1303,3 +1304,26 @@ span.req-check:hover{transform:none;}
 }
 .varz-card{position:relative;}
 .varz-card:has(.varz-more[open]), .varz-card:focus-within{z-index:30;}
+
+/* ===== Treniruotė: renginiai šalia grupių, „+XP“ prie vardo ===== */
+.event-tile .gt-type{align-self:flex-start; padding:1px 8px; border-radius:999px; background:rgba(255,255,255,0.88); color:var(--gc); font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.04em;}
+.xp-btn{flex:0 0 auto; font-family:inherit; font-size:0.85rem; font-weight:700; min-height:46px; padding:8px 12px; border-radius:12px; cursor:pointer;
+  background:#FFF6DA; border:2px solid #EBCB6E; color:#7A5A06;}
+.xp-btn:hover{background:#FCEBB0;}
+@media (min-width:1000px){ .note-row .xp-btn{min-height:40px; padding:6px 10px;} }
+.xp-quick{display:grid; grid-template-columns:minmax(0, 1.4fr) 90px minmax(0, 2fr); gap:8px 12px; align-items:end; margin:8px 0 4px; padding:12px 14px;
+  border-radius:12px; background:#FFF9E8; border:1px solid #F0DCA0;}
+.xp-quick label{display:flex; flex-direction:column; gap:4px; font-size:0.8rem; font-weight:600;}
+.xp-quick .row{grid-column:1 / -1; gap:10px; align-items:center;}
+@media (max-width:700px){ .xp-quick{grid-template-columns:1fr 90px;} .xp-quick .xp-note{grid-column:1 / -1;} }
+.note-existing.xp-line{color:#7A5A06;}
+.ev-add{align-items:flex-end; gap:12px; flex-wrap:wrap;}
+.ev-add select{width:100%;}
+
+/* ===== XP puslapis: skirti XP, taisyklės ===== */
+.xp-give-row{grid-template-columns:minmax(0, 2fr) minmax(0, 2fr) 130px 170px;}
+.xp-give-row .xp-new[hidden]{display:none;}
+@media (max-width:800px){ .xp-give-row{grid-template-columns:1fr 1fr;} }
+.xp-rules input[type=text], .xp-rules input[type=number]{padding:8px 10px; font-size:14px;}
+.xp-rules input[type=number]{width:76px;}
+.xp-rules .xp-when{margin-top:3px; font-size:0.76rem;}

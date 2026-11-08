@@ -75,11 +75,11 @@ function event_targets_member(array $ev, array $m): bool
     return !$groups || ($m['group_id'] && in_array((int) $m['group_id'], $groups, true));
 }
 
-/** Paskutinė registracijos diena: nurodyta arba diena prieš renginį (renginio dieną registruotis nebegalima) */
+/** Paskutinė registracijos diena: nurodyta (ne vėliau kaip renginio diena) arba diena prieš renginį */
 function event_deadline(array $ev): string
 {
     $dayBefore = date('Y-m-d', strtotime($ev['starts_on'] . ' -1 day'));
-    return !empty($ev['registration_until']) && $ev['registration_until'] < $ev['starts_on'] ? $ev['registration_until'] : $dayBefore;
+    return !empty($ev['registration_until']) && $ev['registration_until'] <= $ev['starts_on'] ? $ev['registration_until'] : $dayBefore;
 }
 
 /** Ar dar galima registruotis pačiam (iki termino imtinai) */

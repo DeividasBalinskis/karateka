@@ -317,9 +317,9 @@ page_start($tab === 'nustatymai' ? t('Nustatymai') : t('Mano paskyra'), ['noinde
       <div class="panel card points-card">
         <div class="points-head">
           <div>
-            <div class="kicker"><?= count($members) > 1 ? e($selected['first_name']) . ' · ' : (t('Mano') . ' ') ?><?= te('taškai ·') ?> <?= e($seasonLabel) ?></div>
+            <div class="kicker"><?= count($members) > 1 ? e($selected['first_name']) . ' · ' : (t('Mano') . ' ') ?><?= te('XP ·') ?> <?= e($seasonLabel) ?></div>
             <div class="row" style="align-items:baseline; gap:8px;">
-              <span class="big-number"><?= $seasonPoints ?></span><span class="muted"><?= te('tšk.') ?></span>
+              <span class="big-number"><?= $seasonPoints ?></span><span class="muted">XP</span>
             </div>
           </div>
         </div>
@@ -333,7 +333,7 @@ page_start($tab === 'nustatymai' ? t('Nustatymai') : t('Mano paskyra'), ['noinde
 
         <div class="kicker" style="margin-top:4px;"><?= te('Top 5 ·') ?> <?= e($partition[2]) ?></div>
         <?php if (!$rows): ?>
-          <p class="muted"><?= te('Šį sezoną taškų dar niekas neturi.') ?></p>
+          <p class="muted"><?= te('Šį sezoną XP dar niekas neturi.') ?></p>
         <?php endif; ?>
         <?php if ($rows || $mine): ?>
           <ol class="ranking">
