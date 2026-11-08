@@ -46,7 +46,7 @@ function puslapis_pradzia(string $title, string $active = '', array $opt = []): 
 <meta name="description" content="<?= e($opt['description'] ?? 'Lietuvos tradicinio karatė federacija: klubai, varžybų kalendorius, rezultatai, teisėjai ir dokumentai.') ?>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="assets/ltkf.css?v=1">
+<link rel="stylesheet" href="assets/ltkf.css?v=2">
 <?= $opt['head'] ?? '' ?>
 </head>
 <body>

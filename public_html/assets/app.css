@@ -1327,3 +1327,14 @@ span.req-check:hover{transform:none;}
 .xp-rules input[type=text], .xp-rules input[type=number]{padding:8px 10px; font-size:14px;}
 .xp-rules input[type=number]{width:76px;}
 .xp-rules .xp-when{margin-top:3px; font-size:0.76rem;}
+
+/* ===== Registracija į varžybas kitiems klubams ===== */
+.reg-rows{display:grid; gap:6px;}
+.reg-row{display:grid; grid-template-columns:minmax(0, 2.4fr) 110px 74px minmax(0, 1fr); gap:6px;}
+.reg-row.reg-head{font-size:0.78rem; font-weight:700; color:var(--muted);}
+.reg-row input, .reg-row select{min-width:0;}
+@media (max-width:600px){ .reg-row{grid-template-columns:1fr 90px; } .reg-row.reg-head span:nth-child(n+3){display:none;} }
+
+/* ===== DB atnaujinimas vienu mygtuku ===== */
+.db-update-box{display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px 20px; border:2px solid #E6C35C; background:#FFF9E8;}
+.db-update-box p{margin:4px 0 0;}

@@ -1,6 +1,6 @@
 ﻿# Atsisiunčia naujausią versiją iš GitHub (main) ir paruošia įkėlimo failus aplanke "ikelimui":
 #   svetaine-vX.Y.zip - įkelti į test serverį ir išarchyvuoti (kaip iki šiol)
-#   ir parašo, kurį db\0xx failą importuoti per phpMyAdmin (jei jų atsirado).
+#   ir primena, kaip atnaujinti duomenų bazę (svetainėje vienu mygtuku, phpMyAdmin nereikia).
 #
 # Paleidimas: dešiniu pelės klavišu -> "Run with PowerShell".
 # Jei šiame aplanke ką nors keitėte patys - skriptas sustos ir nieko nepakeis: pirma įkelkite pakeitimus į GitHub.
@@ -40,11 +40,9 @@ if (-not $? -or $LASTEXITCODE -ne 0) { Stop-WithMessage 'Nepavyko paruošti zip 
 if ($before -eq $after) {
     Write-Host "`nNaujų pakeitimų GitHub'e nebuvo - paketas ta pati versija." -ForegroundColor Yellow
 }
-# Duomenų bazė: kurių db failų trūksta, rodo pati svetainė (Nustatymai -> Atsarginės kopijos ir sistema -> Importuoti db failai)
-Write-Host "`nDuomenų bazė (phpMyAdmin -> aus15792_test -> Import): importuokite tuos, kurių dar neimportavote, po vieną iš eilės:" -ForegroundColor Green
-Get-ChildItem (Join-Path $root 'db') -Filter '0*.sql' | Where-Object { $_.Name -match '^(\d{3})_' -and [int]$Matches[1] -ge 22 } | Sort-Object Name |
-    ForEach-Object { Write-Host ('  db\' + $_.Name) -ForegroundColor Green }
-Write-Host '  (svetainėje: Nustatymai -> Atsarginės kopijos ir sistema parodo, kurių trūksta; importuoti antrą kartą nekenkia)'
+# Duomenų bazė: db failai yra pakete (app\db), svetainė juos importuoja pati vienu mygtuku
+Write-Host "`nDuomenų bazė: įkėlus failus - test svetainėje Valdymas -> Šiandien -> „Atnaujinkite duomenų bazę“" -ForegroundColor Green
+Write-Host '  (arba Nustatymai -> Atsarginės kopijos ir sistema -> „Atnaujinti duomenų bazę“; prieš tai pasidaro kopija, phpMyAdmin nereikia)'
 
 # Kas nauja - viršutinis įrašas iš docs\pakeitimai.md
 $log = Get-Content -Encoding UTF8 (Join-Path $root 'docs\pakeitimai.md')

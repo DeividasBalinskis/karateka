@@ -89,7 +89,7 @@ test('competitions: test tournament, editor saves, public results, LTKF, points'
 
   // Kategorija: sistemos pasirinkimas kortelėmis (ratų, balų), tempimas iš dalyvių sąrašo
   await a.click('#tab-kategorijos');
-  check('system cards', await a.locator('.sys-card').count() === 5);
+  check('system cards', await a.locator('.sys-card').count() === 6);   // olimpinės (3), fukugo, ratų, balai
   const catId = await a.locator('#cat-list li[aria-current="true"]').getAttribute('data-drop-cat');
   await a.click('.sys-card[data-sys="rr"]');
   await a.waitForTimeout(1200);

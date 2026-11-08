@@ -12,7 +12,7 @@ const TOURNAMENT_STATUS = [
     'running'      => 'Vyksta',
     'finished'     => 'Baigtos',
 ];
-const VARZ_DISCIPLINES = ['kata' => 'Kata', 'kumite' => 'Kumite', 'fukugo' => 'Fukugo', 'kihon' => 'Kihon'];
+const VARZ_DISCIPLINES = ['kata' => 'Kata', 'kumite' => 'Kumite', 'fukugo' => 'Fukugo', 'kihon' => 'Kihon', 'enbu' => 'Enbu', 'sumo' => 'Sumo'];
 
 function tournaments_ready(): bool
 {
@@ -277,4 +277,68 @@ function footer_links_html(): string
         $links[] = '<a href="' . e(url('varzybu-rezultatai.php')) . '">' . te('Varžybų rezultatai') . '</a>';
     }
     return $links ? ' · ' . implode(' · ', $links) : '';
+}
+
+// ---------- Transliacija ir registracija per nuorodą (db/026) ----------
+
+/** Nuorodos raktas: 'share' - žiūrovams ir ekranams, 'reg' - kitų klubų registracijai. Sukuriamas pirmą kartą prireikus. */
+function tournament_token(array $t, string $kind): string
+{
+    $col = $kind === 'reg' ? 'reg_token' : 'share_token';
+    if (!empty($t[$col])) {
+        return (string) $t[$col];
+    }
+    q("UPDATE tournaments SET $col = ? WHERE id = ? AND $col IS NULL", [bin2hex(random_bytes(12)), (int) $t['id']]);
+    return (string) q_value("SELECT $col FROM tournaments WHERE id = ?", [(int) $t['id']]);
+}
+
+function tournament_by_token(string $token, string $kind): ?array
+{
+    if (!preg_match('/^[a-f0-9]{24}$/', $token) || !tournaments_ready()) {
+        return null;
+    }
+    try {
+        return q_one('SELECT * FROM tournaments WHERE ' . ($kind === 'reg' ? 'reg_token' : 'share_token') . ' = ?', [$token]);
+    } catch (PDOException $ex) {
+        return null;   // dar neimportuotas db/026
+    }
+}
+
+/** Kas vyksta ant tatamio dabar (iš kovos skydelio): išsaugoma su serverio laiku (ms) - laikrodžiui ekranuose */
+function tournament_live_set(int $id, int $area, array $data): void
+{
+    q('INSERT INTO tournament_live (tournament_id, area_id, data, updated_ms) VALUES (?, ?, ?, ?)
+       ON DUPLICATE KEY UPDATE data = VALUES(data), updated_ms = VALUES(updated_ms)',
+        [$id, $area, json_encode($data, JSON_UNESCAPED_UNICODE), (int) round(microtime(true) * 1000)]);
+}
+
+/** [area_id => ['data' => [...], 'ms' => serverio laikas, kada gauta]] */
+function tournament_live_get(int $id): array
+{
+    $out = [];
+    try {
+        foreach (q_all('SELECT area_id, data, updated_ms FROM tournament_live WHERE tournament_id = ?', [$id]) as $r) {
+            $out[(int) $r['area_id']] = ['data' => json_decode((string) $r['data'], true) ?: [], 'ms' => (int) $r['updated_ms']];
+        }
+    } catch (PDOException $ex) {
+        // dar neimportuotas db/026
+    }
+    return $out;
+}
+
+/** Nauji (dar nepridėti) užsiregistravę per nuorodą */
+function tournament_new_entries(int $id): array
+{
+    try {
+        return q_all('SELECT id, club, contact, name, birth_year, gender, belt, created_at FROM tournament_entries WHERE tournament_id = ? AND status = "new" ORDER BY club, id', [$id]);
+    } catch (PDOException $ex) {
+        return [];
+    }
+}
+
+/** Vardas viešai: vaikų ir jaunių (iki 18 m.) - „Vardas P.“ */
+function varz_public_name(array $p): string
+{
+    $parts = preg_split('/\s+/u', trim((string) ($p['name'] ?? '')));
+    return !empty($p['minor']) && count($parts) > 1 ? $parts[0] . ' ' . mb_substr(end($parts), 0, 1) . '.' : (string) ($p['name'] ?? '');
 }

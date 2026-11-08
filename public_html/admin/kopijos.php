@@ -31,10 +31,21 @@ if (is_post()) {
             flash('err', (t('Kopijos sukurti nepavyko:') . ' ') . $ex->getMessage());
         }
     }
+    if (post('action') === 'dbupdate') {
+        try {
+            $res = db_update_run();
+            flash('ok', $res['files'] ? (t('Duomenų bazė atnaujinta:') . ' ' . implode(', ', $res['files']) . '. ' . t('Prieš tai padaryta kopija:') . ' ' . $res['backup'])
+                : t('Duomenų bazė jau atnaujinta - nieko daryti nereikėjo.'));
+        } catch (Throwable $ex) {
+            error_log('db update failed: ' . $ex->getMessage());
+            flash('err', (t('Atnaujinti nepavyko:') . ' ') . $ex->getMessage());
+        }
+    }
     redirect('admin/kopijos.php');
 }
 
 $backups = backup_list();
+$pending = db_update_pending();
 $last = backup_last_time();
 $error = backup_error();
 try {
@@ -53,6 +64,17 @@ page_start(t('Atsarginės kopijos'), ['admin' => true]);
 ?>
 <a class="small" href="<?= url('admin/nustatymai.php') ?>"><?= te('← Nustatymai') ?></a>
 <h1 class="styled" style="margin-top:8px;"><?= te('Atsarginės kopijos ir sistema') ?></h1>
+
+<?php if ($pending): ?>
+  <form method="post" class="panel card db-update-box">
+    <?= csrf_field() ?>
+    <div>
+      <strong><?= te('Reikia atnaujinti duomenų bazę') ?></strong>
+      <p class="small"><?= te('Naujai įkeltai versijai trūksta:') ?> <code><?= e(implode(', ', $pending)) ?></code>. <?= te('Prieš atnaujinant automatiškai padaroma atsarginė kopija. phpMyAdmin nereikia.') ?></p>
+    </div>
+    <button class="btn btn-primary" name="action" value="dbupdate"><?= te('Atnaujinti duomenų bazę') ?></button>
+  </form>
+<?php endif; ?>
 
 <div class="grid-2">
   <div class="panel card">

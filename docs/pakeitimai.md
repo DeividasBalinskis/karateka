@@ -4,6 +4,39 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.19 - 2026-11-08 (Denio pastabos: renginių lankomumas, XP, varžybų balai, laikrodis, ekranai, registracija)
+**Duomenų bazė:** `db/026_lankomumas_xp_varzybos.sql`. Nuo šios versijos - **be phpMyAdmin**: įkėlus failus, Valdymas → Šiandien →
+„Atnaujinkite duomenų bazę“ (arba Nustatymai → Atsarginės kopijos ir sistema → „Atnaujinti duomenų bazę“). Prieš tai pasidaro kopija.
+Jei test svetainėje dar nebuvo 025 - mygtukas įkels ir jį.
+
+Renginiai ir lankomumas:
+- **Treniruotė**: šalia grupių - **renginiai** pasirinktą dieną (pvz. rinktinės treniruotė) ir „Neseniai vyko - pažymėkite, kas buvo“.
+  Atidarius - renginio dalyviai su „Buvo / Nebuvo“, „✓ Visi dalyvaujantys buvo“, pastabos ir „Atėjo, nors nebuvo sąraše“.
+  Pažymėjus „Buvo“ skiriamas renginio XP (seminaras, stovykla, kita, varžybų dalyvavimas); egzamino XP - kaip anksčiau, už „Išlaikė“.
+- Bet kuri diena, ir praėjusi: „← Diena atgal“, data. Prie praėjusių renginių - mygtukas „✓ Kas buvo“; „Šiandien“ primena, kur dar nepažymėta.
+- Be „atsitiktinių“ draudimų adminui: registracija gali baigtis ir renginio dieną; atšauktą treniruotę galima įrašyti ir praėjusiai dienai (nariams tada nepranešama).
+
+XP (vietoj „taškų“):
+- Naujas skirtukas **XP** (Valdymas): **„✨ Skirti XP“** - pažymite kelis vaikus ar visą grupę, kategoriją (pvz. „Pagalba treneriui“), XP ir komentarą;
+  kategoriją galima sukurti čia pat. Kiekvienas gauna pranešimą paskyroje („+5 XP: Pagalba treneriui“).
+- **„+XP“** prie kiekvieno vardo Treniruotės puslapyje; „✨ XP keliems“ - tos grupės ar renginio dalyviai jau pažymėti.
+- Aiškiai: kas skiriama **automatiškai** (ir kada) ir ką **skiria treneris**. Nario kortelėje ir paskyroje - „XP“, ne „taškai“.
+
+Varžybų sistema „Taika“ (pagal Denio sąrašą):
+- **Rungtis → sistema** pati: Kata, Kumite, Kihon, Sumo - olimpinė, 2 trečios; Team Kata ir Team Kumite - olimpinė, 1 trečia (kova dėl 3 vietos);
+  Fukugo - fukugo sistema; Enbu - balai. Rungtys papildytos **Sumo**.
+- **Kovos skydelis** (▶ prie kovos): **laikrodis** (pradėti / sustabdyti tarpu, ±10 s, signalas pabaigoje), balai **+1 / +2 / +3 / −1** abiem pusėms,
+  „Baigti kovą“ (laimi daugiau balų turintis) arba sprendimu „Laimėjo AKA / SHIRO“.
+- **Komandinis kumite**: 3 kovos, po kiekvienos nugalėtojas neskelbiamas - kovoja kiti, balai sumuojasi; pasirenkama, kas kovoja; po 3 kovos - nugalėtoja komanda.
+- **Fukugo**: finalas - kumite, pusfinalis - **Kitei** (vėliavėlės), toliau pakaitomis.
+- **Sumo**: kas pirmas surenka nustatytą taškų skaičių (pvz. 3) - laimi ir keliauja toliau.
+- **Komandinės katos finalas ir kova dėl bronzos**: Kata ir Pritaikymas balais, kraštiniai atmetami ir **lieka matomi perbraukti**.
+- **Vėliavėlės** (kata, kihon, kitei, ratų sistema): ne „kas laimėjo“, o kiek vėliavėlių prieš kiek (pvz. 3:2).
+- **📡 Transliacija**: tatamio **ekranas** (televizoriui ar antram monitoriui) - kova, balai, laikrodis, kas toliau;
+  **nuoroda žiūrovams** telefone - kas vyksta ant kiekvieno tatamio, kas eina toliau, rezultatai. Vaikų vardai - „Vardas P.“.
+- **Registracija kitiems klubams** per nuorodą (vardas, gimimo metai, lytis, diržas); „Dalyviuose“ - „Pridėti visus“.
+- **Mišrios komandos**: komandą galima sudaryti iš skirtingų klubų žmonių.
+
 ## v1.18 - 2026-11-04 (varžybų sistema „Taika“, atsiliepimai, LTKF su tikrais duomenimis)
 **Duomenų bazė:** importuoti `db/025_varzybos_atsiliepimai.sql` (galima importuoti ir antrą kartą).
 

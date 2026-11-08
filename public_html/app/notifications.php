@@ -20,6 +20,7 @@ const NOTIFY_ICONS = [
     'cancelled'         => '🚫',
     'feedback'          => '💡',
     'xp_award'          => '✨',
+    'tournament_entries' => '🥋',
 ];
 // Šventė ekrane (vieną kartą, kol neperskaityta)
 const NOTIFY_CELEBRATE = ['level_up', 'exam_passed'];

@@ -33,6 +33,10 @@ Remove-Item -Recurse -Force -ErrorAction SilentlyContinue (Join-Path $stage 'upl
 Remove-Item -Recurse -Force -ErrorAction SilentlyContinue (Join-Path $stage 'uploads\site')    # pagrindinio puslapio nuotraukos - irgi
 Remove-Item -Recurse -Force -ErrorAction SilentlyContinue (Join-Path $stage 'uploads\kopijos') # kompiuterio DB kopijos niekada nekeliamos (serveris daro savas)
 
+# DB atnaujinimas vienu mygtuku (Nustatymai -> Atsarginės kopijos ir sistema): db failai keliauja kartu, į app\db (iš interneto nepasiekiami)
+New-Item -ItemType Directory -Force (Join-Path $stage 'app\db') | Out-Null
+Copy-Item (Join-Path $root 'db\0*.sql') (Join-Path $stage 'app\db')
+
 # Versija (rodoma prie logotipo test svetainėje) - ir ZIP pavadinime
 $version = (Get-Content -Raw (Join-Path $root 'public_html\app\VERSION')).Trim()
 

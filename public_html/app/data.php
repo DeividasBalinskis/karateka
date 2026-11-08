@@ -435,6 +435,10 @@ function admin_todo_items(): array
     if (is_admin() && ($n = feedback_new_count())) {
         $todo[] = [(t('Nauji atsiliepimai apie svetainę:') . ' ') . $n, 'admin/atsiliepimai.php', t('Peržiūrėti')];
     }
+    // Įkelta nauja versija, o duomenų bazė dar neatnaujinta - vienu mygtuku
+    if (is_admin() && db_update_pending()) {
+        $todo[] = [t('Atnaujinkite duomenų bazę naujai versijai'), 'admin/kopijos.php', t('Atnaujinti')];
+    }
     // Atsarginė kopija: nepavyko arba nedaryta ilgiau nei 2 d.
     if (is_admin() && backup_auto()) {
         $last = backup_last_time();

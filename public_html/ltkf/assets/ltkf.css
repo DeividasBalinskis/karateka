@@ -82,7 +82,7 @@ p { margin: 0; }
 .quick-card b { font-size: 1.1rem; }
 .quick-card span:last-child { font-size: 0.92rem; color: var(--muted); }
 
-.section { padding-block: 48px; display: grid; gap: 22px; }
+.section { padding-block: 48px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 22px; }
 .section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; }
 .section-head a { font-weight: 600; text-decoration: none; }
 .two-col { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 36px; align-items: start; }
@@ -110,7 +110,8 @@ p { margin: 0; }
 
 /* Filtrai */
 .filters { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: center; }
-.filters select { font: inherit; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--line); margin-left: 8px; }
+.filters select { font: inherit; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--line); min-width: 0; max-width: 100%; }
+.filters label { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; min-width: 0; max-width: 100%; }
 .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--surface); }
 .seg a { padding: 8px 16px; text-decoration: none; color: var(--ink); font-weight: 600; }
 .seg a[aria-current="true"] { background: var(--navy); color: #fff; }

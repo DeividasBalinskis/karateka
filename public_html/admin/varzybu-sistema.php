@@ -11,6 +11,36 @@ if (!$t) {
     redirect('admin/varzybos.php');
 }
 
+// Nauji užsiregistravę per nuorodą (JSON) - mygtukas „↻“ Dalyvių skirtuke
+if (get('entries') && !is_post()) {
+    header('Content-Type: application/json; charset=utf-8');
+    exit(json_encode(['ok' => true, 'entries' => tournament_new_entries((int) $t['id'])], JSON_UNESCAPED_UNICODE));
+}
+
+// Kovos skydelis: kas vyksta ant tatamio (ekranams ir žiūrovams); užsiregistravusių žymėjimas; registracijos atidarymas
+if (is_post() && (get('live') || get('entries') || get('reg'))) {
+    csrf_check();
+    header('Content-Type: application/json; charset=utf-8');
+    $in = json_decode((string) file_get_contents('php://input'), true) ?: [];
+    if (get('live')) {
+        $data = is_array($in['data'] ?? null) ? $in['data'] : [];
+        if (strlen(json_encode($data)) > 20000) {
+            http_response_code(413);
+            exit(json_encode(['ok' => false]));
+        }
+        tournament_live_set((int) $t['id'], max(0, (int) ($in['area'] ?? 0)), $data);
+    } elseif (get('entries')) {
+        $ids = array_map('intval', (array) ($in['ids'] ?? []));
+        if ($ids) {
+            q('UPDATE tournament_entries SET status = ? WHERE tournament_id = ? AND id IN (' . implode(',', $ids) . ')',
+                [($in['status'] ?? '') === 'rejected' ? 'rejected' : 'added', (int) $t['id']]);
+        }
+    } else {
+        q('UPDATE tournaments SET reg_open = ? WHERE id = ?', [!empty($in['open']) ? 1 : 0, (int) $t['id']]);
+    }
+    exit(json_encode(['ok' => true]));
+}
+
 // Išsaugojimas (fetch iš assets/varzybos.js)
 if (is_post()) {
     csrf_check();
@@ -37,8 +67,22 @@ $belts = [];
 foreach (BELTS as $lvl => $b) {
     $belts[$lvl] = [$b[0], $b[1], $b[2]];
 }
+// Nuorodos: žiūrovams ir ekranams, kitų klubų registracijai (kol neimportuotas db/026 - nerodomos)
+try {
+    $shareUrl = abs_url('varzybos-gyvai.php?k=' . tournament_token($t, 'share'));
+    $regUrl = abs_url('varzybos-registracija.php?k=' . tournament_token($t, 'reg'));
+    $regOpen = (bool) q_value('SELECT reg_open FROM tournaments WHERE id = ?', [(int) $t['id']]);
+} catch (PDOException $ex) {
+    $shareUrl = $regUrl = '';
+    $regOpen = false;
+}
 $cfg = [
     'id' => (int) $t['id'], 'title' => $t['title'], 'version' => (int) $t['version'], 'isTest' => (bool) $t['is_test'],
+    'liveApi' => $shareUrl ? url('admin/varzybu-sistema.php?id=' . (int) $t['id'] . '&live=1') : '',
+    'entriesApi' => url('admin/varzybu-sistema.php?id=' . (int) $t['id'] . '&entries=1'),
+    'regApi' => url('admin/varzybu-sistema.php?id=' . (int) $t['id'] . '&reg=1'),
+    'shareUrl' => $shareUrl, 'screenUrl' => $shareUrl ? $shareUrl . '&ekranas=1' : '', 'regUrl' => $regUrl, 'regOpen' => $regOpen,
+    'entries' => tournament_new_entries((int) $t['id']),
     'api' => url('admin/varzybu-sistema.php?id=' . (int) $t['id']), 'csrf' => csrf_token(), 'year' => (int) substr($t['starts_on'], 0, 4),
     'homeClub' => VARZ_HOME_CLUB, 'belts' => $belts, 'members' => varz_club_members(), 'state' => tournament_state($t),
 ];
@@ -66,6 +110,7 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
     </div>
     <div class="vz-top-right">
       <span class="save-state ok" id="save-state" role="status">Išsaugota ✓</span>
+      <?php if ($shareUrl): ?><button type="button" class="vz-link" id="share-toggle" aria-expanded="false">📡 Transliacija ir registracija</button><?php endif; ?>
       <a class="vz-link" href="<?= url('varzybu-rezultatai.php?id=' . (int) $t['id']) ?>" target="_blank" rel="noopener">Viešas puslapis ↗</a>
     </div>
   </div>
@@ -79,6 +124,24 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
     <button role="tab" id="tab-rezultatai" aria-selected="false" aria-controls="v-rezultatai"><span class="tab-n">7</span>Rezultatai</button>
   </nav>
 </header>
+<div class="share-panel" id="share-panel" hidden>
+  <div class="sp-block">
+    <b>📺 Ekranai salėje</b>
+    <p class="muted small">Atidarykite tatamio ekraną antrame monitoriuje ar televizoriuje (naršyklėje, F11 - visas ekranas). Rodoma kova, balai, laikrodis ir kas eina toliau.</p>
+    <div class="sp-row" id="sp-screens"></div>
+  </div>
+  <div class="sp-block">
+    <b>🔗 Nuoroda žiūrovams</b>
+    <p class="muted small">Tėvai ir kiti klubai telefone mato, kas vyksta ant kiekvieno tatamio, kas eina toliau ir rezultatus.</p>
+    <div class="sp-row"><input class="sel sp-url" readonly value="<?= e($shareUrl) ?>" aria-label="Nuoroda žiūrovams"><button type="button" class="btn" data-copy="<?= e($shareUrl) ?>">Kopijuoti</button><a class="btn" href="<?= e($shareUrl) ?>" target="_blank" rel="noopener">Atidaryti ↗</a></div>
+  </div>
+  <div class="sp-block">
+    <b>📝 Registracija kitiems klubams</b>
+    <p class="muted small">Klubo treneris užpildo: vardas, pavardė, gimimo metai, lytis, diržas. Jūs matote juos skirtuke „Dalyviai“ ir pridedate vienu mygtuku.</p>
+    <div class="sp-row"><label class="small"><input type="checkbox" id="reg-open"<?= $regOpen ? ' checked' : '' ?>> Registracija atidaryta</label></div>
+    <div class="sp-row"><input class="sel sp-url" readonly value="<?= e($regUrl) ?>" aria-label="Registracijos nuoroda"><button type="button" class="btn" data-copy="<?= e($regUrl) ?>">Kopijuoti</button><a class="btn" href="<?= e($regUrl) ?>" target="_blank" rel="noopener">Atidaryti ↗</a></div>
+  </div>
+</div>
 <div class="notice" id="conflict" hidden><p>Kitas žmogus ką tik pakeitė šias varžybas. Kad neperrašytumėte jo pakeitimų, <a href="">perkraukite puslapį</a>.</p></div>
 
 <main>
@@ -94,6 +157,7 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
       <select class="sel" id="ppl-new-club" aria-label="Naujo dalyvio klubas"></select>
       <button class="btn" id="ppl-add" type="button">+ Dalyvis</button>
     </div>
+    <div class="panel entries-box" id="entries-box" hidden></div>
     <div class="panel members-pick" id="members-pick" hidden>
       <h2>Karateka nariai <span class="spacer"></span><button class="btn" type="button" id="mp-close">Uždaryti</button></h2>
       <div class="mp-tools">
@@ -157,6 +221,7 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
         <option value="wkf">Olimpinė + paguoda (2 bronzos)</option>
         <option value="bronze">Olimpinė + kova dėl 3 vietos</option>
         <option value="plain">Olimpinė, 2 bronzos be kovos</option>
+        <option value="fukugo">Fukugo (kumite ir kitei pakaitomis)</option>
         <option value="rr">Ratų sistema (visi su visais)</option>
         <option value="score">Balai (teisėjų vertinimas)</option>
       </select></label>
@@ -182,6 +247,7 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
       <label class="small"><span class="disc d-fukugo"></span>Fukugo <input type="number" min="1" max="15" step="0.5" id="m-fukugo"></label>
       <label class="small"><span class="disc d-kihon"></span>Kihon <input type="number" min="1" max="15" step="0.5" id="m-kihon"></label>
       <label class="small"><span class="disc d-enbu"></span>Enbu <input type="number" min="1" max="15" step="0.5" id="m-enbu"></label>
+      <label class="small"><span class="disc d-sumo"></span>Sumo <input type="number" min="1" max="15" step="0.5" id="m-sumo"></label>
       <span class="spacer"></span>
       <button class="btn" id="auto-balance" type="button">Paskirstyti tolygiai</button>
     </div>
