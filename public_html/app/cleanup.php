@@ -26,6 +26,13 @@ function run_cleanup(): void
     } catch (PDOException $ex) {
         // dar neimportuotas db/023
     }
+    // Kitų klubų registracija į varžybas: telefonai ištrinami praėjus mėnesiui po varžybų (vardai ir rezultatai lieka)
+    try {
+        q('UPDATE tournament_entries te JOIN tournaments t ON t.id = te.tournament_id SET te.contact = NULL, te.parent_phone = NULL
+           WHERE COALESCE(t.ends_on, t.starts_on) < CURDATE() - INTERVAL 30 DAY AND (te.contact IS NOT NULL OR te.parent_phone IS NOT NULL)');
+    } catch (PDOException $ex) {
+        // dar neimportuotas db/027
+    }
 }
 
 function maybe_run_cleanup(): void

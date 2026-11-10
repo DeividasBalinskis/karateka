@@ -4,6 +4,27 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.20 - 2026-11-10 (Denio ir Nikos pastabos: balų įrašymas, ekranas su grupėmis, grupės iš tvarkaraščio, registracija su sutikimais)
+**Duomenų bazė:** `db/027_varzybu_registracijos_sutikimai.sql` - įkėlus failus, Valdymas → Šiandien → „Atnaujinkite duomenų bazę“.
+
+Varžybų sistema „Taika“:
+- **Kovos skydelis**: didelį balą galima **paspausti ir įrašyti skaičių** (ne tik +1 / +2 / +3 / −1); **laiką** irgi - paspaudus laikrodį
+  įrašoma pvz. `1:30`, `90` (sekundės) arba `2` (minutės).
+- **Ekranas (televizorius)**: kairėje - **visos to tatamio grupės** iš eilės, dabartinė **padidinta** ir pažymėta „dabar“;
+  dešinėje - **gyvai kas su kuo kovoja** (balai, laikrodis), o be skydelio - dabartinė pora ir kas toliau.
+- **Nuoroda žiūrovams**: prie kiekvieno tatamio - visų grupių sąrašas; paspaudus bet kurią grupę atsidaro jos kovos ir vietos (atsinaujina pačios).
+- **Tvarkaraštis**: paspaudus grupės pavadinimą atsidaro tos grupės lentelė.
+- **Pakeitus gimimo metus, lytį ar diržą** - žmogus pats perkeliamas į tinkamą tos pačios rungties grupę (jei ji dar neprasidėjo);
+  parodoma, kas perkelta, arba kad tinkamos grupės nėra.
+- Dalyviai, **nesutinkantys būti fotografuojami**, pažymėti „be nuotraukų“ (Dalyviuose ir grupės sąraše).
+
+Registracija kitiems klubams (pagal Denį ir Niką):
+- **Vienas klubo laukelis**: renkiesi iš sąrašo arba įrašai savo.
+- **Kontaktinis tel. Nr.** (treneris ar vienas iš tėvų); prie kiekvieno vaiko iki 18 m. - **vieno iš tėvų tel. Nr.** (privalomas).
+- Prie kiekvieno dalyvio - **sutinka / nesutinka** būti fotografuojamas ir filmuojamas.
+- Privalomi varnelės: **sutikimas dėl duomenų naudojimo** ir **susipažinau su privatumo politika**; trumpas tekstas „Asmens duomenų apsauga“.
+- Telefonai **ištrinami praėjus mėnesiui** po varžybų; privatumo politikoje - sakinys apie kitų klubų registraciją.
+
 ## v1.19 - 2026-11-08 (Denio pastabos: renginių lankomumas, XP, varžybų balai, laikrodis, ekranai, registracija)
 **Duomenų bazė:** `db/026_lankomumas_xp_varzybos.sql`. Nuo šios versijos - **be phpMyAdmin**: įkėlus failus, Valdymas → Šiandien →
 „Atnaujinkite duomenų bazę“ (arba Nustatymai → Atsarginės kopijos ir sistema → „Atnaujinti duomenų bazę“). Prieš tai pasidaro kopija.

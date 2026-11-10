@@ -15,12 +15,17 @@ if (get('json')) {
     header('Content-Type: application/json; charset=utf-8');
     header('Cache-Control: no-store');
     $r = tournament_results($t);
+    // Viena grupė (atidarius iš sąrašo): kovos pagal ratus ir vietos
+    if (get('cat') !== '') {
+        $b = $r['brackets'][(string) get('cat')] ?? null;
+        exit(json_encode(['ok' => (bool) $b, 'bracket' => $b], JSON_UNESCAPED_UNICODE));
+    }
     $cats = [];
     foreach ((array) ($r['categories'] ?? []) as $c) {
         if (empty($c['count'])) {
             continue;
         }
-        $cats[] = ['name' => $c['name'], 'disc' => $c['discipline'], 'done' => (int) $c['done'], 'total' => (int) $c['total'], 'finished' => !empty($c['finished']),
+        $cats[] = ['id' => (string) ($c['id'] ?? ''), 'name' => $c['name'], 'disc' => $c['discipline'], 'done' => (int) $c['done'], 'total' => (int) $c['total'], 'finished' => !empty($c['finished']),
                    'places' => array_map(function ($p) { return ['place' => (int) $p['place'], 'name' => varz_public_name($p), 'club' => $p['club']]; }, (array) ($c['places'] ?? []))];
     }
     exit(json_encode(['ok' => true, 'now' => (int) round(microtime(true) * 1000), 'title' => $t['title'], 'areas' => $r['areas'] ?? [],

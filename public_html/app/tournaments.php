@@ -133,13 +133,13 @@ function varz_guess_gender(string $firstName): string
 /** Karateka aktyvūs nariai, kuriuos galima pridėti į varžybas: [{id, name, birth, gender, belt, group}] */
 function varz_club_members(): array
 {
-    $rows = q_all('SELECT m.id, m.first_name, m.last_name, m.birth_date, m.gender, m.belt_level, g.name AS group_name
+    $rows = q_all('SELECT m.id, m.first_name, m.last_name, m.birth_date, m.gender, m.belt_level, m.photo_consent, g.name AS group_name
                    FROM members m LEFT JOIN training_groups g ON g.id = m.group_id
                    WHERE m.status = "active" ORDER BY g.sort_order IS NULL, g.sort_order, m.last_name, m.first_name');
     return array_map(function ($m) {
         return ['id' => (int) $m['id'], 'name' => $m['first_name'] . ' ' . $m['last_name'], 'birth' => (int) substr((string) $m['birth_date'], 0, 4) ?: null,
                 'gender' => $m['gender'] ?: varz_guess_gender($m['first_name']), 'belt' => $m['belt_level'] !== null ? (int) $m['belt_level'] : null,
-                'group' => (string) ($m['group_name'] ?? '')];
+                'group' => (string) ($m['group_name'] ?? ''), 'photo' => (int) $m['photo_consent']];
     }, $rows);
 }
 
@@ -330,7 +330,7 @@ function tournament_live_get(int $id): array
 function tournament_new_entries(int $id): array
 {
     try {
-        return q_all('SELECT id, club, contact, name, birth_year, gender, belt, created_at FROM tournament_entries WHERE tournament_id = ? AND status = "new" ORDER BY club, id', [$id]);
+        return q_all('SELECT * FROM tournament_entries WHERE tournament_id = ? AND status = "new" ORDER BY club, id', [$id]);
     } catch (PDOException $ex) {
         return [];
     }

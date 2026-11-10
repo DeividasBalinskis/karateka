@@ -2,7 +2,7 @@
 // Duomenų bazė (PDO, tik paruošti užklausos sakiniai)
 
 // Naujausias db/ failas, kurio reikia šiai svetainės versijai (pridėjus naują - pakeisti; tai tikrina ir testai)
-const DB_REQUIRED = '026_lankomumas_xp_varzybos.sql';
+const DB_REQUIRED = '027_varzybu_registracijos_sutikimai.sql';
 
 function db(): PDO
 {

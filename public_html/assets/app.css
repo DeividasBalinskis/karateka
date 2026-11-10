@@ -1330,10 +1330,17 @@ span.req-check:hover{transform:none;}
 
 /* ===== Registracija į varžybas kitiems klubams ===== */
 .reg-rows{display:grid; gap:6px;}
-.reg-row{display:grid; grid-template-columns:minmax(0, 2.4fr) 110px 74px minmax(0, 1fr); gap:6px;}
+.reg-row{display:grid; grid-template-columns:minmax(0, 2fr) 104px 98px minmax(0, 1fr) minmax(0, 1.2fr) 156px; gap:6px;}
 .reg-row.reg-head{font-size:0.78rem; font-weight:700; color:var(--muted);}
 .reg-row input, .reg-row select{min-width:0;}
-@media (max-width:600px){ .reg-row{grid-template-columns:1fr 90px; } .reg-row.reg-head span:nth-child(n+3){display:none;} }
+@media (max-width:760px){
+  .reg-rows{gap:12px;}
+  .reg-row{grid-template-columns:1fr 1fr; padding-bottom:10px; border-bottom:1px solid rgba(23,20,15,0.1);}
+  .reg-row > input[name="name[]"]{grid-column:1 / -1;}
+  .reg-row.reg-head{display:none;}
+}
+.reg-privacy{display:grid; gap:8px; padding:14px 16px; border-radius:12px; background:rgba(47,107,90,0.06); border:1px solid rgba(47,107,90,0.18);}
+.reg-privacy p{margin:0;}
 
 /* ===== DB atnaujinimas vienu mygtuku ===== */
 .db-update-box{display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px 20px; border:2px solid #E6C35C; background:#FFF9E8;}

@@ -52,7 +52,8 @@ page_start(t('Privatumo politika'), ['description' => t('Kaip VšĮ Karate Ateit
     <li><strong><?= te('Kiti nariai') ?></strong> <?= te('nemato jūsų kontaktų, gimimo datos, pastabų ar žinučių. Prisijungę nariai mato reitingo Top 5: vardą, pavardės pirmąją raidę ir taškus.') ?></li>
     <li><strong><?= te('Varžybų sistema.') ?></strong> <?= te('Registruojant į varžybas jai perduodame vardą, pavardę, gimimo datą, lytį, diržą ir klubą. Pagal juos parenkama kategorija.
         Varžybų lentelėse ir rezultatuose viešai rodomas dalyvio vardas, pavardė, klubas ir kategorija, kaip įprasta varžybose.
-        Varžybų sistemą prižiūri Deividas Balinskis. Ja gali naudotis ir kiti klubai: kurti ir vesti varžybas, gauti rezultatus.') ?></li>
+        Varžybų sistemą prižiūri Deividas Balinskis. Ja gali naudotis ir kiti klubai: kurti ir vesti varžybas, gauti rezultatus.') ?>
+        <?= te('Kitų klubų dalyvius per registracijos nuorodą užregistruoja jų treneris ar tėvai: vardas, pavardė, gimimo metai, lytis, diržas, klubas, kontaktinis ir vieno iš tėvų telefonas, sutikimas dėl nuotraukų ir video. Telefonai ištrinami praėjus mėnesiui po varžybų.') ?></li>
     <li><strong><?= te('Paslaugų teikėjai.') ?></strong> <?= te('Svetainę ir el. paštą talpina domenai.lt (Lietuva). Narystės sutartys pasirašomos per Edufi. Jie duomenų nenaudoja savo tikslais.
         SMS žinučių kol kas nesiunčiame - pasirinkus SMS teikėją, jis bus nurodytas čia.') ?>
         <?= te('Klubo naujienas, renginius ir pamokas į anglų ir rusų kalbas automatiškai verčia DeepL (Vokietija) - jam perduodamas tik viešas klubo tekstas, ne narių duomenys.') ?></li>

@@ -69,7 +69,9 @@ test('competition: kumite bout panel, live link and screen, club registration, D
   await a.click('#draw-clear');
   await a.locator('.bout-open').first().click();
   check('bout panel open', await a.locator('#bout').isVisible());
-  await a.click('[data-pt="a|3"]');
+  await a.click('[data-pt="a|2"]');
+  await a.fill('[data-sc="a"]', '3');   // balą galima ir įrašyti
+  await a.locator('[data-sc="a"]').dispatchEvent('change');
   await a.click('[data-pt="b|1"]');
   await a.click('#bt-start');
   await a.waitForTimeout(1200);
@@ -79,8 +81,8 @@ test('competition: kumite bout panel, live link and screen, club registration, D
   const share = sql(`SELECT share_token FROM tournaments WHERE id = ${tid}`);
   const v = await login(browser, null, 390, 844);
   await v.goto(`varzybos-gyvai.php?k=${share}`);
-  await v.waitForSelector('.gv-now', { timeout: 10_000 });
-  check('viewer sees live bout', /3/.test(await v.locator('.gv-now').first().innerText()));
+  await v.waitForSelector('.gv-now .gv-board', { timeout: 10_000 });   // kovos švieslentė (be skydelio rodoma tik pora)
+  check('viewer sees live bout', /3/.test(await v.locator('.gv-now:has(.gv-board)').first().innerText()));
   const scr = await login(browser, null, 1280, 720);
   await scr.goto(`varzybos-gyvai.php?k=${share}&ekranas=1&tatami=${sql(`SELECT area_id FROM tournament_live WHERE tournament_id = ${tid} LIMIT 1`)}`);
   await scr.waitForSelector('.scr-score', { timeout: 10_000 });
@@ -99,14 +101,22 @@ test('competition: kumite bout panel, live link and screen, club registration, D
   const reg = sql(`SELECT reg_token FROM tournaments WHERE id = ${tid}`);
   const c = await login(browser, null, 390, 844);
   await c.goto(`varzybos-registracija.php?k=${reg}`);
-  await c.selectOption('#regClub', '__other');
-  await c.fill('input[name=club_other]', 'Testo klubas');
-  await c.fill('input[name=contact]', 'treneris@testas.lt');
+  check('one club field', await c.locator('input[name=club]').count() === 1 && await c.locator('select[name=club]').count() === 0);
+  await c.fill('input[name=club]', 'Testo klubas');
+  await c.fill('input[name=contact]', '+370 600 11122');
   await c.locator('input[name="name[]"]').first().fill('Ona Testaitė');
   await c.locator('input[name="birth[]"]').first().fill('2014');
   await c.locator('select[name="gender[]"]').first().selectOption('F');
+  await c.locator('select[name="photo[]"]').first().selectOption('0');
+  await c.check('input[name=consent_data]');
+  await c.check('input[name=consent_privacy]');
   await nav(c, () => c.click('form.reg-form button[type=submit]'));
-  check('registration stored', sql(`SELECT COUNT(*) FROM tournament_entries WHERE tournament_id = ${tid} AND status = 'new'`) === '1');
+  check('minor without parent phone refused', sql(`SELECT COUNT(*) FROM tournament_entries WHERE tournament_id = ${tid}`) === '0');
+  await c.locator('input[name="phone[]"]').first().fill('+370 611 22333');
+  await c.check('input[name=consent_data]');
+  await c.check('input[name=consent_privacy]');
+  await nav(c, () => c.click('form.reg-form button[type=submit]'));
+  check('registration stored', sql(`SELECT CONCAT(status, '|', parent_phone, '|', photo_ok, '|', consent_at IS NOT NULL) FROM tournament_entries WHERE tournament_id = ${tid}`) === 'new|+370 611 22333|0|1');
   await a.click('#tab-dalyviai');
   await a.click('#en-refresh');
   await a.waitForSelector('#en-add-all');
@@ -114,6 +124,21 @@ test('competition: kumite bout panel, live link and screen, club registration, D
   await a.waitForTimeout(1500);
   check('registration added', sql(`SELECT COUNT(*) FROM tournament_entries WHERE tournament_id = ${tid} AND status = 'added'`) === '1');
   check('registered person in state', /Ona Testaitė/.test(sql(`SELECT state FROM tournaments WHERE id = ${tid}`)));
+  check('no-photo badge', await a.locator('#people-view tr:has(input[value="Ona Testaitė"]) .nophoto').count() === 1);
+
+  // Grupės atidarymas: tvarkaraštyje - jos lentelė; žiūrovams - kovos ir vietos
+  await a.click('#tab-tvarkarastis');
+  await a.locator('[data-open-cat]').first().click();
+  check('schedule opens bracket', await a.locator('#v-lenteles').isVisible());
+  await a.waitForTimeout(1200);
+  await v.goto(`varzybos-gyvai.php?k=${share}`);
+  await v.waitForSelector('.gv-glist button');
+  check('viewer lists all groups, current marked', await v.locator('.gv-glist li.cur').count() >= 1);
+  await v.locator('.gv-glist button').first().click();
+  await v.waitForSelector('.gv-sheet:not([hidden]) .gv-sheet-body p');
+  check('viewer opens group', /dalyv\./.test(await v.locator('.gv-sheet-body').innerText()));
+  await scr.waitForSelector('.scr-glist li');
+  check('screen lists tatami groups', await scr.locator('.scr-glist li').count() >= 2);
 
   // DB atnaujinimas vienu mygtuku: trūkstamo failo nėra - mygtuko nėra; ištrynus žymą - mygtukas ir importas
   await a.goto('admin/kopijos.php');

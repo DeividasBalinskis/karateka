@@ -52,25 +52,51 @@
       '<div class="sp-total">' + (p.tk == null || p.tp == null ? '–' : (p.tk + p.tp).toFixed(1)) + '</div>';
   }
 
+  // Tatamio grupės: visos eilės tvarka, dabartinė (kurios kova vyksta ar eina dabar) - pažymėta
+  function currentCatId(a) {
+    var pick = a && liveFor(a.id);
+    if (pick && pick.d.catId) return pick.d.catId;
+    var c = (a && a.cats || []).find(function (x) { return x.cur; });
+    return c ? c.id : null;
+  }
+  function groupsList(a, cls) {
+    var curId = currentCatId(a);
+    return '<ol class="' + cls + '">' + (a && a.cats || []).map(function (c) {
+      var done = c.total && c.done >= c.total, isCur = c.id === curId;
+      return '<li class="' + (isCur ? 'cur' : '') + (done ? ' done' : '') + '"><button type="button" data-cat="' + esc(c.id) + '" data-title="' + esc(c.name) + '"><span class="sg-time">' + esc(c.start) + '</span>' +
+        '<span class="sg-name"><span class="disc d-' + esc(c.disc) + '"></span>' + esc(c.name) + (isCur ? ' <span class="sg-now">dabar</span>' : '') + '</span>' +
+        '<span class="sg-prog">' + (done ? '✓' : c.done + '/' + c.total) + '</span></button></li>';
+    }).join('') + '</ol>';
+  }
+  // Kas kovoja dabar: kovos skydelis (balai, laikrodis) arba, jei jis neatidarytas, pirmoji laukianti kova
+  function nowPair(a) { var n = upNext(a); return n.length ? n[0] : null; }
+
   // ---------- Tatamio ekranas (televizorius) ----------
   function renderScreen() {
-    var a = area(CFG.area), pick = liveFor(CFG.area), name = a ? a.name : (pick ? pick.d.areaName : 'TATAMIS');
-    if (!pick) {
-      root.innerHTML = '<div class="scr-idle"><div class="scr-area">' + esc(name) + '</div><div class="scr-title">' + esc(CFG.title) + '</div>' +
-        '<h2>Toliau</h2>' + nextList(a, 5, 'scr-next') + (a && a.end ? '<p class="scr-end">Pabaiga apie ' + esc(a.end) + '</p>' : '') + '</div>';
-      return;
+    var a = area(CFG.area), pick = liveFor(CFG.area), name = a ? a.name : (pick ? pick.d.areaName : 'TATAMIS'), stage;
+    if (pick) {
+      var d = pick.d, left = timeLeft(pick), win = d.winner;
+      var side = function (s) {
+        var who = s === 'a' ? d.aka : d.shiro, sc = s === 'a' ? d.sa : d.sb, now = s === 'a' ? d.akaNow : d.shiroNow;
+        return '<div class="scr-side ' + (s === 'a' ? 'aka' : 'shiro') + (win === s ? ' won' : win ? ' lost' : '') + '"><div class="scr-tag">' + (s === 'a' ? 'AKA' : 'SHIRO') + (win === s ? ' · LAIMĖJO' : '') + '</div>' +
+          '<div class="scr-name">' + esc(who.name) + '</div><div class="scr-club">' + esc(who.club) + '</div>' + (now ? '<div class="scr-now">Kovoja: <b>' + esc(now) + '</b></div>' : '') +
+          (d.mode === 'score2' ? '<div class="scr-parts">' + partsHtml(d.parts[s]) + '</div>' : '<div class="scr-score">' + sc + '</div>') + '</div>';
+      };
+      stage = '<div class="scr-top"><span class="live-dot"></span><span><span class="disc d-' + esc(d.disc) + '"></span>' + esc(d.cat) + '</span><span>' + esc(d.round) + '</span>' +
+        (d.bout ? '<span class="scr-pill">Kova ' + esc(d.bout) + '</span>' : '') + (d.to ? '<span class="scr-pill">iki ' + d.to + '</span>' : '') + '</div>' +
+        '<div class="scr-main">' + side('a') + (left !== null && d.mode !== 'score2' ? '<div class="scr-timer' + (left <= 0 ? ' over' : left <= 15000 ? ' last' : '') + '" id="scr-timer">' + fmt(left) + '</div>' : '') + side('b') + '</div>';
+    } else {
+      var m = nowPair(a);
+      stage = m ? '<div class="scr-top"><span class="live-dot"></span><span><span class="disc d-' + esc(m.disc) + '"></span>' + esc(m.cat) + '</span><span>' + (m.no ? m.no + ' · ' : '') + esc(m.title) + '</span></div>' +
+          '<div class="scr-main scr-pair"><div class="scr-side aka"><div class="scr-tag">AKA</div><div class="scr-name">' + esc(m.a) + '</div><div class="scr-club">' + esc(m.ac) + '</div></div>' +
+          (m.b ? '<div class="scr-vs">prieš</div><div class="scr-side shiro"><div class="scr-tag">SHIRO</div><div class="scr-name">' + esc(m.b) + '</div><div class="scr-club">' + esc(m.bc) + '</div></div>' : '') + '</div>'
+        : '<div class="scr-empty"><div class="scr-title">' + esc(CFG.title) + '</div><p>Šiame tatamyje kovų nebeliko.</p></div>';
     }
-    var d = pick.d, left = timeLeft(pick), win = d.winner;
-    var side = function (s) {
-      var who = s === 'a' ? d.aka : d.shiro, sc = s === 'a' ? d.sa : d.sb, now = s === 'a' ? d.akaNow : d.shiroNow;
-      return '<div class="scr-side ' + (s === 'a' ? 'aka' : 'shiro') + (win === s ? ' won' : win ? ' lost' : '') + '"><div class="scr-tag">' + (s === 'a' ? 'AKA' : 'SHIRO') + (win === s ? ' · LAIMĖJO' : '') + '</div>' +
-        '<div class="scr-name">' + esc(who.name) + '</div><div class="scr-club">' + esc(who.club) + '</div>' + (now ? '<div class="scr-now">Kovoja: <b>' + esc(now) + '</b></div>' : '') +
-        (d.mode === 'score2' ? '<div class="scr-parts">' + partsHtml(d.parts[s]) + '</div>' : '<div class="scr-score">' + sc + '</div>') + '</div>';
-    };
-    root.innerHTML = '<div class="scr-bout"><div class="scr-top"><span class="scr-area">' + esc(name) + '</span><span><span class="disc d-' + esc(d.disc) + '"></span>' + esc(d.cat) + '</span><span>' + esc(d.round) + '</span>' +
-      (d.bout ? '<span class="scr-pill">Kova ' + esc(d.bout) + '</span>' : '') + (d.to ? '<span class="scr-pill">iki ' + d.to + '</span>' : '') + '</div>' +
-      '<div class="scr-main">' + side('a') + (left !== null && d.mode !== 'score2' ? '<div class="scr-timer' + (left <= 0 ? ' over' : left <= 15000 ? ' last' : '') + '" id="scr-timer">' + fmt(left) + '</div>' : '') + side('b') + '</div>' +
-      '<div class="scr-foot"><b>Toliau:</b> ' + (upNext(a).slice(0, 2).map(function (m) { return esc(m.a) + (m.b ? ' – ' + esc(m.b) : '') + ' <span class="muted">(' + esc(m.cat) + ')</span>'; }).join(' · ') || '—') + '</div></div>';
+    var next = upNext(a).slice(pick ? 0 : 1, (pick ? 0 : 1) + 3);
+    root.innerHTML = '<div class="scr2"><aside class="scr-groups"><div class="scr-area">' + esc(name) + '</div>' + groupsList(a, 'scr-glist') +
+      (a && a.end ? '<p class="scr-end">Pabaiga apie ' + esc(a.end) + '</p>' : '') + '</aside>' +
+      '<section class="scr-stage">' + stage + '<div class="scr-foot"><b>Toliau:</b> ' + (next.map(function (x) { return esc(x.a) + (x.b ? ' – ' + esc(x.b) : '') + ' <span class="muted">(' + esc(x.cat) + ')</span>'; }).join(' · ') || '—') + '</div></section></div>';
+    var cur = root.querySelector('.scr-glist .cur'); if (cur) cur.scrollIntoView({ block: 'center' });
   }
 
   // ---------- Žiūrovams (telefone) ----------
@@ -85,13 +111,17 @@
           (left !== null && d.mode !== 'score2' ? '<span class="gv-t" data-timer="' + a.id + '">' + fmt(left) + '</span>' : '<span class="gv-t">:</span>') +
           '<b class="gv-s">' + (d.mode === 'score2' ? (d.parts.b.tk != null && d.parts.b.tp != null ? (d.parts.b.tk + d.parts.b.tp).toFixed(1) : '–') : d.sb) + '</b><span class="gv-n">' + esc(d.shiro.name) + '</span></div>' +
           (d.winner ? '<div class="gv-win">Laimėjo ' + esc(d.winner === 'a' ? d.aka.name : d.shiro.name) + '</div>' : '') + '</div>';
+      } else {
+        var m = nowPair(a);
+        if (m) now = '<div class="gv-now"><div class="gv-now-top"><span class="live-dot"></span> Dabar · ' + esc(m.cat) + ' · ' + (m.no ? m.no + ' · ' : '') + esc(m.title) + '</div>' +
+          '<div class="gv-pair"><b class="aka-t">' + esc(m.a) + '</b>' + (m.b ? ' <span>prieš</span> <b>' + esc(m.b) + '</b>' : '') + '</div></div>';
       }
+      var next = upNext(a).slice(pick ? 0 : 1, (pick ? 0 : 1) + 3);
       return '<section class="panel gv-area"><h2>' + esc(a.name) + '<span class="spacer"></span><span class="muted small">pabaiga apie ' + esc(a.end) + '</span></h2>' + now +
-        '<div class="gv-sub">Toliau</div>' + nextList(a, 4, 'gv-next') +
-        '<details class="gv-cats"><summary>Kategorijos (' + a.cats.length + ')</summary><ul>' + a.cats.map(function (c) {
-          var pct = c.total ? Math.round(c.done / c.total * 100) : 0;
-          return '<li><span class="gv-time">' + esc(c.start) + '</span><span><span class="disc d-' + esc(c.disc) + '"></span>' + esc(c.name) + '</span><span class="gv-prog' + (pct === 100 ? ' done' : '') + '"><i style="width:' + pct + '%"></i></span></li>';
-        }).join('') + '</ul></details></section>';
+        '<div class="gv-sub">Grupės (paspauskite - atsidarys)</div>' + groupsList(a, 'gv-glist') +
+        (next.length ? '<div class="gv-sub">Toliau</div><ol class="gv-next">' + next.map(function (x) {
+          return '<li><span class="nx-cat"><span class="disc d-' + esc(x.disc) + '"></span>' + esc(x.cat) + ' · ' + (x.no ? x.no + ' · ' : '') + esc(x.title) + '</span><span class="nx-who"><b class="aka-t">' + esc(x.a) + '</b>' + (x.b ? ' <span class="muted">prieš</span> <b>' + esc(x.b) + '</b>' : '') + '</span></li>';
+        }).join('') + '</ol>' : '') + '</section>';
     }).join('') + '</div>';
     var medals = (data && data.medals) || [], fin = ((data && data.cats) || []).filter(function (c) { return c.places.length; });
     html += '<section class="panel gv-res"><h2>Klubų medaliai</h2>' + (medals.length ? '<table><thead><tr><th class="num">#</th><th>Klubas</th><th class="num">🥇</th><th class="num">🥈</th><th class="num">🥉</th></tr></thead><tbody>' +
@@ -99,16 +129,53 @@
       : '<p class="muted" style="padding:10px 14px;">Medalių dar nėra.</p>') + '</section>';
     if (fin.length) {
       html += '<section class="panel gv-res"><h2>Prizininkai</h2><div class="res-cats">' + fin.map(function (c) {
-        return '<div class="res-cat"><div class="res-cat-top"><strong><span class="disc d-' + esc(c.disc) + '"></span>' + esc(c.name) + '</strong>' + (c.finished ? '<span class="pill ok">Baigta</span>' : '') + '</div>' +
+        return '<div class="res-cat"><div class="res-cat-top"><button type="button" class="gv-catlink" data-cat="' + esc(c.id) + '" data-title="' + esc(c.name) + '"><span class="disc d-' + esc(c.disc) + '"></span>' + esc(c.name) + '</button>' + (c.finished ? '<span class="pill ok">Baigta</span>' : '') + '</div>' +
           c.places.map(function (p) { return '<div class="rp"><span class="medal ' + ['', 'g', 's', 'b'][p.place] + '">' + p.place + '</span><span>' + esc(p.name) + ' <span class="club">' + esc(p.club) + '</span></span></div>'; }).join('') + '</div>';
       }).join('') + '</div></section>';
     }
     html += '<p class="hint">Atsinaujina pats. Vaikų ir jaunių iki 18 m. rodomas vardas ir pavardės pirmoji raidė.' + (failed > 2 ? ' <b>Nėra ryšio - bandoma iš naujo…</b>' : '') + '</p>';
-    // Neperpiešiama, kol žmogus skaito išskleistą kategorijų sąrašą
-    var open = [].slice.call(root.querySelectorAll('details.gv-cats')).map(function (x) { return x.open; });
     root.innerHTML = html;
-    root.querySelectorAll('details.gv-cats').forEach(function (x, i) { if (open[i]) x.open = true; });
   }
+
+  // ---------- Grupės atidarymas: kovos pagal ratus ir vietos ----------
+  var sheet = document.createElement('div'), openCat = null, sheetTimer = null;
+  sheet.className = 'gv-sheet'; sheet.hidden = true; sheet.setAttribute('role', 'dialog'); sheet.setAttribute('aria-modal', 'true');
+  document.body.appendChild(sheet);
+  function loadCat(id) {
+    fetch(CFG.json + '&cat=' + encodeURIComponent(id), { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (d) {
+      if (openCat !== id) return;
+      var b = d.bracket;
+      if (!b) { sheet.querySelector('.gv-sheet-body').innerHTML = '<p class="muted">Grupės duomenų dar nėra.</p>'; return; }
+      var html = '<p class="muted small">' + esc(b.sys) + ' · ' + b.count + ' dalyv.</p>';
+      if (b.places && b.places.length) html += '<div class="gv-places">' + b.places.map(function (p) { return '<div class="rp"><span class="medal ' + ['', 'g', 's', 'b'][p.p] + '">' + p.p + '</span><span>' + esc(p.n) + ' <span class="club">' + esc(p.c) + '</span></span></div>'; }).join('') + '</div>';
+      if (b.people) html += '<p class="muted small">Lentelė dar nesudaryta. Dalyviai:</p><ul class="gv-people">' + b.people.map(function (p) { return '<li>' + esc(p.n) + ' <span class="muted">' + esc(p.c) + '</span></li>'; }).join('') + '</ul>';
+      (b.groups || []).forEach(function (g) {
+        html += '<h3>' + esc(g.t) + '</h3>';
+        if (g.score) html += '<ol class="gv-score">' + g.rows.map(function (r) { return '<li><span>' + esc(r.n) + ' <span class="muted">' + esc(r.c) + '</span></span><b>' + esc(r.s || '–') + '</b></li>'; }).join('') + '</ol>';
+        else html += '<div class="gv-matches">' + g.matches.map(function (m) {
+          return '<div class="gv-m' + (m.w ? ' done' : '') + '"><span class="gv-mno">' + esc(m.no) + '</span>' +
+            '<span class="gv-mp' + (m.w === 'a' ? ' won' : '') + '"><b class="aka-t">' + esc(m.a || '…') + '</b> <small>' + esc(m.ac) + '</small></span>' +
+            '<span class="gv-ms">' + esc(m.s || (m.w ? '–' : 'vs')) + '</span>' +
+            '<span class="gv-mp' + (m.w === 'b' ? ' won' : '') + '"><b>' + esc(m.b || '…') + '</b> <small>' + esc(m.bc) + '</small></span></div>';
+        }).join('') + '</div>';
+      });
+      sheet.querySelector('.gv-sheet-body').innerHTML = html;
+    }).catch(function () {});
+  }
+  function openSheet(id, title) {
+    openCat = id;
+    sheet.innerHTML = '<div class="gv-sheet-card"><div class="gv-sheet-top"><b>' + esc(title || '') + '</b><button type="button" class="btn" data-close>✕</button></div><div class="gv-sheet-body"><p class="muted">Kraunama…</p></div></div>';
+    sheet.hidden = false; document.body.style.overflow = 'hidden';
+    loadCat(id);
+    clearInterval(sheetTimer); sheetTimer = setInterval(function () { if (openCat) loadCat(openCat); }, 10000);
+  }
+  function closeSheet() { openCat = null; sheet.hidden = true; document.body.style.overflow = ''; clearInterval(sheetTimer); }
+  sheet.addEventListener('click', function (e) { if (e.target === sheet || e.target.closest('[data-close]')) closeSheet(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && openCat) closeSheet(); });
+  root.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-cat]'); if (!b || CFG.screen) return;
+    openSheet(b.dataset.cat, b.dataset.title);
+  });
 
   function render() { if (!data && !Object.keys(local).length) return; if (CFG.screen) renderScreen(); else renderViewer(); }
   // Laikrodis tiksi tarp atnaujinimų
