@@ -194,9 +194,9 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
     <div class="vz-top-right">
       <span class="save-state ok" id="save-state" role="status">Išsaugota ✓</span>
       <select class="vz-link vz-theme" id="theme-pick" aria-label="Dizaino tema" title="Dizaino tema"><?php foreach (VARZ_THEMES as $k => $l): ?><option value="<?= $k ?>"<?= varz_ui()['theme'] === $k ? ' selected' : '' ?>><?= e($l) ?></option><?php endforeach; ?></select>
-      <button type="button" class="vz-link" id="hist-toggle" aria-expanded="false" title="Atkurti, kaip buvo anksčiau">⟲ Istorija</button>
-      <?php if ($shareUrl): ?><button type="button" class="vz-link" id="share-toggle" aria-expanded="false">📡 Transliacija ir registracija</button><?php endif; ?>
-      <a class="vz-link" href="<?= url('varzybu-rezultatai.php?id=' . (int) $t['id']) ?>" target="_blank" rel="noopener">Viešas puslapis ↗</a>
+      <button type="button" class="vz-link" id="hist-toggle" aria-expanded="false" title="Atkurti, kaip buvo anksčiau">⟲<span class="hide-sm"> Istorija</span></button>
+      <?php if ($shareUrl): ?><button type="button" class="vz-link" id="share-toggle" aria-expanded="false" title="Transliacija, ekranai, apdovanojimai, registracija">📡<span class="hide-sm"> Transliacija ir registracija</span></button><?php endif; ?>
+      <a class="vz-link" href="<?= url('varzybu-rezultatai.php?id=' . (int) $t['id']) ?>" target="_blank" rel="noopener" title="Viešas rezultatų puslapis"><span class="hide-sm">Viešas puslapis </span>↗</a>
     </div>
   </div>
   <nav class="tabs" role="tablist" aria-label="Dalys">
@@ -381,7 +381,7 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
         <div class="run-title"><b id="run-name"></b><span class="muted small" id="run-meta"></span></div>
         <span class="spacer"></span>
         <div class="seg run-views" role="group" aria-label="Vaizdas"><button type="button" class="seg-btn" data-runview="lines" title="Lentelė su linijomis">Lentelė</button><button type="button" class="seg-btn" data-runview="simple" title="Kas kovoja dabar ir kas ruošiasi">Paprastas</button></div>
-        <?php if (!get('langas')): ?><button class="btn" type="button" id="run-detach" title="Atidaryti atskirame lange (pvz. kitame ekrane); tvarkaraštyje ši rungtis bus pilka">Atkabinti ↗</button><?php else: ?><span id="run-detach" hidden></span><?php endif; ?>
+        <?php if (!get('langas')): ?><button class="btn" type="button" id="run-pin" title="Prisegti mažą langelį ekrane - matysite ir kituose skirtukuose">📌 Prisegti</button><button class="btn" type="button" id="run-detach" title="Atidaryti atskirame lange (pvz. kitame ekrane); tvarkaraštyje ši rungtis bus pilka">Atkabinti ↗</button><?php else: ?><span id="run-detach" hidden></span><span id="run-pin" hidden></span><?php endif; ?>
         <button class="btn" type="button" id="run-prev">← Ankstesnė</button>
         <button class="btn btn-primary" type="button" id="run-next">Toliau →</button>
       </div>
@@ -397,7 +397,7 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
         <option value="score">Balai (teisėjų vertinimas)</option>
       </select></label>
       <button class="btn btn-primary" id="draw-new" type="button">Burti iš naujo</button>
-      <button class="btn" id="draw-swap" type="button" aria-pressed="false">Sukeisti dalyvius</button>
+      <button class="btn" id="draw-swap" type="button" aria-pressed="false" title="Tempkite vardą ant kito - apsikeis vietomis">⇄ Keisti vietas</button>
       <button class="btn" id="draw-lock" type="button" aria-pressed="false">Užrakinti</button>
       <button class="btn" id="draw-undo" type="button">Atšaukti</button>
       <span class="spacer"></span>

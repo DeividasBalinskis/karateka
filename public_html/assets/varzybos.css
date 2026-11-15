@@ -183,7 +183,15 @@ tr.dragging, .pool-item.dragging { opacity: .45; }
 .m-score::placeholder { color: #B4BBC6; font-weight: 500; }
 .match.is-done { border-color: #BFE3CD; }
 .match.is-bye { opacity: .6; }
-.slot.dnd button[draggable="true"] { cursor: grab; }
+.slot.dnd button[data-drag-slot] { cursor: grab; }
+.swap-mode .slot.dnd button[data-drag-slot], .ord-grip { touch-action: none; }   /* pirštu tempiama tik keitimo režime ir už rankenėlės */
+.swap-mode .slot.dnd { box-shadow: inset 0 0 0 1px var(--accent-soft); }
+.ord-grip { cursor: grab; color: var(--muted); margin-right: 6px; padding: 2px 4px; border-radius: 6px; user-select: none; }
+.ord-grip:hover { background: var(--surface-2); color: var(--ink); }
+tr.drop td { box-shadow: inset 0 2px 0 var(--accent); }
+tr.dragging { opacity: .4; }
+.drag-ghost { position: fixed; z-index: 10000; pointer-events: none; transform: translate(-50%, -130%); background: var(--ink); color: var(--bg); font-weight: 700; font-size: .9rem; padding: 6px 12px; border-radius: 999px; box-shadow: 0 10px 24px rgba(0, 0, 0, .25); white-space: nowrap; }
+body.is-dragging-name { cursor: grabbing; user-select: none; }
 .slot.drop { outline: 2px dashed var(--accent); outline-offset: -2px; }
 .slot.dragging { opacity: .4; }
 .rr-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(320px, 440px); gap: 16px; align-items: start; }
@@ -280,8 +288,36 @@ tr.dragging, .pool-item.dragging { opacity: .45; }
   .cat-list { max-height: 260px; }
   .vz-brand { border-right: 0; padding-right: 0; }
   .vz-title { flex-basis: 100%; order: 3; }
-  .vz-top-right { margin-left: auto; }
+  .vz-top-right { margin-left: auto; flex-wrap: wrap; gap: 6px; justify-content: flex-end; }
   main { padding: 14px 12px 60px; }
+}
+/* Telefonas: viršuje - tik ženkliukai, nieko neišeina už ekrano; dalyvių lentelė - kortelėmis */
+@media (max-width: 700px) {
+  body.vz { overflow-x: hidden; }
+  .hide-sm { display: none; }
+  .vz-top-row { padding: 10px 12px 6px; }
+  .vz-top-right { width: 100%; margin-left: 0; justify-content: flex-start; }
+  .vz-top-right .vz-link { padding: 6px 9px; font-size: .84rem; }
+  .vz-top-right .vz-theme { max-width: 120px; }
+  .toolbar { gap: 8px; }
+  .toolbar > .sel, .toolbar > input.sel { flex: 1 1 140px; min-width: 0; }
+  .ppl-table thead { display: none; }
+  .ppl-table, .ppl-table tbody { display: block; }
+  .ppl-table tr { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 10px; padding: 12px; border-bottom: 1px solid var(--line); }
+  .ppl-table td { display: block; padding: 0; border: 0; text-align: left; }
+  .ppl-table td:first-child, .ppl-table td.cats-cell { grid-column: 1 / -1; }
+  .ppl-table td[data-label]::before { content: attr(data-label); display: block; font-size: .7rem; font-weight: 600; color: var(--muted); margin-bottom: 2px; }
+  .ppl-table td .sel, .ppl-table td input.inline { width: 100%; }
+  .ppl-table td.cnt-cell { display: none; }
+  .ppl-table td.del-cell { position: absolute; right: 12px; }
+  .ppl-table tr { position: relative; }
+  .ppl-table td:first-child .name-cell { padding-right: 36px; }
+  .ppl-table td.belt-cell { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+  .ppl-table td.belt-cell::before { flex-basis: 100%; }
+  .ppl-table td.belt-cell .sel { flex: 1; min-width: 0; width: auto; }
+  .run-strip { flex-wrap: wrap; }
+  .rs-area.seg { max-width: 100%; overflow-x: auto; flex-wrap: nowrap; }
+  .run-head { flex-wrap: wrap; }
 }
 @media print {
   body.vz { background: #fff; font-size: 12px; }
@@ -578,10 +614,11 @@ tr.club-contacts > td { background: var(--surface-2); padding: 12px 14px; }
 .varz-prog i { position: absolute; inset: 0 auto 0 0; background: linear-gradient(90deg, var(--green), #34B47A); opacity: .9; }
 .varz-prog span { position: relative; }
 .varz-actions { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: auto; padding-top: 8px; }
-.varz-more { position: relative; margin-left: auto; }
+.varz-more { margin-left: auto; }
+.varz-more[open] { flex-basis: 100%; display: grid; justify-items: end; }
 .varz-more > summary { list-style: none; }
 .varz-more > summary::-webkit-details-marker { display: none; }
-.varz-more-body { position: absolute; right: 0; top: calc(100% + 6px); z-index: 30; width: min(400px, calc(100vw - 40px)); padding: 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 18px 44px rgba(16, 24, 40, .22); display: grid; gap: 12px; }
+.varz-more-body { position: static; justify-self: stretch; margin-top: 8px; padding: 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 18px 44px rgba(16, 24, 40, .22); display: grid; gap: 12px; }
 .varz-form { display: grid; gap: 10px; }
 .varz-form label { display: grid; gap: 4px; font-size: .85rem; font-weight: 600; color: var(--muted); }
 .varz-form label.small { display: flex; align-items: center; gap: 6px; }
@@ -980,3 +1017,19 @@ body.vz[data-theme="volcano"] {
 .rs-area.seg { flex-wrap: wrap; }
 .rs-area .seg-btn { padding: 5px 11px; font-size: .82rem; }
 #ov-sort .seg-btn { padding: 4px 11px; font-size: .82rem; }
+
+/* ---------- Prisegtas kategorijos langelis ---------- */
+.pins { position: fixed; inset: 0; pointer-events: none; z-index: 900; }
+.pin-win { position: fixed; pointer-events: auto; background: var(--surface); color: var(--ink); border: 1px solid var(--line-2); border-radius: 14px; box-shadow: 0 16px 40px rgba(16, 24, 40, .28); overflow: hidden; }
+.pin-win.moving { opacity: .9; box-shadow: 0 22px 50px rgba(16, 24, 40, .35); }
+.pin-head { display: flex; align-items: center; gap: 6px; padding: 8px 8px 8px 12px; background: var(--ink); color: var(--bg); cursor: grab; touch-action: none; user-select: none; }
+.pin-head b { flex: 1; min-width: 0; font-size: .85rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pin-head button { border: 0; background: rgba(127, 127, 127, .25); color: inherit; border-radius: 7px; width: 26px; height: 26px; cursor: pointer; font-size: .85rem; line-height: 1; flex-shrink: 0; }
+.pin-head button:hover { background: rgba(127, 127, 127, .45); }
+.pin-body { padding: 10px 12px 12px; display: grid; gap: 7px; font-size: .88rem; }
+.pin-meta { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; color: var(--muted); font-size: .8rem; }
+.pin-now b { font-size: .95rem; }
+.pin-places { display: grid; gap: 4px; }
+.pin-win.min .pin-head { border-radius: 14px; }
+body.pin-drop::after { content: "📌 Paleiskite - langelis bus prisegtas čia"; position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 8px 16px; border-radius: 999px; font-weight: 700; z-index: 1000; pointer-events: none; }
+@media print { .pins { display: none; } }

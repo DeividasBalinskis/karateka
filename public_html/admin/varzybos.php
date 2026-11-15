@@ -161,7 +161,6 @@ varz_html_head(t('Varžybos'), 'vz-home');
       <div class="vz-top-right">
         <form method="post"><?= csrf_field() ?><input type="hidden" name="action" value="test">
           <button class="vz-link" type="submit"><?= te('🎲 Sukurti test varžybas') ?></button></form>
-        <a class="btn btn-primary" href="#nauja" onclick="document.getElementById('nauja').open = true;"><?= te('+ Naujos varžybos') ?></a>
       </div>
     <?php endif; ?>
   </div>
