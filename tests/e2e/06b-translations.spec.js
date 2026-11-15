@@ -35,8 +35,8 @@ test('language switch, manual content translations, Denis bio', async ({ browser
   const ru = await login(browser, null, 1280, 900, undefined, 'ru');
   await ru.goto(`naujienos.php?id=${newsId}`);
   check('news title in Russian', (await ru.locator('h1').first().textContent()).trim() === 'Переведённый заголовок');
-  await ru.click('.lang-switch summary');
-  await nav(ru, () => ru.click('.lang-menu a[lang=lt]'));
+  check('all languages visible at once', await ru.locator('.lang-switch a').count() === 3 && /RU/.test(await ru.locator('.lang-switch a.active').innerText()));
+  await nav(ru, () => ru.click('.lang-switch a[lang=lt]'));
   check('switched back to Lithuanian', (await ru.locator('h1').first().textContent()).trim() === title && ru.url().includes('naujienos.php'));
 
   // Pakeitus lietuvišką tekstą, senas vertimas nebetinka

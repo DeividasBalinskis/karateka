@@ -20,13 +20,14 @@ test('my tatami, next group, send to awards, awards tablet finishes the age grou
   const allAreas = await a.locator('#sched .area').count();
   await a.click('#area-pick [data-my-area="1"]');
   check('only my tatami shown', await a.locator('#sched .area').count() === 1 && allAreas > 1, String(allAreas));
-  await a.click('#area-pick [data-view-area="2"]');
-  check('peek another tatami', (await a.locator('#sched .area .name').inputValue()) === '2 TATAMIS');
-  await a.click('#area-pick [data-view-area=""]');
+  check('one tatami control, no duplicates', await a.locator('#area-seg .seg-btn').count() === allAreas + 1 && await a.locator('#area-pick').isHidden() && await a.locator('select#my-area').count() === 0);
+  await a.click('#area-seg [data-my-area="2"]');
+  check('look at another tatami', (await a.locator('#sched .area .name').inputValue()) === '2 TATAMIS');
+  await a.click('#area-seg [data-my-area="1"]');
   check('back to mine', (await a.locator('#sched .area .name').inputValue()) === '1 TATAMIS');
   await a.reload();
   if (await a.locator('#run').isVisible()) await a.click('#run-back');
-  check('remembered on this device', await a.locator('#sched .area').count() === 1 && !(await a.locator('#area-pick').evaluate(x => x.classList.contains('ask'))));
+  check('remembered on this device', await a.locator('#sched .area').count() === 1 && await a.locator('#area-pick').isHidden());
 
   // „▶ Dabar: …“ atidaro dabartinę grupę; apačioje - visos tatamio grupės
   await a.click('[data-start-run="1"]');
@@ -89,7 +90,7 @@ test('kata scores: auto decimal, kata per round, final = semi + final; kumite ti
   await a.click('#tab-kategorijos');
 
   // Rikiavimas: didėjančia / mažėjančia
-  await a.selectOption('#ov-sort', 'count');
+  await a.click('#ov-sort [data-sort="count"]');
   const counts = async () => a.$$eval('.ov-col', cols => cols.map(c => Array.from(c.querySelectorAll('[data-ov-open]')).map(b => +b.textContent.replace(/\D/g, ''))));
   const desc = await counts();
   await a.click('#ov-dir');

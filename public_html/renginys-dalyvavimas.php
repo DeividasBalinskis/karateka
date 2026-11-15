@@ -44,7 +44,7 @@ if ($status === 'going' && date('Y-m-d') > event_deadline($ev) && ($current['sta
 set_participation($eventId, $memberId, $status, null, $status === 'going' ? $role : null);
 if ($ev['type'] === 'exam') {
     if ($status === 'going') {
-        notify_admins('exam_registration', 'Užsiregistravo į egzaminą: ' . $who, $ev['title'] . ' · ' . fmt_date($ev['starts_on'], true)
+        notify_staff('exam_registration', 'Užsiregistravo į egzaminą: ' . $who, $ev['title'] . ' · ' . fmt_date($ev['starts_on'], true)
             . ($m['belt_level'] !== null ? ' · dabar ' . BELTS[(int) $m['belt_level']][0] : ''), 'admin/renginio-dalyviai.php?id=' . $eventId, $memberId, $eventId);
     } else {
         notifications_done('exam_registration', $eventId, $memberId);

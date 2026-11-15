@@ -3,10 +3,22 @@
 require __DIR__ . '/app/bootstrap.php';
 
 $a = require_login();
+// Iššokantys pranešimai (assets/notify-popup.js): naujausi neperskaityti - JSON
+if (!is_post() && get('naujausi') !== '') {
+    header('Content-Type: application/json; charset=utf-8');
+    header('Cache-Control: no-store');
+    exit(json_encode(['ok' => true, 'items' => is_staff($a) ? notifications_popup((int) $a['id']) : []], JSON_UNESCAPED_UNICODE));
+}
 if (!is_post()) {
     redirect(is_staff($a) ? 'admin/' : 'paskyra.php');
 }
 csrf_check();
+// „Supratau“ iš iššokusio langelio - be perkrovimo
+if (post('ajax') === '1') {
+    header('Content-Type: application/json; charset=utf-8');
+    notification_mark((int) post('id'), (int) $a['id'], false);
+    exit(json_encode(['ok' => true]));
+}
 
 $back = post('back');
 if (!preg_match('~^(admin/)?[\w-]*(\.php)?(\?[\w=&%.\-]*)?(#[\w-]*)?$~', $back) || $back === '') {

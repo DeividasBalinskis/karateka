@@ -517,7 +517,12 @@
   });
   document.getElementById('ov-search').addEventListener('input', function (e) { ovQuery = e.target.value.trim().toLowerCase(); renderOverview(); });
   document.getElementById('ov-problems').addEventListener('change', function (e) { ovProblems = e.target.checked; renderOverview(); });
-  document.getElementById('ov-sort').addEventListener('change', function (e) { ovSort = e.target.value; renderOvDir(); renderOverview(); });
+  document.getElementById('ov-sort').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-sort]'); if (!b) return;
+    ovSort = b.dataset.sort;
+    this.querySelectorAll('[data-sort]').forEach(function (x) { x.classList.toggle('on', x === b); x.setAttribute('aria-pressed', x === b); });
+    renderOvDir(); renderOverview();
+  });
   document.getElementById('ov-dir').addEventListener('click', function () { if (!OV_SORT[ovSort]) return; ovDir[ovSort] = -ovDir[ovSort]; renderOvDir(); renderOverview(); });
   ovBox.addEventListener('click', function (e) {
     var t = e.target.closest('button'); if (!t) return;
@@ -786,6 +791,13 @@
     S.clubInfo[k] = S.clubInfo[k] || {};
     S.clubInfo[k][f] = e.target.value.trim();
     save();
+  });
+  // Kontaktų Excel - pirmiausia išsaugoma, kad faile būtų ką tik įrašyti kontaktai
+  document.getElementById('clubs-xlsx').addEventListener('click', function (e) {
+    if (!dirty && !saving) return;
+    e.preventDefault(); var href = this.href; flush();
+    var wait = setInterval(function () { if (!dirty && !saving) { clearInterval(wait); location.href = href; } }, 200);
+    setTimeout(function () { clearInterval(wait); location.href = href; }, 4000);
   });
   document.getElementById('club-add').addEventListener('click', function () {
     var inp = document.getElementById('club-new-name'), n = inp.value.trim(); if (!n) { inp.focus(); return; }
@@ -1682,39 +1694,26 @@
   }
   setInterval(loadAwards, 10000);
 
-  // ---------- Mano tatamis: šiame kompiuteryje (planšetėje) rodomas tik pasirinktas tatamis, kitą galima pažiūrėti ----------
-  var myArea = null, viewArea = null;
+  // ---------- Mano tatamis: šiame kompiuteryje (planšetėje) rodomas tik pasirinktas tatamis; kitą pažiūrėti - vienu paspaudimu ----------
+  var myArea = null;
   try { myArea = localStorage.getItem(KEY + '-myarea'); } catch (e) {}
   function areaById(id) { return S.areas.find(function (a) { return String(a.id) === String(id); }) || null; }
-  function shownAreas() {
-    var id = viewArea || myArea;
-    if (!id || id === 'all') return S.areas;
-    var a = areaById(id); return a ? [a] : S.areas;
-  }
-  function setMyArea(v) { myArea = v; viewArea = null; try { localStorage.setItem(KEY + '-myarea', v); } catch (e) {} render(); }
+  function shownAreas() { var a = areaById(myArea); return a ? [a] : S.areas; }
+  function setMyArea(v) { myArea = v; try { localStorage.setItem(KEY + '-myarea', v); } catch (e) {} render(); }
   function renderAreaPick() {
-    var sel = document.getElementById('my-area'), box = document.getElementById('area-pick');
-    sel.innerHTML = '<option value="all">Visi tatamiai</option>' + S.areas.map(function (a) { return '<option value="' + a.id + '">' + esc(a.name) + '</option>'; }).join('');
-    sel.value = areaById(myArea) ? String(myArea) : 'all';
-    sel.parentNode.hidden = S.areas.length < 2;
-    var mine = areaById(myArea), ask = S.areas.length > 1 && !myArea, view = viewArea === 'all' ? null : areaById(viewArea);
-    if (ask) {
-      box.innerHTML = '<b>Prie kurio tatamio dirbate?</b> <span class="muted small">Šiame kompiuteryje bus rodomas tik jis - kitą galėsite pažiūrėti bet kada.</span><div class="ap-btns">' +
-        S.areas.map(function (a) { return '<button type="button" class="btn btn-primary" data-my-area="' + a.id + '">' + esc(a.name) + '</button>'; }).join('') +
-        '<button type="button" class="btn" data-my-area="all">Visi tatamiai (vyr. sekretoriatas)</button></div>';
-    } else if (mine && S.areas.length > 1) {
-      box.innerHTML = 'Rodomas: <b>' + (viewArea === 'all' ? 'visi tatamiai' : esc((view || mine).name)) + '</b> ' + (viewArea ? '<button type="button" class="btn btn-sm btn-primary" data-view-area="">← Mano: ' + esc(mine.name) + '</button>' : '<span class="muted small">(mano tatamis)</span>') +
-        '<span class="ap-peek">Pažiūrėti: ' + S.areas.filter(function (a) { return a !== mine && a !== view; }).map(function (a) { return '<button type="button" class="btn btn-sm" data-view-area="' + a.id + '">👁 ' + esc(a.name) + '</button>'; }).join('') +
-        (viewArea !== 'all' ? '<button type="button" class="btn btn-sm" data-view-area="all">👁 Visi</button>' : '') + '</span>';
-    }
-    box.hidden = !(ask || (mine && S.areas.length > 1));
+    var seg = document.getElementById('area-seg'), box = document.getElementById('area-pick'), cur = areaById(myArea) ? String(myArea) : 'all';
+    var opts = S.areas.map(function (a) { return [String(a.id), a.name]; }).concat([['all', 'Visi']]);
+    seg.hidden = S.areas.length < 2;
+    seg.innerHTML = opts.map(function (o) { return '<button type="button" class="seg-btn' + (o[0] === cur ? ' on' : '') + '" aria-pressed="' + (o[0] === cur) + '" data-my-area="' + o[0] + '">' + esc(o[1]) + '</button>'; }).join('');
+    // Pirmą kartą šiame kompiuteryje - paklausiama (dideli mygtukai)
+    var ask = S.areas.length > 1 && !myArea;
+    box.hidden = !ask;
     box.classList.toggle('ask', ask);
+    if (ask) box.innerHTML = '<b>Prie kurio tatamio dirbate?</b> <span class="muted small">Šiame kompiuteryje bus rodomas tik jis. Kitą pažiūrėti - viršuje, vienu paspaudimu.</span><div class="ap-btns">' +
+      opts.map(function (o) { return '<button type="button" class="btn' + (o[0] === 'all' ? '' : ' btn-primary') + '" data-my-area="' + o[0] + '">' + (o[0] === 'all' ? 'Visi tatamiai (vyr. sekretoriatas)' : esc(o[1])) + '</button>'; }).join('') + '</div>';
   }
-  document.getElementById('my-area').addEventListener('change', function (e) { setMyArea(e.target.value); });
-  document.getElementById('area-pick').addEventListener('click', function (e) {
-    var b = e.target.closest('button'); if (!b) return;
-    if (b.dataset.myArea !== undefined) setMyArea(b.dataset.myArea);
-    else if (b.dataset.viewArea !== undefined) { viewArea = b.dataset.viewArea || null; render(); }
+  ['area-seg', 'area-pick'].forEach(function (id) {
+    document.getElementById(id).addEventListener('click', function (e) { var b = e.target.closest('[data-my-area]'); if (b) setMyArea(b.dataset.myArea); });
   });
 
   // ---------- Sekanti grupė: pirma nebaigta po šios tame pačiame tatamyje ----------
@@ -1879,7 +1878,8 @@
     nx.textContent = nb.next ? 'Toliau: ' + nb.next.name + ' →' : 'Toliau →';
     var idx = plan.items.findIndex(function (x) { return x.c === c; }), left = plan.items.filter(function (x) { return x.st !== 'done'; }).length;
     document.getElementById('run-strip').innerHTML =
-      (S.areas.length > 1 ? '<select class="sel rs-area" id="rs-area" aria-label="Tatamis" title="Pažiūrėti kitą tatamį">' + S.areas.map(function (x) { return '<option value="' + x.id + '"' + (x.id === a.id ? ' selected' : '') + '>' + esc(x.name) + '</option>'; }).join('') + '</select>' : '<b class="rs-area">' + esc(a.name) + '</b>') +
+      (S.areas.length > 1 && S.areas.length <= 4 ? '<span class="seg rs-area" role="group" aria-label="Tatamis">' + S.areas.map(function (x) { return '<button type="button" class="seg-btn' + (x.id === a.id ? ' on' : '') + '" data-rs-area="' + x.id + '" title="' + (x.id === a.id ? 'Šis tatamis' : 'Pažiūrėti: dabartinė ' + esc(x.name) + ' grupė') + '">' + esc(x.name) + '</button>'; }).join('') + '</span>'
+        : S.areas.length > 4 ? '<select class="sel rs-area" id="rs-area" aria-label="Tatamis" title="Pažiūrėti kitą tatamį">' + S.areas.map(function (x) { return '<option value="' + x.id + '"' + (x.id === a.id ? ' selected' : '') + '>' + esc(x.name) + '</option>'; }).join('') + '</select>' : '<b class="rs-area">' + esc(a.name) + '</b>') +
       delayChip(plan.delay) + '<span class="rs-pos muted small">Grupė ' + (idx + 1) + ' iš ' + plan.items.length + ' · liko ' + left + '</span>' + stChip(catStatus(c, it.st === 'now')) +
       '<a class="rs-all small" href="#run-list">Visos grupės ↓</a>';
     renderRunDone(c);
@@ -1904,6 +1904,8 @@
   document.getElementById('run-detach').addEventListener('click', function () { var c = cat(S.selected); if (c) detach(c); });
   document.getElementById('run-strip').addEventListener('click', function (e) {
     var b = e.target.closest('[data-run]'); if (b) openRun(b.dataset.run);
+    var ra = e.target.closest('[data-rs-area]');
+    if (ra) { var pl = areaPlan(areaById(ra.dataset.rsArea)), go = pl.cur || pl.items[0]; if (go) openRun(go.c.id); return; }
     var all = e.target.closest('.rs-all'); if (all) { e.preventDefault(); document.getElementById('run-list').scrollIntoView({ behavior: 'smooth', block: 'start' }); }
   });
   document.getElementById('run-list').addEventListener('click', function (e) { var b = e.target.closest('[data-run]'); if (b) goRun(b.dataset.run); });

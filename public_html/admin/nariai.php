@@ -416,6 +416,31 @@ foreach (q_all('SELECT * FROM member_tags') as $t) {
     $allTags[(int) $t['member_id']][] = $t['tag'];
 }
 
+// Kontaktai Excel formatu (pagal tuos pačius filtrus): narys, grupė, diržas, jo paskyra ir tėvų kontaktai
+if (get('excel') !== '') {
+    $acc = [];
+    if ($rows) {
+        $ids = implode(',', array_map(function ($r) { return (int) $r['id']; }, $rows));
+        foreach (q_all("SELECT am.member_id, am.relation, a.first_name, a.last_name, a.email, a.phone FROM account_members am JOIN accounts a ON a.id = am.account_id
+                        WHERE am.member_id IN ($ids) AND a.status <> 'disabled' ORDER BY am.relation DESC, a.id") as $x) {
+            $acc[(int) $x['member_id']][$x['relation']][] = $x;
+        }
+    }
+    $join = function (array $list, string $f): string {
+        return implode('; ', array_filter(array_map(function ($x) use ($f) { return trim($f === 'name' ? $x['first_name'] . ' ' . $x['last_name'] : (string) $x[$f]); }, $list)));
+    };
+    $out = [[t('Vardas'), t('Pavardė'), t('Grupė'), t('Gimimo data'), t('Amžius'), t('Diržas'), t('Būsena'), t('Nario el. paštas'), t('Nario telefonas'),
+             t('Tėvai'), t('Tėvų telefonas'), t('Tėvų el. paštas'), t('Nuotraukos')]];
+    foreach ($rows as $r) {
+        $self = $acc[(int) $r['id']]['self'] ?? [];
+        $par = $acc[(int) $r['id']]['parent'] ?? [];
+        $out[] = [$r['first_name'], $r['last_name'], (string) $r['group_name'], (string) $r['birth_date'], age_on($r['birth_date']),
+                  $r['belt_level'] !== null && isset(BELTS[(int) $r['belt_level']]) ? BELTS[(int) $r['belt_level']][0] : '', (string) $r['status'],
+                  $join($self, 'email'), $join($self, 'phone'), $join($par, 'name'), $join($par, 'phone'), $join($par, 'email'), $r['photo_consent'] ? t('sutinka') : t('ne')];
+    }
+    xlsx_download('nariu-kontaktai-' . date('Y-m-d'), $out, t('Kontaktai'));
+}
+
 page_start(t('Nariai'), ['admin' => true]);
 ?>
 <div class="page-head row between">
@@ -433,6 +458,7 @@ page_start(t('Nariai'), ['admin' => true]);
     </select>
   </label>
   <button class="btn btn-ghost" type="submit"><?= te('Rodyti') ?></button>
+  <a class="btn btn-ghost" href="?<?= e(http_build_query(['q' => $search, 'g' => $groupFilter ?: '', 's' => $status, 'excel' => 1])) ?>" title="<?= te('Rodomų narių kontaktai (ir tėvų) - Excel failas') ?>"><?= te('⬇ Kontaktai (Excel)') ?></a>
 </form>
 
 <div class="panel card">

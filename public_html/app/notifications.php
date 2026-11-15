@@ -52,6 +52,44 @@ function notify_admins(string $type, string $title, ?string $body = null, ?strin
     }
 }
 
+/** Visiems treneriams ir adminams (pvz. registracija į egzaminą - kad iššoktų ir trenerio paskyroje) */
+function notify_staff(string $type, string $title, ?string $body = null, ?string $link = null, ?int $memberId = null, ?int $refId = null): void
+{
+    foreach (q('SELECT id FROM accounts WHERE role IN ("admin", "coach") AND status = "active"')->fetchAll(PDO::FETCH_COLUMN) as $aid) {
+        notify_account((int) $aid, $type, $title, $body, $link, $memberId, $refId);
+    }
+}
+
+// Iššokantys pranešimai treneriams (bet kuriame puslapyje, kol neperskaityti): kas užsiregistravo į egzaminą ir pan.
+const NOTIFY_POPUP = ['exam_registration', 'late_request', 'tournament_entries'];
+
+/** Neperskaityti iššokantys pranešimai (paskutinės 7 d.) - JSON langeliui */
+function notifications_popup(int $accountId): array
+{
+    try {
+        $rows = q_all('SELECT id, type, title, body, link, created_at FROM notifications WHERE account_id = ? AND read_at IS NULL AND done_at IS NULL
+                         AND type IN ("' . implode('","', NOTIFY_POPUP) . '") AND created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY) ORDER BY id DESC LIMIT 6', [$accountId]);
+    } catch (PDOException $ex) {
+        return [];
+    }
+    return array_map(function ($n) {
+        return ['id' => (int) $n['id'], 'icon' => NOTIFY_ICONS[$n['type']] ?? '🔔', 'title' => (string) $n['title'], 'body' => (string) $n['body'],
+                'link' => $n['link'] ? url((string) $n['link']) : '', 'when' => notification_when((string) $n['created_at'])];
+    }, $rows);
+}
+
+/** Langelis treneriui: iššoka naujas pranešimas (tikrinama kas minutę) */
+function notify_popup_html(): string
+{
+    $a = current_account();
+    if (!$a || !is_staff($a)) {
+        return '';
+    }
+    $cfg = ['api' => url('pranesimas.php'), 'csrf' => csrf_token(), 'items' => notifications_popup((int) $a['id'])];
+    return '<div class="ntf-pop" id="ntfPop" aria-live="polite" data-cfg="' . e(json_encode($cfg, JSON_UNESCAPED_UNICODE)) . '"></div>'
+        . '<script src="' . e(asset_url('assets/notify-popup.js')) . '" defer></script>';
+}
+
 /**
  * Neišspręsti pranešimai (naujausi viršuje); $memberId - tik apie šį narį (ir bendri paskyrai).
  * Nesvarbūs (pvz. „treneris patvirtino“) po 14 d. nebe rodomi, kad sąrašas neaugtų.
@@ -213,7 +251,7 @@ function celebration_html(): string
 function page_widgets(): string
 {
     $chat = chat_widget_html();
-    return celebration_html() . $chat . feedback_widget_html() . '<script src="' . e(asset_url('assets/site.js')) . '" defer></script>'
+    return celebration_html() . $chat . feedback_widget_html() . notify_popup_html() . '<script src="' . e(asset_url('assets/site.js')) . '" defer></script>'
         . ($chat ? '<script src="' . e(asset_url('assets/chat.js')) . '" defer></script>' : '');
 }
 

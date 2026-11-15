@@ -951,7 +951,7 @@ Nuo 2013 m. treniravosi Tradicinio karate-do klubo „Sanrei“ komandoje, o 201
     'Registracija į varžybas atsiras, kai treneris patvirtins paskyrą.' => 'Регистрация на соревнования появится, когда тренер подтвердит аккаунт.',
     'Registruojant į varžybas jai perduodame vardą, pavardę, gimimo datą, lytį, diržą ir klubą. Pagal juos parenkama kategorija.
         Varžybų lentelėse ir rezultatuose viešai rodomas dalyvio vardas, pavardė, klubas ir kategorija, kaip įprasta varžybose.
-        Varžybų sistemą prižiūri Deividas Balinskis. Ja gali naudotis ir kiti klubai: kurti ir vesti varžybas, gauti rezultatus.' => 'При регистрации на соревнования мы передаём имя, фамилию, дату рождения, пол, пояс и клуб. По ним подбирается категория. В сетках и результатах соревнований публично показываются имя, фамилия, клуб и категория участника, как принято на соревнованиях. Систему соревнований обслуживает Deividas Balinskis. Ею могут пользоваться и другие клубы: создавать и проводить соревнования, получать результаты.',
+        Varžybų sistemą prižiūri administratorius Deividas Balinskis. Ja gali naudotis ir kiti klubai: kurti ir vesti varžybas, gauti rezultatus.' => 'При регистрации на соревнования мы передаём имя, фамилию, дату рождения, пол, пояс и клуб. По ним подбирается категория. В сетках и результатах соревнований публично показываются имя, фамилия, клуб и категория участника, как принято на соревнованиях. Систему соревнований обслуживает администратор Deividas Balinskis. Ею могут пользоваться и другие клубы: создавать и проводить соревнования, получать результаты.',
     'Registruojuosi pats' => 'Регистрируюсь сам',
     'Registruoti' => 'Зарегистрировать',
     'Registruoti pažymėtus' => 'Зарегистрировать отмеченных',

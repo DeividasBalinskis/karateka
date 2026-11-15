@@ -46,6 +46,30 @@ if (is_post() && (get('live') || get('entries') || get('reg'))) {
     exit(json_encode(['ok' => true]));
 }
 
+// Klubų kontaktai Excel formatu: klubas, atsakingas asmuo, telefonas, el. paštas, pastaba, dalyvių sk., kas registravo per nuorodą
+if (get('kontaktai') && !is_post()) {
+    $st = tournament_state($t);
+    $info = (array) ($st['clubInfo'] ?? []);
+    $dir = $demo ? [] : varz_club_directory();
+    $regs = tournament_club_contacts((int) $t['id']);
+    $count = [];
+    foreach ((array) ($st['people'] ?? []) as $p) {
+        $k = (string) ($p['club'] ?? '');
+        $count[$k] = ($count[$k] ?? 0) + 1;
+    }
+    $clubs = array_values(array_unique(array_merge((array) ($st['clubs'] ?? []), array_keys($count))));
+    sort($clubs, SORT_LOCALE_STRING);
+    $out = [['Klubas', 'Atsakingas asmuo (treneris)', 'Telefonas', 'El. paštas', 'Pastaba', 'Dalyvių', 'Registravo per nuorodą (telefonai)']];
+    foreach ($clubs as $k) {
+        $i = (array) ($info[$k] ?? []);
+        $d = (array) ($dir[$k] ?? []);
+        $v = function (string $f) use ($i, $d) { return trim((string) (array_key_exists($f, $i) ? $i[$f] : ($d[$f] ?? ''))); };
+        $out[] = [$k, $v('person'), $v('phone'), $v('email'), $v('note'), $count[$k] ?? 0,
+                  implode(', ', array_map(function ($r) { return $r['phone'] . ' (' . $r['n'] . ' dal.)'; }, $regs[$k] ?? []))];
+    }
+    xlsx_download('klubu-kontaktai-' . $t['starts_on'], $out, 'Klubų kontaktai');
+}
+
 // Apdovanojimai: būsenos (JSON); „Siųsti apdovanojimams“ / atšaukti / apdovanota
 if (get('awards')) {
     header('Content-Type: application/json; charset=utf-8');
@@ -264,6 +288,7 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
       <input class="sel" id="club-new-name" placeholder="Naujo klubo pavadinimas" aria-label="Naujo klubo pavadinimas">
       <button class="btn btn-primary" id="club-add" type="button">+ Klubas</button>
       <span class="spacer"></span><span class="muted small">Klubai paimti iš LTKF sąrašo. Pavadinimą galima pataisyti lentelėje - pasikeis visur.</span>
+      <a class="btn" id="clubs-xlsx" href="<?= url('admin/varzybu-sistema.php?id=' . (int) $t['id'] . '&kontaktai=1') ?>" title="Visų klubų kontaktai - Excel failas">⬇ Kontaktai (Excel)</a>
     </div>
     <div class="panel" id="clubs-view"></div>
   </section>
@@ -292,7 +317,8 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
         <input type="search" class="sel" id="ov-search" placeholder="Ieškoti kategorijos ar dalyvio" aria-label="Ieškoti">
         <span class="seg" role="group" aria-label="Lytis"><button type="button" class="seg-btn on" data-ovg="">Visi</button><button type="button" class="seg-btn" data-ovg="M">M</button><button type="button" class="seg-btn" data-ovg="F">F</button><button type="button" class="seg-btn" data-ovg="X">Mix</button></span>
         <label class="small"><input type="checkbox" id="ov-problems"> Tik su problemomis</label>
-        <label class="small">Rikiuoti <select class="sel" id="ov-sort"><option value="order">kaip sudėliota</option><option value="years">pagal metus</option><option value="belt">pagal diržą</option><option value="count">pagal dalyvių sk.</option></select></label>
+        <span class="small muted">Rikiuoti</span>
+        <span class="seg" id="ov-sort" role="group" aria-label="Rikiuoti"><button type="button" class="seg-btn on" data-sort="order" title="Kaip sudėliota (galima tempti)">Kaip yra</button><button type="button" class="seg-btn" data-sort="years">Metai</button><button type="button" class="seg-btn" data-sort="belt">Diržas</button><button type="button" class="seg-btn" data-sort="count">Dalyviai</button></span>
         <button type="button" class="btn btn-sm" id="ov-dir" hidden title="Keisti tvarką: didėjančia / mažėjančia"></button>
       </span>
       <span class="spacer"></span>
@@ -326,7 +352,7 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
     <div class="live-board" id="live-board">
       <div class="toolbar live-bar">
         <b class="live-clock" id="live-clock" title="Dabar"></b>
-        <label class="small my-area" title="Prie kurio tatamio dirbate šiame kompiuteryje (planšetėje) - rodomas tik jis">Mano tatamis <select class="sel" id="my-area"></select></label>
+        <span class="seg area-seg" id="area-seg" role="group" aria-label="Rodomas tatamis" title="Šiame kompiuteryje (planšetėje) rodomas tik pasirinktas tatamis"></span>
         <span class="muted small" id="live-legend">Paspauskite rungtį - atsidarys jos valdymas. Tempkite rungtis tarp tatamių.</span>
         <span class="spacer"></span>
         <button class="btn" id="auto-balance" type="button">Paskirstyti tolygiai</button>

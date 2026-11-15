@@ -101,24 +101,33 @@ function exam_protocol_add_participants(array $event): int
     return $n;
 }
 
+/** Protokolas lentele (eilutės) - Excel (.xlsx) ir CSV failams */
+function exam_protocol_table(array $event): array
+{
+    $p = exam_protocol($event);
+    $out = [];
+    $out[] = [t('EGZAMINO PROTOKOLAS')];
+    $out[] = [(string) $p['org_name']];
+    $out[] = [t('Egzaminas') . ' ' . ((string) $p['kyu_label'] ?: '___') . ' KYU', t('Egzamino data ir vieta') . ': ' . (string) $p['place_text']];
+    $out[] = [];
+    $out[] = ['Nr.', t('Vardas Pavardė'), t('Gimimo data'), 'Kyu', 'Kihon', 'Kata', 'Kumite', t('Testas'), t('Seminarai, stovyklos'), t('Pastabos'), t('Išlaikė / Neišlaikė')];
+    foreach (exam_protocol_rows((int) $event['id']) as $r) {
+        $out[] = [$r['number'], $r['name'], (string) $r['birth_date'], (string) $r['kyu'], (string) $r['kihon'], (string) $r['kata'], (string) $r['kumite'], (string) $r['test'],
+                  (string) $r['seminars'], (string) $r['notes'], $r['result'] === 'passed' ? t('Išlaikė') : ($r['result'] === 'failed' ? t('Neišlaikė') : '')];
+    }
+    $out[] = [];
+    $out[] = [t('Egzaminatorius') . ': ' . (string) $p['examiner_name'], t('Licencijos Nr.') . ': ' . (string) $p['examiner_license']];
+    return $out;
+}
+
 /** Protokolas CSV (Excel: UTF-8, kabliataškiai) */
 function exam_protocol_csv(array $event): string
 {
-    $p = exam_protocol($event);
     $out = fopen('php://temp', 'w+');
     fwrite($out, "\xEF\xBB\xBF");
-    $put = function (array $r) use ($out) { fputcsv($out, $r, ';', '"', ''); };
-    $put([t('EGZAMINO PROTOKOLAS')]);
-    $put([(string) $p['org_name']]);
-    $put([t('Egzaminas') . ' ' . ((string) $p['kyu_label'] ?: '___') . ' KYU', t('Egzamino data ir vieta') . ': ' . (string) $p['place_text']]);
-    $put([]);
-    $put(['Nr.', t('Vardas Pavardė'), t('Gimimo data'), 'Kyu', 'Kihon', 'Kata', 'Kumite', t('Testas'), t('Seminarai, stovyklos'), t('Pastabos'), t('Išlaikė / Neišlaikė')]);
-    foreach (exam_protocol_rows((int) $event['id']) as $r) {
-        $put([$r['number'], $r['name'], (string) $r['birth_date'], (string) $r['kyu'], (string) $r['kihon'], (string) $r['kata'], (string) $r['kumite'], (string) $r['test'],
-              (string) $r['seminars'], (string) $r['notes'], $r['result'] === 'passed' ? t('Išlaikė') : ($r['result'] === 'failed' ? t('Neišlaikė') : '')]);
+    foreach (exam_protocol_table($event) as $r) {
+        fputcsv($out, $r, ';', '"', '');
     }
-    $put([]);
-    $put([t('Egzaminatorius') . ': ' . (string) $p['examiner_name'], t('Licencijos Nr.') . ': ' . (string) $p['examiner_license']]);
     rewind($out);
     $csv = (string) stream_get_contents($out);
     fclose($out);

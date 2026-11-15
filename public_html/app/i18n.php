@@ -90,17 +90,17 @@ function i18n_js(): string
         . ';window.tr=function(s,v){s=window.I18N[s]||s;if(v)for(var k in v)s=s.split("{"+k+"}").join(v[k]);return s;};</script>';
 }
 
-/** Kalbos pasirinkimas: „LT ▾“ su sąrašu (viršutinėje juostoje) */
+/** Kalbos pasirinkimas: visos kalbos matomos iš karto (LT | EN | RU) - grįžti į lietuvių kalbą vienu paspaudimu */
 function render_lang_switch(): string
 {
     $cur = current_lang();
     $back = rawurlencode((string) ($_SERVER['REQUEST_URI'] ?? '/'));
-    $html = '<details class="lang-switch"><summary aria-label="' . e(t('Kalba')) . '">' . strtoupper($cur) . '</summary><div class="lang-menu">';
+    $html = '<nav class="lang-switch" aria-label="' . e(t('Kalba')) . '">';
     foreach (LANGS as $code => $name) {
-        $html .= '<a href="' . e(url('kalba.php?l=' . $code . '&b=' . $back)) . '" lang="' . $code . '"' . ($code === $cur ? ' aria-current="true" class="active"' : '') . '>'
-            . '<b>' . strtoupper($code) . '</b> ' . e($name) . '</a>';
+        $html .= '<a href="' . e(url('kalba.php?l=' . $code . '&b=' . $back)) . '" lang="' . $code . '" hreflang="' . $code . '" title="' . e($name) . '"'
+            . ($code === $cur ? ' aria-current="true" class="active"' : '') . '>' . strtoupper($code) . '</a>';
     }
-    return $html . '</div></details>';
+    return $html . '</nav>';
 }
 
 // ---------- Datos ----------

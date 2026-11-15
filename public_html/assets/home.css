@@ -169,6 +169,11 @@ h2.styled-dark::after{
 .instructors-intro{flex:0 0 clamp(280px,27%,380px); padding:30px 28px; display:flex; flex-direction:column; justify-content:center;}
 .instructors-intro p{color:var(--muted); font-size:0.95rem;}
 .instructors-row .instructor-grid{flex:1; min-width:0; grid-template-columns:repeat(3,1fr); grid-auto-rows:1fr;}
+.ins-groups{flex:1; min-width:0; display:grid; gap:22px; align-content:start;}
+.ins-group-title{font-family:'JetBrains Mono',monospace; font-size:0.8rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--accent); margin:0 0 10px; font-weight:700;}
+.ins-coaches .instructor-card{padding-top:28px; padding-bottom:28px;}
+.ins-coaches .instructor-card .avatar{width:64px; height:64px;}
+.ins-group-titles{display:flex; flex-wrap:wrap; gap:6px 14px; align-items:baseline; margin-bottom:10px;}
 .instructor-card{padding:24px 16px; text-align:center; display:flex; flex-direction:column; align-items:center; justify-content:center;}
 .instructor-card.lead{border:1.5px solid rgba(168,92,126,0.5);}
 .instructor-card .avatar{
@@ -577,6 +582,8 @@ section.hb-contacts, section.hb-values, section.hb-instructors, section.hb-banne
 .contact-locs-cat strong{display:block; font-size:0.85rem; color:var(--accent); font-family:'JetBrains Mono',monospace; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:6px;}
 .contact-locs-cat ul{list-style:none; display:grid; gap:4px;}
 .contact-locs-cat li{font-size:0.9rem; color:var(--muted); padding-left:14px; text-indent:-14px;}
+.contact-locs-cat li a{color:inherit; text-decoration:none; border-bottom:1px dotted currentColor;}
+.contact-locs-cat li a:hover{color:var(--accent);}
 .contact-locs-cat li::before{content:"● "; color:#A85C7E; font-size:0.6em; vertical-align:middle;}
 @media(max-width:860px){ .contacts-grid.two{grid-template-columns:1fr;} }
 .registration-title{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:1.5rem; letter-spacing:-0.01em; margin-bottom:10px; background:linear-gradient(90deg, var(--ink) 0%, #A85C7E 100%); -webkit-background-clip:text; background-clip:text; color:transparent; -webkit-text-fill-color:transparent;}

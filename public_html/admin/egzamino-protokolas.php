@@ -12,7 +12,10 @@ if (!$event || $event['type'] !== 'exam' || !exam_protocol_ready()) {
 }
 $p = exam_protocol($event);
 
-// Excel (CSV)
+// Excel (.xlsx; be ZipArchive - CSV)
+if (get('xlsx')) {
+    xlsx_download(preg_replace('/\.csv$/', '', exam_protocol_filename($event)), exam_protocol_table($event), t('Protokolas'), 0);
+}
 if (get('csv')) {
     header('Content-Type: text/csv; charset=utf-8');
     header('Content-Disposition: attachment; filename="' . exam_protocol_filename($event) . '"');
@@ -96,7 +99,9 @@ if (is_post()) {
                 break;
             }
             $ok = send_mail($to, t('Egzamino protokolas') . ': ' . $event['title'], t('Egzamino protokolas prisegtas (atidaroma su Excel).') . "\n\n" . $event['title'] . "\n" . (string) $p['place_text'],
-                [['name' => exam_protocol_filename($event), 'type' => 'text/csv; charset=utf-8', 'data' => exam_protocol_csv($event)]]);
+                [($xl = xlsx_build(exam_protocol_table($event), t('Protokolas'), 0)) !== null
+                    ? ['name' => preg_replace('/\.csv$/', '.xlsx', exam_protocol_filename($event)), 'type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'data' => $xl]
+                    : ['name' => exam_protocol_filename($event), 'type' => 'text/csv; charset=utf-8', 'data' => exam_protocol_csv($event)]]);
             flash($ok ? 'ok' : 'err', $ok ? t('Protokolas išsiųstas: {to}.', ['to' => $to]) : t('Nepavyko išsiųsti laiško. Atsisiųskite Excel ir išsiųskite patys.'));
             break;
     }
@@ -153,7 +158,7 @@ page_start(t('Egzamino protokolas') . ': ' . $event['title'], ['admin' => true, 
     <span class="spacer"></span>
     <span class="small muted" id="protSaved" aria-live="polite"></span>
     <button class="btn btn-ghost btn-sm" type="button" onclick="window.print()"><?= te('🖨 Spausdinti') ?></button>
-    <a class="btn btn-ghost btn-sm" href="?id=<?= $id ?>&amp;csv=1"><?= te('⬇ Excel') ?></a>
+    <a class="btn btn-ghost btn-sm" href="?id=<?= $id ?>&amp;xlsx=1"><?= te('⬇ Excel') ?></a>
     <details class="prot-mail">
       <summary class="btn btn-ghost btn-sm"><?= te('✉ Siųsti el. paštu') ?></summary>
       <form method="post" class="row" style="gap:6px; margin-top:6px;">

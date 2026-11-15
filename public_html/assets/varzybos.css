@@ -976,3 +976,7 @@ body.vz[data-theme="volcano"] {
 .varz-share summary { cursor: pointer; }
 .varz-share .sp-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
 .varz-share .sp-url { flex: 1; min-width: 220px; }
+.area-seg .seg-btn { padding: 5px 11px; font-size: .82rem; }
+.rs-area.seg { flex-wrap: wrap; }
+.rs-area .seg-btn { padding: 5px 11px; font-size: .82rem; }
+#ov-sort .seg-btn { padding: 4px 11px; font-size: .82rem; }

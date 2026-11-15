@@ -66,16 +66,16 @@ function home_block_defaults(string $type): array
                     ['sign' => '和', 'tr' => 'harmonija', 'title' => t('Vidinė pusiausvyra'), 'color' => 'green'],
                 ]];
         case 'instructors':
-            return ['title' => t('Mūsų instruktoriai'),
+            return ['title' => t('Mūsų instruktoriai'), 'coaches_title' => t('Klubo treneriai'), 'helpers_title' => t('Pagalbiniai instruktoriai'),
                 'text' => t('Klubo instruktoriai nuolat gilina žinias, dalyvaudami stažuotėse Lietuvoje ir užsienyje — karate, fizioterapijos, psichologijos, sporto, medicinos, masažų, biomechanikos, sporto mitybos, kinesiologijos ir sporto pedagogikos srityse. Tai leidžia mums treniruotes kurti remiantis ne tik karate tradicijomis, bet ir šiuolaikiniais mokslo pasiekimais.'),
                 'items' => [
-                    ['name' => t('Denis Balinskis'), 'rank' => t('3 Dan · klubo vadovas'), 'photo' => '', 'lead' => true, 'role' => t('Klubo vadovas, vyr. treneris'),
+                    ['name' => t('Denis Balinskis'), 'rank' => t('3 Dan · klubo vadovas'), 'photo' => '', 'lead' => true, 'helper' => false, 'role' => t('Klubo vadovas, vyr. treneris'),
                      'bio' => t(HOME_DENIS_BIO)],
-                    ['name' => t('Lukas Čiulkinas'), 'rank' => t('1 Dan'), 'photo' => '', 'lead' => false],
-                    ['name' => t('Joris Kėrys'), 'rank' => t('1 Dan'), 'photo' => '', 'lead' => false],
-                    ['name' => t('Esmilė Česevičiūtė'), 'rank' => t('1 Dan'), 'photo' => '', 'lead' => false],
-                    ['name' => t('Karolis Kiela'), 'rank' => t('1 Dan'), 'photo' => '', 'lead' => false],
-                    ['name' => t('Giedrius Li Tang'), 'rank' => t('1 Dan'), 'photo' => '', 'lead' => false],
+                    ['name' => t('Lukas Čiulkinas'), 'rank' => t('1 Dan'), 'photo' => '', 'lead' => false, 'helper' => false],
+                    ['name' => t('Joris Kėrys'), 'rank' => t('1 Dan'), 'photo' => '', 'lead' => false, 'helper' => true],
+                    ['name' => t('Esmilė Česevičiūtė'), 'rank' => t('1 Dan'), 'photo' => '', 'lead' => false, 'helper' => true],
+                    ['name' => t('Karolis Kiela'), 'rank' => t('1 Dan'), 'photo' => '', 'lead' => false, 'helper' => true],
+                    ['name' => t('Giedrius Li Tang'), 'rank' => t('1 Dan'), 'photo' => '', 'lead' => false, 'helper' => true],
                 ]];
         case 'banner':
             return ['text' => '„Karateka" — tai klubas, kuriame karate tampa **visos šeimos veikla**. Treniruotėse kartu sportuoja tėvai su vaikais — amžiaus riba mums nėra kliūtis, svarbiausia noras augti ir tobulėti.'];
@@ -134,6 +134,9 @@ function home_page(bool $fresh = false): array
         }
         $def = home_block_defaults($b['type']);
         $d = array_replace($def, is_array($b['d'] ?? null) ? $b['d'] : []);
+        if ($b['type'] === 'contacts' && trim((string) ($d['title'] ?? '')) === 'Kur mus rasti') {
+            $d['title'] = 'Kontaktai';   // senas pavadinimas - Denis prašė „Kontaktai“
+        }
         if ($b['type'] === 'groups') {
             foreach (HOME_GROUP_SLIDES as $cat => $_) {
                 $d['cats'][$cat] = array_replace($def['cats'][$cat], (array) ($d['cats'][$cat] ?? []));
@@ -498,15 +501,42 @@ function home_render_block(array $b): string
                     . ($photo || $edit ? '<img src="' . e($photo ? url($photo) : '') . '" alt=""' . ($photo ? '' : ' hidden') . '>' : '')
                     . '<span class="hb-initials"' . ($photo ? ' hidden' : '') . '>' . e(initials((string) $p['name'])) . '</span>'
                     . hb_img_tools(true) . '</div>' . hb_t('name', (string) $p['name'], 'div', 'name') . hb_t('rank', (string) $p['rank'], 'div', 'rank')
-                    . ($edit ? hb_input('lead', !empty($p['lead']), t('Paryškinti'))
+                    . ($edit ? hb_input('lead', !empty($p['lead']), t('Paryškinti')) . hb_input('helper', !empty($p['helper']), t('Pagalbinis instruktorius'))
                         . '<details class="hb-more"' . (trim((string) ($p['bio'] ?? '')) === '' ? '' : ' open') . ('><summary>' . t('Plačiau (rodoma paspaudus)') . '</summary>')
                         . hb_t('role', (string) ($p['role'] ?? ''), 'div', 'hb-more-role') . hb_t('bio', (string) ($p['bio'] ?? ''), 'div', 'hb-more-bio', true) . '</details>'
                         : ($hasMore ? ('<span class="ins-open" aria-hidden="true">' . t('Plačiau') . '</span>') . $more : ''))
                     . hb_item_tools() . '</div>';
             };
+            // Klubo treneriai ir pagalbiniai instruktoriai - atskirai (kortelėje „Pagalbinis instruktorius“).
+            // Seniau išsaugotame puslapyje tokio žymėjimo nėra: treneriai - paryškintas ir Lukas, kiti - pagalbiniai.
+            $items = array_values((array) $d['items']);
+            $marked = (bool) array_filter($items, function ($p) { return is_array($p) && array_key_exists('helper', $p); });
+            foreach ($items as &$p) {
+                if (is_array($p) && !$marked) {
+                    $p['helper'] = empty($p['lead']) && mb_stripos((string) ($p['name'] ?? ''), 'Lukas') === false;
+                }
+            }
+            unset($p);
+            $blank = ['name' => t('Vardas Pavardė'), 'rank' => t('1 Dan'), 'photo' => '', 'lead' => false, 'helper' => true, 'role' => '', 'bio' => ''];
+            if ($edit) {
+                $grid = '<div class="ins-groups"><div class="ins-group-titles"><span class="small muted">' . t('Grupių pavadinimai (pagalbinius pažymėkite kortelėje):') . '</span>'
+                    . hb_t('coaches_title', (string) $d['coaches_title'], 'b') . hb_t('helpers_title', (string) $d['helpers_title'], 'b') . '</div>'
+                    . '<div class="instructor-grid"' . hb_list('items') . '>' . hb_list_items($items, $card, $blank, '') . '</div></div>';
+            } else {
+                $coaches = array_values(array_filter($items, function ($p) { return is_array($p) && empty($p['helper']); }));
+                $helpers = array_values(array_filter($items, function ($p) { return is_array($p) && !empty($p['helper']); }));
+                $tt = function (string $v): string { $x = t($v); return $x !== $v ? $x : tr_text($v); };
+                $group = function (array $list, string $title, string $cls) use ($card, $blank) {
+                    return '<div class="ins-group ' . $cls . '">' . ($title !== '' ? '<h4 class="ins-group-title">' . e($title) . '</h4>' : '')
+                        . '<div class="instructor-grid">' . hb_list_items($list, $card, $blank, '') . '</div></div>';
+                };
+                $grid = $coaches && $helpers
+                    ? '<div class="ins-groups">' . $group($coaches, $tt((string) $d['coaches_title']), 'ins-coaches') . $group($helpers, $tt((string) $d['helpers_title']), 'ins-helpers') . '</div>'
+                    : '<div class="instructor-grid">' . hb_list_items($items, $card, $blank, '') . '</div>';
+            }
             return '<section id="' . $id . '" class="hb-instructors"><div class="wrap"><div class="about-sub-head about-sub-head-center">' . hb_t('title', $d['title'], 'h3') . '</div>'
                 . '<div class="instructors-row"><div class="panel instructors-intro reveal">' . hb_t('text', $d['text'], 'div', '', true) . '</div>'
-                . '<div class="instructor-grid"' . hb_list('items') . '>' . hb_list_items((array) $d['items'], $card, ['name' => t('Vardas Pavardė'), 'rank' => t('1 Dan'), 'photo' => '', 'lead' => false, 'role' => '', 'bio' => ''], '') . '</div></div>'
+                . $grid . '</div>'
                 . ($edit ? '<div class="hb-center">' . hb_add_button(t('Pridėti instruktorių')) . '</div>' : instructor_modal()) . '</div></section>';
 
         case 'banner':
@@ -523,7 +553,10 @@ function home_render_block(array $b): string
                     if ($list) {
                         $locs .= '<div class="contact-locs-cat"><strong>' . e($catLabel) . '</strong><ul>';
                         foreach ($list as $l) {
-                            $locs .= '<li>' . e($l) . '</li>';
+                            // Vieta - nuoroda į žemėlapį (adresas ir kelias)
+                            $q = $l . (stripos($l, 'vilni') === false ? ', Vilnius' : '');
+                            $locs .= '<li><a href="https://www.google.com/maps/search/?api=1&amp;query=' . rawurlencode($q) . '" target="_blank" rel="noopener" title="'
+                                . e(t('Rodyti žemėlapyje')) . '">' . e($l) . '</a></li>';
                         }
                         $locs .= '</ul></div>';
                     }

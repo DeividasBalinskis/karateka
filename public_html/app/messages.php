@@ -373,22 +373,51 @@ function send_coach_note(array $member, array $coach, string $body, ?int $lesson
 }
 
 /**
- * Puslapis atsinaujina pats, kai atsiranda nauja žinutė (tikrinama kas 10 s, kol puslapis atidarytas).
- * Neperkrauna, jei pradėtas rašyti atsakymas.
+ * Pokalbis atsinaujina pats (kas 4 s tikrinama, ar yra naujų žinučių): nario pokalbyje naujos žinutės įdedamos be perkrovimo,
+ * o pradėtas rašyti atsakymas lieka. Atsakymas išsiunčiamas irgi be perkrovimo. Kituose puslapiuose - perkraunama, jei nerašoma.
  */
 function live_refresh_js(string $path): string
 {
     return '<script>(function () {
-  var url = ' . json_encode(url($path)) . ', base = null;
+  var url = ' . json_encode(url($path)) . ', base = null, busy = false;
   function typing() { return Array.prototype.some.call(document.querySelectorAll("textarea"), function (t) { return t.value.trim() !== ""; }); }
+  function topics(doc) { return Array.prototype.map.call(doc.querySelectorAll(".msg-topic[id]"), function (t) { return t.id; }).join(","); }
+  // Naujos žinutės įdedamos į esamas temas; atsiradus naujai temai - perkraunama (jei niekas nerašoma)
+  function swap(html) {
+    var doc = new DOMParser().parseFromString(html, "text/html");
+    if (!document.querySelector(".msg-topic[id]") || topics(doc) !== topics(document)) { if (!typing()) location.reload(); return false; }
+    Array.prototype.forEach.call(doc.querySelectorAll(".msg-topic[id]"), function (t) {
+      var cur = document.getElementById(t.id), a = cur && cur.querySelector(".msg-thread"), b = t.querySelector(".msg-thread");
+      if (a && b && a.innerHTML !== b.innerHTML) { a.innerHTML = b.innerHTML; cur.classList.remove("live-new"); void cur.offsetWidth; cur.classList.add("live-new"); }
+      else if (!a && b && cur) { var f = cur.querySelector("form.msg-form"); cur.insertBefore(b, f || null); cur.classList.add("live-new"); }
+    });
+    return true;
+  }
+  function refresh() { return fetch(location.href, { credentials: "same-origin" }).then(function (r) { return r.text(); }).then(swap); }
   function check() {
-    if (document.hidden) return;
+    if (document.hidden || busy) return;
     fetch(url, { credentials: "same-origin" }).then(function (r) { return r.json(); }).then(function (d) {
       var key = d.last + ":" + d.anon;
       if (base === null) { base = key; return; }
-      if (key !== base && !typing()) location.reload();
+      if (key === base) return;
+      if (!document.querySelector(".msg-topic[id]")) { if (!typing()) location.reload(); return; }
+      busy = true;
+      refresh().then(function (done) { if (done !== false) base = key; busy = false; }, function () { busy = false; });
     }).catch(function () {});
   }
-  check(); setInterval(check, 10000);
+  // Atsakymas - be perkrovimo (laukelis išvalomas, žinutė atsiranda pokalbyje)
+  document.addEventListener("submit", function (e) {
+    var f = e.target;
+    if (!f.classList || !f.classList.contains("msg-form") || !document.querySelector(".msg-topic[id]") || !window.fetch) return;
+    e.preventDefault();
+    var btn = f.querySelector("[type=submit]"), ta = f.querySelector("textarea");
+    if (btn) btn.disabled = true;
+    busy = true;
+    fetch(f.getAttribute("action") || location.href, { method: "POST", body: new FormData(f), credentials: "same-origin" })
+      .then(function (r) { return r.text(); }).then(function (html) { if (ta) ta.value = ""; swap(html); base = null; })
+      .catch(function () { f.submit(); })
+      .then(function () { busy = false; if (btn) btn.disabled = false; });
+  });
+  check(); setInterval(check, 4000);
 })();</script>';
 }
