@@ -37,7 +37,7 @@ test('Taika home, switcher, menu order, live schedule with current category and 
   check('run panel open', await a.locator('#run').isVisible() && !(await a.locator('#live-board').isVisible()));
   check('run shows category', (await a.textContent('#run-name')).includes(name.slice(0, 8)), name);
   check('list marks open category', await a.locator('#run-list .rl-row.on').count() === 1);
-  const nextLabel = await a.textContent('#run-next');
+  const nextLabel = await a.getAttribute('#run-next', 'title');   // „Kita: <pavadinimas>“
   if (!(await a.locator('#run-next').isDisabled())) {
     await a.click('#run-next');
     check('next opens following category', (await a.textContent('#run-name')).length > 0 && nextLabel.includes((await a.textContent('#run-name')).trim().slice(0, 8)), nextLabel);
@@ -221,7 +221,9 @@ test('history restore, category reset from a round, themes and menu customizatio
   if (await a.locator('#run').isVisible()) await a.click('#run-back');
   const done = a.locator('#sched .card.st-done').first();
   await done.locator('[data-open-cat]').click();
-  const opts = await a.locator('#draw-reset option').allTextContents();
+  await a.click('#draw-reset-menu summary');
+  const opts = await a.locator('#draw-reset [data-reset]').allTextContents();
+  await a.click('#draw-reset-menu summary');
   check('reset options', opts.some(o => /Visą rungtį/.test(o)), opts.join(' | '));
 
   // Tema ir meniu (bendri visoms varžyboms)

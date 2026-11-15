@@ -21,7 +21,7 @@ rules = [
   ('Finalas', 'Final', 'Финал'), ('Bronza', 'Bronze', 'Бронза'), ('Paguoda', 'Repechage', 'Утешение'), ('ratas', 'round', 'круг'),
   ('Dabar', 'Now', 'Сейчас'), ('Toliau', 'Next', 'Далее'), ('TATAMIS', 'TATAMI', 'ТАТАМИ'), ('komandos', 'teams', 'команды'),
   ('Apdovanojimai', 'Awards', 'Награждение'), ('vėliavėlės', 'flags', 'флажки'), ('Kitei', 'Kitei', 'Китэй'), ('dalyv.', 'part.', 'уч.'),
-  ('kateg.', 'cat.', 'кат.'), ('Treneris', 'Coach', 'Тренер'), 
+  ('kateg.', 'cat.', 'кат.'), ('Treneris', 'Coach', 'Тренер'), ('Kita:', 'Next:', 'Далее:'), ('Ankstesnė:', 'Previous:', 'Предыдущая:'),
   ('Test varžybos', 'Test competition', 'Тестовые соревнования'), ('pavyzdys', 'example', 'пример'), ('Vilnius', 'Vilnius', 'Вильнюс'),
   ('Sporto centras Viršuliškės', 'Viršuliškės sports centre', 'спортивный центр Виршулишкес'), ('klubai su medaliais', 'clubs with medals', 'клубы с медалями'),
   ('Vaikai', 'Children', 'Дети'), ('kyu', 'kyu', 'кю'), ('Mix', 'Mix', 'Смеш.'),

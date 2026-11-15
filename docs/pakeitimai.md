@@ -4,6 +4,45 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.29 - 2026-11-15 (Taika telefone, vardų tempimas, prisegamas langelis, temos visur, EN / RU; visų langų peržiūra)
+**Duomenų bazė:** naujų pakeitimų nėra (jei v1.28 dar neįkelta - Valdymas → Šiandien → „Atnaujinkite duomenų bazę“).
+
+**Taika - atsiliepimai (💡)**
+- **Telefone** viršus kompaktiškas (ženkliukai vienoje eilutėje), dalyviai - kortelėmis, niekas neišeina už ekrano.
+- „**⋯**“ prie varžybų atsidaro **kortelės viduje** - informacija nebedingsta.
+
+**Taika - tempimas ir prisegimas**
+- Lentelėje **vardą galima nutempti ant kito** - apsikeis vietomis (pele ir pirštu). Mygtukas vadinasi **„⇄ Keisti vietas“**
+  (paspaudus - galima ir dviem paspaudimais). Balų sistemoje pasirodymo eilė keičiama tempiant už „⋮⋮“.
+- **📌 Prisegti**: tvarkaraščio kortelę nutempkite už tatamių (ar spauskite 📌) - kategorija prisisega mažu langeliu ekrane ir
+  **matosi visuose skirtukuose** (kas kovoja dabar, kas toliau, kiek liko). Langelį galima tempti, sumažinti, uždaryti, atidaryti visą.
+
+**Temos ir kalbos**
+- **🎨 Temos** - vienas sąrašas karateka.lt ir Taikai: Šviesi, Tamsi, Gamta, Kalnai, Jūra, Sakura, Ruduo, Žiema, Kosmosas, Vulkanas
+  (su peizažais). Pasirinkimas - karateka.lt viršuje (adminui), Taikos pradžioje ir varžybose; viešieji Taikos puslapiai seka temą.
+- **Taika ir LTKF - LT | EN | RU** visuose puslapiuose (ir registracija, transliacija, apdovanojimų planšetė).
+
+**Visų langų peržiūra (svoris, vieta, aiškumas, dublikatai)**
+- Atidarytos grupės viršus: **„← Ankstesnė | Kita →“** - viena pora (nebe du raudoni „toliau“ į skirtingas grupes); raudonas tik „Sekanti grupė“,
+  kai grupė baigta. „Atkabinti“ → **„Naujame lange ↗“**.
+- Įrankių juosta vienoje eilutėje: „⇄ Keisti vietas · Burti iš naujo · ↶ Atšaukti · 🔓 Užrakinti … 🖨 Spausdinti · **↺ Atstatyti**“.
+  „Išvalyti rezultatus“ darė tą patį, ką „Atstatyti → Visą rungtį“ - **paliktas vienas** (meniu „↺ Atstatyti“ vietoj iškrentančio sąrašo).
+  „Burti iš naujo“ nebe raudonas (tai pavojingas veiksmas, ne pagrindinis).
+- Nebesikartoja: dalyvių skaičius / sistema / kovos (buvo 3 vietose), „Grupė baigta“ + „Užbaigta“. Po lentele nebėra tuščio ploto.
+- Tvarkaraščio kortelėse ✎ 📌 ↑ ↓ → rodomi užvedus pelę (planšetėje - visada) - sąrašas švaresnis. „Pašalinti tatamį“ - nebe raudonas mygtukas
+  kiekviename stulpelyje, o tylus užrašas.
+- „Prie kurio tatamio dirbate?“ - viena eilutė, ne didelis blokas.
+- 💡 Taikoje - mažas apskritimas (užrašas išsiskleidžia užvedus pelę), nebemirga ir nebeuždengia lentelių.
+- Dalyviai: filtrai kairėje, **„Naujas: vardas · klubas · + Pridėti“** atskiroje grupėje; tuščias „Užsiregistravę per nuorodą“ - viena eilutė;
+  lentelė skaitoma kaip duomenys (laukelių rėmeliai matosi užvedus pelę).
+- Rezultatai: kategorijos pavadinimas nebelaužomas į 3 eilutes, „🏅 Siųsti“ - vėl geltonas mygtukas.
+- Telefone: tvarkaraščio juosta be paaiškinimo, mygtukai vienoje eilutėje.
+- karateka.lt: kalbos jungiklis antraštėje buvo išsitempęs (200 px) - dabar kompaktiškas; „✎ Redaguoti puslapį“ nebeslepia pokalbio mygtuko;
+  Nariai → „⬇ Kontaktai (Excel)“ šalia „+ Naujas narys“, grupė ir būsena pritaikomos iškart (be „Rodyti“).
+- Taikos pradžia: „Išorinė varžybų sistema“ - tokia pati eilutė kaip „👀 Duoti išbandyti“.
+- Trenerių iššokantys pranešimai (registracija į egzaminą ir pan.) **po 12 s susitraukia į „🔔 N“** - nebeuždengia lentelių; kituose puslapiuose
+  jau matyti rodomi tik kaip „🔔 N“ (paspaudus - išsiskleidžia). Pataisyta: rodomi daugiausia 3 (anksčiau „dar N“ nepaslėpdavo kitų).
+
 ## v1.28 - 2026-11-15 (Denio pastabos: tatamio darbas, apdovanojimai, katos balai, svetainė; bandymo nuoroda draugui)
 **Duomenų bazė:** `db/033_apdovanojimai.sql` - Valdymas → Šiandien → „Atnaujinkite duomenų bazę“.
 

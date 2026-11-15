@@ -445,20 +445,22 @@ page_start(t('Nariai'), ['admin' => true]);
 ?>
 <div class="page-head row between">
   <h1 class="styled"><?= te('Nariai') ?></h1>
-  <a class="btn btn-primary" href="?new=1"><?= te('+ Naujas narys') ?></a>
+  <div class="row" style="gap:8px; flex-wrap:wrap;">
+    <a class="btn btn-ghost" href="?<?= e(http_build_query(['q' => $search, 'g' => $groupFilter ?: '', 's' => $status, 'excel' => 1])) ?>" title="<?= te('Rodomų narių kontaktai (ir tėvų) - Excel failas') ?>"><?= te('⬇ Kontaktai (Excel)') ?></a>
+    <a class="btn btn-primary" href="?new=1"><?= te('+ Naujas narys') ?></a>
+  </div>
 </div>
 <form method="get" class="panel card form filters">
   <label><?= te('Paieška') ?> <input type="search" name="q" value="<?= e($search) ?>" placeholder="<?= te('Vardas ar pavardė') ?>"></label>
-  <label><?= te('Grupė') ?> <select name="g"><option value=""><?= te('Visos grupės') ?></option><?= str_replace('<option value="">— pasirinkite grupę —</option>', '', group_options($groupFilter ?: null)) ?></select></label>
+  <label><?= te('Grupė') ?> <select name="g" onchange="this.form.submit()"><option value=""><?= te('Visos grupės') ?></option><?= str_replace('<option value="">— pasirinkite grupę —</option>', '', group_options($groupFilter ?: null)) ?></select></label>
   <label><?= te('Būsena') ?>
-    <select name="s">
+    <select name="s" onchange="this.form.submit()">
       <?php foreach (['active' => t('Aktyvūs'), 'pending' => t('Laukia'), 'inactive' => t('Neaktyvūs'), 'all' => t('Visi')] as $k => $label): ?>
         <option value="<?= $k ?>" <?= $status === $k ? 'selected' : '' ?>><?= $label ?></option>
       <?php endforeach; ?>
     </select>
   </label>
   <button class="btn btn-ghost" type="submit"><?= te('Rodyti') ?></button>
-  <a class="btn btn-ghost" href="?<?= e(http_build_query(['q' => $search, 'g' => $groupFilter ?: '', 's' => $status, 'excel' => 1])) ?>" title="<?= te('Rodomų narių kontaktai (ir tėvų) - Excel failas') ?>"><?= te('⬇ Kontaktai (Excel)') ?></a>
 </form>
 
 <div class="panel card">

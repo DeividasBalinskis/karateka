@@ -19,6 +19,7 @@ Browser tests (Playwright) and quick static checks. They run on every push in Gi
 | `e2e/06h-atsiliepimai-nuotraukos.spec.js` | Feedback widget on all sites: autosave, paste many images, Enter for next, edit earlier, LTKF, admin images, Claude API key and endpoints, image privacy |
 | `e2e/06i-taika-tatamis-apdovanojimai.spec.js` | My tatami (one control), bottom list, next group, send to awards, awards tablet grey/green and finish, kata scores 75→7.5, kata per round, semi+final total, time presets, sort direction, phone screen no jump, test link without account |
 | `e2e/06j-svetaine-denio-pastabos.spec.js` | Coaches vs assistant instructors, Kontaktai with map links, privacy text, live chat without reload, exam signup pop-up for coaches, contacts/protocol/club contacts as Excel |
+| `e2e/06k-taika-tempimas-prisegimas.spec.js` | Drag a name onto another to swap (mouse and touch), drag performance order, pinned category window (pin, move, minimise, close, open), phone layout (participants as cards, ⋯ inside the card, no sideways scroll), themes on karateka.lt and Taika, EN/RU translation of Taika and LTKF |
 | `e2e/07-pages.spec.js` | Every page for every role at desktop and phone width: no PHP/JS errors, no horizontal scroll |
 | `e2e/08-test-data.spec.js` | One-time purge of old demo data (real people and content stay, backup first), test people generator, admin view switch (parent / child, belt), deleting test people and members (runs last) |
 

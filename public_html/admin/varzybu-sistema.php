@@ -266,9 +266,10 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
       <select class="sel" id="ppl-club" aria-label="Klubas"></select>
       <label class="small"><input type="checkbox" id="ppl-nocat"> Tik be kategorijos</label>
       <span class="spacer"></span>
+      <span class="add-group" role="group" aria-label="Naujas dalyvis"><span class="add-label">Naujas:</span>
       <input class="sel" id="ppl-new-name" placeholder="Vardas Pavardė" aria-label="Naujo dalyvio vardas">
       <select class="sel" id="ppl-new-club" aria-label="Naujo dalyvio klubas"></select>
-      <button class="btn" id="ppl-add" type="button">+ Dalyvis</button>
+      <button class="btn" id="ppl-add" type="button">+ Pridėti</button></span>
     </div>
     <div class="panel entries-box" id="entries-box" hidden></div>
     <div class="panel members-pick" id="members-pick" hidden>
@@ -383,9 +384,8 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
         <div class="run-title"><b id="run-name"></b><span class="muted small" id="run-meta"></span></div>
         <span class="spacer"></span>
         <div class="seg run-views" role="group" aria-label="Vaizdas"><button type="button" class="seg-btn" data-runview="lines" title="Lentelė su linijomis">Lentelė</button><button type="button" class="seg-btn" data-runview="simple" title="Kas kovoja dabar ir kas ruošiasi">Paprastas</button></div>
-        <?php if (!get('langas')): ?><button class="btn" type="button" id="run-pin" title="Prisegti mažą langelį ekrane - matysite ir kituose skirtukuose">📌 Prisegti</button><button class="btn" type="button" id="run-detach" title="Atidaryti atskirame lange (pvz. kitame ekrane); tvarkaraštyje ši rungtis bus pilka">Atkabinti ↗</button><?php else: ?><span id="run-detach" hidden></span><span id="run-pin" hidden></span><?php endif; ?>
-        <button class="btn" type="button" id="run-prev">← Ankstesnė</button>
-        <button class="btn btn-primary" type="button" id="run-next">Toliau →</button>
+        <?php if (!get('langas')): ?><button class="btn" type="button" id="run-pin" title="Prisegti mažą langelį ekrane - matysite ir kituose skirtukuose">📌 Prisegti</button><button class="btn" type="button" id="run-detach" title="Atidaryti atskirame lange (pvz. kitame ekrane); tvarkaraštyje ši rungtis bus pilka">Naujame lange ↗</button><?php else: ?><span id="run-detach" hidden></span><span id="run-pin" hidden></span><?php endif; ?>
+        <span class="seg run-nav" role="group" aria-label="Kitos šio tatamio grupės"><button class="seg-btn" type="button" id="run-prev" title="Ankstesnė šio tatamio grupė">← Ankstesnė</button><button class="seg-btn" type="button" id="run-next" title="Kita šio tatamio grupė">Kita →</button></span>
       </div>
       <div class="run-done" id="run-done" hidden></div>
     <div class="toolbar run-tools">
@@ -398,15 +398,14 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
         <option value="rr">Ratų sistema (visi su visais)</option>
         <option value="score">Balai (teisėjų vertinimas)</option>
       </select></label>
-      <button class="btn btn-primary" id="draw-new" type="button">Burti iš naujo</button>
       <button class="btn" id="draw-swap" type="button" aria-pressed="false" title="Tempkite vardą ant kito - apsikeis vietomis">⇄ Keisti vietas</button>
-      <button class="btn" id="draw-lock" type="button" aria-pressed="false">Užrakinti</button>
-      <button class="btn" id="draw-undo" type="button">Atšaukti</button>
+      <button class="btn" id="draw-new" type="button" title="Naujas burtų traukimas (rezultatai dingsta)">Burti iš naujo</button>
+      <button class="btn" id="draw-undo" type="button" title="Atšaukti paskutinį veiksmą">↶ Atšaukti</button>
+      <button class="btn" id="draw-lock" type="button" aria-pressed="false" title="Užrakinus burtų ir vietų pakeisti nebegalima">🔓 Užrakinti</button>
       <span class="spacer"></span>
-      <?php if ($t['is_test']): ?><button class="btn btn-test" id="draw-sim" type="button" title="Tik test varžybose">🎲 Sužaisti kategoriją</button><?php endif; ?>
-      <button class="btn" id="draw-print" type="button">Spausdinti</button>
-      <select class="sel" id="draw-reset" aria-label="Atstatyti rungtį"><option value="">Atstatyti…</option></select>
-      <button class="btn" id="draw-clear" type="button">Išvalyti rezultatus</button>
+      <?php if ($t['is_test']): ?><button class="btn btn-test" id="draw-sim" type="button" title="Tik test varžybose">🎲 Sužaisti</button><?php endif; ?>
+      <button class="btn" id="draw-print" type="button">🖨 Spausdinti</button>
+      <details class="tool-menu" id="draw-reset-menu"><summary class="btn" title="Ištrinti rezultatus: visus arba nuo pasirinkto rato">↺ Atstatyti</summary><div class="tool-menu-body" id="draw-reset"></div></details>
     </div>
       <div id="draw-view"></div>
       <div class="run-list panel" id="run-list"></div>

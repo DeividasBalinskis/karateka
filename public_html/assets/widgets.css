@@ -1,4 +1,5 @@
-/* Visų puslapių valdikliai (ir pagrindiniame): pokalbis su Deniu apačioje dešinėje, šventė (naujas lygis / išlaikytas egzaminas) */
+/* „✎ Redaguoti puslapį“ (assets/home.css .hb-fab) stovi virš pokalbio mygtuko, kad jo neuždengtų.
+   Visų puslapių valdikliai (ir pagrindiniame): pokalbis su Deniu apačioje dešinėje, šventė (naujas lygis / išlaikytas egzaminas) */
 
 /* ---------- Pokalbis ---------- */
 .chat{--c-bg:#FBFAF6; --c-ink:#17140F; --c-muted:#5A5448; --c-line:rgba(23,20,15,0.09); --c-mine:#2F6B5A; --c-theirs:#EFEBE2; --c-accent:#A85C7E;}
@@ -245,6 +246,7 @@ span.chat-ctx{text-decoration:none;}
 .ntf-card{pointer-events:auto; position:relative; display:flex; gap:12px; align-items:flex-start; background:#fff; color:#17140F; border-radius:16px; padding:14px 38px 14px 14px;
   box-shadow:0 10px 30px rgba(23,20,15,0.18), 0 0 0 1px rgba(23,20,15,0.06); border-left:4px solid #E8772E; transform:translateY(16px); opacity:0; transition:transform .25s ease, opacity .25s ease;}
 .ntf-card.in{transform:none; opacity:1;}
+.ntf-card[hidden]{display:none;}
 .ntf-icon{font-size:1.5rem; line-height:1;}
 .ntf-txt{display:grid; gap:3px; font-size:.88rem; min-width:0;}
 .ntf-txt b{font-size:.95rem;}
@@ -255,6 +257,7 @@ span.chat-ctx{text-decoration:none;}
 .ntf-btns .ntf-open{background:#E8772E; border-color:#E8772E; color:#fff;}
 .ntf-x{position:absolute; top:6px; right:8px; border:0; background:none; font-size:1.2rem; line-height:1; cursor:pointer; color:#8A8174; padding:4px;}
 .ntf-more{pointer-events:auto; justify-self:end; border:0; border-radius:999px; background:#17140F; color:#fff; font:inherit; font-size:.8rem; font-weight:700; padding:5px 12px; cursor:pointer;}
+.ntf-pill{pointer-events:auto; justify-self:end; border:0; border-radius:999px; background:#E8772E; color:#fff; font:inherit; font-size:.85rem; font-weight:800; padding:7px 13px; cursor:pointer; box-shadow:0 6px 18px rgba(232,119,46,.35);}
 @media print{.ntf-pop{display:none;}}
 
 /* ---------- Temos pasirinkimas (assets/theme-pick.js) - karateka.lt ir Taika ---------- */
@@ -277,3 +280,11 @@ span.chat-ctx{text-decoration:none;}
 .vz-top .lang-switch{display:inline-flex; gap:2px; padding:3px; border-radius:10px; background:rgba(255,255,255,0.08);}
 .vz-top .lang-switch a{padding:5px 7px; border-radius:7px; font:700 11px/1 'Inter', sans-serif; letter-spacing:.04em; color:#AEB5C2; text-decoration:none;}
 .vz-top .lang-switch a.active{background:#fff; color:#12151C;}
+/* Taikoje (tankus darbo langas) - 💡 mažas apskritimas be mirgėjimo, užrašas išsiskleidžia užvedus pelę: neuždengia lentelių */
+@media (min-width:641px){
+  body.vz .fb-fab{height:44px; padding:0 13px; gap:0; font-size:14px;}
+  body.vz .fb:not(.open) .fb-fab{animation:none; box-shadow:0 6px 16px rgba(232,89,12,0.35), 0 0 0 2px rgba(255,255,255,0.9);}
+  body.vz .fb-fab-label{max-width:0; overflow:hidden; white-space:nowrap; transition:max-width .2s ease, margin .2s ease;}
+  body.vz .fb-fab:hover .fb-fab-label, body.vz .fb-fab:focus-visible .fb-fab-label, body.vz .fb.open .fb-fab-label{max-width:160px; margin-left:8px;}
+  body.vz .fb-panel{bottom:54px;}
+}

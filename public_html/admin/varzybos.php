@@ -221,7 +221,7 @@ varz_html_head(t('Varžybos'), 'vz-home');
     </form>
   <?php endif; ?>
   <?php if (varzybos_enabled() && !$demo): ?>
-    <p class="small"><a href="<?= url('admin/varzybos-isorine.php') ?>"><?= te('Išorinė varžybų sistema (registracija per karateka.lt) →') ?></a></p>
+    <a class="varz-share varz-ext" href="<?= url('admin/varzybos-isorine.php') ?>">🔗 <b><?= te('Išorinė varžybų sistema') ?></b> <span class="muted small"><?= te('- registracija per karateka.lt') ?></span> <span class="varz-ext-go">→</span></a>
   <?php endif; ?>
   <?php if (is_admin()): $demoTok = varz_demo_token(); $demoUrl = $demoTok !== '' ? abs_url('varzybos-bandymas.php?k=' . $demoTok) : ''; ?>
     <details class="varz-share" id="bandymas"<?= $demoUrl ? ' open' : '' ?>>

@@ -67,7 +67,8 @@ test('competition: kumite bout panel, live link and screen, club registration, D
   // Kumite kova: balai ir laikrodis
   await a.locator('#cat-list button', { hasText: 'Kumite' }).first().click();
   await a.click('#cat-draw');   // „Valdyti →“ - rungtis atsidaro Live tvarkaraštyje
-  await a.click('#draw-clear');
+  await a.click('#draw-reset-menu summary');   // ↺ Atstatyti → visą rungtį
+  await a.click('#draw-reset [data-reset="all"]');
   await a.locator('.bout-open').first().click();
   check('bout panel open', await a.locator('#bout').isVisible());
   await a.click('[data-pt="a|2"]');
