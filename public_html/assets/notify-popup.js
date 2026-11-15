@@ -1,9 +1,9 @@
 // Iššokantys pranešimai treneriui (app/notifications.php notify_popup_html): kas užsiregistravo į egzaminą, pavėlavo,
-// kitų klubų registracija į varžybas. Rodoma apačioje dešinėje, kol nepažymėta „Supratau“ ar neatidaryta; tikrinama kas minutę.
+// kitų klubų registracija į varžybas. Rodoma viršuje dešinėje, kol nepažymėta „Supratau“ ar neatidaryta; tikrinama kas minutę.
 (function () {
   var box = document.getElementById('ntfPop'); if (!box) return;
   var cfg = {}; try { cfg = JSON.parse(box.getAttribute('data-cfg') || '{}'); } catch (e) {}
-  var shown = {}, gone = {};
+  var shown = {}, gone = {}, L = cfg.l || { open: 'Atidaryti', ok: 'Supratau', close: 'Uždaryti' };
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
   function markRead(id) {
     var f = new FormData(); f.append('_csrf', cfg.csrf); f.append('ajax', '1'); f.append('action', 'read'); f.append('id', id);
@@ -16,8 +16,8 @@
       var el = document.createElement('div');
       el.className = 'ntf-card'; el.setAttribute('role', 'status'); el.dataset.id = n.id;
       el.innerHTML = '<span class="ntf-icon" aria-hidden="true">' + esc(n.icon) + '</span><div class="ntf-txt"><b>' + esc(n.title) + '</b>' + (n.body ? '<span>' + esc(n.body) + '</span>' : '') +
-        '<small>' + esc(n.when) + '</small><div class="ntf-btns">' + (n.link ? '<a class="ntf-open" href="' + esc(n.link) + '">Atidaryti</a>' : '') +
-        '<button type="button" class="ntf-ok">Supratau</button></div></div><button type="button" class="ntf-x" aria-label="Uždaryti">×</button>';
+        '<small>' + esc(n.when) + '</small><div class="ntf-btns">' + (n.link ? '<a class="ntf-open" href="' + esc(n.link) + '">' + esc(L.open) + '</a>' : '') +
+        '<button type="button" class="ntf-ok">' + esc(L.ok) + '</button></div></div><button type="button" class="ntf-x" aria-label="' + esc(L.close) + '">×</button>';
       box.appendChild(el);
       requestAnimationFrame(function () { el.classList.add('in'); });
     });

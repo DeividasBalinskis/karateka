@@ -85,7 +85,8 @@ function notify_popup_html(): string
     if (!$a || !is_staff($a)) {
         return '';
     }
-    $cfg = ['api' => url('pranesimas.php'), 'csrf' => csrf_token(), 'items' => notifications_popup((int) $a['id'])];
+    $cfg = ['api' => url('pranesimas.php'), 'csrf' => csrf_token(), 'items' => notifications_popup((int) $a['id']),
+            'l' => ['open' => t('Atidaryti'), 'ok' => t('Supratau'), 'close' => t('Uždaryti')]];
     return '<div class="ntf-pop" id="ntfPop" aria-live="polite" data-cfg="' . e(json_encode($cfg, JSON_UNESCAPED_UNICODE)) . '"></div>'
         . '<script src="' . e(asset_url('assets/notify-popup.js')) . '" defer></script>';
 }

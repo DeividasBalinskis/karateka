@@ -335,7 +335,9 @@ test('guest: event page, menu, contacts, instructors', async ({ browser }) => {
   await g.goto('index.php');
   check('guest trial button', await g.locator('.site-header .nav-account .nav-cta').count() === 1);
   // Kontaktai: visa sekcija matoma, blokai vienodo aukščio
-  await g.click('.site-header a[href$="#kontaktai"]'); await g.waitForTimeout(1200);
+  await g.click('.site-header a[href$="#kontaktai"]');
+  // Lėtame kompiuteryje sklandus slinkimas trunka ilgiau - laukiama, kol puslapis sustos
+  await g.waitForFunction(() => new Promise(r => { const y = window.scrollY; setTimeout(() => r(y > 0 && window.scrollY === y), 300); }), null, { timeout: 6000, polling: 100 }).catch(() => {});
   const top = await g.evaluate(() => document.getElementById('kontaktai').getBoundingClientRect().top);
   const hdrH = await g.evaluate(() => document.querySelector('.site-header').getBoundingClientRect().bottom);
   check('kontaktai not cut', top >= hdrH - 2 && top < hdrH + 80, `top ${top} header ${hdrH}`);

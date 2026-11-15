@@ -4,6 +4,44 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.28 - 2026-11-15 (Denio pastabos: tatamio darbas, apdovanojimai, katos balai, svetainė; bandymo nuoroda draugui)
+**Duomenų bazė:** `db/033_apdovanojimai.sql` - Valdymas → Šiandien → „Atnaujinkite duomenų bazę“.
+
+**Taika - varžybų diena**
+- **Mano tatamis**: Live tvarkaraštyje viršuje mygtukai „1 TATAMIS | 2 TATAMIS | … | Visi“. Pirmą kartą paklausiama, prie kurio dirbate -
+  šiame kompiuteryje (planšetėje) rodomas tik jis, kitą pažiūrėti - vienu paspaudimu. „▶ Dabar: …“ atidaro dabartinę grupę.
+- Atidarius grupę - **pačioje apačioje visos to tatamio grupės**: laikas, kiek kovų liko, kas toliau, būsena. Paspaudus - atsidaro.
+- Baigus grupę iššoka: **„🏅 Siųsti apdovanojimams“** ir **„Sekanti grupė: … →“**.
+- Būsenos prie grupių (sekretoriatui ir žiūrovams): **Laukiama → Vyksta → Užbaigta → Užbaigta · apdovanojama → Užbaigta ir apdovanota**.
+- **Apdovanojimų planšetė** („📡 Transliacija ir registracija“ → „🏅 Apdovanojimų planšetė“, slapta nuoroda): amžiaus grupės (tie patys metai -
+  ir kata, ir kumite) **pilkos, kol kuri nors rungtis vyksta ar neišsiųsta, žalios - kai visos išsiųstos**. Matosi prizininkai (pilni vardai),
+  naujai žalia grupė pyptelėja. Apdovanojus - „✓ Apdovanota - užbaigti“.
+- Telefone tatamio ekranas **nebešokinėja į viršų**; viršuje - kas vyksta dabar, apačioje - grupių sąrašas.
+
+**Taika - katos balai ir kumite**
+- Balai rašomi be taško: **75 → 7.5** (taškas įdedamas pats). Paspaudus kitą langelį, žymeklis lieka ten.
+- **Kata kiekvienam dalyviui kiekviename rate** - pasirinkti iš sąrašo (Heian, Tekki, Bassai, Kanku, Enpi, Jion…) ar įrašyti; finale ta pati kata
+  kaip pusfinalyje pažymima raudonai.
+- Balų sistemoje rato balas - **teisėjų balų vidurkis** (be aukščiausio ir žemiausio); galima perjungti į sumą. 2 ratai: **„Pusfinalis“ ir „Finalas“,
+  finalininkų vietos - pusfinalio ir finalo vidurkių suma** (ne tik finalo).
+- Kumite kovos skydelyje - **laiko šablonai**: Kova (kategorijos laikas), Jiyu ippon 0:10, Ko-Go 0:10, Jiyu pratęsimas 1:30.
+- Kategorijų rikiavimas mygtukais (Kaip yra | Metai | Diržas | Dalyviai) ir **didėjančia / mažėjančia** tvarka.
+- Klubai → **„⬇ Kontaktai (Excel)“** - visų klubų atsakingi asmenys, telefonai, el. paštai, dalyvių skaičius.
+
+**Taika - bandymo nuoroda (be paskyros)**
+- Taikos pradžioje (adminui) **„👀 Duoti išbandyti“** → nuoroda. Draugas įrašo vardą ir gali daryti viską, ką adminas, bet **tik bandymo varžybose**:
+  išgalvoti dalyviai, tikrų klubo narių ir jų duomenų nemato, karateka.lt valdymo neatidaro. Atsiliepimus palieka per 💡 (matosi su jo vardu).
+  „Išjungti“ - prieiga baigiasi.
+
+**karateka.lt**
+- Instruktoriai: **„Klubo treneriai“** (Denis, Lukas) ir **„Pagalbiniai instruktoriai“** atskirai. Redaguojant - kortelėje „Pagalbinis instruktorius“.
+- „Kur mus rasti“ → **„Kontaktai“**; treniruočių vietos - nuorodos į žemėlapį.
+- Nario pokalbis (Valdymas → Žinutės) **atsinaujina pats** - naujos žinutės atsiranda be perkrovimo, atsakymas išsiunčiamas be perkrovimo.
+- Kai kas nors užsiregistruoja į egzaminą - **iššoka pranešimas** (viršuje dešinėje) ir treneriams, ne tik adminui.
+- Nariai → **„⬇ Kontaktai (Excel)“** (nario ir tėvų telefonai, el. paštai); egzamino protokolas - tikras Excel (.xlsx) failas.
+- Kalba - **LT | EN | RU visada matomi** viršuje (grįžti į lietuvių - vienu paspaudimu).
+- Privatumo politikoje: „Varžybų sistemą prižiūri administratorius Deividas Balinskis“.
+
 ## v1.27 - 2026-11-15 (Atsiliepimai su nuotraukomis visose svetainėse + Claude juos skaito pats)
 **Duomenų bazė:** `db/032_atsiliepimai_nuotraukos.sql` - Valdymas → Šiandien → „Atnaujinkite duomenų bazę“.
 
