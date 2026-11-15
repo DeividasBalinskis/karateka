@@ -1,7 +1,10 @@
 /* karateka.lt temos (app/themes.php): fonas su peizažu, kortelės lieka šviesios ir aiškiai skaitomos.
    Tamsiose temose (theme-dark) - tamsi viršutinė juosta, šviesūs užrašai ant fono. */
 body[data-theme]:not([data-theme="light"]){background-attachment:fixed;}
-body[data-theme="nature"]   {background:url("../img/temos/gamta.svg") center bottom / cover fixed no-repeat, #EAF5E1;}
+body[data-theme="nature"]   {background:url("../img/temos/gamta.svg") center bottom / cover fixed no-repeat, #F2E8D8;}
+body[data-theme="dunes"]    {background:url("../img/temos/kopos.svg") center bottom / cover fixed no-repeat, #FBE3B8;}
+body[data-theme="dojo"]     {background:url("../img/temos/dojo.svg") center bottom / cover fixed no-repeat, #F1E7D2;}
+body[data-theme="aurora"]   {background:url("../img/temos/pasvaiste.svg") center bottom / cover fixed no-repeat, #071A2B;}
 body[data-theme="mountains"]{background:url("../img/temos/kalnai.svg") center bottom / cover fixed no-repeat, #EEF3F8;}
 body[data-theme="sea"]      {background:url("../img/temos/jura.svg") center bottom / cover fixed no-repeat, #E6F6FC;}
 body[data-theme="sakura"]   {background:url("../img/temos/sakura.svg") center bottom / cover fixed no-repeat, #FFF6F8;}
@@ -19,6 +22,9 @@ body[data-theme="sea"]      {--accent:#1E6F9E; --accent-dark:#175A80;}
 body[data-theme="sakura"]   {--accent:#B4436F; --accent-dark:#8E3357;}
 body[data-theme="autumn"]   {--accent:#B5541F; --accent-dark:#8E4118;}
 body[data-theme="winter"]   {--accent:#2F5263; --accent-dark:#233F4C;}
+body[data-theme="dunes"]    {--accent:#B4572E; --accent-dark:#8E4220;}
+body[data-theme="dojo"]     {--accent:#7A4E2C; --accent-dark:#5E3B20;}
+body[data-theme="aurora"]   {--accent:#2E9C7A; --accent-dark:#237A5F;}
 
 /* ---------- Tamsios temos: juosta, antraštės ir užrašai ant fono ---------- */
 body.theme-dark .site-header{background:rgba(20,18,26,0.92); border-bottom-color:rgba(255,255,255,0.08); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);}

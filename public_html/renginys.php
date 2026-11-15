@@ -76,6 +76,7 @@ page_start(tr_text($ev['title']), ['section' => 'renginiai', 'description' => $e
     <aside class="stack">
       <div class="panel card ep-reg">
         <div class="kicker"><?= te('Registracija') ?></div>
+        <?php if (!$past && ($regBtn = event_reg_button($ev, 'btn btn-primary ep-reg-link'))): ?><p><?= $regBtn ?></p><?php endif; ?>
         <?php if ($past): ?>
           <p class="muted"><?= te('Renginys jau įvyko.') ?></p>
         <?php elseif ($members): ?>

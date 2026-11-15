@@ -8,10 +8,13 @@ const THEMES = [
     'nature'    => ['🌿', 'Gamta', false, 'gamta'],
     'mountains' => ['🏔️', 'Kalnai', false, 'kalnai'],
     'sea'       => ['🌊', 'Jūra', false, 'jura'],
+    'dunes'     => ['🏜️', 'Kopos', false, 'kopos'],
     'sakura'    => ['🌸', 'Sakura', false, 'sakura'],
     'autumn'    => ['🍂', 'Ruduo', false, 'ruduo'],
     'winter'    => ['❄️', 'Žiema', false, 'ziema'],
+    'dojo'      => ['🥋', 'Dojo', false, 'dojo'],
     'dark'      => ['🌙', 'Tamsi', true, ''],
+    'aurora'    => ['🌌', 'Pašvaistė', true, 'pasvaiste'],
     'space'     => ['🪐', 'Kosmosas', true, 'kosmosas'],
     'volcano'   => ['🌋', 'Vulkanas', true, 'vulkanas'],
 ];

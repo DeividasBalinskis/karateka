@@ -48,6 +48,35 @@ function render_schedule(array $rows): string
     return $html;
 }
 
+/**
+ * Renginio registracijos nuoroda (db/034): įrašyta renginyje arba rasta aprašyme (Google Forms, Microsoft Forms ir pan.) - mygtukas „📝 Registracija →“.
+ * Praėjusiam renginiui ar pasibaigus registracijai - ''.
+ */
+function event_reg_url(array $ev): string
+{
+    if (event_last_day($ev) < date('Y-m-d') || (!empty($ev['registration_until']) && $ev['registration_until'] < date('Y-m-d'))) {
+        return '';
+    }
+    $url = trim((string) ($ev['registration_url'] ?? ''));
+    if ($url === '' && preg_match('~https?://(?:forms\.gle|docs\.google\.com/forms|forms\.office\.com|forms\.microsoft\.com|[\w-]+\.typeform\.com|form\.jotform\.com)/[^\s<>"\)]+~i',
+            ($ev['summary'] ?? '') . ' ' . ($ev['description'] ?? ''), $m)) {
+        $url = rtrim($m[0], '.,;');
+    }
+    return preg_match('~^https?://~i', $url) ? $url : '';
+}
+
+/** Paskutinė renginio diena (Y-m-d) */
+function event_last_day(array $ev): string
+{
+    return (string) ($ev['ends_on'] ?: $ev['starts_on']);
+}
+
+function event_reg_button(array $ev, string $class = 'btn btn-primary btn-sm'): string
+{
+    $url = event_reg_url($ev);
+    return $url === '' ? '' : '<a class="' . e($class) . ' event-reg" href="' . e($url) . '" target="_blank" rel="noopener">' . e(t('📝 Registracija →')) . '</a>';
+}
+
 function render_event(array $ev): string
 {
     $ts = strtotime($ev['starts_on']);
@@ -72,7 +101,7 @@ function render_event(array $ev): string
         . '<div class="muted small">' . e($when) . ($ev['location'] ? ' · ' . e(tr_text($ev['location'])) : '') . '</div>'
         . ($short !== '' ? '<div class="small" style="margin-top:6px;">' . e($short) . '</div>' : '')
         . (!empty($ev['file_path']) ? '<div class="small" style="margin-top:6px;">' . event_file_link($ev) . '</div>' : '')
-        . '<a class="small event-more" href="' . e($link) . '">' . e(t('Plačiau →')) . '</a>'
+        . '<div class="event-links"><a class="small event-more" href="' . e($link) . '">' . e(t('Plačiau →')) . '</a>' . event_reg_button($ev) . '</div>'
         . '</div></div>';
 }
 

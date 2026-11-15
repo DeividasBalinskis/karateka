@@ -1824,7 +1824,7 @@
     var ask = S.areas.length > 1 && !myArea;
     box.hidden = !ask;
     box.classList.toggle('ask', ask);
-    if (ask) box.innerHTML = '<div class="ap-q"><b>Prie kurio tatamio dirbate?</b><span class="muted small">Šiame kompiuteryje bus rodomas tik jis, kitą - vienu paspaudimu viršuje.</span></div><div class="ap-btns">' +
+    if (ask) box.innerHTML = '<div class="ap-q"><b>▶ Start: prie kurio tatamio dirbate?</b><span class="muted small">Šiame kompiuteryje bus rodomas tik jis, kitą - vienu paspaudimu viršuje.</span></div><div class="ap-btns">' +
       opts.map(function (o) { return '<button type="button" class="btn' + (o[0] === 'all' ? '' : ' btn-primary') + '" data-my-area="' + o[0] + '">' + (o[0] === 'all' ? 'Visi tatamiai (vyr. sekretoriatas)' : esc(o[1])) + '</button>'; }).join('') + '</div>';
   }
   ['area-seg', 'area-pick'].forEach(function (id) {

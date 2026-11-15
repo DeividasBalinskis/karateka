@@ -877,7 +877,7 @@ body.vz { background-attachment: fixed; }
   --accent: #2F7D4F; --accent-2: #24653F; --accent-soft: #E1F1E6; --green: #2F7D4F; --green-soft: #E1F1E6;
 }
 body.vz[data-theme="nature"] {
-  background: url("../img/temos/gamta.svg") center bottom / cover fixed no-repeat, #EAF5E1;
+  background: url("../img/temos/gamta.svg") center bottom / cover fixed no-repeat, #F2E8D8;
 }
 [data-theme="nature"] .vz-top { background: linear-gradient(135deg, #12301F 0%, #1D4A2E 100%); }
 /* 🏔️ Kalnai: dangus ir kalnų siluetai apačioje */
@@ -1059,6 +1059,23 @@ body.vz[data-theme="winter"] { background: url("../img/temos/ziema.svg") center 
 [data-theme="winter"] .vz-top { background: linear-gradient(135deg, #1A2E3A 0%, #2F5263 100%); }
 body.vz[data-theme="space"] { background: url("../img/temos/kosmosas.svg") center / cover fixed no-repeat, #050816; }
 body.vz[data-theme="volcano"] { background: url("../img/temos/vulkanas.svg") center bottom / cover fixed no-repeat, #140806; }
+/* v1.30: Kopos, Dojo, Šiaurės pašvaistė (tamsi) */
+[data-theme="dunes"] { --bg: #FBEBD3; --surface: #FFFFFF; --surface-2: #FDF4E8; --line: #F0D9BC; --line-2: #E4C29A; --ink: #33210F; --muted: #7A5D40; --accent: #B4572E; --accent-2: #8E4220; --accent-soft: #FBE5D6; }
+body.vz[data-theme="dunes"] { background: url("../img/temos/kopos.svg") center bottom / cover fixed no-repeat, #FBE3B8; }
+[data-theme="dunes"] .vz-top { background: linear-gradient(135deg, #3B2846 0%, #8A4A4E 100%); }
+[data-theme="dojo"] { --bg: #F5EDDC; --surface: #FFFDF8; --surface-2: #F8F1E3; --line: #E6D7BB; --line-2: #D6C09A; --ink: #2B1E12; --muted: #6E5A44; --accent: #7A4E2C; --accent-2: #5E3B20; --accent-soft: #F1E4D2; }
+body.vz[data-theme="dojo"] { background: url("../img/temos/dojo.svg") center bottom / cover fixed no-repeat, #F1E7D2; }
+[data-theme="dojo"] .vz-top { background: linear-gradient(135deg, #3A2414 0%, #6B4224 100%); }
+[data-theme="aurora"] { color-scheme: dark;
+  --bg: #061420; --surface: #0E2131; --surface-2: #132A3D; --line: rgba(90, 230, 180, .22); --line-2: rgba(90, 230, 180, .4); --ink: #E8F6F2; --muted: #9DBFB6;
+  --accent: #34D399; --accent-2: #22B07E; --accent-soft: #0F3328; --green: #4BE0A0; --green-soft: #10302A; --amber: #F2C14E; --amber-soft: #3A3014;
+  --shadow: 0 0 0 1px rgba(90, 230, 180, .1), 0 8px 30px rgba(0, 10, 20, .6); }
+body.vz[data-theme="aurora"] { background: url("../img/temos/pasvaiste.svg") center bottom / cover fixed no-repeat, #071A2B; }
+[data-theme="aurora"] .vz-top { background: linear-gradient(135deg, #03101A 0%, #0B2A33 100%); }
+[data-theme="aurora"] .seg-btn, [data-theme="aurora"] .sys-card, [data-theme="aurora"] .pi-add, [data-theme="aurora"] .flag-chip, [data-theme="aurora"] .bt-pside,
+[data-theme="aurora"] .m-score:focus, [data-theme="aurora"] .varz-card.is-test { background: var(--surface); color: var(--ink); }
+[data-theme="aurora"] .area, [data-theme="aurora"] .ov-col, [data-theme="aurora"] .varz-card, [data-theme="aurora"] .toolbar, [data-theme="aurora"] .panel { border-color: rgba(90, 230, 180, .3); }
+body.vz[data-theme="dunes"] .panel, body.vz[data-theme="dojo"] .panel { background: rgba(255, 255, 255, .93); }
 /* Peizažinėse temose kortelės - tankesnės (aiškus tekstas) */
 body.vz[data-theme="nature"] .panel, body.vz[data-theme="mountains"] .panel, body.vz[data-theme="sea"] .panel, body.vz[data-theme="sakura"] .panel, body.vz[data-theme="autumn"] .panel, body.vz[data-theme="winter"] .panel { background: rgba(255, 255, 255, .93); }
 .vz-top .theme-pick .tp-btn { background: rgba(255, 255, 255, .08); color: #DDE1E8; }

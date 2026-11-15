@@ -4,6 +4,25 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.30 - 2026-11-15 (renginių registracija ir kalendorius, nauja gamta ir 3 naujos temos)
+**Duomenų bazė:** `db/034_renginiu_registracija.sql` - Valdymas → Šiandien → „Atnaujinkite duomenų bazę“.
+
+**Svarbu įkeliant:** zip'o turinį išpakuokite **tiesiai į svetainės aplanką** (ten, kur `index.php`), ne į naują `public_html` aplanką.
+v1.29 buvo išpakuota į `test.karateka.lt/public_html/...`, todėl svetainė liko v1.27 - tą papildomą `public_html` aplanką galima ištrinti.
+
+**Denio atsiliepimai #12-#17**
+- **#12 📝 Registracija**: renginio formoje (4 žingsnis) - **„Registracijos nuoroda“** (pvz. Google Forms). Prie renginio ir jo puslapyje atsiranda
+  mygtukas **„📝 Registracija →“**. Jei nuoroda jau įrašyta aprašyme (forms.gle, Google / Microsoft Forms) - mygtukas atsiranda pats.
+  Praėjus renginiui ar registracijos terminui - mygtukas dingsta.
+- **#13 📅 Renginių kalendorius**: Renginiai → **„☰ Sąrašas | 📅 Kalendorius“** - mėnesio tinklelis, visi renginiai savo dienose (ir kelių dienų),
+  ← → kiti mėnesiai, filtras pagal tipą veikia. **„📲 Į telefono kalendorių“** - visi vieši renginiai atsiranda telefono / Google kalendoriuje
+  ir atsinaujina patys.
+- **#14** Taikoje „mano tatamis“ jau yra nuo v1.28 (Denis matė v1.27): Live tvarkaraštyje **„▶ Start: prie kurio tatamio dirbate?“** - pasirinkus
+  šiame kompiuteryje rodomas tik tas tatamis ir jo rungtys.
+- **#15-#17 🎨 Temos**: pasirinkimas karateka.lt viršuje (šalia LT | EN | RU), Taikos pradžioje ir varžybose - nuo v1.29.
+  **Gamta perpiešta tikroviškiau** (eglių miškas rūke saulėtekyje, ežeras su atspindžiu) ir **3 naujos temos**: 🏜️ Kopos (saulėlydis prie jūros),
+  🥋 Dojo (shoji sienos, tatami), 🌌 Pašvaistė (tamsi, šiaurės pašvaistė virš miško). Iš viso 13.
+
 ## v1.29 - 2026-11-15 (Taika telefone, vardų tempimas, prisegamas langelis, temos visur, EN / RU; visų langų peržiūra)
 **Duomenų bazė:** naujų pakeitimų nėra (jei v1.28 dar neįkelta - Valdymas → Šiandien → „Atnaujinkite duomenų bazę“).
 

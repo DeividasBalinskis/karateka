@@ -64,6 +64,11 @@ if (is_post()) {
     if ($fileErr = event_file_error($_FILES['file'] ?? null)) {
         $errors[] = $fileErr;
     }
+    // Registracijos nuoroda (db/034): pvz. Google Forms - prie renginio mygtukas „📝 Registracija →“
+    $regUrl = trim(post('registration_url'));
+    if ($regUrl !== '' && !preg_match('~^https?://\S+$~i', $regUrl)) {
+        $errors[] = t('Registracijos nuoroda turi prasidėti https:// (nukopijuokite visą nuorodą).');
+    }
     if ($ev['registration_until'] && !DateTime::createFromFormat('!Y-m-d', $ev['registration_until'])) {
         $errors[] = t('Netinkama registracijos pabaigos data.');
     } elseif ($ev['registration_until'] && !$errors && $ev['registration_until'] > $ev['starts_on']) {
@@ -86,6 +91,11 @@ if (is_post()) {
             q('INSERT IGNORE INTO event_groups (event_id, group_id) VALUES (?, ?)', [$id, $gid]);
         }
         db()->commit();
+        try {
+            q('UPDATE events SET registration_url = ? WHERE id = ?', [mb_substr($regUrl, 0, 500) ?: null, $id]);
+        } catch (PDOException $ex) {
+            // DB dar neatnaujinta (db/034) - nuoroda neišsaugoma, kita viskas veikia
+        }
         try {
             event_file_save($id, $_FILES['file'] ?? null, !empty($_POST['file_remove']));
         } catch (RuntimeException $ex) {
@@ -182,6 +192,8 @@ if ($edit !== '') {
           <div class="panel card form">
             <h2 class="ef-step"><span>4</span> <?= te('Registracija ir pranešimai') ?></h2>
             <label class="check"><input type="checkbox" name="registration" value="1" <?= !empty($ev['registration']) ? 'checked' : '' ?>><span><?= te('Nariai gali registruotis patys („Dalyvausiu“)') ?></span></label>
+            <label><?= te('Registracijos nuoroda') ?> <span class="hint"><?= te('nebūtina; pvz. Google Forms - prie renginio atsiras mygtukas „📝 Registracija →“') ?></span>
+              <input type="url" name="registration_url" maxlength="500" placeholder="https://forms.gle/…" value="<?= e((string) (post('registration_url') !== '' ? post('registration_url') : ($ev['registration_url'] ?? ''))) ?>"></label>
             <label><?= te('Registracija iki') ?> <span class="hint"><?= te('numatyta - diena prieš renginį (galima ir renginio diena); po termino Denis gauna prašymą') ?></span>
               <input type="date" name="registration_until" id="evUntil" value="<?= e((string) ($ev['registration_until'] ?? '')) ?>"></label>
             <div class="kicker" style="margin-top:6px;"><?= te('Kaip pranešti pakviestiems') ?></div>
