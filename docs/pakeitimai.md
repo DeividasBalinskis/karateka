@@ -4,6 +4,22 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.25 - 2026-11-15 (Taikos pertvarka, 5-6 etapai: apsauga nuo klaidų, dizaino temos, meniu)
+**Duomenų bazė:** `db/030_varzybu_istorija.sql` - Valdymas → Šiandien → „Atnaujinkite duomenų bazę“.
+
+Apsauga nuo klaidų:
+- **⟲ Istorija** (viršuje): serveryje kas minutę daroma kopija, kai kas nors keičiama. Mygtukai **„Kaip prieš 5 min.“, „prieš 15 min.“,
+  „prieš 1 val.“** arba bet kuri kopija iš sąrašo (laikas, kiek kategorijų, kiek baigta). Prieš atkuriant dabartinė būsena irgi išsaugoma
+  („Prieš atkūrimą“) - atkūrimą galima atšaukti. Vienoms varžyboms - iki 400 kopijų.
+- Rungties valdyme **„Atstatyti…“**: visą rungtį arba **nuo pasirinkto rato** (pvz. nuo pusfinalio) ar tik paguodą / kovą dėl 3 vietos.
+  Kaip anksčiau - ir „Atšaukti“ (paskutinis veiksmas).
+
+Išvaizda (bendra visoms varžyboms):
+- **Dizaino temos** (viršuje): ☀️ Šviesi, 🌙 Tamsi, 🪐 Kosmosas, 🌿 Gamta, 🏔️ Kalnai, 🌋 Vulkanas. Fonas keičiasi, o lentelės ir kortelės lieka
+  nepermatomos ir aiškios; kosmose ir vulkane vykstančios rungties kraštas švelniai keičia spalvą.
+- **⚙ Meniu** (skirtukų eilutės dešinėje): skirtukus galima **pervadinti** ir **sukeisti vietomis**; „Numatytasis“ - grąžina kaip buvo.
+- Laikas prie rungties - visada 24 val. formatu (pvz. 13:45).
+
 ## v1.24 - 2026-11-15 (Taikos pertvarka, 3-4 etapai: Live tvarkaraštis ir paprastas kovos vaizdas)
 Duomenų bazės keisti nereikia.
 

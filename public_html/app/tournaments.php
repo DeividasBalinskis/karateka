@@ -56,6 +56,39 @@ function varz_partners(): array
     return home_block_defaults('partners')['items'];
 }
 
+const VARZ_THEMES = ['light' => '☀️ Šviesi', 'dark' => '🌙 Tamsi', 'space' => '🪐 Kosmosas', 'nature' => '🌿 Gamta', 'mountains' => '🏔️ Kalnai', 'volcano' => '🌋 Vulkanas'];
+
+/** Taikos išvaizdos nustatymai (bendri visoms varžyboms): tema ir meniu (tvarka, pavadinimai) */
+function varz_ui(): array
+{
+    $ui = json_decode((string) site_setting('taika_ui', '{}'), true);
+    $ui = is_array($ui) ? $ui : [];
+    $ui['theme'] = isset(VARZ_THEMES[$ui['theme'] ?? '']) ? $ui['theme'] : 'light';
+    $ui['menu'] = is_array($ui['menu'] ?? null) ? $ui['menu'] : ['order' => [], 'names' => []];
+    return $ui;
+}
+
+function varz_ui_save(array $in): array
+{
+    $ui = varz_ui();
+    if (isset($in['theme']) && isset(VARZ_THEMES[$in['theme']])) {
+        $ui['theme'] = $in['theme'];
+    }
+    if (isset($in['menu']) && is_array($in['menu'])) {
+        $tabs = ['klubai', 'komandos', 'dalyviai', 'kategorijos', 'live', 'rezultatai'];
+        $order = array_values(array_intersect((array) ($in['menu']['order'] ?? []), $tabs));
+        $names = [];
+        foreach ((array) ($in['menu']['names'] ?? []) as $k => $v) {
+            if (in_array($k, $tabs, true) && trim((string) $v) !== '') {
+                $names[$k] = mb_substr(trim((string) $v), 0, 40);
+            }
+        }
+        $ui['menu'] = ['order' => count($order) === count($tabs) ? $order : [], 'names' => $names];
+    }
+    set_site_setting('taika_ui', json_encode($ui, JSON_UNESCAPED_UNICODE));
+    return $ui;
+}
+
 /** Taikos puslapio pradžia (be karateka.lt meniu): <head>, šriftai, stilius */
 function varz_html_head(string $title, string $bodyClass = ''): void
 {
@@ -64,7 +97,7 @@ function varz_html_head(string $title, string $bodyClass = ''): void
         . '<link rel="icon" type="image/png" sizes="32x32" href="' . url('favicon-32.png?v=2') . '">'
         . '<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">'
         . '<link rel="stylesheet" href="' . e(asset_url('assets/varzybos.css')) . '"><link rel="stylesheet" href="' . e(asset_url('assets/widgets.css')) . '">'
-        . '</head><body class="vz ' . e($bodyClass) . '">';
+        . '</head><body class="vz ' . e($bodyClass) . '" data-theme="' . e(varz_ui()['theme']) . '">';
 }
 
 /** Partnerių juosta Taikos puslapių apačioje */
@@ -144,7 +177,62 @@ function tournament_save_state(int $id, array $state, array $results, int $versi
     unset($state['history']);
     $st = q('UPDATE tournaments SET state = ?, results = ?, version = version + 1, updated_at = NOW() WHERE id = ? AND version = ?',
         [json_encode($state, JSON_UNESCAPED_UNICODE), json_encode($results, JSON_UNESCAPED_UNICODE), $id, $version]);
-    return $st->rowCount() ? $version + 1 : null;
+    if (!$st->rowCount()) {
+        return null;
+    }
+    tournament_snapshot($id);   // kopija istorijai (ne dažniau kaip kas minutę)
+    return $version + 1;
+}
+
+// ---------- Istorija (db/030): kopija kas minutę, atkūrimas „kaip prieš 5 min.“ ----------
+
+/** Dabartinės būsenos kopija (dažniausiai - ne dažniau kaip kas minutę; su pastaba - visada) */
+function tournament_snapshot(int $id, string $note = ''): void
+{
+    try {
+        if ($note === '') {
+            $last = q_value('SELECT created_at FROM tournament_versions WHERE tournament_id = ? ORDER BY id DESC LIMIT 1', [$id]);
+            if ($last && strtotime((string) $last) > time() - 60) {
+                return;
+            }
+        }
+        q('INSERT INTO tournament_versions (tournament_id, version, state, results, note) SELECT id, version, COALESCE(state, "{}"), results, ? FROM tournaments WHERE id = ?',
+            [$note !== '' ? mb_substr($note, 0, 120) : null, $id]);
+        $cut = q_value('SELECT id FROM tournament_versions WHERE tournament_id = ? ORDER BY id DESC LIMIT 1 OFFSET 400', [$id]);
+        if ($cut) {
+            q('DELETE FROM tournament_versions WHERE tournament_id = ? AND id <= ?', [$id, (int) $cut]);
+        }
+    } catch (PDOException $ex) {
+        // dar neimportuotas db/030
+    }
+}
+
+/** Kopijų sąrašas (naujausios viršuje): laikas, pastaba, kiek kategorijų ir kiek baigta */
+function tournament_history(int $id, int $limit = 80): array
+{
+    try {
+        $rows = q_all('SELECT id, version, note, created_at, results FROM tournament_versions WHERE tournament_id = ? ORDER BY id DESC LIMIT ' . max(1, $limit), [$id]);
+    } catch (PDOException $ex) {
+        return [];
+    }
+    return array_map(function ($r) {
+        $res = json_decode((string) $r['results'], true);
+        $cats = is_array($res['categories'] ?? null) ? $res['categories'] : [];
+        return ['id' => (int) $r['id'], 'at' => $r['created_at'], 'note' => (string) $r['note'], 'cats' => count($cats),
+                'done' => count(array_filter($cats, function ($c) { return !empty($c['finished']); }))];
+    }, $rows);
+}
+
+/** Atkuria kopiją (dabartinė būsena prieš tai išsaugoma kaip kopija). Grąžina naują versiją ir būseną arba null. */
+function tournament_restore(int $id, int $snapId): ?array
+{
+    $snap = q_one('SELECT * FROM tournament_versions WHERE id = ? AND tournament_id = ?', [$snapId, $id]);
+    if (!$snap) {
+        return null;
+    }
+    tournament_snapshot($id, 'Prieš atkūrimą');
+    q('UPDATE tournaments SET state = ?, results = ?, version = version + 1, updated_at = NOW() WHERE id = ?', [$snap['state'], $snap['results'], $id]);
+    return ['version' => (int) q_value('SELECT version FROM tournaments WHERE id = ?', [$id]), 'state' => json_decode((string) $snap['state'], true)];
 }
 
 function tournament_delete(int $id): void

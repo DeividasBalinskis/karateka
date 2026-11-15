@@ -42,6 +42,26 @@ if (is_post() && (get('live') || get('entries') || get('reg'))) {
     exit(json_encode(['ok' => true]));
 }
 
+// Išvaizda: tema ir meniu (bendri visoms varžyboms)
+if (get('ui') && is_post()) {
+    csrf_check();
+    header('Content-Type: application/json; charset=utf-8');
+    exit(json_encode(['ok' => true, 'ui' => varz_ui_save(json_decode((string) file_get_contents('php://input'), true) ?: [])], JSON_UNESCAPED_UNICODE));
+}
+
+// Istorija: kopijų sąrašas (JSON) ir atkūrimas
+if (get('history') && !is_post()) {
+    header('Content-Type: application/json; charset=utf-8');
+    exit(json_encode(['ok' => true, 'now' => date('Y-m-d H:i:s'), 'list' => tournament_history((int) $t['id'])], JSON_UNESCAPED_UNICODE));
+}
+if (get('restore') && is_post()) {
+    csrf_check();
+    header('Content-Type: application/json; charset=utf-8');
+    $in = json_decode((string) file_get_contents('php://input'), true) ?: [];
+    $r = tournament_restore((int) $t['id'], (int) ($in['id'] ?? 0));
+    exit(json_encode($r ? ['ok' => true] + $r : ['ok' => false, 'error' => 'Kopija nerasta.'], JSON_UNESCAPED_UNICODE));
+}
+
 // Išsaugojimas (fetch iš assets/varzybos.js)
 if (is_post()) {
     csrf_check();
@@ -81,6 +101,9 @@ $cfg = [
     'id' => (int) $t['id'], 'title' => $t['title'], 'version' => (int) $t['version'], 'isTest' => (bool) $t['is_test'],
     'liveApi' => $shareUrl ? url('admin/varzybu-sistema.php?id=' . (int) $t['id'] . '&live=1') : '',
     'entriesApi' => url('admin/varzybu-sistema.php?id=' . (int) $t['id'] . '&entries=1'),
+    'historyApi' => url('admin/varzybu-sistema.php?id=' . (int) $t['id'] . '&history=1'),
+    'uiApi' => url('admin/varzybu-sistema.php?id=' . (int) $t['id'] . '&ui=1'), 'ui' => varz_ui(), 'themes' => VARZ_THEMES,
+    'restoreApi' => url('admin/varzybu-sistema.php?id=' . (int) $t['id'] . '&restore=1'),
     'regApi' => url('admin/varzybu-sistema.php?id=' . (int) $t['id'] . '&reg=1'),
     'shareUrl' => $shareUrl, 'screenUrl' => $shareUrl ? $shareUrl . '&ekranas=1' : '', 'regUrl' => $regUrl, 'regOpen' => $regOpen,
     'entries' => tournament_new_entries((int) $t['id']),
@@ -103,7 +126,7 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
 <link rel="stylesheet" href="<?= e(asset_url('assets/varzybos.css')) ?>">
 <link rel="stylesheet" href="<?= e(asset_url('assets/widgets.css')) ?>">
 </head>
-<body class="vz<?= get('langas') ? ' vz-popup' : '' ?>">
+<body class="vz<?= get('langas') ? ' vz-popup' : '' ?>" data-theme="<?= e(varz_ui()['theme']) ?>">
 <header class="vz-top">
   <div class="vz-top-row">
     <a class="vz-back" href="<?= url('admin/varzybos.php') ?>" title="Visos varžybos">←</a>
@@ -120,6 +143,8 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
     </div>
     <div class="vz-top-right">
       <span class="save-state ok" id="save-state" role="status">Išsaugota ✓</span>
+      <select class="vz-link vz-theme" id="theme-pick" aria-label="Dizaino tema" title="Dizaino tema"><?php foreach (VARZ_THEMES as $k => $l): ?><option value="<?= $k ?>"<?= varz_ui()['theme'] === $k ? ' selected' : '' ?>><?= e($l) ?></option><?php endforeach; ?></select>
+      <button type="button" class="vz-link" id="hist-toggle" aria-expanded="false" title="Atkurti, kaip buvo anksčiau">⟲ Istorija</button>
       <?php if ($shareUrl): ?><button type="button" class="vz-link" id="share-toggle" aria-expanded="false">📡 Transliacija ir registracija</button><?php endif; ?>
       <a class="vz-link" href="<?= url('varzybu-rezultatai.php?id=' . (int) $t['id']) ?>" target="_blank" rel="noopener">Viešas puslapis ↗</a>
     </div>
@@ -132,8 +157,26 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
     <span class="tabs-sep" aria-hidden="true"></span>
     <button role="tab" id="tab-live" aria-selected="false" aria-controls="v-live" class="tab-live"><span class="live-dot" aria-hidden="true"></span>Live tvarkaraštis</button>
     <button role="tab" id="tab-rezultatai" aria-selected="false" aria-controls="v-rezultatai"><span class="tab-n">🏅</span>Rezultatai</button>
+    <button type="button" class="tab-cfg" id="menu-cfg" aria-expanded="false" title="Meniu: pervadinti, sukeisti vietomis">⚙</button>
   </nav>
 </header>
+<div class="share-panel menu-panel" id="menu-panel" hidden>
+  <div class="sp-block">
+    <b>⚙ Meniu</b>
+    <p class="muted small">Pervadinkite skirtukus ir sukeiskite juos vietomis (↑ ↓). Galioja visoms varžyboms.</p>
+    <div id="menu-list" class="menu-list"></div>
+    <div class="sp-row"><button type="button" class="btn btn-primary" id="menu-save">Išsaugoti</button><button type="button" class="btn" id="menu-reset">Numatytasis</button></div>
+  </div>
+</div>
+<div class="share-panel hist-panel" id="hist-panel" hidden>
+  <div class="sp-block">
+    <b>⟲ Atkurti, kaip buvo anksčiau</b>
+    <p class="muted small">Kopija serveryje daroma kas minutę, kai kas nors keičiama. Atkūrus - dabartinė būsena irgi išsaugoma, tad atkūrimą galima atšaukti.
+      Vienos rungties klaidą paprasčiau taisyti rungties valdyme: „Atšaukti“ ar „Atstatyti…“.</p>
+    <div class="sp-row"><button type="button" class="btn" data-hist-ago="5">Kaip prieš 5 min.</button><button type="button" class="btn" data-hist-ago="15">prieš 15 min.</button><button type="button" class="btn" data-hist-ago="60">prieš 1 val.</button></div>
+    <div class="hist-list" id="hist-list"><p class="muted small">Kraunama…</p></div>
+  </div>
+</div>
 <div class="share-panel" id="share-panel" hidden>
   <div class="sp-block">
     <b>📺 Ekranai salėje</b>
@@ -296,6 +339,7 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
       <span class="spacer"></span>
       <?php if ($t['is_test']): ?><button class="btn btn-test" id="draw-sim" type="button" title="Tik test varžybose">🎲 Sužaisti kategoriją</button><?php endif; ?>
       <button class="btn" id="draw-print" type="button">Spausdinti</button>
+      <select class="sel" id="draw-reset" aria-label="Atstatyti rungtį"><option value="">Atstatyti…</option></select>
       <button class="btn" id="draw-clear" type="button">Išvalyti rezultatus</button>
     </div>
       <div id="draw-view"></div>

@@ -39,7 +39,7 @@ a.btn, a.vz-link { text-decoration: none; display: inline-block; }
 .tabs::-webkit-scrollbar { display: none; }
 .tabs button { flex-shrink: 0; display: inline-flex; align-items: center; gap: 7px; background: transparent; color: #C4CAD5; border: 0; border-radius: 10px; padding: 8px 14px; font-weight: 600; font-size: .92rem; }
 .tabs button:hover { background: rgba(255, 255, 255, .08); color: #fff; }
-.tabs button[aria-selected="true"] { background: #fff; color: var(--ink); box-shadow: 0 2px 8px rgba(0, 0, 0, .2); }
+.tabs button[aria-selected="true"] { background: #fff; color: #12151C; box-shadow: 0 2px 8px rgba(0, 0, 0, .2); }
 .tab-n { width: 20px; height: 20px; border-radius: 50%; display: inline-grid; place-items: center; font-size: .72rem; font-weight: 700; background: rgba(255, 255, 255, .12); }
 .tabs button[aria-selected="true"] .tab-n { background: var(--accent); color: #fff; }
 .notice { max-width: none; margin: 12px 0 0; padding: 0 20px; }
@@ -69,7 +69,7 @@ main { max-width: none; margin: 0; padding: 16px 20px 40px; }
 .disc { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 7px; vertical-align: 0; }
 .d-enbu { background: var(--enbu); } .d-sumo { background: var(--sumo); } .d-kata { background: var(--kata); } .d-kumite { background: var(--kumite); } .d-fukugo { background: var(--fukugo); } .d-kihon { background: var(--kihon); }
 .belt-dot { display: inline-block; width: 11px; height: 11px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .18); }
-.home-mark { display: inline-grid; place-items: center; width: 18px; height: 18px; border-radius: 5px; background: var(--ink); color: #fff; font-size: .68rem; font-weight: 800; margin-right: 6px; vertical-align: 1px; }
+.home-mark { display: inline-grid; place-items: center; width: 18px; height: 18px; border-radius: 5px; background: var(--ink); color: var(--bg); font-size: .68rem; font-weight: 800; margin-right: 6px; vertical-align: 1px; }
 
 /* ---------- Skydeliai, lentelės ---------- */
 .panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
@@ -99,7 +99,7 @@ td.num, th.num { text-align: center; font-variant-numeric: tabular-nums; }
 .mp-tools .sel { max-width: 320px; }
 .chips-row { display: flex; flex-wrap: wrap; gap: 6px; }
 .fchip { border: 1px solid var(--line-2); background: var(--surface); border-radius: 999px; padding: 4px 12px; font-size: .84rem; font-weight: 600; }
-.fchip[aria-pressed="true"] { background: var(--ink); color: #fff; border-color: var(--ink); }
+.fchip[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
 .mp-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 6px; padding: 12px 16px; max-height: 46vh; overflow: auto; }
 .mp-item { display: flex; align-items: center; gap: 8px; padding: 7px 10px; border: 1px solid var(--line); border-radius: 10px; cursor: pointer; }
 .mp-item:hover { border-color: var(--ink); }
@@ -128,7 +128,7 @@ td.num, th.num { text-align: center; font-variant-numeric: tabular-nums; }
 .seg { gap: 4px; }
 .seg-btn { border: 1px solid var(--line-2); background: #fff; border-radius: 999px; padding: 6px 13px; font-weight: 600; font-size: .88rem; }
 .seg-btn:hover { border-color: var(--ink); }
-.seg-btn.on { background: var(--ink); color: #fff; border-color: var(--ink); }
+.seg-btn.on { background: var(--ink); color: var(--bg); border-color: var(--ink); }
 .seg-btn.on .disc { box-shadow: 0 0 0 2px #fff; }
 .team-chk { margin-left: 8px; }
 .sys-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 8px; }
@@ -517,7 +517,7 @@ button.card-name:focus-visible { outline: 3px solid #F2B705; outline-offset: 2px
 
 /* Klubų kontaktai (skirtukas „Klubai“ → „☎ Kontaktai“) */
 .club-btns { white-space: nowrap; }
-.btn.on { background: var(--ink); color: #fff; border-color: var(--ink); }
+.btn.on { background: var(--ink); color: var(--bg); border-color: var(--ink); }
 tr.club-contacts > td { background: var(--surface-2); padding: 12px 14px; }
 .ci-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
 .ci-field { display: grid; gap: 4px; font-size: 0.8rem; font-weight: 600; color: var(--muted); }
@@ -610,7 +610,7 @@ tr.club-contacts > td { background: var(--surface-2); padding: 12px 14px; }
 
 /* ---------- Live tvarkaraštis ---------- */
 .live-bar { gap: 10px; }
-.live-clock { font-size: 1.25rem; font-variant-numeric: tabular-nums; letter-spacing: .02em; padding: 2px 10px; border-radius: 8px; background: var(--ink); color: #fff; }
+.live-clock { font-size: 1.25rem; font-variant-numeric: tabular-nums; letter-spacing: .02em; padding: 2px 10px; border-radius: 8px; background: var(--ink); color: var(--bg); }
 .live-settings { position: relative; }
 .live-settings > summary { list-style: none; }
 .live-settings > summary::-webkit-details-marker { display: none; }
@@ -642,8 +642,8 @@ tr.club-contacts > td { background: var(--surface-2); padding: 12px 14px; }
 .rs-chip.st-done { opacity: .55; }
 .rs-chip.st-now { border-color: var(--accent); }
 .rs-chip.st-now .rs-time { background: var(--accent); color: #fff; }
-.rs-chip.on { background: var(--ink); color: #fff; border-color: var(--ink); opacity: 1; }
-.rs-chip.on .rs-time { background: rgba(255, 255, 255, .18); color: #fff; }
+.rs-chip.on { background: var(--ink); color: var(--bg); border-color: var(--ink); opacity: 1; }
+.rs-chip.on .rs-time { background: rgba(127, 127, 127, .25); color: var(--bg); }
 .run-head { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 10px; }
 .run-title { display: grid; min-width: 0; }
 .run-title b { font-size: 1.25rem; display: inline-flex; align-items: center; gap: 8px; }
@@ -691,7 +691,7 @@ tr.club-contacts > td { background: var(--surface-2); padding: 12px 14px; }
 .ov-in::-webkit-outer-spin-button, .ov-in::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 .ov-in:hover, .ov-sel:hover { border-color: var(--line-2); }
 .ov-in:focus, .ov-sel:focus { border-color: var(--ink); background: var(--surface); outline: none; }
-.ovb-n { border: 0; border-radius: 8px; background: var(--ink); color: #fff; font-weight: 800; padding: 4px 0; cursor: pointer; position: relative; }
+.ovb-n { border: 0; border-radius: 8px; background: var(--ink); color: var(--bg); font-weight: 800; padding: 4px 0; cursor: pointer; position: relative; }
 .ovb.few .ovb-n { background: var(--accent); }
 .ovb-n b { position: absolute; top: -6px; right: -6px; width: 16px; height: 16px; border-radius: 50%; background: var(--amber); color: #fff; font-size: .7rem; line-height: 16px; }
 .ovb-edit { border: 0; background: transparent; color: var(--muted); cursor: pointer; font-size: 1rem; }
@@ -712,9 +712,10 @@ tr.club-contacts > td { background: var(--surface-2); padding: 12px 14px; }
 .card.detached, .rs-chip.detached { opacity: .45; filter: grayscale(1); pointer-events: none; }
 .card.detached { pointer-events: auto; }
 .card.detached .card-name { pointer-events: none; }
-.st-badge.det { background: var(--ink); color: #fff; }
+.st-badge.det { background: var(--ink); color: var(--bg); }
 /* Tvarkaraščio kortelė: laikas keičiamas, pavadinimas pervadinamas, dalyviai */
-.card-time-in { border: 1px solid transparent; background: transparent; font-weight: 800; font-variant-numeric: tabular-nums; padding: 0 2px; border-radius: 6px; width: 74px; font-size: .95rem; }
+.card-time-in { border: 1px solid transparent; background: transparent; color: var(--ink); font-weight: 800; font-variant-numeric: tabular-nums; padding: 0 2px; border-radius: 6px; width: 62px; font-size: .95rem; flex-shrink: 0; }
+.card-time-in::-webkit-calendar-picker-indicator { display: none; }
 .card-time-in:hover { border-color: var(--line-2); }
 .card-time-in[data-fixed] { background: var(--amber-soft); color: var(--amber); }
 .card-name-in { flex: 1; min-width: 0; font-weight: 600; padding: 3px 8px; }
@@ -730,7 +731,7 @@ tr.club-contacts > td { background: var(--surface-2); padding: 12px 14px; }
 .sv-a { background: linear-gradient(160deg, #E5323F, #B71C31); color: #fff; }
 .sv-b { background: linear-gradient(160deg, #FFFFFF, #EEF1F5); color: var(--ink); }
 .sv-score .sv-a { background: linear-gradient(160deg, #1B2130, #12151C); }
-.sv-vs { display: grid; place-items: center; padding: 0 14px; background: var(--ink); color: #fff; font-weight: 800; letter-spacing: .1em; }
+.sv-vs { display: grid; place-items: center; padding: 0 14px; background: var(--ink); color: var(--bg); font-weight: 800; letter-spacing: .1em; }
 .sv-label { font-size: .8rem; font-weight: 800; letter-spacing: .14em; opacity: .75; }
 .sv-name { font-size: clamp(1.6rem, 3.4vw, 2.8rem); font-weight: 800; line-height: 1.1; }
 .sv-club { font-size: 1.05rem; opacity: .8; }
@@ -738,7 +739,7 @@ tr.club-contacts > td { background: var(--surface-2); padding: 12px 14px; }
 .sv-belt span { width: 46px; height: 12px; border-radius: 4px; box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .25); }
 .sv-win { border: 0; border-radius: 12px; padding: 16px; font-size: 1.15rem; font-weight: 800; cursor: pointer; }
 .sv-a .sv-win { background: #fff; color: #B71C31; }
-.sv-b .sv-win { background: var(--ink); color: #fff; }
+.sv-b .sv-win { background: var(--ink); color: var(--bg); }
 .sv-win:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(0, 0, 0, .2); }
 .sv-flags .flags { display: flex; gap: 8px; flex-wrap: wrap; }
 .sv-flags .flag-chip { min-width: 54px; min-height: 48px; font-size: 1.2rem; }
@@ -753,3 +754,95 @@ tr.club-contacts > td { background: var(--surface-2); padding: 12px 14px; }
 .sv-places { list-style: none; padding: 0; margin: 12px auto 16px; display: grid; gap: 6px; max-width: 420px; text-align: left; }
 .sv-places li b { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--surface-2); margin-right: 8px; }
 @media (max-width: 700px) { .sv { grid-template-columns: 1fr; } .sv-vs { padding: 6px; } .sv-side { min-height: 0; } }
+/* Istorija */
+.hist-list { max-height: 50vh; overflow: auto; margin-top: 8px; }
+.hist-table { width: 100%; border-collapse: collapse; }
+.hist-table td { padding: 6px 8px; border-bottom: 1px solid var(--line); }
+.hist-table td:last-child { text-align: right; }
+#draw-reset { max-width: 220px; }
+
+/* ======================================================================
+   Dizaino temos (⚙ viršuje: Šviesi, Tamsi, Kosmosas, Gamta, Kalnai, Vulkanas).
+   Fonas gali keistis labiau, bet lentelės ir kortelės - visada nepermatomos ir aiškios.
+   ====================================================================== */
+.vz-theme { border: 0; cursor: pointer; max-width: 150px; }
+.vz-theme option { color: #12151C; }
+.tab-cfg { flex-shrink: 0; border: 0; background: transparent; color: #8A93A3; border-radius: 10px; padding: 8px 10px; font-size: 1rem; margin-left: auto; }
+.tab-cfg:hover { color: #fff; background: rgba(255, 255, 255, .08); }
+.menu-list { display: grid; gap: 6px; margin: 8px 0; }
+.menu-row { display: grid; grid-template-columns: 18px minmax(0, 220px) auto auto 1fr; gap: 6px; align-items: center; }
+body.vz { background-attachment: fixed; }
+
+/* Tamsios temos - bendros taisyklės */
+[data-theme="dark"], [data-theme="space"], [data-theme="volcano"] { color-scheme: dark; }
+[data-theme="dark"] .seg-btn, [data-theme="space"] .seg-btn, [data-theme="volcano"] .seg-btn,
+[data-theme="dark"] .sys-card, [data-theme="space"] .sys-card, [data-theme="volcano"] .sys-card,
+[data-theme="dark"] .pi-add, [data-theme="space"] .pi-add, [data-theme="volcano"] .pi-add,
+[data-theme="dark"] .flag-chip, [data-theme="space"] .flag-chip, [data-theme="volcano"] .flag-chip,
+[data-theme="dark"] .bt-pside, [data-theme="space"] .bt-pside, [data-theme="volcano"] .bt-pside,
+[data-theme="dark"] .m-score:focus, [data-theme="space"] .m-score:focus, [data-theme="volcano"] .m-score:focus { background: var(--surface); color: var(--ink); }
+[data-theme="dark"] .varz-card.is-test, [data-theme="space"] .varz-card.is-test, [data-theme="volcano"] .varz-card.is-test { background: var(--surface); }
+
+/* 🌙 Tamsi */
+[data-theme="dark"] {
+  --bg: #0E1117; --surface: #171B23; --surface-2: #1F242E; --line: #2A303C; --line-2: #3A4252; --ink: #E9ECF2; --muted: #9AA3B2;
+  --accent-soft: #3B1A22; --green-soft: #12301F; --amber-soft: #3A2A10; --green: #3FBF7F; --amber: #E3A33B;
+  --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 1px 3px rgba(0, 0, 0, .3);
+}
+/* 🪐 Kosmosas: žvaigždės ir ūkai fone, kortelės - tamsiai mėlynos su švytinčiu kraštu */
+[data-theme="space"] {
+  --bg: #070A1A; --surface: #121834; --surface-2: #1A2246; --line: rgba(140, 160, 255, .28); --line-2: rgba(160, 180, 255, .45); --ink: #EEF1FF; --muted: #A6B0D6;
+  --accent: #FF4D8D; --accent-2: #E0306F; --accent-soft: #3A1636; --green: #4BE0A0; --green-soft: #10302A; --amber: #F2C14E; --amber-soft: #3A3014;
+  --shadow: 0 0 0 1px rgba(140, 160, 255, .12), 0 8px 30px rgba(10, 14, 40, .6);
+}
+[data-theme="space"] body.vz, body.vz[data-theme="space"] {
+  background:
+    radial-gradient(1px 1px at 20% 30%, #fff 50%, transparent 51%), radial-gradient(1px 1px at 70% 20%, #fff 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 40% 80%, #cfd8ff 50%, transparent 51%), radial-gradient(1px 1px at 85% 65%, #fff 50%, transparent 51%),
+    radial-gradient(1px 1px at 10% 90%, #fff 50%, transparent 51%), radial-gradient(1.5px 1.5px at 55% 45%, #ffd6f0 50%, transparent 51%),
+    radial-gradient(900px 500px at 85% 0%, rgba(150, 60, 220, .35), transparent 60%),
+    radial-gradient(800px 600px at 0% 100%, rgba(40, 120, 255, .28), transparent 60%), #070A1A;
+  background-size: 260px 260px, 340px 340px, 420px 420px, 300px 300px, 380px 380px, 520px 520px, auto, auto, auto;
+  background-attachment: fixed;
+}
+[data-theme="space"] .area, [data-theme="space"] .ov-col, [data-theme="space"] .varz-card, [data-theme="space"] .toolbar, [data-theme="space"] .panel { border-color: rgba(140, 160, 255, .35); }
+/* 🌿 Gamta: šviesiai žalia, lapų atspalviai fone */
+[data-theme="nature"] {
+  --bg: #EEF5EC; --surface: #FFFFFF; --surface-2: #F3F8F1; --line: #D5E5D1; --line-2: #B9D2B3; --ink: #142318; --muted: #5A6E5C;
+  --accent: #2F7D4F; --accent-2: #24653F; --accent-soft: #E1F1E6; --green: #2F7D4F; --green-soft: #E1F1E6;
+}
+body.vz[data-theme="nature"] {
+  background: radial-gradient(700px 400px at 100% 0%, rgba(120, 180, 90, .25), transparent 60%), radial-gradient(600px 500px at 0% 100%, rgba(60, 140, 90, .22), transparent 60%),
+    repeating-linear-gradient(135deg, rgba(47, 125, 79, .035) 0 14px, transparent 14px 28px), #EEF5EC;
+  background-attachment: fixed;
+}
+[data-theme="nature"] .vz-top { background: linear-gradient(135deg, #12301F 0%, #1D4A2E 100%); }
+/* 🏔️ Kalnai: dangus ir kalnų siluetai apačioje */
+[data-theme="mountains"] {
+  --bg: #E9EFF6; --surface: #FFFFFF; --surface-2: #F2F5FA; --line: #D4DDE9; --line-2: #B8C6D8; --ink: #142033; --muted: #56657A;
+  --accent: #2F5D8A; --accent-2: #244A70; --accent-soft: #E3ECF6;
+}
+body.vz[data-theme="mountains"] {
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1600 320' preserveAspectRatio='none'%3E%3Cpath d='M0 320 L0 210 L180 90 L300 180 L470 40 L640 200 L760 130 L930 230 L1100 70 L1260 190 L1400 120 L1600 220 L1600 320Z' fill='%23B9C8DA'/%3E%3Cpath d='M0 320 L0 260 L220 170 L380 250 L560 150 L720 260 L900 180 L1080 270 L1250 190 L1420 260 L1600 200 L1600 320Z' fill='%2398ABC2'/%3E%3C/svg%3E") bottom / 100% 34vh no-repeat,
+    linear-gradient(180deg, #DCE7F3 0%, #F3F6FA 60%, #E9EFF6 100%);
+  background-attachment: fixed;
+}
+[data-theme="mountains"] .vz-top { background: linear-gradient(135deg, #1B2A40 0%, #2F4A6C 100%); }
+/* 🌋 Vulkanas: tamsus fonas su lavos švytėjimu, kortelių kraštai - žarijos */
+[data-theme="volcano"] {
+  --bg: #120A08; --surface: #1C1210; --surface-2: #261814; --line: rgba(255, 110, 50, .28); --line-2: rgba(255, 130, 60, .48); --ink: #FBEDE6; --muted: #C9A99A;
+  --accent: #FF5A1F; --accent-2: #E04812; --accent-soft: #3A1A10; --green: #5CD08A; --green-soft: #13301F; --amber: #FFB547; --amber-soft: #3A2610;
+  --shadow: 0 0 0 1px rgba(255, 110, 50, .12), 0 10px 30px rgba(0, 0, 0, .55);
+}
+body.vz[data-theme="volcano"] {
+  background: radial-gradient(1000px 420px at 50% 115%, rgba(255, 90, 30, .55), transparent 65%), radial-gradient(600px 300px at 15% 100%, rgba(255, 140, 40, .25), transparent 60%),
+    radial-gradient(700px 400px at 90% 0%, rgba(120, 20, 10, .45), transparent 60%), #120A08;
+  background-attachment: fixed;
+}
+[data-theme="volcano"] .vz-top { background: linear-gradient(135deg, #1A0B07 0%, #3A140A 100%); }
+[data-theme="volcano"] .area, [data-theme="volcano"] .ov-col, [data-theme="volcano"] .varz-card, [data-theme="volcano"] .toolbar { border-color: rgba(255, 110, 50, .4); }
+/* Kortelių kraštai švelniai keičia spalvą (kosmosas, vulkanas) */
+@keyframes vzglow { 0%, 100% { box-shadow: 0 0 0 1px var(--line-2), var(--shadow); } 50% { box-shadow: 0 0 0 1px var(--accent), var(--shadow); } }
+[data-theme="space"] .card.st-now, [data-theme="volcano"] .card.st-now, [data-theme="space"] .varz-card.s-running, [data-theme="volcano"] .varz-card.s-running { animation: vzglow 3s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { [data-theme] .card.st-now, [data-theme] .varz-card.s-running { animation: none; } }

@@ -190,3 +190,55 @@ test('live schedule: fixed time, rename, participants; simple bout view; detache
   sql('DELETE FROM tournaments WHERE is_test = 1');
   noJsErrors(a);
 });
+
+test('history restore, category reset from a round, themes and menu customization', async ({ browser }) => {
+  const a = await login(browser, 'info@karateka.lt', 1440, 900);
+  await a.goto('admin/varzybos.php');
+  await nav(a, () => a.click('text=🎲 Sukurti test varžybas'));
+  const tid = +sql('SELECT MAX(id) FROM tournaments');
+  const state = () => JSON.parse(sql(`SELECT state FROM tournaments WHERE id = ${tid}`));
+  await a.waitForTimeout(1500);
+  check('snapshot made on save', +sql(`SELECT COUNT(*) FROM tournament_versions WHERE tournament_id = ${tid}`) >= 1);
+
+  // Pakeitimas ir „kaip prieš 5 min.“
+  sql(`UPDATE tournament_versions SET created_at = NOW() - INTERVAL 10 MINUTE WHERE tournament_id = ${tid}`);
+  const n0 = state().categories.length;
+  await a.click('#tab-kategorijos');
+  await a.click('[data-catview="ov"]');
+  await a.click('[data-ov-new="kata"]');
+  await a.waitForTimeout(1500);
+  check('change saved', state().categories.length === n0 + 1);
+  await a.click('#hist-toggle');
+  await a.waitForSelector('#hist-list tr');
+  await a.click('[data-hist-ago="5"]');
+  await a.waitForTimeout(1500);
+  check('restored as 5 min ago', state().categories.length === n0);
+  check('current state kept before restore', +sql(`SELECT COUNT(*) FROM tournament_versions WHERE tournament_id = ${tid} AND note = 'Prieš atkūrimą'`) === 1);
+  check('editor shows restored', await a.locator('#ov-cols .ovb').count() === n0);
+
+  // Rungties atstatymas nuo rato
+  await a.click('#tab-live');
+  if (await a.locator('#run').isVisible()) await a.click('#run-back');
+  const done = a.locator('#sched .card.st-done').first();
+  await done.locator('[data-open-cat]').click();
+  const opts = await a.locator('#draw-reset option').allTextContents();
+  check('reset options', opts.some(o => /Visą rungtį/.test(o)), opts.join(' | '));
+
+  // Tema ir meniu (bendri visoms varžyboms)
+  await a.selectOption('#theme-pick', 'volcano');
+  await a.waitForTimeout(600);
+  check('theme saved', JSON.parse(sql("SELECT value FROM site_settings WHERE name = 'taika_ui'")).theme === 'volcano');
+  await a.click('#menu-cfg');
+  await a.fill('[data-menu-name="live"]', 'Varžybų diena');
+  await a.locator('[data-menu-up]').nth(1).click();   // Komandos ↑ - pirmos
+  await a.click('#menu-save');
+  await a.waitForTimeout(600);
+  await a.reload();
+  check('theme applied', await a.evaluate(() => document.body.dataset.theme) === 'volcano');
+  check('tab renamed', /Varžybų diena/.test(await a.textContent('#tab-live')));
+  const order = await a.$$eval('.tabs [role=tab]', bs => bs.map(b => b.id.replace('tab-', '')).join(','));
+  check('tab order changed', order.startsWith('komandos,klubai'), order);
+  sql("DELETE FROM site_settings WHERE name = 'taika_ui'");
+  sql('DELETE FROM tournaments WHERE is_test = 1');
+  noJsErrors(a);
+});

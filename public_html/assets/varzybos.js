@@ -1094,6 +1094,7 @@
     document.getElementById('draw-new').disabled = c.draw.locked;
     document.getElementById('draw-swap').disabled = c.draw.locked;
     document.getElementById('draw-undo').disabled = !S.history.length;
+    fillReset(c);
     if (runView === 'simple' && runOpen && !document.getElementById('run').hidden) renderSimple(c, view);
     else if (c.draw.system === 'rr') renderRR(c, view);
     else if (c.draw.system === 'score') renderScore(c, view);
@@ -1581,7 +1582,7 @@
         var nameEl = editName === c.id ? '<input class="sel card-name-in" data-cname="' + c.id + '" value="' + esc(c.name) + '" aria-label="Rungties pavadinimas">'
           : '<button type="button" class="card-name" data-open-cat="' + c.id + '" title="Atidaryti: lentelė, kovos, balai"><span class="disc d-' + c.discipline + '"></span>' + esc(c.name) + '</button>';
         return '<li class="card st-' + x.st + (det ? ' detached' : '') + '" draggable="true" data-c="' + c.id + '"><div class="card-top">' +
-          '<input class="card-time-in" type="time" value="' + hhmm(start) + '" data-cat-at="' + c.id + '" title="' + (c.at ? 'Nustatytas laikas (ištrinkite - vėl skaičiuosis pats)' : 'Pakeiskite - rungtis prasidės ne anksčiau') + '"' + (c.at ? ' data-fixed="1"' : '') + '>' +
+          '<input class="card-time-in" type="text" inputmode="numeric" maxlength="5" value="' + hhmm(start) + '" data-cat-at="' + c.id + '" title="' + (c.at ? 'Nustatytas laikas (ištrinkite - vėl skaičiuosis pats)' : 'Pakeiskite - rungtis prasidės ne anksčiau') + '"' + (c.at ? ' data-fixed="1"' : '') + '>' +
           nameEl + (det ? '<span class="st-badge det">atskirame lange</span>' : ST_BADGE[x.st]) + '</div>' +
           (peopleOpen[c.id] ? '<div class="card-people">' + c.competitors.map(function (p) { return '<span>' + esc(p.name) + ' <i>' + esc(p.club) + '</i></span>'; }).join('') + '</div>' : '') +
           '<div class="prog' + (pct === 100 ? ' done' : '') + '"><i style="width:' + pct + '%"></i><span>' + done + ' / ' + total + '</span></div>' +
@@ -1735,7 +1736,11 @@
   });
   sched.addEventListener('change', function (e) {
     var t0 = e.target;
-    if (t0.dataset.catAt) { var ca = cat(t0.dataset.catAt); if (!ca) return; snapshot(); if (t0.value) ca.at = t0.value; else delete ca.at; save(); render(); return; }
+    if (t0.dataset.catAt) {
+      var ca = cat(t0.dataset.catAt), tv = t0.value.trim().replace('.', ':'); if (!ca) return;
+      if (tv && !/^\d{1,2}:\d{2}$/.test(tv)) { toast('Laiką įrašykite taip: 13:45'); renderSched(); return; }
+      snapshot(); if (tv) ca.at = hhmm(toMin(tv)); else delete ca.at; save(); render(); return;
+    }
     if (t0.dataset.cname) { var cn = cat(t0.dataset.cname); editName = null; if (!cn) return; var v = t0.value.trim(); if (v && v !== cn.name) { snapshot(); cn.name = v; cn.customName = v !== critName(cn); save(); } render(); return; }
     var t = e.target;
     if (t.dataset.start) { S.areas.find(function (a) { return a.id === +t.dataset.start; }).start = t.value || '09:00'; }
@@ -2045,6 +2050,128 @@
   });
   document.getElementById('members-pick').addEventListener('input', function (e) { if (e.target.id === 'mp-search') renderMembersPick(); });
 
+  // ---------- Išvaizda: tema ir meniu (pavadinimai, tvarka) - bendri visoms varžyboms ----------
+  var UI = CFG.ui || { theme: 'light', menu: { order: [], names: {} } };
+  var TAB_DEFAULT = {}; tabs.forEach(function (t) { var b = document.getElementById('tab-' + t); TAB_DEFAULT[t] = b.lastChild.textContent; });
+  function postUi(data) {
+    return fetch(CFG.uiApi, { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': CFG.csrf, Accept: 'application/json' }, body: JSON.stringify(data) })
+      .then(function (r) { return r.json(); }).then(function (d) { if (d.ui) UI = d.ui; return d; });
+  }
+  function applyMenu() {
+    var nav = document.querySelector('.tabs'), sep = nav.querySelector('.tabs-sep'), cfgBtn = document.getElementById('menu-cfg');
+    var order = UI.menu && UI.menu.order && UI.menu.order.length === tabs.length ? UI.menu.order : tabs;
+    order.forEach(function (t, i) {
+      var b = document.getElementById('tab-' + t); nav.insertBefore(b, cfgBtn);
+      if (t === 'live' && order === tabs) nav.insertBefore(sep, b);
+      b.lastChild.textContent = (UI.menu && UI.menu.names && UI.menu.names[t]) || TAB_DEFAULT[t];
+      var n = b.querySelector('.tab-n'); if (n && /^\d$/.test(n.textContent)) n.textContent = i + 1;
+    });
+    sep.hidden = order !== tabs;
+  }
+  applyMenu();
+  var themePick = document.getElementById('theme-pick');
+  if (themePick) themePick.addEventListener('change', function () { document.body.dataset.theme = themePick.value; postUi({ theme: themePick.value }); });
+  var menuBtn = document.getElementById('menu-cfg'), menuPanel = document.getElementById('menu-panel'), menuDraft = null;
+  function renderMenuPanel() {
+    document.getElementById('menu-list').innerHTML = menuDraft.order.map(function (t, i) {
+      return '<div class="menu-row"><span class="muted small">' + (i + 1) + '</span><input class="sel" data-menu-name="' + t + '" value="' + esc(menuDraft.names[t] || TAB_DEFAULT[t]) + '" aria-label="Pavadinimas: ' + esc(TAB_DEFAULT[t]) + '">' +
+        '<button type="button" class="btn btn-xs" data-menu-up="' + i + '"' + (i ? '' : ' disabled') + ' aria-label="Aukštyn">↑</button><button type="button" class="btn btn-xs" data-menu-down="' + i + '"' + (i < menuDraft.order.length - 1 ? '' : ' disabled') + ' aria-label="Žemyn">↓</button>' +
+        '<span class="muted small">' + esc(TAB_DEFAULT[t]) + '</span></div>';
+    }).join('');
+  }
+  if (menuBtn) {
+    menuBtn.addEventListener('click', function () {
+      menuPanel.hidden = !menuPanel.hidden; menuBtn.setAttribute('aria-expanded', !menuPanel.hidden);
+      if (!menuPanel.hidden) {
+        menuDraft = { order: (UI.menu.order && UI.menu.order.length === tabs.length ? UI.menu.order : tabs).slice(), names: Object.assign({}, UI.menu.names || {}) };
+        renderMenuPanel(); window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    });
+    menuPanel.addEventListener('input', function (e) { var k = e.target.dataset.menuName; if (k) menuDraft.names[k] = e.target.value; });
+    menuPanel.addEventListener('click', function (e) {
+      var t = e.target.closest('button'); if (!t) return;
+      var o = menuDraft.order, i;
+      if (t.dataset.menuUp) { i = +t.dataset.menuUp; o.splice(i - 1, 0, o.splice(i, 1)[0]); renderMenuPanel(); }
+      else if (t.dataset.menuDown) { i = +t.dataset.menuDown; o.splice(i + 1, 0, o.splice(i, 1)[0]); renderMenuPanel(); }
+      else if (t.id === 'menu-reset') { menuDraft = { order: tabs.slice(), names: {} }; renderMenuPanel(); }
+      else if (t.id === 'menu-save') {
+        var names = {}; Object.keys(menuDraft.names).forEach(function (k) { var v = String(menuDraft.names[k]).trim(); if (v && v !== TAB_DEFAULT[k]) names[k] = v; });
+        var same = menuDraft.order.join() === tabs.join();
+        postUi({ menu: { order: same ? [] : menuDraft.order, names: names } }).then(function () { applyMenu(); menuPanel.hidden = true; toast('Meniu išsaugotas.'); });
+      }
+    });
+  }
+
+  // ---------- Istorija serveryje: „kaip prieš 5 min.“ ar bet kuri kopija ----------
+  var histBtn = document.getElementById('hist-toggle'), histPanel = document.getElementById('hist-panel'), histList = [];
+  function agoText(at, now) {
+    var m = Math.round((new Date(now.replace(' ', 'T')) - new Date(at.replace(' ', 'T'))) / 60000);
+    return m < 1 ? 'ką tik' : m < 60 ? 'prieš ' + m + ' min.' : m < 1440 ? 'prieš ' + Math.floor(m / 60) + ' val. ' + (m % 60) + ' min.' : at.slice(0, 16);
+  }
+  function loadHistory() {
+    var box = document.getElementById('hist-list');
+    fetch(CFG.historyApi, { credentials: 'same-origin', headers: { Accept: 'application/json' } }).then(function (r) { return r.json(); }).then(function (d) {
+      histList = (d.list || []).map(function (x) { x.ago = agoText(x.at, d.now); x.min = Math.round((new Date(d.now.replace(' ', 'T')) - new Date(x.at.replace(' ', 'T'))) / 60000); return x; });
+      box.innerHTML = histList.length ? '<table class="hist-table"><tbody>' + histList.map(function (x) {
+        return '<tr><td><b>' + x.at.slice(11, 16) + '</b> <span class="muted small">' + esc(x.ago) + '</span></td><td class="small">' + x.cats + ' kat., baigta ' + x.done + (x.note ? ' · <i>' + esc(x.note) + '</i>' : '') + '</td>' +
+          '<td><button type="button" class="btn btn-xs" data-hist-id="' + x.id + '">Atkurti</button></td></tr>';
+      }).join('') + '</tbody></table>' : '<p class="muted small">Kopijų dar nėra - jos atsiranda, kai kas nors pakeičiama.</p>';
+    }).catch(function () { box.innerHTML = '<p class="muted small">Nepavyko įkelti istorijos.</p>'; });
+  }
+  function restoreSnap(id, label) {
+    if (!confirm('Atkurti varžybas, kaip buvo ' + label + '? Dabartinė būsena bus išsaugota istorijoje.')) return;
+    flush();
+    fetch(CFG.restoreApi, { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': CFG.csrf, Accept: 'application/json' }, body: JSON.stringify({ id: id }) })
+      .then(function (r) { return r.json(); }).then(function (d) {
+        if (!d.ok) { toast(esc(d.error || 'Nepavyko atkurti.')); return; }
+        var sel = S.selected; CFG.state = d.state; load(); if (cat(sel)) S.selected = sel;
+        version = d.version; dirty = false; conflict = false;
+        var cf = document.getElementById('conflict'); if (cf) cf.hidden = true;
+        if (stateCh) { try { stateCh.postMessage({ v: version, state: d.state }); } catch (e) {} }
+        setStatus('Atkurta ✓', 'ok'); toast('Atkurta: <b>' + esc(label) + '</b>. Jei ne tai - atkurkite kitą kopiją (ir „Prieš atkūrimą“).');
+        histPanel.hidden = true; render();
+      }).catch(function () { toast('Nepavyko atkurti - nėra ryšio.'); });
+  }
+  if (histBtn) {
+    histBtn.addEventListener('click', function () { histPanel.hidden = !histPanel.hidden; histBtn.setAttribute('aria-expanded', !histPanel.hidden); if (!histPanel.hidden) { loadHistory(); window.scrollTo({ top: 0, behavior: 'smooth' }); } });
+    histPanel.addEventListener('click', function (e) {
+      var t = e.target.closest('button'); if (!t) return;
+      if (t.dataset.histId) { var x = histList.find(function (h) { return h.id === +t.dataset.histId; }); restoreSnap(+t.dataset.histId, x ? x.at.slice(11, 16) + ' (' + x.ago + ')' : ''); }
+      else if (t.dataset.histAgo) {
+        var need = +t.dataset.histAgo, pick = histList.find(function (h) { return h.min >= need; });
+        if (!pick) { toast('Tokios senos kopijos dar nėra.'); return; }
+        restoreSnap(pick.id, pick.at.slice(11, 16) + ' (' + pick.ago + ')');
+      }
+    });
+  }
+
+  // ---------- Rungties atstatymas: visa arba nuo pasirinkto rato (vėlesni rezultatai ištrinami) ----------
+  function fillReset(c) {
+    var sel = document.getElementById('draw-reset'); if (!sel) return;
+    var opts = '<option value="">Atstatyti…</option><option value="all">Visą rungtį (visi rezultatai)</option>';
+    if (c && c.draw && isElim(c.draw.system)) {
+      var b = bracket(c);
+      b.rounds.forEach(function (rd, i) { if (i > 0) opts += '<option value="r' + i + '">Nuo: ' + esc(roundName(i, b.R)) + '</option>'; });
+      if (b.rep.length) opts += '<option value="rep">Tik paguoda / dėl 3 vietos</option>';
+    }
+    sel.innerHTML = opts;
+  }
+  document.getElementById('draw-reset').addEventListener('change', function (e) {
+    var c = cat(S.selected), v = e.target.value; e.target.value = ''; if (!c || !c.draw || !v) return;
+    var label = e.target.options[e.target.selectedIndex] ? '' : '';
+    if (v === 'all') { if (!confirm('Atstatyti visą rungtį „' + c.name + '“ - ištrinti visus rezultatus ir balus?')) return; snapshot(); c.draw.results = {}; c.draw.scores = {}; c.draw.final = {}; }
+    else {
+      var b = bracket(c), ids = {};
+      if (v === 'rep') b.rep.forEach(function (g) { g.matches.forEach(function (m) { ids[m.id] = 1; }); });
+      else { var from = +v.slice(1); b.rounds.forEach(function (rd, i) { if (i >= from) rd.forEach(function (m) { ids[m.id] = 1; }); }); b.rep.forEach(function (g) { g.matches.forEach(function (m) { ids[m.id] = 1; }); }); }
+      if (!confirm('Ištrinti ' + Object.keys(ids).filter(function (k) { return c.draw.results[k]; }).length + ' kovų rezultatus nuo pasirinkto rato?')) return;
+      snapshot();
+      Object.keys(ids).forEach(function (k) { delete c.draw.results[k]; if (c.draw.scores) delete c.draw.scores[k]; });
+      prune(c);
+    }
+    save(); render();
+  });
+
   // ---------- Transliacija ir registracija: nuorodos, ekranai ----------
   var shareBtn = document.getElementById('share-toggle'), sharePanel = document.getElementById('share-panel');
   function renderScreens() {
@@ -2052,7 +2179,7 @@
     box.innerHTML = S.areas.map(function (a) { return '<button type="button" class="btn" data-screen="' + a.id + '">📺 ' + esc(a.name) + '</button>'; }).join('');
   }
   if (shareBtn) {
-    shareBtn.addEventListener('click', function () { sharePanel.hidden = !sharePanel.hidden; shareBtn.setAttribute('aria-expanded', sharePanel.hidden ? 'false' : 'true'); renderScreens(); });
+    shareBtn.addEventListener('click', function () { sharePanel.hidden = !sharePanel.hidden; shareBtn.setAttribute('aria-expanded', sharePanel.hidden ? 'false' : 'true'); renderScreens(); if (!sharePanel.hidden) window.scrollTo({ top: 0, behavior: 'smooth' }); });
     sharePanel.addEventListener('click', function (e) {
       var t = e.target.closest('button'); if (!t) return;
       if (t.dataset.screen) { window.open(CFG.screenUrl + '&tatami=' + t.dataset.screen, 'taika-ekranas-' + t.dataset.screen); return; }
