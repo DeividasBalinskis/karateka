@@ -29,6 +29,16 @@ if (is_post()) {
                 flash('ok', t('Atsiliepimas ištrintas.'));
             }
             break;
+        case 'api_key':   // Claude prieiga: naujas raktas (rodomas vieną kartą; saugomas tik hash)
+            $key = bin2hex(random_bytes(20));
+            set_site_setting('feedback_api_key', password_hash($key, PASSWORD_DEFAULT));
+            $_SESSION['fb_api_key_once'] = $key;
+            flash('ok', t('Raktas sukurtas - nukopijuokite jį dabar, vėliau jo nebematysite.'));
+            redirect('admin/atsiliepimai.php#claude');
+        case 'api_off':
+            set_site_setting('feedback_api_key', '');
+            flash('ok', t('Claude prieiga išjungta.'));
+            redirect('admin/atsiliepimai.php#claude');
         case 'mode':
             if (isset(FEEDBACK_SHOW[post('mode')])) {
                 set_site_setting('feedback_button', post('mode'));
@@ -96,11 +106,15 @@ $tabs['visi'] = [t('Visi'), array_sum(array_map('intval', $counts))];
         <strong><?= e(fb_author($f)) ?></strong>
         <?php if ($f['role'] && $f['role'] !== 'member'): ?><span class="badge badge-tag"><?= e(t($f['role'] === 'admin' ? 'adminas' : 'treneris')) ?></span><?php endif; ?>
         <span class="muted small"> · <?= e(fmt_date(substr($f['created_at'], 0, 10))) ?> <?= e(substr($f['created_at'], 11, 5)) ?></span>
-        <?php if ($f['page']): ?><span class="small"> · <a href="<?= url(ltrim($f['page'], '/')) ?>" target="_blank" rel="noopener"><?= e(mb_strimwidth($f['page'], 0, 60, '…')) ?> ↗</a></span><?php endif; ?>
+        <?php if (!empty($f['site'])): ?><span class="badge"><?= e(FEEDBACK_SITES[$f['site']] ?? $f['site']) ?></span><?php endif; ?>
+        <?php if ($f['page']): ?><span class="small"> · <a href="<?= e(strpos((string) $f['page'], '/ltkf/') !== false ? (string) $f['page'] : url(ltrim($f['page'], '/'))) ?>" target="_blank" rel="noopener"><?= e(mb_strimwidth($f['page'], 0, 60, '…')) ?> ↗</a></span><?php endif; ?>
       </div>
       <?= feedback_status_badge($f['status']) ?>
     </div>
-    <div class="fb-card-body"><?= nl2br(e($f['body'])) ?></div>
+    <div class="fb-card-body"><?= $f['body'] !== '' ? nl2br(e($f['body'])) : '<span class="muted">' . te('(tik nuotraukos)') . '</span>' ?></div>
+    <?php $imgs = feedback_images((int) $f['id']); if ($imgs): ?>
+      <div class="fb-card-imgs"><?php foreach ($imgs as $im): ?><a href="<?= e(feedback_image_url($im)) ?>" target="_blank" rel="noopener"><img src="<?= e(feedback_image_url($im, true)) ?>" alt="" loading="lazy"></a><?php endforeach; ?></div>
+    <?php endif; ?>
     <div class="fb-card-edit">
       <label class="fb-status"><span class="small muted"><?= te('Būsena') ?></span>
         <select name="status"><?php foreach (FEEDBACK_STATUS as $k => $s): ?><option value="<?= $k ?>"<?= $k === $f['status'] ? ' selected' : '' ?>><?= e(t($s[0])) ?></option><?php endforeach; ?></select>
@@ -117,6 +131,20 @@ $tabs['visi'] = [t('Visi'), array_sum(array_map('intval', $counts))];
 <?php endforeach; ?>
 </div>
 
+<div class="panel card fb-claude" id="claude">
+  <div class="kicker"><?= te('Claude prieiga') ?></div>
+  <p class="small" style="margin:4px 0 10px;"><?= te('Claude kas kelias valandas pats perskaito naujus atsiliepimus (su nuotraukomis), padaro pakeitimus ir praneša, kai yra ką peržiūrėti. Tam jam reikia rakto: sukurkite jį ir įklijuokite Claude lange, kai jis paprašys.') ?></p>
+  <?php if (!empty($_SESSION['fb_api_key_once'])): $once = (string) $_SESSION['fb_api_key_once']; unset($_SESSION['fb_api_key_once']); ?>
+    <div class="row" style="gap:8px; flex-wrap:wrap; margin-bottom:8px;"><input type="text" readonly value="<?= e($once) ?>" id="fbKey" onclick="this.select()" style="flex:1; min-width:260px; font-family:monospace;">
+      <button class="btn btn-primary btn-sm" type="button" onclick="var i=document.getElementById('fbKey'); i.select(); try { navigator.clipboard.writeText(i.value); } catch (e) {} this.textContent='✓ Nukopijuota';"><?= te('Kopijuoti') ?></button></div>
+  <?php endif; ?>
+  <form method="post" class="row" style="gap:8px; flex-wrap:wrap;"><?= csrf_field() ?>
+    <button class="btn btn-ghost btn-sm" type="submit" name="action" value="api_key" onclick="return <?= site_setting('feedback_api_key', '') ? "confirm('" . e(t('Sukurti naują raktą? Senas nustos veikti.')) . "')" : 'true' ?>"><?= site_setting('feedback_api_key', '') ? te('Sukurti naują raktą') : te('Sukurti raktą Claude') ?></button>
+    <?php if (site_setting('feedback_api_key', '')): ?><span class="badge badge-ok"><?= te('įjungta') ?></span>
+      <button class="btn btn-ghost btn-sm" type="submit" name="action" value="api_off"><?= te('Išjungti') ?></button><?php endif; ?>
+  </form>
+</div>
+
 <form method="post" class="panel card fb-mode">
   <?= csrf_field() ?><input type="hidden" name="action" value="mode">
   <div class="kicker"><?= te('Kam rodomas mygtukas „Atsiliepimas“') ?></div>
@@ -129,7 +157,8 @@ $tabs['visi'] = [t('Visi'), array_sum(array_map('intval', $counts))];
 
 <?php if ($open): ?>
 <textarea id="fbCopyText" hidden><?= e("Atsiliepimai iš karateka.lt (" . count($open) . "):\n\n" . implode("\n\n", array_map(function ($f) {
-    return '#' . $f['id'] . ' · ' . substr($f['created_at'], 0, 16) . ' · ' . fb_author($f) . ($f['page'] ? ' · ' . $f['page'] : '') . ($f['status'] === 'planned' ? ' · [bus pataisyta]' : '') . "\n" . $f['body'];
+    $n = count(feedback_images((int) $f['id']));
+    return '#' . $f['id'] . ' · ' . substr($f['created_at'], 0, 16) . ' · ' . fb_author($f) . ($f['page'] ? ' · ' . $f['page'] : '') . ($n ? ' · nuotraukų: ' . $n : '') . ($f['status'] === 'planned' ? ' · [bus pataisyta]' : '') . "\n" . $f['body'];
 }, $open))) ?></textarea>
 <script>
   document.getElementById('fbCopy').addEventListener('click', function () {

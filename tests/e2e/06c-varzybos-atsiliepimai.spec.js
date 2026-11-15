@@ -11,19 +11,19 @@ test('feedback: visitor and member write, admin answers', async ({ browser }) =>
   const v = await login(browser, null);
   await v.goto('renginiai.php');
   await v.click('#fbFab');
-  await v.fill('#fbPanel textarea[name=body]', 'Renginių puslapyje trūksta filtro');
-  await v.fill('#fbPanel input[name=name]', 'Lankytojas Jonas');
-  await v.click('#fbPanel button[type=submit]');
-  await v.waitForSelector('#fbPanel .fb-msg:not([hidden])');
-  check('visitor thanked', /Ačiū/.test(await v.locator('#fbPanel .fb-msg').textContent()));
+  await v.fill('#fbName', 'Lankytojas Jonas');
+  await v.fill('#fbText', 'Renginių puslapyje trūksta filtro');
+  await v.press('#fbText', 'Enter');   // Enter - išsaugoti ir naujas
+  await v.waitForFunction(() => /Išsaugota/.test(document.getElementById('fbState').textContent));
+  check('visitor saved', /Išsaugota/.test(await v.textContent('#fbState')));
   check('visitor stored with page', sql("SELECT CONCAT(page, '|', name) FROM feedback WHERE account_id IS NULL") === '/renginiai.php|Lankytojas Jonas');
 
   // Narys mato savo atsiliepimą lange
   const m = await login(browser, 'narys@karateka.test', 390, 800);
   await m.goto('paskyra.php');
   await m.click('#fbFab');
-  await m.fill('#fbPanel textarea[name=body]', 'Telefone mygtukas per mažas');
-  await m.click('#fbPanel button[type=submit]');
+  await m.fill('#fbText', 'Telefone mygtukas per mažas');
+  await m.click('#fbSend');
   await m.waitForSelector('#fbPanel .fb-list .fb-item');
   check('member sees own feedback', /Telefone mygtukas per mažas/.test(await m.locator('#fbPanel .fb-list').textContent()));
 
@@ -43,6 +43,7 @@ test('feedback: visitor and member write, admin answers', async ({ browser }) =>
   check('member notified', +sql("SELECT COUNT(*) FROM notifications n JOIN accounts a ON a.id = n.account_id WHERE a.email = 'narys@karateka.test' AND n.type = 'feedback'") === 1);
   await m.goto('paskyra.php');
   await m.click('#fbFab');
+  await m.waitForSelector('#fbPanel .fb-list .fb-reply');
   check('member sees reply', /Padidinome, ačiū!/.test(await m.locator('#fbPanel .fb-list').textContent()));
 
   // Išjungus - mygtuko nėra

@@ -4,6 +4,21 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.27 - 2026-11-15 (Atsiliepimai su nuotraukomis visose svetainėse + Claude juos skaito pats)
+**Duomenų bazė:** `db/032_atsiliepimai_nuotraukos.sql` - Valdymas → Šiandien → „Atnaujinkite duomenų bazę“.
+
+- **💡 Atsiliepimas** - ryškus oranžinis mygtukas apačioje kairėje **visose svetainėse: karateka.lt, Taika ir LTKF**.
+- Lange - didelis laukelis: **rašai, ir išsaugoma pati** (be mygtuko). **Ctrl+V** - įklijuoja ekrano nuotrauką (galima daug, iki 40),
+  taip pat galima **nutempti** paveikslėlius ar paspausti „📎 Nuotraukos“. Galima pradėti ir nuo nuotraukos, tekstą parašyti po to.
+- **Enter** - išsaugota ir iš karto naujas atsiliepimas (Shift+Enter - nauja eilutė). Taip galima vieną po kito, nesustojant.
+- Apačioje - **ankstesni atsiliepimai**: pavadinimas (pirma eilutė), 🖼 nuotraukų skaičius, būsena; paspaudus - atsidaro taisyti
+  (tekstą, nuotraukas pridėti ar pašalinti, 🗑 ištrinti).
+- Kartu išsaugoma, kurioje svetainėje ir puslapyje parašyta, ekrano dydis - kad būtų aišku, ką taisyti.
+- Valdymas → **Atsiliepimai**: nuotraukos prie kiekvieno atsiliepimo (paspaudus - didelė), svetainės žymė.
+  Nuotraukas mato tik autorius, treneriai ir adminai.
+- **Claude prieiga** (Valdymas → Atsiliepimai, apačioje): „Sukurti raktą Claude“ - Claude pats skaito naujus atsiliepimus su nuotraukomis,
+  daro pakeitimus, pažymi „Pataisyta“ ir praneša, kai yra ką peržiūrėti. Nebereikia persiųsti per Messenger.
+
 ## v1.26 - 2026-11-15 (Egzamino protokolas internete - pagal Denio failą)
 **Duomenų bazė:** `db/031_egzamino_protokolas.sql` - Valdymas → Šiandien → „Atnaujinkite duomenų bazę“.
 

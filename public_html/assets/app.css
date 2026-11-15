@@ -1257,6 +1257,9 @@ span.req-check:hover{transform:none;}
 .fb-card.is-new{box-shadow:inset 4px 0 0 #A85C7E;}
 .fb-card-top{display:flex; justify-content:space-between; align-items:flex-start; gap:10px;}
 .fb-card-body{white-space:normal; font-size:1rem; line-height:1.55; background:#FBFAF6; border-radius:12px; padding:10px 14px;}
+.fb-card-imgs{display:flex; flex-wrap:wrap; gap:8px; margin-top:8px;}
+.fb-card-imgs img{width:140px; height:96px; object-fit:cover; border-radius:10px; border:1px solid rgba(23,20,15,0.12); display:block;}
+.fb-card-imgs a:hover img{outline:3px solid #E8590C;}
 .fb-card-edit{display:grid; grid-template-columns:180px minmax(0, 1fr) auto; gap:10px; align-items:end;}
 .fb-card-edit label{display:grid; gap:4px;}
 .fb-card-edit textarea, .fb-card-edit select{width:100%; font:inherit;}

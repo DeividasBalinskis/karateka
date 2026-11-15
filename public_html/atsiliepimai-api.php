@@ -1,0 +1,55 @@
+<?php
+// Atsiliepimai Claude (be naršyklės): kas kelias valandas Claude perskaito naujus atsiliepimus su nuotraukomis,
+// padaro pakeitimus ir pažymi, kas padaryta. Prieiga - tik su raktu (Valdymas → Atsiliepimai → „Claude prieiga“), antraštė X-Api-Key.
+//   GET  ?since=ID&status=open|all  - atsiliepimai (naujausi paskutiniai), su nuotraukų nuorodomis
+//   GET  ?img=ID                    - nuotrauka (JPEG)
+//   POST {"id":..,"status":"planned|done|declined","reply":"..."}  - būsena ir atsakymas autoriui (gauna pranešimą)
+require __DIR__ . '/app/bootstrap.php';
+
+header('Cache-Control: no-store');
+if (!feedback_ready() || !feedback_api_check((string) ($_SERVER['HTTP_X_API_KEY'] ?? ''))) {
+    http_response_code(401);
+    header('Content-Type: application/json; charset=utf-8');
+    exit(json_encode(['ok' => false, 'error' => 'Netinkamas raktas.']));
+}
+
+if (get('img')) {
+    $img = feedback_images_ready() ? q_one('SELECT * FROM feedback_images WHERE id = ?', [(int) get('img')]) : null;
+    $path = $img ? FEEDBACK_IMG_DIR . '/' . basename($img['file']) : '';
+    if (!$img || !is_file($path)) {
+        http_response_code(404);
+        exit;
+    }
+    header('Content-Type: image/jpeg');
+    readfile($path);
+    exit;
+}
+
+header('Content-Type: application/json; charset=utf-8');
+if (is_post()) {
+    $in = json_decode((string) file_get_contents('php://input'), true) ?: [];
+    $f = q_one('SELECT * FROM feedback WHERE id = ?', [(int) ($in['id'] ?? 0)]);
+    if (!$f) {
+        http_response_code(404);
+        exit(json_encode(['ok' => false, 'error' => 'Nerasta.']));
+    }
+    $status = isset(FEEDBACK_STATUS[$in['status'] ?? '']) ? $in['status'] : $f['status'];
+    $reply = array_key_exists('reply', $in) ? trim((string) $in['reply']) : (string) $f['reply'];
+    q('UPDATE feedback SET status = ?, reply = ?, updated_at = NOW() WHERE id = ?', [$status, $reply !== '' ? mb_substr($reply, 0, 2000) : null, (int) $f['id']]);
+    if ($f['account_id'] && ($status !== $f['status'] || $reply !== (string) $f['reply'])) {
+        notify_account((int) $f['account_id'], 'feedback', t('Jūsų atsiliepimas:') . ' ' . mb_strtolower(t(FEEDBACK_STATUS[$status][0])),
+            $reply !== '' ? $reply : mb_strimwidth($f['body'], 0, 200, '…'), ltrim((string) $f['page'], '/') ?: null, null, (int) $f['id'], false);
+    }
+    exit(json_encode(['ok' => true]));
+}
+
+$where = get('status') === 'all' ? '1' : 'f.status IN ("new", "planned")';
+$rows = q_all("SELECT f.*, a.first_name, a.last_name, a.role FROM feedback f LEFT JOIN accounts a ON a.id = f.account_id
+                WHERE $where AND f.id > ? ORDER BY f.id LIMIT 200", [(int) get('since')]);
+$base = rtrim((string) config('site_url'), '/');
+exit(json_encode(['ok' => true, 'version' => trim((string) @file_get_contents(APP_DIR . '/VERSION')), 'items' => array_map(function ($f) use ($base) {
+    return ['id' => (int) $f['id'], 'created' => $f['created_at'], 'updated' => $f['updated_at'], 'status' => $f['status'], 'site' => $f['site'] ?? null,
+            'page' => $f['page'], 'author' => $f['account_id'] ? trim($f['first_name'] . ' ' . $f['last_name']) . ' (' . $f['role'] . ')' : ($f['name'] ?: 'lankytojas'),
+            'body' => $f['body'], 'reply' => $f['reply'], 'context' => json_decode((string) ($f['context'] ?? ''), true),
+            'images' => array_map(function ($i) use ($base) { return $base . '/atsiliepimai-api.php?img=' . (int) $i['id']; }, feedback_images((int) $f['id']))];
+}, $rows)], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));

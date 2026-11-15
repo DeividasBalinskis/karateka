@@ -104,6 +104,10 @@ function puslapis_pabaiga(): void
   <div class="wrap footer-bottom">© <?= date('Y') ?> <?= e(n('pavadinimas')) ?> · <a href="en.php" lang="en">English</a></div>
 </footer>
 <script src="assets/ltkf.js?v=1" defer></script>
+<?php // Atsiliepimų langas - tas pats kaip karateka.lt (tame pačiame serveryje ta pati sesija); paimamas iš ../atsiliepimas.php ?>
+<link rel="stylesheet" href="../assets/widgets.css?v=<?= (int) @filemtime(dirname(__DIR__, 2) . '/assets/widgets.css') ?>">
+<script>window.FB_REMOTE = '../atsiliepimas.php?widget=1&site=ltkf';</script>
+<script src="../assets/feedback.js?v=<?= (int) @filemtime(dirname(__DIR__, 2) . '/assets/feedback.js') ?>" defer></script>
 </body>
 </html>
 <?php
