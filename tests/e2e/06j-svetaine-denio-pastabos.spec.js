@@ -71,7 +71,10 @@ test('exam registration pops up for coaches; contacts as Excel', async ({ browse
   check('coach also notified', +sql("SELECT COUNT(*) FROM notifications n JOIN accounts a ON a.id = n.account_id WHERE n.type = 'exam_registration' AND a.role = 'coach'") >= 1);
   const c = await login(browser, 'treneris@karateka.test');
   await c.goto('admin/');
-  await c.waitForSelector('.ntf-card.in');
+  // Jau matyti šioje sesijoje (po prisijungimo) - antrame puslapyje tik „🔔 N“; paspaudus išsiskleidžia
+  await c.waitForSelector('.ntf-card.in:not([hidden]), .ntf-pill');
+  if (await c.locator('.ntf-pill').count()) await c.click('.ntf-pill');
+  await c.waitForSelector('.ntf-card.in:not([hidden])');
   check('pop-up shows registration', /Užsiregistravo į egzaminą: Jonas/.test(await c.textContent('.ntf-pop')));
   await c.click('.ntf-card .ntf-ok');
   await c.waitForTimeout(500);

@@ -19,7 +19,7 @@ test('Taika home, switcher, menu order, live schedule with current category and 
 
   // Meniu tvarka ir perjungimas į kitas varžybas
   const tabs = await a.$$eval('.tabs [role=tab]', bs => bs.map(b => b.id.replace('tab-', '')).join(','));
-  check('menu order', tabs === 'klubai,komandos,dalyviai,kategorijos,live,rezultatai', tabs);
+  check('menu order', tabs === 'klubai,komandos,dalyviai,kategorijos,tinklai,live,rezultatai', tabs);
   check('switcher lists competitions', await a.locator('#t-switch option').count() >= 2);
 
   // Live tvarkaraštis: dabartinė rungtis, varžybų dieną - ar tatamis vėluoja
