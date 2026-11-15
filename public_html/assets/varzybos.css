@@ -513,3 +513,13 @@ button.card-name:focus-visible { outline: 3px solid #F2B705; outline-offset: 2px
 
 /* Nesutinka būti fotografuojamas ir filmuojamas */
 .nophoto { display: inline-block; margin-left: 6px; padding: 1px 7px; border-radius: 999px; background: #FDECEE; color: #9E1628; font-size: .7rem; font-weight: 700; white-space: nowrap; }
+
+/* Klubų kontaktai (skirtukas „Klubai“ → „☎ Kontaktai“) */
+.club-btns { white-space: nowrap; }
+.btn.on { background: var(--ink); color: #fff; border-color: var(--ink); }
+tr.club-contacts > td { background: var(--surface-2); padding: 12px 14px; }
+.ci-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.ci-field { display: grid; gap: 4px; font-size: 0.8rem; font-weight: 600; color: var(--muted); }
+.ci-field input { width: 100%; font-weight: 400; color: var(--ink); }
+.ci-regs { margin-top: 10px; }
+@media (max-width: 900px) { .ci-grid { grid-template-columns: 1fr 1fr; } }

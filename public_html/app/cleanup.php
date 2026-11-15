@@ -33,6 +33,12 @@ function run_cleanup(): void
     } catch (PDOException $ex) {
         // dar neimportuotas db/027
     }
+    // Testai per nuorodą be paskyros: vardas ir rezultatas saugomi metus
+    try {
+        q('DELETE FROM quiz_guest_attempts WHERE created_at < NOW() - INTERVAL 1 YEAR');
+    } catch (PDOException $ex) {
+        // dar neimportuotas db/028
+    }
 }
 
 function maybe_run_cleanup(): void

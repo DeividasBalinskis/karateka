@@ -646,6 +646,18 @@ label.q-answer:has(input:checked){border-color:var(--accent); background:rgba(47
 .ans-row input[type=radio]{width:20px; height:20px; accent-color:var(--accent); flex-shrink:0;}
 .ans-row input[type=text]{flex:1;}
 .q-thumb{height:36px; border-radius:6px; vertical-align:middle; margin-left:6px;}
+/* Klausimų sąrašas: varnelė trynimui kairėje, įkėlimas iš failo, nuoroda be paskyros (v1.21) */
+.q-row{display:grid; grid-template-columns:26px minmax(0, 1fr); gap:6px; align-items:start;}
+.q-pick{padding-top:22px; display:flex; justify-content:center; cursor:pointer;}
+.q-pick input{width:18px; height:18px; accent-color:var(--accent);}
+.bulk-bar{gap:12px; align-items:center; margin-bottom:10px;}
+.q-err[hidden]{display:none;}
+.import-box summary{cursor:pointer;}
+.import-preview{max-height:440px; overflow:auto;}
+.import-preview .imp-ok{font-weight:700; color:var(--accent-dark);}
+.import-preview tr.warn-row td{background:rgba(217,83,79,0.07);}
+.import-help pre{white-space:pre-wrap; background:rgba(23,20,15,0.04); padding:10px 12px; border-radius:10px; font-size:0.82rem;}
+.share-row input{flex:1; min-width:0;}
 .req-admin{padding:10px 0; border-bottom:1px solid rgba(23,20,15,0.07);}
 .req-admin summary{cursor:pointer;}
 .req-admin .req-form{margin-top:12px;}
@@ -1330,13 +1342,21 @@ span.req-check:hover{transform:none;}
 
 /* ===== Registracija į varžybas kitiems klubams ===== */
 .reg-rows{display:grid; gap:6px;}
-.reg-row{display:grid; grid-template-columns:minmax(0, 2fr) 104px 98px minmax(0, 1fr) minmax(0, 1.2fr) 156px; gap:6px;}
+.reg-row{position:relative; display:grid; grid-template-columns:22px minmax(0, 2fr) 104px 98px minmax(0, 1fr) minmax(0, 1.2fr) 156px 34px; gap:6px; align-items:center;}
 .reg-row.reg-head{font-size:0.78rem; font-weight:700; color:var(--muted);}
 .reg-row input, .reg-row select{min-width:0;}
+.reg-num{font-weight:700; color:var(--muted); font-size:0.9rem; text-align:center;}
+.reg-num-l{display:none;}
+.reg-del{width:34px; height:34px; border:0; border-radius:8px; background:transparent; color:var(--muted); font-size:1.3rem; line-height:1; cursor:pointer;}
+.reg-del:hover{background:rgba(180,40,40,0.08); color:#a3302a;}
+.reg-rows.single .reg-del{visibility:hidden;}
 @media (max-width:760px){
   .reg-rows{gap:12px;}
-  .reg-row{grid-template-columns:1fr 1fr; padding-bottom:10px; border-bottom:1px solid rgba(23,20,15,0.1);}
-  .reg-row > input[name="name[]"]{grid-column:1 / -1;}
+  .reg-row{grid-template-columns:1fr 1fr; padding:10px 12px 12px; border:1px solid rgba(23,20,15,0.12); border-radius:12px;}
+  .reg-row > input[name="name[]"], .reg-num{grid-column:1 / -1;}
+  .reg-num{text-align:left; color:var(--ink, inherit);}
+  .reg-num-l{display:inline;}
+  .reg-del{position:absolute; top:4px; right:4px;}
   .reg-row.reg-head{display:none;}
 }
 .reg-privacy{display:grid; gap:8px; padding:14px 16px; border-radius:12px; background:rgba(47,107,90,0.06); border:1px solid rgba(47,107,90,0.18);}

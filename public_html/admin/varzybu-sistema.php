@@ -84,7 +84,8 @@ $cfg = [
     'shareUrl' => $shareUrl, 'screenUrl' => $shareUrl ? $shareUrl . '&ekranas=1' : '', 'regUrl' => $regUrl, 'regOpen' => $regOpen,
     'entries' => tournament_new_entries((int) $t['id']),
     'api' => url('admin/varzybu-sistema.php?id=' . (int) $t['id']), 'csrf' => csrf_token(), 'year' => (int) substr($t['starts_on'], 0, 4),
-    'homeClub' => VARZ_HOME_CLUB, 'belts' => $belts, 'members' => varz_club_members(), 'state' => tournament_state($t),
+    'homeClub' => VARZ_HOME_CLUB, 'belts' => $belts, 'members' => varz_club_members(), 'state' => varz_drop_example_clubs(tournament_state($t)),
+    'clubContacts' => tournament_club_contacts((int) $t['id']), 'clubDirectory' => varz_club_directory(),
 ];
 $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($t['ends_on'], true) : '');
 ?><!doctype html>
@@ -136,8 +137,8 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
     <div class="sp-row"><input class="sel sp-url" readonly value="<?= e($shareUrl) ?>" aria-label="Nuoroda žiūrovams"><button type="button" class="btn" data-copy="<?= e($shareUrl) ?>">Kopijuoti</button><a class="btn" href="<?= e($shareUrl) ?>" target="_blank" rel="noopener">Atidaryti ↗</a></div>
   </div>
   <div class="sp-block">
-    <b>📝 Registracija kitiems klubams</b>
-    <p class="muted small">Klubo treneris užpildo: vardas, pavardė, gimimo metai, lytis, diržas. Jūs matote juos skirtuke „Dalyviai“ ir pridedate vienu mygtuku.</p>
+    <b>📝 Registracija klubams</b>
+    <p class="muted small">Kitų klubų treneriai ir Karatekos tėvai užpildo: klubas, vardas, pavardė, gimimo metai, lytis, diržas, telefonas. Jūs matote juos skirtuke „Dalyviai“ ir pridedate vienu mygtuku.</p>
     <div class="sp-row"><label class="small"><input type="checkbox" id="reg-open"<?= $regOpen ? ' checked' : '' ?>> Registracija atidaryta</label></div>
     <div class="sp-row"><input class="sel sp-url" readonly value="<?= e($regUrl) ?>" aria-label="Registracijos nuoroda"><button type="button" class="btn" data-copy="<?= e($regUrl) ?>">Kopijuoti</button><a class="btn" href="<?= e($regUrl) ?>" target="_blank" rel="noopener">Atidaryti ↗</a></div>
   </div>

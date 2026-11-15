@@ -42,9 +42,10 @@ page_start(tr_text($ev['title']), ['section' => 'renginiai', 'description' => $e
         <?php if ($ev['summary']): ?><p class="ep-summary"><?= e($ev['summary']) ?></p><?php endif; ?>
         <?php if ($ev['description']): ?>
           <div class="news-body"><?= text_to_html(tr_text($ev['description'])) ?></div>
-        <?php elseif (!$ev['summary']): ?>
+        <?php elseif (!$ev['summary'] && empty($ev['file_path'])): ?>
           <p class="muted"><?= te('Daugiau informacijos - netrukus.') ?></p>
         <?php endif; ?>
+        <?php if (!empty($ev['file_path'])): ?><p class="ep-file"><?= event_file_link($ev, 'btn btn-ghost') ?></p><?php endif; ?>
         <?php if ($ev['location']): ?>
           <p class="ep-place">📍 <?= e($ev['location']) ?> · <a href="https://www.google.com/maps/search/?api=1&amp;query=<?= e(rawurlencode($ev['location'])) ?>" target="_blank" rel="noopener"><?= te('Žemėlapis ↗') ?></a></p>
         <?php endif; ?>

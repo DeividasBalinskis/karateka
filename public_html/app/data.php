@@ -71,8 +71,68 @@ function render_event(array $ev): string
         . '<h3 style="margin-top:6px;"><a class="event-title" href="' . e($link) . '">' . e(tr_text($ev['title'])) . '</a></h3>'
         . '<div class="muted small">' . e($when) . ($ev['location'] ? ' · ' . e(tr_text($ev['location'])) : '') . '</div>'
         . ($short !== '' ? '<div class="small" style="margin-top:6px;">' . e($short) . '</div>' : '')
+        . (!empty($ev['file_path']) ? '<div class="small" style="margin-top:6px;">' . event_file_link($ev) . '</div>' : '')
         . '<a class="small event-more" href="' . e($link) . '">' . e(t('Plačiau →')) . '</a>'
         . '</div></div>';
+}
+
+// ---------- Renginio priedas (db/028): vienas failas, pvz. reglamentas ----------
+const EVENT_FILE_DIR = PUBLIC_DIR . '/uploads/events';
+const EVENT_FILE_TYPES = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'odt', 'ods', 'ppt', 'pptx', 'jpg', 'jpeg', 'png'];
+const EVENT_FILE_MAX = 10 * 1024 * 1024;
+
+/** Įkelto priedo patikra: null - tinka (ar nėra), kitaip - klaidos tekstas */
+function event_file_error(?array $f): ?string
+{
+    if (!$f || ($f['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_NO_FILE) {
+        return null;
+    }
+    if ($f['error'] !== UPLOAD_ERR_OK || $f['size'] > EVENT_FILE_MAX) {
+        return t('Priedo nepavyko įkelti: failas turi būti iki 10 MB.');
+    }
+    if (!in_array(strtolower(pathinfo((string) $f['name'], PATHINFO_EXTENSION)), EVENT_FILE_TYPES, true)) {
+        return t('Priedas turi būti PDF, Word, Excel ar paveikslėlis.');
+    }
+    return null;
+}
+
+/** Išsaugo priedą renginiui (senas ištrinamas); $remove - tik pašalinti */
+function event_file_save(int $eventId, ?array $f, bool $remove = false): void
+{
+    $has = $f && ($f['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_OK && is_uploaded_file($f['tmp_name']);
+    if (!$has && !$remove) {
+        return;
+    }
+    $old = q_value('SELECT file_path FROM events WHERE id = ?', [$eventId]);
+    if ($old) {
+        @unlink(EVENT_FILE_DIR . '/' . basename($old));
+    }
+    if (!$has) {
+        q('UPDATE events SET file_path = NULL, file_name = NULL WHERE id = ?', [$eventId]);
+        return;
+    }
+    if (!is_dir(EVENT_FILE_DIR)) {
+        @mkdir(EVENT_FILE_DIR, 0755, true);
+    }
+    $ext = strtolower(pathinfo((string) $f['name'], PATHINFO_EXTENSION));
+    $file = bin2hex(random_bytes(10)) . '.' . $ext;
+    if (!move_uploaded_file($f['tmp_name'], EVENT_FILE_DIR . '/' . $file)) {
+        throw new RuntimeException(t('Priedo nepavyko išsaugoti.'));
+    }
+    // Pradinis pavadinimas atsisiuntimui (be kelio ir keistų simbolių)
+    $name = trim(preg_replace('~[\\\\/:*?"<>|\x00-\x1F]+~u', ' ', basename((string) $f['name'])));
+    q('UPDATE events SET file_path = ?, file_name = ? WHERE id = ?', [$file, mb_substr($name ?: ('priedas.' . $ext), 0, 190), $eventId]);
+}
+
+/** Priedo nuoroda (atsisiųsti) arba '' */
+function event_file_link(array $ev, string $class = ''): string
+{
+    if (empty($ev['file_path'])) {
+        return '';
+    }
+    $ext = strtoupper(pathinfo((string) $ev['file_path'], PATHINFO_EXTENSION));
+    return '<a class="event-file ' . e($class) . '" href="' . e(url('uploads/events/' . basename($ev['file_path']))) . '" download="' . e($ev['file_name'] ?: basename($ev['file_path'])) . '" target="_blank" rel="noopener">'
+        . '📄 ' . e($ev['file_name'] ?: t('Priedas')) . ' <span class="muted small">' . e($ext) . '</span></a>';
 }
 
 /**

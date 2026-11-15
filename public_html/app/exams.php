@@ -228,6 +228,258 @@ function member_upcoming_exam(array $m): ?array
     return null;
 }
 
+// ---------- Nuoroda be paskyros (db/028) ----------
+
+/** Testo nuorodos raktas (sukuriamas pirmą kartą) */
+function quiz_share_token(array $quiz): string
+{
+    if (!empty($quiz['share_token'])) {
+        return (string) $quiz['share_token'];
+    }
+    q('UPDATE quizzes SET share_token = ? WHERE id = ? AND share_token IS NULL', [bin2hex(random_bytes(12)), (int) $quiz['id']]);
+    return (string) q_value('SELECT share_token FROM quizzes WHERE id = ?', [(int) $quiz['id']]);
+}
+
+/** Testas pagal nuorodos raktą (tik jei dalijimasis įjungtas) */
+function quiz_by_share_token(string $token): ?array
+{
+    if (!preg_match('/^[a-f0-9]{24}$/', $token)) {
+        return null;
+    }
+    try {
+        return q_one('SELECT * FROM quizzes WHERE share_token = ? AND share_open = 1', [$token]);
+    } catch (PDOException $ex) {
+        return null;   // dar neimportuotas db/028
+    }
+}
+
+// ---------- Klausimų įkėlimas iš failo ar teksto (pvz. sugeneruotų ChatGPT) ----------
+
+/** Užklausa ChatGPT: kad klausimai būtų tokiu formatu, kurį supranta quiz_import_parse() */
+function quiz_import_prompt(): string
+{
+    return "Iš šio teksto sukurk 50 testo klausimų lietuviškai. Kiekvienam klausimui - 3 arba 4 atsakymų variantai, teisingas tik vienas.\n"
+        . "Atsakyk tik klausimais, tokiu formatu, tarp klausimų - tuščia eilutė:\n\n"
+        . "1. Klausimo tekstas?\nA) pirmas variantas\nB) antras variantas\nC) trečias variantas\nD) ketvirtas variantas\nAtsakymas: B\nPaaiškinimas: trumpai, kodėl (nebūtina)\n";
+}
+
+/**
+ * Tekstas → klausimai. Supranta:
+ *  - ChatGPT tekstą: „1. Klausimas?“, „A) ...“ ar „- ...“, „Atsakymas: B“ (arba teisingas pažymėtas * ar ✓), „Paaiškinimas: ...“, „Tema: ...“;
+ *  - CSV (; arba tab): klausimas; A; B; C; D; teisingas (raidė, numeris ar tekstas); paaiškinimas; tema;
+ *  - JSON: [{"klausimas", "atsakymai": [...], "teisingas", "paaiskinimas", "tema"}] (ar angliškai question/answers/correct).
+ * Grąžina [['body', 'answers' => [..], 'correct' => indeksas|null, 'explanation', 'topic', 'error' => tekstas|null], ...]
+ */
+function quiz_import_parse(string $text): array
+{
+    $text = str_replace(["\r\n", "\r", "\u{FEFF}"], ["\n", "\n", ''], $text);
+    $trim = ltrim($text);
+    $items = [];
+    if ($trim !== '' && ($trim[0] === '[' || $trim[0] === '{')) {
+        $items = quiz_import_json($trim);
+    } elseif (preg_match('/^[^\n]*[;\t][^\n]*[;\t][^\n]*[;\t]/', $trim) && !preg_match('/^\s*[A-Da-d][\).]\s/m', $trim)) {
+        $items = quiz_import_csv($trim);
+    } else {
+        $items = quiz_import_text($text);
+    }
+    return array_map('quiz_import_check', $items);
+}
+
+/** Teisingo atsakymo nuoroda (raidė, numeris nuo 1 ar atsakymo tekstas) → indeksas */
+function quiz_import_correct($raw, array $answers): ?int
+{
+    if ($raw === null || $raw === '') {
+        return null;
+    }
+    if (is_int($raw)) {
+        return $raw >= 1 && $raw <= count($answers) ? $raw - 1 : ($raw === 0 ? 0 : null);
+    }
+    $raw = trim((string) $raw);
+    if (preg_match('/^([A-Fa-f])(?:$|[\).:\s])/u', $raw, $m)) {
+        return ord(strtoupper($m[1])) - 65;
+    }
+    if (preg_match('/^(\d)(?:$|[\).:\s])/', $raw, $m)) {
+        return (int) $m[1] - 1;
+    }
+    foreach ($answers as $i => $an) {
+        if (mb_strtolower(trim($an)) === mb_strtolower($raw)) {
+            return $i;
+        }
+    }
+    return null;
+}
+
+function quiz_import_json(string $text): array
+{
+    $data = json_decode($text, true);
+    if (is_array($data) && $data && array_keys($data) !== range(0, count($data) - 1)) {
+        $data = $data['klausimai'] ?? $data['questions'] ?? [$data];
+    }
+    $out = [];
+    foreach (is_array($data) ? $data : [] as $row) {
+        if (!is_array($row)) {
+            continue;
+        }
+        $pick = function (array $keys) use ($row) { foreach ($keys as $k) { if (isset($row[$k]) && $row[$k] !== '') { return $row[$k]; } } return null; };
+        $answers = [];
+        $marked = null;
+        foreach ((array) $pick(['atsakymai', 'answers', 'variantai', 'options']) as $i => $an) {
+            if (is_array($an)) {
+                $answers[] = trim((string) ($an['tekstas'] ?? $an['text'] ?? $an['atsakymas'] ?? ''));
+                if (!empty($an['teisingas']) || !empty($an['correct'])) {
+                    $marked = count($answers) - 1;
+                }
+            } else {
+                $answers[] = trim((string) $an);
+            }
+        }
+        $c = $pick(['teisingas', 'correct', 'atsakymas', 'answer']);
+        $out[] = ['body' => trim((string) $pick(['klausimas', 'question', 'body', 'q'])), 'answers' => $answers,
+                  'correct' => $marked ?? quiz_import_correct(is_numeric($c) ? (int) $c : $c, $answers),
+                  'explanation' => trim((string) $pick(['paaiskinimas', 'paaiškinimas', 'explanation'])), 'topic' => trim((string) $pick(['tema', 'topic']))];
+    }
+    return $out;
+}
+
+function quiz_import_csv(string $text): array
+{
+    $first = strtok($text, "\n");
+    $sep = substr_count($first, "\t") > substr_count($first, ';') ? "\t" : ';';
+    $out = [];
+    foreach (explode("\n", $text) as $n => $line) {
+        if (trim($line) === '') {
+            continue;
+        }
+        $c = array_map('trim', str_getcsv($line, $sep, '"', ''));
+        if ($n === 0 && preg_match('/^(klausimas|question)$/iu', $c[0] ?? '')) {
+            continue;   // antraštė
+        }
+        // klausimas; atsakymai...; teisingas; [paaiškinimas]; [tema] - teisingas: paskutinis trumpas laukas (raidė ar skaičius) po atsakymų
+        $body = array_shift($c);
+        $answers = [];
+        $correct = null;
+        while ($c) {
+            $v = array_shift($c);
+            if (preg_match('/^([A-Fa-f]|\d)$/', $v) && count($answers) >= 2) {
+                $correct = $v;
+                break;
+            }
+            if ($v !== '') {
+                $answers[] = $v;
+            }
+        }
+        $out[] = ['body' => (string) $body, 'answers' => $answers, 'correct' => quiz_import_correct($correct, $answers),
+                  'explanation' => (string) ($c[0] ?? ''), 'topic' => (string) ($c[1] ?? '')];
+    }
+    return $out;
+}
+
+function quiz_import_text(string $text): array
+{
+    $out = [];
+    $cur = null;
+    $flush = function () use (&$cur, &$out) {
+        if ($cur && ($cur['body'] !== '' || $cur['answers'])) {
+            $cur['correct'] = $cur['marked'] ?? quiz_import_correct($cur['raw'], $cur['answers']);
+            unset($cur['marked'], $cur['raw']);
+            $out[] = $cur;
+        }
+        $cur = null;
+    };
+    $new = function (string $body) use (&$cur, $flush) {
+        $flush();
+        $cur = ['body' => $body, 'answers' => [], 'marked' => null, 'raw' => null, 'explanation' => '', 'topic' => ''];
+    };
+    foreach (explode("\n", $text) as $line) {
+        $l = trim(str_replace(['**', '__'], '', $line));
+        $l = preg_replace('/^#+\s*/', '', $l);
+        if ($l === '' || preg_match('/^-{3,}$/', $l)) {
+            continue;
+        }
+        if ($cur && preg_match('/^(?:teisingas(?:\s+atsakymas)?|atsakymas|correct(?:\s+answer)?|answer)\s*[:\-–]\s*(.+)$/iu', $l, $m)) {
+            $cur['raw'] = trim($m[1]);
+            continue;
+        }
+        if ($cur && preg_match('/^(?:paai[sš]kinimas|explanation)\s*[:\-–]\s*(.+)$/iu', $l, $m)) {
+            $cur['explanation'] = trim($m[1]);
+            continue;
+        }
+        if ($cur && preg_match('/^(?:tema|topic)\s*[:\-–]\s*(.+)$/iu', $l, $m)) {
+            $cur['topic'] = trim($m[1]);
+            continue;
+        }
+        // Atsakymas: „A) ...“, „a. ...“, „- ...“, „[x] ...“
+        if ($cur && $cur['body'] !== '' && (preg_match('/^(?:[-*•]\s*)?(?:\[( |x|X)\]\s*)?([A-Fa-f])[\).:]\s+(.+)$/u', $l, $m)
+                || preg_match('/^(?:[-*•])\s+(?:\[( |x|X)\]\s*)?()(.+)$/u', $l, $m))) {
+            $an = trim($m[3]);
+            $ok = strtolower($m[1]) === 'x';
+            if (preg_match('/\s*(?:\*|✓|✔|✅|\((?:teisingas|teisingai|correct)\))\s*$/iu', $an)) {
+                $an = trim(preg_replace('/\s*(?:\*|✓|✔|✅|\((?:teisingas|teisingai|correct)\))\s*$/iu', '', $an));
+                $ok = true;
+            }
+            $cur['answers'][] = $an;
+            if ($ok) {
+                $cur['marked'] = count($cur['answers']) - 1;
+            }
+            continue;
+        }
+        // Klausimas: „1. ...“, „1) ...“, „Klausimas 1: ...“ arba bet kokia eilutė po ankstesnio klausimo atsakymų
+        if (preg_match('/^(?:(?:klausimas|question|q)\s*\d*\s*[:.)]\s*|\d{1,4}\s*[.)]\s+)(.+)$/iu', $l, $m)) {
+            $new(trim($m[1]));
+        } elseif (!$cur || $cur['answers']) {
+            $new($l);
+        } else {
+            $cur['body'] .= ($cur['body'] === '' ? '' : ' ') . $l;   // ilgas klausimas per kelias eilutes
+        }
+    }
+    $flush();
+    return $out;
+}
+
+/** Klausimo patikra prieš įkeliant: 2-4 atsakymai, pažymėtas teisingas */
+function quiz_import_check(array $q): array
+{
+    $q['body'] = mb_substr(trim((string) $q['body']), 0, 2000);
+    $q['answers'] = array_values(array_filter(array_map(function ($a) { return mb_substr(trim((string) $a), 0, 255); }, (array) $q['answers']), 'strlen'));
+    $q['explanation'] = mb_substr(trim((string) ($q['explanation'] ?? '')), 0, 2000);
+    $q['topic'] = mb_substr(trim((string) ($q['topic'] ?? '')), 0, 190);
+    $q['error'] = null;
+    if ($q['body'] === '') {
+        $q['error'] = 'nėra klausimo teksto';
+    } elseif (count($q['answers']) < 2) {
+        $q['error'] = 'reikia bent 2 atsakymų';
+    } elseif (count($q['answers']) > 4) {
+        $q['error'] = 'daugiausia 4 atsakymai';
+    } elseif (!isset($q['correct']) || $q['correct'] === null || !isset($q['answers'][$q['correct']])) {
+        $q['error'] = 'nepažymėtas teisingas atsakymas';
+    }
+    return $q;
+}
+
+/** Įkelia tinkamus klausimus į testą (jau esantys tokiu pačiu tekstu praleidžiami). Grąžina, kiek įkelta. */
+function quiz_import_save(int $quizId, array $items): int
+{
+    $have = array_map(function ($b) { return mb_strtolower(trim($b)); }, q('SELECT body FROM quiz_questions WHERE quiz_id = ?', [$quizId])->fetchAll(PDO::FETCH_COLUMN));
+    $next = (int) q_value('SELECT COALESCE(MAX(sort_order), 0) FROM quiz_questions WHERE quiz_id = ?', [$quizId]);
+    $n = 0;
+    db()->beginTransaction();
+    foreach ($items as $q) {
+        if ($q['error'] || in_array(mb_strtolower($q['body']), $have, true)) {
+            continue;
+        }
+        q('INSERT INTO quiz_questions (quiz_id, topic, body, explanation, sort_order) VALUES (?, ?, ?, ?, ?)',
+            [$quizId, $q['topic'] ?: null, $q['body'], $q['explanation'] ?: null, ++$next]);
+        $qid = (int) db()->lastInsertId();
+        foreach ($q['answers'] as $i => $an) {
+            q('INSERT INTO quiz_answers (question_id, body, is_correct, sort_order) VALUES (?, ?, ?, ?)', [$qid, $an, $i === $q['correct'] ? 1 : 0, $i]);
+        }
+        $have[] = mb_strtolower($q['body']);
+        $n++;
+    }
+    db()->commit();
+    return $n;
+}
+
 function quiz_image_url(string $file): string
 {
     return url('uploads/quiz/' . $file);

@@ -25,6 +25,7 @@ if (is_post()) {
     $id = (int) post('id');
 
     if (post('action') === 'delete' && $id) {
+        event_file_save($id, null, true);   // priedas ištrinamas kartu
         q('DELETE FROM events WHERE id = ?', [$id]);
         flash('ok', t('Renginys ištrintas.'));
         back_after_save($back, $backPages);
@@ -60,6 +61,9 @@ if (is_post()) {
     } elseif ($ev['ends_on'] && $ev['ends_on'] < $ev['starts_on']) {
         $errors[] = t('Pabaigos data negali būti ankstesnė už pradžią.');
     }
+    if ($fileErr = event_file_error($_FILES['file'] ?? null)) {
+        $errors[] = $fileErr;
+    }
     if ($ev['registration_until'] && !DateTime::createFromFormat('!Y-m-d', $ev['registration_until'])) {
         $errors[] = t('Netinkama registracijos pabaigos data.');
     } elseif ($ev['registration_until'] && !$errors && $ev['registration_until'] > $ev['starts_on']) {
@@ -82,6 +86,11 @@ if (is_post()) {
             q('INSERT IGNORE INTO event_groups (event_id, group_id) VALUES (?, ?)', [$id, $gid]);
         }
         db()->commit();
+        try {
+            event_file_save($id, $_FILES['file'] ?? null, !empty($_POST['file_remove']));
+        } catch (RuntimeException $ex) {
+            flash('err', $ex->getMessage());
+        }
         // Kviečiami pažymėtų grupių nariai ir atskirai pažymėti žmonės (jau sąraše esantys nekeičiami)
         $inviteIds = $picked['members'];
         if ($picked['groups']) {
@@ -122,7 +131,7 @@ if ($edit !== '') {
     <h1 class="styled" style="margin-top:8px;"><?= $ev['id'] ? t('Redaguoti renginį') : t('Naujas renginys') ?></h1>
     <?php if ($ev['id']): ?><a class="btn btn-ghost btn-sm tr-link" href="<?= url('admin/vertimai.php?e=event&id=' . (int) $ev['id']) ?>"><?= te('🌐 Vertimai (EN / RU)') ?></a><?php endif; ?>
     <?= form_errors($errors) ?>
-    <form method="post" class="form">
+    <form method="post" class="form" enctype="multipart/form-data">
       <?= csrf_field() ?>
       <input type="hidden" name="id" value="<?= (int) $ev['id'] ?>">
       <input type="hidden" name="edit" value="<?= e($edit) ?>">
@@ -144,6 +153,12 @@ if ($edit !== '') {
             <label><?= te('Trumpai') ?> <span class="hint"><?= te('rodoma renginių sąraše, iki 300 simbolių') ?></span>
               <textarea name="summary" rows="2" maxlength="300" placeholder="<?= te('pvz. Kyu egzaminas visoms grupėms. Reikia išlaikyti testą.') ?>"><?= e((string) ($ev['summary'] ?? '')) ?></textarea></label>
             <label><?= te('Plačiau') ?> <span class="hint"><?= te('rodoma atidarius renginį') ?></span><textarea name="description" rows="6"><?= e((string) $ev['description']) ?></textarea></label>
+            <label><?= te('Priedas') ?> <span class="hint"><?= te('nebūtina; pvz. reglamentas - PDF, Word ar Excel, iki 10 MB') ?></span>
+              <input type="file" name="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.odt,.ods,.ppt,.pptx,.jpg,.jpeg,.png"></label>
+            <?php if (!empty($ev['file_path'])): ?>
+              <div class="row" style="gap:12px; align-items:center;"><?= event_file_link($ev) ?>
+                <label class="check"><input type="checkbox" name="file_remove" value="1"><span><?= te('Pašalinti priedą') ?></span></label></div>
+            <?php endif; ?>
             <label class="check"><input type="checkbox" name="members_only" value="1" <?= !empty($ev['members_only']) ? 'checked' : '' ?>><span><?= te('Tik nariams (neprisijungusiems nerodomas)') ?></span></label>
           </div>
           <div class="panel card form ef-place">

@@ -13,6 +13,7 @@ Browser tests (Playwright) and quick static checks. They run on every push in Gi
 | `e2e/05-lessons.spec.js` | Lessons: kyu and dan folders in belt colors, kata video in each belt folder, photo without a title, subfolders, what a member sees |
 | `e2e/06-app.spec.js` | Installable phone app: manifest, icons, service worker, offline page without personal data |
 | `e2e/06d-renginiai-xp-gyvai.spec.js` | Past event attendance on the training page, XP for several and +XP; competition bout panel (kumite points, timer), live viewer link and tatami screen, club registration link (one club field, parent phone, consents), editable score, schedule and viewer open any group, tatami screen group list, no-photo badge, one-click DB update |
+| `e2e/06e-varzybos-testai-renginiai.spec.js` | Taika club contacts, 6 judges, Enter through judge scores; registration for Karateka with one row; LTKF clubs and judges; quiz form keeps input, Enter to next answer, import from text, bulk delete, guest link; event attachment; kids schedule on phone |
 | `e2e/07-pages.spec.js` | Every page for every role at desktop and phone width: no PHP/JS errors, no horizontal scroll |
 | `e2e/08-test-data.spec.js` | One-time purge of old demo data (real people and content stay, backup first), test people generator, admin view switch (parent / child, belt), deleting test people and members (runs last) |
 

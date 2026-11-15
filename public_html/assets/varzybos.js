@@ -48,6 +48,7 @@
     S.categories.forEach(function (c) { c.competitors.forEach(function (p) { if (!p.team && !S.people[p.id]) S.people[p.id] = { id: p.id, name: p.name, club: p.club }; }); });
     S.clubs = Array.isArray(S.clubs) && S.clubs.length ? S.clubs : [HOME];
     S.areas = Array.isArray(S.areas) && S.areas.length ? S.areas : [{ id: 1, name: '1 TATAMIS', start: '09:30' }];
+    S.clubInfo = S.clubInfo && !Array.isArray(S.clubInfo) ? S.clubInfo : {};   // klubų kontaktai: { klubas: { person, phone, email, note } }
     S.minutes = S.minutes || { kata: 2, kumite: 3, fukugo: 4, kihon: 1.5 };
     if (!S.minutes.enbu) S.minutes.enbu = 3;
     if (!S.minutes.sumo) S.minutes.sumo = 2;
@@ -414,7 +415,7 @@
           return '<button type="button" class="sys-card' + (k2 === sys ? ' on' : '') + '" data-sys="' + k2 + '"><span class="sys-ico sys-' + k2 + '" aria-hidden="true"></span><b>' + SYSTEMS[k2][0] + '</b><span>' + SYSTEMS[k2][1] + '</span></button>';
         }).join('') + '</div></div>' +
         '<div class="fmt-row"><span class="fmt-label">Kova</span><div class="fmt-ctl crit">' +
-          '<label>Teisėjai <select class="sel" data-cfg="judges">' + [3, 5, 7].map(function (n) { return '<option' + (n === f.judges ? ' selected' : '') + '>' + n + '</option>'; }).join('') + '</select></label>' +
+          '<label>Teisėjai <select class="sel" data-cfg="judges">' + [3, 5, 6, 7].map(function (n) { return '<option' + (n === f.judges ? ' selected' : '') + '>' + n + '</option>'; }).join('') + '</select></label>' +
           (c.discipline === 'kumite' || c.discipline === 'fukugo' || c.discipline === 'sumo' ? '<label>Kovos laikas <select class="sel" data-cfg="time">' + [60, 90, 120, 150, 180].map(function (n) { return '<option value="' + n + '"' + (n === f.time ? ' selected' : '') + '>' + Math.floor(n / 60) + ':' + (n % 60 ? '30' : '00') + '</option>'; }).join('') + '</select></label>' : '') +
           (c.discipline === 'sumo' ? '<label>Laimi surinkęs <input class="sel num-in" type="number" min="1" max="20" data-cfg="sumoTo" value="' + f.sumoTo + '"> tšk.</label>' : '') +
           (c.team && c.discipline !== 'kumite' ? '<label><input type="checkbox" data-cfg="bunkai"' + (f.bunkai ? ' checked' : '') + '> Finale ir dėl bronzos: Kata + Pritaikymas (balai)</label>' : '') +
@@ -576,9 +577,30 @@
       names.map(function (k) {
         tp += st[k].people; te += st[k].entries; tt += st[k].teams;
         return '<tr><td><input class="inline" value="' + esc(k) + '" data-club-rename="' + esc(k) + '" aria-label="Klubo pavadinimas"></td><td class="num">' + st[k].people + '</td><td class="num">' + st[k].entries + '</td><td class="num">' + st[k].teams + '</td>' +
-          '<td><button class="btn" type="button" data-club-show="' + esc(k) + '">Dalyviai →</button>' + (st[k].people ? '' : ' <button class="btn btn-danger" type="button" data-club-del="' + esc(k) + '">Pašalinti</button>') + '</td></tr>';
+          '<td class="club-btns"><button class="btn' + (openContacts === k ? ' on' : '') + '" type="button" data-club-contacts="' + esc(k) + '" aria-expanded="' + (openContacts === k) + '">☎ Kontaktai</button> <button class="btn" type="button" data-club-show="' + esc(k) + '">Dalyviai →</button>' + (st[k].people ? '' : ' <button class="btn btn-danger" type="button" data-club-del="' + esc(k) + '">Pašalinti</button>') + '</td></tr>' +
+          (openContacts === k ? clubContactsRow(k) : '');
       }).join('') + '</tbody><tfoot><tr><td>Iš viso</td><td class="num">' + tp + '</td><td class="num">' + te + '</td><td class="num">' + tt + '</td><td></td></tr></tfoot></table>';
   }
+  // Klubo kontaktai: atsakingas asmuo, telefonas, el. paštas, pastaba (saugoma varžybose); LTKF sąrašo duomenys - kaip pradžia;
+  // žemiau - telefonai, kuriuos klubas nurodė registruodamasis per nuorodą
+  var openContacts = '';
+  function clubContactsRow(k) {
+    var info = S.clubInfo[k] || {}, dir = (CFG.clubDirectory || {})[k] || {}, regs = (CFG.clubContacts || {})[k] || [];
+    var field = function (f, label, type) {
+      var v = info[f] !== undefined ? info[f] : (dir[f] || '');
+      var link = v && f === 'phone' ? ' <a class="small" href="tel:' + esc(v.replace(/[^\d+]/g, '')) + '">skambinti</a>' : v && f === 'email' ? ' <a class="small" href="mailto:' + esc(v) + '">rašyti</a>' : '';
+      return '<label class="ci-field"><span>' + label + link + '</span><input class="sel" type="' + type + '" value="' + esc(v) + '" data-ci-club="' + esc(k) + '" data-ci-field="' + f + '"' + (CFG.readOnly ? ' readonly' : '') + '></label>';
+    };
+    return '<tr class="club-contacts"><td colspan="5"><div class="ci-grid">' + field('person', 'Atsakingas asmuo (treneris)', 'text') + field('phone', 'Telefonas', 'tel') + field('email', 'El. paštas', 'email') + field('note', 'Pastaba', 'text') + '</div>' +
+      (regs.length ? '<div class="ci-regs small"><b>Registravosi per nuorodą:</b> ' + regs.map(function (r) { return '<a href="tel:' + esc(String(r.phone).replace(/[^\d+]/g, '')) + '">' + esc(r.phone) + '</a> <span class="muted">(' + r.n + ' dal.)</span>'; }).join(', ') + '</div>'
+        : '<div class="ci-regs small muted">Per registracijos nuorodą šis klubas dar nesiregistravo.</div>') + '</td></tr>';
+  }
+  document.getElementById('clubs-view').addEventListener('input', function (e) {
+    var k = e.target.dataset.ciClub, f = e.target.dataset.ciField; if (!k || !f) return;
+    S.clubInfo[k] = S.clubInfo[k] || {};
+    S.clubInfo[k][f] = e.target.value.trim();
+    save();
+  });
   document.getElementById('club-add').addEventListener('click', function () {
     var inp = document.getElementById('club-new-name'), n = inp.value.trim(); if (!n) { inp.focus(); return; }
     if (S.clubs.indexOf(n) === -1) { snapshot(); S.clubs.push(n); save(); }
@@ -587,6 +609,8 @@
   document.getElementById('clubs-view').addEventListener('change', function (e) {
     var old = e.target.dataset.clubRename, n = e.target.value.trim(); if (!old || !n || n === old) return;
     snapshot();
+    if (S.clubInfo[old]) { S.clubInfo[n] = S.clubInfo[old]; delete S.clubInfo[old]; }
+    if (openContacts === old) openContacts = n;
     S.clubs = S.clubs.map(function (k) { return k === old ? n : k; }); if (S.clubs.indexOf(n) === -1) S.clubs.push(n);
     Object.keys(S.people).forEach(function (id) { if (S.people[id].club === old) updatePerson(id, { club: n }); });
     Object.keys(S.teams).forEach(function (id) { if (S.teams[id].club === old) updateTeam(id, { club: n }); });
@@ -594,7 +618,8 @@
   });
   var pplClub = '';
   document.getElementById('clubs-view').addEventListener('click', function (e) {
-    if (e.target.dataset.clubShow) { pplClub = e.target.dataset.clubShow; showTab('dalyviai'); }
+    if (e.target.dataset.clubContacts !== undefined) { openContacts = openContacts === e.target.dataset.clubContacts ? '' : e.target.dataset.clubContacts; renderClubs(); }
+    else if (e.target.dataset.clubShow) { pplClub = e.target.dataset.clubShow; showTab('dalyviai'); }
     else if (e.target.dataset.clubDel) { snapshot(); S.clubs = S.clubs.filter(function (k) { return k !== e.target.dataset.clubDel; }); save(); render(); }
   });
 
@@ -863,7 +888,7 @@
   function renderScore(c, view) {
     var f = cfg(c), ids = (c.draw.order || []).filter(function (id) { return person(c, id); });
     var html = drawHead(c, scoreDone(c), matchCount(c));
-    html += '<div class="score-cfg"><label>Teisėjai <select class="sel" data-cfg="judges">' + [3, 5, 7].map(function (n) { return '<option' + (n === f.judges ? ' selected' : '') + '>' + n + '</option>'; }).join('') + '</select></label>' +
+    html += '<div class="score-cfg"><label>Teisėjai <select class="sel" data-cfg="judges">' + [3, 5, 6, 7].map(function (n) { return '<option' + (n === f.judges ? ' selected' : '') + '>' + n + '</option>'; }).join('') + '</select></label>' +
       '<label><input type="checkbox" data-cfg="drop"' + (f.drop ? ' checked' : '') + (f.judges < 5 ? ' disabled' : '') + '> Atmesti aukščiausią ir žemiausią balą</label>' +
       '<label>Ratai <select class="sel" data-cfg="rounds"><option value="1"' + (f.rounds === 1 ? ' selected' : '') + '>1</option><option value="2"' + (f.rounds === 2 ? ' selected' : '') + '>2 (finalas)</option></select></label>' +
       (f.rounds === 2 ? '<label>Į finalą <input class="sel num-in" type="number" min="2" max="16" data-cfg="finalists" value="' + f.finalists + '"></label>' : '') + '</div>';
@@ -973,6 +998,22 @@
       if (k === 'drop') f.drop = t.checked; else f[k] = Math.max(1, parseInt(t.value, 10) || 1);
       save(); render();
     }
+  });
+  // Teisėjų balai: Enter - kitas teisėjas, po paskutinio - kito dalyvio pirmas teisėjas (Shift+Enter - atgal).
+  // Lentelė perpiešiama pasikeitus balui, todėl kitas laukelis surandamas pagal jo žymes ir pažymimas po perpiešimo.
+  document.addEventListener('keydown', function (e) {
+    var t = e.target;
+    if (e.key !== 'Enter' || !t.classList || !t.classList.contains('j-in')) return;
+    e.preventDefault();
+    var scope = t.closest('#draw-view') || boutEl;
+    var sel = t.dataset.part ? '.j-in[data-part]' : '.j-in[data-sp][data-which="' + t.dataset.which + '"]';
+    var list = Array.prototype.slice.call(scope.querySelectorAll(sel)), nx = list[list.indexOf(t) + (e.shiftKey ? -1 : 1)];
+    var key = !nx ? null : nx.dataset.part ? '[data-part="' + nx.dataset.part + '"]' : '[data-sp="' + nx.dataset.sp + '"][data-which="' + nx.dataset.which + '"][data-j="' + nx.dataset.j + '"]';
+    t.blur();
+    setTimeout(function () {
+      var el = key && scope.querySelector(key);
+      if (el) { el.focus(); try { el.select(); } catch (ex) {} }
+    }, 40);
   });
   // Tempimas pirmame rate: sukeičiami du dalyviai (ar dalyvis perkeliamas į laisvą vietą)
   var slotDrag = null;

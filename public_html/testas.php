@@ -81,6 +81,7 @@ $kid = (bool) $quiz['kids_mode'];
 if ($practice) {
     $qs = array_values(quiz_pick_questions(quiz_questions_full((int) $quiz['id'])));
     $data = array_map(function ($q) {
+        shuffle($q['answers']);   // atsakymų tvarka kaskart kita (ir treniruotėje)
         return [
             'body' => $q['body'], 'explanation' => $q['explanation'],
             'image' => $q['image'] ? quiz_image_url($q['image']) : null,

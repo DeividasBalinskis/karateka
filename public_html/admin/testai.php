@@ -8,6 +8,9 @@ const QUIZ_DIR = PUBLIC_DIR . '/uploads/quiz';
 
 $id = (int) (get('id') ?: post('id'));
 $errors = [];
+$failed = null;        // klausimas, kurio nepavyko išsaugoti (rodomas su įvestais duomenimis)
+$importItems = null;   // įkeliamų klausimų peržiūra
+$importText = '';
 
 /** Klausimo formos duomenys -> DB (naujas arba esamas) */
 function save_question(int $quizId, int $qid, array &$errors): ?int
@@ -74,25 +77,38 @@ function save_question(int $quizId, int $qid, array &$errors): ?int
     return $qid;
 }
 
-/** Klausimo forma (naujam - tuščia) */
-function question_form(int $quizId, ?array $q): string
+/** Po klaidos - forma su tuo, ką žmogus jau įvedė (kad niekas neišsitrintų) */
+function question_from_post(): array
+{
+    $answers = [];
+    for ($i = 0; $i < 4; $i++) {
+        $answers[] = ['id' => (int) ($_POST['ans_id'][$i] ?? 0), 'body' => (string) ($_POST['ans_body'][$i] ?? ''), 'is_correct' => (string) $i === post('correct') ? 1 : 0];
+    }
+    $yt = post('youtube');
+    return ['id' => (int) post('qid'), 'body' => post('body'), 'answers' => $answers, 'explanation' => post('explanation'), 'topic' => post('topic'),
+            'youtube_id' => '', 'youtube_raw' => $yt, 'image' => post('qid') ? q_value('SELECT image FROM quiz_questions WHERE id = ?', [(int) post('qid')]) : null];
+}
+
+/** Klausimo forma (naujam - tuščia); $errs - klaidos rodomos pačioje formoje */
+function question_form(int $quizId, ?array $q, array $errs = []): string
 {
     $answers = $q['answers'] ?? [];
     while (count($answers) < 4) {
         $answers[] = ['id' => 0, 'body' => '', 'is_correct' => 0];
     }
-    $html = '<form method="post" enctype="multipart/form-data" class="form q-form">' . csrf_field()
+    $html = '<form method="post" enctype="multipart/form-data" class="form q-form" novalidate>' . csrf_field() . ($errs ? form_errors($errs) : '')
+        . '<p class="q-err flash flash-err" hidden></p>'
         . '<input type="hidden" name="id" value="' . $quizId . '"><input type="hidden" name="action" value="question"><input type="hidden" name="qid" value="' . (int) ($q['id'] ?? 0) . '">'
         . ('<label>' . t('Klausimas') . ' <textarea name="body" rows="2" required>') . e($q['body'] ?? '') . '</textarea></label>'
         . ('<div class="q-answers-edit"><span class="hint">' . t('Atsakymai (užtenka 2; pažymėkite teisingą)') . '</span>');
     foreach (array_slice($answers, 0, 4) as $i => $an) {
         $html .= '<div class="ans-row"><input type="radio" name="correct" value="' . $i . '" ' . ($an['is_correct'] ? 'checked' : '') . ' aria-label="' . e(t('Teisingas')) . '">'
             . '<input type="hidden" name="ans_id[' . $i . ']" value="' . (int) $an['id'] . '">'
-            . '<input type="text" name="ans_body[' . $i . ']" value="' . e($an['body']) . '" placeholder="' . ($i + 1) . ' atsakymas"></div>';
+            . '<input type="text" name="ans_body[' . $i . ']" value="' . e($an['body']) . '" placeholder="' . ($i + 1) . ' atsakymas" enterkeyhint="next"></div>';
     }
     $html .= '</div><div class="form-row">'
         . ('<label>' . t('Paaiškinimas') . ' <span class="hint">' . t('nebūtina, rodomas po atsakymo') . '</span><input type="text" name="explanation" value="') . e($q['explanation'] ?? '') . '"></label>'
-        . ('<label>YouTube <span class="hint">' . t('nebūtina') . '</span><input type="text" name="youtube" value="') . (!empty($q['youtube_id']) ? 'https://youtu.be/' . e($q['youtube_id']) : '') . '"></label></div>'
+        . ('<label>YouTube <span class="hint">' . t('nebūtina') . '</span><input type="text" name="youtube" value="') . (isset($q['youtube_raw']) ? e($q['youtube_raw']) : (!empty($q['youtube_id']) ? 'https://youtu.be/' . e($q['youtube_id']) : '')) . '"></label></div>'
         . ('<label>' . t('Tema') . ' <span class="hint">' . t('nebūtina; to paties klausimo kitos formuluotės turi tą pačią temą - teste būna tik viena iš jų') . '</span>')
         . '<input type="text" name="topic" value="' . e($q['topic'] ?? '') . '" maxlength="190" list="quizTopics"></label>'
         . ('<div class="form-row"><label>' . t('Paveikslėlis') . ' <span class="hint">' . t('nebūtina, pvz. stovėsena ar smūgis') . '</span><input type="file" name="image" accept="image/jpeg,image/png,image/webp"></label>');
@@ -135,11 +151,54 @@ if (is_post()) {
             redirect('admin/testai.php?id=' . $id);
         }
     } elseif ($action === 'question' && $id) {
-        $qid = save_question($id, (int) post('qid'), $errors);
+        $qErrors = [];
+        $qid = save_question($id, (int) post('qid'), $qErrors);
         if ($qid) {
             flash('ok', t('Klausimas išsaugotas.'));
             redirect('admin/testai.php?id=' . $id . '#q' . $qid);
         }
+        $failed = ['qid' => (int) post('qid'), 'q' => question_from_post(), 'errors' => $qErrors];   // forma rodoma su įvestais duomenimis
+    } elseif ($action === 'share' && $id) {
+        $qz = q_one('SELECT * FROM quizzes WHERE id = ?', [$id]);
+        if ($qz) {
+            quiz_share_token($qz);
+            q('UPDATE quizzes SET share_open = ? WHERE id = ?', [!empty($_POST['share_open']) ? 1 : 0, $id]);
+            flash('ok', !empty($_POST['share_open']) ? t('Nuoroda įjungta - ją galima siųsti bet kam.') : t('Nuoroda išjungta.'));
+        }
+        redirect('admin/testai.php?id=' . $id . '#nuoroda');
+    } elseif (($action === 'import_preview' || $action === 'import_do') && $id) {
+        $importText = (string) ($_POST['import_text'] ?? '');
+        if (!empty($_FILES['import_file']['tmp_name']) && is_uploaded_file($_FILES['import_file']['tmp_name'])) {
+            if ($_FILES['import_file']['size'] > 2 * 1024 * 1024) {
+                $errors[] = t('Failas per didelis (iki 2 MB).');
+            } else {
+                $importText = (string) file_get_contents($_FILES['import_file']['tmp_name']);
+                if (!mb_check_encoding($importText, 'UTF-8')) {
+                    $importText = mb_convert_encoding($importText, 'UTF-8', 'Windows-1257');   // Excel CSV lietuviškai
+                }
+            }
+        }
+        $importItems = $errors ? [] : array_slice(quiz_import_parse($importText), 0, 1000);
+        if (!$errors && !$importItems) {
+            $errors[] = t('Neradau klausimų. Patikrinkite formatą (pavyzdys - žemiau).');
+        }
+        if ($action === 'import_do' && $importItems) {
+            $n = quiz_import_save($id, $importItems);
+            flash('ok', t('Įkelta klausimų: {n}. Juos galite taisyti ar ištrinti žemiau.', ['n' => $n]));
+            redirect('admin/testai.php?id=' . $id . '#klausimai');
+        }
+    } elseif ($action === 'delete_questions' && $id) {
+        $ids = array_values(array_filter(array_map('intval', (array) ($_POST['qids'] ?? []))));
+        if ($ids) {
+            $in = implode(',', $ids);
+            foreach (q("SELECT image FROM quiz_questions WHERE quiz_id = ? AND id IN ($in) AND image IS NOT NULL", [$id])->fetchAll(PDO::FETCH_COLUMN) as $img) {
+                @unlink(QUIZ_DIR . '/' . basename($img));
+                @unlink(QUIZ_DIR . '/thumb_' . basename($img));
+            }
+            q("DELETE FROM quiz_questions WHERE quiz_id = ? AND id IN ($in)", [$id]);
+            flash('ok', t('Ištrinta klausimų: {n}.', ['n' => count($ids)]));
+        }
+        redirect('admin/testai.php?id=' . $id . '#klausimai');
     } elseif ($action === 'delete_question' && $id) {
         $img = q_value('SELECT image FROM quiz_questions WHERE id = ? AND quiz_id = ?', [(int) post('qid'), $id]);
         if ($img) {
@@ -182,7 +241,7 @@ if ($id || get('id') === 'new' || get('new')) {
       <h1 class="styled"><?= $id ? e($quiz['title']) : t('Naujas testas') ?></h1>
       <?php if ($id): ?><a class="btn btn-ghost btn-sm" href="<?= url('testas.php?q=' . $id . '&rezimas=treniruote') ?>"><?= te('Išbandyti →') ?></a><?php endif; ?>
     </div>
-    <?= form_errors($errors) ?>
+    <?= $importItems === null ? form_errors($errors) : '' ?>
     <form method="post" class="panel card form">
       <?= csrf_field() ?>
       <input type="hidden" name="id" value="<?= $id ?>"><input type="hidden" name="action" value="quiz">
@@ -218,30 +277,143 @@ if ($id || get('id') === 'new' || get('new')) {
         c.addEventListener('input', u); p.addEventListener('input', u); u(); })();
     </script>
 
-    <?php if ($id): ?>
+    <?php if ($id): $shareUrl = abs_url('testas-svecias.php?k=' . quiz_share_token($quiz)); ?>
+      <div class="panel card" id="nuoroda">
+        <h2><?= te('Nuoroda be paskyros') ?></h2>
+        <p class="small muted" style="margin-top:0;"><?= te('Testą gali išspręsti bet kas, net be paskyros: įrašo vardą ir iš karto mato rezultatą su teisingais atsakymais. Rezultatus matote čia.') ?></p>
+        <form method="post" class="row" style="gap:10px; align-items:center;">
+          <?= csrf_field() ?><input type="hidden" name="id" value="<?= $id ?>"><input type="hidden" name="action" value="share">
+          <label class="check"><input type="checkbox" name="share_open" value="1" <?= !empty($quiz['share_open']) ? 'checked' : '' ?> onchange="this.form.submit()"><span><?= te('Leisti spręsti per nuorodą') ?></span></label>
+          <noscript><button class="btn btn-ghost btn-sm" type="submit"><?= te('Išsaugoti') ?></button></noscript>
+        </form>
+        <?php if (!empty($quiz['share_open'])): ?>
+          <div class="row share-row" style="gap:8px; margin-top:8px;">
+            <input type="text" readonly value="<?= e($shareUrl) ?>" id="quizShareUrl" aria-label="<?= te('Nuoroda') ?>" onclick="this.select()">
+            <button class="btn btn-ghost btn-sm" type="button" onclick="var i=document.getElementById('quizShareUrl'); i.select(); try { navigator.clipboard.writeText(i.value); } catch (e) { document.execCommand('copy'); } this.textContent='✓ Nukopijuota';"><?= te('Kopijuoti') ?></button>
+            <a class="btn btn-ghost btn-sm" href="<?= e($shareUrl) ?>" target="_blank" rel="noopener"><?= te('Atidaryti ↗') ?></a>
+          </div>
+        <?php endif; ?>
+        <?php $guests = q_all('SELECT * FROM quiz_guest_attempts WHERE quiz_id = ? ORDER BY created_at DESC LIMIT 100', [$id]); ?>
+        <?php if ($guests): ?>
+          <h3 style="margin:16px 0 6px;"><?= te('Sprendė per nuorodą') ?> (<?= count($guests) ?>)</h3>
+          <ul class="list small">
+            <?php foreach ($guests as $g): $gp = $g['total'] ? (int) round(100 * $g['score'] / $g['total']) : 0; ?>
+              <li class="row between"><span><strong><?= e($g['name']) ?></strong><?= $g['club'] ? ' · ' . e($g['club']) : '' ?>
+                <span class="muted"> · <?= e(fmt_date($g['created_at'], true)) ?>, <?= e(substr($g['created_at'], 11, 5)) ?></span></span>
+                <span class="badge <?= $g['passed'] ? 'badge-ok' : 'badge-warn' ?>"><?= $gp ?> % <?= $g['passed'] ? '✓' : '✕' ?></span></li>
+            <?php endforeach; ?>
+          </ul>
+        <?php endif; ?>
+      </div>
+
+      <details class="panel card import-box" id="ikelti"<?= $importItems !== null ? ' open' : '' ?>>
+        <summary><strong><?= te('📥 Įkelti klausimus iš failo ar teksto (pvz. iš ChatGPT)') ?></strong></summary>
+        <?= $importItems !== null ? form_errors($errors) : '' ?>
+        <?php if ($importItems): $okCount = count(array_filter($importItems, function ($x) { return !$x['error']; })); ?>
+          <h3 style="margin:12px 0 6px;"><?= te('Peržiūra') ?>: <?= $okCount ?> <?= te('tinkamų') ?><?= count($importItems) - $okCount ? ', ' . (count($importItems) - $okCount) . ' ' . t('su klaidomis (nebus įkelti)') : '' ?></h3>
+          <div class="table-scroll import-preview"><table class="table small">
+            <thead><tr><th>#</th><th><?= te('Klausimas') ?></th><th><?= te('Atsakymai') ?></th><th></th></tr></thead>
+            <tbody>
+            <?php foreach ($importItems as $k => $it): ?>
+              <tr class="<?= $it['error'] ? 'warn-row' : '' ?>"><td><?= $k + 1 ?></td><td><?= e($it['body']) ?><?= $it['topic'] ? '<div class="muted">' . te('tema:') . ' ' . e($it['topic']) . '</div>' : '' ?></td>
+                <td><?php foreach ($it['answers'] as $ai => $an): ?><div<?= $ai === $it['correct'] ? ' class="imp-ok"' : '' ?>><?= $ai === $it['correct'] ? '✓ ' : '' ?><?= e($an) ?></div><?php endforeach; ?></td>
+                <td><?= $it['error'] ? '<span class="badge badge-warn">' . e($it['error']) . '</span>' : '<span class="badge badge-ok">OK</span>' ?></td></tr>
+            <?php endforeach; ?>
+            </tbody>
+          </table></div>
+          <form method="post" class="row" style="gap:8px; margin-top:10px;">
+            <?= csrf_field() ?><input type="hidden" name="id" value="<?= $id ?>"><input type="hidden" name="action" value="import_do">
+            <textarea name="import_text" hidden><?= e($importText) ?></textarea>
+            <button class="btn btn-primary" type="submit"<?= $okCount ? '' : ' disabled' ?>><?= te('Įkelti') ?> <?= $okCount ?> <?= te('klaus.') ?></button>
+            <span class="small muted"><?= te('Jau esantys (tokiu pačiu tekstu) praleidžiami.') ?></span>
+          </form>
+          <hr>
+        <?php endif; ?>
+        <form method="post" enctype="multipart/form-data" class="form" style="margin-top:10px;">
+          <?= csrf_field() ?><input type="hidden" name="id" value="<?= $id ?>"><input type="hidden" name="action" value="import_preview">
+          <label><?= te('Įklijuokite klausimus') ?> <span class="hint"><?= te('pvz. ką sugeneravo ChatGPT') ?></span>
+            <textarea name="import_text" rows="8" placeholder="1. Klausimas?&#10;A) ...&#10;B) ...&#10;C) ...&#10;Atsakymas: B"><?= e($importItems === null ? '' : $importText) ?></textarea></label>
+          <label><?= te('arba pasirinkite failą') ?> <span class="hint">.txt, .csv, .json</span><input type="file" name="import_file" accept=".txt,.csv,.json,.md,text/plain,text/csv,application/json"></label>
+          <div class="row"><button class="btn btn-ghost" type="submit"><?= te('Peržiūrėti →') ?></button></div>
+        </form>
+        <div class="import-help small">
+          <p><strong><?= te('Kaip gauti klausimus iš ChatGPT:') ?></strong> <?= te('įkelkite jam taisykles (failą ar tekstą) ir nukopijuokite šį prašymą. Atsakymą įklijuokite čia aukščiau.') ?></p>
+          <pre id="importPrompt"><?= e(quiz_import_prompt()) ?></pre>
+          <button class="btn btn-ghost btn-sm" type="button" onclick="var t=document.getElementById('importPrompt').textContent; try { navigator.clipboard.writeText(t); } catch (e) {} this.textContent='✓ Nukopijuota';"><?= te('Kopijuoti prašymą') ?></button>
+          <p class="muted"><?= te('Tinka ir Excel CSV: klausimas; A; B; C; D; teisingas (raidė); paaiškinimas; tema.') ?></p>
+        </div>
+      </details>
+
       <h2 id="klausimai" style="margin:28px 0 12px;"><?= te('Klausimai (') ?><?= count($all) ?>)</h2>
       <?php if ($distinct < (int) $quiz['question_count']): ?>
         <p class="small muted"><?= te('Banke skirtingų klausimų (') ?><?= $distinct ?><?= te(') mažiau nei teste (') ?><?= (int) $quiz['question_count'] ?><?= te(') - kol kas bus užduodami visi esami.') ?></p>
       <?php endif; ?>
       <datalist id="quizTopics"><?php foreach (array_unique(array_filter(array_column($all, 'topic'))) as $t): ?><option value="<?= e($t) ?>"><?php endforeach; ?></datalist>
-      <?php foreach ($all as $i => $qq): $correct = array_values(array_filter($qq['answers'], function ($an) { return $an['is_correct']; })); ?>
-        <details class="panel card q-item" id="q<?= (int) $qq['id'] ?>">
+      <?php if ($all): ?>
+        <form method="post" id="bulkDel" class="row bulk-bar" onsubmit="var n = document.querySelectorAll('.q-pick input:checked').length; if (!n) { alert('Pažymėkite klausimus, kuriuos ištrinti.'); return false; } return confirm('Ištrinti pažymėtus klausimus (' + n + ')?');">
+          <?= csrf_field() ?><input type="hidden" name="id" value="<?= $id ?>"><input type="hidden" name="action" value="delete_questions">
+          <label class="check"><input type="checkbox" id="pickAll"><span><?= te('Pažymėti visus') ?></span></label>
+          <button class="btn btn-danger btn-sm" type="submit"><?= te('Ištrinti pažymėtus') ?> (<span id="pickN">0</span>)</button>
+        </form>
+      <?php endif; ?>
+      <?php foreach ($all as $i => $qq): $correct = array_values(array_filter($qq['answers'], function ($an) { return $an['is_correct']; }));
+        $isFailed = $failed && $failed['qid'] === (int) $qq['id']; ?>
+        <div class="q-row">
+        <label class="q-pick" title="<?= te('Pažymėti trynimui') ?>"><input type="checkbox" name="qids[]" value="<?= (int) $qq['id'] ?>" form="bulkDel" aria-label="<?= te('Pažymėti') ?> <?= $i + 1 ?>"></label>
+        <details class="panel card q-item" id="q<?= (int) $qq['id'] ?>"<?= $isFailed ? ' open' : '' ?>>
           <summary>
             <span class="q-num"><?= $i + 1 ?></span>
             <span class="q-sum"><strong><?= e(mb_strimwidth($qq['body'], 0, 120, '…')) ?></strong>
               <span class="small muted">✓ <?= e($correct ? $correct[0]['body'] : t('nepažymėtas teisingas atsakymas!')) ?> · <?= count($qq['answers']) ?> ats.<?= !empty($qq['topic']) ? (' ' . t('· tema:') . ' ') . e($qq['topic']) : '' ?><?= $qq['image'] ? (' ' . t('· paveikslėlis')) : '' ?><?= $qq['youtube_id'] ? (' ' . t('· video')) : '' ?></span></span>
           </summary>
-          <?= question_form($id, $qq) ?>
+          <?= $isFailed ? question_form($id, $failed['q'], $failed['errors']) : question_form($id, $qq) ?>
           <form method="post" class="inline-form" onsubmit="return confirm('Ištrinti klausimą?')">
             <?= csrf_field() ?><input type="hidden" name="id" value="<?= $id ?>"><input type="hidden" name="qid" value="<?= (int) $qq['id'] ?>">
             <button class="linklike small muted" name="action" value="delete_question" style="border:none; padding:0; text-decoration:underline;"><?= te('ištrinti klausimą') ?></button>
           </form>
         </details>
+        </div>
       <?php endforeach; ?>
-      <div class="panel card">
+      <div class="panel card" id="naujas">
         <h2><?= te('Naujas klausimas') ?></h2>
-        <?= question_form($id, null) ?>
+        <?= $failed && !$failed['qid'] ? question_form($id, $failed['q'], $failed['errors']) : question_form($id, null) ?>
       </div>
+      <script>
+      (function () {
+        // Po klaidos - iš karto prie tos formos (įvesti duomenys lieka)
+        var bad = document.querySelector('.q-form .flash-err:not([hidden])');
+        if (bad) bad.closest('.q-form').scrollIntoView({ block: 'center' });
+        // Enter ar ↓ - į kitą laukelį (atsakymai, paaiškinimas, YouTube, tema); ↑ - atgal; klausime Shift+Enter - nauja eilutė
+        document.addEventListener('keydown', function (e) {
+          var t = e.target, f = t.closest && t.closest('.q-form'); if (!f) return;
+          var fields = Array.prototype.slice.call(f.querySelectorAll('textarea[name=body], input[type=text]'));
+          var i = fields.indexOf(t); if (i < 0) return;
+          var isAns = /^ans_body/.test(t.name);
+          var go = function (k) { if (fields[k]) { e.preventDefault(); fields[k].focus(); } };
+          if (e.key === 'Enter' && !e.shiftKey && t.name !== 'topic') go(i + 1);
+          else if (e.key === 'ArrowDown' && isAns) go(i + 1);
+          else if (e.key === 'ArrowUp' && isAns) go(i - 1);
+        });
+        // Prieš siunčiant: klausimas, bent 2 atsakymai, pažymėtas teisingas (netinka - nesiunčiama ir niekas neišsitrina)
+        document.addEventListener('submit', function (e) {
+          var f = e.target; if (!f.classList || !f.classList.contains('q-form')) return;
+          var msg = [], body = f.querySelector('[name=body]').value.trim();
+          var filled = Array.prototype.filter.call(f.querySelectorAll('input[name^=ans_body]'), function (x) { return x.value.trim() !== ''; });
+          var chk = f.querySelector('input[name=correct]:checked');
+          if (!body) msg.push('Įveskite klausimą.');
+          if (filled.length < 2) msg.push('Reikia bent 2 atsakymų.');
+          else if (!chk) msg.push('Pažymėkite teisingą atsakymą (bumbuliukas kairėje).');
+          else if (!f.querySelector('input[name="ans_body[' + chk.value + ']"]').value.trim()) msg.push('Pažymėtas teisingu atsakymas tuščias.');
+          var box = f.querySelector('.q-err');
+          if (msg.length) { e.preventDefault(); box.textContent = msg.join(' '); box.hidden = false; box.scrollIntoView({ block: 'center' }); }
+          else box.hidden = true;
+        });
+        // Keli klausimai trynimui
+        var all = document.getElementById('pickAll'), cnt = function () { var n = document.getElementById('pickN'); if (n) n.textContent = document.querySelectorAll('.q-pick input:checked').length; };
+        if (all) all.addEventListener('change', function () { document.querySelectorAll('.q-pick input').forEach(function (x) { x.checked = all.checked; }); cnt(); });
+        document.addEventListener('change', function (e) { if (e.target.closest && e.target.closest('.q-pick')) cnt(); });
+      })();
+      </script>
     <?php endif; ?>
     <?php
     page_end();

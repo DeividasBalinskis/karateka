@@ -336,6 +336,52 @@ function tournament_new_entries(int $id): array
     }
 }
 
+/** Registracijų kontaktai pagal klubą (skirtukas „Klubai“ → „Kontaktai“): [klubas => [['phone', 'n' => kiek dalyvių], ...]] */
+function tournament_club_contacts(int $id): array
+{
+    $out = [];
+    try {
+        foreach (q_all('SELECT club, contact, COUNT(*) AS n FROM tournament_entries WHERE tournament_id = ? AND contact IS NOT NULL AND contact <> "" GROUP BY club, contact ORDER BY club, n DESC', [$id]) as $r) {
+            $out[$r['club']][] = ['phone' => $r['contact'], 'n' => (int) $r['n']];
+        }
+    } catch (PDOException $ex) {
+        $out = [];
+    }
+    return $out;
+}
+
+/** Klubų kontaktai iš LTKF sąrašo (tik tikri, be „[...]“ vietos rezervavimo): [klubas => ['person', 'phone', 'email']] */
+function varz_club_directory(): array
+{
+    $file = PUBLIC_DIR . '/ltkf/turinys/klubai.php';
+    $out = [];
+    foreach (is_file($file) ? (array) require $file : [] as $k) {
+        $real = function ($v) { $v = trim((string) $v); return $v !== '' && strpos($v, '[') === false ? $v : ''; };
+        $c = ['person' => $real($k['treneris'] ?? ''), 'phone' => $real($k['telefonas'] ?? ''), 'email' => $real($k['el_pastas'] ?? '')];
+        if (array_filter($c)) {
+            $out[(string) $k['pavadinimas']] = $c;
+        }
+    }
+    return $out;
+}
+
+/** Senieji pavyzdiniai klubai (iki v1.21 LTKF sąraše) - išimami iš varžybų, jei juose nėra dalyvių */
+function varz_drop_example_clubs(array $state): array
+{
+    $old = ['Danas', 'Lūšis', 'Sokratus', 'Tikslas'];
+    $used = [];
+    foreach ((array) ($state['people'] ?? []) as $p) {
+        $used[(string) ($p['club'] ?? '')] = true;
+    }
+    foreach ((array) ($state['teams'] ?? []) as $tm) {
+        $used[(string) ($tm['club'] ?? '')] = true;
+    }
+    if (isset($state['clubs']) && is_array($state['clubs'])) {
+        $state['clubs'] = array_values(array_filter($state['clubs'], function ($c) use ($old, $used) { return !in_array($c, $old, true) || isset($used[$c]); }));
+    }
+    return $state;
+}
+
 /** Vardas viešai: vaikų ir jaunių (iki 18 m.) - „Vardas P.“ */
 function varz_public_name(array $p): string
 {

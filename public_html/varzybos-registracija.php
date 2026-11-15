@@ -11,7 +11,8 @@ if (!$t) {
 }
 $open = !empty($t['reg_open']);
 $year = (int) date('Y');
-$clubs = array_values(array_filter((array) (tournament_state($t)['clubs'] ?? []), function ($c) { return $c !== VARZ_HOME_CLUB; }));
+// Ir Karateka: jos nariai (ar tėvai) irgi gali registruotis per tą pačią nuorodą
+$clubs = array_values(array_unique(array_merge([VARZ_HOME_CLUB], array_map('strval', (array) (tournament_state($t)['clubs'] ?? [])))));
 $phoneOk = function (string $p): bool { return (bool) preg_match('/^\+?[\d\s()-]{8,20}$/', $p) && strlen(preg_replace('/\D/', '', $p)) >= 8; };
 $errors = [];
 
@@ -106,10 +107,13 @@ $pv = function (string $key, int $i): string { return (string) ($_POST[$key][$i]
 
   <div class="kicker" style="margin-top:8px;"><?= te('Dalyviai') ?></div>
   <div class="reg-rows" id="regRows">
-    <div class="reg-row reg-head"><span><?= te('Vardas ir pavardė') ?></span><span><?= te('Gimimo metai') ?></span><span><?= te('Lytis') ?></span><span><?= te('Diržas') ?></span>
-      <span><?= te('Vieno iš tėvų tel. Nr.') ?></span><span><?= te('Nuotraukos, video') ?></span></div>
-    <?php $n = max(4, count((array) ($_POST['name'] ?? []))); for ($i = 0; $i < $n; $i++): ?>
+    <div class="reg-row reg-head"><span>#</span><span><?= te('Vardas ir pavardė') ?></span><span><?= te('Gimimo metai') ?></span><span><?= te('Lytis') ?></span><span><?= te('Diržas') ?></span>
+      <span><?= te('Vieno iš tėvų tel. Nr.') ?></span><span><?= te('Nuotraukos, video') ?></span><span></span></div>
+    <?php // po klaidos - tik užpildytos eilutės, ta pačia tvarka
+    $idx = array_keys(array_filter((array) ($_POST['name'] ?? []), function ($v) { return is_string($v) && trim($v) !== ''; })) ?: [0];
+    foreach ($idx as $k => $i): ?>
       <div class="reg-row">
+        <span class="reg-num"><span class="reg-num-l"><?= te('Dalyvis') ?> </span><span class="reg-n"><?= $k + 1 ?></span></span>
         <input type="text" name="name[]" maxlength="120" placeholder="<?= te('Vardenis Pavardenis') ?>" aria-label="<?= te('Vardas ir pavardė') ?>" value="<?= e($pv('name', $i)) ?>">
         <input type="number" name="birth[]" min="<?= $year - 90 ?>" max="<?= $year - 3 ?>" placeholder="<?= te('metai') ?>" aria-label="<?= te('Gimimo metai') ?>" value="<?= e($pv('birth', $i)) ?>">
         <select name="gender[]" aria-label="<?= te('Lytis') ?>"><option value=""><?= te('lytis') ?></option><option value="M"<?= $pv('gender', $i) === 'M' ? ' selected' : '' ?>>M</option><option value="F"<?= $pv('gender', $i) === 'F' ? ' selected' : '' ?>>F</option></select>
@@ -117,12 +121,13 @@ $pv = function (string $key, int $i): string { return (string) ($_POST[$key][$i]
         <input type="tel" name="phone[]" maxlength="40" placeholder="<?= te('tėvų tel. Nr.') ?>" aria-label="<?= te('Vieno iš tėvų tel. Nr.') ?>" value="<?= e($pv('phone', $i)) ?>">
         <select name="photo[]" aria-label="<?= te('Sutinka būti fotografuojamas ir filmuojamas') ?>"><option value=""><?= te('nuotraukos?') ?></option>
           <option value="1"<?= $pv('photo', $i) === '1' ? ' selected' : '' ?>><?= te('Sutinka') ?></option><option value="0"<?= $pv('photo', $i) === '0' ? ' selected' : '' ?>><?= te('Nesutinka') ?></option></select>
+        <button type="button" class="reg-del" title="<?= te('Pašalinti') ?>" aria-label="<?= te('Pašalinti') ?>">×</button>
       </div>
-    <?php endfor; ?>
+    <?php endforeach; ?>
   </div>
   <div class="row" style="gap:10px;">
-    <button type="button" class="btn btn-ghost btn-sm" id="regMore"><?= te('+ Dar eilučių') ?></button>
-    <span class="hint"><?= te('Tuščios eilutės nesiunčiamos. Vaikams iki 18 m. - būtinas vieno iš tėvų telefonas.') ?></span>
+    <button type="button" class="btn btn-ghost btn-sm" id="regMore"><?= te('+ Pridėti dar vieną dalyvį') ?></button>
+    <span class="hint"><?= te('Vaikams iki 18 m. - būtinas vieno iš tėvų telefonas.') ?></span>
   </div>
 
   <div class="reg-privacy">
@@ -137,10 +142,25 @@ $pv = function (string $key, int $i): string { return (string) ($_POST[$key][$i]
 </form>
 <script>
 (function () {
+  // Vienas dalyvis iš pradžių; „+ Pridėti dar vieną“ - nauja tuščia eilutė, × - pašalina (paskutinės - ne)
+  var rows = document.getElementById('regRows');
+  function renumber() {
+    var list = rows.querySelectorAll('.reg-row:not(.reg-head)');
+    list.forEach(function (r, i) { r.querySelector('.reg-n').textContent = i + 1; });
+    rows.classList.toggle('single', list.length < 2);
+  }
   document.getElementById('regMore').addEventListener('click', function () {
-    var rows = document.getElementById('regRows'), last = rows.lastElementChild;
-    for (var i = 0; i < 4; i++) { var c = last.cloneNode(true); c.querySelectorAll('input, select').forEach(function (x) { x.value = ''; }); rows.appendChild(c); }
+    var c = rows.querySelector('.reg-row:not(.reg-head)').cloneNode(true);
+    c.querySelectorAll('input, select').forEach(function (x) { x.value = ''; });
+    rows.appendChild(c);
+    renumber();
+    c.querySelector('input').focus();
   });
+  rows.addEventListener('click', function (e) {
+    var b = e.target.closest('.reg-del');
+    if (b && rows.querySelectorAll('.reg-row:not(.reg-head)').length > 1) { b.closest('.reg-row').remove(); renumber(); }
+  });
+  renumber();
 })();
 </script>
 <?php endif; ?>

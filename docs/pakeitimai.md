@@ -4,6 +4,37 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.21 - 2026-11-15 (Denio pastabos lapkričio 11-15: testai, klausimai iš ChatGPT, klubų kontaktai, reglamentas prie renginio)
+**Duomenų bazė:** `db/028_testai_nuoroda_renginio_failas.sql` - įkėlus failus, Valdymas → Šiandien → „Atnaujinkite duomenų bazę“.
+
+Varžybų sistema „Taika“:
+- **Registracijos nuoroda - ir Karatekai**: klubų sąraše yra ir Karateka. Forma prasideda nuo **vieno dalyvio**,
+  „+ Pridėti dar vieną dalyvį“ prideda po vieną, × - pašalina; telefone kiekvienas dalyvis - atskira kortelė „Dalyvis 1, 2…“.
+- **Klubai → „☎ Kontaktai“**: atsakingas asmuo, telefonas, el. paštas, pastaba (Karatekos - iš LTKF sąrašo);
+  žemiau - telefonai, kuriuos klubas nurodė registruodamasis per nuorodą.
+- **Balai**: Enter - kitas teisėjas, po paskutinio - kito dalyvio pirmas teisėjas (Shift+Enter - atgal). Teisėjų: 3, 5, **6** arba 7.
+- Klubų sąraše - tik LTKF klubai (Karateka, Sanrei, Takami, Vilniaus karate mokykla, Karate akademija); senieji pavyzdžiai be dalyvių išimti.
+
+LTKF svetainė:
+- **Klubai** - tik tie penki.
+- **Teisėjai** - sąrašas iš karateka.lt: nariai su žyma „Teisėjas“ ir ar galioja teisėjų testas (vaikų - „Vardas P.“).
+
+Testai:
+- Pildant klausimą ir ką nors pamiršus - **niekas neišsitrina**: neleidžiama pateikti, kol trūksta (klausimas, 2 atsakymai, pažymėtas teisingas),
+  o jei serveris atmeta - forma grįžta su tuo, kas įvesta.
+- **Enter** ar **↓** - į kitą atsakymo laukelį (↑ - atgal).
+- Atsakymų tvarka **kaskart kita** ir treniruotės režime.
+- **Nuoroda be paskyros**: testo puslapyje „Leisti spręsti per nuorodą“ - bet kas įrašo vardą (ir klubą), sprendžia ir iš karto mato rezultatą
+  su teisingais atsakymais. Treneris mato, kas sprendė ir kiek surinko (ištrinama po metų).
+- **Klausimų įkėlimas** (pvz. 500 iš ChatGPT): „📥 Įkelti klausimus“ - įklijuoti tekstą ar pasirinkti failą (.txt, Excel CSV, .json) →
+  peržiūra (matosi, kurie netinka) → „Įkelti“. Ten pat - paruoštas prašymas ChatGPT, kad klausimai būtų tinkamu formatu.
+- **Keli klausimai iš karto**: varnelės kairėje ir „Ištrinti pažymėtus“.
+
+Svetainė:
+- **Renginio priedas** (pvz. reglamentas): renginio formoje - PDF, Word ar Excel iki 10 MB; renginio puslapyje ir sąraše - nuoroda atsisiųsti.
+- **Vaikų tvarkaraštis telefone**: iš karto rodoma pirmos vietos tvarkaraštis, paspaudus kitą - pasikeičia ir ekranas nuslenka iki jo;
+  vietoje „← kairėje“ telefone rašoma „↑ Paspauskite vietą viršuje“.
+
 ## v1.20 - 2026-11-10 (Denio ir Nikos pastabos: balų įrašymas, ekranas su grupėmis, grupės iš tvarkaraščio, registracija su sutikimais)
 **Duomenų bazė:** `db/027_varzybu_registracijos_sutikimai.sql` - įkėlus failus, Valdymas → Šiandien → „Atnaujinkite duomenų bazę“.
 

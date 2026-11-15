@@ -358,7 +358,7 @@ function home_render_block(array $b): string
                 $facts = $cat === 'vaikai'
                     ? ('<div><div class="kicker">' . t('Kainos') . '</div><div data-live="price-') . $cat . '">' . render_price($cat) . '</div></div>'
                       . ('<div class="full"><div class="kicker">' . t('Kur treniruojamės') . '</div><div class="schedule-picker"><div class="picker-locations loc-scroll loc-accordion" data-live="schedule-') . $cat . '">'
-                      . render_kids_locations() . ('</div><div class="picker-schedule" id="vaikamsSchedulePanel"><div class="kicker">' . t('Tvarkaraštis') . '</div><p class="schedule-placeholder">' . t('← Pasirinkite vietą kairėje') . '</p></div></div></div>')
+                      . render_kids_locations() . ('</div><div class="picker-schedule" id="vaikamsSchedulePanel"><div class="kicker">' . t('Tvarkaraštis') . '</div><p class="schedule-placeholder"><span class="ph-wide">' . t('← Pasirinkite vietą kairėje') . '</span><span class="ph-narrow">' . t('↑ Paspauskite vietą viršuje') . '</span></p></div></div></div>')
                     : ('<div><div class="kicker">' . t('Kainos') . '</div><div data-live="price-') . $cat . '">' . render_price($cat) . '</div></div>'
                       . ('<div><div class="kicker">' . t('Tvarkaraštis') . '</div><div data-live="schedule-') . $cat . '">' . render_category_schedule($cat) . '</div></div>'
                       . ('<div class="full"><div class="kicker">' . t('Kur treniruojamės') . '</div><div data-live="locations-') . $cat . '">' . render_category_locations($cat) . '</div></div>';

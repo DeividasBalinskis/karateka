@@ -75,16 +75,31 @@ document.addEventListener('toggle', (ev) => {
   d.closest('.loc-accordion').querySelectorAll('details.loc-group').forEach(other => { if (other !== d) other.open = false; });
 }, true);
 
-// Vaikams: paspaudus vietą, jos tvarkaraštis rodomas dešinėje
-document.addEventListener('click', (ev) => {
-  const li = ev.target.closest('.picker-locations li[data-schedule]');
+// Vaikams: paspaudus vietą, jos tvarkaraštis rodomas šalia (telefone - po sąrašu, ir ekranas paslenkamas iki jo).
+// Iš karto parodoma pirmoji vieta, kad tvarkaraštis niekada nebūtų tuščias.
+function pickLocation(li, scroll) {
   const panel = document.getElementById('vaikamsSchedulePanel');
   if (!li || !panel) return;
-  document.querySelectorAll('.picker-locations li[data-schedule]').forEach(other => other.classList.remove('active'));
+  document.querySelectorAll('.picker-locations li[data-schedule]').forEach(other => { other.classList.remove('active'); other.setAttribute('aria-pressed', 'false'); });
   li.classList.add('active');
+  li.setAttribute('aria-pressed', 'true');
   panel.innerHTML = '<div class="kicker">Tvarkaraštis</div><div class="schedule-name"></div>' + li.dataset.schedule;
   panel.querySelector('.schedule-name').textContent = li.dataset.name;
+  if (scroll && window.matchMedia('(max-width: 860px)').matches) {
+    const r = panel.getBoundingClientRect();
+    if (r.top > window.innerHeight - 80 || r.bottom < 0) panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+}
+document.querySelectorAll('.picker-locations li[data-schedule]').forEach(li => { li.setAttribute('role', 'button'); li.setAttribute('tabindex', '0'); });
+document.addEventListener('click', (ev) => {
+  const li = ev.target.closest && ev.target.closest('.picker-locations li[data-schedule]');
+  if (li) pickLocation(li, true);
 });
+document.addEventListener('keydown', (ev) => {
+  const li = ev.target.closest && ev.target.closest('.picker-locations li[data-schedule]');
+  if (li && (ev.key === 'Enter' || ev.key === ' ')) { ev.preventDefault(); pickLocation(li, true); }
+});
+pickLocation(document.querySelector('.picker-locations li[data-schedule]'), false);
 
 // Gimimo metai - užpildoma čia, kad intervalas būtų vienoje vietoje
 const yearSelect = document.getElementById('gimimoMetai');

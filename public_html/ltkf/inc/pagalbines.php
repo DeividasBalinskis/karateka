@@ -238,6 +238,36 @@ function karateka_klubas(): ?array
     }
 }
 
+/**
+ * Karatekos teisėjai (nariai su žyma „Teisėjas“ karateka.lt) teisėjų sąrašui: vardas, klubas ir ar galioja teisėjų testas (išlaikytas per 12 mėn.).
+ * Vaikų ir jaunių vardai - „Vardas P.“. [['vardas', 'klubas', 'galioja_iki' => 'Y-m-d' | null], ...]
+ */
+function karateka_teisejai(): array
+{
+    $db = karateka_db();
+    if (!$db) {
+        return [];
+    }
+    try {
+        $rows = $db->query("SELECT m.first_name, m.last_name, m.birth_date,
+                (SELECT MAX(qa.finished_at) FROM quiz_attempts qa JOIN quizzes q ON q.id = qa.quiz_id
+                  WHERE qa.member_id = m.id AND q.audience = 'teisejas' AND qa.passed = 1) AS islaike
+              FROM member_tags t JOIN members m ON m.id = t.member_id
+             WHERE t.tag = 'teisejas' AND m.status = 'active' ORDER BY m.last_name, m.first_name")->fetchAll();
+    } catch (Throwable $ex) {
+        return [];
+    }
+    $out = [];
+    foreach ($rows as $r) {
+        $minor = $r['birth_date'] && $r['birth_date'] > date('Y-m-d', strtotime('-18 years'));
+        $iki = $r['islaike'] ? date('Y-m-d', strtotime($r['islaike'] . ' +12 months')) : null;
+        $out[] = ['vardas' => trumpas_vardas($r['first_name'] . ' ' . $r['last_name'], $minor), 'klubas' => 'Karateka',
+                  'galioja_iki' => $iki && $iki >= date('Y-m-d') ? $iki : null];
+    }
+    usort($out, function ($a, $b) { return [$a['galioja_iki'] === null, $a['vardas']] <=> [$b['galioja_iki'] === null, $b['vardas']]; });
+    return $out;
+}
+
 /** Varžybos iš varžybų sistemos kalendoriaus formatu (tušti, jei sistema nepasiekiama) */
 function varzybos_renginiai(): array
 {
