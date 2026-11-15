@@ -205,7 +205,27 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
 
   <!-- KATEGORIJOS -->
   <section id="v-kategorijos" role="tabpanel" aria-labelledby="tab-kategorijos" hidden>
-    <div class="cat-layout">
+    <div class="toolbar cat-views">
+      <div class="seg" role="group" aria-label="Vaizdas">
+        <button type="button" class="seg-btn" data-catview="ov" aria-pressed="false">▦ Struktūra</button>
+        <button type="button" class="seg-btn" data-catview="edit" aria-pressed="false">✎ Viena kategorija</button>
+      </div>
+      <span class="ov-only">
+        <input type="search" class="sel" id="ov-search" placeholder="Ieškoti kategorijos ar dalyvio" aria-label="Ieškoti">
+        <span class="seg" role="group" aria-label="Lytis"><button type="button" class="seg-btn on" data-ovg="">Visi</button><button type="button" class="seg-btn" data-ovg="M">M</button><button type="button" class="seg-btn" data-ovg="F">F</button><button type="button" class="seg-btn" data-ovg="X">Mix</button></span>
+        <label class="small"><input type="checkbox" id="ov-problems"> Tik su problemomis</label>
+        <label class="small">Rikiuoti <select class="sel" id="ov-sort"><option value="order">kaip sudėliota</option><option value="years">pagal metus</option><option value="belt">pagal diržą</option><option value="count">pagal dalyvių sk.</option></select></label>
+      </span>
+      <span class="spacer"></span>
+      <span class="ov-only"><button class="btn" id="ov-auto" type="button" title="Pagal amžių, lytį ir diržą">⚡ Sudaryti automatiškai</button></span>
+    </div>
+    <div class="ov" id="cat-overview" hidden>
+      <p class="ov-sum muted small" id="ov-sum"></p>
+      <div class="ov-cols" id="ov-cols"></div>
+      <p class="hint">Metus, lytį ir kyu keiskite tiesiai bloke - pavadinimas atsinaujins pats. Tempkite ⋮⋮ - blokas persikels (ir į kitą rungtį).
+        Paspaudus dalyvių skaičių matosi dalyviai - juos irgi galima tempti į kitą bloką (su Ctrl - nukopijuoti). „⟳“ - perkelia netinkančius į tinkamus blokus.</p>
+    </div>
+    <div class="cat-layout" id="cat-edit">
       <div class="panel cat-side">
         <h2>Kategorijos <span class="spacer"></span><button class="btn" id="cat-auto" type="button" title="Pagal amžių, lytį ir diržą">⚡ Automatiškai</button><button class="btn" id="cat-new" type="button">+ Nauja</button></h2>
         <ul class="cat-list" id="cat-list"></ul>

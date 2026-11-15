@@ -4,6 +4,21 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.23 - 2026-11-15 (Taikos pertvarka, 2 etapas: kategorijų struktūra kaip Kihapp)
+Duomenų bazės keisti nereikia.
+
+- **Kategorijos → „▦ Struktūra“** (numatytas vaizdas): visos rungtys stulpeliais (Kata, Kumite, Fukugo...), kiekviena kategorija - vienas blokas:
+  **gimę (jauniausi–vyriausi), lytis, kyu nuo–iki, dalyvių skaičius**. Mažiau teksto - pilnas pavadinimas rodomas tik jei pakeistas ranka.
+  - Metus, lytį ir kyu **keiskite tiesiai bloke** - pavadinimas atsinaujina pats.
+  - **⋮⋮ tempimas** - blokas perkeliamas aukščiau / žemiau ar į kitą rungtį.
+  - Paspaudus **dalyvių skaičių** - dalyviai; juos galima **tempti į kitą bloką** (su Ctrl - nukopijuoti). Netinkantys pagal kriterijus - geltoni.
+  - Stulpelio mygtukai: **„+“** naujas blokas, **„⟳“** netinkančius perkelti į tinkamus, **„⧉ →“** nukopijuoti visą struktūrą į kitą rungtį
+    (pvz. Kata → Kumite; tada pakeisti tik tai, kas skiriasi). „+ Rungtis…“ - nauja rungtis.
+  - Viršuje: **paieška** (kategorija ar dalyvis), **lytis** (Visi / M / F / Mix), **„Tik su problemomis“** (mažiau nei 2 dalyviai ar netinkantys),
+    **rikiavimas** (kaip sudėliota, pagal metus, diržą, dalyvių skaičių); suvestinė - kiek kategorijų, įrašų, problemų ir dalyvių be kategorijos.
+  - Raudonas kraštas - per mažai dalyvių, geltonas - yra netinkančių, žalsvas fonas - kategorija jau prasidėjo.
+- **„✎ Viena kategorija“** - kaip anksčiau: sistema, kova, dalyviai su sąrašu dešinėje; ✎ bloke atidaro būtent tą kategoriją.
+
 ## v1.22 - 2026-11-15 (Taikos pertvarka, 1 etapas: pagrindinis meniu ir Live tvarkaraštis)
 **Duomenų bazė:** `db/029_testo_svecio_el_pastas.sql` - Valdymas → Šiandien → „Atnaujinkite duomenų bazę“.
 

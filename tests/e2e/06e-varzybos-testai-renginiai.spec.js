@@ -24,6 +24,7 @@ test('Taika: club contacts, 6 judges, Enter through scores; registration for Kar
 
   // Balai: 6 teisėjai galimi; Enter - kitas teisėjas, po paskutinio - kitas dalyvis
   await a.click('#tab-kategorijos');
+  await a.click('[data-catview=\"edit\"]');   // viena kategorija (numatyta - struktūra)
   await a.waitForSelector('#cat-list button');
   await a.locator('#cat-list button').first().click();
   await a.click('[data-sys="score"]');

@@ -58,7 +58,7 @@ test('feedback: visitor and member write, admin answers', async ({ browser }) =>
 
 test('competitions: test tournament, editor saves, public results, LTKF, points', async ({ browser }) => {
   sql('DELETE FROM tournaments');
-  const a = await login(browser, 'info@karateka.lt', 1400, 900);
+  const a = await login(browser, 'info@karateka.lt', 1400, 1200);   // aukštas langas - tempiant iš dalyvių sąrašo kategorija matosi
   await a.goto('admin/varzybos.php');
   check('empty state', await a.locator('.varz-empty').count() === 1);
 
@@ -89,6 +89,7 @@ test('competitions: test tournament, editor saves, public results, LTKF, points'
 
   // Kategorija: sistemos pasirinkimas kortelėmis (ratų, balų), tempimas iš dalyvių sąrašo
   await a.click('#tab-kategorijos');
+  await a.click('[data-catview=\"edit\"]');   // viena kategorija (numatyta - struktūra)
   check('system cards', await a.locator('.sys-card').count() === 6);   // olimpinės (3), fukugo, ratų, balai
   const catId = await a.locator('#cat-list li[aria-current="true"]').getAttribute('data-drop-cat');
   await a.click('.sys-card[data-sys="rr"]');
@@ -96,7 +97,8 @@ test('competitions: test tournament, editor saves, public results, LTKF, points'
   check('system changed to round robin', JSON.parse(sql('SELECT state FROM tournaments ORDER BY id DESC LIMIT 1')).categories.find(c => c.id === catId).draw.system === 'rr');
   await a.click('[data-pool="all"]');
   const rowsBefore = await a.locator('#cat-detail tbody tr').count();
-  await a.locator('.pool-item:has(.pi-add)').first().dragTo(a.locator('#cat-detail .drop-zone'));
+  await a.locator('.pool-item:has(.pi-add)').first().dragTo(a.locator('#cat-detail .drop-zone'), { targetPosition: { x: 200, y: 30 } });
+  await a.waitForTimeout(800);
   check('drag from pool adds', await a.locator('#cat-detail tbody tr').count() === rowsBefore + 1);
   await a.click('.sys-card[data-sys="score"]');
   await a.click('#cat-draw');

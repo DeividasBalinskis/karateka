@@ -656,3 +656,52 @@ tr.club-contacts > td { background: var(--surface-2); padding: 12px 14px; }
 #run .run-tools > label:first-child { display: none; }
 .card.st-done .prog, .card.st-done .card-actions { display: none; }
 .card.st-done { padding-top: 6px; padding-bottom: 6px; }
+
+/* ---------- Kategorijų struktūra (kaip Kihapp „Divisions“) ---------- */
+.cat-views { gap: 10px; }
+.cat-views .ov-only { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.cat-views .seg { display: inline-flex; gap: 4px; }
+.ov-sum { margin: 0 0 10px; }
+.warn-t { color: var(--accent); }
+.linkish { background: none; border: 0; padding: 0; color: var(--accent); font-weight: 700; text-decoration: underline; cursor: pointer; font-size: inherit; }
+.ov-cols { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(390px, 1fr); gap: 14px; overflow-x: auto; padding-bottom: 8px; align-items: start; }
+.ov-col { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); min-width: 0; }
+.ov-col.ov-add { background: transparent; border-style: dashed; box-shadow: none; padding: 12px; }
+.ov-head { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-bottom: 1px solid var(--line); background: var(--surface-2); border-radius: var(--radius) var(--radius) 0 0; position: sticky; top: 0; }
+.ov-head b { font-size: 1.05rem; }
+.ov-copy { width: 52px; padding: 2px 4px; font-size: .85rem; }
+.ov-list { display: grid; gap: 6px; padding: 8px; }
+.ovb { border: 1px solid var(--line); border-radius: 10px; background: var(--surface); transition: border-color .12s, box-shadow .12s; }
+.ovb:hover { border-color: var(--line-2); }
+.ovb.drop, .ovb.drop-before { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.ovb.drop-before { box-shadow: 0 -4px 0 -1px var(--accent); }
+.ovb.dragging { opacity: .4; }
+.ovb.few { border-left: 4px solid var(--accent); }
+.ovb.unfit { border-left: 4px solid var(--amber); }
+.ovb.started { background: linear-gradient(90deg, var(--green-soft), var(--surface) 60px); }
+.ovb-row { display: grid; grid-template-columns: 14px 118px 46px 88px minmax(36px, 1fr) 22px; gap: 5px; align-items: center; padding: 5px 6px; }
+.ovb-row .ovb-n { justify-self: end; width: 40px; }
+.ovb-grip { cursor: grab; color: var(--muted); font-weight: 800; letter-spacing: -2px; user-select: none; text-align: center; }
+.ovb-years, .ovb-kyu { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 3px; min-width: 0; color: var(--muted); }
+.ovb-kyu { grid-template-columns: 1fr auto 1fr; }
+.ovb-kyu small { font-size: .7rem; }
+.ov-in, .ov-sel { min-width: 0; width: 100%; border: 1px solid transparent; background: var(--surface-2); border-radius: 7px; padding: 4px 2px; font-size: .88rem; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--ink); }
+.ov-in { -moz-appearance: textfield; text-align: center; }
+.ov-sel { -webkit-appearance: none; appearance: none; text-align: center; text-align-last: center; padding: 4px 2px; cursor: pointer; }
+.ov-in::-webkit-outer-spin-button, .ov-in::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.ov-in:hover, .ov-sel:hover { border-color: var(--line-2); }
+.ov-in:focus, .ov-sel:focus { border-color: var(--ink); background: var(--surface); outline: none; }
+.ovb-n { border: 0; border-radius: 8px; background: var(--ink); color: #fff; font-weight: 800; padding: 4px 0; cursor: pointer; position: relative; }
+.ovb.few .ovb-n { background: var(--accent); }
+.ovb-n b { position: absolute; top: -6px; right: -6px; width: 16px; height: 16px; border-radius: 50%; background: var(--amber); color: #fff; font-size: .7rem; line-height: 16px; }
+.ovb-edit { border: 0; background: transparent; color: var(--muted); cursor: pointer; font-size: 1rem; }
+.ovb-edit:hover { color: var(--accent); }
+.ovb-name { padding: 0 10px 6px 26px; font-size: .78rem; color: var(--muted); font-style: italic; }
+.ovb-people { display: flex; flex-wrap: wrap; gap: 4px; padding: 6px 8px 8px 26px; border-top: 1px dashed var(--line); }
+.ovp { display: inline-flex; align-items: center; gap: 4px; font-size: .8rem; border: 1px solid var(--line); border-radius: 999px; padding: 2px 9px; background: var(--surface); cursor: grab; }
+.ovp i { color: var(--muted); font-style: normal; font-size: .72rem; }
+.ovp.unfit { border-color: var(--amber); background: var(--amber-soft); }
+.ovp.dragging { opacity: .4; }
+@media (max-width: 700px) { .ov-cols { grid-auto-flow: row; grid-auto-columns: auto; } }
+.ov-labels { display: grid; grid-template-columns: 14px 118px 46px 88px minmax(36px, 1fr) 22px; gap: 5px; padding: 6px 15px 0; font-size: .68rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); text-align: center; }
+.ov-labels span:nth-child(5) { text-align: right; }

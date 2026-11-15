@@ -47,6 +47,7 @@ test('Taika home, switcher, menu order, live schedule with current category and 
 
   // Kategorijos → „Valdyti →“ atidaro tą rungtį Live tvarkaraštyje
   await a.click('#tab-kategorijos');
+  await a.click('[data-catview=\"edit\"]');   // viena kategorija (numatyta - struktūra)
   await a.locator('#cat-list button').nth(1).click();
   await a.click('#cat-draw');
   check('manage from categories', await a.locator('#v-live').isVisible() && await a.locator('#run').isVisible());
@@ -73,4 +74,67 @@ test('guest quiz: only name required, optional email stored', async ({ browser }
   check('email stored, club empty', sql(`SELECT CONCAT(name, '|', COALESCE(club, '-'), '|', email) FROM quiz_guest_attempts WHERE quiz_id = ${qz}`) === 'Be Klubo|-|svecias@example.com');
   sql(`DELETE FROM quizzes WHERE id = ${qz}`);
   noJsErrors(g);
+});
+
+test('categories structure: all disciplines, edit years and gender in place, open people, drag, redistribute, copy', async ({ browser }) => {
+  const a = await login(browser, 'info@karateka.lt', 1440, 900);
+  await a.goto('admin/varzybos.php');
+  await nav(a, () => a.click('text=🎲 Sukurti test varžybas'));
+  const tid = +sql('SELECT MAX(id) FROM tournaments');
+  const state = () => JSON.parse(sql(`SELECT state FROM tournaments WHERE id = ${tid}`));
+  await a.click('#tab-kategorijos');
+  await a.click('[data-catview="ov"]');
+  await a.waitForSelector('#ov-cols .ov-col[data-ov-col="kata"]');
+  check('columns per discipline', await a.locator('#ov-cols .ov-col[data-ov-col]').count() >= 3);
+  await a.waitForTimeout(1200);
+
+  // Naujas blokas Fukugo stulpelyje (trumpas - matosi ekrane): metai, lytis, kyu - pavadinimas atsinaujina pats
+  const before = state().categories.length;
+  await a.click('[data-ov-new="fukugo"]');
+  const blk = a.locator('#ov-cols [data-ov-col="fukugo"] .ovb').last();
+  const cid = await blk.getAttribute('data-ovb');
+  await blk.locator('[data-ov="y1"]').fill('2016');
+  await blk.locator('[data-ov="y0"]').fill('2015');
+  await blk.locator('[data-ov="y0"]').press('Tab');
+  await a.locator(`[data-c="${cid}"][data-ov="g"]`).selectOption('F');
+  await a.waitForTimeout(1200);
+  const nc = state().categories.find(c => c.id === cid);
+  check('new block saved', state().categories.length === before + 1 && nc.crit.y1 === 2016 && nc.crit.y0 === 2015 && nc.crit.g === 'F', JSON.stringify(nc));
+  check('name follows criteria', /Fukugo F 2016–2015/.test(nc.name), nc.name);
+
+  // Dalyviai bloke ir tempimas į kitą bloką
+  const src = a.locator('#ov-cols [data-ov-col="kata"] .ovb').first();
+  const srcId = await src.getAttribute('data-ovb');
+  await src.locator('[data-ov-open]').click();
+  const chip = a.locator(`[data-ovb="${srcId}"] .ovp`).first();
+  const pid = await chip.getAttribute('data-drag');
+  await chip.dragTo(a.locator(`[data-ovb="${cid}"] .ovb-row`));
+  await a.waitForTimeout(1200);
+  const st = state();
+  check('person moved to block', st.categories.find(c => c.id === cid).competitors.some(p => p.id === pid) && !st.categories.find(c => c.id === srcId).competitors.some(p => p.id === pid));
+  check('unfit marked', await a.locator(`[data-ovb="${cid}"].few, [data-ovb="${cid}"].unfit`).count() === 1);
+
+  // ⟳ - netinkantys perkeliami į tinkamą bloką; ⧉ - struktūra į kitą rungtį
+  await a.click('[data-ov-redo="kumite"]');
+  await a.waitForSelector('.vz-toast:not([hidden])');
+  check('redistribute toast', /Perkelta dalyvių/.test(await a.locator('.vz-toast').innerText()));
+  const kihonBefore = state().categories.filter(c => c.discipline === 'kihon').length;
+  await a.selectOption('[data-ov-copy="fukugo"]', 'kihon');
+  await a.waitForTimeout(1200);
+  check('copy discipline structure', state().categories.filter(c => c.discipline === 'kihon').length > kihonBefore);
+
+  // Filtrai: tik problemos, lytis
+  await a.check('#ov-problems');
+  const probs = await a.locator('#ov-cols .ovb').count();
+  await a.uncheck('#ov-problems');
+  check('problems filter narrows', probs < await a.locator('#ov-cols .ovb').count());
+  await a.click('[data-ovg="F"]');
+  check('gender filter', await a.locator('#ov-cols select[data-ov="g"]').evaluateAll(s => s.every(x => x.value === 'F')));
+  await a.click('[data-ovg=""]');
+
+  // ✎ - viena kategorija redagavimui
+  await a.locator(`[data-ov-edit="${cid}"]`).click();
+  check('edit view opens category', await a.locator('#cat-edit').isVisible() && (await a.locator('#cat-name').inputValue()).includes('Fukugo F'));
+  sql('DELETE FROM tournaments WHERE is_test = 1');
+  noJsErrors(a);
 });

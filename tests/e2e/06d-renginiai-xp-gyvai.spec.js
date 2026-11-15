@@ -60,6 +60,7 @@ test('competition: kumite bout panel, live link and screen, club registration, D
   await nav(a, () => a.click('text=🎲 Sukurti test varžybas'));
   const tid = +sql('SELECT MAX(id) FROM tournaments');
   await a.click('#tab-kategorijos');   // sukūrus atsidaro Live tvarkaraštis
+  await a.click('[data-catview=\"edit\"]');   // viena kategorija (numatyta - struktūra)
   await a.waitForSelector('#cat-list button');
   check('default system by discipline', /2 trečios/.test(await a.locator('#cat-list').innerText()));
 

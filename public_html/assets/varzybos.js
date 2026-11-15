@@ -396,7 +396,156 @@
     return name;
   }
   function sysBadge(c) { var s = c.draw ? c.draw.system : defaultSystem(c); return s === 'rr' ? 'Ratai' : s === 'score' ? 'Balai' : s === 'bronze' ? '1 trečia' : s === 'plain' ? '2 trečios' : s === 'fukugo' ? 'Fukugo' : 'Paguoda'; }
+  // ---------- Kategorijų struktūra (kaip Kihapp „Divisions“): visos rungtys stulpeliais, blokai - metai, lytis, kyu ----------
+  var catView = 'ov', ovQuery = '', ovGender = '', ovProblems = false, ovSort = 'order', ovOpen = {}, bDrag = null;
+  try { catView = sessionStorage.getItem(KEY + '-catview') || 'ov'; } catch (e) {}
+  function setCatView(v) { catView = v; try { sessionStorage.setItem(KEY + '-catview', v); } catch (e) {} renderCats(); }
+  function kyuOpts(cur) { return '<option value="">—</option>' + Object.keys(BELTS).map(function (k) { return '<option value="' + k + '"' + (+k === +cur ? ' selected' : '') + '>' + kyu(+k).replace(' kyu', '') + '</option>'; }).join(''); }
+  function catUnfit(c) { return c.competitors.filter(function (p) { return !p.team && S.people[p.id] && !fits(c, S.people[p.id]); }).length; }
+  function catProblems(c) { return c.competitors.length < 2 || catUnfit(c) > 0; }
+  var OV_SORT = {
+    years: function (a, b) { return (crit(b).y1 || 0) - (crit(a).y1 || 0) || (crit(b).y0 || 0) - (crit(a).y0 || 0); },
+    belt: function (a, b) { return (crit(a).b0 || 0) - (crit(b).b0 || 0) || (crit(a).b1 || 0) - (crit(b).b1 || 0); },
+    count: function (a, b) { return b.competitors.length - a.competitors.length; }
+  };
+  function ovMatch(c) {
+    var g = crit(c).g || 'X', q = ovQuery;
+    if (ovGender && g !== ovGender) return false;
+    if (ovProblems && !catProblems(c)) return false;
+    return !q || c.name.toLowerCase().indexOf(q) !== -1 || c.competitors.some(function (p) { return p.name.toLowerCase().indexOf(q) !== -1; });
+  }
+  function ovBlock(c) {
+    var k = crit(c), n = c.competitors.length, unfit = catUnfit(c), custom = !!c.customName, g = k.g === 'M' || k.g === 'F' ? k.g : 'X';
+    var people = ovOpen[c.id] ? '<div class="ovb-people">' + (c.competitors.map(function (p) {
+      var pp = S.people[p.id] || {}, ok = p.team || fits(c, pp);
+      return '<span class="ovp' + (ok ? '' : ' unfit') + '" draggable="true" data-drag="' + p.id + '" data-from="' + c.id + '" title="' + esc(p.club) + (ok ? '' : ' - netinka pagal kriterijus') + '">' + beltDot(pp.belt) + esc(p.name) + (pp.birth ? ' <i>' + pp.birth + '</i>' : '') + '</span>';
+    }).join('') || '<span class="muted small">Tempkite dalyvius čia</span>') + '</div>' : '';
+    return '<div class="ovb' + (n < 2 ? ' few' : '') + (unfit ? ' unfit' : '') + (c.team ? ' team' : '') + (catStarted(c) ? ' started' : '') + '" data-ovb="' + c.id + '" data-drop-cat="' + c.id + '">' +
+      '<div class="ovb-row"><span class="ovb-grip" draggable="true" title="Tempkite - perkelti">⋮⋮</span>' +
+      '<span class="ovb-years" title="Gimimo metai: jauniausi - vyriausi"><input class="ov-in" type="number" data-ov="y1" data-c="' + c.id + '" value="' + (k.y1 || '') + '" placeholder="—" aria-label="Gimę iki (jauniausi)">–<input class="ov-in" type="number" data-ov="y0" data-c="' + c.id + '" value="' + (k.y0 || '') + '" placeholder="—" aria-label="Gimę nuo (vyriausi)"></span>' +
+      '<select class="ov-sel" data-ov="g" data-c="' + c.id + '" aria-label="Lytis"><option value="M"' + (g === 'M' ? ' selected' : '') + '>M</option><option value="F"' + (g === 'F' ? ' selected' : '') + '>F</option><option value="X"' + (g === 'X' ? ' selected' : '') + '>Mix</option></select>' +
+      '<span class="ovb-kyu" title="Kyu nuo - iki"><select class="ov-sel" data-ov="b0" data-c="' + c.id + '" aria-label="Diržas nuo">' + kyuOpts(k.b0) + '</select>–<select class="ov-sel" data-ov="b1" data-c="' + c.id + '" aria-label="Diržas iki">' + kyuOpts(k.b1) + '</select></span>' +
+      '<button type="button" class="ovb-n" data-ov-open="' + c.id + '" aria-expanded="' + !!ovOpen[c.id] + '" title="' + (n < 2 ? 'Per mažai dalyvių' : 'Rodyti dalyvius') + (unfit ? ' · netinka: ' + unfit : '') + '">' + n + (unfit ? '<b>!</b>' : '') + '</button>' +
+      '<button type="button" class="ovb-edit" data-ov-edit="' + c.id + '" title="Redaguoti: sistema, kova, dalyviai">✎</button></div>' +
+      (custom || c.team ? '<div class="ovb-name">' + (c.team ? '<span class="pill">komandos</span> ' : '') + esc(c.name) + '</div>' : '') + people + '</div>';
+  }
+  function renderOverview() {
+    var ae = document.activeElement, keep = ae && ae.dataset && ae.dataset.c && ae.dataset.ov ? '[data-c="' + ae.dataset.c + '"][data-ov="' + ae.dataset.ov + '"]' : null;
+    renderOverviewNow();
+    if (keep) { var el = document.querySelector('#ov-cols ' + keep); if (el) el.focus(); }   // perpiešus - žymeklis lieka ten, kur buvo
+  }
+  function renderOverviewNow() {
+    var discs = Object.keys(DISC).filter(function (d) { return S.categories.some(function (c) { return c.discipline === d; }); });
+    var entries = 0, probs = 0;
+    S.categories.forEach(function (c) { entries += c.competitors.length; if (catProblems(c)) probs++; });
+    var none = Object.keys(S.people).filter(function (id) { return !catsOf(id).length; }).length;
+    document.getElementById('ov-sum').innerHTML = S.categories.length + ' kategorijų · ' + entries + ' įrašų' + (probs ? ' · <b class="warn-t">' + probs + ' su problemomis</b>' : '') +
+      (none ? ' · <button type="button" class="linkish" id="ov-none">' + none + ' dalyvių be kategorijos →</button>' : '');
+    var others = function (d) { return Object.keys(DISC).filter(function (x) { return x !== d; }).map(function (x) { return '<option value="' + x + '">→ ' + DISC[x] + '</option>'; }).join(''); };
+    document.getElementById('ov-cols').innerHTML = discs.map(function (d) {
+      var list = S.categories.filter(function (c) { return c.discipline === d; }), shown = list.filter(ovMatch), n = 0;
+      list.forEach(function (c) { n += c.competitors.length; });
+      if (OV_SORT[ovSort]) shown = shown.slice().sort(OV_SORT[ovSort]);
+      return '<div class="ov-col" data-ov-col="' + d + '"><div class="ov-head"><span class="disc d-' + d + '"></span><b>' + DISC[d] + '</b><span class="muted small">' + list.length + ' kat. · ' + n + ' dal.</span><span class="spacer"></span>' +
+        '<button type="button" class="btn btn-xs" data-ov-redo="' + d + '" title="Netinkančius dalyvius perkelti į tinkamus blokus">⟳</button>' +
+        '<select class="sel ov-copy" data-ov-copy="' + d + '" title="Nukopijuoti visus blokus į kitą rungtį" aria-label="Kopijuoti į"><option value="">⧉</option>' + others(d) + '</select>' +
+        '<button type="button" class="btn btn-xs" data-ov-new="' + d + '" title="Naujas blokas">+</button></div>' +
+        '<div class="ov-labels"><span></span><span>Gimę</span><span>Lytis</span><span>Kyu</span><span>Dalyv.</span><span></span></div>' +
+        '<div class="ov-list">' + (shown.map(ovBlock).join('') || '<p class="muted small" style="padding:8px;">Nieko nerasta</p>') + '</div></div>';
+    }).join('') + '<div class="ov-col ov-add"><select class="sel" id="ov-new-disc" aria-label="Nauja rungtis"><option value="">+ Rungtis…</option>' +
+      Object.keys(DISC).filter(function (d) { return discs.indexOf(d) === -1; }).map(function (d) { return '<option value="' + d + '">' + DISC[d] + '</option>'; }).join('') + '</select></div>';
+  }
+  function newCatIn(d, after) {
+    var c = { id: newId('k'), name: '', discipline: d, competitors: [], tatami: (after && after.tatami) || S.areas[0].id, draw: null, crit: after ? JSON.parse(JSON.stringify(after.crit || {})) : {} };
+    c.name = critName(c);
+    var last = -1; S.categories.forEach(function (x, i) { if (x.discipline === d) last = i; });
+    S.categories.splice(last + 1, 0, c);
+    return c;
+  }
+  // Netinkantys dalyviai perkeliami į tinkamiausią (siauriausią) tos rungties bloką; pradėtos kategorijos nekeičiamos
+  function redistribute(d) {
+    var movable = S.categories.filter(function (c) { return c.discipline === d && !c.team && !catStarted(c) && hasCrit(c); }), moved = 0, left = [];
+    movable.forEach(function (c) {
+      c.competitors.slice().forEach(function (p) {
+        var pp = S.people[p.id]; if (!pp || fits(c, pp)) return;
+        var target = movable.filter(function (x) { return x !== c && fits(x, pp); }).sort(function (x, y) { return catSpan(x) - catSpan(y); })[0];
+        if (!target) { left.push(pp.name); return; }
+        removeFromCat(p.id, c.id); addToCat(p.id, target.id); moved++;
+      });
+    });
+    toast('Perkelta dalyvių: <b>' + moved + '</b>' + (left.length ? '<br>Tinkamo bloko nėra: ' + esc(left.slice(0, 6).join(', ')) + (left.length > 6 ? '…' : '') : ''));
+  }
+  // Visa rungties struktūra į kitą rungtį (pvz. Kata → Kumite): tie patys metai, lytis, kyu ir dalyviai; jau esantys tokie pat blokai praleidžiami
+  function copyDiscipline(from, to) {
+    var have = S.categories.filter(function (c) { return c.discipline === to; }).map(function (c) { return JSON.stringify(crit(c)); }), n = 0;
+    S.categories.filter(function (c) { return c.discipline === from && !c.team; }).forEach(function (c) {
+      if (have.indexOf(JSON.stringify(crit(c))) !== -1) return;
+      var nc = newCatIn(to, c); nc.competitors = c.competitors.map(function (p) { return { id: p.id, name: p.name, club: p.club }; }); nc.name = critName(nc); n++;
+    });
+    toast(DISC[from] + ' → ' + DISC[to] + ': nukopijuota blokų <b>' + n + '</b>. Pakeiskite, kas skiriasi.');
+  }
+  var ovBox = document.getElementById('cat-overview');
+  document.getElementById('v-kategorijos').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-catview]'); if (b) { setCatView(b.dataset.catview); return; }
+    var g = e.target.closest('[data-ovg]'); if (g) { ovGender = g.dataset.ovg; document.querySelectorAll('[data-ovg]').forEach(function (x) { x.classList.toggle('on', x === g); }); renderOverview(); return; }
+    if (e.target.id === 'ov-auto') { document.getElementById('cat-auto').click(); return; }
+  });
+  document.getElementById('ov-search').addEventListener('input', function (e) { ovQuery = e.target.value.trim().toLowerCase(); renderOverview(); });
+  document.getElementById('ov-problems').addEventListener('change', function (e) { ovProblems = e.target.checked; renderOverview(); });
+  document.getElementById('ov-sort').addEventListener('change', function (e) { ovSort = e.target.value; renderOverview(); });
+  ovBox.addEventListener('click', function (e) {
+    var t = e.target.closest('button'); if (!t) return;
+    if (t.dataset.ovOpen) { ovOpen[t.dataset.ovOpen] = !ovOpen[t.dataset.ovOpen]; renderOverview(); return; }
+    if (t.dataset.ovEdit) { S.selected = t.dataset.ovEdit; save(); setCatView('edit'); return; }
+    if (t.id === 'ov-none') { poolFilter = 'none'; setCatView('edit'); return; }
+    if (t.dataset.ovNew) { snapshot(); var nc = newCatIn(t.dataset.ovNew, null); save(); renderOverview(); var inp = ovBox.querySelector('[data-c="' + nc.id + '"][data-ov="y1"]'); if (inp) inp.focus(); return; }
+    if (t.dataset.ovRedo) { snapshot(); redistribute(t.dataset.ovRedo); save(); render(); }
+  });
+  ovBox.addEventListener('change', function (e) {
+    var t = e.target;
+    if (t.dataset.ovCopy !== undefined) { if (t.value) { snapshot(); copyDiscipline(t.dataset.ovCopy, t.value); save(); render(); } return; }
+    if (t.id === 'ov-new-disc') { if (t.value) { snapshot(); newCatIn(t.value, null); save(); render(); } return; }
+    var c = cat(t.dataset.c); if (!c || !t.dataset.ov) return;
+    snapshot();
+    var v = t.value.trim();
+    c.crit = c.crit || {};
+    c.crit[t.dataset.ov] = t.dataset.ov === 'g' ? v : (+v || null);
+    if (!c.customName) c.name = critName(c);   // pavadinimo niekas nekeitė ranka - atsinaujina pats
+    save(); renderSoon();
+  });
+  // Bloko tempimas: į kitą vietą tame pačiame ar kitame stulpelyje (rungtis pasikeičia)
+  ovBox.addEventListener('dragstart', function (e) {
+    var g = e.target.closest && e.target.closest('.ovb-grip'); if (!g) return;
+    var blk = g.closest('[data-ovb]'); bDrag = blk.dataset.ovb;
+    e.dataTransfer.effectAllowed = 'move'; try { e.dataTransfer.setData('text/plain', bDrag); e.dataTransfer.setDragImage(blk, 16, 16); } catch (x) {}
+    blk.classList.add('dragging');
+  });
+  ovBox.addEventListener('dragend', function () { bDrag = null; ovBox.querySelectorAll('.dragging, .drop-before').forEach(function (x) { x.classList.remove('dragging', 'drop-before'); }); });
+  ovBox.addEventListener('dragover', function (e) {
+    if (!bDrag) return; var col = e.target.closest('[data-ov-col]'); if (!col) return;
+    e.preventDefault();
+    ovBox.querySelectorAll('.drop-before').forEach(function (x) { x.classList.remove('drop-before'); });
+    var over = e.target.closest('[data-ovb]'); if (over && over.dataset.ovb !== bDrag) over.classList.add('drop-before');
+  });
+  ovBox.addEventListener('drop', function (e) {
+    if (!bDrag) return; var col = e.target.closest('[data-ov-col]'); if (!col) return; e.preventDefault();
+    var c = cat(bDrag), over = e.target.closest('[data-ovb]'), d = col.dataset.ovCol; bDrag = null;
+    if (!c || (over && over.dataset.ovb === c.id)) return;
+    snapshot();
+    S.categories.splice(S.categories.indexOf(c), 1);
+    if (c.discipline !== d) { c.discipline = d; delete cfg(c).time; cfg(c); applyDefaultSystem(c); if (!c.customName) c.name = critName(c); }
+    var idx = over ? S.categories.indexOf(cat(over.dataset.ovb)) : -1;
+    if (idx === -1) { var last = -1; S.categories.forEach(function (x, i) { if (x.discipline === d) last = i; }); S.categories.splice(last + 1, 0, c); }
+    else S.categories.splice(idx, 0, c);
+    save(); render();
+  });
+
   function renderCats() {
+    document.querySelectorAll('[data-catview]').forEach(function (b) { b.classList.toggle('on', b.dataset.catview === catView); b.setAttribute('aria-pressed', b.dataset.catview === catView); });
+    document.querySelectorAll('.ov-only').forEach(function (x) { x.hidden = catView !== 'ov'; });
+    document.getElementById('cat-overview').hidden = catView !== 'ov';
+    document.getElementById('cat-edit').hidden = catView === 'ov';
+    if (catView === 'ov') { renderOverview(); return; }
     var ul = document.getElementById('cat-list');
     ul.innerHTML = S.categories.map(function (c) {
       var bad = c.competitors.length === 1 ? ' one' : '';
@@ -525,7 +674,7 @@
   document.getElementById('cat-detail').addEventListener('change', function (e) {
     var c = cat(S.selected); if (!c) return;
     var t = e.target;
-    if (t.id === 'cat-name') { c.name = t.value.trim() || c.name; }
+    if (t.id === 'cat-name') { c.name = t.value.trim() || c.name; c.customName = c.name !== critName(c); }
     else if (t.id === 'cat-team') { snapshot(); c.team = t.checked; applyDefaultSystem(c); }
     else if (t.dataset.cfg) { snapshot(); var f0 = cfg(c); f0[t.dataset.cfg] = t.type === 'checkbox' ? t.checked : Math.max(1, parseInt(t.value, 10) || 1); if (f0.judges > 15) f0.judges = 15; }
     else if (t.dataset.crit) {
@@ -550,7 +699,7 @@
     if (t.dataset.remove) { snapshot(); c.competitors = c.competitors.filter(function (p) { return p.id !== t.dataset.remove; }); }
     else if (t.dataset.disc) { snapshot(); c.discipline = t.dataset.disc; delete cfg(c).time; cfg(c); applyDefaultSystem(c); }
     else if (t.dataset.sys) { setSystem(c, t.dataset.sys); return; }
-    else if (t.id === 'cat-autoname') { snapshot(); c.name = critName(c); }
+    else if (t.id === 'cat-autoname') { snapshot(); c.name = critName(c); delete c.customName; }
     else if (t.id === 'cat-addfit') {
       snapshot(); Object.keys(S.people).forEach(function (id) { if (!person(c, id) && fits(c, S.people[id])) addToCat(id, c.id); });
     }
