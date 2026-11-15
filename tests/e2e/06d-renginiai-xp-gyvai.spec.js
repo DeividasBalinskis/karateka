@@ -59,13 +59,13 @@ test('competition: kumite bout panel, live link and screen, club registration, D
   await a.goto('admin/varzybos.php');
   await nav(a, () => a.click('text=🎲 Sukurti test varžybas'));
   const tid = +sql('SELECT MAX(id) FROM tournaments');
-  await a.click('#tab-kategorijos');   // sukūrus atsidaro pačios varžybos (Lentelės)
+  await a.click('#tab-kategorijos');   // sukūrus atsidaro Live tvarkaraštis
   await a.waitForSelector('#cat-list button');
   check('default system by discipline', /2 trečios/.test(await a.locator('#cat-list').innerText()));
 
   // Kumite kova: balai ir laikrodis
   await a.locator('#cat-list button', { hasText: 'Kumite' }).first().click();
-  await a.click('#tab-lenteles');
+  await a.click('#cat-draw');   // „Valdyti →“ - rungtis atsidaro Live tvarkaraštyje
   await a.click('#draw-clear');
   await a.locator('.bout-open').first().click();
   check('bout panel open', await a.locator('#bout').isVisible());
@@ -127,9 +127,10 @@ test('competition: kumite bout panel, live link and screen, club registration, D
   check('no-photo badge', await a.locator('#people-view tr:has(input[value="Ona Testaitė"]) .nophoto').count() === 1);
 
   // Grupės atidarymas: tvarkaraštyje - jos lentelė; žiūrovams - kovos ir vietos
-  await a.click('#tab-tvarkarastis');
+  await a.click('#tab-live');
+  if (await a.locator('#run').isVisible()) await a.click('#run-back');
   await a.locator('[data-open-cat]').first().click();
-  check('schedule opens bracket', await a.locator('#v-lenteles').isVisible());
+  check('schedule opens bracket', await a.locator('#run').isVisible() && await a.locator('#draw-view .match, #draw-view table').count() > 0);
   await a.waitForTimeout(1200);
   await v.goto(`varzybos-gyvai.php?k=${share}`);
   await v.waitForSelector('.gv-glist button');

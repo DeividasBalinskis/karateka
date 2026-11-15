@@ -28,9 +28,10 @@ test('Taika: club contacts, 6 judges, Enter through scores; registration for Kar
   await a.locator('#cat-list button').first().click();
   await a.click('[data-sys="score"]');
   await a.waitForTimeout(300);
-  check('6 judges option', await a.locator('#cat-detail select[data-cfg="judges"] option', { hasText: '6' }).count() === 1);
-  await a.selectOption('#cat-detail select[data-cfg="judges"]', '3');
-  await a.click('#tab-lenteles');
+  check('judges: any number', await a.locator('#cat-detail input[data-cfg="judges"]').count() === 1);
+  await a.fill('#cat-detail input[data-cfg="judges"]', '3');
+  await a.locator('#cat-detail input[data-cfg="judges"]').dispatchEvent('change');
+  await a.click('#cat-draw');
   await a.waitForSelector('#draw-view .j-in');
   const first = a.locator('#draw-view .j-in[data-j="0"]').first();
   const sp = await first.getAttribute('data-sp');

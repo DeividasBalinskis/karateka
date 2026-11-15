@@ -45,6 +45,40 @@ function tournament_is_visible(array $t): bool
     return (int) $t['is_public'] === 1 && ((int) $t['is_test'] === 0 || config('env') !== 'live');
 }
 
+/** Partneriai Taikos apačioje - tie patys, kaip karateka.lt pagrindiniame puslapyje: [['image', 'name', 'url'], ...] */
+function varz_partners(): array
+{
+    foreach (home_page() as $b) {
+        if (($b['type'] ?? '') === 'partners' && empty($b['hidden'])) {
+            return array_values(array_filter((array) ($b['d']['items'] ?? []), function ($i) { return !empty($i['image']); }));
+        }
+    }
+    return home_block_defaults('partners')['items'];
+}
+
+/** Taikos puslapio pradžia (be karateka.lt meniu): <head>, šriftai, stilius */
+function varz_html_head(string $title, string $bodyClass = ''): void
+{
+    echo '<!doctype html><html lang="lt"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
+        . '<meta name="robots" content="noindex"><title>' . e($title) . ' · ' . e(VARZ_NAME) . '</title>'
+        . '<link rel="icon" type="image/png" sizes="32x32" href="' . url('favicon-32.png?v=2') . '">'
+        . '<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">'
+        . '<link rel="stylesheet" href="' . e(asset_url('assets/varzybos.css')) . '"><link rel="stylesheet" href="' . e(asset_url('assets/widgets.css')) . '">'
+        . '</head><body class="vz ' . e($bodyClass) . '">';
+}
+
+/** Partnerių juosta Taikos puslapių apačioje */
+function varz_partners_html(): string
+{
+    $html = '';
+    foreach (varz_partners() as $p) {
+        $img = '<img src="' . e(url(ltrim((string) $p['image'], '/'))) . '" alt="' . e((string) ($p['name'] ?? '')) . '" loading="lazy">';
+        $html .= !empty($p['url']) ? '<a class="vzp-logo" href="' . e($p['url']) . '" target="_blank" rel="noopener" title="' . e((string) ($p['name'] ?? '')) . '">' . $img . '</a>'
+            : '<span class="vzp-logo" title="' . e((string) ($p['name'] ?? '')) . '">' . $img . '</span>';
+    }
+    return $html ? '<footer class="vz-partners"><div class="vzp-head">Partneriai</div><div class="vzp-row">' . $html . '</div></footer>' : '';
+}
+
 /** Federacijos klubai (LTKF sąrašas) - varžybų klubų pradžiai */
 function varz_federation_clubs(): array
 {

@@ -10,6 +10,7 @@ body.vz { margin: 0; background: var(--bg); color: var(--ink); font: 14.5px/1.5 
 button, input, select { font: inherit; color: inherit; }
 button { cursor: pointer; }
 a { color: var(--accent); }
+a.btn, a.vz-link { text-decoration: none; display: inline-block; }
 :focus-visible { outline: 3px solid #F2B705; outline-offset: 2px; }
 [hidden] { display: none !important; }
 .muted { color: var(--muted); }
@@ -523,3 +524,135 @@ tr.club-contacts > td { background: var(--surface-2); padding: 12px 14px; }
 .ci-field input { width: 100%; font-weight: 400; color: var(--ink); }
 .ci-regs { margin-top: 10px; }
 @media (max-width: 900px) { .ci-grid { grid-template-columns: 1fr 1fr; } }
+
+/* ---------- Taikos pradžia: visos varžybos (admin/varzybos.php) ---------- */
+.flash { margin: 0 0 12px; padding: 10px 14px; border-radius: 10px; font-weight: 600; background: var(--green-soft); color: #14532D; }
+.flash-err { background: var(--accent-soft); color: #8E1426; }
+.vzh { max-width: 1320px; margin: 0 auto; }
+.vzh-h { margin: 22px 0 10px; font-size: .8rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.vz-home .vz-top-right form { margin: 0; }
+.vz-home .vz-top-right .vz-link { border: 0; cursor: pointer; }
+.varz-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); gap: 14px; }
+.varz-card { position: relative; display: flex; flex-direction: column; gap: 6px; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow); padding: 16px 16px 14px; transition: box-shadow .15s, border-color .15s, transform .15s; }
+.varz-card:hover { border-color: var(--line-2); box-shadow: 0 10px 28px rgba(16, 24, 40, .12); transform: translateY(-1px); }
+.varz-card.s-running { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft), var(--shadow); }
+.varz-card.is-test { background: linear-gradient(180deg, #FFFBEF 0, var(--surface) 90px); }
+.is-past .varz-card:not(:hover) { opacity: .82; }
+.varz-card-link { position: absolute; inset: 0; border-radius: inherit; z-index: 0; }
+.varz-card > :not(.varz-card-link) { position: relative; z-index: 1; pointer-events: none; }
+.varz-card .varz-actions, .varz-card .varz-actions * { pointer-events: auto; }
+.varz-card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+.varz-date { display: grid; justify-items: center; align-content: center; width: 58px; height: 64px; border-radius: 14px; background: linear-gradient(160deg, #1B2130, #12151C); color: #fff; line-height: 1.05; box-shadow: 0 6px 14px rgba(16, 24, 40, .2); }
+.varz-date .d { font-size: 1.55rem; font-weight: 800; }
+.varz-date .m { font-size: .7rem; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: #F7A8B4; }
+.varz-date .y { font-size: .66rem; opacity: .6; }
+.varz-tags { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; align-items: center; }
+.varz-status { display: inline-flex; align-items: center; gap: 6px; font-size: .72rem; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); background: var(--surface-2); border-radius: 999px; padding: 3px 10px; }
+.varz-status::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: #9AA3B2; }
+.varz-status.s-registration::before { background: var(--green); }
+.varz-status.s-running { color: var(--accent); background: var(--accent-soft); }
+.varz-status.s-running::before { background: var(--accent); box-shadow: 0 0 0 3px rgba(215, 38, 61, .2); animation: vzpulse 1.6s infinite; }
+.varz-status.s-finished::before { background: var(--ink); }
+@keyframes vzpulse { 50% { box-shadow: 0 0 0 6px rgba(215, 38, 61, 0); } }
+.varz-chip { font-size: .72rem; font-weight: 700; border-radius: 999px; padding: 3px 9px; background: var(--surface-2); color: var(--muted); }
+.varz-card h2 { margin: 6px 0 0; font-size: 1.12rem; line-height: 1.3; }
+.varz-place { margin: 0; color: var(--muted); font-size: .86rem; }
+.varz-stats { display: flex; flex-wrap: wrap; gap: 4px 16px; list-style: none; padding: 0; margin: 6px 0 0; font-size: .86rem; color: var(--muted); }
+.varz-stats strong { color: var(--ink); font-size: 1rem; }
+.varz-prog { position: relative; height: 18px; margin-top: 4px; border-radius: 7px; background: var(--surface-2); overflow: hidden; font-size: .72rem; font-weight: 700; line-height: 18px; text-align: center; }
+.varz-prog i { position: absolute; inset: 0 auto 0 0; background: linear-gradient(90deg, var(--green), #34B47A); opacity: .9; }
+.varz-prog span { position: relative; }
+.varz-actions { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: auto; padding-top: 8px; }
+.varz-more { position: relative; margin-left: auto; }
+.varz-more > summary { list-style: none; }
+.varz-more > summary::-webkit-details-marker { display: none; }
+.varz-more-body { position: absolute; right: 0; top: calc(100% + 6px); z-index: 30; width: min(400px, calc(100vw - 40px)); padding: 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 18px 44px rgba(16, 24, 40, .22); display: grid; gap: 12px; }
+.varz-form { display: grid; gap: 10px; }
+.varz-form label { display: grid; gap: 4px; font-size: .85rem; font-weight: 600; color: var(--muted); }
+.varz-form label.small { display: flex; align-items: center; gap: 6px; }
+.varz-form .sel { width: 100%; color: var(--ink); font-weight: 400; }
+.varz-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: end; }
+.varz-more-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding-top: 10px; border-top: 1px solid var(--line); }
+.varz-more-row form { margin: 0; }
+.varz-new { margin-top: 4px; background: var(--surface); border: 1.5px dashed var(--line-2); border-radius: 16px; padding: 0 16px; }
+.varz-new[open] { border-style: solid; box-shadow: var(--shadow); padding-bottom: 16px; }
+.varz-new > summary { list-style: none; cursor: pointer; padding: 14px 0; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+.varz-new > summary::-webkit-details-marker { display: none; }
+.varz-new-plus { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: var(--accent); color: #fff; font-weight: 800; }
+.varz-new .varz-form { max-width: 560px; }
+.varz-empty { text-align: center; padding: 40px 20px; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; margin-top: 14px; }
+.varz-empty-mark { width: 56px; height: 56px; margin: 0 auto 10px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 10px var(--accent-soft); }
+.varz-test-del { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 22px 0 6px; }
+/* Partneriai (kaip karateka.lt apačioje) */
+.vz-partners { border-top: 1px solid var(--line); background: var(--surface); padding: 22px 20px 30px; margin-top: 30px; }
+.vzp-head { max-width: 1320px; margin: 0 auto 12px; font-size: .74rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.vzp-row { max-width: 1320px; margin: 0 auto; display: flex; flex-wrap: wrap; gap: 14px 22px; align-items: center; }
+.vzp-logo { display: flex; align-items: center; justify-content: center; width: 120px; height: 64px; padding: 6px; border-radius: 12px; background: var(--surface-2); overflow: hidden; }
+.vzp-logo img { display: block; width: auto; height: auto; max-width: 100%; max-height: 52px; object-fit: contain; filter: grayscale(1); opacity: .72; transition: filter .2s, opacity .2s; }
+.vzp-logo:hover img { filter: none; opacity: 1; }
+@media (max-width: 640px) {
+  .vz-home .vz-title { order: 2; flex-basis: 100%; }
+  .vz-home .vz-title .sub { display: none; }
+  .vz-home .vz-top-right { order: 3; width: 100%; }
+  .varz-2 { grid-template-columns: 1fr; }
+  .vzp-logo { width: 96px; height: 54px; }
+  .vzp-logo img { max-height: 42px; }
+}
+
+/* ---------- Varžybų viršus: perjungimas į kitas varžybas; meniu: organizacinė pusė | varžybų diena ---------- */
+.vz-switch { position: relative; display: inline-flex; align-items: center; gap: 6px; max-width: 100%; }
+.vz-switch h1 { pointer-events: none; }
+.vz-switch::after { content: "▾"; color: #AEB5C2; font-size: .9rem; pointer-events: none; }
+.vz-switch select { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; }
+.vz-switch:hover h1 { text-decoration: underline; text-decoration-color: rgba(255, 255, 255, .35); text-underline-offset: 4px; }
+.tabs-sep { flex-shrink: 0; width: 1px; margin: 6px 8px; background: rgba(255, 255, 255, .18); }
+.tabs .tab-live .live-dot { width: 8px; height: 8px; margin: 0 3px; }
+
+/* ---------- Live tvarkaraštis ---------- */
+.live-bar { gap: 10px; }
+.live-clock { font-size: 1.25rem; font-variant-numeric: tabular-nums; letter-spacing: .02em; padding: 2px 10px; border-radius: 8px; background: var(--ink); color: #fff; }
+.live-settings { position: relative; }
+.live-settings > summary { list-style: none; }
+.live-settings > summary::-webkit-details-marker { display: none; }
+.live-settings > .toolbar { position: absolute; right: 0; top: calc(100% + 6px); z-index: 40; width: min(560px, calc(100vw - 40px)); box-shadow: 0 18px 44px rgba(16, 24, 40, .22); }
+.area-meta { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; }
+.delay { font-size: .74rem; font-weight: 800; border-radius: 999px; padding: 2px 9px; white-space: nowrap; }
+.delay.ok { background: var(--green-soft); color: var(--green); }
+.delay.early { background: #E3ECFB; color: #1D4ED8; }
+.delay.late { background: var(--accent); color: #fff; }
+.area.late { border-color: #F3A6B0; box-shadow: 0 0 0 3px rgba(215, 38, 61, .14), var(--shadow); }
+.area.late .area-head { background: linear-gradient(180deg, #FDECEE, var(--surface-2)); }
+.card.st-done { opacity: .55; background: var(--surface-2); }
+.card.st-done:hover { opacity: .9; }
+.card.st-now { border: 2px solid var(--accent); box-shadow: 0 6px 18px rgba(215, 38, 61, .16); padding: 10px 12px; }
+.card.st-next { border-color: #F7C6CD; }
+.card-name { background: none; border: 0; padding: 0; text-align: left; cursor: pointer; display: inline-flex; gap: 6px; align-items: center; }
+.card-name:hover { color: var(--accent); text-decoration: underline; }
+.st-badge { margin-left: auto; flex-shrink: 0; font-size: .66rem; font-weight: 800; letter-spacing: .06em; border-radius: 6px; padding: 2px 6px; }
+.st-badge.now { background: var(--accent); color: #fff; animation: vzpulse 1.6s infinite; }
+.st-badge.next { background: var(--accent-soft); color: var(--accent); text-transform: uppercase; }
+.st-badge.done { color: var(--green); background: var(--green-soft); }
+/* Atidarytos rungties valdymas */
+.run-strip { display: flex; align-items: center; gap: 10px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 8px 10px; margin-bottom: 10px; }
+.rs-area { flex-shrink: 0; font-weight: 800; }
+.rs-list { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: thin; padding: 2px; min-width: 0; flex: 1; }
+.rs-chip { flex-shrink: 0; display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 4px 12px 4px 6px; font-size: .84rem; font-weight: 600; white-space: nowrap; }
+.rs-chip:hover { border-color: var(--ink); }
+.rs-time { font-variant-numeric: tabular-nums; font-weight: 800; font-size: .76rem; background: var(--surface-2); border-radius: 999px; padding: 1px 7px; }
+.rs-chip.st-done { opacity: .55; }
+.rs-chip.st-now { border-color: var(--accent); }
+.rs-chip.st-now .rs-time { background: var(--accent); color: #fff; }
+.rs-chip.on { background: var(--ink); color: #fff; border-color: var(--ink); opacity: 1; }
+.rs-chip.on .rs-time { background: rgba(255, 255, 255, .18); color: #fff; }
+.run-head { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 10px; }
+.run-title { display: grid; min-width: 0; }
+.run-title b { font-size: 1.25rem; display: inline-flex; align-items: center; gap: 8px; }
+.run-tools { margin-bottom: 12px; }
+@media (max-width: 700px) {
+  .run-head #run-prev { display: none; }
+  .tabs-sep { display: none; }
+}
+#run .draw-head h2 { display: none; }
+#run .run-tools > label:first-child { display: none; }
+.card.st-done .prog, .card.st-done .card-actions { display: none; }
+.card.st-done { padding-top: 6px; padding-bottom: 6px; }

@@ -353,8 +353,19 @@
   }
 
   // ---------- Skirtukai ----------
-  var tabs = ['klubai', 'dalyviai', 'komandos', 'kategorijos', 'lenteles', 'tvarkarastis', 'rezultatai'];
+  // Organizacinė pusė (klubai, komandos, dalyviai, kategorijos) ir varžybų diena (live tvarkaraštis, rezultatai).
+  // Live tvarkaraštis: tatamių lenta; atidarius rungtį - jos valdymas (buvusios „Lentelės“), „Toliau →“ - kita rungtis.
+  var tabs = ['klubai', 'komandos', 'dalyviai', 'kategorijos', 'live', 'rezultatai'];
+  var runOpen = false;
+  try { runOpen = sessionStorage.getItem(KEY + '-run') === '1'; } catch (e) {}
+  function setRun(open) { runOpen = !!open; try { sessionStorage.setItem(KEY + '-run', runOpen ? '1' : ''); } catch (e) {} }
+  function openRun(id) {
+    if (id && S.selected !== id) { S.selected = id; save(); }
+    setRun(true); showTab('live');
+    var r = document.getElementById('run'); if (r && r.getBoundingClientRect().top < 0) r.scrollIntoView({ block: 'start' });
+  }
   function showTab(t) {
+    if (t === 'lenteles') { setRun(true); t = 'live'; } else if (t === 'tvarkarastis') t = 'live';   // seni pavadinimai (nuorodos, #)
     tabs.forEach(function (x) {
       document.getElementById('tab-' + x).setAttribute('aria-selected', x === t ? 'true' : 'false');
       document.getElementById('v-' + x).hidden = x !== t;
@@ -404,7 +415,7 @@
     var beltSel = function (key, cur) { return '<select class="sel" data-crit="' + key + '">' + beltOpts(cur) + '</select>'; };
     document.getElementById('cat-detail').innerHTML =
       '<h2><span class="disc d-' + c.discipline + '"></span>' + esc(c.name) + ' <span class="pill">' + c.competitors.length + ' dalyv.</span>' + (stale ? ' <span class="pill warn">Lentelė pasenusi</span>' : '') +
-        '<span class="spacer"></span><button class="btn btn-primary" type="button" id="cat-draw">Į lentelę →</button></h2>' +
+        '<span class="spacer"></span><button class="btn btn-primary" type="button" id="cat-draw" title="Atidaryti Live tvarkaraštyje: lentelė, kovos, balai">Valdyti →</button></h2>' +
       '<div class="cat-scroll">' +
       '<div class="fmt">' +
         '<div class="fmt-row"><span class="fmt-label">Pavadinimas</span><div class="fmt-ctl"><input type="text" class="sel wide" id="cat-name" value="' + esc(c.name) + '" aria-label="Kategorijos pavadinimas"><button class="btn" type="button" id="cat-autoname" title="Pagal rungtį ir kriterijus">↻ Pagal kriterijus</button></div></div>' +
@@ -415,7 +426,7 @@
           return '<button type="button" class="sys-card' + (k2 === sys ? ' on' : '') + '" data-sys="' + k2 + '"><span class="sys-ico sys-' + k2 + '" aria-hidden="true"></span><b>' + SYSTEMS[k2][0] + '</b><span>' + SYSTEMS[k2][1] + '</span></button>';
         }).join('') + '</div></div>' +
         '<div class="fmt-row"><span class="fmt-label">Kova</span><div class="fmt-ctl crit">' +
-          '<label>Teisėjai <select class="sel" data-cfg="judges">' + [3, 5, 6, 7].map(function (n) { return '<option' + (n === f.judges ? ' selected' : '') + '>' + n + '</option>'; }).join('') + '</select></label>' +
+          '<label>Teisėjai <input class="sel num-in" type="number" min="1" max="15" data-cfg="judges" value="' + f.judges + '" title="Kiek teisėjų vertina (bet koks skaičius)"></label>' +
           (c.discipline === 'kumite' || c.discipline === 'fukugo' || c.discipline === 'sumo' ? '<label>Kovos laikas <select class="sel" data-cfg="time">' + [60, 90, 120, 150, 180].map(function (n) { return '<option value="' + n + '"' + (n === f.time ? ' selected' : '') + '>' + Math.floor(n / 60) + ':' + (n % 60 ? '30' : '00') + '</option>'; }).join('') + '</select></label>' : '') +
           (c.discipline === 'sumo' ? '<label>Laimi surinkęs <input class="sel num-in" type="number" min="1" max="20" data-cfg="sumoTo" value="' + f.sumoTo + '"> tšk.</label>' : '') +
           (c.team && c.discipline !== 'kumite' ? '<label><input type="checkbox" data-cfg="bunkai"' + (f.bunkai ? ' checked' : '') + '> Finale ir dėl bronzos: Kata + Pritaikymas (balai)</label>' : '') +
@@ -516,7 +527,7 @@
     var t = e.target;
     if (t.id === 'cat-name') { c.name = t.value.trim() || c.name; }
     else if (t.id === 'cat-team') { snapshot(); c.team = t.checked; applyDefaultSystem(c); }
-    else if (t.dataset.cfg) { snapshot(); var f0 = cfg(c); f0[t.dataset.cfg] = t.type === 'checkbox' ? t.checked : Math.max(1, parseInt(t.value, 10) || 1); }
+    else if (t.dataset.cfg) { snapshot(); var f0 = cfg(c); f0[t.dataset.cfg] = t.type === 'checkbox' ? t.checked : Math.max(1, parseInt(t.value, 10) || 1); if (f0.judges > 15) f0.judges = 15; }
     else if (t.dataset.crit) {
       snapshot(); c.crit = c.crit || {};
       var v = t.value.trim(); c.crit[t.dataset.crit] = t.dataset.crit === 'g' || t.dataset.crit === 'w' ? v : (+v || null);
@@ -557,7 +568,7 @@
     } else if (t.id === 'cat-del') {
       if (c.competitors.length && !confirm('Ištrinti kategoriją „' + c.name + '“? Dalyviai liks varžybose.')) return;
       snapshot(); S.categories = S.categories.filter(function (x) { return x !== c; }); S.selected = S.categories[0] && S.categories[0].id;
-    } else if (t.id === 'cat-draw') { showTab('lenteles'); return; }
+    } else if (t.id === 'cat-draw') { openRun(S.selected); return; }
     else return;
     save(); render();
   });
@@ -888,7 +899,7 @@
   function renderScore(c, view) {
     var f = cfg(c), ids = (c.draw.order || []).filter(function (id) { return person(c, id); });
     var html = drawHead(c, scoreDone(c), matchCount(c));
-    html += '<div class="score-cfg"><label>Teisėjai <select class="sel" data-cfg="judges">' + [3, 5, 6, 7].map(function (n) { return '<option' + (n === f.judges ? ' selected' : '') + '>' + n + '</option>'; }).join('') + '</select></label>' +
+    html += '<div class="score-cfg"><label>Teisėjai <input class="sel num-in" type="number" min="1" max="15" data-cfg="judges" value="' + f.judges + '" title="Kiek teisėjų vertina (bet koks skaičius)"></label>' +
       '<label><input type="checkbox" data-cfg="drop"' + (f.drop ? ' checked' : '') + (f.judges < 5 ? ' disabled' : '') + '> Atmesti aukščiausią ir žemiausią balą</label>' +
       '<label>Ratai <select class="sel" data-cfg="rounds"><option value="1"' + (f.rounds === 1 ? ' selected' : '') + '>1</option><option value="2"' + (f.rounds === 2 ? ' selected' : '') + '>2 (finalas)</option></select></label>' +
       (f.rounds === 2 ? '<label>Į finalą <input class="sel num-in" type="number" min="2" max="16" data-cfg="finalists" value="' + f.finalists + '"></label>' : '') + '</div>';
@@ -996,6 +1007,7 @@
       var f = cfg(c), k = t.dataset.cfg;
       snapshot();
       if (k === 'drop') f.drop = t.checked; else f[k] = Math.max(1, parseInt(t.value, 10) || 1);
+      if (f.judges > 15) f.judges = 15;
       save(); render();
     }
   });
@@ -1325,26 +1337,106 @@
   function minutesFor(c) { return Math.round(matchCount(c) * (S.minutes[c.discipline] || 2) * (c.team ? 3 : 1) + 2); }   // komandoje - 3 kovos
   function hhmm(min) { var h = Math.floor(min / 60) % 24, m = Math.round(min % 60); return (h < 10 ? '0' : '') + h + ':' + (m < 10 ? '0' : '') + m; }
   function toMin(t) { var p = String(t || '09:00').split(':'); return (+p[0]) * 60 + (+p[1] || 0); }
+  // Varžybų diena: ar šiandien (tada rodoma, ar tatamis vėluoja)
+  function pad2(n) { return (n < 10 ? '0' : '') + n; }
+  function liveDay() { var d = new Date(), s = d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()); return !!CFG.date && s >= CFG.date && s <= (CFG.dateEnd || CFG.date); }
+  function nowMin() { var d = new Date(); return d.getHours() * 60 + d.getMinutes() + d.getSeconds() / 60; }
+  // Tatamio planas: rungtys su laikais ir būsena (done - baigta, now - vyksta dabar, next - toliau, later); vėlavimas min. (tik varžybų dieną)
+  function areaPlan(a) {
+    var t = toMin(a.start), out = [], cur = null;
+    S.categories.filter(function (c) { return c.tatami === a.id; }).forEach(function (c) {
+      var dur = minutesFor(c), total = matchCount(c), done = Math.min(doneCount(c), total), st;
+      if ((total && done >= total) || (!total && c.competitors.length < 2)) st = 'done';
+      else if (!cur) st = 'now';
+      else st = out.length && out[out.length - 1].st === 'now' ? 'next' : 'later';
+      var it = { c: c, start: t, dur: dur, total: total, done: done, pct: total ? Math.round(done / total * 100) : 0, st: st };
+      if (st === 'now') cur = it;
+      out.push(it); t += dur;
+    });
+    var delay = null;
+    if (cur && liveDay()) {
+      var left = cur.dur * (1 - cur.done / Math.max(1, cur.total)), rest = 0;
+      out.forEach(function (x) { if (x.st !== 'done' && x !== cur) rest += x.dur; });
+      delay = Math.round(nowMin() + left + rest - t);
+    }
+    return { items: out, end: t, delay: delay, cur: cur };
+  }
+  function delayChip(d) {
+    if (d === null) return '';
+    if (d > 5) return '<span class="delay late" title="Pagal dabartinį tempą tatamis baigs vėliau nei planuota">vėluoja ~' + d + ' min</span>';
+    if (d < -5) return '<span class="delay early" title="Tatamis lenkia planą">lenkia ' + (-d) + ' min</span>';
+    return '<span class="delay ok">laiku</span>';
+  }
+  var ST_BADGE = { now: '<span class="st-badge now">DABAR</span>', next: '<span class="st-badge next">toliau</span>', done: '<span class="st-badge done">✓</span>', later: '' };
   function renderSched() {
     Object.keys(DISC).forEach(function (k) { document.getElementById('m-' + k).value = S.minutes[k]; });
+    var clock = document.getElementById('live-clock'); if (clock) clock.textContent = hhmm(nowMin());
     var wrap = document.getElementById('sched');
     wrap.innerHTML = S.areas.map(function (a, ai) {
-      var t = toMin(a.start), list = S.categories.filter(function (c) { return c.tatami === a.id; });
-      var items = list.map(function (c, idx) {
-        var start = t, dur = minutesFor(c); t += dur;
-        var total = matchCount(c), done = Math.min(doneCount(c), total), pct = total ? Math.round(done / total * 100) : 0;
-        var moveOpts = S.areas.filter(function (x) { return x.id !== a.id; }).map(function (x) { return '<button class="btn" type="button" data-to="' + x.id + '" data-c="' + c.id + '" title="Perkelti į ' + esc(x.name) + '">→ ' + esc(x.name.replace(' TATAMIS', '')) + '</button>'; }).join('');
-        return '<li class="card" draggable="true" data-c="' + c.id + '"><div class="card-top"><span class="card-time">' + hhmm(start) + '</span><button type="button" class="card-name" data-open-cat="' + c.id + '" title="Atidaryti lentelę"><span class="disc d-' + c.discipline + '"></span>' + esc(c.name) + '</button></div>' +
+      var plan = areaPlan(a), list = plan.items.map(function (x) { return x.c; }), t = plan.end;
+      var items = plan.items.map(function (x, idx) {
+        var c = x.c, start = x.start, dur = x.dur, total = x.total, done = x.done, pct = x.pct;
+        var moveOpts = S.areas.filter(function (y) { return y.id !== a.id; }).map(function (y) { return '<button class="btn" type="button" data-to="' + y.id + '" data-c="' + c.id + '" title="Perkelti į ' + esc(y.name) + '">→ ' + esc(y.name.replace(' TATAMIS', '')) + '</button>'; }).join('');
+        return '<li class="card st-' + x.st + '" draggable="true" data-c="' + c.id + '"><div class="card-top"><span class="card-time">' + hhmm(start) + '</span><button type="button" class="card-name" data-open-cat="' + c.id + '" title="Atidaryti: lentelė, kovos, balai"><span class="disc d-' + c.discipline + '"></span>' + esc(c.name) + '</button>' + ST_BADGE[x.st] + '</div>' +
           '<div class="prog' + (pct === 100 ? ' done' : '') + '"><i style="width:' + pct + '%"></i><span>' + done + ' / ' + total + '</span></div>' +
           '<div class="card-actions"><span class="muted small">' + c.competitors.length + ' dalyv. · ~' + dur + ' min</span><span class="spacer"></span>' +
           '<button class="btn" type="button" data-up="' + c.id + '"' + (idx === 0 ? ' disabled' : '') + ' aria-label="Aukštyn">↑</button><button class="btn" type="button" data-down="' + c.id + '"' + (idx === list.length - 1 ? ' disabled' : '') + ' aria-label="Žemyn">↓</button>' + moveOpts + '</div></li>';
       }).join('');
-      return '<div class="area" data-area="' + a.id + '"><div class="area-head"><input class="name" value="' + esc(a.name) + '" data-rename="' + a.id + '" aria-label="Tatamio pavadinimas">' +
-        '<label>Pradžia <input type="time" value="' + esc(a.start) + '" data-start="' + a.id + '"></label></div>' +
+      return '<div class="area' + (plan.delay !== null && plan.delay > 5 ? ' late' : '') + '" data-area="' + a.id + '"><div class="area-head"><input class="name" value="' + esc(a.name) + '" data-rename="' + a.id + '" aria-label="Tatamio pavadinimas">' +
+        '<div class="area-meta"><label>Pradžia <input type="time" value="' + esc(a.start) + '" data-start="' + a.id + '"></label>' + delayChip(plan.delay) + '</div></div>' +
         '<ul class="area-list" data-drop="' + a.id + '">' + (items || '<li class="muted small">Tempkite kategoriją čia</li>') + '</ul>' +
         '<div class="area-foot">Pabaiga apie <b>' + hhmm(t) + '</b> · ' + list.length + ' kateg.' + (S.areas.length > 1 ? ' · <button class="btn btn-danger" type="button" data-del-area="' + a.id + '">Pašalinti tatamį</button>' : '') + '</div></div>';
     }).join('');
   }
+  // ---------- Live: lenta arba atidarytos rungties valdymas ----------
+  function renderLive() {
+    var c = runOpen ? cat(S.selected) : null;
+    if (runOpen && !c) setRun(false);
+    document.getElementById('live-board').hidden = !!c;
+    document.getElementById('run').hidden = !c;
+    if (!c) { renderSched(); return; }
+    renderRunHead(c);
+    renderDraw();
+  }
+  function runNeighbours(c) {
+    var list = S.categories.filter(function (x) { return x.tatami === c.tatami; }), i = list.indexOf(c);
+    return { prev: list[i - 1] || null, next: list[i + 1] || null };
+  }
+  function renderRunHead(c) {
+    var a = S.areas.find(function (x) { return x.id === c.tatami; }) || S.areas[0], plan = areaPlan(a);
+    var it = plan.items.find(function (x) { return x.c === c; }) || { start: toMin(a.start), done: 0, total: matchCount(c) };
+    document.getElementById('run-name').innerHTML = '<span class="disc d-' + c.discipline + '"></span>' + esc(c.name);
+    document.getElementById('run-meta').textContent = a.name + ' · ' + hhmm(it.start) + ' · ' + c.competitors.length + ' dalyv. · kovos ' + it.done + ' / ' + it.total;
+    var nb = runNeighbours(c);
+    document.getElementById('run-prev').disabled = !nb.prev;
+    var nx = document.getElementById('run-next'); nx.disabled = !nb.next;
+    nx.textContent = nb.next ? 'Toliau: ' + nb.next.name + ' →' : 'Toliau →';
+    document.getElementById('run-strip').innerHTML =
+      (S.areas.length > 1 ? '<select class="sel rs-area" id="rs-area" aria-label="Tatamis">' + S.areas.map(function (x) { return '<option value="' + x.id + '"' + (x.id === a.id ? ' selected' : '') + '>' + esc(x.name) + '</option>'; }).join('') + '</select>' : '<b class="rs-area">' + esc(a.name) + '</b>') +
+      delayChip(plan.delay) +
+      '<div class="rs-list">' + plan.items.map(function (x) {
+        return '<button type="button" class="rs-chip st-' + x.st + (x.c === c ? ' on' : '') + '" data-run="' + x.c.id + '"><span class="rs-time">' + hhmm(x.start) + '</span><span class="disc d-' + x.c.discipline + '"></span>' + esc(x.c.name) + (x.st === 'done' ? ' ✓' : '') + '</button>';
+      }).join('') + '</div>';
+    var on = document.querySelector('.rs-chip.on'); if (on && on.scrollIntoView) on.scrollIntoView({ block: 'nearest', inline: 'center' });
+  }
+  document.getElementById('run-back').addEventListener('click', function () { setRun(false); render(); });
+  document.getElementById('run-prev').addEventListener('click', function () { var nb = runNeighbours(cat(S.selected)); if (nb.prev) openRun(nb.prev.id); });
+  document.getElementById('run-next').addEventListener('click', function () { var nb = runNeighbours(cat(S.selected)); if (nb.next) openRun(nb.next.id); });
+  document.getElementById('run-strip').addEventListener('click', function (e) { var b = e.target.closest('[data-run]'); if (b) openRun(b.dataset.run); });
+  document.getElementById('run-strip').addEventListener('change', function (e) {
+    if (e.target.id !== 'rs-area') return;
+    var plan = areaPlan(S.areas.find(function (x) { return x.id === +e.target.value; }));
+    var go = plan.cur || plan.items[0]; if (go) openRun(go.c.id);
+  });
+  // Laikrodis ir vėlavimas atsinaujina kas 30 s (jei niekas nevelkama ir nerašoma lentoje)
+  setInterval(function () {
+    var board = document.getElementById('live-board');
+    if (document.getElementById('v-live').hidden || board.hidden || dragId) return;
+    if (document.activeElement && board.contains(document.activeElement) && /INPUT|SELECT/.test(document.activeElement.tagName)) return;
+    renderSched();
+  }, 30000);
+  var tSwitch = document.getElementById('t-switch');
+  if (tSwitch) tSwitch.addEventListener('change', function () { flush(true); location.href = tSwitch.value; });
   function moveCat(id, areaId, beforeId) {
     var c = cat(id); if (!c) return;
     snapshot();
@@ -1369,7 +1461,7 @@
   sched.addEventListener('click', function (e) {
     var t = e.target, c, list, i;
     var oc = t.closest && t.closest('[data-open-cat]');
-    if (oc) { S.selected = oc.dataset.openCat; save(); showTab('lenteles'); return; }
+    if (oc) { openRun(oc.dataset.openCat); return; }
     if (t.dataset.to) { moveCat(t.dataset.c, +t.dataset.to, null); return; }
     if (t.dataset.up || t.dataset.down) {
       c = cat(t.dataset.up || t.dataset.down);
@@ -1534,7 +1626,7 @@
   document.getElementById('res-done').addEventListener('change', renderResults);
   document.getElementById('podium-view').addEventListener('click', function (e) {
     var b = e.target.closest('[data-res-open]'); if (!b) return;
-    S.selected = b.dataset.resOpen; save(); showTab('lenteles');
+    openRun(b.dataset.resOpen);
   });
   document.getElementById('res-print').addEventListener('click', function () { window.print(); });
   document.getElementById('draw-print').addEventListener('click', function () { window.print(); });
@@ -1768,7 +1860,7 @@
   function render() {
     document.getElementById('t-name').textContent = S.tournament;
     var tab = tabs.find(function (t) { return !document.getElementById('v-' + t).hidden; });
-    if (tab === 'klubai') renderClubs(); else if (tab === 'dalyviai') { renderEntries(); renderPeople(); } else if (tab === 'komandos') renderTeams(); else if (tab === 'kategorijos') renderCats(); else if (tab === 'lenteles') renderDraw(); else if (tab === 'rezultatai') renderResults(); else renderSched();
+    if (tab === 'klubai') renderClubs(); else if (tab === 'dalyviai') { renderEntries(); renderPeople(); } else if (tab === 'komandos') renderTeams(); else if (tab === 'kategorijos') renderCats(); else if (tab === 'rezultatai') renderResults(); else renderLive();
   }
   load();
   // Naujos test varžybos: kategorijos sudaromos ir dalis kovų „sužaidžiama“ pirmą kartą atidarius
@@ -1776,5 +1868,6 @@
   if (S.simulate) { var fr = +S.simulate; delete S.simulate; simulate(fr); save(); }
   var startTab = 'dalyviai';
   try { startTab = location.hash.replace('#', '') || sessionStorage.getItem(KEY + '-tab') || 'dalyviai'; } catch (e) {}
+  if (startTab === 'lenteles') { setRun(true); startTab = 'live'; } else if (startTab === 'tvarkarastis') startTab = 'live';
   showTab(tabs.indexOf(startTab) >= 0 ? startTab : 'dalyviai');
 })();

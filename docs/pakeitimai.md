@@ -4,6 +4,23 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.22 - 2026-11-15 (Taikos pertvarka, 1 etapas: pagrindinis meniu ir Live tvarkaraštis)
+**Duomenų bazė:** `db/029_testo_svecio_el_pastas.sql` - Valdymas → Šiandien → „Atnaujinkite duomenų bazę“.
+
+- **Taikos pradžia** (Valdymas → Varžybos): visos varžybos kortelėmis - „Vyksta ir artimiausios“ viršuje, „Praėjusios“ žemiau;
+  „+ Naujos varžybos“, test varžybos; apačioje - **partneriai** (tie patys, kaip karateka.lt).
+- **Varžybų viduje** - paspaudus pavadinimą viršuje (▾) galima pereiti į kitas varžybas ar į visų sąrašą.
+- **Meniu iš kairės:** Klubai → Komandos → Dalyviai → Kategorijos (organizacinė pusė) | **Live tvarkaraštis** → Rezultatai.
+- **Live tvarkaraštis** (sujungti „Lentelės“ ir „Tvarkaraštis“):
+  - tatamių lenta: kiekvienoje - rungtys su laikais; vykstanti pažymėta **DABAR**, kita - „toliau“, baigtos - pritemdytos ir sutrauktos;
+  - varžybų dieną prie tatamio: **„laiku“, „vėluoja ~X min“ (raudonai) ar „lenkia X min“** - pagal tai, kiek kovų liko;
+  - paspaudus rungtį atsidaro jos **valdymas** (lentelė, kovos, balai), viršuje - to tatamio rungčių juostelė,
+    **„← Ankstesnė“ ir „Toliau: … →“**, „← Visas tvarkaraštis“; tatamių ir kovų trukmės nustatymai - po „⚙“.
+  - Kategorijose mygtukas „Valdyti →“ atidaro rungtį Live tvarkaraštyje.
+- **Teisėjų skaičius** - bet koks (įrašomas skaičius, iki 15).
+- **Testas be paskyros:** privalomas tik vardas ir pavardė; klubas ir **el. paštas** nebūtini - įrašius el. paštą, rezultatas
+  (ir klaidos su teisingais atsakymais) išsiunčiamas laišku. Treneris mato el. paštą prie rezultato.
+
 ## v1.21 - 2026-11-15 (Denio pastabos lapkričio 11-15: testai, klausimai iš ChatGPT, klubų kontaktai, reglamentas prie renginio)
 **Duomenų bazė:** `db/028_testai_nuoroda_renginio_failas.sql` - įkėlus failus, Valdymas → Šiandien → „Atnaujinkite duomenų bazę“.
 

@@ -1,7 +1,8 @@
 <?php
 // Testas per nuorodą žmonėms be paskyros (Valdymas → Testai → testas → „Nuoroda be paskyros“).
-// Žmogus įrašo vardą (ir klubą), sprendžia tuos pačius atsitiktinius klausimus kaip nariai ir iš karto mato rezultatą su teisingais atsakymais.
-// Saugoma tik: vardas, klubas, balas (quiz_guest_attempts) - treneris mato juos testo puslapyje. Ištrinama po metų (app/cleanup.php).
+// Žmogus įrašo vardą ir pavardę (privaloma), klubą ir el. paštą (nebūtina), sprendžia tuos pačius atsitiktinius klausimus kaip nariai
+// ir iš karto mato rezultatą su teisingais atsakymais; įrašius el. paštą - rezultatas išsiunčiamas ir laišku.
+// Saugoma tik tai, ką žmogus įrašė, ir balas (quiz_guest_attempts) - treneris mato testo puslapyje. Ištrinama po metų (app/cleanup.php).
 require __DIR__ . '/app/bootstrap.php';
 
 $k = (string) (get('k') ?: post('k'));
@@ -21,6 +22,10 @@ if (is_post()) {
     if (post('action') === 'start') {
         $name = trim(preg_replace('/\s+/u', ' ', mb_substr(post('name'), 0, 120)));
         $club = trim(preg_replace('/\s+/u', ' ', mb_substr(post('club'), 0, 120)));
+        $email = mb_strtolower(trim(mb_substr(post('email'), 0, 190)));
+        if ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $errors[] = t('Patikrinkite el. pašto adresą (arba palikite tuščią).');
+        }
         $_SESSION['guest_quiz_starts'] = array_values(array_filter((array) ($_SESSION['guest_quiz_starts'] ?? []), function ($ts) { return $ts > time() - 3600; }));
         if (mb_strlen($name) < 3) {
             $errors[] = t('Įrašykite vardą ir pavardę.');
@@ -33,7 +38,7 @@ if (is_post()) {
             if (!$ids) {
                 $errors[] = t('Šiame teste dar nėra klausimų.');
             } else {
-                $_SESSION['guest_quiz'][$qzId] = ['ids' => $ids, 'name' => $name, 'club' => $club, 'started' => time()];
+                $_SESSION['guest_quiz'][$qzId] = ['ids' => $ids, 'name' => $name, 'club' => $club, 'email' => $email, 'started' => time()];
                 $_SESSION['guest_quiz_starts'][] = time();
                 redirect($self);
             }
@@ -60,10 +65,26 @@ if (is_post()) {
         }
         $total = count($review);
         $passed = $total > 0 && 100 * $score >= (int) $quiz['pass_percent'] * $total;
-        q('INSERT INTO quiz_guest_attempts (quiz_id, name, club, score, total, passed) VALUES (?, ?, ?, ?, ?, ?)',
-            [$qzId, $state['name'], $state['club'] !== '' ? $state['club'] : null, $score, $total, $passed ? 1 : 0]);
+        $email = (string) ($state['email'] ?? '');
+        q('INSERT INTO quiz_guest_attempts (quiz_id, name, club, email, score, total, passed) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            [$qzId, $state['name'], $state['club'] !== '' ? $state['club'] : null, $email !== '' ? $email : null, $score, $total, $passed ? 1 : 0]);
+        $mailed = false;
+        if ($email !== '' && !$late) {
+            // Rezultatas laišku: balas ir klausimai, kur suklysta, su teisingais atsakymais
+            $body = $quiz['title'] . "\n" . $state['name'] . "\n\n" . t('Rezultatas:') . ' ' . ($total ? (int) round(100 * $score / $total) : 0) . ' % (' . $score . ' / ' . $total . ') - '
+                . ($passed ? t('testas išlaikytas.') : t('testas neišlaikytas.'));
+            $wrong = array_filter($review, function ($r) { return !$r['ok']; });
+            if ($wrong) {
+                $body .= "\n\n" . t('Klaidos ir teisingi atsakymai:');
+                foreach ($wrong as $r) {
+                    $ok = array_values(array_filter($r['q']['answers'], function ($an) { return $an['is_correct']; }));
+                    $body .= "\n\n- " . $r['q']['body'] . "\n  ✓ " . ($ok ? $ok[0]['body'] : '');
+                }
+            }
+            $mailed = send_mail($email, t('Testo rezultatas:') . ' ' . $quiz['title'], $body);
+        }
         unset($_SESSION['guest_quiz'][$qzId]);
-        $result = ['score' => $score, 'total' => $total, 'passed' => $passed, 'late' => $late, 'review' => $review, 'name' => $state['name']];
+        $result = ['score' => $score, 'total' => $total, 'passed' => $passed, 'late' => $late, 'review' => $review, 'name' => $state['name'], 'mailed' => $mailed ? $email : ''];
         $state = null;
     }
 }
@@ -84,6 +105,7 @@ if ($result):
         : ($result['passed'] ? ($kid ? t('🎉 Šaunuolis! Testas išlaikytas!') : t('✓ Testas išlaikytas.'))
         : (t('Testas neišlaikytas: reikia bent') . ' ' . (int) $quiz['pass_percent'] . ' %.')) ?></p>
     <p class="muted small"><?= te('Teisingai') ?> <?= (int) $result['score'] ?> <?= te('iš') ?> <?= (int) $result['total'] ?></p>
+    <?php if ($result['mailed']): ?><p class="small"><?= te('Rezultatas išsiųstas el. paštu:') ?> <strong><?= e($result['mailed']) ?></strong></p><?php endif; ?>
     <div class="row" style="gap:8px; justify-content:center; margin-top:10px;">
       <a class="btn btn-primary" href="<?= e(url($self . '&naujas=1')) ?>"><?= te('Spręsti dar kartą') ?></a>
     </div>
@@ -176,7 +198,8 @@ else:
       <label><?= te('Vardas ir pavardė') ?> <input type="text" name="name" maxlength="120" required autocomplete="name" value="<?= e(post('name')) ?>"></label>
       <label><?= te('Klubas') ?> <span class="hint"><?= te('nebūtina') ?></span><input type="text" name="club" maxlength="120" value="<?= e(post('club')) ?>"></label>
     </div>
-    <p class="small muted" style="margin:0;"><?= te('Treneris mato tik tavo vardą, klubą ir rezultatą; jie ištrinami po metų.') ?></p>
+    <label><?= te('El. paštas') ?> <span class="hint"><?= te('nebūtina - atsiųsime rezultatą') ?></span><input type="email" name="email" maxlength="190" autocomplete="email" value="<?= e(post('email')) ?>"></label>
+    <p class="small muted" style="margin:0;"><?= te('Treneris mato tik tai, ką įrašei, ir rezultatą; tai ištrinama po metų.') ?></p>
     <div><button class="btn btn-primary" type="submit"<?= $count ? '' : ' disabled' ?>><?= te('Pradėti testą') ?></button></div>
   </form>
 <?php endif;

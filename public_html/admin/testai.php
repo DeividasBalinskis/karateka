@@ -298,7 +298,7 @@ if ($id || get('id') === 'new' || get('new')) {
           <h3 style="margin:16px 0 6px;"><?= te('Sprendė per nuorodą') ?> (<?= count($guests) ?>)</h3>
           <ul class="list small">
             <?php foreach ($guests as $g): $gp = $g['total'] ? (int) round(100 * $g['score'] / $g['total']) : 0; ?>
-              <li class="row between"><span><strong><?= e($g['name']) ?></strong><?= $g['club'] ? ' · ' . e($g['club']) : '' ?>
+              <li class="row between"><span><strong><?= e($g['name']) ?></strong><?= $g['club'] ? ' · ' . e($g['club']) : '' ?><?= !empty($g['email']) ? ' · <a href="mailto:' . e($g['email']) . '">' . e($g['email']) . '</a>' : '' ?>
                 <span class="muted"> · <?= e(fmt_date($g['created_at'], true)) ?>, <?= e(substr($g['created_at'], 11, 5)) ?></span></span>
                 <span class="badge <?= $g['passed'] ? 'badge-ok' : 'badge-warn' ?>"><?= $gp ?> % <?= $g['passed'] ? '✓' : '✕' ?></span></li>
             <?php endforeach; ?>

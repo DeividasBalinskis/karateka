@@ -65,7 +65,7 @@ test('competitions: test tournament, editor saves, public results, LTKF, points'
   // Test varžybos: kategorijos ir dalis kovų atsiranda atidarius, išsaugoma serveryje
   await nav(a, () => a.click('button:has-text("Sukurti test varžybas")'));
   check('editor opened', a.url().includes('varzybu-sistema.php'));
-  await a.waitForFunction(() => /Išsaugota/.test(document.getElementById('save-state').textContent) && +document.querySelectorAll('#draw-cat option').length > 3);
+  await a.waitForFunction(() => /Išsaugota/.test(document.getElementById('save-state').textContent) && +document.querySelectorAll('#sched .card').length > 3);
   await a.waitForTimeout(400);
   const res = JSON.parse(sql('SELECT results FROM tournaments ORDER BY id DESC LIMIT 1'));
   check('results saved with medals', res.medals.length > 2 && res.categories.length > 5, JSON.stringify(res).slice(0, 200));
@@ -77,7 +77,7 @@ test('competitions: test tournament, editor saves, public results, LTKF, points'
   check('no duplicate home club', !Object.values(state.people).some(p => p.club === 'Karate Ateitis'));
 
   // Valdymas: skirtukai veikia, test mygtukas užbaigia visas kovas
-  for (const tab of ['dalyviai', 'klubai', 'komandos', 'kategorijos', 'tvarkarastis', 'rezultatai']) {
+  for (const tab of ['klubai', 'komandos', 'dalyviai', 'kategorijos', 'live', 'rezultatai']) {
     await a.click('#tab-' + tab);
     check('tab ' + tab, await a.locator('#v-' + tab).isVisible());
   }

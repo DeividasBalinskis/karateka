@@ -1,5 +1,6 @@
 <?php
-// Varžybų valdymas (Valdymas → Varžybos → Atidaryti): klubai, dalyviai, komandos, kategorijos, lentelės, tvarkaraštis, rezultatai.
+// Varžybų valdymas (Valdymas → Varžybos → Atidaryti): klubai, komandos, dalyviai, kategorijos (organizacinė pusė), live tvarkaraštis
+// (tatamiai, laikai ir kiekvienos rungties valdymas - lentelė, kovos, balai), rezultatai. Viršuje - perjungimas į kitas varžybas.
 // Viskas veikia naršyklėje (assets/varzybos.js), pakeitimai išsaugomi automatiškai (POST JSON į šį puslapį).
 require dirname(__DIR__) . '/app/bootstrap.php';
 $me = require_staff();
@@ -84,6 +85,7 @@ $cfg = [
     'shareUrl' => $shareUrl, 'screenUrl' => $shareUrl ? $shareUrl . '&ekranas=1' : '', 'regUrl' => $regUrl, 'regOpen' => $regOpen,
     'entries' => tournament_new_entries((int) $t['id']),
     'api' => url('admin/varzybu-sistema.php?id=' . (int) $t['id']), 'csrf' => csrf_token(), 'year' => (int) substr($t['starts_on'], 0, 4),
+    'date' => $t['starts_on'], 'dateEnd' => $t['ends_on'] ?: $t['starts_on'],
     'homeClub' => VARZ_HOME_CLUB, 'belts' => $belts, 'members' => varz_club_members(), 'state' => varz_drop_example_clubs(tournament_state($t)),
     'clubContacts' => tournament_club_contacts((int) $t['id']), 'clubDirectory' => varz_club_directory(),
 ];
@@ -104,9 +106,15 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
 <header class="vz-top">
   <div class="vz-top-row">
     <a class="vz-back" href="<?= url('admin/varzybos.php') ?>" title="Visos varžybos">←</a>
-    <a class="vz-brand" href="<?= url('admin/varzybos.php') ?>"><span class="vz-logo" aria-hidden="true"></span><?= e(VARZ_NAME) ?></a>
+    <a class="vz-brand" href="<?= url('admin/varzybos.php') ?>" title="Visos varžybos"><span class="vz-logo" aria-hidden="true"></span><?= e(VARZ_NAME) ?></a>
     <div class="vz-title">
-      <h1 id="t-name"><?= e($t['title']) ?></h1>
+      <div class="vz-switch">
+        <h1 id="t-name"><?= e($t['title']) ?></h1>
+        <select id="t-switch" aria-label="Kitos varžybos" title="Pereiti į kitas varžybas">
+          <?php foreach (tournaments_list() as $o): ?><option value="<?= url('admin/varzybu-sistema.php?id=' . (int) $o['id']) ?>"<?= (int) $o['id'] === (int) $t['id'] ? ' selected' : '' ?>><?= e($o['title']) ?> · <?= e(fmt_date($o['starts_on'])) ?></option><?php endforeach; ?>
+          <option value="<?= url('admin/varzybos.php') ?>">☰ Visos varžybos</option>
+        </select>
+      </div>
       <div class="sub"><?= e($dates) ?><?= $t['location'] ? ' · ' . e($t['location']) : '' ?><?= $t['is_test'] ? ' <span class="vz-test">TEST</span>' : '' ?></div>
     </div>
     <div class="vz-top-right">
@@ -116,13 +124,13 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
     </div>
   </div>
   <nav class="tabs" role="tablist" aria-label="Dalys">
-    <button role="tab" id="tab-dalyviai" aria-selected="false" aria-controls="v-dalyviai"><span class="tab-n">1</span>Dalyviai</button>
-    <button role="tab" id="tab-klubai" aria-selected="false" aria-controls="v-klubai"><span class="tab-n">2</span>Klubai</button>
-    <button role="tab" id="tab-komandos" aria-selected="false" aria-controls="v-komandos"><span class="tab-n">3</span>Komandos</button>
+    <button role="tab" id="tab-klubai" aria-selected="false" aria-controls="v-klubai"><span class="tab-n">1</span>Klubai</button>
+    <button role="tab" id="tab-komandos" aria-selected="false" aria-controls="v-komandos"><span class="tab-n">2</span>Komandos</button>
+    <button role="tab" id="tab-dalyviai" aria-selected="false" aria-controls="v-dalyviai"><span class="tab-n">3</span>Dalyviai</button>
     <button role="tab" id="tab-kategorijos" aria-selected="false" aria-controls="v-kategorijos"><span class="tab-n">4</span>Kategorijos</button>
-    <button role="tab" id="tab-lenteles" aria-selected="false" aria-controls="v-lenteles"><span class="tab-n">5</span>Lentelės</button>
-    <button role="tab" id="tab-tvarkarastis" aria-selected="false" aria-controls="v-tvarkarastis"><span class="tab-n">6</span>Tvarkaraštis</button>
-    <button role="tab" id="tab-rezultatai" aria-selected="false" aria-controls="v-rezultatai"><span class="tab-n">7</span>Rezultatai</button>
+    <span class="tabs-sep" aria-hidden="true"></span>
+    <button role="tab" id="tab-live" aria-selected="false" aria-controls="v-live" class="tab-live"><span class="live-dot" aria-hidden="true"></span>Live tvarkaraštis</button>
+    <button role="tab" id="tab-rezultatai" aria-selected="false" aria-controls="v-rezultatai"><span class="tab-n">🏅</span>Rezultatai</button>
   </nav>
 </header>
 <div class="share-panel" id="share-panel" hidden>
@@ -214,9 +222,41 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
     </div>
   </section>
 
-  <!-- LENTELĖS -->
-  <section id="v-lenteles" role="tabpanel" aria-labelledby="tab-lenteles" hidden>
-    <div class="toolbar">
+  <!-- LIVE TVARKARAŠTIS: tatamiai ir rungtys; atidarius rungtį - jos valdymas (lentelė, kovos, balai) -->
+  <section id="v-live" role="tabpanel" aria-labelledby="tab-live" hidden>
+    <div class="live-board" id="live-board">
+      <div class="toolbar live-bar">
+        <b class="live-clock" id="live-clock" title="Dabar"></b>
+        <span class="muted small" id="live-legend">Paspauskite rungtį - atsidarys jos valdymas. Tempkite rungtis tarp tatamių.</span>
+        <span class="spacer"></span>
+        <button class="btn" id="auto-balance" type="button">Paskirstyti tolygiai</button>
+        <details class="live-settings">
+          <summary class="btn">⚙ Tatamiai ir kovų trukmė</summary>
+      <div class="toolbar settings">
+      <button class="btn btn-primary" id="area-new" type="button">+ Tatamis</button>
+      <span class="muted small">Kovos trukmė, min:</span>
+      <label class="small"><span class="disc d-kata"></span>Kata <input type="number" min="1" max="15" step="0.5" id="m-kata"></label>
+      <label class="small"><span class="disc d-kumite"></span>Kumite <input type="number" min="1" max="15" step="0.5" id="m-kumite"></label>
+      <label class="small"><span class="disc d-fukugo"></span>Fukugo <input type="number" min="1" max="15" step="0.5" id="m-fukugo"></label>
+      <label class="small"><span class="disc d-kihon"></span>Kihon <input type="number" min="1" max="15" step="0.5" id="m-kihon"></label>
+      <label class="small"><span class="disc d-enbu"></span>Enbu <input type="number" min="1" max="15" step="0.5" id="m-enbu"></label>
+      <label class="small"><span class="disc d-sumo"></span>Sumo <input type="number" min="1" max="15" step="0.5" id="m-sumo"></label>
+      </div>
+        </details>
+      </div>
+      <div class="sched" id="sched"></div>
+      <p class="hint">Laikai persiskaičiuoja patys pagal kovų skaičių ir trukmę. Varžybų dieną matosi, ar tatamis vėluoja.</p>
+    </div>
+    <div class="run" id="run" hidden>
+      <div class="run-strip" id="run-strip"></div>
+      <div class="run-head">
+        <button class="btn" type="button" id="run-back">← Visas tvarkaraštis</button>
+        <div class="run-title"><b id="run-name"></b><span class="muted small" id="run-meta"></span></div>
+        <span class="spacer"></span>
+        <button class="btn" type="button" id="run-prev">← Ankstesnė</button>
+        <button class="btn btn-primary" type="button" id="run-next">Toliau →</button>
+      </div>
+    <div class="toolbar run-tools">
       <label>Kategorija <select class="sel" id="draw-cat"></select></label>
       <label>Sistema <select class="sel" id="draw-system">
         <option value="wkf">Olimpinė + paguoda (2 bronzos)</option>
@@ -235,25 +275,8 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
       <button class="btn" id="draw-print" type="button">Spausdinti</button>
       <button class="btn" id="draw-clear" type="button">Išvalyti rezultatus</button>
     </div>
-    <div id="draw-view"></div>
-  </section>
-
-  <!-- TVARKARAŠTIS -->
-  <section id="v-tvarkarastis" role="tabpanel" aria-labelledby="tab-tvarkarastis" hidden>
-    <div class="toolbar settings">
-      <button class="btn btn-primary" id="area-new" type="button">+ Tatamis</button>
-      <span class="muted small">Kovos trukmė, min:</span>
-      <label class="small"><span class="disc d-kata"></span>Kata <input type="number" min="1" max="15" step="0.5" id="m-kata"></label>
-      <label class="small"><span class="disc d-kumite"></span>Kumite <input type="number" min="1" max="15" step="0.5" id="m-kumite"></label>
-      <label class="small"><span class="disc d-fukugo"></span>Fukugo <input type="number" min="1" max="15" step="0.5" id="m-fukugo"></label>
-      <label class="small"><span class="disc d-kihon"></span>Kihon <input type="number" min="1" max="15" step="0.5" id="m-kihon"></label>
-      <label class="small"><span class="disc d-enbu"></span>Enbu <input type="number" min="1" max="15" step="0.5" id="m-enbu"></label>
-      <label class="small"><span class="disc d-sumo"></span>Sumo <input type="number" min="1" max="15" step="0.5" id="m-sumo"></label>
-      <span class="spacer"></span>
-      <button class="btn" id="auto-balance" type="button">Paskirstyti tolygiai</button>
+      <div id="draw-view"></div>
     </div>
-    <div class="sched" id="sched"></div>
-    <p class="hint">Tempkite kategorijas tarp tatamių arba naudokite ↑ ↓ →. Laikai persiskaičiuoja patys pagal kovų skaičių ir trukmę. Juosta rodo atliktas kovas.</p>
   </section>
 
   <!-- REZULTATAI -->
