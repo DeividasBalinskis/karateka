@@ -88,7 +88,7 @@ foreach ($members as $m) {
 
 page_start((t('Rezultatai:') . ' ') . $event['title'], ['admin' => true, 'section' => 'renginiai']);
 ?>
-<a class="small" href="<?= url('renginiai.php#e' . $id) ?>"><?= te('← Renginiai') ?></a> · <a class="small" href="<?= url('admin/renginio-dalyviai.php?id=' . $id) ?>"><?= te('Dalyviai') ?></a>
+<a class="small" href="<?= url('renginiai.php#e' . $id) ?>"><?= te('← Renginiai') ?></a> · <a class="small" href="<?= url('admin/renginio-dalyviai.php?id=' . $id) ?>"><?= te('Dalyviai') ?></a><?php if ($event['type'] === 'exam' && exam_protocol_ready()): ?> · <a class="small" href="<?= url('admin/egzamino-protokolas.php?id=' . $id) ?>"><?= te('📋 Egzamino protokolas') ?></a><?php endif; ?>
 <div class="page-head" style="margin-top:8px;">
   <div><span class="badge badge-pink"><?= e(t(EVENT_TYPES[$event['type']])) ?><?= $event['type'] === 'competition' ? ($event['is_abroad'] ? (' ' . t('· užsienyje')) : (' ' . t('· Lietuvoje'))) : '' ?></span></div>
   <h1 class="styled" style="margin-top:8px;"><?= e($event['title']) ?></h1>

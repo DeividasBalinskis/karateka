@@ -138,6 +138,7 @@ test('competition: kumite bout panel, live link and screen, club registration, D
   check('viewer lists all groups, current marked', await v.locator('.gv-glist li.cur').count() >= 1);
   await v.locator('.gv-glist button').first().click();
   await v.waitForSelector('.gv-sheet:not([hidden]) .gv-sheet-body p');
+  await v.waitForFunction(() => /dalyv\./.test(document.querySelector('.gv-sheet-body').innerText), null, { timeout: 8000 }).catch(() => {});   // grupė įkeliama atskirai
   check('viewer opens group', /dalyv\./.test(await v.locator('.gv-sheet-body').innerText()));
   await scr.waitForSelector('.scr-glist li');
   check('screen lists tatami groups', await scr.locator('.scr-glist li').count() >= 2);

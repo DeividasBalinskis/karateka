@@ -4,6 +4,21 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.26 - 2026-11-15 (Egzamino protokolas internete - pagal Denio failą)
+**Duomenų bazė:** `db/031_egzamino_protokolas.sql` - Valdymas → Šiandien → „Atnaujinkite duomenų bazę“.
+
+- Prie egzamino renginio (Renginiai → „📋 Protokolas“, ar „Rezultatai“ → „📋 Egzamino protokolas“) - **protokolas kaip popierinis**:
+  „EGZAMINO PROTOKOLAS“, organizacija (numatyta - LIETUVOS TRADICINIO KARATE ASOCIACIJA, galima pakeisti), „Egzaminas ___ KYU“, data ir vieta,
+  lentelė **Nr., vardas pavardė, gimimo data, kyu, Kihon, Kata, Kumite, Testas, seminarai ir stovyklos, pastabos, Išlaikė / Neišlaikė**,
+  apačioje egzaminatorius, licencijos Nr. ir parašas.
+- **„+ Įtraukti užsiregistravusius“** - užpildo pats: vardas, gimimo data, laikomas kyu, testo rezultatas, seminarai ir stovyklos per paskutinius 12 mėn.
+  „+ Kitas dalyvis“ - pvz. iš kito klubo.
+- Kiekvienas dalyvis gauna **unikalų numerį** metai-mėnuo-diena-eilė, pvz. **26-11-11-01**. **Neatvykusį ištrynus (✕), jo numeris daugiau niekam nepriskiriamas**
+  (ištrintus galima grąžinti).
+- Egzaminatorius pildo balus ar komentarus ir spaudžia **„Išlaikė“ / „Neišlaikė“** - viskas išsaugoma iš karto (Enter - į kitą laukelį).
+- **🖨 Spausdinti** (gulsčias A4, kaip popierinis), **⬇ Excel**, **✉ Siųsti el. paštu** (Excel priede).
+- Adminui: **„Išlaikė“ → renginio rezultatai ir XP**. Organizacija ir egzaminatorius įrašomi ir kitame protokole.
+
 ## v1.25 - 2026-11-15 (Taikos pertvarka, 5-6 etapai: apsauga nuo klaidų, dizaino temos, meniu)
 **Duomenų bazė:** `db/030_varzybu_istorija.sql` - Valdymas → Šiandien → „Atnaujinkite duomenų bazę“.
 

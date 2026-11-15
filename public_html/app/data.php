@@ -158,6 +158,9 @@ function event_staff_actions(array $ev, string $back): string
         $html .= '<a class="btn btn-ghost btn-sm" href="' . e(url(!empty($ev['tournament_id']) ? 'admin/varzybu-dalyviai.php?id=' . $id : 'admin/varzybu-rezultatai.php?id=' . $id)) . '">'
             . (!empty($ev['tournament_id']) ? t('🥋 Varžybų sistema') : t('🔗 Susieti su varžybomis')) . '</a>';
     }
+    if ($ev['type'] === 'exam' && exam_protocol_ready()) {
+        $html .= '<a class="btn btn-ghost btn-sm" href="' . e(url('admin/egzamino-protokolas.php?id=' . $id)) . '">' . e(t('📋 Protokolas')) . '</a>';
+    }
     if ($ev['starts_on'] <= date('Y-m-d')) {
         // Prasidėjęs ar praėjęs renginys: kas buvo (Treniruotės puslapyje); egzaminams ir varžyboms - ir rezultatai
         $html .= '<a class="btn btn-ghost btn-sm" href="' . e(url('admin/treniruote.php?e=' . $id)) . '">' . e(t('✓ Kas buvo')) . '</a>';

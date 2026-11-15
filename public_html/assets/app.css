@@ -1365,3 +1365,45 @@ span.req-check:hover{transform:none;}
 /* ===== DB atnaujinimas vienu mygtuku ===== */
 .db-update-box{display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px 20px; border:2px solid #E6C35C; background:#FFF9E8;}
 .db-update-box p{margin:4px 0 0;}
+
+/* ===== Egzamino protokolas (admin/egzamino-protokolas.php) - ekrane ir spausdinant (gulsčias A4) ===== */
+.print-only{display:none;}
+.prot-title{text-align:center; margin:10px 0 16px;}
+.prot-title h1{font-size:1.5rem; letter-spacing:.08em; margin:0;}
+.prot-org{font-weight:700; letter-spacing:.06em; margin-top:2px;}
+.prot-meta{display:flex; flex-wrap:wrap; justify-content:center; gap:6px 28px; margin-top:8px;}
+.prot-head-form summary{cursor:pointer; font-weight:600;}
+.prot-tools{gap:8px; align-items:center; flex-wrap:wrap; margin:10px 0;}
+.prot-tools form{margin:0;}
+.prot-add > summary, .prot-mail > summary{list-style:none;}
+.prot-add > summary::-webkit-details-marker, .prot-mail > summary::-webkit-details-marker{display:none;}
+.prot-table{width:100%; border-collapse:collapse; font-size:0.86rem; background:#fff;}
+.prot-table th, .prot-table td{border:1px solid rgba(23,20,15,0.25); padding:4px 5px; vertical-align:middle;}
+.prot-table th{font-size:0.72rem; text-transform:none; letter-spacing:0; background:rgba(23,20,15,0.05); text-align:center;}
+.prot-nr{font-family:'JetBrains Mono', monospace; font-size:0.78rem; white-space:nowrap; font-weight:700;}
+.prot-table .pi{width:100%; min-width:0; border:1px solid transparent; background:transparent; padding:4px 5px; font:inherit; border-radius:6px;}
+.prot-table .pi:hover{border-color:rgba(23,20,15,0.18);}
+.prot-table .pi:focus{border-color:var(--accent); background:#fff; outline:none;}
+.prot-table .pi-s{min-width:56px; text-align:center;}
+.prot-table td:nth-child(2) .pi{min-width:170px; font-weight:600;}
+.prot-table td:nth-child(3) .pi{min-width:128px;}
+.prot-table td:nth-child(9) .pi{min-width:120px;}
+.prot-table td:nth-child(10) .pi{min-width:140px;}
+.prot-table textarea.pi{resize:vertical; min-height:30px;}
+.prot-res{white-space:nowrap;}
+.res-btn{border:1px solid rgba(23,20,15,0.2); background:#fff; border-radius:8px; padding:5px 9px; font-weight:700; font-size:0.78rem; cursor:pointer;}
+.res-btn.ok.on{background:#2F7D4F; border-color:#2F7D4F; color:#fff;}
+.res-btn.no.on{background:#C0392B; border-color:#C0392B; color:#fff;}
+tr.res-passed td{background:rgba(47,125,79,0.07);}
+tr.res-failed td{background:rgba(192,57,43,0.06);}
+.prot-sign{display:flex; flex-wrap:wrap; gap:10px 40px; margin:18px 0 10px;}
+@media print{
+  @page{size:A4 landscape; margin:12mm;}
+  .prot-sheet{font-size:11px;}
+  .print-only{display:inline;}
+  .res-btn{display:none;}
+  .prot-table .pi{border:0; padding:0; resize:none; min-width:0 !important;}
+  .prot-table textarea.pi{overflow:hidden;}
+  .prot-table input[type=date]::-webkit-calendar-picker-indicator{display:none;}
+  .table-scroll{overflow:visible;}
+}

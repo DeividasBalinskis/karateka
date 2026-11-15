@@ -2,7 +2,8 @@
 // Laiškų siuntimas per SMTP (nustatymai config.php -> 'mail').
 // Lokaliai laiškai keliauja į Mailpit: http://localhost:8025
 
-function send_mail(string $to, string $subject, string $body): bool
+/** $attachments: [['name' => 'failas.csv', 'type' => 'text/csv', 'data' => turinys], ...] */
+function send_mail(string $to, string $subject, string $body, array $attachments = []): bool
 {
     $c = config('mail');
     $fromName = '=?UTF-8?B?' . base64_encode($c['from_name']) . '?=';
@@ -11,16 +12,26 @@ function send_mail(string $to, string $subject, string $body): bool
     $body .= "\r\n\r\n--\r\nVšĮ Karate Ateitis · " . config('site_url') . "\r\nŠis laiškas išsiųstas automatiškai.";
     $body = preg_replace("/\r?\n/", "\r\n", $body);
 
-    $message = "From: {$fromName} <{$c['from']}>\r\n"
+    $head = "From: {$fromName} <{$c['from']}>\r\n"
         . "To: <{$to}>\r\n"
         . "Subject: {$subjectEnc}\r\n"
         . 'Date: ' . date('r') . "\r\n"
         . 'Message-ID: <' . bin2hex(random_bytes(12)) . '@karateka.lt>' . "\r\n"
-        . "MIME-Version: 1.0\r\n"
-        . "Content-Type: text/plain; charset=UTF-8\r\n"
-        . "Content-Transfer-Encoding: base64\r\n"
-        . "\r\n"
-        . chunk_split(base64_encode($body));
+        . "MIME-Version: 1.0\r\n";
+    if (!$attachments) {
+        $message = $head . "Content-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n\r\n" . chunk_split(base64_encode($body));
+    } else {
+        // Laiškas su priedais (pvz. egzamino protokolas Excel / CSV)
+        $bnd = 'b' . bin2hex(random_bytes(10));
+        $message = $head . "Content-Type: multipart/mixed; boundary=\"{$bnd}\"\r\n\r\n"
+            . "--{$bnd}\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n\r\n" . chunk_split(base64_encode($body));
+        foreach ($attachments as $a) {
+            $fn = '=?UTF-8?B?' . base64_encode((string) $a['name']) . '?=';
+            $message .= "--{$bnd}\r\nContent-Type: " . ($a['type'] ?? 'application/octet-stream') . "; name=\"{$fn}\"\r\n"
+                . "Content-Disposition: attachment; filename=\"{$fn}\"\r\nContent-Transfer-Encoding: base64\r\n\r\n" . chunk_split(base64_encode((string) $a['data']));
+        }
+        $message .= "--{$bnd}--\r\n";
+    }
 
     $prefix = $c['secure'] === 'ssl' ? 'ssl://' : 'tcp://';
     $socket = @stream_socket_client($prefix . $c['host'] . ':' . $c['port'], $errno, $errstr, 20);

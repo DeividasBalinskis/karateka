@@ -57,6 +57,7 @@ require APP_DIR . '/belts.php';
 require APP_DIR . '/varzybos.php';
 require APP_DIR . '/participants.php';
 require APP_DIR . '/exams.php';
+require APP_DIR . '/exam_protocol.php';
 require APP_DIR . '/sms.php';
 require APP_DIR . '/lessons.php';
 require APP_DIR . '/test_data.php';
