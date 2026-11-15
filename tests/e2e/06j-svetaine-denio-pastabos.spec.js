@@ -96,6 +96,7 @@ test('exam registration pops up for coaches; contacts as Excel', async ({ browse
   const kxml = sheetXml(await kx.body());
   check('clubs contacts excel', /Atsakingas asmuo/.test(kxml) && /Karateka/.test(kxml));
   sql(`DELETE FROM events WHERE id = ${ev}`);
+  sql("DELETE FROM notifications WHERE type = 'exam_registration' AND body = 'Kyu egzaminas (iššokimas e2e)'");
   sql('DELETE FROM tournaments WHERE is_test = 1');
   noJsErrors(c, a);
 });

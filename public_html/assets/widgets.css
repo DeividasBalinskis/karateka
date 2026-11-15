@@ -241,9 +241,9 @@ span.chat-ctx{text-decoration:none;}
 @media print{ .fb-fab, .fb-panel{display:none !important;} }
 
 /* ---------- Iššokantys pranešimai treneriui (assets/notify-popup.js) ---------- */
-.ntf-pop{position:fixed; top:78px; right:16px; z-index:9500; display:grid; gap:10px; width:min(360px, calc(100vw - 32px)); pointer-events:none;}
+.ntf-pop{position:fixed; bottom:92px; right:16px; z-index:9500; display:grid; gap:10px; width:min(360px, calc(100vw - 32px)); pointer-events:none;}
 .ntf-card{pointer-events:auto; position:relative; display:flex; gap:12px; align-items:flex-start; background:#fff; color:#17140F; border-radius:16px; padding:14px 38px 14px 14px;
-  box-shadow:0 10px 30px rgba(23,20,15,0.18), 0 0 0 1px rgba(23,20,15,0.06); border-left:4px solid #E8772E; transform:translateX(24px); opacity:0; transition:transform .25s ease, opacity .25s ease;}
+  box-shadow:0 10px 30px rgba(23,20,15,0.18), 0 0 0 1px rgba(23,20,15,0.06); border-left:4px solid #E8772E; transform:translateY(16px); opacity:0; transition:transform .25s ease, opacity .25s ease;}
 .ntf-card.in{transform:none; opacity:1;}
 .ntf-icon{font-size:1.5rem; line-height:1;}
 .ntf-txt{display:grid; gap:3px; font-size:.88rem; min-width:0;}

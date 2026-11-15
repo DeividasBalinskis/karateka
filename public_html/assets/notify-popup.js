@@ -1,5 +1,5 @@
 // Iššokantys pranešimai treneriui (app/notifications.php notify_popup_html): kas užsiregistravo į egzaminą, pavėlavo,
-// kitų klubų registracija į varžybas. Rodoma viršuje dešinėje, kol nepažymėta „Supratau“ ar neatidaryta; tikrinama kas minutę.
+// kitų klubų registracija į varžybas. Rodoma apačioje dešinėje (virš pokalbio mygtuko), kol nepažymėta „Supratau“ ar neatidaryta; tikrinama kas minutę.
 (function () {
   var box = document.getElementById('ntfPop'); if (!box) return;
   var cfg = {}; try { cfg = JSON.parse(box.getAttribute('data-cfg') || '{}'); } catch (e) {}

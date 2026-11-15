@@ -37,7 +37,7 @@ Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar
 - Instruktoriai: **„Klubo treneriai“** (Denis, Lukas) ir **„Pagalbiniai instruktoriai“** atskirai. Redaguojant - kortelėje „Pagalbinis instruktorius“.
 - „Kur mus rasti“ → **„Kontaktai“**; treniruočių vietos - nuorodos į žemėlapį.
 - Nario pokalbis (Valdymas → Žinutės) **atsinaujina pats** - naujos žinutės atsiranda be perkrovimo, atsakymas išsiunčiamas be perkrovimo.
-- Kai kas nors užsiregistruoja į egzaminą - **iššoka pranešimas** (viršuje dešinėje) ir treneriams, ne tik adminui.
+- Kai kas nors užsiregistruoja į egzaminą - **iššoka pranešimas** (apačioje dešinėje) ir treneriams, ne tik adminui.
 - Nariai → **„⬇ Kontaktai (Excel)“** (nario ir tėvų telefonai, el. paštai); egzamino protokolas - tikras Excel (.xlsx) failas.
 - Kalba - **LT | EN | RU visada matomi** viršuje (grįžti į lietuvių - vienu paspaudimu).
 - Privatumo politikoje: „Varžybų sistemą prižiūri administratorius Deividas Balinskis“.
