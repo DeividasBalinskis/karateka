@@ -4,6 +4,22 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.24 - 2026-11-15 (Taikos pertvarka, 3-4 etapai: Live tvarkaraštis ir paprastas kovos vaizdas)
+Duomenų bazės keisti nereikia.
+
+Live tvarkaraštis:
+- **Laikas** prie rungties - paspaudus galima pakeisti: rungtis prasidės ne anksčiau (geltonas laikas = nustatytas ranka; ištrynus - vėl skaičiuojasi pats).
+  Pakeisti laikai matosi ir ekranuose bei žiūrovų nuorodoje.
+- **✎** - pervadinti rungtį tiesiai tvarkaraštyje; **👥 N** - parodo dalyvius.
+- Atidarius rungtį - **„Atkabinti ↗“**: ji atsidaro **atskirame lange** (pvz. kitame ekrane), tvarkaraštyje tampa **pilka**;
+  uždarius langą - grįžta. Pakeitimai abiejuose languose išsaugomi ir matosi kitame.
+
+Kovos vaizdas (rungties valdyme, viršuje „Lentelė / Paprastas“):
+- **Lentelė** - kaip anksčiau, su linijomis.
+- **Paprastas** (kaip Kihapp): **kairėje AKA, dešinėje SHIRO** - vardas, klubas, gimimo metai, **diržo spalva ir kyu**;
+  dideli mygtukai „Laimėjo AKA / SHIRO“ (vėliavėlių kovose - kiek vėliavėlių), kumite - „▶ Kovos skydelis“;
+  apačioje - **kas ruošiasi**. Balų sistemoje - vienas dalyvis ir teisėjų balai. Baigus - prizininkai ir „Toliau: …“.
+
 ## v1.23 - 2026-11-15 (Taikos pertvarka, 2 etapas: kategorijų struktūra kaip Kihapp)
 Duomenų bazės keisti nereikia.
 

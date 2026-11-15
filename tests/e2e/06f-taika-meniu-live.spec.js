@@ -138,3 +138,55 @@ test('categories structure: all disciplines, edit years and gender in place, ope
   sql('DELETE FROM tournaments WHERE is_test = 1');
   noJsErrors(a);
 });
+
+test('live schedule: fixed time, rename, participants; simple bout view; detached window', async ({ browser }) => {
+  const a = await login(browser, 'info@karateka.lt', 1440, 900);
+  await a.goto('admin/varzybos.php');
+  await nav(a, () => a.click('text=🎲 Sukurti test varžybas'));
+  const tid = +sql('SELECT MAX(id) FROM tournaments');
+  const state = () => JSON.parse(sql(`SELECT state FROM tournaments WHERE id = ${tid}`));
+  await a.waitForTimeout(1500);
+  if (await a.locator('#run').isVisible()) await a.click('#run-back');
+
+  // Tvarkaraštyje: laikas „ne anksčiau kaip“, pervadinimas, dalyviai
+  const card = a.locator('#sched .card.st-now').first();
+  const cid = await card.getAttribute('data-c');
+  await card.locator('[data-cat-at]').fill('13:45');
+  await card.locator('[data-cat-at]').dispatchEvent('change');
+  await a.waitForTimeout(1200);
+  check('fixed time saved', state().categories.find(c => c.id === cid).at === '13:45');
+  check('time shown', (await a.locator(`#sched .card[data-c="${cid}"] [data-cat-at]`).inputValue()) === '13:45');
+  await a.locator(`#sched .card[data-c="${cid}"] [data-rename]`).click();
+  await a.fill(`[data-cname="${cid}"]`, 'Finalinė kata');
+  await a.press(`[data-cname="${cid}"]`, 'Enter');
+  await a.waitForTimeout(1200);
+  check('renamed in schedule', state().categories.find(c => c.id === cid).name === 'Finalinė kata');
+  await a.locator(`#sched .card[data-c="${cid}"] [data-people]`).click();
+  check('participants shown', await a.locator(`#sched .card[data-c="${cid}"] .card-people span`).count() >= 2);
+
+  // Paprastas vaizdas: kairėje AKA, dešinėje SHIRO, kas ruošiasi; pažymėjus - rezultatas
+  await a.locator(`#sched .card[data-c="${cid}"] [data-open-cat]`).click();
+  await a.click('[data-runview="simple"]');
+  check('simple view', await a.locator('#draw-view .sv-a .sv-name').count() + await a.locator('#draw-view .sv-done').count() === 1);
+  const doneBefore = Object.keys(state().categories.find(c => c.id === cid).draw.results || {}).length;
+  if (await a.locator('#draw-view .sv-win').count()) await a.locator('#draw-view .sv-a .sv-win').click();
+  else if (await a.locator('#draw-view .sv-a .flag-chip').count()) await a.locator('#draw-view .sv-a .flag-chip').last().click();
+  await a.waitForTimeout(1200);
+  check('winner marked from simple view', Object.keys(state().categories.find(c => c.id === cid).draw.results || {}).length > doneBefore || await a.locator('#draw-view .sv-done').count() === 1);
+  await a.click('[data-runview="lines"]');
+
+  // Atkabinti: atskiras langas su ta rungtimi, tvarkaraštyje ji pilka
+  const ctx = a.context();
+  const [pop] = await Promise.all([ctx.waitForEvent('page'), a.click('#run-detach')]);
+  await pop.waitForURL(/langas=1/);
+  await pop.waitForSelector('#run:not([hidden])');
+  check('popup shows the category', (await pop.textContent('#run-name')).includes('Finalinė kata'));
+  check('popup without menu', !(await pop.locator('.tabs').isVisible()));
+  await a.waitForTimeout(500);
+  check('detached greyed on board', await a.locator(`#sched .card.detached[data-c="${cid}"]`).count() === 1);
+  await pop.close({ runBeforeUnload: true });
+  await a.waitForTimeout(800);
+  check('back after closing', await a.locator(`#sched .card.detached[data-c="${cid}"]`).count() === 0);
+  sql('DELETE FROM tournaments WHERE is_test = 1');
+  noJsErrors(a);
+});

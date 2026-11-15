@@ -86,6 +86,7 @@ $cfg = [
     'entries' => tournament_new_entries((int) $t['id']),
     'api' => url('admin/varzybu-sistema.php?id=' . (int) $t['id']), 'csrf' => csrf_token(), 'year' => (int) substr($t['starts_on'], 0, 4),
     'date' => $t['starts_on'], 'dateEnd' => $t['ends_on'] ?: $t['starts_on'],
+    'popup' => get('langas') && get('cat') !== '' ? (string) get('cat') : null,   // atkabinta rungtis atskirame lange
     'homeClub' => VARZ_HOME_CLUB, 'belts' => $belts, 'members' => varz_club_members(), 'state' => varz_drop_example_clubs(tournament_state($t)),
     'clubContacts' => tournament_club_contacts((int) $t['id']), 'clubDirectory' => varz_club_directory(),
 ];
@@ -102,7 +103,7 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
 <link rel="stylesheet" href="<?= e(asset_url('assets/varzybos.css')) ?>">
 <link rel="stylesheet" href="<?= e(asset_url('assets/widgets.css')) ?>">
 </head>
-<body class="vz">
+<body class="vz<?= get('langas') ? ' vz-popup' : '' ?>">
 <header class="vz-top">
   <div class="vz-top-row">
     <a class="vz-back" href="<?= url('admin/varzybos.php') ?>" title="Visos varžybos">←</a>
@@ -270,9 +271,11 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
     <div class="run" id="run" hidden>
       <div class="run-strip" id="run-strip"></div>
       <div class="run-head">
-        <button class="btn" type="button" id="run-back">← Visas tvarkaraštis</button>
+        <button class="btn" type="button" id="run-back"><?= get('langas') ? '✕ Uždaryti langą' : '← Visas tvarkaraštis' ?></button>
         <div class="run-title"><b id="run-name"></b><span class="muted small" id="run-meta"></span></div>
         <span class="spacer"></span>
+        <div class="seg run-views" role="group" aria-label="Vaizdas"><button type="button" class="seg-btn" data-runview="lines" title="Lentelė su linijomis">Lentelė</button><button type="button" class="seg-btn" data-runview="simple" title="Kas kovoja dabar ir kas ruošiasi">Paprastas</button></div>
+        <?php if (!get('langas')): ?><button class="btn" type="button" id="run-detach" title="Atidaryti atskirame lange (pvz. kitame ekrane); tvarkaraštyje ši rungtis bus pilka">Atkabinti ↗</button><?php else: ?><span id="run-detach" hidden></span><?php endif; ?>
         <button class="btn" type="button" id="run-prev">← Ankstesnė</button>
         <button class="btn btn-primary" type="button" id="run-next">Toliau →</button>
       </div>

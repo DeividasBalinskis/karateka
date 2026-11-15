@@ -705,3 +705,51 @@ tr.club-contacts > td { background: var(--surface-2); padding: 12px 14px; }
 @media (max-width: 700px) { .ov-cols { grid-auto-flow: row; grid-auto-columns: auto; } }
 .ov-labels { display: grid; grid-template-columns: 14px 118px 46px 88px minmax(36px, 1fr) 22px; gap: 5px; padding: 6px 15px 0; font-size: .68rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); text-align: center; }
 .ov-labels span:nth-child(5) { text-align: right; }
+
+/* ---------- Atkabinta rungtis (atskiras langas) ---------- */
+.vz-popup .vz-top .tabs, .vz-popup .vz-top-right .vz-link, .vz-popup #live-board, .vz-popup .run-strip, .vz-popup .fb-fab { display: none !important; }
+.vz-popup .vz-top-row { padding-bottom: 12px; }
+.card.detached, .rs-chip.detached { opacity: .45; filter: grayscale(1); pointer-events: none; }
+.card.detached { pointer-events: auto; }
+.card.detached .card-name { pointer-events: none; }
+.st-badge.det { background: var(--ink); color: #fff; }
+/* Tvarkaraščio kortelė: laikas keičiamas, pavadinimas pervadinamas, dalyviai */
+.card-time-in { border: 1px solid transparent; background: transparent; font-weight: 800; font-variant-numeric: tabular-nums; padding: 0 2px; border-radius: 6px; width: 74px; font-size: .95rem; }
+.card-time-in:hover { border-color: var(--line-2); }
+.card-time-in[data-fixed] { background: var(--amber-soft); color: var(--amber); }
+.card-name-in { flex: 1; min-width: 0; font-weight: 600; padding: 3px 8px; }
+.card-people { display: flex; flex-wrap: wrap; gap: 4px; font-size: .78rem; }
+.card-people span { background: var(--surface-2); border-radius: 999px; padding: 1px 8px; }
+.card-people i { color: var(--muted); font-style: normal; }
+.run-views { display: inline-flex; gap: 2px; }
+/* ---------- Paprastas kovos vaizdas ---------- */
+.sv-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 10px 14px; margin-bottom: 10px; }
+.sv { display: grid; grid-template-columns: 1fr auto 1fr; gap: 0; border-radius: 18px; overflow: hidden; box-shadow: 0 10px 30px rgba(16, 24, 40, .15); }
+.sv-score { grid-template-columns: 1fr; }
+.sv-side { padding: 26px 26px 22px; display: grid; gap: 14px; align-content: space-between; min-height: 260px; }
+.sv-a { background: linear-gradient(160deg, #E5323F, #B71C31); color: #fff; }
+.sv-b { background: linear-gradient(160deg, #FFFFFF, #EEF1F5); color: var(--ink); }
+.sv-score .sv-a { background: linear-gradient(160deg, #1B2130, #12151C); }
+.sv-vs { display: grid; place-items: center; padding: 0 14px; background: var(--ink); color: #fff; font-weight: 800; letter-spacing: .1em; }
+.sv-label { font-size: .8rem; font-weight: 800; letter-spacing: .14em; opacity: .75; }
+.sv-name { font-size: clamp(1.6rem, 3.4vw, 2.8rem); font-weight: 800; line-height: 1.1; }
+.sv-club { font-size: 1.05rem; opacity: .8; }
+.sv-belt { display: inline-flex; align-items: center; gap: 8px; font-weight: 700; margin-top: 6px; }
+.sv-belt span { width: 46px; height: 12px; border-radius: 4px; box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .25); }
+.sv-win { border: 0; border-radius: 12px; padding: 16px; font-size: 1.15rem; font-weight: 800; cursor: pointer; }
+.sv-a .sv-win { background: #fff; color: #B71C31; }
+.sv-b .sv-win { background: var(--ink); color: #fff; }
+.sv-win:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(0, 0, 0, .2); }
+.sv-flags .flags { display: flex; gap: 8px; flex-wrap: wrap; }
+.sv-flags .flag-chip { min-width: 54px; min-height: 48px; font-size: 1.2rem; }
+.sv-judges { display: flex; flex-wrap: wrap; gap: 8px; }
+.sv-judges .j-in { width: 84px; font-size: 1.5rem; padding: 10px; text-align: center; border-radius: 10px; border: 0; }
+.sv-prep { margin-top: 12px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 16px; font-size: 1.05rem; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.sv-dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+.sv-dot.a { background: var(--accent); }
+.sv-dot.b { background: #fff; box-shadow: inset 0 0 0 2px var(--ink); }
+.sv-done { text-align: center; background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 30px 20px; }
+.sv-done-mark { width: 64px; height: 64px; margin: 0 auto 8px; border-radius: 50%; display: grid; place-items: center; background: var(--green); color: #fff; font-size: 2rem; }
+.sv-places { list-style: none; padding: 0; margin: 12px auto 16px; display: grid; gap: 6px; max-width: 420px; text-align: left; }
+.sv-places li b { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--surface-2); margin-right: 8px; }
+@media (max-width: 700px) { .sv { grid-template-columns: 1fr; } .sv-vs { padding: 6px; } .sv-side { min-height: 0; } }
