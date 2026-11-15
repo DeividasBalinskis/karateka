@@ -406,7 +406,7 @@ function footer_links_html(): string
 /** Nuorodos raktas: 'share' - žiūrovams ir ekranams, 'reg' - kitų klubų registracijai. Sukuriamas pirmą kartą prireikus. */
 function tournament_token(array $t, string $kind): string
 {
-    $col = $kind === 'reg' ? 'reg_token' : 'share_token';
+    $col = ['reg' => 'reg_token', 'awards' => 'awards_token'][$kind] ?? 'share_token';
     if (!empty($t[$col])) {
         return (string) $t[$col];
     }
@@ -420,7 +420,7 @@ function tournament_by_token(string $token, string $kind): ?array
         return null;
     }
     try {
-        return q_one('SELECT * FROM tournaments WHERE ' . ($kind === 'reg' ? 'reg_token' : 'share_token') . ' = ?', [$token]);
+        return q_one('SELECT * FROM tournaments WHERE ' . (['reg' => 'reg_token', 'awards' => 'awards_token'][$kind] ?? 'share_token') . ' = ?', [$token]);
     } catch (PDOException $ex) {
         return null;   // dar neimportuotas db/026
     }
@@ -446,6 +446,44 @@ function tournament_live_get(int $id): array
         // dar neimportuotas db/026
     }
     return $out;
+}
+
+// ---------- Apdovanojimai (db/033): sekretoriatas siunčia baigtą grupę, apdovanojimų planšetėje - „Užbaigti“ ----------
+
+/** [kategorijos id => ['st' => 'sent'|'done', 'sent' => laikas, 'done' => laikas]] */
+function tournament_awards(int $id): array
+{
+    $out = [];
+    try {
+        foreach (q_all('SELECT cat_id, status, sent_at, done_at FROM tournament_awards WHERE tournament_id = ?', [$id]) as $r) {
+            $out[(string) $r['cat_id']] = ['st' => $r['status'], 'sent' => $r['sent_at'], 'done' => $r['done_at']];
+        }
+    } catch (PDOException $ex) {
+        // dar neimportuotas db/033
+    }
+    return $out;
+}
+
+/** Būsena: 'sent' - išsiųsta apdovanojimams, 'done' - apdovanota, '' - atšaukta (vėl tik baigta) */
+function tournament_award_set(int $id, string $catId, string $status): bool
+{
+    if (!preg_match('/^[\w-]{1,40}$/', $catId)) {
+        return false;
+    }
+    try {
+        if ($status === 'sent') {
+            q('INSERT INTO tournament_awards (tournament_id, cat_id, status, sent_at) VALUES (?, ?, "sent", NOW())
+               ON DUPLICATE KEY UPDATE status = "sent", sent_at = COALESCE(sent_at, NOW()), done_at = NULL', [$id, $catId]);
+        } elseif ($status === 'done') {
+            q('INSERT INTO tournament_awards (tournament_id, cat_id, status, sent_at, done_at) VALUES (?, ?, "done", NOW(), NOW())
+               ON DUPLICATE KEY UPDATE status = "done", done_at = NOW()', [$id, $catId]);
+        } else {
+            q('DELETE FROM tournament_awards WHERE tournament_id = ? AND cat_id = ?', [$id, $catId]);
+        }
+        return true;
+    } catch (PDOException $ex) {
+        return false;   // dar neimportuotas db/033
+    }
 }
 
 /** Nauji (dar nepridėti) užsiregistravę per nuorodą */

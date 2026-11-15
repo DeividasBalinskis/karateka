@@ -23,6 +23,7 @@
   function cfg(c) {
     c.cfg = c.cfg || {}; var f = c.cfg; f.judges = f.judges || 5; f.rounds = f.rounds || 1; f.finalists = f.finalists || 8; if (f.drop === undefined) f.drop = true;
     f.time = f.time || (c.discipline === 'sumo' ? 60 : 120); f.sumoTo = f.sumoTo || 3; if (f.bunkai === undefined) f.bunkai = true;
+    if (f.avg === undefined) f.avg = true;   // balų sistemoje: rato balas - teisėjų balų vidurkis (be kraštinių), ne suma
     return f;
   }
   // Kaip vyksta kova: kumite (balai +/- ir laikrodis), komandinis kumite (3 kovos, balai sumuojasi), sumo (iki N taškų),
@@ -316,21 +317,25 @@
     });
   }
   // ---------- Balai: teisėjų balai, kraštiniai atmetami (nebūtina), 1 arba 2 ratai ----------
+  // Rato balas: teisėjų balų vidurkis (ar suma), kraštiniai (aukščiausias ir žemiausias) atmetami, kai teisėjų 5 ir daugiau
   function scoreTotal(c, arr) {
     var f = cfg(c), v = (arr || []).slice(0, f.judges).map(function (x) { return parseFloat(x); });
     if (v.length < f.judges || v.some(function (x) { return isNaN(x); })) return null;
-    var sum = v.reduce(function (a, b) { return a + b; }, 0);
-    if (f.drop && f.judges >= 5) sum -= Math.max.apply(null, v) + Math.min.apply(null, v);
-    return Math.round(sum * 100) / 100;
+    var sum = v.reduce(function (a, b) { return a + b; }, 0), n = v.length;
+    if (f.drop && f.judges >= 5) { sum -= Math.max.apply(null, v) + Math.min.apply(null, v); n -= 2; }
+    return f.avg ? Math.round(sum / n * 1000) / 1000 : Math.round(sum * 100) / 100;
   }
+  function fmtScore(c, v) { return v === null || v === undefined ? '–' : cfg(c).avg ? (Math.round(v * 100) / 100).toFixed(2) : v.toFixed(1); }
+  // Finale vieta - pusfinalio (1 rato) ir finalo balų suma (sum); lygiųjų atveju - finalo balas, tada visų balų suma
   function scoreRank(c, which, ids) {
     var d = c.draw, src = which === 'final' ? d.final : d.scores;
     return ids.map(function (id) {
       var arr = (src || {})[id], t = scoreTotal(c, arr), all = (arr || []).reduce(function (a, b) { return a + (parseFloat(b) || 0); }, 0);
-      return { id: id, total: t, all: all, r1: which === 'final' ? scoreTotal(c, (d.scores || {})[id]) : null };
+      var r1 = which === 'final' ? scoreTotal(c, (d.scores || {})[id]) : null;
+      return { id: id, total: t, all: all, r1: r1, sum: which === 'final' ? (t === null || r1 === null ? null : Math.round((t + r1) * 1000) / 1000) : t };
     }).sort(function (x, y) {
-      if (x.total === null || y.total === null) return (x.total === null) - (y.total === null);
-      return y.total - x.total || (y.r1 || 0) - (x.r1 || 0) || y.all - x.all;
+      if (x.sum === null || y.sum === null) return (x.sum === null) - (y.sum === null);
+      return y.sum - x.sum || (y.total || 0) - (x.total || 0) || y.all - x.all;
     });
   }
   function scoreFinalists(c) {
@@ -356,7 +361,7 @@
       var ids = (c.draw.order || []).filter(function (id) { return person(c, id); });
       var fin = cfg(c).rounds === 2 ? scoreFinalists(c) : [];
       ranked = (fin.length ? scoreRank(c, 'final', fin).concat(scoreRank(c, 'scores', ids.filter(function (id) { return fin.indexOf(id) === -1; }))) : scoreRank(c, 'scores', ids))
-        .map(function (x) { return { id: x.id, key: (fin.indexOf(x.id) >= 0 ? 'F' : '') + x.total + '|' + (x.r1 || 0) + '|' + x.all }; });
+        .map(function (x) { return { id: x.id, key: (fin.indexOf(x.id) >= 0 ? 'F' : '') + x.sum + '|' + x.total + '|' + x.all }; });
     }
     var out = [], place = 0;
     ranked.forEach(function (x, i) { if (!i || x.key !== ranked[i - 1].key) place = i + 1; out.push([place, [x.id]]); });
@@ -415,11 +420,19 @@
   function kyuOpts(cur) { return '<option value="">—</option>' + Object.keys(BELTS).map(function (k) { return '<option value="' + k + '"' + (+k === +cur ? ' selected' : '') + '>' + kyu(+k).replace(' kyu', '') + '</option>'; }).join(''); }
   function catUnfit(c) { return c.competitors.filter(function (p) { return !p.team && S.people[p.id] && !fits(c, S.people[p.id]); }).length; }
   function catProblems(c) { return c.competitors.length < 2 || catUnfit(c) > 0; }
+  // Rikiavimas didėjančia tvarka (gimimo metai, diržas, dalyvių sk.); ovDir: 1 - didėjančia, -1 - mažėjančia
   var OV_SORT = {
-    years: function (a, b) { return (crit(b).y1 || 0) - (crit(a).y1 || 0) || (crit(b).y0 || 0) - (crit(a).y0 || 0); },
+    years: function (a, b) { return (crit(a).y0 || crit(a).y1 || 0) - (crit(b).y0 || crit(b).y1 || 0) || (crit(a).y1 || 0) - (crit(b).y1 || 0); },
     belt: function (a, b) { return (crit(a).b0 || 0) - (crit(b).b0 || 0) || (crit(a).b1 || 0) - (crit(b).b1 || 0); },
-    count: function (a, b) { return b.competitors.length - a.competitors.length; }
+    count: function (a, b) { return a.competitors.length - b.competitors.length; }
   };
+  var ovDir = { years: -1, belt: 1, count: -1 };
+  function renderOvDir() {
+    var b = document.getElementById('ov-dir'); if (!b) return;
+    b.hidden = !OV_SORT[ovSort];
+    b.textContent = ovDir[ovSort] === 1 ? '↑ Didėjančia' : '↓ Mažėjančia';
+    b.title = ovSort === 'years' ? (ovDir.years === 1 ? 'Vyriausi (seniausi gimimo metai) pirma' : 'Jauniausi pirma') : ovSort === 'belt' ? (ovDir.belt === 1 ? 'Žemesni diržai pirma' : 'Aukštesni diržai pirma') : (ovDir.count === 1 ? 'Mažiausiai dalyvių pirma' : 'Daugiausiai dalyvių pirma');
+  }
   function ovMatch(c) {
     var g = crit(c).g || 'X', q = ovQuery;
     if (ovGender && g !== ovGender) return false;
@@ -457,7 +470,7 @@
     document.getElementById('ov-cols').innerHTML = discs.map(function (d) {
       var list = S.categories.filter(function (c) { return c.discipline === d; }), shown = list.filter(ovMatch), n = 0;
       list.forEach(function (c) { n += c.competitors.length; });
-      if (OV_SORT[ovSort]) shown = shown.slice().sort(OV_SORT[ovSort]);
+      if (OV_SORT[ovSort]) shown = shown.slice().sort(function (x, y) { return OV_SORT[ovSort](x, y) * ovDir[ovSort]; });
       return '<div class="ov-col" data-ov-col="' + d + '"><div class="ov-head"><span class="disc d-' + d + '"></span><b>' + DISC[d] + '</b><span class="muted small">' + list.length + ' kat. · ' + n + ' dal.</span><span class="spacer"></span>' +
         '<button type="button" class="btn btn-xs" data-ov-redo="' + d + '" title="Netinkančius dalyvius perkelti į tinkamus blokus">⟳</button>' +
         '<select class="sel ov-copy" data-ov-copy="' + d + '" title="Nukopijuoti visus blokus į kitą rungtį" aria-label="Kopijuoti į"><option value="">⧉</option>' + others(d) + '</select>' +
@@ -504,7 +517,8 @@
   });
   document.getElementById('ov-search').addEventListener('input', function (e) { ovQuery = e.target.value.trim().toLowerCase(); renderOverview(); });
   document.getElementById('ov-problems').addEventListener('change', function (e) { ovProblems = e.target.checked; renderOverview(); });
-  document.getElementById('ov-sort').addEventListener('change', function (e) { ovSort = e.target.value; renderOverview(); });
+  document.getElementById('ov-sort').addEventListener('change', function (e) { ovSort = e.target.value; renderOvDir(); renderOverview(); });
+  document.getElementById('ov-dir').addEventListener('click', function () { if (!OV_SORT[ovSort]) return; ovDir[ovSort] = -ovDir[ovSort]; renderOvDir(); renderOverview(); });
   ovBox.addEventListener('click', function (e) {
     var t = e.target.closest('button'); if (!t) return;
     if (t.dataset.ovOpen) { ovOpen[t.dataset.ovOpen] = !ovOpen[t.dataset.ovOpen]; renderOverview(); return; }
@@ -588,7 +602,7 @@
         }).join('') + '</div></div>' +
         '<div class="fmt-row"><span class="fmt-label">Kova</span><div class="fmt-ctl crit">' +
           '<label>Teisėjai <input class="sel num-in" type="number" min="1" max="15" data-cfg="judges" value="' + f.judges + '" title="Kiek teisėjų vertina (bet koks skaičius)"></label>' +
-          (c.discipline === 'kumite' || c.discipline === 'fukugo' || c.discipline === 'sumo' ? '<label>Kovos laikas <select class="sel" data-cfg="time">' + [60, 90, 120, 150, 180].map(function (n) { return '<option value="' + n + '"' + (n === f.time ? ' selected' : '') + '>' + Math.floor(n / 60) + ':' + (n % 60 ? '30' : '00') + '</option>'; }).join('') + '</select></label>' : '') +
+          (c.discipline === 'kumite' || c.discipline === 'fukugo' || c.discipline === 'sumo' ? '<label>Kovos laikas <select class="sel" data-cfg="time">' + [10, 30, 60, 90, 120, 150, 180].map(function (n) { return '<option value="' + n + '"' + (n === f.time ? ' selected' : '') + '>' + Math.floor(n / 60) + ':' + (n % 60 < 10 ? '0' : '') + (n % 60) + (n === 10 ? ' (Jiyu ippon, Ko-Go)' : '') + '</option>'; }).join('') + '</select></label>' : '') +
           (c.discipline === 'sumo' ? '<label>Laimi surinkęs <input class="sel num-in" type="number" min="1" max="20" data-cfg="sumoTo" value="' + f.sumoTo + '"> tšk.</label>' : '') +
           (c.team && c.discipline !== 'kumite' ? '<label><input type="checkbox" data-cfg="bunkai"' + (f.bunkai ? ' checked' : '') + '> Finale ir dėl bronzos: Kata + Pritaikymas (balai)</label>' : '') +
           '<span class="muted small">' + MODE_NAME[boutMode(c, { left: 3 })] + (c.discipline === 'fukugo' ? ' / Kitei' : '') + '</span>' +
@@ -1043,18 +1057,40 @@
       '<p class="hint">Visi kovoja su visais. Vietos: pergalės → tarpusavio kova → balų skirtumas (iš kovos balų, pvz. 3:1).</p></div>';
     view.innerHTML = html;
   }
+  // Katos pavadinimas kiekvienam dalyviui kiekviename rate (pasirinkti iš sąrašo ar įrašyti); finale ta pati kata kaip pusfinalyje - pažymima
+  var KATA_LIST = ['Taikyoku Shodan', 'Heian Shodan', 'Heian Nidan', 'Heian Sandan', 'Heian Yondan', 'Heian Godan', 'Tekki Shodan', 'Tekki Nidan', 'Tekki Sandan',
+    'Bassai Dai', 'Bassai Sho', 'Kanku Dai', 'Kanku Sho', 'Enpi', 'Jion', 'Jitte', 'Jiin', 'Hangetsu', 'Gankaku', 'Chinte', 'Sochin', 'Nijushiho', 'Meikyo',
+    'Unsu', 'Wankan', 'Gojushiho Dai', 'Gojushiho Sho', 'Rohai', 'Seienchin', 'Saifa', 'Seipai', 'Seisan', 'Kururunfa', 'Suparinpei', 'Sanchin', 'Tensho'];
+  function kataOf(c, which, id) { var k = c.draw && c.draw.kata && c.draw.kata[which]; return (k && k[id]) || ''; }
+  function kataDatalist() {
+    var el = document.getElementById('kata-list'), have = {};
+    if (!el) { el = document.createElement('datalist'); el.id = 'kata-list'; document.body.appendChild(el); }
+    var names = KATA_LIST.slice();
+    S.categories.forEach(function (c) { var k = c.draw && c.draw.kata; if (k) ['scores', 'final'].forEach(function (w) { Object.keys(k[w] || {}).forEach(function (id) { var n = k[w][id]; if (n && names.indexOf(n) === -1) names.push(n); }); }); });
+    var html = names.map(function (n) { return have[n] ? '' : (have[n] = 1, '<option value="' + esc(n) + '">'); }).join('');
+    if (el.innerHTML !== html) el.innerHTML = html;
+  }
+  function kataInput(c, which, id, cls) {
+    var v = kataOf(c, which, id), dup = which === 'final' && v && v.toLowerCase() === kataOf(c, 'scores', id).toLowerCase();
+    return '<input class="kata-in' + (cls ? ' ' + cls : '') + (dup ? ' dup' : '') + '" list="kata-list" maxlength="40" placeholder="Kata…" data-kata="' + id + '" data-which="' + which + '" value="' + esc(v) + '" aria-label="Kata"' + (dup ? ' title="Ši kata jau buvo pusfinalyje"' : '') + '>';
+  }
   function scoreTable(c, ids, which, title) {
     var f = cfg(c), src = which === 'final' ? (c.draw.final = c.draw.final || {}) : (c.draw.scores = c.draw.scores || {});
-    var rank = scoreRank(c, which, ids), placeOf = {};
-    rank.forEach(function (x, i) { if (x.total !== null) placeOf[x.id] = i + 1; });
-    var head = '<tr><th class="num">Eil.</th><th>Dalyvis</th>';
+    var rank = scoreRank(c, which, ids), placeOf = {}, kata = c.discipline === 'kata', fin = which === 'final';
+    rank.forEach(function (x, i) { if (x.sum !== null) placeOf[x.id] = i + 1; });
+    var sumOf = {}; rank.forEach(function (x) { sumOf[x.id] = x; });
+    var head = '<tr><th class="num">Eil.</th><th>Dalyvis</th>' + (kata ? '<th>Kata</th>' : '');
     for (var j = 0; j < f.judges; j++) head += '<th class="num">T' + (j + 1) + '</th>';
-    head += '<th class="num">Suma' + (f.drop && f.judges >= 5 ? '*' : '') + '</th><th class="num">Vieta</th></tr>';
+    var lbl = (f.avg ? 'Vidurkis' : 'Suma') + (f.drop && f.judges >= 5 ? '*' : '');
+    head += fin ? '<th class="num">Finalas</th><th class="num">Pusfinalis</th><th class="num">Iš viso</th>' : '<th class="num">' + lbl + '</th>';
+    head += '<th class="num">Vieta</th></tr>';
     return '<div class="panel score-panel"><h2>' + esc(title) + '</h2><div class="table-scroll"><table class="score-table"><thead>' + head + '</thead><tbody>' +
       ids.map(function (id, i) {
-        var p = person(c, id), arr = src[id] || [], t = scoreTotal(c, arr), drop = droppedIdx(c, arr), row = '<tr' + (t !== null ? ' class="scored"' : '') + '><td class="num">' + (i + 1) + '</td><td><b>' + esc(p.name) + '</b> <span class="muted small">' + esc(p.club) + '</span></td>';
+        var p = person(c, id), arr = src[id] || [], t = scoreTotal(c, arr), drop = droppedIdx(c, arr), x = sumOf[id] || {};
+        var row = '<tr' + (t !== null ? ' class="scored"' : '') + '><td class="num">' + (i + 1) + '</td><td><b>' + esc(p.name) + '</b> <span class="muted small">' + esc(p.club) + '</span></td>' + (kata ? '<td>' + kataInput(c, which, id) + '</td>' : '');
         for (var j = 0; j < f.judges; j++) row += '<td class="num"><input class="j-in' + (drop.indexOf(j) >= 0 ? ' dropped' : '') + '" type="number" step="0.1" min="0" max="10" inputmode="decimal" data-j="' + j + '" data-sp="' + id + '" data-which="' + which + '" value="' + (arr[j] !== undefined && arr[j] !== null ? esc(arr[j]) : '') + '" aria-label="Teisėjas ' + (j + 1) + '"></td>';
-        return row + '<td class="num"><b>' + (t === null ? '–' : t.toFixed(1)) + '</b></td><td class="num">' + (placeOf[id] ? '<span class="rank r' + Math.min(placeOf[id], 4) + '">' + placeOf[id] + '</span>' : '') + '</td></tr>';
+        row += fin ? '<td class="num">' + fmtScore(c, t) + '</td><td class="num">' + fmtScore(c, x.r1) + '</td><td class="num"><b>' + fmtScore(c, x.sum) + '</b></td>' : '<td class="num"><b>' + fmtScore(c, t) + '</b></td>';
+        return row + '<td class="num">' + (placeOf[id] ? '<span class="rank r' + Math.min(placeOf[id], 4) + '">' + placeOf[id] + '</span>' : '') + '</td></tr>';
       }).join('') + '</tbody></table></div></div>';
   }
   function renderScore(c, view) {
@@ -1062,15 +1098,20 @@
     var html = drawHead(c, scoreDone(c), matchCount(c));
     html += '<div class="score-cfg"><label>Teisėjai <input class="sel num-in" type="number" min="1" max="15" data-cfg="judges" value="' + f.judges + '" title="Kiek teisėjų vertina (bet koks skaičius)"></label>' +
       '<label><input type="checkbox" data-cfg="drop"' + (f.drop ? ' checked' : '') + (f.judges < 5 ? ' disabled' : '') + '> Atmesti aukščiausią ir žemiausią balą</label>' +
+      '<label><input type="checkbox" data-cfg="avg"' + (f.avg ? ' checked' : '') + '> Vidurkis (ne suma)</label>' +
       '<label>Ratai <select class="sel" data-cfg="rounds"><option value="1"' + (f.rounds === 1 ? ' selected' : '') + '>1</option><option value="2"' + (f.rounds === 2 ? ' selected' : '') + '>2 (finalas)</option></select></label>' +
       (f.rounds === 2 ? '<label>Į finalą <input class="sel num-in" type="number" min="2" max="16" data-cfg="finalists" value="' + f.finalists + '"></label>' : '') + '</div>';
-    html += scoreTable(c, ids, 'scores', f.rounds === 2 ? '1 ratas' : 'Balai');
+    kataDatalist();
+    html += scoreTable(c, ids, 'scores', f.rounds === 2 ? 'Pusfinalis (1 ratas)' : 'Balai');
     if (f.rounds === 2) {
       var fin = scoreFinalists(c);
-      html += fin.length ? scoreTable(c, fin, 'final', 'Finalas (' + fin.length + ' geriausi)') : '<p class="muted small">Finalas atsiras, kai visi gaus 1 rato balus.</p>';
+      html += fin.length ? scoreTable(c, fin, 'final', 'Finalas (' + fin.length + ' geriausi)') : '<p class="muted small">Finalas atsiras, kai visi gaus pusfinalio balus.</p>';
     }
+    var what = f.avg ? 'vidurkis' : 'suma';
     html += '<div class="draw-foot">' + placesHtml(c, catPlaces(c), 'Vietos atsiras, kai visi gaus balus.') +
-      '<p class="hint">Įrašykite kiekvieno teisėjo balą (pvz. 7.5). ' + (f.drop && f.judges >= 5 ? '* Suma be aukščiausio ir žemiausio balo - jie lieka matomi perbraukti. ' : '') + 'Lygiųjų atveju lemia 1 rato suma, tada visų balų suma. Eilės tvarka - burtų; „Burti iš naujo“ ją sumaišo.</p></div>';
+      '<p class="hint">Įrašykite kiekvieno teisėjo balą be taško: 75 → 7.5. ' + (f.drop && f.judges >= 5 ? '* ' + (f.avg ? 'Vidurkis' : 'Suma') + ' be aukščiausio ir žemiausio balo - jie lieka matomi perbraukti. ' : '') +
+      (f.rounds === 2 ? 'Finalininkų vietos - pusfinalio ir finalo ' + (f.avg ? 'vidurkių' : 'sumų') + ' suma; lygiųjų atveju - finalo ' + what + ', tada visų balų suma. ' : 'Lygiųjų atveju lemia visų balų suma. ') +
+      (c.discipline === 'kata' ? 'Kata - pasirinkite iš sąrašo ar įrašykite. ' : '') + 'Eilės tvarka - burtų; „Burti iš naujo“ ją sumaišo.</p></div>';
     view.innerHTML = html;
   }
   function renderDraw() {
@@ -1116,13 +1157,16 @@
       var pl = catPlaces(c).filter(function (x) { return x[0] <= 3; });
       view.innerHTML = '<div class="sv-done"><div class="sv-done-mark">✓</div><h2>Kategorija baigta</h2>' +
         (pl.length ? '<ol class="sv-places">' + pl.map(function (x) { return x[1].map(function (id) { return '<li><b>' + x[0] + '</b> ' + esc((person(c, id) || {}).name || '') + ' <span class="muted">' + esc((person(c, id) || {}).club || '') + '</span></li>'; }).join(''); }).join('') + '</ol>' : '') +
-        (nb.next ? '<button type="button" class="btn btn-primary sv-next-cat" data-run-next="1">Toliau: ' + esc(nb.next.name) + ' →</button>' : '') + '</div>';
+        (function () { var ng = nextGroup(c); return ng ? '<button type="button" class="btn btn-primary sv-next-cat" data-run-go="' + ng.id + '">Sekanti grupė: ' + esc(ng.name) + ' →</button>' : ''; })() + '</div>';
       return;
     }
     if (c.draw.system === 'score') {
-      var arr = (c.draw.scores || {})[m.a] || [], J = cfg(c).judges, cells = '';
-      for (var j = 0; j < J; j++) cells += '<input class="j-in sv-j" type="number" step="0.1" min="0" max="10" inputmode="decimal" data-j="' + j + '" data-sp="' + m.a + '" data-which="r1" value="' + (arr[j] !== undefined && arr[j] !== null ? esc(arr[j]) : '') + '" aria-label="Teisėjas ' + (j + 1) + '">';
-      view.innerHTML = '<div class="sv sv-score"><div class="sv-side sv-a">' + svPerson(c, m.a, '') + '<div class="sv-judges">' + cells + '</div><p class="muted small">Enter - kitas teisėjas, po paskutinio - kitas dalyvis.</p></div></div>' +
+      var w = m.which || 'scores', arr = ((w === 'final' ? c.draw.final : c.draw.scores) || {})[m.a] || [], J = cfg(c).judges, cells = '';
+      for (var j = 0; j < J; j++) cells += '<input class="j-in sv-j" type="number" step="0.1" min="0" max="10" inputmode="decimal" data-j="' + j + '" data-sp="' + m.a + '" data-which="' + w + '" value="' + (arr[j] !== undefined && arr[j] !== null ? esc(arr[j]) : '') + '" aria-label="Teisėjas ' + (j + 1) + '">';
+      if (c.discipline === 'kata') kataDatalist();
+      view.innerHTML = '<div class="sv-meta"><b>' + esc(m.title) + '</b></div><div class="sv sv-score"><div class="sv-side sv-a">' + svPerson(c, m.a, '') +
+        (c.discipline === 'kata' ? '<label class="sv-kata">Kata ' + kataInput(c, w, m.a) + '</label>' : '') +
+        '<div class="sv-judges">' + cells + '</div><p class="muted small">Balai be taško: 75 → 7.5. Enter - kitas teisėjas, po paskutinio - kitas dalyvis.</p></div></div>' +
         (prep ? '<div class="sv-prep"><b>Ruošiasi:</b> ' + esc((person(c, prep.a) || {}).name || '') + ' <span class="muted">' + esc((person(c, prep.a) || {}).club || '') + '</span></div>' : '');
       return;
     }
@@ -1135,7 +1179,7 @@
       (prep ? '<div class="sv-prep"><b>Ruošiasi:</b> <span class="sv-dot a"></span>' + esc((person(c, prep.a) || {}).name || '') + ' <span class="muted">vs</span> <span class="sv-dot b"></span>' + esc((person(c, prep.b) || {}).name || '') +
         (list.length > 2 ? ' <span class="muted">· dar ' + (list.length - 2) + ' kov.</span>' : '') + '</div>' : '');
   }
-  document.getElementById('draw-view').addEventListener('click', function (e) { if (e.target.closest('[data-run-next]')) document.getElementById('run-next').click(); });
+  document.getElementById('draw-view').addEventListener('click', function (e) { var g = e.target.closest('[data-run-go]'); if (g) goRun(g.dataset.runGo); });
   // Sistemos keitimas: olimpinės tarpusavyje - rezultatai lieka; į ratų ar balų - nauji burtai
   function setSystem(c, sys) {
     if (!c || !SYSTEMS[sys] || (c.draw && c.draw.system === sys)) return;
@@ -1193,22 +1237,60 @@
   document.getElementById('draw-view').addEventListener('change', function (e) {
     var t = e.target, c = cat(S.selected); if (!c) return;
     if (t.dataset.score) { c.draw.scores = c.draw.scores || {}; if (t.value.trim()) c.draw.scores[t.dataset.score] = t.value.trim(); else delete c.draw.scores[t.dataset.score]; save(); if (c.draw.system === 'rr') render(); return; }
+    if (t.dataset.kata) {
+      var kw = t.dataset.which === 'final' ? 'final' : 'scores';
+      c.draw.kata = c.draw.kata || {}; c.draw.kata[kw] = c.draw.kata[kw] || {};
+      var kv = t.value.trim().slice(0, 40);
+      if (kv) c.draw.kata[kw][t.dataset.kata] = kv; else delete c.draw.kata[kw][t.dataset.kata];
+      save(); kataDatalist();
+      // Ta pati kata finale kaip pusfinalyje - pažymima vietoje (be perpiešimo, kad fokusas liktų)
+      var fk = document.querySelector('.kata-in[data-kata="' + t.dataset.kata + '"][data-which="final"]');
+      if (fk) { var dup = !!fk.value.trim() && fk.value.trim().toLowerCase() === kataOf(c, 'scores', t.dataset.kata).toLowerCase(); fk.classList.toggle('dup', dup); fk.title = dup ? 'Ši kata jau buvo pusfinalyje' : ''; }
+      return;
+    }
     if (t.dataset.sp) {
       var src = t.dataset.which === 'final' ? (c.draw.final = c.draw.final || {}) : (c.draw.scores = c.draw.scores || {});
       var arr = src[t.dataset.sp] = src[t.dataset.sp] || [], v = t.value.replace(',', '.');
       arr[+t.dataset.j] = v === '' ? null : Math.max(0, Math.min(10, parseFloat(v)));
-      save(); render();
-      var next = document.querySelector('[data-sp="' + t.dataset.sp + '"][data-which="' + t.dataset.which + '"][data-j="' + (+t.dataset.j + 1) + '"]');
-      if (next) next.focus();
+      save();
+      // Perpiešiama, kai fokusas jau persikėlė (Tab ar paspaustas kitas langelis) - jis grąžinamas į tą patį langelį
+      setTimeout(function () {
+        var key = focusKey(document.activeElement);
+        render();
+        var el = key && document.querySelector(key);
+        if (el) { el.focus(); try { el.select(); } catch (ex) {} }
+      }, 0);
       return;
     }
     if (t.dataset.cfg) {
       var f = cfg(c), k = t.dataset.cfg;
       snapshot();
-      if (k === 'drop') f.drop = t.checked; else f[k] = Math.max(1, parseInt(t.value, 10) || 1);
+      if (k === 'drop' || k === 'avg') f[k] = t.checked; else f[k] = Math.max(1, parseInt(t.value, 10) || 1);
       if (f.judges > 15) f.judges = 15;
       save(); render();
     }
+  });
+  // Balai rašomi be taško: įvedus antrą skaitmenį taškas įdedamas pats (75 → 7.5, 80 → 8.0); 10 lieka 10.
+  document.addEventListener('input', function (e) {
+    var t = e.target;
+    if (!t.classList || !t.classList.contains('j-in')) return;
+    var m = String(t.value).match(/^(\d)(\d)$/);
+    if (m && t.value !== '10') t.value = m[1] + '.' + m[2];
+  });
+  function focusKey(el) {
+    if (!el || !el.dataset) return null;
+    if (el.dataset.sp) return '.j-in[data-sp="' + el.dataset.sp + '"][data-which="' + el.dataset.which + '"][data-j="' + el.dataset.j + '"]';
+    if (el.dataset.kata) return '.kata-in[data-kata="' + el.dataset.kata + '"][data-which="' + el.dataset.which + '"]';
+    return null;
+  }
+  // Kata: Enter - to paties dalyvio pirmo teisėjo balas
+  document.addEventListener('keydown', function (e) {
+    var t = e.target;
+    if (e.key !== 'Enter' || !t.classList || !t.classList.contains('kata-in')) return;
+    e.preventDefault();
+    var sel = '.j-in[data-sp="' + t.dataset.kata + '"][data-which="' + t.dataset.which + '"][data-j="0"]';
+    t.blur();
+    setTimeout(function () { var el = document.querySelector(sel); if (el) { el.focus(); try { el.select(); } catch (ex) {} } }, 40);
   });
   // Teisėjų balai: Enter - kitas teisėjas, po paskutinio - kito dalyvio pirmas teisėjas (Shift+Enter - atgal).
   // Lentelė perpiešiama pasikeitus balui, todėl kitas laukelis surandamas pagal jo žymes ir pažymimas po perpiešimo.
@@ -1369,6 +1451,13 @@
     return '<div class="bt-psides">' + side('a') + side('b') + '</div>' +
       '<p class="hint">' + (cfg(c).drop && J >= 5 ? 'Aukščiausias ir žemiausias kiekvienos dalies balas atmetamas - jie lieka matomi perbraukti. ' : '') + 'Iš viso = Kata + Pritaikymas.</p>';
   }
+  // Kumite laiko šablonai: kategorijos laikas ir dažniausi (Jiyu ippon, Ko-Go - 10 s, Jiyu pratęsimas - 1:30)
+  var TIME_PRESETS = [['Jiyu ippon', 10], ['Ko-Go', 10], ['Jiyu pratęsimas', 90]];
+  function timePresets(c) {
+    var base = cfg(c).time, out = [['Kova', base]];
+    TIME_PRESETS.forEach(function (x) { out.push(x); });
+    return out;
+  }
   function renderBout() {
     if (!B) return;
     var c = cat(B.cat), area = areaOf(c), body, mode = B.mode, f = cfg(c);
@@ -1381,6 +1470,10 @@
       var mid = '<div class="bt-mid">' + (mode === 'team' ? '<div class="bt-round">Kova ' + (B.i + 1) + ' / ' + Math.max(B.ma.length, B.mb.length, 1) + '</div>' : '') +
         '<button type="button" class="bt-timer" id="bt-timer" title="Paspauskite ir įrašykite laiką (pvz. 1:30)"></button><div class="bt-tbtns"><button type="button" class="btn btn-primary" id="bt-start"></button><button type="button" class="btn" id="bt-reset" title="Iš naujo">↺ ' + fmtTime(B.timer.total) + '</button>' +
         '<button type="button" class="btn" data-dt="-10000">−10 s</button><button type="button" class="btn" data-dt="10000">+10 s</button></div>' +
+        (mode === 'kumite' || mode === 'team' ? '<div class="bt-presets" role="group" aria-label="Laiko šablonai">' + timePresets(c).map(function (x) {
+          var on = B.timer.preset ? B.timer.preset === x[0] : B.timer.total === x[1] * 1000 && x[0] === 'Kova';
+          return '<button type="button" class="btn btn-sm' + (on ? ' on' : '') + '" data-preset="' + x[1] + '" data-preset-name="' + esc(x[0]) + '">' + esc(x[0]) + ' <b>' + fmtTime(x[1] * 1000) + '</b></button>';
+        }).join('') + '</div>' : '') +
         (mode === 'team' && B.log.length ? '<ol class="bt-log">' + B.log.map(function (l, j) { return '<li>' + (j + 1) + ' kova: ' + esc(l.an) + ' <b>' + l.a + ':' + l.b + '</b> ' + esc(l.bn) + '</li>'; }).join('') + '</ol>' : '') +
         '<p class="muted small">Tarpas - laikrodis</p></div>';
       body = '<div class="bt-sides">' + sideHtml('a') + mid + sideHtml('b') + '</div>';
@@ -1426,6 +1519,10 @@
     if (t.id === 'bt-timer') { editTimer(); return; }
     if (t.id === 'bt-reset') { if (B.timer.running) toggleTimer(); setTime(B.timer.total); return; }
     if (t.dataset.dt) { setTime(timeLeft() + +t.dataset.dt); return; }
+    if (t.dataset.preset) {
+      if (B.timer.running) toggleTimer();
+      B.timer.total = +t.dataset.preset * 1000; B.timer.preset = t.dataset.presetName; setTime(B.timer.total); renderBout(); return;
+    }
     if (t.dataset.pt) {
       var q = t.dataset.pt.split('|'), side = q[0], n = +q[1];
       if (side === 'a') B.sa = Math.max(0, B.sa + n); else B.sb = Math.max(0, B.sb + n);
@@ -1541,6 +1638,128 @@
   function liveDay() { var d = new Date(), s = d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()); return !!CFG.date && s >= CFG.date && s <= (CFG.dateEnd || CFG.date); }
   function nowMin() { var d = new Date(); return d.getHours() * 60 + d.getMinutes() + d.getSeconds() / 60; }
   // Tatamio planas: rungtys su laikais ir būsena (done - baigta, now - vyksta dabar, next - toliau, later); vėlavimas min. (tik varžybų dieną)
+  // ---------- Grupių būsenos ir apdovanojimai (db/033) ----------
+  // Laukiama → Vyksta → Užbaigta → „Siųsti apdovanojimams“ → Užbaigta · apdovanojama → (planšetėje „Užbaigti“) → Užbaigta ir apdovanota.
+  // Amžiaus grupė (tie patys gimimo metai: ir kata, ir kumite) apdovanojimų planšetėje žalia, kai visos jos rungtys išsiųstos.
+  var AW = CFG.awards && typeof CFG.awards === 'object' && !Array.isArray(CFG.awards) ? CFG.awards : {}, awPending = false;
+  var ST_LABEL = { wait: 'Laukiama', run: 'Vyksta', fin: 'Užbaigta', sent: 'Užbaigta · apdovanojama', awarded: 'Užbaigta ir apdovanota' };
+  function catFinished(c) {
+    if (!c.draw || drawStale(c)) return false;
+    var total = matchCount(c), pl = catPlaces(c);
+    return total > 0 ? doneCount(c) >= total && pl.some(function (x) { return x[0] === 1; }) : pl.length > 0;
+  }
+  function catStatus(c, isNow) {
+    var aw = AW[c.id] && AW[c.id].st;
+    if (aw === 'done') return 'awarded';
+    if (aw === 'sent') return 'sent';
+    if (catFinished(c)) return 'fin';
+    return isNow || (c.draw && !drawStale(c) && doneCount(c) > 0) ? 'run' : 'wait';
+  }
+  function stChip(st) { return '<span class="aw-chip aw-' + st + '">' + (st === 'sent' ? '🏅 ' : st === 'awarded' ? '✓ ' : '') + ST_LABEL[st] + '</span>'; }
+  function ageKey(c) { var k = crit(c); return k.y0 || k.y1 ? 'y' + (k.y0 || '') + '-' + (k.y1 || '') : 'c' + c.id; }
+  function ageName(c) {
+    var k = crit(c); if (!k.y0 && !k.y1) return c.name;
+    return k.y0 && k.y1 ? (k.y1 === k.y0 ? k.y0 + ' m.' : k.y1 + '–' + k.y0 + ' m.') : k.y1 ? k.y1 + ' m. ir vyr.' : k.y0 + ' m. ir jaun.';
+  }
+  function ageGroup(c) { var key = ageKey(c); return S.categories.filter(function (x) { return x.competitors.length && ageKey(x) === key; }); }
+  function setAward(ids, st) {
+    ids.forEach(function (id) { if (st) AW[id] = { st: st }; else delete AW[id]; });
+    render();
+    if (!CFG.awardsApi) { toast('Apdovanojimai veiks, kai bus atnaujinta duomenų bazė (Šiandien → „Atnaujinkite duomenų bazę“).'); return; }
+    fetch(CFG.awardsApi, { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': CFG.csrf }, body: JSON.stringify({ cats: ids, status: st || '' }) })
+      .then(function (r) { return r.json(); }).then(function (d) { if (d.awards) { AW = d.awards; render(); } })
+      .catch(function () { toast('Nepavyko išsiųsti apdovanojimams - nėra ryšio. Bandykite dar kartą.'); });
+  }
+  function typingNow() { var el = document.activeElement; return !!(el && /INPUT|SELECT|TEXTAREA/.test(el.tagName) && document.querySelector('main').contains(el)) || !!B; }
+  // Apdovanojimų būsenos iš serverio (planšetėje paspaudus „Užbaigti“) - kas 10 s
+  function loadAwards() {
+    if (!CFG.awardsApi || document.hidden) return;
+    fetch(CFG.awardsApi, { credentials: 'same-origin', headers: { Accept: 'application/json' } }).then(function (r) { return r.json(); }).then(function (d) {
+      if (!d.awards) return;
+      if (JSON.stringify(d.awards) !== JSON.stringify(AW)) { AW = d.awards; awPending = true; }
+      if (awPending && !typingNow() && !dragId && (!document.getElementById('v-live').hidden || !document.getElementById('v-rezultatai').hidden)) { awPending = false; render(); }
+    }).catch(function () {});
+  }
+  setInterval(loadAwards, 10000);
+
+  // ---------- Mano tatamis: šiame kompiuteryje (planšetėje) rodomas tik pasirinktas tatamis, kitą galima pažiūrėti ----------
+  var myArea = null, viewArea = null;
+  try { myArea = localStorage.getItem(KEY + '-myarea'); } catch (e) {}
+  function areaById(id) { return S.areas.find(function (a) { return String(a.id) === String(id); }) || null; }
+  function shownAreas() {
+    var id = viewArea || myArea;
+    if (!id || id === 'all') return S.areas;
+    var a = areaById(id); return a ? [a] : S.areas;
+  }
+  function setMyArea(v) { myArea = v; viewArea = null; try { localStorage.setItem(KEY + '-myarea', v); } catch (e) {} render(); }
+  function renderAreaPick() {
+    var sel = document.getElementById('my-area'), box = document.getElementById('area-pick');
+    sel.innerHTML = '<option value="all">Visi tatamiai</option>' + S.areas.map(function (a) { return '<option value="' + a.id + '">' + esc(a.name) + '</option>'; }).join('');
+    sel.value = areaById(myArea) ? String(myArea) : 'all';
+    sel.parentNode.hidden = S.areas.length < 2;
+    var mine = areaById(myArea), ask = S.areas.length > 1 && !myArea, view = viewArea === 'all' ? null : areaById(viewArea);
+    if (ask) {
+      box.innerHTML = '<b>Prie kurio tatamio dirbate?</b> <span class="muted small">Šiame kompiuteryje bus rodomas tik jis - kitą galėsite pažiūrėti bet kada.</span><div class="ap-btns">' +
+        S.areas.map(function (a) { return '<button type="button" class="btn btn-primary" data-my-area="' + a.id + '">' + esc(a.name) + '</button>'; }).join('') +
+        '<button type="button" class="btn" data-my-area="all">Visi tatamiai (vyr. sekretoriatas)</button></div>';
+    } else if (mine && S.areas.length > 1) {
+      box.innerHTML = 'Rodomas: <b>' + (viewArea === 'all' ? 'visi tatamiai' : esc((view || mine).name)) + '</b> ' + (viewArea ? '<button type="button" class="btn btn-sm btn-primary" data-view-area="">← Mano: ' + esc(mine.name) + '</button>' : '<span class="muted small">(mano tatamis)</span>') +
+        '<span class="ap-peek">Pažiūrėti: ' + S.areas.filter(function (a) { return a !== mine && a !== view; }).map(function (a) { return '<button type="button" class="btn btn-sm" data-view-area="' + a.id + '">👁 ' + esc(a.name) + '</button>'; }).join('') +
+        (viewArea !== 'all' ? '<button type="button" class="btn btn-sm" data-view-area="all">👁 Visi</button>' : '') + '</span>';
+    }
+    box.hidden = !(ask || (mine && S.areas.length > 1));
+    box.classList.toggle('ask', ask);
+  }
+  document.getElementById('my-area').addEventListener('change', function (e) { setMyArea(e.target.value); });
+  document.getElementById('area-pick').addEventListener('click', function (e) {
+    var b = e.target.closest('button'); if (!b) return;
+    if (b.dataset.myArea !== undefined) setMyArea(b.dataset.myArea);
+    else if (b.dataset.viewArea !== undefined) { viewArea = b.dataset.viewArea || null; render(); }
+  });
+
+  // ---------- Sekanti grupė: pirma nebaigta po šios tame pačiame tatamyje ----------
+  function nextGroup(c) {
+    var a = areaById(c.tatami) || S.areas[0], items = areaPlan(a).items, i = items.findIndex(function (x) { return x.c === c; });
+    var after = items.slice(i + 1).find(function (x) { return x.st !== 'done'; }) || items.find(function (x) { return x.st !== 'done' && x.c !== c; });
+    return after ? after.c : null;
+  }
+  function goRun(id) {
+    if (POPUP) { S.selected = id; save(); render(); if (winCh) winCh.postMessage({ t: 'open', cat: id }); window.scrollTo(0, 0); return; }
+    openRun(id); window.scrollTo(0, 0);
+  }
+  function placesShort(c) {
+    var pl = catPlaces(c).filter(function (x) { return x[0] <= 3; });
+    return pl.map(function (x) { return x[1].map(function (id) { var p = person(c, id) || {}; return '<span class="rd-p"><span class="medal ' + ['', 'g', 's', 'b'][x[0]] + '">' + x[0] + '</span>' + esc(p.name || '') + ' <span class="muted">' + esc(p.club || '') + '</span></span>'; }).join(''); }).join('');
+  }
+  // Kai grupė baigta: „Siųsti apdovanojimams“ ir „Sekanti grupė →“
+  function renderRunDone(c) {
+    var box = document.getElementById('run-done'), st = catStatus(c);
+    if (st === 'wait' || st === 'run') { box.hidden = true; box.innerHTML = ''; return; }
+    var nx = nextGroup(c), others = ageGroup(c).filter(function (x) { return x !== c; });
+    var pending = others.filter(function (x) { var s2 = catStatus(x); return s2 !== 'sent' && s2 !== 'awarded'; });
+    var html = '<div class="rd-main"><span class="rd-mark">✓</span><div class="rd-txt"><div class="rd-title"><b>Grupė baigta</b> ' + stChip(st) + '</div><div class="rd-places">' + placesShort(c) + '</div></div></div><div class="rd-btns">';
+    if (st === 'fin') html += '<button type="button" class="btn btn-award" data-award-send="' + c.id + '">🏅 Siųsti apdovanojimams</button>';
+    else if (st === 'sent') html += '<button type="button" class="btn btn-sm" data-award-undo="' + c.id + '" title="Grąžinti - dar nesiųsta">Atšaukti siuntimą</button>';
+    html += nx ? '<button type="button" class="btn btn-primary rd-next" data-run-go="' + nx.id + '">Sekanti grupė: ' + esc(nx.name) + ' →</button>' : '<span class="muted small">Šio tatamio grupių daugiau nėra.</span>';
+    html += '</div>';
+    if (others.length) {
+      html += '<p class="rd-age small">Amžiaus grupė <b>' + esc(ageName(c)) + '</b>: ' + (pending.length
+        ? 'apdovanojimų planšetėje ji užsidegs žaliai, kai bus išsiųsta ir ' + pending.map(function (x) { return esc(x.name) + ' <span class="muted">(' + ST_LABEL[catStatus(x)].toLowerCase() + ')</span>'; }).join(', ') + '.'
+        : (st === 'fin' ? 'kitos rungtys jau išsiųstos - išsiuntus šią, planšetėje užsidegs žaliai.' : 'visos rungtys išsiųstos - planšetėje ji žalia.')) + '</p>';
+    }
+    box.innerHTML = html; box.hidden = false;
+  }
+  // Pačioje apačioje - visos šio tatamio grupės: kiek liko, kas toliau, būsenos
+  function renderRunList(c, a, plan) {
+    var left = plan.items.filter(function (x) { return x.st !== 'done'; }).length;
+    document.getElementById('run-list').innerHTML = '<h2>' + esc(a.name) + ' - visos grupės <span class="muted small">liko ' + left + ' iš ' + plan.items.length + ' · pabaiga apie ' + hhmm(plan.end) + '</span></h2>' +
+      '<ol class="rl">' + plan.items.map(function (x) {
+        var st = catStatus(x.c, x.st === 'now');
+        return '<li class="rl-row st-' + x.st + (x.c === c ? ' on' : '') + (isDetached(x.c.id) ? ' detached' : '') + '"><button type="button" data-run="' + x.c.id + '"><span class="rl-time">' + hhmm(x.start) + '</span>' +
+          '<span class="rl-name"><span class="disc d-' + x.c.discipline + '"></span>' + esc(x.c.name) + (x.c === c ? ' <span class="rl-here">← atidaryta</span>' : '') + '</span>' +
+          '<span class="rl-prog">' + x.done + '/' + x.total + '</span><span class="rl-badge">' + (x.st === 'next' ? ST_BADGE.next : '') + '</span>' + stChip(st) + '</button></li>';
+      }).join('') + '</ol>';
+  }
   function areaPlan(a) {
     var t = toMin(a.start), out = [], cur = null;
     S.categories.filter(function (c) { return c.tatami === a.id; }).forEach(function (c) {
@@ -1573,7 +1792,10 @@
     Object.keys(DISC).forEach(function (k) { document.getElementById('m-' + k).value = S.minutes[k]; });
     var clock = document.getElementById('live-clock'); if (clock) clock.textContent = hhmm(nowMin());
     var wrap = document.getElementById('sched');
-    wrap.innerHTML = S.areas.map(function (a, ai) {
+    renderAreaPick();
+    var areas = shownAreas();
+    wrap.classList.toggle('one', areas.length === 1);
+    wrap.innerHTML = areas.map(function (a, ai) {
       var plan = areaPlan(a), list = plan.items.map(function (x) { return x.c; }), t = plan.end;
       var items = plan.items.map(function (x, idx) {
         var c = x.c, start = x.start, dur = x.dur, total = x.total, done = x.done, pct = x.pct;
@@ -1581,9 +1803,12 @@
         var det = isDetached(c.id);
         var nameEl = editName === c.id ? '<input class="sel card-name-in" data-cname="' + c.id + '" value="' + esc(c.name) + '" aria-label="Rungties pavadinimas">'
           : '<button type="button" class="card-name" data-open-cat="' + c.id + '" title="Atidaryti: lentelė, kovos, balai"><span class="disc d-' + c.discipline + '"></span>' + esc(c.name) + '</button>';
-        return '<li class="card st-' + x.st + (det ? ' detached' : '') + '" draggable="true" data-c="' + c.id + '"><div class="card-top">' +
+        return '<li class="card st-' + x.st + (det ? ' detached' : '') + (x.st === 'done' && catStatus(c) === 'fin' ? ' needs-send' : '') + '" draggable="true" data-c="' + c.id + '"><div class="card-top">' +
           '<input class="card-time-in" type="text" inputmode="numeric" maxlength="5" value="' + hhmm(start) + '" data-cat-at="' + c.id + '" title="' + (c.at ? 'Nustatytas laikas (ištrinkite - vėl skaičiuosis pats)' : 'Pakeiskite - rungtis prasidės ne anksčiau') + '"' + (c.at ? ' data-fixed="1"' : '') + '>' +
-          nameEl + (det ? '<span class="st-badge det">atskirame lange</span>' : ST_BADGE[x.st]) + '</div>' +
+          nameEl + (det ? '<span class="st-badge det">atskirame lange</span>' : x.st === 'done' ? '' : ST_BADGE[x.st]) + (function () {
+            var st = catStatus(c, x.st === 'now');
+            return st === 'wait' ? '' : st === 'fin' ? '<button type="button" class="btn btn-award btn-xs" data-award-send="' + c.id + '" title="Siųsti apdovanojimams">🏅 Siųsti</button>' : stChip(st);
+          })() + '</div>' +
           (peopleOpen[c.id] ? '<div class="card-people">' + c.competitors.map(function (p) { return '<span>' + esc(p.name) + ' <i>' + esc(p.club) + '</i></span>'; }).join('') + '</div>' : '') +
           '<div class="prog' + (pct === 100 ? ' done' : '') + '"><i style="width:' + pct + '%"></i><span>' + done + ' / ' + total + '</span></div>' +
           '<div class="card-actions"><button type="button" class="btn" data-people="' + c.id + '" aria-expanded="' + !!peopleOpen[c.id] + '" title="Dalyviai">👥 ' + c.competitors.length + '</button><span class="muted small">~' + dur + ' min</span>' +
@@ -1591,7 +1816,8 @@
           '<button class="btn" type="button" data-up="' + c.id + '"' + (idx === 0 ? ' disabled' : '') + ' aria-label="Aukštyn">↑</button><button class="btn" type="button" data-down="' + c.id + '"' + (idx === list.length - 1 ? ' disabled' : '') + ' aria-label="Žemyn">↓</button>' + moveOpts + '</div></li>';
       }).join('');
       return '<div class="area' + (plan.delay !== null && plan.delay > 5 ? ' late' : '') + '" data-area="' + a.id + '"><div class="area-head"><input class="name" value="' + esc(a.name) + '" data-rename="' + a.id + '" aria-label="Tatamio pavadinimas">' +
-        '<div class="area-meta"><label>Pradžia <input type="time" value="' + esc(a.start) + '" data-start="' + a.id + '"></label>' + delayChip(plan.delay) + '</div></div>' +
+        '<div class="area-meta"><label>Pradžia <input type="time" value="' + esc(a.start) + '" data-start="' + a.id + '"></label>' + delayChip(plan.delay) + '</div>' +
+        (plan.items.length ? '<button type="button" class="btn btn-primary area-go" data-start-run="' + a.id + '">▶ ' + (plan.cur ? 'Dabar: ' + esc(plan.cur.c.name) : 'Visos grupės baigtos') + '</button>' : '') + '</div>' +
         '<ul class="area-list" data-drop="' + a.id + '">' + (items || '<li class="muted small">Tempkite kategoriją čia</li>') + '</ul>' +
         '<div class="area-foot">Pabaiga apie <b>' + hhmm(t) + '</b> · ' + list.length + ' kateg.' + (S.areas.length > 1 ? ' · <button class="btn btn-danger" type="button" data-del-area="' + a.id + '">Pašalinti tatamį</button>' : '') + '</div></div>';
     }).join('');
@@ -1651,13 +1877,13 @@
     document.getElementById('run-prev').disabled = !nb.prev;
     var nx = document.getElementById('run-next'); nx.disabled = !nb.next;
     nx.textContent = nb.next ? 'Toliau: ' + nb.next.name + ' →' : 'Toliau →';
+    var idx = plan.items.findIndex(function (x) { return x.c === c; }), left = plan.items.filter(function (x) { return x.st !== 'done'; }).length;
     document.getElementById('run-strip').innerHTML =
-      (S.areas.length > 1 ? '<select class="sel rs-area" id="rs-area" aria-label="Tatamis">' + S.areas.map(function (x) { return '<option value="' + x.id + '"' + (x.id === a.id ? ' selected' : '') + '>' + esc(x.name) + '</option>'; }).join('') + '</select>' : '<b class="rs-area">' + esc(a.name) + '</b>') +
-      delayChip(plan.delay) +
-      '<div class="rs-list">' + plan.items.map(function (x) {
-        return '<button type="button" class="rs-chip st-' + x.st + (x.c === c ? ' on' : '') + (isDetached(x.c.id) ? ' detached' : '') + '" data-run="' + x.c.id + '"><span class="rs-time">' + hhmm(x.start) + '</span><span class="disc d-' + x.c.discipline + '"></span>' + esc(x.c.name) + (x.st === 'done' ? ' ✓' : '') + '</button>';
-      }).join('') + '</div>';
-    var on = document.querySelector('.rs-chip.on'); if (on && on.scrollIntoView) on.scrollIntoView({ block: 'nearest', inline: 'center' });
+      (S.areas.length > 1 ? '<select class="sel rs-area" id="rs-area" aria-label="Tatamis" title="Pažiūrėti kitą tatamį">' + S.areas.map(function (x) { return '<option value="' + x.id + '"' + (x.id === a.id ? ' selected' : '') + '>' + esc(x.name) + '</option>'; }).join('') + '</select>' : '<b class="rs-area">' + esc(a.name) + '</b>') +
+      delayChip(plan.delay) + '<span class="rs-pos muted small">Grupė ' + (idx + 1) + ' iš ' + plan.items.length + ' · liko ' + left + '</span>' + stChip(catStatus(c, it.st === 'now')) +
+      '<a class="rs-all small" href="#run-list">Visos grupės ↓</a>';
+    renderRunDone(c);
+    renderRunList(c, a, plan);
   }
   document.getElementById('run-back').addEventListener('click', function () { if (POPUP) { window.close(); return; } setRun(false); render(); });
   document.getElementById('run').addEventListener('click', function (e) {
@@ -1676,7 +1902,17 @@
     openRun(nb.next.id);
   });
   document.getElementById('run-detach').addEventListener('click', function () { var c = cat(S.selected); if (c) detach(c); });
-  document.getElementById('run-strip').addEventListener('click', function (e) { var b = e.target.closest('[data-run]'); if (b) openRun(b.dataset.run); });
+  document.getElementById('run-strip').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-run]'); if (b) openRun(b.dataset.run);
+    var all = e.target.closest('.rs-all'); if (all) { e.preventDefault(); document.getElementById('run-list').scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+  });
+  document.getElementById('run-list').addEventListener('click', function (e) { var b = e.target.closest('[data-run]'); if (b) goRun(b.dataset.run); });
+  document.getElementById('run-done').addEventListener('click', function (e) {
+    var b = e.target.closest('button'); if (!b) return;
+    if (b.dataset.awardSend) setAward([b.dataset.awardSend], 'sent');
+    else if (b.dataset.awardUndo) { if (confirm('Atšaukti siuntimą apdovanojimams? Planšetėje ši grupė vėl bus nebaigta.')) setAward([b.dataset.awardUndo], ''); }
+    else if (b.dataset.runGo) goRun(b.dataset.runGo);
+  });
   document.getElementById('run-strip').addEventListener('change', function (e) {
     if (e.target.id !== 'rs-area') return;
     var plan = areaPlan(S.areas.find(function (x) { return x.id === +e.target.value; }));
@@ -1717,6 +1953,9 @@
     var t = e.target, c, list, i;
     var oc = t.closest && t.closest('[data-open-cat]');
     if (oc) { openRun(oc.dataset.openCat); return; }
+    var sr = t.closest && t.closest('[data-start-run]');
+    if (sr) { var pl = areaPlan(areaById(sr.dataset.startRun)), go = pl.cur || pl.items[pl.items.length - 1]; if (go) openRun(go.c.id); return; }
+    var as = t.closest && t.closest('[data-award-send]'); if (as) { setAward([as.dataset.awardSend], 'sent'); return; }
     var pb = t.closest && t.closest('[data-people]'); if (pb) { peopleOpen[pb.dataset.people] = !peopleOpen[pb.dataset.people]; renderSched(); return; }
     var rb = t.closest && t.closest('[data-rename]'); if (rb) { editName = rb.dataset.rename; renderSched(); var ip = document.querySelector('[data-cname="' + editName + '"]'); if (ip) { ip.focus(); ip.select(); } return; }
     if (t.dataset.to) { moveCat(t.dataset.c, +t.dataset.to, null); return; }
@@ -1792,7 +2031,8 @@
     var rs = results();
     return {
       categories: rs.map(function (r) {
-        return { id: r.c.id, name: r.c.name, discipline: r.c.discipline, team: !!r.c.team, count: r.c.competitors.length, total: r.total, done: r.done, finished: r.finished, places: r.places };
+        return { id: r.c.id, name: r.c.name, discipline: r.c.discipline, team: !!r.c.team, count: r.c.competitors.length, total: r.total, done: r.done, finished: r.finished, places: r.places,
+          group: ageKey(r.c), groupName: ageName(r.c), tatami: (areaOf(r.c) || {}).name || '' };
       }),
       medals: medalTable(rs).map(function (t) { return { club: t.club, g: t.m.g, s: t.m.s, b: t.m.b, pts: t.m.pts }; }),
       people: Object.keys(S.people).length,
@@ -1821,7 +2061,9 @@
     var sys = c.draw.system;
     if (sys === 'score') {
       var ids = (c.draw.order || []).filter(function (id) { return person(c, id); });
-      out.groups.push({ t: 'Balai', score: true, rows: scoreRank(c, 'scores', ids).map(function (x) { return { n: pubName(x.id), c: club(x.id), s: x.total === null ? '' : x.total.toFixed(1) }; }) });
+      var finIds = cfg(c).rounds === 2 ? scoreFinalists(c) : [];
+      if (finIds.length) out.groups.push({ t: 'Finalas (pusfinalis + finalas)', score: true, rows: scoreRank(c, 'final', finIds).map(function (x) { return { n: pubName(x.id), c: club(x.id), k: kataOf(c, 'final', x.id), s: x.sum === null ? '' : fmtScore(c, x.sum) }; }) });
+      out.groups.push({ t: finIds.length || cfg(c).rounds === 2 ? 'Pusfinalis' : 'Balai', score: true, rows: scoreRank(c, 'scores', ids).map(function (x) { return { n: pubName(x.id), c: club(x.id), k: kataOf(c, 'scores', x.id), s: x.total === null ? '' : fmtScore(c, x.total) }; }) });
     } else if (sys === 'rr') {
       out.groups.push({ t: 'Ratų sistema', matches: rrMatches(c).map(function (m) { return mm(m, m.round + ' ratas'); }) });
     } else {
@@ -1836,8 +2078,11 @@
   function upcoming(c) {
     if (!c.draw || drawStale(c) || c.competitors.length < 2) return [];
     if (c.draw.system === 'score') {
-      return (c.draw.order || []).filter(function (id) { return person(c, id) && scoreTotal(c, (c.draw.scores || {})[id]) === null; })
-        .map(function (id) { return { title: 'Pasirodymas', a: id, b: null }; });
+      var r1 = (c.draw.order || []).filter(function (id) { return person(c, id) && scoreTotal(c, (c.draw.scores || {})[id]) === null; })
+        .map(function (id) { return { title: cfg(c).rounds === 2 ? 'Pusfinalis' : 'Pasirodymas', a: id, b: null, which: 'scores' }; });
+      if (r1.length || cfg(c).rounds !== 2) return r1;
+      return scoreFinalists(c).filter(function (id) { return scoreTotal(c, (c.draw.final || {})[id]) === null; })
+        .map(function (id) { return { title: 'Finalas', a: id, b: null, which: 'final' }; });
     }
     var list = c.draw.system === 'rr' ? rrMatches(c) : allMatches(bracket(c));
     return list.filter(function (m) { return m.a && m.b && !m.winner; }).sort(function (x, y) { return (x.no || 0) - (y.no || 0); });
@@ -1883,13 +2128,16 @@
       }).join('') + '</tbody><tfoot><tr><td></td><td>Iš viso</td><td class="num">' + sum.g + '</td><td class="num">' + sum.s + '</td><td class="num">' + sum.b + '</td><td class="num">' + sum.pts + '</td></tr></tfoot></table>'
       : '<p class="muted" style="padding:12px 14px;margin:0;">Dar nėra prizininkų. Pažymėkite kovų nugalėtojus skirtuke „Lentelės“.</p>';
     document.getElementById('podium-view').innerHTML = rs.length ? '<div class="res-cats">' + rs.map(function (r) {
-      var state = r.finished ? '<span class="pill ok">Baigta</span>' : r.done ? '<span class="pill warn">Vyksta ' + r.done + '/' + r.total + '</span>' : '<span class="pill">Nepradėta</span>';
+      var ast = AW[r.c.id] && AW[r.c.id].st;
+      var state = (ast === 'done' ? stChip('awarded') : ast === 'sent' ? stChip('sent') : r.finished ? '<span class="pill ok">Baigta</span><button type="button" class="btn btn-award btn-sm" data-award-send="' + r.c.id + '">🏅 Siųsti</button>' : '') +
+        (r.finished || ast ? '' : r.done ? '<span class="pill warn">Vyksta ' + r.done + '/' + r.total + '</span>' : '<span class="pill">Nepradėta</span>');
       return '<div class="res-cat"><div class="res-cat-top"><button type="button" data-res-open="' + r.c.id + '" title="Atidaryti lentelę"><span class="disc d-' + r.c.discipline + '"></span>' + esc(r.c.name) + '</button>' + state + '</div>' +
         (r.places.length ? r.places.map(function (p) { return '<div class="rp">' + MEDAL[p.place] + '<span>' + esc(p.name) + ' <span class="club">' + esc(p.club) + '</span></span></div>'; }).join('') : '<span class="muted small">Prizininkų dar nėra</span>') + '</div>';
     }).join('') + '</div>' : '<p class="muted" style="padding:12px 14px;margin:0;">Nėra baigtų kategorijų.</p>';
   }
   document.getElementById('res-done').addEventListener('change', renderResults);
   document.getElementById('podium-view').addEventListener('click', function (e) {
+    var as = e.target.closest('[data-award-send]'); if (as) { setAward([as.dataset.awardSend], 'sent'); return; }
     var b = e.target.closest('[data-res-open]'); if (!b) return;
     openRun(b.dataset.resOpen);
   });
@@ -1990,8 +2238,11 @@
     }
     if (c.draw.system === 'score') {
       var f = cfg(c), ids = (c.draw.order || []).slice(0, limit), j;
-      ids.forEach(function (id) { if (!c.draw.scores[id]) { c.draw.scores[id] = []; for (j = 0; j < f.judges; j++) c.draw.scores[id].push(rnd()); } });
-      if (f.rounds === 2 && limit >= ids.length) scoreFinalists(c).forEach(function (id) { c.draw.final = c.draw.final || {}; if (!c.draw.final[id]) { c.draw.final[id] = []; for (j = 0; j < f.judges; j++) c.draw.final[id].push(rnd()); } });
+      // Trūkstami teisėjų balai užpildomi (jau įrašyti lieka)
+      var fill = function (src, id) { var arr = src[id] = src[id] || []; for (j = 0; j < f.judges; j++) if (arr[j] === undefined || arr[j] === null || isNaN(parseFloat(arr[j]))) arr[j] = rnd(); };
+      c.draw.scores = c.draw.scores || {};
+      ids.forEach(function (id) { fill(c.draw.scores, id); });
+      if (f.rounds === 2 && limit >= ids.length) { c.draw.final = c.draw.final || {}; scoreFinalists(c).forEach(function (id) { fill(c.draw.final, id); }); }
       return;
     }
     for (var n = 0; n < limit; n++) {

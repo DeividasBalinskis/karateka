@@ -42,6 +42,20 @@ if (is_post() && (get('live') || get('entries') || get('reg'))) {
     exit(json_encode(['ok' => true]));
 }
 
+// Apdovanojimai: būsenos (JSON); „Siųsti apdovanojimams“ / atšaukti / apdovanota
+if (get('awards')) {
+    header('Content-Type: application/json; charset=utf-8');
+    if (is_post()) {
+        csrf_check();
+        $in = json_decode((string) file_get_contents('php://input'), true) ?: [];
+        $st = in_array($in['status'] ?? '', ['sent', 'done'], true) ? $in['status'] : '';
+        foreach (array_slice((array) ($in['cats'] ?? [$in['cat'] ?? '']), 0, 100) as $cid) {
+            tournament_award_set((int) $t['id'], (string) $cid, $st);
+        }
+    }
+    exit(json_encode(['ok' => true, 'awards' => (object) tournament_awards((int) $t['id'])], JSON_UNESCAPED_UNICODE));
+}
+
 // Išvaizda: tema ir meniu (bendri visoms varžyboms)
 if (get('ui') && is_post()) {
     csrf_check();
@@ -97,6 +111,11 @@ try {
     $shareUrl = $regUrl = '';
     $regOpen = false;
 }
+try {
+    $awardsUrl = abs_url('varzybos-apdovanojimai.php?k=' . tournament_token($t, 'awards'));
+} catch (PDOException $ex) {
+    $awardsUrl = '';   // dar neimportuotas db/033
+}
 $cfg = [
     'id' => (int) $t['id'], 'title' => $t['title'], 'version' => (int) $t['version'], 'isTest' => (bool) $t['is_test'],
     'liveApi' => $shareUrl ? url('admin/varzybu-sistema.php?id=' . (int) $t['id'] . '&live=1') : '',
@@ -105,6 +124,8 @@ $cfg = [
     'uiApi' => url('admin/varzybu-sistema.php?id=' . (int) $t['id'] . '&ui=1'), 'ui' => varz_ui(), 'themes' => VARZ_THEMES,
     'restoreApi' => url('admin/varzybu-sistema.php?id=' . (int) $t['id'] . '&restore=1'),
     'regApi' => url('admin/varzybu-sistema.php?id=' . (int) $t['id'] . '&reg=1'),
+    'awardsApi' => $awardsUrl ? url('admin/varzybu-sistema.php?id=' . (int) $t['id'] . '&awards=1') : '', 'awardsUrl' => $awardsUrl,
+    'awards' => (object) tournament_awards((int) $t['id']),
     'shareUrl' => $shareUrl, 'screenUrl' => $shareUrl ? $shareUrl . '&ekranas=1' : '', 'regUrl' => $regUrl, 'regOpen' => $regOpen,
     'entries' => tournament_new_entries((int) $t['id']),
     'api' => url('admin/varzybu-sistema.php?id=' . (int) $t['id']), 'csrf' => csrf_token(), 'year' => (int) substr($t['starts_on'], 0, 4),
@@ -183,6 +204,14 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
     <p class="muted small">Atidarykite tatamio ekraną antrame monitoriuje ar televizoriuje (naršyklėje, F11 - visas ekranas). Rodoma kova, balai, laikrodis ir kas eina toliau.</p>
     <div class="sp-row" id="sp-screens"></div>
   </div>
+  <?php if ($awardsUrl): ?>
+  <div class="sp-block">
+    <b>🏅 Apdovanojimų planšetė</b>
+    <p class="muted small">Atidarykite planšetėje prie apdovanojimų. Amžiaus grupė užsidega žaliai, kai visos jos rungtys (ir kata, ir kumite) baigtos ir išsiųstos.
+      Apdovanojęs žmogus paspaudžia „Užbaigti“. Nuoroda slapta - duokite tik apdovanojimus vedančiam.</p>
+    <div class="sp-row"><input class="sel sp-url" readonly value="<?= e($awardsUrl) ?>" aria-label="Apdovanojimų nuoroda"><button type="button" class="btn" data-copy="<?= e($awardsUrl) ?>">Kopijuoti</button><a class="btn" href="<?= e($awardsUrl) ?>" target="_blank" rel="noopener">Atidaryti ↗</a></div>
+  </div>
+  <?php endif; ?>
   <div class="sp-block">
     <b>🔗 Nuoroda žiūrovams</b>
     <p class="muted small">Tėvai ir kiti klubai telefone mato, kas vyksta ant kiekvieno tatamio, kas eina toliau ir rezultatus.</p>
@@ -259,6 +288,7 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
         <span class="seg" role="group" aria-label="Lytis"><button type="button" class="seg-btn on" data-ovg="">Visi</button><button type="button" class="seg-btn" data-ovg="M">M</button><button type="button" class="seg-btn" data-ovg="F">F</button><button type="button" class="seg-btn" data-ovg="X">Mix</button></span>
         <label class="small"><input type="checkbox" id="ov-problems"> Tik su problemomis</label>
         <label class="small">Rikiuoti <select class="sel" id="ov-sort"><option value="order">kaip sudėliota</option><option value="years">pagal metus</option><option value="belt">pagal diržą</option><option value="count">pagal dalyvių sk.</option></select></label>
+        <button type="button" class="btn btn-sm" id="ov-dir" hidden title="Keisti tvarką: didėjančia / mažėjančia"></button>
       </span>
       <span class="spacer"></span>
       <span class="ov-only"><button class="btn" id="ov-auto" type="button" title="Pagal amžių, lytį ir diržą">⚡ Sudaryti automatiškai</button></span>
@@ -291,6 +321,7 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
     <div class="live-board" id="live-board">
       <div class="toolbar live-bar">
         <b class="live-clock" id="live-clock" title="Dabar"></b>
+        <label class="small my-area" title="Prie kurio tatamio dirbate šiame kompiuteryje (planšetėje) - rodomas tik jis">Mano tatamis <select class="sel" id="my-area"></select></label>
         <span class="muted small" id="live-legend">Paspauskite rungtį - atsidarys jos valdymas. Tempkite rungtis tarp tatamių.</span>
         <span class="spacer"></span>
         <button class="btn" id="auto-balance" type="button">Paskirstyti tolygiai</button>
@@ -308,6 +339,7 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
       </div>
         </details>
       </div>
+      <div class="area-pick" id="area-pick" hidden></div>
       <div class="sched" id="sched"></div>
       <p class="hint">Laikai persiskaičiuoja patys pagal kovų skaičių ir trukmę. Varžybų dieną matosi, ar tatamis vėluoja.</p>
     </div>
@@ -322,6 +354,7 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
         <button class="btn" type="button" id="run-prev">← Ankstesnė</button>
         <button class="btn btn-primary" type="button" id="run-next">Toliau →</button>
       </div>
+      <div class="run-done" id="run-done" hidden></div>
     <div class="toolbar run-tools">
       <label>Kategorija <select class="sel" id="draw-cat"></select></label>
       <label>Sistema <select class="sel" id="draw-system">
@@ -343,6 +376,7 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
       <button class="btn" id="draw-clear" type="button">Išvalyti rezultatus</button>
     </div>
       <div id="draw-view"></div>
+      <div class="run-list panel" id="run-list"></div>
     </div>
   </section>
 

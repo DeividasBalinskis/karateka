@@ -3,7 +3,7 @@
   // Varžybos gyvai (varzybos-gyvai.php): žiūrovų puslapis ir tatamio ekranas. Duomenys - iš serverio kas 1-3 s,
   // o tame pačiame kompiuteryje atidarytas ekranas gauna kovos skydelio pakeitimus iškart (BroadcastChannel).
   var CFG = window.GYVAI || {}, root = document.getElementById('gyvai');
-  var data = null, offset = 0, local = {}, failed = 0;
+  var data = null, offset = 0, local = {}, failed = 0, lastHtml = '', lastCur = null;
   var MODE = { kumite: 'Kumite', team: 'Komandinis kumite', sumo: 'Sumo', flags: 'Vėliavėlės', score2: 'Kata + Pritaikymas' };
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
   function fmt(ms) { var s = Math.ceil(Math.max(0, ms) / 1000), m = Math.floor(s / 60); s %= 60; return m + ':' + (s < 10 ? '0' : '') + s; }
@@ -65,7 +65,7 @@
       var done = c.total && c.done >= c.total, isCur = c.id === curId;
       return '<li class="' + (isCur ? 'cur' : '') + (done ? ' done' : '') + '"><button type="button" data-cat="' + esc(c.id) + '" data-title="' + esc(c.name) + '"><span class="sg-time">' + esc(c.start) + '</span>' +
         '<span class="sg-name"><span class="disc d-' + esc(c.disc) + '"></span>' + esc(c.name) + (isCur ? ' <span class="sg-now">dabar</span>' : '') + '</span>' +
-        '<span class="sg-prog">' + (done ? '✓' : c.done + '/' + c.total) + '</span></button></li>';
+        '<span class="sg-prog">' + (c.aw === 'done' ? '✓ apdovanota' : c.aw === 'sent' ? '🏅 apdovanojama' : done ? '✓' : c.done + '/' + c.total) + '</span></button></li>';
     }).join('') + '</ol>';
   }
   // Kas kovoja dabar: kovos skydelis (balai, laikrodis) arba, jei jis neatidarytas, pirmoji laukianti kova
@@ -93,10 +93,19 @@
         : '<div class="scr-empty"><div class="scr-title">' + esc(CFG.title) + '</div><p>Šiame tatamyje kovų nebeliko.</p></div>';
     }
     var next = upNext(a).slice(pick ? 0 : 1, (pick ? 0 : 1) + 3);
-    root.innerHTML = '<div class="scr2"><aside class="scr-groups"><div class="scr-area">' + esc(name) + '</div>' + groupsList(a, 'scr-glist') +
+    var html = '<div class="scr2"><aside class="scr-groups"><div class="scr-area">' + esc(name) + '</div>' + groupsList(a, 'scr-glist') +
       (a && a.end ? '<p class="scr-end">Pabaiga apie ' + esc(a.end) + '</p>' : '') + '</aside>' +
       '<section class="scr-stage">' + stage + '<div class="scr-foot"><b>Toliau:</b> ' + (next.map(function (x) { return esc(x.a) + (x.b ? ' – ' + esc(x.b) : '') + ' <span class="muted">(' + esc(x.cat) + ')</span>'; }).join(' · ') || '—') + '</div></section></div>';
-    var cur = root.querySelector('.scr-glist .cur'); if (cur) cur.scrollIntoView({ block: 'center' });
+    if (html === lastHtml) return;   // nieko nepasikeitė - nepiešiama iš naujo (telefone puslapis nešokinėja)
+    lastHtml = html;
+    // Grupių sąrašas slenkamas tik savo viduje (ne visas puslapis) ir tik pasikeitus dabartinei grupei
+    var old = root.querySelector('.scr-glist'), keep = old ? old.scrollTop : 0;
+    root.innerHTML = html;
+    var list = root.querySelector('.scr-glist'), cur = list && list.querySelector('.cur'), curId = cur ? cur.querySelector('[data-cat]').dataset.cat : null;
+    if (!list) return;
+    list.scrollTop = keep;
+    if (cur && curId !== lastCur && list.scrollHeight > list.clientHeight + 4) list.scrollTop = Math.max(0, cur.offsetTop - list.offsetTop - (list.clientHeight - cur.offsetHeight) / 2);
+    lastCur = curId;
   }
 
   // ---------- Žiūrovams (telefone) ----------
@@ -134,6 +143,8 @@
       }).join('') + '</div></section>';
     }
     html += '<p class="hint">Atsinaujina pats. Vaikų ir jaunių iki 18 m. rodomas vardas ir pavardės pirmoji raidė.' + (failed > 2 ? ' <b>Nėra ryšio - bandoma iš naujo…</b>' : '') + '</p>';
+    if (html === lastHtml) return;
+    lastHtml = html;
     root.innerHTML = html;
   }
 
@@ -151,7 +162,7 @@
       if (b.people) html += '<p class="muted small">Lentelė dar nesudaryta. Dalyviai:</p><ul class="gv-people">' + b.people.map(function (p) { return '<li>' + esc(p.n) + ' <span class="muted">' + esc(p.c) + '</span></li>'; }).join('') + '</ul>';
       (b.groups || []).forEach(function (g) {
         html += '<h3>' + esc(g.t) + '</h3>';
-        if (g.score) html += '<ol class="gv-score">' + g.rows.map(function (r) { return '<li><span>' + esc(r.n) + ' <span class="muted">' + esc(r.c) + '</span></span><b>' + esc(r.s || '–') + '</b></li>'; }).join('') + '</ol>';
+        if (g.score) html += '<ol class="gv-score">' + g.rows.map(function (r) { return '<li><span>' + esc(r.n) + ' <span class="muted">' + esc(r.c) + (r.k ? ' · ' + esc(r.k) : '') + '</span></span><b>' + esc(r.s || '–') + '</b></li>'; }).join('') + '</ol>';
         else html += '<div class="gv-matches">' + g.matches.map(function (m) {
           return '<div class="gv-m' + (m.w ? ' done' : '') + '"><span class="gv-mno">' + esc(m.no) + '</span>' +
             '<span class="gv-mp' + (m.w === 'a' ? ' won' : '') + '"><b class="aka-t">' + esc(m.a || '…') + '</b> <small>' + esc(m.ac) + '</small></span>' +

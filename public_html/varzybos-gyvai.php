@@ -28,7 +28,17 @@ if (get('json')) {
         $cats[] = ['id' => (string) ($c['id'] ?? ''), 'name' => $c['name'], 'disc' => $c['discipline'], 'done' => (int) $c['done'], 'total' => (int) $c['total'], 'finished' => !empty($c['finished']),
                    'places' => array_map(function ($p) { return ['place' => (int) $p['place'], 'name' => varz_public_name($p), 'club' => $p['club']]; }, (array) ($c['places'] ?? []))];
     }
-    exit(json_encode(['ok' => true, 'now' => (int) round(microtime(true) * 1000), 'title' => $t['title'], 'areas' => $r['areas'] ?? [],
+    // Apdovanojimų būsenos (apdovanojama / apdovanota) - kad ir dalyviai matytų, kur renginio eiga
+    $aw = tournament_awards((int) $t['id']);
+    $areas = (array) ($r['areas'] ?? []);
+    foreach ($areas as &$a) {
+        foreach ($a['cats'] as &$c) {
+            $c['aw'] = $aw[(string) ($c['id'] ?? '')]['st'] ?? '';
+        }
+        unset($c);
+    }
+    unset($a);
+    exit(json_encode(['ok' => true, 'now' => (int) round(microtime(true) * 1000), 'title' => $t['title'], 'areas' => $areas,
         'live' => (object) tournament_live_get((int) $t['id']), 'medals' => $r['medals'] ?? [], 'cats' => $cats], JSON_UNESCAPED_UNICODE));
 }
 

@@ -36,7 +36,7 @@ test('Taika home, switcher, menu order, live schedule with current category and 
   await now.locator('[data-open-cat]').click();
   check('run panel open', await a.locator('#run').isVisible() && !(await a.locator('#live-board').isVisible()));
   check('run shows category', (await a.textContent('#run-name')).includes(name.slice(0, 8)), name);
-  check('strip marks open category', await a.locator('.rs-chip.on').count() === 1);
+  check('list marks open category', await a.locator('#run-list .rl-row.on').count() === 1);
   const nextLabel = await a.textContent('#run-next');
   if (!(await a.locator('#run-next').isDisabled())) {
     await a.click('#run-next');
