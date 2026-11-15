@@ -60,6 +60,7 @@ require APP_DIR . '/exams.php';
 require APP_DIR . '/exam_protocol.php';
 require APP_DIR . '/xlsx.php';
 require APP_DIR . '/themes.php';
+require APP_DIR . '/tl.php';
 require APP_DIR . '/sms.php';
 require APP_DIR . '/lessons.php';
 require APP_DIR . '/test_data.php';

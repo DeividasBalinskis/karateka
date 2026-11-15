@@ -155,7 +155,7 @@ function varz_html_head(string $title, string $bodyClass = ''): void
         . '<link rel="icon" type="image/png" sizes="32x32" href="' . url('favicon-32.png?v=2') . '">'
         . '<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">'
         . '<link rel="stylesheet" href="' . e(asset_url('assets/varzybos.css')) . '"><link rel="stylesheet" href="' . e(asset_url('assets/widgets.css')) . '">'
-        . '<script src="' . e(asset_url('assets/theme-pick.js')) . '" defer></script></head><body' . theme_body_attrs(varz_ui()['theme'], 'vz ' . $bodyClass) . '>';
+        . '<script src="' . e(asset_url('assets/theme-pick.js')) . '" defer></script>' . tl_script() . '</head><body' . theme_body_attrs(varz_ui()['theme'], 'vz ' . $bodyClass) . '>';
 }
 
 /** Partnerių juosta Taikos puslapių apačioje */

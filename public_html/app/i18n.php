@@ -91,9 +91,9 @@ function i18n_js(): string
 }
 
 /** Kalbos pasirinkimas: visos kalbos matomos iš karto (LT | EN | RU) - grįžti į lietuvių kalbą vienu paspaudimu */
-function render_lang_switch(): string
+function render_lang_switch(?string $cur = null): string
 {
-    $cur = current_lang();
+    $cur = $cur ?? current_lang();
     $back = rawurlencode((string) ($_SERVER['REQUEST_URI'] ?? '/'));
     $html = '<nav class="lang-switch" aria-label="' . e(t('Kalba')) . '">';
     foreach (LANGS as $code => $name) {

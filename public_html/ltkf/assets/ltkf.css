@@ -288,3 +288,7 @@ body { background: linear-gradient(180deg, #F1F3F6 0, #F4F5F2 420px); }
 a.partner-card:hover { box-shadow: var(--shadow-2); transform: translateY(-2px); color: var(--ink); }
 .partner-card:hover img { filter: none; opacity: 1; }
 .site-footer { margin-top: 0; background: linear-gradient(180deg, #0E2A47 0, #0A2038 100%); }
+/* Kalba: LT | EN | RU - visos matomos */
+.lang-sw { display: inline-flex; gap: 2px; padding: 3px; border-radius: 10px; background: rgba(0, 0, 0, .05); margin-left: 6px; }
+.lang-sw a { padding: 5px 8px; border-radius: 8px; font-weight: 700; font-size: .78rem; text-decoration: none; color: inherit; opacity: .7; }
+.lang-sw a.on { background: #fff; opacity: 1; box-shadow: 0 1px 2px rgba(0, 0, 0, .15); }

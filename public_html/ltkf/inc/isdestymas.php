@@ -33,6 +33,31 @@ function logotipas(int $size = 44): string
         . '</svg>';
 }
 
+/** Lankytojo kalba (slapukas „kalba“, LT | EN | RU viršuje) - puslapiai rašomi lietuviškai, EN / RU verčia assets/tl.js */
+function ltkf_kalba(): string
+{
+    $c = (string) ($_COOKIE['kalba'] ?? '');
+    return in_array($c, ['lt', 'en', 'ru'], true) ? $c : 'lt';
+}
+
+function ltkf_vertimas(): string
+{
+    $l = ltkf_kalba();
+    $f = __DIR__ . '/lang/' . $l . '.json';
+    return $l === 'lt' || !is_file($f) ? '' : '<script>window.TL=' . str_replace('</', '<\/', (string) file_get_contents($f)) . ';</script><script src="assets/tl.js?v=1" defer></script>';
+}
+
+function ltkf_kalbos(): string
+{
+    $cur = ltkf_kalba();
+    $b = rawurlencode((string) ($_SERVER['REQUEST_URI'] ?? '/'));
+    $h = '<span class="lang-sw" aria-label="Kalba">';
+    foreach (['lt' => 'Lietuvių', 'en' => 'English', 'ru' => 'Русский'] as $k => $name) {
+        $h .= '<a href="kalba.php?l=' . $k . '&amp;b=' . $b . '" lang="' . $k . '" title="' . $name . '"' . ($k === $cur ? ' class="on" aria-current="true"' : '') . '>' . strtoupper($k) . '</a>';
+    }
+    return $h . '</span>';
+}
+
 function puslapis_pradzia(string $title, string $active = '', array $opt = []): void
 {
     $full = $title === '' ? n('pavadinimas') : $title . ' – ' . n('trumpas');
@@ -48,6 +73,7 @@ function puslapis_pradzia(string $title, string $active = '', array $opt = []): 
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="assets/ltkf.css?v=2">
 <?= $opt['head'] ?? '' ?>
+<?= $lang === 'lt' ? ltkf_vertimas() : '' ?>
 </head>
 <body>
 <style>
@@ -70,7 +96,7 @@ function puslapis_pradzia(string $title, string $active = '', array $opt = []): 
       <?php foreach (MENIU as $key => [$label, $href]): if ($key === 'index') continue; ?>
         <a href="<?= e($href) ?>"<?= $key === $active ? ' aria-current="page"' : '' ?>><?= e($label) ?></a>
       <?php endforeach; ?>
-      <a class="lang" href="en.php"<?= $active === 'en' ? ' aria-current="page"' : '' ?> lang="en">EN</a>
+      <?= ltkf_kalbos() ?>
     </nav>
   </div>
 </header>

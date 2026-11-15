@@ -165,4 +165,5 @@ $pv = function (string $key, int $i): string { return (string) ($_POST[$key][$i]
 </script>
 <?php endif; ?>
 <?php
+echo tl_script();   // Taikos tekstai EN / RU (assets/tl.js)
 page_end();

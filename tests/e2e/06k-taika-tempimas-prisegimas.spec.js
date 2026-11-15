@@ -107,3 +107,24 @@ test('themes: one list for karateka.lt and Taika, picker everywhere it changes t
   sql("DELETE FROM site_settings WHERE name IN ('site_theme', 'taika_ui')");
   noJsErrors(a, g);
 });
+
+test('Taika and LTKF in English and Russian; switch back to Lithuanian in one click', async ({ browser }) => {
+  const a = await login(browser, 'info@karateka.lt', 1300, 900);
+  const tid = await newTest(a);
+  await a.goto(`admin/varzybu-sistema.php?id=${tid}`);
+  await a.click('.vz-top .lang-switch a[lang=en]');
+  await a.waitForTimeout(400);
+  check('Taika tabs in English', /Participants/.test(await a.textContent('#tab-dalyviai')) && /Live schedule/.test(await a.textContent('#tab-live')));
+  await a.click('#tab-live');
+  await a.waitForTimeout(300);
+  check('JS-made texts translated too', !/Visas tvarkaraštis|Paskirstyti tolygiai/.test(await a.textContent('#v-live')));
+  await a.click('.vz-top .lang-switch a[lang=ru]');
+  await a.waitForTimeout(400);
+  check('Taika in Russian', /Участники/.test(await a.textContent('#tab-dalyviai')));
+  await a.goto('ltkf/index.php');
+  check('LTKF follows the choice', /Календарь|Клубы/.test(await a.textContent('.main-nav')));
+  await a.click('.lang-sw a[lang=lt]');
+  check('back to Lithuanian', /Kalendorius/.test(await a.textContent('.main-nav')) && await a.evaluate(() => !window.TL));
+  sql('DELETE FROM tournaments WHERE is_test = 1');
+  noJsErrors(a);
+});

@@ -1,0 +1,463 @@
+(laukiama)	(waiting)	(ожидает)
+(užbaigta)	(finished)	(завершено)
++ Dalyvis	+ Participant	+ Участник
++ Klubas	+ Club	+ Клуб
++ Komanda	+ Team	+ Команда
++ Komandinė kategorija	+ Team category	+ Командная категория
++ Nauja	+ New	+ Новая
++ Naujas	+ New	+ Новый
++ Naujas dalyvis	+ New participant	+ Новый участник
++ Rungtis…	+ Discipline…	+ Дисциплина…
++ Tatamis	+ Tatami	+ Татами
++ kategorija…	+ category…	+ категория…
+- draugui ar kito klubo sekretoriatui	- for a friend or another club's secretariat	- другу или секретариату другого клуба
+-{#} kg	-{#} kg	-{#} кг
+. Tempkite už antraštės, ✕ - atsegti.	. Drag by the title, ✕ - unpin.	. Тяните за заголовок, ✕ - открепить.
+AKA	AKA	АКА
+AKA balai	AKA points	Баллы АКА
+Apdovanojimų nuoroda	Awards link	Ссылка награждения
+Apdovanoti išsiųstas dabar	Award the sent ones now	Наградить отправленные сейчас
+Apdovanoti išsiųstas rungtis nelaukiant kitų	Award the sent categories without waiting for the others	Наградить отправленные категории, не дожидаясь остальных
+Atidaryti	Open	Открыть
+Atidaryti Live tvarkaraštyje: lentelė, kovos, balai	Open in the live schedule: bracket, bouts, scores	Открыть в живом расписании: сетка, бои, баллы
+Atidaryti atskirame lange (pvz. kitame ekrane); tvarkaraštyje ši rungtis bus pilka	Open in a separate window (e.g. another screen); it turns grey in the schedule	Открыть в отдельном окне (например, на другом экране); в расписании станет серой
+Atidaryti ekrano langą šiam tatamiui (antram monitoriui ar televizoriui)	Open the screen for this tatami (second monitor or TV)	Открыть экран этого татами (второй монитор или телевизор)
+Atidaryti lentelę	Open bracket	Открыть сетку
+Atidaryti: lentelė, kovos, balai	Open: bracket, bouts, scores	Открыть: сетка, бои, баллы
+Atkabinti ↗	Detach ↗	Открепить ↗
+Atkurti	Restore	Восстановить
+Atkurti, kaip buvo anksčiau	Restore an earlier state	Восстановить прежнее состояние
+Atmesti aukščiausią ir žemiausią balą	Drop the highest and lowest score	Отбросить высший и низший балл
+Atsakingas asmuo (treneris)	Contact person (coach)	Ответственный (тренер)
+Atsegti	Unpin	Открепить
+Atsiliepimas	Feedback	Отзыв
+Atsisiųsti CSV (Excel)	Download CSV (Excel)	Скачать CSV (Excel)
+Atstatyti rungtį	Reset category	Сбросить категорию
+Atstatyti…	Reset…	Сбросить…
+Atšaukti	Undo	Отменить
+Atšaukti siuntimą	Cancel sending	Отменить отправку
+Aukštyn	Up	Вверх
+Baigta	Finished	Завершено
+Baigta - sekretoriatas dar neišsiuntė	Finished - not sent by the secretariat yet	Завершено - секретариат ещё не отправил
+Baigta {#} / {#}	Finished {#} / {#}	Завершено {#} / {#}
+Baigta {#} iš {#} kategorijų	{#} of {#} categories finished	Завершено {#} из {#} категорий
+Baigtos	Finished	Завершённые
+Baigtos kategorijos	Finished categories	Завершённые категории
+Balai	Scores	Баллы
+Balai (teisėjų vertinimas)	Scores (judges' marks)	Баллы (оценки судей)
+Be kategorijos	No category	Без категории
+Burti iš naujo	Redraw	Новая жеребьёвка
+Būsena	Status	Статус
+DABAR	NOW	СЕЙЧАС
+Dabar	Now	Сейчас
+Dalys	Sections	Разделы
+Dalyv.	Part.	Уч.
+Dalyviai	Participants	Участники
+Dalyviai ({#})	Participants ({#})	Участники ({#})
+Dalyviai →	Participants →	Участники →
+Dalyvis	Participant	Участник
+Dalyvius tempkite: iš dešinės - į kategoriją, iš lentelės - į kitą kategoriją kairėje.	Drag participants: from the right into the category, from the table into another category on the left.	Перетаскивайте участников: справа - в категорию, из таблицы - в другую категорию слева.
+Dar vyksta	Still running	Ещё идёт
+Data	Date	Дата
+Diržas	Belt	Пояс
+Diržas iki	Belt to	Пояс до
+Diržas nuo	Belt from	Пояс от
+Duomenys, rezultatai → taškai, ištrinti	Details, results → points, delete	Данные, результаты → очки, удалить
+Dvi trečios vietos: abu pusfinalių pralaimėtojai - be kovos.	Two third places: both semi-final losers, no bout.	Два третьих места: оба проигравших в полуфиналах, без боя.
+Eil.	No.	№
+El. paštas	Email	Эл. почта
+Enbu	Enbu	Энбу
+Enter - išsaugoti ir naujas · Shift+Enter - nauja eilutė	Enter - save and new · Shift+Enter - new line	Enter - сохранить и новый · Shift+Enter - новая строка
+Finalas	Final	Финал
+Finalas (pusfinalis + finalas)	Final (semi-final + final)	Финал (полуфинал + финал)
+Finalas ({#} geriausi)	Final (best {#})	Финал ({#} лучших)
+Finalas - kumite, pusfinalis - kitei (vėliavėlės), toliau pakaitomis. {#} bronzos.	Final - kumite, semi-final - kitei (flags), alternating further. {#} bronzes.	Финал - кумитэ, полуфинал - китэй (флажки), далее поочерёдно. {#} бронзы.
+Gim.	Born	Род.
+Gim. metai	Birth year	Год рожд.
+Gimimo metai	Birth year	Год рождения
+Gimimo metai, lytis ir diržas paimami iš nario kortelės - juos galima pataisyti lentelėje.	Birth year, gender and belt come from the member card - you can correct them in the table.	Год рождения, пол и пояс берутся из карточки члена - их можно исправить в таблице.
+Gimimo metai: jauniausi - vyriausi	Birth years: youngest - oldest	Годы рождения: младшие - старшие
+Gimę	Born	Рождены
+Gimę iki (jauniausi)	Born up to (youngest)	Рождены до (младшие)
+Gimę nuo	Born from	Рождены с
+Gimę nuo (vyriausi)	Born from (oldest)	Рождены с (старшие)
+Grupė baigta	Group finished	Группа завершена
+Grupė {#} iš {#} · liko {#}	Group {#} of {#} · {#} left	Группа {#} из {#} · осталось {#}
+Grupės (paspauskite - atsidarys)	Groups (tap to open)	Группы (нажмите - откроется)
+Grąžinti - dar nesiųsta	Revert - not sent yet	Вернуть - ещё не отправлено
+Ieškoti	Search	Поиск
+Ieškoti dalyvio	Search participant	Найти участника
+Ieškoti kategorijos ar dalyvio	Search category or participant	Найти категорию или участника
+Ieškoti nario	Search member	Найти члена клуба
+Iki	To	До
+Istorija	History	История
+Iš naujo	Again	Заново
+Iš viso	Total	Всего
+Išbandyti · Taika	Try it · Taika	Попробовать · Taika
+Išimti	Remove	Убрать
+Išsaugota ✓	Saved ✓	Сохранено ✓
+Išsaugoti	Save	Сохранить
+Išsiųsta - galima apdovanoti	Sent - ready to award	Отправлено - можно награждать
+Ištrinti	Delete	Удалить
+Ištrinti kategoriją	Delete category	Удалить категорию
+Ištrinti šį atsiliepimą	Delete this feedback	Удалить этот отзыв
+Išvalyti rezultatus	Clear results	Очистить результаты
+Jaunimas	Youth	Молодёжь
+Jiyu ippon	Jiyu ippon	Дзию иппон
+Jiyu pratęsimas	Jiyu extension	Дзию продление
+Jūsų atsiliepimai	Your feedback	Ваши отзывы
+Kaip prieš {#} min.	As {#} min ago	Как {#} мин назад
+Kaip sudėliota (galima tempti)	As arranged (drag to reorder)	Как расставлено (можно перетаскивать)
+Kaip yra	As is	Как есть
+Kalba	Language	Язык
+Karateka ir LTKF varžybos	Karateka and LTKF competitions	Соревнования Karateka и LTKF
+Karateka nariai	Karateka members	Члены Karateka
+Karateka narys	Karateka member	Член Karateka
+Kas kovoja dabar ir kas ruošiasi	Who fights now and who is next	Кто бьётся сейчас и кто готовится
+Kas negerai arba ką pakeisti? Ctrl+V - įklijuokite ekrano nuotrauką.	What is wrong or what to change? Ctrl+V - paste a screenshot.	Что не так или что изменить? Ctrl+V - вставьте снимок экрана.
+Kategorija	Category	Категория
+Kategorija baigta	Category finished	Категория завершена
+Kategorijos	Categories	Категории
+Kategorijos pavadinimas	Category name	Название категории
+Keisti tvarką: didėjančia / mažėjančia	Change order: ascending / descending	Порядок: по возрастанию / убыванию
+Keičiama…	Saving…	Сохраняется…
+Keliomis vėliavėlėmis laimėjo	Won by how many flags	Сколькими флажками победил
+Kiek teisėjų vertina (bet koks skaičius)	How many judges score (any number)	Сколько судей оценивает (любое число)
+Kitos varžybos	Other competitions	Другие соревнования
+Klubai	Clubs	Клубы
+Klubai paimti iš LTKF sąrašo. Pavadinimą galima pataisyti lentelėje - pasikeis visur.	Clubs come from the LTKF list. Edit a name in the table - it changes everywhere.	Клубы взяты из списка LTKF. Название можно исправить в таблице - изменится везде.
+Klubas	Club	Клуб
+Klubo pavadinimas	Club name	Название клуба
+Klubų medaliai	Club medals	Медали клубов
+Ko-Go	Ko-Go	Ко-Го
+Komandinė	Team	Командная
+Komandos	Teams	Команды
+Komandos ({#})	Teams ({#})	Команды ({#})
+Komandos pavadinimas	Team name	Название команды
+Kopijuoti	Copy	Копировать
+Kopijuoti į	Copy to	Копировать в
+Kova	Bout	Бой
+Kova: balai ir laikrodis, ekranas	Bout: scores, clock, screen	Бой: баллы, часы, экран
+Kovos rezultatas	Bout result	Результат боя
+Kovos rezultatas, pvz. {#} ar vėliavėlės {#}	Bout result, e.g. {#} or flags {#}	Результат боя, напр. {#} или флажки {#}
+Kovos trukmė, min:	Bout length, min:	Длительность боя, мин:
+Kovos: {#} / {#}	Bouts: {#} / {#}	Бои: {#} / {#}
+Kriterijai	Criteria	Критерии
+Kyu	Kyu	Кю
+Kyu nuo - iki	Kyu from - to	Кю от - до
+Laimėjo AKA	AKA won	Победил АКА
+Laimėjo SHIRO	SHIRO won	Победил СИРО
+Laisva vieta	Free slot	Свободное место
+Laisvas ratas	Bye	Свободный круг
+Laukiama	Waiting	Ожидает
+Lentelė	Bracket	Сетка
+Lentelė su linijomis	Bracket with lines	Сетка с линиями
+Lietuvių	Lithuanian	Литовский
+Lietuvos tradicinio karate-do federacija	Lithuanian Traditional Karate-do Federation	Литовская федерация традиционного каратэ-до
+Live tvarkaraštis	Live schedule	Живое расписание
+Lygiosios - nugalėtoją pasirinkite:	Draw - choose the winner:	Ничья - выберите победителя:
+Lytis	Gender	Пол
+Meniu	Menu	Меню
+Meniu: pervadinti, sukeisti vietomis	Menu: rename, reorder	Меню: переименовать, поменять местами
+Metai	Years	Годы
+Nariai	Members	Члены
+Nauja rungtis	New discipline	Новая дисциплина
+Naujas blokas	New block	Новый блок
+Naujo dalyvio klubas	New participant's club	Клуб нового участника
+Naujo dalyvio vardas	New participant's name	Имя нового участника
+Naujo klubo pavadinimas	New club name	Название нового клуба
+Naujos varžybos	New competition	Новые соревнования
+Nepradėta	Not started	Не начато
+Netinkančius dalyvius perkelti į tinkamus blokus	Move mismatched participants to fitting blocks	Перенести неподходящих участников в подходящие блоки
+Nukopijuoti visus blokus į kitą rungtį	Copy all blocks to another discipline	Скопировать все блоки в другую дисциплину
+Numatytasis	Default	По умолчанию
+Nuo balto iki juodo diržo.	From white to black belt.	От белого до чёрного пояса.
+Nuo: Finalas	From: Final	С: Финал
+Nuoroda neveikia	Link does not work	Ссылка не работает
+Nuoroda žiūrovams	Link for spectators	Ссылка для зрителей
+Olimpinė + kova dėl {#} vietos	Olympic + bout for {#} place	Олимпийская + бой за {#} место
+Olimpinė + paguoda	Olympic + repechage	Олимпийская + утешение
+Olimpinė + paguoda ({#} bronzos)	Olympic + repechage ({#} bronzes)	Олимпийская + утешение ({#} бронзы)
+Olimpinė, {#} bronzos	Olympic, {#} bronzes	Олимпийская, {#} бронзы
+Olimpinė, {#} bronzos be kovos	Olympic, {#} bronzes without a bout	Олимпийская, {#} бронзы без боя
+Pabaiga apie	Ends about	Конец около
+Padalinti per pusę	Split in half	Разделить пополам
+Pagal amžių, lytį ir diržą	By age, gender and belt	По возрасту, полу и поясу
+Pagal rungtį ir kriterijus	By discipline and criteria	По дисциплине и критериям
+Pagrindinis puslapis	Home page	Главная страница
+Pakeiskite - rungtis prasidės ne anksčiau	Change it - the category will not start earlier	Измените - категория начнётся не раньше
+Pakeitus sistemą, jau įrašyti kovų rezultatai ar balai dings. Tęsti?	Changing the system removes entered bout results or scores. Continue?	При смене системы введённые результаты или баллы пропадут. Продолжить?
+Palikite komentarą ar ekrano nuotrauką - pataisysime	Leave a comment or screenshot - we will fix it	Оставьте комментарий или снимок экрана - исправим
+Paprastas	Simple	Простой
+Partneriai	Partners	Партнёры
+Pasirodymai: {#} / {#}	Performances: {#} / {#}	Выступления: {#} / {#}
+Paskirstyti tolygiai	Distribute evenly	Распределить равномерно
+Paspauskite ir įrašykite balą	Tap and enter the score	Нажмите и введите балл
+Paspauskite ir įrašykite laiką (pvz. {#})	Tap and enter the time (e.g. {#})	Нажмите и введите время (напр. {#})
+Paspauskite rungtį - atsidarys jos valdymas. Tempkite rungtis tarp tatamių.	Tap a category to manage it. Drag categories between tatamis.	Нажмите категорию - откроется управление. Перетаскивайте категории между татами.
+Pastaba	Note	Заметка
+Patikrinti, ar yra naujų	Check for new ones	Проверить новые
+Pavadinimas	Name	Название
+Pavadinimas (nebūtina)	Name (optional)	Название (необязательно)
+Pavadinimas: Dalyviai	Name: Participants	Название: Участники
+Pavadinimas: Kategorijos	Name: Categories	Название: Категории
+Pavadinimas: Klubai	Name: Clubs	Название: Клубы
+Pavadinimas: Komandos	Name: Teams	Название: Команды
+Pavadinimas: Live tvarkaraštis	Name: Live schedule	Название: Живое расписание
+Pavadinimas: Rezultatai	Name: Results	Название: Результаты
+Pašalinti tatamį	Remove tatami	Удалить татами
+Pažiūrėti: dabartinė {#} TATAMIS grupė	View: current group on TATAMI {#}	Посмотреть: текущая группа на ТАТАМИ {#}
+Pažymėjimo tvarka = kovų tvarka	Order of selection = order of bouts	Порядок отметки = порядок боёв
+Pažymėti visus	Select all	Отметить всех
+Pažymėti visus ({#})	Select all ({#})	Отметить всех ({#})
+Per registracijos nuorodą šis klubas dar nesiregistravo.	This club has not registered via the link yet.	Этот клуб ещё не регистрировался по ссылке.
+Pereiti į kitas varžybas	Go to another competition	Перейти к другим соревнованиям
+Perkelti į	Move to	Перенести в
+Perkelti į {#} TATAMIS	Move to TATAMI {#}	Перенести на ТАТАМИ {#}
+Pervadinti	Rename	Переименовать
+Pradžia	Start	Начало
+Pralaimėję finalininkams kovoja paguodoje, {#} bronzos (WKF).	Those who lost to the finalists fight in repechage, {#} bronzes (WKF).	Проигравшие финалистам бьются в утешении, {#} бронзы (WKF).
+Pridėti nuotraukų (arba Ctrl+V, ar nutempkite čia)	Add images (or Ctrl+V, or drag here)	Добавить фото (или Ctrl+V, или перетащите сюда)
+Pridėti pažymėtus	Add selected	Добавить отмеченных
+Pridėti į kategoriją	Add to category	Добавить в категорию
+Prie kurio tatamio dirbate?	Which tatami are you working at?	За каким татами вы работаете?
+Prisegti langelį ekrane (ar nutempkite kortelę už tatamių)	Pin a box on screen (or drag the card outside the tatamis)	Закрепить окошко на экране (или перетащите карточку за пределы татами)
+Prisegti mažą langelį ekrane - matysite ir kituose skirtukuose	Pin a small box on screen - visible on other tabs too	Закрепить окошко на экране - видно и в других вкладках
+Prizininkai	Medallists	Призёры
+Prizininkai pagal kategorijas	Medallists by category	Призёры по категориям
+Prizininkų dar nėra	No medallists yet	Призёров ещё нет
+Pusfinalis	Semi-final	Полуфинал
+Pusfinalis ({#} ratas)	Semi-final (round {#})	Полуфинал ({#} круг)
+Puslapiai	Pages	Страницы
+Ratai	Rounds	Круги
+Ratų sistema	Round robin	Круговая система
+Ratų sistema (visi su visais)	Round robin (everyone vs everyone)	Круговая система (все со всеми)
+Redaguoti: sistema, kova, dalyviai	Edit: system, bout, participants	Редактировать: система, бой, участники
+Registracija	Registration	Регистрация
+Registracija atidaryta	Registration open	Регистрация открыта
+Registracija klubams	Registration for clubs	Регистрация для клубов
+Registracijos nuoroda	Registration link	Ссылка регистрации
+Rezultatai	Results	Результаты
+Rezultatai viešai (LTKF, karateka.lt)	Results public (LTKF, karateka.lt)	Результаты публично (LTKF, karateka.lt)
+Rezultatai · Taika	Results · Taika	Результаты · Taika
+Rikiuoti	Sort	Сортировать
+Rodomas tatamis	Tatami shown	Показан татами
+Rodyti dalyvius	Show participants	Показать участников
+Rodyti nariams Renginiuose (sukurti renginį)	Show to members in Events (create an event)	Показать членам в Событиях (создать событие)
+Rungtis	Discipline	Дисциплина
+Ruošiamos	In preparation	Готовятся
+SHIRO	SHIRO	СИРО
+SHIRO balai	SHIRO points	Баллы СИРО
+Sistema	System	Система
+Siųsti apdovanojimams	Send to awards	Отправить на награждение
+Spausdinti	Print	Печать
+Suaugusieji	Adults	Взрослые
+Sujungti su	Merge with	Объединить с
+Sujungti su…	Merge with…	Объединить с…
+Sukurti bandymo nuorodą	Create a test link	Создать ссылку для пробы
+Sukurti ir pridėti dalyvius →	Create and add participants →	Создать и добавить участников →
+Sumo	Sumo	Сумо
+Suskleisti	Collapse	Свернуть
+Svetainės versija (rodoma tik testuojant)	Site version (shown only when testing)	Версия сайта (видна только при тестировании)
+Svoris	Weight	Вес
+TEST	TEST	ТЕСТ
+Taikos tema (visoms varžyboms)	Taika theme (all competitions)	Тема Taika (для всех соревнований)
+Tatamio pavadinimas	Tatami name	Название татами
+Tatamis	Tatami	Татами
+Taškai	Points	Очки
+Teisėjai	Judges	Судьи
+Teisėjai vertina balais, kraštiniai atmetami (matosi perbraukti). Enbu, kata.	Judges give scores, extremes dropped (shown crossed out). Enbu, kata.	Судьи ставят баллы, крайние отбрасываются (видны зачёркнутыми). Энбу, ката.
+Teisėjas {#}	Judge {#}	Судья {#}
+Telefonas	Phone	Телефон
+Tema	Theme	Тема
+Tempkite - keisti eilę	Drag to change the order	Тяните - изменить порядок
+Tempkite - perkelti	Drag to move	Тяните - переместить
+Tempkite ant kito dalyvio - apsikeis vietomis	Drag onto another participant to swap places	Перетащите на другого участника - поменяются местами
+Tempkite vardą ant kito - apsikeis vietomis	Drag a name onto another to swap places	Перетащите имя на другое - поменяются местами
+Test varžybų rezultatai į narių taškus neperkeliami.	Test competition results are not moved to member points.	Результаты тестовых соревнований не переносятся в очки членов.
+Tik baigtos kategorijos	Finished categories only	Только завершённые категории
+Tik be kategorijos	Only without a category	Только без категории
+Tik su problemomis	Only with problems	Только с проблемами
+Tik test varžybose	Test competitions only	Только в тестовых соревнованиях
+Tikros varžybos ir nariai nepaliečiami.	Real competitions and members are not touched.	Настоящие соревнования и члены не затрагиваются.
+Toliau	Next	Далее
+Toliau →	Next →	Далее →
+Toliau:	Next:	Далее:
+Transliacija ir registracija	Broadcast and registration	Трансляция и регистрация
+Transliacija, ekranai, apdovanojimai, registracija	Broadcast, screens, awards, registration	Трансляция, экраны, награждение, регистрация
+Užbaigta	Finished	Завершено
+Uždaryti	Close	Закрыть
+Užrakinti	Lock	Заблокировать
+Užsiregistravę per nuorodą	Registered via the link	Зарегистрировавшиеся по ссылке
+Vaizdas	View	Вид
+Valdyti →	Manage →	Управлять →
+Vardas	Name	Имя
+Vardas ar el. paštas (nebūtina)	Name or email (optional)	Имя или эл. почта (необязательно)
+Vardas, pavardė	Name, surname	Имя, фамилия
+Varžybos	Competitions	Соревнования
+Varžybos · Taika	Competitions · Taika	Соревнования · Taika
+Varžybų rezultatai	Competition results	Результаты соревнований
+Varžybų sistemos bandymas	Competition system trial	Проба системы соревнований
+Veiksmai	Actions	Действия
+Vidurkis (ne suma)	Average (not sum)	Среднее (не сумма)
+Vidurkis*	Average*	Среднее*
+Viena trečia vieta: pusfinalių pralaimėtojai kovoja dėl bronzos.	One third place: semi-final losers fight for bronze.	Одно третье место: проигравшие полуфиналы бьются за бронзу.
+Vieta	Place	Место
+Vietos	Places	Места
+Viešas puslapis	Public page	Публичная страница
+Viešas rezultatų puslapis	Public results page	Публичная страница результатов
+Visi	All	Все
+Visi ({#})	All ({#})	Все ({#})
+Visi klubai	All clubs	Все клубы
+Visi klubai (mišri komanda)	All clubs (mixed team)	Все клубы (смешанная команда)
+Visi su visais. Kovoje - kiek vėliavėlių prieš kiek (ar kumite balai).	Everyone vs everyone. In a bout - flags against flags (or kumite points).	Все со всеми. В бою - сколько флажков против скольких (или баллы кумитэ).
+Visi tatamiai (vyr. sekretoriatas)	All tatamis (chief secretariat)	Все татами (главный секретариат)
+Visos varžybos	All competitions	Все соревнования
+Visos varžybos vienoje vietoje: klubai, komandos, dalyviai, kategorijos, live tvarkaraštis ir rezultatai.	All competitions in one place: clubs, teams, participants, categories, live schedule and results.	Все соревнования в одном месте: клубы, команды, участники, категории, живое расписание и результаты.
+Visą rungtį (visi rezultatai)	Whole category (all results)	Всю категорию (все результаты)
+Visų klubų kontaktai - Excel failas	All clubs' contacts - Excel file	Контакты всех клубов - файл Excel
+Vyksta	Running	Идёт
+Vyksta ir artimiausios	Running and upcoming	Идут и ближайшие
+Vėliavėlės	Flags	Флажки
+apdovanota	awarded	награждено
+baigtos	finished	завершены
+balai	points	баллы
+dabar	now	сейчас
+dalyviai	participants	участники
+dar vyksta	still running	ещё идёт
+galima apdovanoti	ready to award	можно награждать
+gyvai	live	в прямом эфире
+iki	to	до
+kategorijos	categories	категории
+klubai	clubs	клубы
+klubai su medaliais	clubs with medals	клубы с медалями
+komandos	teams	команды
+ką tik	just now	только что
+liko {#} iš {#} · pabaiga apie {#}	{#} of {#} left · ends about {#}	осталось {#} из {#} · конец около {#}
+metai	years	годы
+nebūtina	optional	необязательно
+pabaiga apie {#}	ends about {#}	конец около {#}
+prieš	vs	против
+prieš {#} min.	{#} min ago	{#} мин назад
+prieš {#} val.	{#} h ago	{#} ч назад
+pvz. Vilnius, Sporto centras Viršuliškės	e.g. Vilnius, Viršuliškės sports centre	напр. Вильнюс, спортивный центр Виршулишкес
+tempkite vardą ant kito	drag a name onto another	перетащите имя на другое
+tempkite ↔	drag ↔	тяните ↔
+tempti	drag	перетаскивать
+toliau	next	далее
+{#} (finalas)	{#} (final)	{#} (финал)
+{#} TATAMIS	TATAMI {#}	ТАТАМИ {#}
+{#} TATAMIS - visos grupės	TATAMI {#} - all groups	ТАТАМИ {#} - все группы
+{#} dalyv.	{#} part.	{#} уч.
+{#} dan	{#} dan	{#} дан
+{#} kat. · {#} dal.	{#} cat. · {#} part.	{#} кат. · {#} уч.
+{#} kat., baigta {#}	{#} cat., {#} finished	{#} кат., завершено {#}
+{#} kyu	{#} kyu	{#} кю
+{#} m. ir jaun.	{#} and younger	{#} и младше
+{#} m. ir vyr.	{#} and older	{#} и старше
+{#} trečia	{#} third	{#} третье
+{#} trečios	{#} thirds	{#} третьих
+{#} · Finalas	{#} · Final	{#} · Финал
+{#} · Pusfinalis	{#} · Semi-final	{#} · Полуфинал
+{#} · Pusfinalis · Kitei	{#} · Semi-final · Kitei	{#} · Полуфинал · Китэй
+~{#} min	~{#} min	~{#} мин
+Į finalą	To the final	В финал
+Įrašai	Entries	Записи
+Šiame kompiuteryje (planšetėje) rodomas tik pasirinktas tatamis	Only the chosen tatami is shown on this computer (tablet)	На этом компьютере (планшете) показан только выбранный татами
+Šiame kompiuteryje bus rodomas tik jis. Kitą pažiūrėti - viršuje, vienu paspaudimu.	Only it will be shown on this computer. View another one at the top, with one tap.	На этом компьютере будет показан только он. Другой - вверху, одним нажатием.
+Šis tatamis	This tatami	Этот татами
+Žemyn	Down	Вниз
+← Ankstesnė	← Previous	← Предыдущая
+← Visas tvarkaraštis	← Whole schedule	← Всё расписание
+← atidaryta	← open	← открыта
+↻ Atnaujinti	↻ Refresh	↻ Обновить
+↻ Pagal kriterijus	↻ By criteria	↻ По критериям
+⇄ Keisti vietas	⇄ Swap places	⇄ Поменять места
+▦ Struktūra	▦ Structure	▦ Структура
+▶ Pradėti	▶ Start	▶ Старт
+☀️ Šviesi	☀️ Light	☀️ Светлая
+☎ Kontaktai	☎ Contacts	☎ Контакты
+☰ Visos varžybos	☰ All competitions	☰ Все соревнования
+⚙ Meniu	⚙ Menu	⚙ Меню
+⚙ Tatamiai ir kovų trukmė	⚙ Tatamis and bout length	⚙ Татами и длительность боёв
+⚡ Automatiškai	⚡ Automatically	⚡ Автоматически
+⚡ Sudaryti automatiškai	⚡ Build automatically	⚡ Составить автоматически
+✎ Viena kategorija	✎ One category	✎ Одна категория
+✓ Baigti keitimą	✓ Finish swapping	✓ Закончить замену
+✓ Baigti kovą	✓ Finish bout	✓ Завершить бой
+✕ Uždaryti	✕ Close	✕ Закрыть
+❄️ Žiema	❄️ Winter	❄️ Зима
+⟲ Atkurti, kaip buvo anksčiau	⟲ Restore an earlier state	⟲ Восстановить прежнее
+🌊 Jūra	🌊 Sea	🌊 Море
+🌋 Vulkanas	🌋 Volcano	🌋 Вулкан
+🌙 Tamsi	🌙 Dark	🌙 Тёмная
+🌸 Sakura	🌸 Sakura	🌸 Сакура
+🌿 Gamta	🌿 Nature	🌿 Природа
+🍂 Ruduo	🍂 Autumn	🍂 Осень
+🎲 Sukurti test varžybas	🎲 Create test competition	🎲 Создать тестовые соревнования
+🎲 Sužaisti kategoriją	🎲 Play the category	🎲 Сыграть категорию
+🎲 Užbaigti visas kovas	🎲 Finish all bouts	🎲 Завершить все бои
+🏅 Apdovanojimai	🏅 Awards	🏅 Награждение
+🏅 Apdovanojimų planšetė	🏅 Awards tablet	🏅 Планшет награждения
+🏅 Siųsti	🏅 Send	🏅 Отправить
+🏅 Siųsti apdovanojimams	🏅 Send to awards	🏅 Отправить на награждение
+🏅 Užbaigta · apdovanojama	🏅 Finished · being awarded	🏅 Завершено · награждается
+🏅 apdovanojama	🏅 being awarded	🏅 награждается
+🏔️ Kalnai	🏔️ Mountains	🏔️ Горы
+👀 Duoti išbandyti (be paskyros)	👀 Let someone try it (no account)	👀 Дать попробовать (без учётной записи)
+💡 Atsiliepimas	💡 Feedback	💡 Отзыв
+📌 Prisegta:	📌 Pinned:	📌 Закреплено:
+📌 Prisegti	📌 Pin	📌 Закрепить
+📎 Nuotraukos	📎 Images	📎 Фото
+📝 Registracija klubams	📝 Registration for clubs	📝 Регистрация для клубов
+📺 Ekranai salėje	📺 Screens in the hall	📺 Экраны в зале
+📺 Ekranas	📺 Screen	📺 Экран
+📺 {#} TATAMIS	📺 TATAMI {#}	📺 ТАТАМИ {#}
+🔗 Nuoroda žiūrovams	🔗 Link for spectators	🔗 Ссылка для зрителей
+🗑 Ištrinti visas test varžybas	🗑 Delete all test competitions	🗑 Удалить все тестовые соревнования
+🪐 Kosmosas	🪐 Space	🪐 Космос
+Apdovanojimai	Awards	Награждение
+Užbaigta ir apdovanota	Finished and awarded	Завершено и награждено
+Užbaigta · apdovanojama	Finished · being awarded	Завершено · награждается
+Galima apdovanoti	Ready to award	Можно награждать
+✓ Apdovanota - užbaigti	✓ Awarded - finish	✓ Награждено - завершить
+↺ Grąžinti	↺ Revert	↺ Вернуть
+Apdovanota	Awarded	Награждено
+Apdovanota ✓	Awarded ✓	Награждено ✓
+Sekanti grupė:	Next group:	Следующая группа:
+Šio tatamio grupių daugiau nėra.	No more groups on this tatami.	На этом татами групп больше нет.
+Amžiaus grupė	Age group	Возрастная группа
+Mano tatamis	My tatami	Мой татами
+Visos grupės ↓	All groups ↓	Все группы ↓
+Grupė	Group	Группа
+Laimėjo	Won	Победил
+Kova	Bout	Бой
+Kumite	Kumite	Кумитэ
+Kata	Kata	Ката
+Kihon	Kihon	Кихон
+Fukugo	Fukugo	Фукуго
+Kitei	Kitei	Китэй
+Mix	Mix	Смеш.
+Pervadinkite skirtukus ir sukeiskite juos vietomis (↑ ↓). Galioja visoms varžyboms.	Rename the tabs and reorder them (↑ ↓). Applies to all competitions.	Переименуйте вкладки и поменяйте их местами (↑ ↓). Действует для всех соревнований.
+Kopija serveryje daroma kas minutę, kai kas nors keičiama. Atkūrus - dabartinė būsena irgi išsaugoma, tad atkūrimą galima atšaukti. Vienos rungties klaidą paprasčiau taisyti rungties valdyme: „Atšaukti“ ar „Atstatyti…“.	A copy is saved on the server every minute while something changes. When restoring, the current state is saved too, so a restore can be undone. A mistake in one category is easier to fix in its control: “Undo” or “Reset…”.	Копия на сервере сохраняется каждую минуту, когда что-то меняется. При восстановлении текущее состояние тоже сохраняется, поэтому восстановление можно отменить. Ошибку в одной категории проще исправить в её управлении: «Отменить» или «Сбросить…».
+Atidarykite tatamio ekraną antrame monitoriuje ar televizoriuje (naršyklėje, F11 - visas ekranas). Rodoma kova, balai, laikrodis ir kas eina toliau.	Open the tatami screen on a second monitor or TV (in the browser, F11 - full screen). It shows the bout, scores, clock and who is next.	Откройте экран татами на втором мониторе или телевизоре (в браузере, F11 - полный экран). Показывается бой, баллы, часы и кто следующий.
+Atidarykite planšetėje prie apdovanojimų. Amžiaus grupė užsidega žaliai, kai visos jos rungtys (ir kata, ir kumite) baigtos ir išsiųstos. Apdovanojęs žmogus paspaudžia „Užbaigti“. Nuoroda slapta - duokite tik apdovanojimus vedančiam.	Open it on a tablet at the awards. An age group turns green when all its categories (both kata and kumite) are finished and sent. After awarding, the person taps “Finish”. The link is secret - give it only to the person running the awards.	Откройте на планшете у награждения. Возрастная группа становится зелёной, когда все её категории (и ката, и кумитэ) завершены и отправлены. Наградив, человек нажимает «Завершить». Ссылка секретная - дайте её только ведущему награждение.
+Tėvai ir kiti klubai telefone mato, kas vyksta ant kiekvieno tatamio, kas eina toliau ir rezultatus.	Parents and other clubs see on their phones what is happening on each tatami, who is next and the results.	Родители и другие клубы видят на телефоне, что происходит на каждом татами, кто следующий и результаты.
+Kitų klubų treneriai ir Karatekos tėvai užpildo: klubas, vardas, pavardė, gimimo metai, lytis, diržas, telefonas. Jūs matote juos skirtuke „Dalyviai“ ir pridedate vienu mygtuku.	Coaches of other clubs and Karateka parents fill in: club, name, surname, birth year, gender, belt, phone. You see them in the “Participants” tab and add them with one button.	Тренеры других клубов и родители Karateka заполняют: клуб, имя, фамилию, год рождения, пол, пояс, телефон. Вы видите их во вкладке «Участники» и добавляете одной кнопкой.
+Kitas žmogus ką tik pakeitė šias varžybas. Kad neperrašytumėte jo pakeitimų,	Someone else has just changed this competition. To avoid overwriting their changes,	Другой человек только что изменил эти соревнования. Чтобы не перезаписать его изменения,
+perkraukite puslapį	reload the page	перезагрузите страницу
+Kategorijų įrašai	Category entries	Записи в категориях
+Metus, lytį ir kyu keiskite tiesiai bloke - pavadinimas atsinaujins pats. Tempkite ⋮⋮ - blokas persikels (ir į kitą rungtį). Paspaudus dalyvių skaičių matosi dalyviai - juos irgi galima tempti į kitą bloką (su Ctrl - nukopijuoti). „⟳“ - perkelia netinkančius į tinkamus blokus.	Change years, gender and kyu right in the block - the name updates itself. Drag ⋮⋮ to move a block (also to another discipline). Tap the participant count to see participants - you can drag them to another block too (with Ctrl - copy). “⟳” moves mismatched ones to fitting blocks.	Годы, пол и кю меняйте прямо в блоке - название обновится само. Тяните ⋮⋮ - блок переместится (и в другую дисциплину). Нажав на число участников, увидите их - их тоже можно перетаскивать в другой блок (с Ctrl - копировать). «⟳» переносит неподходящих в подходящие блоки.
+Tinka šiai	Fits this one	Подходит сюда
+Laikai persiskaičiuoja patys pagal kovų skaičių ir trukmę. Varžybų dieną matosi, ar tatamis vėluoja.	Times recalculate by the number and length of bouts. On competition day you see whether a tatami is running late.	Время пересчитывается само по числу и длительности боёв. В день соревнований видно, опаздывает ли татами.
+Taškai klubui: 1 vieta - 3, 2 vieta - 2, 3 vieta - 1. Rezultatai matomi viešame puslapyje ir LTKF svetainėje.	Club points: 1st place - 3, 2nd - 2, 3rd - 1. Results are visible on the public page and the LTKF website.	Очки клубу: 1 место - 3, 2 место - 2, 3 место - 1. Результаты видны на публичной странице и на сайте LTKF.
+Naujų nėra. Registracijos nuorodą rasite „📡 Transliacija ir registracija“.	Nothing new. The registration link is under “📡 Broadcast and registration”.	Новых нет. Ссылку регистрации найдёте в «📡 Трансляция и регистрация».
+{#} kategorijų · {#} įrašų	{#} categories · {#} entries	{#} категорий · {#} записей
+Spauskite dalyvio vardą kovoje – jis laimi (dar kartą – atšaukiama). Balus įrašykite kovos viršuje. Kol kovų nebuvo, dalyvius pirmame rate galima	Tap a participant's name in a bout - they win (tap again to undo). Enter scores at the top of the bout. Before any bouts, participants in the first round can be	Нажмите имя участника в бою - он побеждает (ещё раз - отмена). Баллы вводите вверху боя. Пока боёв не было, участников в первом круге можно
+- apsikeis vietomis. Raudonas – aka, baltas – shiro.	- they swap places. Red – aka, white – shiro.	- поменяются местами. Красный – ака, белый – сиро.
+tempti	dragged	перетаскивать
++ Karateka nariai	+ Karateka members	+ Члены Karateka
+Fukugo (kumite ir kitei pakaitomis)	Fukugo (kumite and kitei alternating)	Фукуго (кумитэ и китэй поочерёдно)
+vėliavėlės	flags	флажки
+{#} TATAMIS · {#} · {#} dalyv. · kovos {#} / {#}	TATAMI {#} · {#} · {#} part. · bouts {#} / {#}	ТАТАМИ {#} · {#} · {#} уч. · бои {#} / {#}
+{#} TATAMIS · {#}	TATAMI {#} · {#}	ТАТАМИ {#} · {#}

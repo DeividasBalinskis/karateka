@@ -57,6 +57,7 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="<?= e(asset_url('assets/varzybos.css')) ?>">
+<?= $screen ? '' : tl_script() ?>
 </head>
 <body<?= $screen ? ' class="vz scr"' : theme_body_attrs(varz_ui()['theme'], 'vz vz-public gyvai') ?>>
 <?php if (!$screen): ?>
@@ -67,6 +68,7 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
       <h1><?= e($t['title']) ?></h1>
       <div class="sub"><?= e($dates) ?><?= $t['location'] ? ' · ' . e($t['location']) : '' ?> · <span class="live-dot" aria-hidden="true"></span> gyvai</div>
     </div>
+    <div class="vz-top-right"><?= render_lang_switch(tl_lang()) ?></div>
   </div>
 </header>
 <?php endif; ?>

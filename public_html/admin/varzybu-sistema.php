@@ -175,6 +175,7 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="<?= e(asset_url('assets/varzybos.css')) ?>">
 <link rel="stylesheet" href="<?= e(asset_url('assets/widgets.css')) ?>">
+<?= tl_script() ?>
 </head>
 <body<?= theme_body_attrs(varz_ui()['theme'], 'vz' . (get('langas') ? ' vz-popup' : '')) ?>>
 <header class="vz-top">
@@ -192,6 +193,7 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
       <div class="sub"><?= e($dates) ?><?= $t['location'] ? ' · ' . e($t['location']) : '' ?><?= $t['is_test'] ? ' <span class="vz-test">TEST</span>' : '' ?></div>
     </div>
     <div class="vz-top-right">
+      <?= render_lang_switch(tl_lang()) ?>
       <span class="save-state ok" id="save-state" role="status">Išsaugota ✓</span>
       <?= theme_picker_html('taika', varz_ui()['theme'], 'vz-link') ?>
       <button type="button" class="vz-link" id="hist-toggle" aria-expanded="false" title="Atkurti, kaip buvo anksčiau">⟲<span class="hide-sm"> Istorija</span></button>

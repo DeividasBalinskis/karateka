@@ -32,6 +32,7 @@ $medal = function (int $p): string { return '<span class="medal ' . ['', 'g', 's
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="<?= e(asset_url('assets/varzybos.css')) ?>">
 <link rel="stylesheet" href="<?= e(asset_url('assets/widgets.css')) ?>">
+<?= tl_script() ?>
 </head>
 <body<?= theme_body_attrs(varz_ui()['theme'], 'vz vz-public') ?>>
 <header class="vz-top">
@@ -42,7 +43,7 @@ $medal = function (int $p): string { return '<span class="medal ' . ['', 'g', 's
       <div class="sub"><?php if ($visible): ?><?= e(fmt_date($t['starts_on'], true)) ?><?= $t['ends_on'] ? ' – ' . e(fmt_date($t['ends_on'], true)) : '' ?><?= $t['location'] ? ' · ' . e($t['location']) : '' ?>
         <?= $t['is_test'] ? ' <span class="vz-test">TEST</span>' : '' ?><?php else: ?><?= te('Karateka ir LTKF varžybos') ?><?php endif; ?></div>
     </div>
-    <div class="vz-top-right"><a class="vz-link" href="<?= url('index.php') ?>">karateka.lt</a></div>
+    <div class="vz-top-right"><?= render_lang_switch(tl_lang()) ?><a class="vz-link" href="<?= url('index.php') ?>">karateka.lt</a></div>
   </div>
 </header>
 <main class="pub">

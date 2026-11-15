@@ -49,6 +49,7 @@ varz_html_head('Apdovanojimai · ' . $t['title'], 'vz-public apd');
       <h1>🏅 Apdovanojimai</h1>
       <div class="sub"><?= e($t['title']) ?> · <?= e(fmt_date($t['starts_on'], true)) ?></div>
     </div>
+  <div class="vz-top-right"><?= render_lang_switch(tl_lang()) ?></div>
   </div>
 </header>
 <main id="apd" aria-live="polite"><p class="muted">Kraunama…</p></main>
