@@ -32,6 +32,7 @@ Remove-Item -Recurse -Force -ErrorAction SilentlyContinue (Join-Path $stage 'upl
 Remove-Item -Recurse -Force -ErrorAction SilentlyContinue (Join-Path $stage 'uploads\lessons') # pamokų nuotraukos - irgi
 Remove-Item -Recurse -Force -ErrorAction SilentlyContinue (Join-Path $stage 'uploads\site')    # pagrindinio puslapio nuotraukos - irgi
 Remove-Item -Recurse -Force -ErrorAction SilentlyContinue (Join-Path $stage 'uploads\events')  # renginių priedai (reglamentai) - irgi
+Remove-Item -Recurse -Force -ErrorAction SilentlyContinue (Join-Path $stage 'uploads\feedback') # atsiliepimų nuotraukos - irgi
 Remove-Item -Recurse -Force -ErrorAction SilentlyContinue (Join-Path $stage 'uploads\kopijos') # kompiuterio DB kopijos niekada nekeliamos (serveris daro savas)
 
 # DB atnaujinimas vienu mygtuku (Nustatymai -> Atsarginės kopijos ir sistema): db failai keliauja kartu, į app\db (iš interneto nepasiekiami)
