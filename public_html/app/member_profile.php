@@ -85,6 +85,10 @@ function member_profile_html(int $memberId): string
         . '<a class="btn btn-primary btn-sm" href="' . e(url('admin/nariai.php?id=' . $memberId)) . '">Visa kortelė →</a>'
         . '<button type="button" class="btn btn-ghost btn-sm" data-open-chat data-member="' . $memberId . '">💬 Pokalbis</button>'
         . ($m['gid'] ? '<a class="btn btn-ghost btn-sm" href="' . e(url('admin/treniruote.php?g=' . (int) $m['gid'])) . '">Lankomumas</a>' : '')
+        // Adminui - ištrinti iš karto (tas pats veiksmas kaip kortelės apačioje „Ištrinti narį“)
+        . (is_admin() ? '<form method="post" action="' . e(url('admin/nariai.php?id=' . $memberId)) . '" class="mp-del" onsubmit="return confirm(this.dataset.q)" data-q="'
+            . e(t('Ištrinti') . ' ' . $m['first_name'] . ' ' . $m['last_name'] . ' ' . t('visam laikui? Kartu dingsta lankomumas, taškai, pastabos ir žinutės. Jei narys tik nebetreniruoja - geriau pažymėti „Neaktyvus“.')) . '">'
+            . csrf_field() . '<input type="hidden" name="id" value="' . $memberId . '"><button class="btn btn-danger btn-sm" name="action" value="delete_member">🗑 ' . te('Ištrinti') . '</button></form>' : '')
         . '</div></div>';
     return $html;
 }

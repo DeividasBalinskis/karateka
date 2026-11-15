@@ -133,8 +133,15 @@ function varz_ui_save(array $in): array
         $ui['theme'] = $in['theme'];
     }
     if (isset($in['menu']) && is_array($in['menu'])) {
-        $tabs = ['klubai', 'komandos', 'dalyviai', 'kategorijos', 'live', 'rezultatai'];
-        $order = array_values(array_intersect((array) ($in['menu']['order'] ?? []), $tabs));
+        $tabs = ['klubai', 'komandos', 'dalyviai', 'kategorijos', 'tinklai', 'live', 'rezultatai'];
+        $order = array_values(array_unique(array_intersect((array) ($in['menu']['order'] ?? []), $tabs)));
+        // Nauji skirtukai (pvz. „Tinklai“ nuo v1.29) įterpiami po savo numatyto kaimyno, kad sena tvarka neprapultų
+        foreach ($tabs as $i => $tab) {
+            if ($order && !in_array($tab, $order, true)) {
+                $prev = $i > 0 ? array_search($tabs[$i - 1], $order, true) : -1;
+                array_splice($order, $prev === false ? count($order) : $prev + 1, 0, [$tab]);
+            }
+        }
         $names = [];
         foreach ((array) ($in['menu']['names'] ?? []) as $k => $v) {
             if (in_array($k, $tabs, true) && trim((string) $v) !== '') {
@@ -142,6 +149,16 @@ function varz_ui_save(array $in): array
             }
         }
         $ui['menu'] = ['order' => count($order) === count($tabs) ? $order : [], 'names' => $names];
+    }
+    // Amžiaus kategorijų šablonas (Kategorijos → „📋 Šablonas“): blokai pagal amžių, ne metus - tinka ir kitais metais
+    if (isset($in['tpl']) && is_array($in['tpl'])) {
+        $age = function ($v) { return $v === null || $v === '' ? null : max(0, min(99, (int) $v)); };
+        $kyu = function ($v) { return $v === null || $v === '' ? null : max(-10, min(20, (int) $v)); };
+        $ui['tpl'] = array_values(array_map(function ($b) use ($age, $kyu) {
+            $b = (array) $b;
+            return ['a0' => $age($b['a0'] ?? null), 'a1' => $age($b['a1'] ?? null), 'g' => in_array($b['g'] ?? '', ['M', 'F'], true) ? $b['g'] : '',
+                    'b0' => $kyu($b['b0'] ?? null), 'b1' => $kyu($b['b1'] ?? null)];
+        }, array_slice($in['tpl'], 0, 80)));
     }
     set_site_setting('taika_ui', json_encode($ui, JSON_UNESCAPED_UNICODE));
     return $ui;

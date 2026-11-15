@@ -1812,6 +1812,7 @@ Nuo 2013 m. treniravosi Tradicinio karate-do klubo „Sanrei“ komandoje, o 201
     'Sukurti ir pridėti dalyvius →' => 'Создать и добавить участников →',
     'Išorinė varžybų sistema (registracija per karateka.lt) →' => 'Внешняя система соревнований (регистрация через karateka.lt) →',
     'Rodyti pranešimus' => 'Показать уведомления',
+    'visam laikui? Kartu dingsta lankomumas, taškai, pastabos ir žinutės. Jei narys tik nebetreniruoja - geriau pažymėti „Neaktyvus“.' => 'навсегда? Вместе удаляются посещаемость, баллы, заметки и сообщения. Если участник просто перестал тренироваться - лучше отметить „Неактивный“.',
     'Išorinė varžybų sistema' => 'Внешняя система соревнований',
     '- registracija per karateka.lt' => '- регистрация через karateka.lt',
     'Varžybų rezultatai (viešai)' => 'Результаты соревнований (публично)',

@@ -488,3 +488,66 @@ Baigta · išsiųsta apdovanojimams	Finished · sent to awards	Завершен�
 Baigta ir apdovanota	Finished and awarded	Завершено и награждено
 Pašalinti šį tatamį (jo rungtys pereis į kitus)	Remove this tatami (its events move to others)	Удалить этот татами (его дисциплины перейдут на другие)
 Šiame kompiuteryje bus rodomas tik jis, kitą - vienu paspaudimu viršuje.	Only it will be shown on this computer; switch with one tap at the top.	На этом компьютере будет показан только он, другой - одним нажатием вверху.
+Jauniausi gimę	Youngest born	Младшие рождены
+Vyriausi gimę	Oldest born	Старшие рождены
+Be ribos (ir jaunesni) - paspauskite ir įrašykite metus	No limit (and younger) - click and enter a year	Без ограничения (и младше) - нажмите и введите год
+Be ribos (ir vyresni) - paspauskite ir įrašykite metus	No limit (and older) - click and enter a year	Без ограничения (и старше) - нажмите и введите год
+← Grįžti į kategorijas	← Back to categories	← Назад к категориям
+Atgal į visų kategorijų struktūrą (ten, kur buvote)	Back to the structure of all categories (where you were)	Назад к структуре всех категорий (туда, где были)
+Atidaryti kategoriją: sistema, kova, dalyviai	Open category: system, bout, participants	Открыть категорию: система, бой, участники
+Atidaryti kategoriją	Open category	Открыть категорию
+📋 Šablonas	📋 Template	📋 Шаблон
+Amžiaus kategorijų šablonas: sukurti blokus iš karto visoms individualioms rungtims	Age category template: create blocks for all individual events at once	Шаблон возрастных категорий: создать блоки сразу для всех индивидуальных дисциплин
+Amžiaus kategorijų šablonas	Age category template	Шаблон возрастных категорий
+Sukurti blokus pažymėtoms rungtims	Create blocks for the checked events	Создать блоки для отмеченных дисциплин
+Pakeisti šabloną pagal:	Replace the template with:	Заменить шаблон по:
+Išsaugoti šabloną pagal:	Save the template from:	Сохранить шаблон по:
+Pirma sukurkite bent vieną bloką.	First create at least one block.	Сначала создайте хотя бы один блок.
+Sudėliokite vienos rungties blokus (metai, lytis, kyu) ir išsaugokite. Tada - viena paspauda visoms rungtims ir kitoms varžyboms.	Set up the blocks of one event (years, gender, kyu) and save. Then one click for all events and other competitions.	Настройте блоки одной дисциплины (годы, пол, кю) и сохраните. Затем - одно нажатие для всех дисциплин и других соревнований.
+Išsaugota blokų:	Saved blocks:	Сохранено блоков:
+(pagal amžių - tinka ir kitais metais). Pažymėkite rungtis - blokai bus sukurti visiems iš karto.	(by age - works in other years too). Check the events - blocks will be created for all at once.	(по возрасту - подходит и в другие годы). Отметьте дисциплины - блоки будут созданы сразу для всех.
+Šablonas išsaugotas:	Template saved:	Шаблон сохранён:
+Pagal šabloną sukurta blokų:	Blocks created from the template:	Создано блоков по шаблону:
+Tinklai	Draws	Сетки
+🤼 Tinklai	🤼 Draws	🤼 Сетки
+Amžiaus grupės	Age groups	Возрастные группы
+Atidaryti Live tvarkaraštyje	Open in the Live schedule	Открыть в Live расписании
+Lentelė dar nesudaryta. Dalyviai:	The draw is not made yet. Participants:	Сетка ещё не составлена. Участники:
+{#} rungt. · {#} dalyv.	{#} events · {#} part.	{#} дисц. · {#} уч.
+{#} rungt.	{#} events	{#} дисц.
+Grupės duomenų dar nėra.	No data for this group yet.	Данных группы пока нет.
+Kategorijų su dalyviais dar nėra.	No categories with participants yet.	Категорий с участниками пока нет.
+kas su kuo kovoja - pasirinkite amžiaus grupę	who fights whom - choose an age group	кто с кем борется - выберите возрастную группу
+Čia - tik peržiūra: kas su kuo kovoja ir kas laimėjo. Žiūrovams tas pats matosi transliacijos nuorodoje („📡 Transliacija ir registracija“) - skiltyje „Tinklai“.	View only: who fights whom and who won. Spectators see the same in the broadcast link („📡 Broadcast and registration“) - in the „Draws“ section.	Только просмотр: кто с кем борется и кто победил. Зрители видят то же по ссылке трансляции („📡 Трансляция и регистрация“) - в разделе „Сетки“.
+🎓 Diplomai	🎓 Diplomas	🎓 Дипломы
+Diplomai prizininkams: pagal jūsų Excel šabloną arba paprastas dizainas	Diplomas for medallists: from your Excel template or a simple design	Дипломы призёрам: по вашему шаблону Excel или простой дизайн
+🎓 Diplomai prizininkams	🎓 Diplomas for medallists	🎓 Дипломы призёрам
+Prizininkų dabar:	Medallists now:	Призёров сейчас:
+Diplomai - ir prie kiekvienos kategorijos „Vietos“.	Diplomas also next to each category's „Places“.	Дипломы - и у каждой категории в „Места“.
+Prizininkų dar nėra - diplomai atsiras, kai kategorijos bus baigtos.	No medallists yet - diplomas appear when categories are finished.	Призёров пока нет - дипломы появятся, когда категории будут завершены.
+⬇ Excel pagal šabloną (visi)	⬇ Excel from template (all)	⬇ Excel по шаблону (все)
+🖨 Spausdinti paprastus (visi)	🖨 Print simple ones (all)	🖨 Печать простых (все)
+Jūsų diplomo šablonas (Excel)	Your diploma template (Excel)	Ваш шаблон диплома (Excel)
+Neįkeltas - spausdinami paprasti diplomai.	Not uploaded - simple diplomas are printed.	Не загружен - печатаются простые дипломы.
+Rastos žymos:	Tags found:	Найденные метки:
+Žymų nerasta	No tags found	Метки не найдены
+- įrašykite jas į langelius (žr. žemiau).	- type them into cells (see below).	- впишите их в ячейки (см. ниже).
+Excel faile (pirmas lapas - vienas diplomas su jūsų dizainu) į tuščias vietas įrašykite:	In the Excel file (first sheet - one diploma with your design) type into the empty places:	В файле Excel (первый лист - один диплом с вашим дизайном) впишите в пустые места:
+Atsisiuntus - kiekvienas diplomas atskirame lape, spausdinkite visus iš karto.	After download - each diploma on its own sheet, print them all at once.	После скачивания - каждый диплом на отдельном листе, печатайте все сразу.
+↻ Pakeisti šabloną	↻ Replace template	↻ Заменить шаблон
+⬆ Įkelti šabloną (.xlsx)	⬆ Upload template (.xlsx)	⬆ Загрузить шаблон (.xlsx)
+Ištrinti šabloną	Delete template	Удалить шаблон
+Įkeliama…	Uploading…	Загрузка…
+Diplomo šablonas įkeltas ✓	Diploma template uploaded ✓	Шаблон диплома загружен ✓
+Ištrinti diplomo šabloną? Bus spausdinami paprasti diplomai.	Delete the diploma template? Simple diplomas will be printed.	Удалить шаблон диплома? Будут печататься простые дипломы.
+Diplomai šios kategorijos prizininkams - Excel pagal jūsų šabloną	Diplomas for this category's medallists - Excel from your template	Дипломы призёрам этой категории - Excel по вашему шаблону
+Spausdinti diplomus šios kategorijos prizininkams	Print diplomas for this category's medallists	Печать дипломов призёрам этой категории
+Diplomai	Diplomas	Дипломы
+Spausdinkite gulsčiai (A4), be paraščių.	Print in landscape (A4), without margins.	Печатайте альбомно (A4), без полей.
+Prizininkų dar nėra - diplomai atsiras, kai kategorija bus baigta.	No medallists yet - diplomas appear when the category is finished.	Призёров пока нет - дипломы появятся, когда категория будет завершена.
+⬇ CSV (Excel)	⬇ CSV (Excel)	⬇ CSV (Excel)
+Failas neįkeltas.	File not uploaded.	Файл не загружен.
+Failas per didelis (daugiausia 15 MB).	File too large (max 15 MB).	Файл слишком большой (максимум 15 МБ).
+Reikia Excel failo .xlsx (Excel: Failas → Įrašyti kaip → Excel darbaknygė).	An Excel .xlsx file is needed (Excel: File → Save as → Excel workbook).	Нужен файл Excel .xlsx (Excel: Файл → Сохранить как → Книга Excel).
+Tai ne Excel .xlsx failas.	This is not an Excel .xlsx file.	Это не файл Excel .xlsx.
+Bandymo nuorodoje šablono keisti negalima - jis bendras visoms varžyboms.	The template can't be changed via the test link - it is shared by all competitions.	По тестовой ссылке шаблон менять нельзя - он общий для всех соревнований.

@@ -15,6 +15,16 @@ if (get('json')) {
     header('Content-Type: application/json; charset=utf-8');
     header('Cache-Control: no-store');
     $r = tournament_results($t);
+    // Tinklai: visa amžiaus grupė (visos jos rungtys) - kas su kuo kovoja
+    if (get('group') !== '') {
+        $list = [];
+        foreach ((array) ($r['categories'] ?? []) as $c) {
+            if (!empty($c['count']) && (string) ($c['group'] ?? '') === (string) get('group') && isset($r['brackets'][(string) $c['id']])) {
+                $list[] = $r['brackets'][(string) $c['id']] + ['tatami' => (string) ($c['tatami'] ?? '')];
+            }
+        }
+        exit(json_encode(['ok' => true, 'cats' => $list], JSON_UNESCAPED_UNICODE));
+    }
     // Viena grupė (atidarius iš sąrašo): kovos pagal ratus ir vietos
     if (get('cat') !== '') {
         $b = $r['brackets'][(string) get('cat')] ?? null;
@@ -26,6 +36,7 @@ if (get('json')) {
             continue;
         }
         $cats[] = ['id' => (string) ($c['id'] ?? ''), 'name' => $c['name'], 'disc' => $c['discipline'], 'done' => (int) $c['done'], 'total' => (int) $c['total'], 'finished' => !empty($c['finished']),
+                   'group' => (string) ($c['group'] ?? ''), 'groupName' => (string) ($c['groupName'] ?? $c['name']),
                    'places' => array_map(function ($p) { return ['place' => (int) $p['place'], 'name' => varz_public_name($p), 'club' => $p['club']]; }, (array) ($c['places'] ?? []))];
     }
     // Apdovanojimų būsenos (apdovanojama / apdovanota) - kad ir dalyviai matytų, kur renginio eiga

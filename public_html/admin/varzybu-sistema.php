@@ -3,6 +3,7 @@
 // (tatamiai, laikai ir kiekvienos rungties valdymas - lentelė, kovos, balai), rezultatai. Viršuje - perjungimas į kitas varžybas.
 // Viskas veikia naršyklėje (assets/varzybos.js), pakeitimai išsaugomi automatiškai (POST JSON į šį puslapį).
 require dirname(__DIR__) . '/app/bootstrap.php';
+require_once dirname(__DIR__) . '/app/diplomas.php';
 $me = varz_require_access();
 $demo = varz_is_demo($me);   // bandymo nuoroda: tik bandymo varžybos, be tikrų narių ir bendrų nustatymų
 current_lang('lt');   // varžybų valdymas kol kas lietuviškai
@@ -20,6 +21,36 @@ if (!$t) {
 if (get('entries') && !is_post()) {
     header('Content-Type: application/json; charset=utf-8');
     exit(json_encode(['ok' => true, 'entries' => tournament_new_entries((int) $t['id'])], JSON_UNESCAPED_UNICODE));
+}
+
+// Diplomai prizininkams: Excel pagal įkeltą šabloną arba paprasti spausdinami (?html=1); POST - šablono įkėlimas / ištrynimas
+if (get('diplomai')) {
+    if (is_post()) {
+        csrf_check();
+        header('Content-Type: application/json; charset=utf-8');
+        if ($demo) {
+            exit(json_encode(['ok' => false, 'error' => t('Bandymo nuorodoje šablono keisti negalima - jis bendras visoms varžyboms.')], JSON_UNESCAPED_UNICODE));
+        }
+        if (post('action') === 'delete') {
+            diploma_template_delete();
+            exit(json_encode(['ok' => true, 'tpl' => null]));
+        }
+        $err = diploma_template_save((array) ($_FILES['file'] ?? []));
+        exit(json_encode(['ok' => $err === '', 'error' => $err, 'tpl' => diploma_template()], JSON_UNESCAPED_UNICODE));
+    }
+    $rows = diploma_rows($t, get('cat') !== '' ? get('cat') : null);
+    if ($rows && get('html') !== '1' && diploma_template()) {
+        $bin = diplomas_xlsx(DIPLOMA_FILE, $rows);
+        if ($bin !== null) {
+            $slug = trim((string) preg_replace('/[^a-z0-9]+/', '-', diploma_key_slug($t['title'] . (count($rows) <= 4 ? ' ' . $rows[0]['category'] : ''))), '-');
+            header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            header('Content-Disposition: attachment; filename="diplomai-' . ($slug ?: 'varzybos') . '.xlsx"');
+            header('Content-Length: ' . strlen($bin));
+            exit($bin);
+        }
+    }
+    diplomas_html($t, $rows);
+    exit;
 }
 
 // Kovos skydelis: kas vyksta ant tatamio (ekranams ir žiūrovams); užsiregistravusių žymėjimas; registracijos atidarymas
@@ -162,6 +193,8 @@ $cfg = [
     'popup' => get('langas') && get('cat') !== '' ? (string) get('cat') : null,   // atkabinta rungtis atskirame lange
     'homeClub' => VARZ_HOME_CLUB, 'belts' => $belts, 'members' => $demo ? [] : varz_club_members(), 'state' => varz_drop_example_clubs(tournament_state($t)),
     'clubContacts' => tournament_club_contacts((int) $t['id']), 'clubDirectory' => $demo ? [] : varz_club_directory(), 'demo' => $demo,
+    'admin' => is_admin() || $demo,
+    'diplomaApi' => url('admin/varzybu-sistema.php?id=' . (int) $t['id'] . '&diplomai=1'), 'diplomaTpl' => diploma_template(),   // tatamio šalinimas - tik pagrindiniam adminui (ir bandymo nuorodai)
 ];
 $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($t['ends_on'], true) : '');
 ?><!doctype html>
@@ -207,6 +240,7 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
     <button role="tab" id="tab-dalyviai" aria-selected="false" aria-controls="v-dalyviai"><span class="tab-n">3</span>Dalyviai</button>
     <button role="tab" id="tab-kategorijos" aria-selected="false" aria-controls="v-kategorijos"><span class="tab-n">4</span>Kategorijos</button>
     <span class="tabs-sep" aria-hidden="true"></span>
+    <button role="tab" id="tab-tinklai" aria-selected="false" aria-controls="v-tinklai"><span class="tab-n">🤼</span>Tinklai</button>
     <button role="tab" id="tab-live" aria-selected="false" aria-controls="v-live" class="tab-live"><span class="live-dot" aria-hidden="true"></span>Live tvarkaraštis</button>
     <button role="tab" id="tab-rezultatai" aria-selected="false" aria-controls="v-rezultatai"><span class="tab-n">🏅</span>Rezultatai</button>
     <button type="button" class="tab-cfg" id="menu-cfg" aria-expanded="false" title="Meniu: pervadinti, sukeisti vietomis">⚙</button>
@@ -325,7 +359,8 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
         <button type="button" class="btn btn-sm" id="ov-dir" hidden title="Keisti tvarką: didėjančia / mažėjančia"></button>
       </span>
       <span class="spacer"></span>
-      <span class="ov-only"><button class="btn" id="ov-auto" type="button" title="Pagal amžių, lytį ir diržą">⚡ Sudaryti automatiškai</button></span>
+      <span class="ov-only"><details class="tool-menu" id="ov-tpl"><summary class="btn" title="Amžiaus kategorijų šablonas: sukurti blokus iš karto visoms individualioms rungtims">📋 Šablonas</summary><div class="tool-menu-body tpl-body" id="ov-tpl-body"></div></details>
+        <button class="btn" id="ov-auto" type="button" title="Pagal amžių, lytį ir diržą">⚡ Sudaryti automatiškai</button></span>
     </div>
     <div class="ov" id="cat-overview" hidden>
       <p class="ov-sum muted small" id="ov-sum"></p>
@@ -348,6 +383,15 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
         <div class="pool-list"></div>
       </div>
     </div>
+  </section>
+
+  <!-- TINKLAI (Draws): amžiaus grupės → kas su kuo kovoja visose tos grupės rungtyse; žiūrovams tas pats - transliacijos nuorodoje -->
+  <section id="v-tinklai" role="tabpanel" aria-labelledby="tab-tinklai" hidden>
+    <div class="tk-layout">
+      <div class="panel tk-side"><h2>Amžiaus grupės</h2><div class="tk-groups" id="tk-groups"></div></div>
+      <div class="tk-view" id="tk-view"></div>
+    </div>
+    <p class="hint">Čia - tik peržiūra: kas su kuo kovoja ir kas laimėjo. Žiūrovams tas pats matosi transliacijos nuorodoje („📡 Transliacija ir registracija“) - skiltyje „Tinklai“.</p>
   </section>
 
   <!-- LIVE TVARKARAŠTIS: tatamiai ir rungtys; atidarius rungtį - jos valdymas (lentelė, kovos, balai) -->
@@ -419,8 +463,9 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
       <span class="muted small" id="res-count"></span>
       <span class="spacer"></span>
       <?php if ($t['is_test']): ?><button class="btn btn-test" id="res-sim" type="button" title="Tik test varžybose">🎲 Užbaigti visas kovas</button><?php endif; ?>
-      <button class="btn" id="res-csv" type="button">Atsisiųsti CSV (Excel)</button>
-      <button class="btn btn-primary" id="res-print" type="button">Spausdinti</button>
+      <details class="tool-menu" id="dipl-menu"><summary class="btn" title="Diplomai prizininkams: pagal jūsų Excel šabloną arba paprastas dizainas">🎓 Diplomai</summary><div class="tool-menu-body dipl-body" id="dipl-body"></div></details>
+      <button class="btn" id="res-csv" type="button">⬇ CSV (Excel)</button>
+      <button class="btn btn-primary" id="res-print" type="button">🖨 Spausdinti</button>
     </div>
     <div class="res-layout">
       <div class="panel"><h2>Klubų medaliai</h2><div id="medals-view"></div></div>

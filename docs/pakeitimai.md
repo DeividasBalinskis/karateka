@@ -11,6 +11,20 @@ Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar
 - **Telefone** viršus kompaktiškas (ženkliukai vienoje eilutėje), dalyviai - kortelėmis, niekas neišeina už ekrano.
 - „**⋯**“ prie varžybų atsidaro **kortelės viduje** - informacija nebedingsta.
 
+**Denio atsiliepimai #5-#11 (💡 test svetainėje)**
+- **#5 Nario ištrynimas**: paspaudus vardą (Nariai) - langelyje **„🗑 Ištrinti“** (adminui; su patvirtinimu). Tas pats, kas kortelės apačioje.
+- **#6 „Pašalinti tatamį“** - matomas tik pagrindiniam adminui (treneriai / sekretoriatas jo nemato).
+- **#7 🎓 Diplomai**: prie kiekvienos baigtos kategorijos „Vietos“ - **„🎓 Diplomai“**; Rezultatai → **„🎓 Diplomai“** - visi iš karto.
+  Ten pat **įkeliamas jūsų Excel šablonas** (diplomas su dizainu): į tuščias vietas įrašykite `{vardas}` `{vieta}` `{vietaR}` (I, II, III) `{kategorija}`
+  `{klubas}` `{varzybos}` `{data}` `{rungtis}` - atsisiųstame Excel **kiekvienas diplomas atskirame lape** (su paveikslėliais), spausdinkite visus.
+  Be šablono - gražūs paprasti diplomai spausdinimui (A4 gulsčias).
+- **#8** Kategorijų struktūroje tuščia metų riba rodoma **„+“** (paspaudus įrašomi metai; tuščia - „ir jaunesni / ir vyresni“).
+- **#9 📋 Šablonas** (Kategorijos → Struktūra): išsaugokite vienos rungties amžiaus kategorijas (pagal amžių - tinka ir kitais metais) ir
+  **viena paspauda sukurkite tuos pačius blokus Kata, Kumite, Fukugo, Kihon**; jau esantys dalyviai persikelia į tinkamus blokus.
+- **#10** Struktūroje prie kiekvienos kategorijos **„→“** - atidaro ją; ten **„← Grįžti į kategorijas“** - atgal į tą pačią vietą (paryškinta).
+- **#11 🤼 Tinklai** (naujas skirtukas tarp Kategorijų ir Live): kairėje **amžiaus grupės**, paspaudus - visos tos grupės rungtys:
+  **kas su kuo kovoja**, kas laimėjo, vietos. **Žiūrovams tas pats** - transliacijos nuorodoje skiltis „🤼 Tinklai“.
+
 **Taika - tempimas ir prisegimas**
 - Lentelėje **vardą galima nutempti ant kito** - apsikeis vietomis (pele ir pirštu). Mygtukas vadinasi **„⇄ Keisti vietas“**
   (paspaudus - galima ir dviem paspaudimais). Balų sistemoje pasirodymo eilė keičiama tempiant už „⋮⋮“.

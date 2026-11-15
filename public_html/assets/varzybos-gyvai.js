@@ -132,6 +132,11 @@
           return '<li><span class="nx-cat"><span class="disc d-' + esc(x.disc) + '"></span>' + esc(x.cat) + ' · ' + (x.no ? x.no + ' · ' : '') + esc(x.title) + '</span><span class="nx-who"><b class="aka-t">' + esc(x.a) + '</b>' + (x.b ? ' <span class="muted">prieš</span> <b>' + esc(x.b) + '</b>' : '') + '</span></li>';
         }).join('') + '</ol>' : '') + '</section>';
     }).join('') + '</div>';
+    var gseen = {}, groups = [];
+    ((data && data.cats) || []).forEach(function (c) { var k = c.group || ('c' + c.id); if (!gseen[k]) { gseen[k] = 1; groups.push({ key: k, name: c.groupName || c.name, y: +(String(k).match(/\d{4}/g) || [0]).pop() || 0 }); } });
+    groups.sort(function (a, b) { return b.y - a.y || a.name.localeCompare(b.name); });
+    if (groups.length) html += '<section class="panel gv-res"><h2>🤼 Tinklai <span class="muted small">kas su kuo kovoja - pasirinkite amžiaus grupę</span></h2><div class="gv-tk">' +
+      groups.map(function (g) { return '<button type="button" class="btn" data-cat="grp:' + esc(g.key) + '" data-title="' + esc(g.name) + '">' + esc(g.name) + '</button>'; }).join('') + '</div></section>';
     var medals = (data && data.medals) || [], fin = ((data && data.cats) || []).filter(function (c) { return c.places.length; });
     html += '<section class="panel gv-res"><h2>Klubų medaliai</h2>' + (medals.length ? '<table><thead><tr><th class="num">#</th><th>Klubas</th><th class="num">🥇</th><th class="num">🥈</th><th class="num">🥉</th></tr></thead><tbody>' +
       medals.slice(0, 15).map(function (m, i) { return '<tr><td class="num">' + (i + 1) + '</td><td>' + esc(m.club) + '</td><td class="num">' + m.g + '</td><td class="num">' + m.s + '</td><td class="num">' + m.b + '</td></tr>'; }).join('') + '</tbody></table>'
@@ -152,12 +157,8 @@
   var sheet = document.createElement('div'), openCat = null, sheetTimer = null;
   sheet.className = 'gv-sheet'; sheet.hidden = true; sheet.setAttribute('role', 'dialog'); sheet.setAttribute('aria-modal', 'true');
   document.body.appendChild(sheet);
-  function loadCat(id) {
-    fetch(CFG.json + '&cat=' + encodeURIComponent(id), { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (d) {
-      if (openCat !== id) return;
-      var b = d.bracket;
-      if (!b) { sheet.querySelector('.gv-sheet-body').innerHTML = '<p class="muted">Grupės duomenų dar nėra.</p>'; return; }
-      var html = '<p class="muted small">' + esc(b.sys) + ' · ' + b.count + ' dalyv.</p>';
+  function bracketHtml(b) {
+      var html = '';
       if (b.places && b.places.length) html += '<div class="gv-places">' + b.places.map(function (p) { return '<div class="rp"><span class="medal ' + ['', 'g', 's', 'b'][p.p] + '">' + p.p + '</span><span>' + esc(p.n) + ' <span class="club">' + esc(p.c) + '</span></span></div>'; }).join('') + '</div>';
       if (b.people) html += '<p class="muted small">Lentelė dar nesudaryta. Dalyviai:</p><ul class="gv-people">' + b.people.map(function (p) { return '<li>' + esc(p.n) + ' <span class="muted">' + esc(p.c) + '</span></li>'; }).join('') + '</ul>';
       (b.groups || []).forEach(function (g) {
@@ -170,7 +171,25 @@
             '<span class="gv-mp' + (m.w === 'b' ? ' won' : '') + '"><b>' + esc(m.b || '…') + '</b> <small>' + esc(m.bc) + '</small></span></div>';
         }).join('') + '</div>';
       });
-      sheet.querySelector('.gv-sheet-body').innerHTML = html;
+      return html;
+  }
+  function loadCat(id) {
+    if (String(id).indexOf('grp:') === 0) { loadGroup(id.slice(4)); return; }
+    fetch(CFG.json + '&cat=' + encodeURIComponent(id), { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (d) {
+      if (openCat !== id) return;
+      var b = d.bracket;
+      if (!b) { sheet.querySelector('.gv-sheet-body').innerHTML = '<p class="muted">Grupės duomenų dar nėra.</p>'; return; }
+      sheet.querySelector('.gv-sheet-body').innerHTML = '<p class="muted small">' + esc(b.sys) + ' · ' + b.count + ' dalyv.</p>' + bracketHtml(b);
+    }).catch(function () {});
+  }
+  // Tinklai: visa amžiaus grupė - visos jos rungtys (kas su kuo kovoja)
+  function loadGroup(key) {
+    fetch(CFG.json + '&group=' + encodeURIComponent(key), { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (d) {
+      if (openCat !== 'grp:' + key) return;
+      var cats = d.cats || [];
+      sheet.querySelector('.gv-sheet-body').innerHTML = cats.length ? cats.map(function (b) {
+        return '<section class="panel tk-cat"><div class="tk-cat-head"><span class="disc d-' + esc(b.disc) + '"></span><b>' + esc(b.name) + '</b><span class="muted small">' + (b.tatami ? esc(b.tatami) + ' · ' : '') + esc(b.sys) + ' · ' + b.count + ' dalyv.</span></div>' + bracketHtml(b) + '</section>';
+      }).join('') : '<p class="muted">Grupės duomenų dar nėra.</p>';
     }).catch(function () {});
   }
   function openSheet(id, title) {
