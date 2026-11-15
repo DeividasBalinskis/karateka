@@ -34,9 +34,67 @@ function tournament_get(int $id): ?array
 }
 
 /** Varžybos sąraše: naujausios ir būsimos viršuje */
-function tournaments_list(bool $withTest = true): array
+function tournaments_list(bool $withTest = true, bool $demoOnly = false): array
 {
-    return tournaments_ready() ? q_all('SELECT * FROM tournaments' . ($withTest ? '' : ' WHERE is_test = 0') . ' ORDER BY starts_on DESC, id DESC') : [];
+    if (!tournaments_ready()) {
+        return [];
+    }
+    if ($demoOnly) {
+        try {
+            return q_all('SELECT * FROM tournaments WHERE is_demo = 1 ORDER BY starts_on DESC, id DESC');
+        } catch (PDOException $ex) {
+            return [];   // dar neimportuotas db/033
+        }
+    }
+    return q_all('SELECT * FROM tournaments' . ($withTest ? '' : ' WHERE is_test = 0') . ' ORDER BY starts_on DESC, id DESC');
+}
+
+// ---------- Taikos bandymo nuoroda (be paskyros) ----------
+// Adminas sukuria nuorodą (Taikos pradžia → „👀 Duoti išbandyti“). Ją atidaręs žmogus įrašo vardą ir gali daryti viską, ką adminas,
+// bet tik bandymo varžybose (is_demo): be tikrų klubo narių, be bendrų nustatymų keitimo; gali palikti atsiliepimų (💡).
+
+function varz_demo_token(): string
+{
+    return (string) site_setting('taika_demo_token', '');
+}
+
+/** Bandančiojo sesija: ['name' => ...] arba null (nuoroda išjungta ar pakeista - prieiga baigiasi) */
+function varz_demo(): ?array
+{
+    $s = $_SESSION['taika_demo'] ?? null;
+    $tok = varz_demo_token();
+    if (!is_array($s) || $tok === '' || !hash_equals(hash('sha256', $tok), (string) ($s['tok'] ?? ''))) {
+        return null;
+    }
+    return $s;
+}
+
+function varz_demo_start(string $token, string $name): bool
+{
+    $tok = varz_demo_token();
+    if ($tok === '' || !hash_equals($tok, $token)) {
+        return false;
+    }
+    $_SESSION['taika_demo'] = ['tok' => hash('sha256', $tok), 'name' => mb_substr(trim($name), 0, 60)];
+    return true;
+}
+
+/** Taikos puslapiams: treneris / adminas arba bandantysis per nuorodą (['demo' => true, 'id' => 0, ...]) */
+function varz_require_access(): array
+{
+    $a = current_account();
+    if ($a && is_staff($a)) {
+        return $a;
+    }
+    if ($d = varz_demo()) {
+        return ['id' => 0, 'role' => 'demo', 'demo' => true, 'first_name' => $d['name'], 'last_name' => '', 'email' => ''];
+    }
+    return require_staff();
+}
+
+function varz_is_demo(array $me): bool
+{
+    return !empty($me['demo']);
 }
 
 /** Viešai rodomos varžybos (LTKF, rezultatų puslapis): test - tik test svetainėje ir kompiuteryje */
@@ -160,12 +218,16 @@ function tournament_stats(array $t): array
     ];
 }
 
-function tournament_create(string $title, string $startsOn, ?string $endsOn, ?string $location, bool $isTest, int $by, ?array $state = null): int
+function tournament_create(string $title, string $startsOn, ?string $endsOn, ?string $location, bool $isTest, int $by, ?array $state = null, bool $demo = false): int
 {
     q('INSERT INTO tournaments (title, starts_on, ends_on, location, is_test, state, created_by) VALUES (?, ?, ?, ?, ?, ?, ?)',
-        [mb_substr($title, 0, 190), $startsOn, $endsOn ?: null, $location ?: null, $isTest ? 1 : 0,
-         json_encode($state ?? tournament_default_state(), JSON_UNESCAPED_UNICODE), $by]);
-    return (int) db()->lastInsertId();
+        [mb_substr($title, 0, 190), $startsOn, $endsOn ?: null, $location ?: null, $isTest || $demo ? 1 : 0,
+         json_encode($state ?? tournament_default_state(), JSON_UNESCAPED_UNICODE), $by ?: null]);
+    $id = (int) db()->lastInsertId();
+    if ($demo) {
+        q('UPDATE tournaments SET is_demo = 1 WHERE id = ?', [$id]);
+    }
+    return $id;
 }
 
 /**
@@ -275,7 +337,7 @@ function varz_person_from_member(array $m): array
  * Test varžybos: visi aktyvūs Karateka nariai + po 5-12 išgalvotų dalyvių iš kitų federacijos klubų, komandos,
  * kategorijos sudaromos automatiškai (atidarius), dalis kovų „sužaidžiama“ atsitiktinai - kad iškart matytųsi lentelės ir rezultatai.
  */
-function tournament_generate_test(int $by): int
+function tournament_generate_test(int $by, bool $demo = false): int
 {
     $first = ['M' => ['Jonas', 'Lukas', 'Matas', 'Domas', 'Tomas', 'Paulius', 'Rokas', 'Kajus', 'Nojus', 'Augustas', 'Ignas', 'Dovydas', 'Herkus', 'Benas', 'Jokūbas', 'Adomas'],
               'F' => ['Ona', 'Ieva', 'Gabija', 'Emilija', 'Austėja', 'Kamilė', 'Urtė', 'Gustė', 'Liepa', 'Saulė', 'Rugilė', 'Smiltė', 'Viltė', 'Elzė', 'Luknė', 'Goda']];
@@ -286,7 +348,8 @@ function tournament_generate_test(int $by): int
     };
     $year = (int) date('Y');
     $people = [];
-    foreach (varz_club_members() as $m) {
+    // Bandymo nuorodai - tikrų narių nėra: ir Karatekos dalyviai išgalvoti
+    foreach ($demo ? [] : varz_club_members() as $m) {
         if ($m['birth']) {
             $people['m' . $m['id']] = varz_person_from_member($m) + ['belt' => null];
             $people['m' . $m['id']]['belt'] = $m['belt'] ?: mt_rand(1, 4);
@@ -295,7 +358,7 @@ function tournament_generate_test(int $by): int
     $used = [];
     $clubs = varz_federation_clubs();
     $uid = 1;
-    foreach (array_slice($clubs, 1) as $club) {
+    foreach (array_slice($clubs, $demo ? 0 : 1) as $club) {
         $n = mt_rand(5, 12);
         for ($i = 0; $i < $n; $i++) {
             $g = mt_rand(0, 9) < 5 ? 'M' : 'F';
@@ -336,7 +399,7 @@ function tournament_generate_test(int $by): int
     $state['simulate'] = 0.6;     // ir dalis kovų „sužaidžiama“
     $date = date('Y-m-d', strtotime('next saturday'));
     $n = (int) q_value('SELECT COUNT(*) FROM tournaments WHERE is_test = 1') + 1;
-    return tournament_create('Test varžybos #' . $n . ' · Budo Cup pavyzdys', $date, null, 'Vilnius, Sporto centras Viršuliškės', true, $by, $state);
+    return tournament_create(($demo ? 'Bandymas' : 'Test varžybos') . ' #' . $n . ' · Budo Cup pavyzdys', $date, null, 'Vilnius, Sporto centras Viršuliškės', true, $by, $state, $demo);
 }
 
 /**

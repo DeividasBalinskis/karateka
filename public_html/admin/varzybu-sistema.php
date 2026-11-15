@@ -3,10 +3,14 @@
 // (tatamiai, laikai ir kiekvienos rungties valdymas - lentelė, kovos, balai), rezultatai. Viršuje - perjungimas į kitas varžybas.
 // Viskas veikia naršyklėje (assets/varzybos.js), pakeitimai išsaugomi automatiškai (POST JSON į šį puslapį).
 require dirname(__DIR__) . '/app/bootstrap.php';
-$me = require_staff();
+$me = varz_require_access();
+$demo = varz_is_demo($me);   // bandymo nuoroda: tik bandymo varžybos, be tikrų narių ir bendrų nustatymų
 current_lang('lt');   // varžybų valdymas kol kas lietuviškai
 
 $t = tournament_get((int) get('id'));
+if ($t && $demo && empty($t['is_demo'])) {
+    $t = null;
+}
 if (!$t) {
     flash('err', t('Varžybos nerastos.'));
     redirect('admin/varzybos.php');
@@ -60,7 +64,8 @@ if (get('awards')) {
 if (get('ui') && is_post()) {
     csrf_check();
     header('Content-Type: application/json; charset=utf-8');
-    exit(json_encode(['ok' => true, 'ui' => varz_ui_save(json_decode((string) file_get_contents('php://input'), true) ?: [])], JSON_UNESCAPED_UNICODE));
+    // Tema ir meniu bendri visiems - bandantysis jų nekeičia (jam pakeitimas galioja tik šiame lange)
+    exit(json_encode(['ok' => true, 'ui' => $demo ? varz_ui() : varz_ui_save(json_decode((string) file_get_contents('php://input'), true) ?: [])], JSON_UNESCAPED_UNICODE));
 }
 
 // Istorija: kopijų sąrašas (JSON) ir atkūrimas
@@ -131,8 +136,8 @@ $cfg = [
     'api' => url('admin/varzybu-sistema.php?id=' . (int) $t['id']), 'csrf' => csrf_token(), 'year' => (int) substr($t['starts_on'], 0, 4),
     'date' => $t['starts_on'], 'dateEnd' => $t['ends_on'] ?: $t['starts_on'],
     'popup' => get('langas') && get('cat') !== '' ? (string) get('cat') : null,   // atkabinta rungtis atskirame lange
-    'homeClub' => VARZ_HOME_CLUB, 'belts' => $belts, 'members' => varz_club_members(), 'state' => varz_drop_example_clubs(tournament_state($t)),
-    'clubContacts' => tournament_club_contacts((int) $t['id']), 'clubDirectory' => varz_club_directory(),
+    'homeClub' => VARZ_HOME_CLUB, 'belts' => $belts, 'members' => $demo ? [] : varz_club_members(), 'state' => varz_drop_example_clubs(tournament_state($t)),
+    'clubContacts' => tournament_club_contacts((int) $t['id']), 'clubDirectory' => $demo ? [] : varz_club_directory(), 'demo' => $demo,
 ];
 $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($t['ends_on'], true) : '');
 ?><!doctype html>
@@ -156,7 +161,7 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
       <div class="vz-switch">
         <h1 id="t-name"><?= e($t['title']) ?></h1>
         <select id="t-switch" aria-label="Kitos varžybos" title="Pereiti į kitas varžybas">
-          <?php foreach (tournaments_list() as $o): ?><option value="<?= url('admin/varzybu-sistema.php?id=' . (int) $o['id']) ?>"<?= (int) $o['id'] === (int) $t['id'] ? ' selected' : '' ?>><?= e($o['title']) ?> · <?= e(fmt_date($o['starts_on'])) ?></option><?php endforeach; ?>
+          <?php foreach (tournaments_list(true, $demo) as $o): ?><option value="<?= url('admin/varzybu-sistema.php?id=' . (int) $o['id']) ?>"<?= (int) $o['id'] === (int) $t['id'] ? ' selected' : '' ?>><?= e($o['title']) ?> · <?= e(fmt_date($o['starts_on'])) ?></option><?php endforeach; ?>
           <option value="<?= url('admin/varzybos.php') ?>">☰ Visos varžybos</option>
         </select>
       </div>
@@ -230,7 +235,7 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
   <!-- DALYVIAI -->
   <section id="v-dalyviai" role="tabpanel" aria-labelledby="tab-dalyviai" hidden>
     <div class="toolbar">
-      <button class="btn btn-primary" id="ppl-members" type="button">+ Karateka nariai</button>
+      <button class="btn btn-primary" id="ppl-members" type="button"<?= $demo ? ' hidden' : '' ?>>+ Karateka nariai</button>
       <input type="search" class="sel" id="ppl-search" placeholder="Ieškoti dalyvio" aria-label="Ieškoti dalyvio">
       <select class="sel" id="ppl-club" aria-label="Klubas"></select>
       <label class="small"><input type="checkbox" id="ppl-nocat"> Tik be kategorijos</label>

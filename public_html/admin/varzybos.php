@@ -3,13 +3,25 @@
 // naujos varžybos, test varžybos, varžybų duomenys, rezultatai → narių taškai; apačioje - partneriai (kaip karateka.lt).
 // Pačių varžybų valdymas (klubai, komandos, dalyviai, kategorijos, live tvarkaraštis, rezultatai) - admin/varzybu-sistema.php.
 require dirname(__DIR__) . '/app/bootstrap.php';
-$me = require_staff();
+$me = varz_require_access();
+$demo = varz_is_demo($me);   // bandymo nuoroda: tik bandymo varžybos, be tikrų narių
 $ready = tournaments_ready();
+
+// Bandymo nuoroda draugams: sukurti / pakeisti / išjungti (tik adminui)
+if (is_post() && in_array(post('action'), ['demo_on', 'demo_off'], true) && is_admin()) {
+    csrf_check();
+    set_site_setting('taika_demo_token', post('action') === 'demo_on' ? bin2hex(random_bytes(12)) : '');
+    flash('ok', post('action') === 'demo_on' ? t('Bandymo nuoroda sukurta - nukopijuokite ir nusiųskite.') : t('Bandymo nuoroda išjungta - su ja nebeprisijungs.'));
+    redirect('admin/varzybos.php#bandymas');
+}
 
 if (is_post() && $ready) {
     csrf_check();
     $id = (int) post('id');
     $t = $id ? tournament_get($id) : null;
+    if ($demo && $t && empty($t['is_demo'])) {
+        $t = null;   // bandantysis keičia tik bandymo varžybas
+    }
     switch (post('action')) {
         case 'create':
             $title = trim((string) post('title'));
@@ -19,8 +31,8 @@ if (is_post() && $ready) {
                 redirect('admin/varzybos.php#nauja');
             }
             $end = preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) post('ends_on')) && post('ends_on') > $start ? post('ends_on') : null;
-            $newId = tournament_create($title, $start, $end, trim((string) post('location')) ?: null, false, (int) $me['id']);
-            if (post('event') === '1') {
+            $newId = tournament_create($title, $start, $end, trim((string) post('location')) ?: null, false, (int) $me['id'], null, $demo);
+            if (post('event') === '1' && !$demo) {
                 q('INSERT INTO events (type, title, starts_on, ends_on, location, description) VALUES ("competition", ?, ?, ?, ?, ?)',
                     [mb_substr($title, 0, 190), $start, $end, trim((string) post('location')) ?: null, t('Lentelės ir rezultatai - varžybų sistemoje.')]);
                 q('UPDATE tournaments SET event_id = ? WHERE id = ?', [(int) db()->lastInsertId(), $newId]);
@@ -28,11 +40,12 @@ if (is_post() && $ready) {
             flash('ok', t('Varžybos sukurtos. Pradėkite nuo dalyvių: „+ Karateka nariai“ arba pridėkite kitų klubų dalyvius.'));
             redirect('admin/varzybu-sistema.php?id=' . $newId . '#dalyviai');
         case 'test':
-            $newId = tournament_generate_test((int) $me['id']);
-            flash('ok', t('Test varžybos sukurtos: Karateka nariai ir kitų klubų išgalvoti dalyviai, kategorijos sudarytos, dalis kovų jau įvyko.'));
+            $newId = tournament_generate_test((int) $me['id'], $demo);
+            flash('ok', $demo ? t('Bandymo varžybos sukurtos: išgalvoti dalyviai, kategorijos sudarytos, dalis kovų jau įvyko.')
+                : t('Test varžybos sukurtos: Karateka nariai ir kitų klubų išgalvoti dalyviai, kategorijos sudarytos, dalis kovų jau įvyko.'));
             redirect('admin/varzybu-sistema.php?id=' . $newId . '#live');
         case 'delete_test':
-            $n = tournaments_delete_test();
+            $n = $demo ? (int) q('DELETE FROM tournaments WHERE is_demo = 1')->rowCount() : tournaments_delete_test();
             flash('ok', t('Ištrinta test varžybų:') . ' ' . $n . '.');
             break;
         case 'delete':
@@ -52,7 +65,7 @@ if (is_post() && $ready) {
             }
             break;
         case 'points':
-            if ($t && !$t['is_test']) {
+            if ($t && !$t['is_test'] && !$demo) {
                 [$eventId, $members, $changes] = tournament_results_to_points($t, (int) $me['id']);
                 flash('ok', t('Rezultatai perkelti į renginį ir narių taškus:') . ' ' . $members . ' ' . t('nar.') . ($changes ? '' : ' ' . t('(nieko naujo)')));
             }
@@ -61,7 +74,7 @@ if (is_post() && $ready) {
     redirect('admin/varzybos.php' . ($id ? '#t' . $id : ''));
 }
 
-$list = tournaments_list();
+$list = tournaments_list(true, $demo);
 $hasTest = (bool) array_filter($list, function ($t) { return (int) $t['is_test'] === 1; });
 $today = date('Y-m-d');
 $soon = array_values(array_filter($list, function ($t) use ($today) { return $t['status'] === 'running' || ($t['ends_on'] ?: $t['starts_on']) >= $today; }));
@@ -121,7 +134,7 @@ $card = function (array $t): string {
             <?php else: ?>
               <span class="small muted"><?= te('Test varžybų rezultatai į narių taškus neperkeliami.') ?></span>
             <?php endif; ?>
-            <?php if ($t['is_test'] || is_admin()): ?>
+            <?php if ($t['is_test'] || is_admin()): /* bandantysis mato tik bandymo varžybas */ ?>
               <form method="post" onsubmit="return confirm('<?= e(t('Ištrinti varžybas su visais dalyviais, lentelėmis ir rezultatais?')) ?>')"><?= csrf_field() ?>
                 <input type="hidden" name="action" value="delete"><input type="hidden" name="id" value="<?= (int) $t['id'] ?>">
                 <button class="btn btn-danger" type="submit"><?= te('Ištrinti') ?></button></form>
@@ -138,7 +151,7 @@ varz_html_head(t('Varžybos'), 'vz-home');
 ?>
 <header class="vz-top">
   <div class="vz-top-row">
-    <a class="vz-back" href="<?= url('admin/index.php') ?>" title="<?= te('Į Karateka valdymą') ?>">←</a>
+    <?php if (!$demo): ?><a class="vz-back" href="<?= url('admin/index.php') ?>" title="<?= te('Į Karateka valdymą') ?>">←</a><?php endif; ?>
     <a class="vz-brand" href="<?= url('admin/varzybos.php') ?>"><span class="vz-logo" aria-hidden="true"></span><?= e(VARZ_NAME) ?></a>
     <div class="vz-title">
       <h1><?= te('Varžybos') ?></h1>
@@ -155,6 +168,12 @@ varz_html_head(t('Varžybos'), 'vz-home');
 </header>
 <main class="vzh">
   <?php foreach (take_flashes() as $f): ?><div class="flash flash-<?= e($f['type']) ?>"><?= e(t($f['message'])) ?></div><?php endforeach; ?>
+  <?php if ($demo): ?>
+    <div class="varz-demo-note">
+      <b><?= te('👋 Sveiki,') ?> <?= e($me['first_name']) ?>!</b> <?= te('Tai Taikos varžybų sistemos bandymas: galite daryti viską, ką daro sekretoriatas ir organizatorius - kurti varžybas, dalyvius, kategorijas, vesti kovas, siųsti apdovanojimams.') ?>
+      <?= te('Pradėkite nuo „🎲 Sukurti test varžybas“ - bus išgalvoti dalyviai ir dalis kovų. Pastebėjimus rašykite per') ?> <b><?= te('💡 Atsiliepimas') ?></b> <?= te('(apačioje kairėje) - galima įklijuoti ekrano nuotrauką (Ctrl+V).') ?>
+    </div>
+  <?php endif; ?>
   <?php if (!$ready): ?>
     <div class="flash flash-err"><?= te('Duomenų bazė neatnaujinta - importuokite') ?> <code>db/025_varzybos_atsiliepimai.sql</code>.</div>
   <?php endif; ?>
@@ -170,7 +189,7 @@ varz_html_head(t('Varžybos'), 'vz-home');
         <label><?= te('Iki') ?> <span class="muted small"><?= te('nebūtina') ?></span><input class="sel" type="date" name="ends_on"></label>
       </div>
       <label><?= te('Vieta') ?> <input class="sel" type="text" name="location" maxlength="190" placeholder="<?= e(t('pvz. Vilnius, Sporto centras Viršuliškės')) ?>"></label>
-      <label class="small"><input type="checkbox" name="event" value="1" checked> <?= te('Rodyti nariams Renginiuose (sukurti renginį)') ?></label>
+      <?php if (!$demo): ?><label class="small"><input type="checkbox" name="event" value="1" checked> <?= te('Rodyti nariams Renginiuose (sukurti renginį)') ?></label><?php endif; ?>
       <button class="btn btn-primary" type="submit"><?= te('Sukurti ir pridėti dalyvius →') ?></button>
     </form>
   </details>
@@ -200,8 +219,23 @@ varz_html_head(t('Varžybos'), 'vz-home');
       <span class="small muted"><?= te('Tikros varžybos ir nariai nepaliečiami.') ?></span>
     </form>
   <?php endif; ?>
-  <?php if (varzybos_enabled()): ?>
+  <?php if (varzybos_enabled() && !$demo): ?>
     <p class="small"><a href="<?= url('admin/varzybos-isorine.php') ?>"><?= te('Išorinė varžybų sistema (registracija per karateka.lt) →') ?></a></p>
+  <?php endif; ?>
+  <?php if (is_admin()): $demoTok = varz_demo_token(); $demoUrl = $demoTok !== '' ? abs_url('varzybos-bandymas.php?k=' . $demoTok) : ''; ?>
+    <details class="varz-share" id="bandymas"<?= $demoUrl ? ' open' : '' ?>>
+      <summary><b><?= te('👀 Duoti išbandyti (be paskyros)') ?></b> <span class="small muted"><?= te('- draugui ar kito klubo sekretoriatui') ?></span></summary>
+      <p class="small muted"><?= te('Su šia nuoroda žmogus įrašo savo vardą ir gali daryti viską, ką daro adminas, bet tik bandymo varžybose: tikrų klubo narių ir jų duomenų nemato, karateka.lt valdymo neatidaro. Atsiliepimus (💡) matysite Valdymas → Atsiliepimai.') ?></p>
+      <?php if ($demoUrl): ?>
+        <div class="sp-row"><input class="sel sp-url" readonly value="<?= e($demoUrl) ?>" aria-label="<?= te('Bandymo nuoroda') ?>" onclick="this.select()">
+          <button type="button" class="btn" onclick="navigator.clipboard && navigator.clipboard.writeText(this.previousElementSibling.value).then(() => { this.textContent = '✓'; })"><?= te('Kopijuoti') ?></button></div>
+        <form method="post" class="sp-row"><?= csrf_field() ?>
+          <button class="btn" name="action" value="demo_on" type="submit" onclick="return confirm('<?= e(t('Sukurti naują nuorodą? Sena nebeveiks.')) ?>')"><?= te('↻ Nauja nuoroda') ?></button>
+          <button class="btn btn-danger" name="action" value="demo_off" type="submit"><?= te('Išjungti') ?></button></form>
+      <?php else: ?>
+        <form method="post"><?= csrf_field() ?><button class="btn btn-primary" name="action" value="demo_on" type="submit"><?= te('Sukurti bandymo nuorodą') ?></button></form>
+      <?php endif; ?>
+    </details>
   <?php endif; ?>
 </main>
 <?= varz_partners_html() ?>

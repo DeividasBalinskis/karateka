@@ -174,3 +174,54 @@ test('tatami screen on a phone does not jump to the top', async ({ browser }) =>
   sql('DELETE FROM tournaments WHERE is_test = 1');
   noJsErrors(a);
 });
+
+test('Taika test link: no account, only demo competitions, no real members, can leave feedback', async ({ browser }) => {
+  sql("DELETE FROM tournaments WHERE title = 'Tikros varžybos (e2e)'");
+  sql("INSERT INTO tournaments (title, starts_on, is_test) VALUES ('Tikros varžybos (e2e)', CURDATE(), 0)");
+  const real = +sql("SELECT id FROM tournaments WHERE title = 'Tikros varžybos (e2e)'");
+  const a = await login(browser, 'info@karateka.lt', 1300, 900);
+  await a.goto('admin/varzybos.php');
+  await a.evaluate(() => { document.getElementById('bandymas').open = true; });
+  await Promise.all([a.waitForNavigation(), a.click('#bandymas button[value="demo_on"]')]);
+  const link = await a.locator('#bandymas .sp-url').inputValue();
+  check('test link created', /varzybos-bandymas\.php\?k=[a-f0-9]{24}$/.test(link), link);
+
+  const ctx = await browser.newContext({ viewport: { width: 1300, height: 900 } });
+  const g = await ctx.newPage();
+  const errs = []; g.on('pageerror', e => errs.push(e.message));
+  g.on('dialog', d => d.accept());
+  await g.goto(link);
+  await g.fill('input[name=name]', 'Tomas');
+  await Promise.all([g.waitForNavigation(), g.click('button[type=submit]')]);
+  check('lands in Taika', /admin\/varzybos\.php/.test(g.url()) && /Sveiki, Tomas/.test(await g.textContent('.varz-demo-note')));
+  check('real competitions hidden', !(await g.content()).includes('Tikros varžybos (e2e)'));
+  await Promise.all([g.waitForNavigation(), g.click('text=🎲 Sukurti test varžybas')]);
+  const tid = +sql('SELECT MAX(id) FROM tournaments');
+  check('demo competition', sql(`SELECT CONCAT(is_test, is_demo, COALESCE(created_by, 'null')) FROM tournaments WHERE id = ${tid}`) === '11null');
+  check('no real members in state', sql(`SELECT COUNT(*) FROM tournaments WHERE id = ${tid} AND state LIKE '%"member":%' AND state NOT LIKE '%"member":null%'`) === '0'
+    && !(await g.evaluate(() => (window.VARZ.members || []).length)));
+  check('members button hidden', await g.locator('#ppl-members').isHidden());
+  await g.goto(`admin/varzybu-sistema.php?id=${real}`);
+  check('real competition not reachable', /admin\/varzybos\.php/.test(g.url()));
+  await g.goto('admin/index.php');
+  check('club admin not reachable', /prisijungti/.test(g.url()));
+
+  // Atsiliepimas su vardu
+  await g.goto(`admin/varzybu-sistema.php?id=${tid}`);
+  await g.click('#fbFab');
+  await g.fill('#fbText', 'Bandymas: patogu, bet norėčiau didesnių mygtukų');
+  await g.press('#fbText', 'Enter');
+  await g.waitForTimeout(800);
+  check('feedback saved with name', sql("SELECT CONCAT(name, '|', site) FROM feedback WHERE body LIKE 'Bandymas: patogu%'") === 'Tomas (Taikos bandymas)|taika');
+  check('no js errors (guest)', !errs.length, errs.join('; '));
+
+  // Išjungus nuorodą - prieiga baigiasi
+  await a.goto('admin/varzybos.php');
+  await Promise.all([a.waitForNavigation(), a.click('#bandymas button[value="demo_off"]')]);
+  await g.goto('admin/varzybos.php');
+  check('access ends when link off', /prisijungti/.test(g.url()));
+  await ctx.close();
+  sql("DELETE FROM feedback WHERE body LIKE 'Bandymas: patogu%'");
+  sql(`DELETE FROM tournaments WHERE id = ${real} OR is_test = 1`);
+  noJsErrors(a);
+});

@@ -1,6 +1,6 @@
 -- 033: varžybų apdovanojimai. Sekretoriatas baigtą grupę „Siunčia apdovanojimams“, apdovanojimų planšetėje
 -- (nuoroda su raktu awards_token) amžiaus grupė užsidega žaliai, kai visos jos rungtys išsiųstos, o apdovanojus - „Užbaigti“.
--- Būsenos: sent - laukia apdovanojimo, done - apdovanota. Failą galima importuoti ir antrą kartą.
+-- Būsenos: sent - laukia apdovanojimo, done - apdovanota. Taip pat - Taikos bandymo varžybos (is_demo). Failą galima importuoti ir antrą kartą.
 SET NAMES utf8mb4;
 
 CREATE TABLE IF NOT EXISTS tournament_awards (
@@ -14,5 +14,8 @@ CREATE TABLE IF NOT EXISTS tournament_awards (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 ALTER TABLE tournaments ADD COLUMN IF NOT EXISTS awards_token VARCHAR(32) NULL;
+
+-- Taikos bandymo nuoroda (be paskyros): bandantysis mato ir kuria tik bandymo varžybas (is_demo), be tikrų klubo narių duomenų
+ALTER TABLE tournaments ADD COLUMN IF NOT EXISTS is_demo TINYINT(1) NOT NULL DEFAULT 0;
 
 INSERT IGNORE INTO db_versija (failas) VALUES ('033_apdovanojimai.sql');
