@@ -225,7 +225,8 @@ test('history restore, category reset from a round, themes and menu customizatio
   check('reset options', opts.some(o => /Visą rungtį/.test(o)), opts.join(' | '));
 
   // Tema ir meniu (bendri visoms varžyboms)
-  await a.selectOption('#theme-pick', 'volcano');
+  await a.click('.theme-pick .tp-btn');
+  await a.click('.theme-pick [data-theme-id="volcano"]');
   await a.waitForTimeout(600);
   check('theme saved', JSON.parse(sql("SELECT value FROM site_settings WHERE name = 'taika_ui'")).theme === 'volcano');
   await a.click('#menu-cfg');

@@ -150,7 +150,7 @@ $cfg = [
     'liveApi' => $shareUrl ? url('admin/varzybu-sistema.php?id=' . (int) $t['id'] . '&live=1') : '',
     'entriesApi' => url('admin/varzybu-sistema.php?id=' . (int) $t['id'] . '&entries=1'),
     'historyApi' => url('admin/varzybu-sistema.php?id=' . (int) $t['id'] . '&history=1'),
-    'uiApi' => url('admin/varzybu-sistema.php?id=' . (int) $t['id'] . '&ui=1'), 'ui' => varz_ui(), 'themes' => VARZ_THEMES,
+    'uiApi' => url('admin/varzybu-sistema.php?id=' . (int) $t['id'] . '&ui=1'), 'ui' => varz_ui(),
     'restoreApi' => url('admin/varzybu-sistema.php?id=' . (int) $t['id'] . '&restore=1'),
     'regApi' => url('admin/varzybu-sistema.php?id=' . (int) $t['id'] . '&reg=1'),
     'awardsApi' => $awardsUrl ? url('admin/varzybu-sistema.php?id=' . (int) $t['id'] . '&awards=1') : '', 'awardsUrl' => $awardsUrl,
@@ -176,7 +176,7 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
 <link rel="stylesheet" href="<?= e(asset_url('assets/varzybos.css')) ?>">
 <link rel="stylesheet" href="<?= e(asset_url('assets/widgets.css')) ?>">
 </head>
-<body class="vz<?= get('langas') ? ' vz-popup' : '' ?>" data-theme="<?= e(varz_ui()['theme']) ?>">
+<body<?= theme_body_attrs(varz_ui()['theme'], 'vz' . (get('langas') ? ' vz-popup' : '')) ?>>
 <header class="vz-top">
   <div class="vz-top-row">
     <a class="vz-back" href="<?= url('admin/varzybos.php') ?>" title="Visos varžybos">←</a>
@@ -193,7 +193,7 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
     </div>
     <div class="vz-top-right">
       <span class="save-state ok" id="save-state" role="status">Išsaugota ✓</span>
-      <select class="vz-link vz-theme" id="theme-pick" aria-label="Dizaino tema" title="Dizaino tema"><?php foreach (VARZ_THEMES as $k => $l): ?><option value="<?= $k ?>"<?= varz_ui()['theme'] === $k ? ' selected' : '' ?>><?= e($l) ?></option><?php endforeach; ?></select>
+      <?= theme_picker_html('taika', varz_ui()['theme'], 'vz-link') ?>
       <button type="button" class="vz-link" id="hist-toggle" aria-expanded="false" title="Atkurti, kaip buvo anksčiau">⟲<span class="hide-sm"> Istorija</span></button>
       <?php if ($shareUrl): ?><button type="button" class="vz-link" id="share-toggle" aria-expanded="false" title="Transliacija, ekranai, apdovanojimai, registracija">📡<span class="hide-sm"> Transliacija ir registracija</span></button><?php endif; ?>
       <a class="vz-link" href="<?= url('varzybu-rezultatai.php?id=' . (int) $t['id']) ?>" target="_blank" rel="noopener" title="Viešas rezultatų puslapis"><span class="hide-sm">Viešas puslapis </span>↗</a>
@@ -430,6 +430,6 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
 </main>
 <script>window.VARZ = <?= json_encode($cfg, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP) ?>;</script>
 <script src="<?= e(asset_url('assets/varzybos.js')) ?>"></script>
-<?= feedback_widget_html() ?><script src="<?= e(asset_url('assets/site.js')) ?>" defer></script>
+<?= feedback_widget_html() ?><script src="<?= e(asset_url('assets/site.js')) ?>" defer></script><script src="<?= e(asset_url('assets/theme-pick.js')) ?>" defer></script>
 </body>
 </html>

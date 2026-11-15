@@ -33,9 +33,10 @@ function page_start(string $title, array $opt = []): void
 <link rel="stylesheet" href="<?= e(asset_url('assets/header.css')) ?>">
 <link rel="stylesheet" href="<?= e($css) ?>">
 <link rel="stylesheet" href="<?= e(asset_url('assets/widgets.css')) ?>">
+<link rel="stylesheet" href="<?= e(asset_url('assets/themes.css')) ?>">
 <?= i18n_js() ?>
 </head>
-<body class="<?= $admin ? 'is-admin' : '' ?>">
+<body<?= theme_body_attrs(site_theme(), $admin ? 'is-admin' : '') ?>>
 <?php
     // Renginiai, Naujienos, Pamokos - viena vieta visiems (ir treneriui su redagavimo mygtukais), be trenerio skirtukų juostos
     $section = $opt['section'] ?? null;
@@ -378,6 +379,7 @@ function site_header(bool $home = false, ?string $area = null, ?string $tab = nu
       <li class="nav-account">
         <ul>
           <li class="lang-li"><?= render_lang_switch() ?></li>
+          <?php if (is_admin()): ?><li class="theme-li"><?= theme_picker_html('site', site_theme()) ?></li><?php endif; ?>
           <?php if ($a && ($vs = render_view_switch())): ?><li class="vs-li"><?= $vs ?></li><?php endif; ?>
           <?php if ($a && is_staff($a)): ?>
             <li><a class="nav-login<?= $area === 'admin' ? ' is-current' : '' ?>" href="<?= url('admin/') ?>"><?= te('Valdymas') ?><?php if ($n = staff_attention_count((int) $a['id'])): ?><span class="count-badge nav-bubble" title="<?= te('Reikia padaryti: pranešimai, patvirtinimai ir kiti darbai') ?>"><?= $n ?></span><?php endif; ?></a></li>

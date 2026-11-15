@@ -81,3 +81,29 @@ test('Taika fits a phone screen; ⋯ opens inside the card', async ({ browser })
   sql('DELETE FROM tournaments WHERE is_test = 1');
   noJsErrors(a);
 });
+
+test('themes: one list for karateka.lt and Taika, picker everywhere it changes the look', async ({ browser }) => {
+  const a = await login(browser, 'info@karateka.lt', 1300, 850);
+  // karateka.lt: adminas keičia viršuje (🎨), matosi visiems
+  await a.goto('index.php');
+  await a.click('.theme-li .tp-btn');
+  check('all themes shown at once', await a.locator('.theme-li .tp-sw').count() >= 10);
+  await a.click('.theme-li [data-theme-id="nature"]');
+  await a.waitForTimeout(400);
+  check('site theme saved', sql("SELECT value FROM site_settings WHERE name = 'site_theme'") === 'nature');
+  const g = await login(browser, null);
+  await g.goto('index.php');
+  check('visitors see the theme', await g.evaluate(() => document.body.dataset.theme) === 'nature' && await g.locator('.theme-pick').count() === 0);
+  if (await a.locator('.theme-li .tp-panel').isHidden()) await a.click('.theme-li .tp-btn');   // langas lieka atviras - galima išbandyti kelias
+  await a.click('.theme-li [data-theme-id="space"]'); await a.waitForTimeout(300);
+  await g.reload();
+  check('dark theme class', await g.evaluate(() => document.body.classList.contains('theme-dark')));
+  // Taika: pasirinkimas ir pradžioje, ir varžybose; ta pati tema viešuose puslapiuose
+  await a.goto('admin/varzybos.php');
+  await a.click('.theme-pick .tp-btn'); await a.click('.theme-pick [data-theme-id="sea"]'); await a.waitForTimeout(400);
+  check('Taika theme from home', JSON.parse(sql("SELECT value FROM site_settings WHERE name = 'taika_ui'")).theme === 'sea');
+  await a.goto('varzybu-rezultatai.php');
+  check('public Taika page uses the theme', await a.evaluate(() => document.body.dataset.theme) === 'sea');
+  sql("DELETE FROM site_settings WHERE name IN ('site_theme', 'taika_ui')");
+  noJsErrors(a, g);
+});

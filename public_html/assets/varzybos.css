@@ -864,9 +864,7 @@ body.vz { background-attachment: fixed; }
   --accent: #2F7D4F; --accent-2: #24653F; --accent-soft: #E1F1E6; --green: #2F7D4F; --green-soft: #E1F1E6;
 }
 body.vz[data-theme="nature"] {
-  background: radial-gradient(700px 400px at 100% 0%, rgba(120, 180, 90, .25), transparent 60%), radial-gradient(600px 500px at 0% 100%, rgba(60, 140, 90, .22), transparent 60%),
-    repeating-linear-gradient(135deg, rgba(47, 125, 79, .035) 0 14px, transparent 14px 28px), #EEF5EC;
-  background-attachment: fixed;
+  background: url("../img/temos/gamta.svg") center bottom / cover fixed no-repeat, #EAF5E1;
 }
 [data-theme="nature"] .vz-top { background: linear-gradient(135deg, #12301F 0%, #1D4A2E 100%); }
 /* 🏔️ Kalnai: dangus ir kalnų siluetai apačioje */
@@ -875,10 +873,7 @@ body.vz[data-theme="nature"] {
   --accent: #2F5D8A; --accent-2: #244A70; --accent-soft: #E3ECF6;
 }
 body.vz[data-theme="mountains"] {
-  background:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1600 320' preserveAspectRatio='none'%3E%3Cpath d='M0 320 L0 210 L180 90 L300 180 L470 40 L640 200 L760 130 L930 230 L1100 70 L1260 190 L1400 120 L1600 220 L1600 320Z' fill='%23B9C8DA'/%3E%3Cpath d='M0 320 L0 260 L220 170 L380 250 L560 150 L720 260 L900 180 L1080 270 L1250 190 L1420 260 L1600 200 L1600 320Z' fill='%2398ABC2'/%3E%3C/svg%3E") bottom / 100% 34vh no-repeat,
-    linear-gradient(180deg, #DCE7F3 0%, #F3F6FA 60%, #E9EFF6 100%);
-  background-attachment: fixed;
+  background: url("../img/temos/kalnai.svg") center bottom / cover fixed no-repeat, #EEF3F8;
 }
 [data-theme="mountains"] .vz-top { background: linear-gradient(135deg, #1B2A40 0%, #2F4A6C 100%); }
 /* 🌋 Vulkanas: tamsus fonas su lavos švytėjimu, kortelių kraštai - žarijos */
@@ -1033,3 +1028,23 @@ body.vz[data-theme="volcano"] {
 .pin-win.min .pin-head { border-radius: 14px; }
 body.pin-drop::after { content: "📌 Paleiskite - langelis bus prisegtas čia"; position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 8px 16px; border-radius: 999px; font-weight: 700; z-index: 1000; pointer-events: none; }
 @media print { .pins { display: none; } }
+
+/* v1.29: daugiau temų (bendros su karateka.lt) - peizažai img/temos/*.svg; lentelės ir kortelės lieka šviesios ir aiškios */
+[data-theme="sea"] { --bg: #E6F6FC; --surface: #FFFFFF; --surface-2: #F1F8FC; --line: #D1E6F0; --line-2: #B3D3E3; --ink: #12303F; --muted: #4F6B79; --accent: #1E6F9E; --accent-2: #175A80; --accent-soft: #E0F0F8; }
+body.vz[data-theme="sea"] { background: url("../img/temos/jura.svg") center bottom / cover fixed no-repeat, #E6F6FC; }
+[data-theme="sea"] .vz-top { background: linear-gradient(135deg, #0F3550 0%, #1E5F86 100%); }
+[data-theme="sakura"] { --bg: #FFF6F8; --surface: #FFFFFF; --surface-2: #FDF2F5; --line: #F1D9E1; --line-2: #E6C2CF; --ink: #3A1F2A; --muted: #7A5A66; --accent: #B4436F; --accent-2: #8E3357; --accent-soft: #FBE6EE; }
+body.vz[data-theme="sakura"] { background: url("../img/temos/sakura.svg") center bottom / cover fixed no-repeat, #FFF6F8; }
+[data-theme="sakura"] .vz-top { background: linear-gradient(135deg, #4A2233 0%, #7A3552 100%); }
+[data-theme="autumn"] { --bg: #FCEBD2; --surface: #FFFFFF; --surface-2: #FDF5EA; --line: #EFD8BC; --line-2: #E3C29C; --ink: #34200F; --muted: #7A5B40; --accent: #B5541F; --accent-2: #8E4118; --accent-soft: #FBE7D6; }
+body.vz[data-theme="autumn"] { background: url("../img/temos/ruduo.svg") center bottom / cover fixed no-repeat, #FCEBD2; }
+[data-theme="autumn"] .vz-top { background: linear-gradient(135deg, #3E2312 0%, #6E3818 100%); }
+[data-theme="winter"] { --bg: #F4F8FC; --surface: #FFFFFF; --surface-2: #F2F6FA; --line: #DCE6EF; --line-2: #C3D2E0; --ink: #16303D; --muted: #566C78; --accent: #2F5263; --accent-2: #233F4C; --accent-soft: #E3EDF3; }
+body.vz[data-theme="winter"] { background: url("../img/temos/ziema.svg") center bottom / cover fixed no-repeat, #F4F8FC; }
+[data-theme="winter"] .vz-top { background: linear-gradient(135deg, #1A2E3A 0%, #2F5263 100%); }
+body.vz[data-theme="space"] { background: url("../img/temos/kosmosas.svg") center / cover fixed no-repeat, #050816; }
+body.vz[data-theme="volcano"] { background: url("../img/temos/vulkanas.svg") center bottom / cover fixed no-repeat, #140806; }
+/* Peizažinėse temose kortelės - tankesnės (aiškus tekstas) */
+body.vz[data-theme="nature"] .panel, body.vz[data-theme="mountains"] .panel, body.vz[data-theme="sea"] .panel, body.vz[data-theme="sakura"] .panel, body.vz[data-theme="autumn"] .panel, body.vz[data-theme="winter"] .panel { background: rgba(255, 255, 255, .93); }
+.vz-top .theme-pick .tp-btn { background: rgba(255, 255, 255, .08); color: #DDE1E8; }
+.vzh > p.small { display: inline-block; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; }

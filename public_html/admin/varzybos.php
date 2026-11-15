@@ -159,6 +159,7 @@ varz_html_head(t('Varžybos'), 'vz-home');
     </div>
     <?php if ($ready): ?>
       <div class="vz-top-right">
+        <?= theme_picker_html('taika', varz_ui()['theme'], 'vz-link') ?>
         <form method="post"><?= csrf_field() ?><input type="hidden" name="action" value="test">
           <button class="vz-link" type="submit"><?= te('🎲 Sukurti test varžybas') ?></button></form>
       </div>

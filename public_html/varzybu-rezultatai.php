@@ -33,7 +33,7 @@ $medal = function (int $p): string { return '<span class="medal ' . ['', 'g', 's
 <link rel="stylesheet" href="<?= e(asset_url('assets/varzybos.css')) ?>">
 <link rel="stylesheet" href="<?= e(asset_url('assets/widgets.css')) ?>">
 </head>
-<body class="vz vz-public">
+<body<?= theme_body_attrs(varz_ui()['theme'], 'vz vz-public') ?>>
 <header class="vz-top">
   <div class="vz-top-row">
     <a class="vz-brand" href="<?= url('varzybu-rezultatai.php') ?>"><span class="vz-logo" aria-hidden="true"></span><?= e(VARZ_NAME) ?></a>

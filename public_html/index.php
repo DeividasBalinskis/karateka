@@ -27,9 +27,10 @@ $page = home_page();
 <script>document.documentElement.classList.add('js');</script>
 <?= i18n_js() ?>
 <link rel="stylesheet" href="<?= e(asset_url('assets/home.css')) ?>">
+<link rel="stylesheet" href="<?= e(asset_url('assets/themes.css')) ?>">
 <?php if ($edit): ?><link rel="stylesheet" href="<?= e(asset_url('assets/home-edit.css')) ?>"><?php endif; ?>
 </head>
-<body class="<?= $edit ? 'home-edit' : '' ?>">
+<body<?= theme_body_attrs(site_theme(), $edit ? 'home-edit' : '') ?>>
 
 <?php site_header(true); ?>
 

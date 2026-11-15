@@ -1,0 +1,40 @@
+/* karateka.lt temos (app/themes.php): fonas su peizažu, kortelės lieka šviesios ir aiškiai skaitomos.
+   Tamsiose temose (theme-dark) - tamsi viršutinė juosta, šviesūs užrašai ant fono. */
+body[data-theme]:not([data-theme="light"]){background-attachment:fixed;}
+body[data-theme="nature"]   {background:url("../img/temos/gamta.svg") center bottom / cover fixed no-repeat, #EAF5E1;}
+body[data-theme="mountains"]{background:url("../img/temos/kalnai.svg") center bottom / cover fixed no-repeat, #EEF3F8;}
+body[data-theme="sea"]      {background:url("../img/temos/jura.svg") center bottom / cover fixed no-repeat, #E6F6FC;}
+body[data-theme="sakura"]   {background:url("../img/temos/sakura.svg") center bottom / cover fixed no-repeat, #FFF6F8;}
+body[data-theme="autumn"]   {background:url("../img/temos/ruduo.svg") center bottom / cover fixed no-repeat, #FCEBD2;}
+body[data-theme="winter"]   {background:url("../img/temos/ziema.svg") center bottom / cover fixed no-repeat, #F4F8FC;}
+body[data-theme="dark"]     {background:radial-gradient(ellipse 70% 45% at 15% 10%, rgba(120,96,160,.35), transparent 60%), radial-gradient(ellipse 60% 40% at 85% 80%, rgba(47,107,90,.3), transparent 60%), #14121A fixed;}
+body[data-theme="space"]    {background:url("../img/temos/kosmosas.svg") center / cover fixed no-repeat, #050816;}
+body[data-theme="volcano"]  {background:url("../img/temos/vulkanas.svg") center bottom / cover fixed no-repeat, #140806;}
+
+/* Kortelės ant peizažo - šiek tiek tankesnės, kad tekstas būtų aiškus */
+body[data-theme]:not([data-theme="light"]) .panel{background:rgba(255,255,255,0.8);}
+body[data-theme="nature"]   {--accent:#2F7D4F; --accent-dark:#24653F;}
+body[data-theme="mountains"]{--accent:#2F5D8A; --accent-dark:#244A70;}
+body[data-theme="sea"]      {--accent:#1E6F9E; --accent-dark:#175A80;}
+body[data-theme="sakura"]   {--accent:#B4436F; --accent-dark:#8E3357;}
+body[data-theme="autumn"]   {--accent:#B5541F; --accent-dark:#8E4118;}
+body[data-theme="winter"]   {--accent:#2F5263; --accent-dark:#233F4C;}
+
+/* ---------- Tamsios temos: juosta, antraštės ir užrašai ant fono ---------- */
+body.theme-dark .site-header{background:rgba(20,18,26,0.92); border-bottom-color:rgba(255,255,255,0.08); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);}
+body.theme-dark .site-header .nav-link, body.theme-dark .site-header .nav-page, body.theme-dark .site-header .nav-login, body.theme-dark .site-header .logout-btn{color:#ECE8F4;}
+body.theme-dark .site-header .nav-group{background:rgba(255,255,255,0.08);}
+body.theme-dark .lang-switch{background:rgba(255,255,255,0.1);}
+body.theme-dark .lang-switch a{color:#C9C3D6;}
+body.theme-dark .lang-switch a.active{background:#ECE8F4; color:#3E2C55;}
+body.theme-dark .tp-btn{background:rgba(255,255,255,0.12);}
+body.theme-dark h1.styled, body.theme-dark .section-head h2.styled, body.theme-dark h2.styled-dark, body.theme-dark .chooser-title, body.theme-dark .about-sub-head h3{
+  background:linear-gradient(90deg, #FFFFFF 0%, #D9C9F2 100%); -webkit-background-clip:text; background-clip:text;}
+body.theme-dark .section-head p, body.theme-dark main > p, body.theme-dark main > .muted, body.theme-dark main > a, body.theme-dark main > .small,
+body.theme-dark .page-head, body.theme-dark .page-head .muted, body.theme-dark main > h1, body.theme-dark main > h2{color:#E4DFEE; text-shadow:0 1px 2px rgba(0,0,0,.45);}
+body.theme-dark .footer-bottom{color:#C9C3D6; border-top-color:rgba(255,255,255,0.14);}
+body.theme-dark .footer-bottom a{color:#ECE8F4;}
+body.theme-dark .panel{background:rgba(255,255,255,0.88);}
+@media (max-width:1100px){ body.theme-dark .site-header .nav-menu, body.theme-dark .nav-menu{background:#1A1722;} }
+body.theme-dark .view-switch > summary{color:#ECE8F4; background:rgba(255,255,255,0.1);}
+body.theme-dark .site-header .logo img{background:rgba(255,255,255,0.92); border-radius:12px; padding:2px 6px;}

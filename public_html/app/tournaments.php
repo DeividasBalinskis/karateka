@@ -114,14 +114,14 @@ function varz_partners(): array
     return home_block_defaults('partners')['items'];
 }
 
-const VARZ_THEMES = ['light' => '☀️ Šviesi', 'dark' => '🌙 Tamsi', 'space' => '🪐 Kosmosas', 'nature' => '🌿 Gamta', 'mountains' => '🏔️ Kalnai', 'volcano' => '🌋 Vulkanas'];
+// Temos - app/themes.php (THEMES), bendros su karateka.lt
 
 /** Taikos išvaizdos nustatymai (bendri visoms varžyboms): tema ir meniu (tvarka, pavadinimai) */
 function varz_ui(): array
 {
     $ui = json_decode((string) site_setting('taika_ui', '{}'), true);
     $ui = is_array($ui) ? $ui : [];
-    $ui['theme'] = isset(VARZ_THEMES[$ui['theme'] ?? '']) ? $ui['theme'] : 'light';
+    $ui['theme'] = isset(THEMES[$ui['theme'] ?? '']) ? $ui['theme'] : 'light';
     $ui['menu'] = is_array($ui['menu'] ?? null) ? $ui['menu'] : ['order' => [], 'names' => []];
     return $ui;
 }
@@ -129,7 +129,7 @@ function varz_ui(): array
 function varz_ui_save(array $in): array
 {
     $ui = varz_ui();
-    if (isset($in['theme']) && isset(VARZ_THEMES[$in['theme']])) {
+    if (isset($in['theme']) && isset(THEMES[$in['theme']])) {
         $ui['theme'] = $in['theme'];
     }
     if (isset($in['menu']) && is_array($in['menu'])) {
@@ -155,7 +155,7 @@ function varz_html_head(string $title, string $bodyClass = ''): void
         . '<link rel="icon" type="image/png" sizes="32x32" href="' . url('favicon-32.png?v=2') . '">'
         . '<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">'
         . '<link rel="stylesheet" href="' . e(asset_url('assets/varzybos.css')) . '"><link rel="stylesheet" href="' . e(asset_url('assets/widgets.css')) . '">'
-        . '</head><body class="vz ' . e($bodyClass) . '" data-theme="' . e(varz_ui()['theme']) . '">';
+        . '<script src="' . e(asset_url('assets/theme-pick.js')) . '" defer></script></head><body' . theme_body_attrs(varz_ui()['theme'], 'vz ' . $bodyClass) . '>';
 }
 
 /** Partnerių juosta Taikos puslapių apačioje */
