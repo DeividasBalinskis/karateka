@@ -1560,7 +1560,7 @@
     html += '<input class="bt-score" type="number" min="0" max="99" inputmode="numeric" data-sc="' + side + '" value="' + sc + '" aria-label="' + (side === 'a' ? 'AKA' : 'SHIRO') + ' balai" title="Paspauskite ir įrašykite balą">';
     if (mode === 'sumo') html += '<div class="bt-btns"><button type="button" class="btn bt-big" data-pt="' + side + '|1">+1 taškas</button><button type="button" class="btn" data-pt="' + side + '|-1">−1</button></div>' +
       '<div class="muted small">Laimi surinkęs ' + cfg(c).sumoTo + '</div>';
-    else html += '<div class="bt-btns">' + [1, 2, 3].map(function (n) { return '<button type="button" class="btn bt-big" data-pt="' + side + '|' + n + '">+' + n + '</button>'; }).join('') + '<button type="button" class="btn" data-pt="' + side + '|-1">−1</button></div>';
+    else html += '<div class="bt-btns">' + [1, 2, 4].map(function (n) { return '<button type="button" class="btn bt-big" data-pt="' + side + '|' + n + '">+' + n + '</button>'; }).join('') + '<button type="button" class="btn" data-pt="' + side + '|-1">−1</button></div>';
     return html + '</div>';
   }
   function partsTable() {
@@ -1918,6 +1918,7 @@
         var nameEl = editName === c.id ? '<input class="sel card-name-in" data-cname="' + c.id + '" value="' + esc(c.name) + '" aria-label="Rungties pavadinimas">'
           : '<button type="button" class="card-name" data-open-cat="' + c.id + '" title="Atidaryti: lentelė, kovos, balai"><span class="disc d-' + c.discipline + '"></span>' + esc(c.name) + '</button>';
         return '<li class="card st-' + x.st + (det ? ' detached' : '') + (x.st === 'done' && catStatus(c) === 'fin' ? ' needs-send' : '') + '" draggable="true" data-c="' + c.id + '"><div class="card-top">' +
+          '<span class="card-grip" data-card-grip title="Tempkite - pakeisti eilę ar tatamį (ir pirštu)" aria-hidden="true">⠿</span>' +
           '<input class="card-time-in" type="text" inputmode="numeric" maxlength="5" value="' + hhmm(start) + '" data-cat-at="' + c.id + '" title="' + (c.at ? 'Nustatytas laikas (ištrinkite - vėl skaičiuosis pats)' : 'Pakeiskite - rungtis prasidės ne anksčiau') + '"' + (c.at ? ' data-fixed="1"' : '') + '>' +
           nameEl + (det ? '<span class="st-badge det">atskirame lange</span>' : x.st === 'done' ? '' : ST_BADGE[x.st]) + (function () {
             var st = catStatus(c, x.st === 'now');
@@ -1983,7 +1984,26 @@
     savePins(); renderPins();
     toast('📌 Prisegta: <b>' + esc(cat(id).name) + '</b>. Tempkite už antraštės, ✕ - atsegti.');
   }
-  function pinBody(c) {
+  // Prisegtame langelyje - visa lentelė: paspaudus vardą pažymimas nugalėtojas (dar kartą - atšaukiama)
+  function pinTree(c) {
+    if (!c.draw || drawStale(c) || c.competitors.length < 2) return '<p class="muted small">Lentelė dar nesudaryta.</p>';
+    var b = catBracket(c, true), h = '';
+    (b.groups || []).forEach(function (g) {
+      h += '<h4>' + esc(g.t) + '</h4>';
+      if (g.score) { h += '<ol class="gv-score">' + g.rows.map(function (r) { return '<li><span>' + esc(r.n) + '</span><b>' + esc(r.s || '–') + '</b></li>'; }).join('') + '</ol>'; return; }
+      h += '<div class="pin-ms">' + g.matches.map(function (m) {
+        var side = function (k) {
+          var id = m[k + 'i'], nm = m[k], won = m.w === k;
+          return id && m.ai && m.bi ? '<button type="button" class="pin-p' + (won ? ' won' : '') + (k === 'a' ? ' aka-t' : '') + '" data-pin-res="' + esc(c.id + '|' + m.id + '|' + id) + '" title="Pažymėti nugalėtoju">' + esc(nm) + '</button>'
+            : '<span class="pin-p' + (won ? ' won' : '') + '">' + esc(nm || '…') + '</span>';
+        };
+        return '<div class="pin-m' + (m.w ? ' done' : '') + '"><span class="muted">' + esc(m.no) + '</span>' + side('a') + '<span class="muted">' + esc(m.s || 'vs') + '</span>' + side('b') + '</div>';
+      }).join('') + '</div>';
+    });
+    return h;
+  }
+  function pinBody(c, view) {
+    if (view === 'tree') return pinTree(c);
     var a = areaById(c.tatami) || S.areas[0], plan = areaPlan(a), it = plan.items.find(function (x) { return x.c === c; }) || { start: toMin(a.start), done: 0, total: matchCount(c), st: '' };
     var st = catStatus(c, it.st === 'now'), html = '<div class="pin-meta">' + esc(a.name) + ' · ' + hhmm(it.start) + ' ' + stChip(st) + '</div>' +
       '<div class="prog' + (it.total && it.done >= it.total ? ' done' : '') + '"><i style="width:' + (it.total ? Math.round(it.done / it.total * 100) : 0) + '%"></i><span>' + it.done + ' / ' + it.total + '</span></div>';
@@ -1997,12 +2017,13 @@
     if (POPUP) return;
     pins = pins.filter(function (p) { return cat(p.id); });
     pinBox.innerHTML = pins.map(function (p) {
-      var c = cat(p.id), w = Math.min(300, window.innerWidth - 24);
+      var c = cat(p.id), w = Math.max(220, Math.min(p.w || (p.view === 'tree' ? 380 : 300), window.innerWidth - 24));
       var x = Math.max(8, Math.min(p.x, window.innerWidth - w - 8)), y = Math.max(8, Math.min(p.y, window.innerHeight - 60));
-      return '<section class="pin-win' + (p.min ? ' min' : '') + '" data-pin="' + esc(p.id) + '" style="left:' + x + 'px;top:' + y + 'px;width:' + w + 'px" aria-label="Prisegta: ' + esc(c.name) + '">' +
+      return '<section class="pin-win' + (p.min ? ' min' : '') + (p.view === 'tree' ? ' tree' : '') + '" data-pin="' + esc(p.id) + '" style="left:' + x + 'px;top:' + y + 'px;width:' + w + 'px' + (p.h && !p.min ? ';height:' + Math.min(p.h, window.innerHeight - 16) + 'px' : '') + '" aria-label="Prisegta: ' + esc(c.name) + '">' +
         '<header class="pin-head" data-pin-drag title="Tempkite - perkelti"><span class="disc d-' + c.discipline + '"></span><b>' + esc(c.name) + '</b>' +
+        '<button type="button" data-pin-view title="' + (p.view === 'tree' ? 'Rodyti: kas kovoja dabar' : 'Rodyti visą lentelę (galima žymėti nugalėtojus)') + '">' + (p.view === 'tree' ? '◉' : '▦') + '</button>' +
         '<button type="button" data-pin-open title="Atidaryti">↗</button><button type="button" data-pin-min title="' + (p.min ? 'Išskleisti' : 'Suskleisti') + '">' + (p.min ? '▢' : '–') + '</button><button type="button" data-pin-x title="Atsegti">✕</button></header>' +
-        (p.min ? '' : '<div class="pin-body">' + pinBody(c) + '</div>') + '</section>';
+        (p.min ? '' : '<div class="pin-body">' + pinBody(c, p.view) + '</div><span class="pin-resize" data-pin-resize title="Tempkite - keisti dydį" aria-hidden="true"></span>') + '</section>';
     }).join('');
   }
   // Langelio tempimas už antraštės (pele ir pirštu); prie ekrano krašto - prilimpa
@@ -2012,6 +2033,22 @@
     var win = h.closest('.pin-win'), r = win.getBoundingClientRect();
     pinMove = { id: win.dataset.pin, win: win, dx: e.clientX - r.left, dy: e.clientY - r.top };
     win.classList.add('moving'); e.preventDefault();
+  });
+  var pinSize = null;
+  pinBox.addEventListener('pointerdown', function (e) {
+    var g = e.target.closest('[data-pin-resize]'); if (!g) return;
+    var win = g.closest('.pin-win'), r = win.getBoundingClientRect();
+    pinSize = { id: win.dataset.pin, win: win, x: e.clientX, y: e.clientY, w: r.width, h: r.height }; e.preventDefault(); e.stopPropagation();
+  }, true);
+  document.addEventListener('pointermove', function (e) {
+    if (!pinSize) return;
+    pinSize.win.style.width = Math.max(220, pinSize.w + e.clientX - pinSize.x) + 'px';
+    pinSize.win.style.height = Math.max(120, pinSize.h + e.clientY - pinSize.y) + 'px';
+  });
+  document.addEventListener('pointerup', function () {
+    if (!pinSize) return;
+    var m = pinSize, p = pins.find(function (x) { return x.id === m.id; }); pinSize = null;
+    if (p) { p.w = Math.round(m.win.offsetWidth); p.h = Math.round(m.win.offsetHeight); savePins(); }
   });
   document.addEventListener('pointermove', function (e) {
     if (!pinMove) return;
@@ -2031,6 +2068,13 @@
     var id = win.dataset.pin, p = pins.find(function (x) { return x.id === id; });
     if (e.target.closest('[data-pin-x]')) { pins = pins.filter(function (x) { return x.id !== id; }); savePins(); renderPins(); }
     else if (e.target.closest('[data-pin-min]') && p) { p.min = !p.min; savePins(); renderPins(); }
+    else if (e.target.closest('[data-pin-view]') && p) { p.view = p.view === 'tree' ? '' : 'tree'; p.h = 0; savePins(); renderPins(); }
+    else if (e.target.closest('[data-pin-res]')) {
+      var pr = e.target.closest('[data-pin-res]').dataset.pinRes.split('|'), pc = cat(pr[0]); if (!pc || !pc.draw) return;
+      snapshot();
+      if (pc.draw.results[pr[1]] === pr[2]) delete pc.draw.results[pr[1]]; else pc.draw.results[pr[1]] = pr[2];
+      prune(pc); save(); render();
+    }
     else if (e.target.closest('[data-pin-open]')) goRun(id);
   });
   window.addEventListener('resize', function () { renderPins(); });
@@ -2073,9 +2117,22 @@
         : S.areas.length > 4 ? '<select class="sel rs-area" id="rs-area" aria-label="Tatamis" title="Pažiūrėti kitą tatamį">' + S.areas.map(function (x) { return '<option value="' + x.id + '"' + (x.id === a.id ? ' selected' : '') + '>' + esc(x.name) + '</option>'; }).join('') + '</select>' : '<b class="rs-area">' + esc(a.name) + '</b>') +
       delayChip(plan.delay) + '<span class="rs-pos muted small">Grupė ' + (idx + 1) + ' iš ' + plan.items.length + ' · liko ' + left + '</span>' + stChip(catStatus(c, it.st === 'now')) +
       '<a class="rs-all small" href="#run-list">Visos grupės ↓</a>';
+    // Iš pačios rungties: pradėti ją dabar (be eilės) arba perkelti į kitą tatamį
+    var isCur = plan.cur && plan.cur.c === c, itSt = (plan.items.find(function (x) { return x.c === c; }) || {}).st;
+    document.getElementById('run-move').innerHTML = (CFG.readOnly ? '' :
+      (!isCur && itSt && itSt !== 'done' ? '<button type="button" class="btn btn-sm" data-run-start="' + c.id + '" title="Ši grupė taps dabartine šiame tatamyje (kitos pasislinks)">▶ Pradėti dabar</button>' : '') +
+      (S.areas.length > 1 ? '<span class="seg run-to" role="group" aria-label="Perkelti į tatamį"><span class="small muted">Perkelti į</span>' + S.areas.filter(function (x) { return x.id !== a.id; }).map(function (x) {
+        return '<button type="button" class="seg-btn" data-run-to="' + x.id + '" title="Perkelti į ' + esc(x.name) + ' (į galą)">' + esc(x.name.replace(/\s*TATAMIS/i, '')) + '</button>'; }).join('') + '</span>' : ''));
     renderRunDone(c);
     renderRunList(c, a, plan);
   }
+  document.getElementById('run-move').addEventListener('click', function (e) {
+    var c = cat(S.selected); if (!c) return;
+    var st = e.target.closest('[data-run-start]');
+    if (st) { var pl = areaPlan(areaById(c.tatami)); if (pl.cur && pl.cur.c !== c) moveCat(c.id, c.tatami, pl.cur.c.id); toast('„' + esc(c.name) + '“ - dabar šiame tatamyje.'); return; }
+    var to = e.target.closest('[data-run-to]');
+    if (to) { var ar = areaById(to.dataset.runTo); moveCat(c.id, +to.dataset.runTo, null); toast('Perkelta į <b>' + esc(ar ? ar.name : '') + '</b>.'); }
+  });
   document.getElementById('run-back').addEventListener('click', function () { if (POPUP) { window.close(); return; } setRun(false); render(); });
   document.getElementById('run').addEventListener('click', function (e) {
     var v = e.target.closest('[data-runview]'); if (!v) return;
@@ -2134,6 +2191,35 @@
     save(); render();
   }
   var sched = document.getElementById('sched'), dragId = null;
+  // Liečiamame ekrane (planšetė) HTML5 tempimas neveikia - kortelė tempiama už ⠿: į kitą eilę, kitą tatamį arba už tatamių (prisegti)
+  var cd = null;
+  sched.addEventListener('pointerdown', function (e) {
+    var g = e.target.closest('[data-card-grip]'); if (!g || e.pointerType === 'mouse') return;
+    var li = g.closest('.card'); if (!li) return;
+    e.preventDefault();
+    var r = li.getBoundingClientRect(), gh = li.cloneNode(true);
+    gh.className += ' drag-ghost'; gh.style.cssText = 'position:fixed;left:' + r.left + 'px;top:' + r.top + 'px;width:' + r.width + 'px;pointer-events:none;z-index:2000;opacity:.9;';
+    document.body.appendChild(gh); li.classList.add('dragging');
+    cd = { id: li.dataset.c, gh: gh, dx: e.clientX - r.left, dy: e.clientY - r.top };
+  });
+  document.addEventListener('pointermove', function (e) {
+    if (!cd) return; e.preventDefault();
+    cd.gh.style.left = (e.clientX - cd.dx) + 'px'; cd.gh.style.top = (e.clientY - cd.dy) + 'px';
+    var el = document.elementFromPoint(e.clientX, e.clientY), ul = el && el.closest('[data-drop]');
+    sched.querySelectorAll('.drop').forEach(function (x) { x.classList.remove('drop'); }); if (ul) ul.classList.add('drop');
+    document.body.classList.toggle('pin-drop', !ul);
+  }, { passive: false });
+  function cardDrop(e, cancel) {
+    if (!cd) return;
+    var id = cd.id; cd.gh.remove(); cd = null;
+    document.body.classList.remove('pin-drop'); sched.querySelectorAll('.drop, .dragging').forEach(function (x) { x.classList.remove('drop', 'dragging'); });
+    if (cancel) return;
+    var el = document.elementFromPoint(e.clientX, e.clientY), ul = el && el.closest('[data-drop]');
+    if (ul) { var over = el.closest('.card'); moveCat(id, +ul.dataset.drop, over && over.dataset.c !== id ? over.dataset.c : null); }
+    else if (el && !el.closest('#sched')) pinCat(id, e.clientX, e.clientY);
+  }
+  document.addEventListener('pointerup', function (e) { cardDrop(e, false); });
+  document.addEventListener('pointercancel', function (e) { cardDrop(e, true); });
   sched.addEventListener('keydown', function (e) { if (e.target.dataset && e.target.dataset.cname && (e.key === 'Enter' || e.key === 'Escape')) { if (e.key === 'Escape') { editName = null; renderSched(); } else e.target.blur(); } });
   sched.addEventListener('dragstart', function (e) { var li = e.target.closest('.card'); if (!li || /INPUT/.test(e.target.tagName)) return; dragId = li.dataset.c; li.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move'; try { e.dataTransfer.setData('text/plain', dragId); } catch (x) {} });
   sched.addEventListener('dragend', function () { dragId = null; render(); });
@@ -2246,8 +2332,10 @@
     var club = function (id) { return id ? (person(c, id) || {}).club || '' : ''; };
     var pubName = full ? function (id) { return (person(c, id) || {}).name || ''; } : pubNameShort;
     var mm = function (m, t) {
-      return { no: m.no || '', t: t, a: m.a ? pubName(m.a) : '', ac: club(m.a), b: m.b ? pubName(m.b) : '', bc: club(m.b),
+      var o = { no: m.no || '', t: t, a: m.a ? pubName(m.a) : '', ac: club(m.a), b: m.b ? pubName(m.b) : '', bc: club(m.b),
         w: m.winner && !m.bye ? (m.winner === m.a ? 'a' : 'b') : '', s: (c.draw.scores || {})[m.id] || '' };
+      if (full) { o.id = m.id; o.ai = m.a || ''; o.bi = m.b || ''; }   // valdymui (prisegtame langelyje) - kovos ir dalyvių id
+      return o;
     };
     var out = { id: c.id, name: c.name, disc: c.discipline, sys: c.draw && SYSTEMS[c.draw.system] ? SYSTEMS[c.draw.system][0] : '', count: c.competitors.length, groups: [], places: [] };
     if (!c.draw || drawStale(c) || c.competitors.length < 2) {

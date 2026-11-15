@@ -28,15 +28,23 @@
     function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
 
     // ---------- Sąrašas ----------
+    // Matomi tik 2 naujausi (ir šiuo metu taisomas); kiti - paspaudus „Rodyti visus“
+    var showAll = false;
     function renderList() {
       mine.hidden = !items.length;
-      list.innerHTML = items.map(function (it) {
+      var shown = showAll ? items : items.filter(function (it, i) { return i < 2 || it.id === cur.id; });
+      list.innerHTML = shown.map(function (it) {
         return '<li class="fb-item' + (it.id === cur.id ? ' on' : '') + '" data-id="' + it.id + '" tabindex="0" role="button" title="Paspauskite - taisyti">' +
           '<div class="fb-item-top"><span class="fb-item-title">' + esc(it.title) + '</span>' + (it.images.length ? '<span class="fb-item-img" title="Nuotraukos">🖼 ' + it.images.length + '</span>' : '') + '</div>' +
           '<div class="fb-item-meta"><span>' + esc(it.date) + '</span><span class="fb-st st-' + esc(it.status) + '">' + esc(it.statusLabel) + '</span></div>' +
           (it.reply ? '<div class="fb-reply"><b>Atsakymas:</b> ' + esc(it.reply) + '</div>' : '') + '</li>';
-      }).join('');
+      }).join('') + (items.length > shown.length ? '<li><button type="button" class="fb-more" data-fb-all>Rodyti visus (' + items.length + ') ↓</button></li>'
+        : showAll && items.length > 2 ? '<li><button type="button" class="fb-more" data-fb-all>Rodyti tik naujausius ↑</button></li>' : '');
     }
+    list.addEventListener('click', function (e) {
+      if (!e.target.closest('[data-fb-all]')) return;
+      e.stopPropagation(); showAll = !showAll; renderList();
+    }, true);
     function upsert(it) {
       if (!it) return;
       var i = items.findIndex(function (x) { return x.id === it.id; });

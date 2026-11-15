@@ -104,6 +104,29 @@ if (is_post()) {
         redirect($self);
     }
 
+    // Lankytojas, kurio dar nėra sistemoje (kol neveikia klientų registracija): sukuriamas narys šioje grupėje ir pažymimas „Buvo“
+    if (post('action') === 'guest_add' && $group) {
+        $first = mb_substr(trim((string) post('first_name')), 0, 80);
+        $last = mb_substr(trim((string) post('last_name')), 0, 80);
+        $year = (int) post('birth_year');
+        if ($first === '' || $last === '' || $year < 1920 || $year > (int) date('Y')) {
+            flash('err', t('Įrašykite vardą, pavardę ir gimimo metus.'));
+            redirect($self);
+        }
+        $mid = (int) q_value('SELECT id FROM members WHERE first_name = ? AND last_name = ? AND YEAR(birth_date) = ? LIMIT 1', [$first, $last, $year]);
+        if (!$mid) {
+            q('INSERT INTO members (first_name, last_name, birth_date, group_id, status) VALUES (?, ?, ?, ?, "active")', [$first, $last, $year . '-01-01', $groupId]);
+            $mid = (int) db()->lastInsertId();
+        } else {
+            q('UPDATE members SET status = "active", group_id = COALESCE(group_id, ?) WHERE id = ?', [$groupId, $mid]);
+        }
+        q('INSERT INTO attendance (member_id, training_date, group_id, present, marked_by) VALUES (?, ?, ?, 1, ?)
+           ON DUPLICATE KEY UPDATE present = 1, group_id = VALUES(group_id), marked_by = VALUES(marked_by)', [$mid, $date, $groupId, $me['id']]);
+        sync_attendance_points($mid, $date, true, (int) $me['id']);
+        flash('ok', $first . ' ' . $last . ' ' . t('pridėtas į grupę ir pažymėtas „Buvo“. Duomenis (gimimo data, tėvai) galima papildyti Nariuose.'));
+        redirect($self);
+    }
+
     // Lankomumas: vienas narys (buvo / nebuvo / nuimti žymą) arba visi nepažymėti - "buvo". Atsakymas JSON.
     if (in_array(post('action'), ['attendance', 'attendance_all'], true) && $group) {
         header('Content-Type: application/json; charset=utf-8');
@@ -393,6 +416,17 @@ $evTile = function (array $ev, bool $showDate) use ($event, $evColors): string {
       <input type="hidden" name="g" value="<?= (int) $groupId ?>"><input type="hidden" name="e" value="<?= (int) $eventId ?>"><input type="hidden" name="d" value="<?= e($date) ?>">
     </form>
   <?php endforeach; endforeach; ?>
+<?php endif; ?>
+
+<?php if ($group && !$event): ?>
+  <form method="post" class="panel card form row guest-add">
+    <?= csrf_field() ?><input type="hidden" name="action" value="guest_add"><input type="hidden" name="g" value="<?= (int) $groupId ?>"><input type="hidden" name="d" value="<?= e($date) ?>">
+    <div style="flex-basis:100%;"><strong><?= te('+ Lankytojas, kurio dar nėra sąraše') ?></strong> <span class="hint"><?= te('pridedamas į šią grupę ir pažymimas „Buvo“') ?></span></div>
+    <label style="flex:1 1 140px;"><?= te('Vardas') ?> <input name="first_name" required maxlength="80"></label>
+    <label style="flex:1 1 140px;"><?= te('Pavardė') ?> <input name="last_name" required maxlength="80"></label>
+    <label style="flex:0 1 120px;"><?= te('Gimimo metai') ?> <input name="birth_year" type="number" inputmode="numeric" min="1920" max="<?= date('Y') ?>" required placeholder="<?= (int) date('Y') - 8 ?>"></label>
+    <div style="align-self:flex-end;"><button class="btn btn-primary" type="submit"><?= te('+ Pridėti') ?></button></div>
+  </form>
 <?php endif; ?>
 
 <?php if ($event):

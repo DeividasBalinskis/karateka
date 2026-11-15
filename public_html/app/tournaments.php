@@ -412,6 +412,7 @@ function tournament_generate_test(int $by, bool $demo = false): int
     $state['categories'] = count($teamCompetitors) >= 2
         ? [['id' => 'kt1', 'name' => 'Kata komandos Mix', 'discipline' => 'kata', 'team' => true, 'competitors' => $teamCompetitors, 'tatami' => 3, 'draw' => null]] : [];
     $state['areas'][] = ['id' => 3, 'name' => '3 TATAMIS', 'start' => '09:30'];
+    $state['areas'][] = ['id' => 4, 'name' => '4 TATAMIS', 'start' => '09:30'];   // varžybose dažniausiai 4 tatamiai
     $state['autoCats'] = true;    // kategorijos sudaromos atidarius (assets/varzybos.js)
     $state['simulate'] = 0.6;     // ir dalis kovų „sužaidžiama“
     $date = date('Y-m-d', strtotime('next saturday'));

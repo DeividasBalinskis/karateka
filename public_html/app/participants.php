@@ -238,7 +238,7 @@ function render_event_rsvp(array $ev, array $members, string $back): string
         $status = $p['status'] ?? null;
         $canChange = $ev['starts_on'] > date('Y-m-d');
         $late = date('Y-m-d') > event_deadline($ev);   // terminas praėjo - „Dalyvausiu“ tampa prašymu Deniui
-        $label = count($members) > 1 ? '<span class="rsvp-name">' . e($m['first_name']) . '</span>' : '';
+        $label = count($members) > 1 ? '<span class="rsvp-name">' . e(member_short_name($m, $members)) . '</span>' : '';
         $state = $status === 'going' ? '<span class="rsvp-state ok">✓ ' . ($p['role'] === 'referee' ? t('Teisėjaus') : t('Dalyvaus')) . '</span>'
             : ($status === 'late' ? ('<span class="rsvp-state late">' . t('⏰ Pavėlavo - laukia Denio patvirtinimo') . '</span>')
             : ($status === 'declined' ? ('<span class="rsvp-state no">' . t('Negalės') . '</span>')
@@ -293,4 +293,11 @@ function participant_extra_info(array $ev, array $row): string
     return $st['passed']
         ? ('<div class="test-ok">' . t('✓ Testas išlaikytas · leidžiama laikyti praktiką') . '</div>')
         : ('<div class="test-no">' . t('Testas') . ' ') . ($st['best'] !== null ? (t('neišlaikytas (geriausias') . ' ') . $st['best'] . ' %)' : 'dar nelaikytas') . '</div>';
+}
+
+/** Vardas sąraše tarp kelių vaikų: jei vardai vienodi (pvz. du „Test“) - su pavardės raide */
+function member_short_name(array $m, array $all): string
+{
+    $same = count(array_filter($all, function ($x) use ($m) { return $x['first_name'] === $m['first_name']; }));
+    return $m['first_name'] . ($same > 1 ? ' ' . mb_substr((string) ($m['last_name'] ?? ''), 0, 1) . '.' : '');
 }

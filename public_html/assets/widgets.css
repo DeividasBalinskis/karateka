@@ -195,8 +195,10 @@ span.chat-ctx{text-decoration:none;}
 .fb-state{font-size:12px; font-weight:700; color:var(--f-muted); white-space:nowrap;}
 .fb-state.ok{color:#2B8A3E;} .fb-state.busy{color:#B26A00;} .fb-state.err{color:#C92A2A;}
 .fb-close{border:none; background:none; font-size:26px; line-height:1; color:var(--f-muted); cursor:pointer; padding:0 4px;}
-.fb-scroll{overflow:auto; padding:12px 14px 14px;}
-.fb-compose{display:grid; gap:8px;}
+.fb-scroll{overflow-y:auto; overflow-x:hidden; padding:12px 14px 14px;}
+/* minmax(0,1fr): ilgas tekstas (redaguojamo atsiliepimo juosta) nebeišplečia lango */
+.fb-compose{display:grid; grid-template-columns:minmax(0, 1fr); gap:8px;}
+.fb-more{border:0; background:none; color:var(--f-accent2); font-weight:800; font-size:13px; cursor:pointer; padding:6px 2px 0;}
 .fb-editing{display:flex; align-items:center; gap:8px; font-size:12.5px; font-weight:700; color:#B26A00; background:#FFF4DB; border-radius:10px; padding:6px 10px;}
 .fb-editing span{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
 .fb-editing[hidden]{display:none;}

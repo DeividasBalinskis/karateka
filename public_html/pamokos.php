@@ -111,7 +111,10 @@ function lesson_cards(array $lessons, array $opt = []): string
             . (!empty($l['task_open']) ? (' <span class="badge badge-new">' . t('užduotis') . '</span>') : '')
             . '<h3>' . e(tr_text($l['title'])) . '</h3><div class="muted small">' . e($meta) . '</div></div></a>';
         $html .= $edit ? '<div class="lc-wrap" data-type="lesson" data-id="' . (int) $l['id'] . '">' . $card
-            . '<span class="lc-tools"><span class="lc-drag" title="' . e(t('Tempkite')) . '">⠿</span><a href="' . e(url('pamokos.php?id=' . (int) $l['id'] . '&keisti=1')) . '" title="' . e(t('Keisti')) . '">✎</a></span></div>' : $card;
+            . '<span class="lc-tools"><span class="lc-drag" title="' . e(t('Tempkite')) . '">⠿</span><a href="' . e(url('pamokos.php?id=' . (int) $l['id'] . '&keisti=1')) . '" title="' . e(t('Keisti')) . '">✎</a>'
+            . '<form method="post" action="' . e(url('admin/pamokos.php')) . '" onsubmit="return confirm(\'' . e(t('Ištrinti pamoką visam laikui?')) . '\')">' . csrf_field()
+            . '<input type="hidden" name="id" value="' . (int) $l['id'] . '"><input type="hidden" name="back" value="' . e('pamokos.php' . (($q = (string) parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_QUERY)) !== '' ? '?' . $q : '')) . '">'
+            . '<button class="lc-del" name="action" value="delete" title="' . e(t('Ištrinti pamoką')) . '">🗑</button></form></span></div>' : $card;
     }
     if ($edit && !$lessons) {
         $html .= ('<p class="ls-empty">' . t('Pamokų nėra - nutempkite čia arba pridėkite.') . '</p>');
@@ -209,7 +212,7 @@ function folder_tiles(array $list, array $counts, array $v): string
             . '<span class="kyu-ico">' . folder_icon($f) . '</span>'
             . '<span class="kyu-text"><strong>' . e($f['title']) . '</strong>'
             . '<span class="kyu-sub">' . ($b && is_belt_folder($f) ? e(t(BELTS[$b][1])) . (' ' . t('diržas ·') . ' ') : '') . lt_count($counts[$fid] ?? 0, 'pamoka', 'pamokos', t('pamokų')) . '</span></span>'
-            . ($own ? '<span class="kyu-own">' . e(count($v['members']) > 1 ? implode(', ', $v['own'][$b]) : t('Tavo diržas')) . '</span>' : '')
+            . ($own ? '<span class="kyu-own" title="' . e(t('Šio diržo pamokos - jūsų vaikui')) . '">' . e(count($v['members']) > 1 ? '👤 ' . implode(', ', $v['own'][$b]) : t('Tavo diržas')) . '</span>' : '')
             . (!$f['is_published'] ? '<span class="badge badge-warn">nepaskelbtas</span>' : '')
             . '</a>';
     }
@@ -385,7 +388,9 @@ if ($id) {
         <?= $lesson['audience'] !== 'karateka' ? '<span class="badge badge-tag">' . e(t(QUIZ_AUDIENCE[$lesson['audience']])) . '</span>' : '' ?>
         <?= !$lesson['is_published'] ? '<span class="badge badge-warn">nepaskelbta</span>' : '' ?>
         <?php if ($staffTools): ?><a class="btn btn-primary btn-sm lesson-edit-btn" href="<?= url('pamokos.php?id=' . (int) $lesson['id'] . '&keisti=1') ?>"><?= te('✎ Keisti') ?></a>
-          <a class="btn btn-ghost btn-sm" href="<?= url('admin/vertimai.php?e=lesson&id=' . (int) $lesson['id']) ?>"><?= te('🌐 Vertimai') ?></a><?php endif; ?>
+          <a class="btn btn-ghost btn-sm" href="<?= url('admin/vertimai.php?e=lesson&id=' . (int) $lesson['id']) ?>"><?= te('🌐 Vertimai') ?></a>
+          <form method="post" action="<?= url('admin/pamokos.php') ?>" onsubmit="return confirm('<?= te('Ištrinti pamoką visam laikui?') ?>')" style="display:inline"><?= csrf_field() ?><input type="hidden" name="id" value="<?= (int) $lesson['id'] ?>">
+            <input type="hidden" name="back" value="<?= e($lesson['folder_id'] ? 'pamokos.php?aplankas=' . (int) $lesson['folder_id'] : 'pamokos.php') ?>"><button class="btn btn-ghost btn-sm" name="action" value="delete">🗑 <?= te('Ištrinti') ?></button></form><?php endif; ?>
       </div>
       <h1 style="margin-top:10px;"><?= e(tr_text($lesson['title'])) ?></h1>
       <div class="lesson-blocks">

@@ -11,13 +11,13 @@ const FEEDBACK_STATUS = [
     'declined' => ['Nedarysime', ''],
 ];
 const FEEDBACK_MAX = 4000;
-const FEEDBACK_SHOW = ['all' => 'Visiems (ir neprisijungusiems)', 'members' => 'Tik prisijungusiems', 'off' => 'Niekam (išjungta)'];
+const FEEDBACK_SHOW = ['staff' => 'Tik treneriams ir adminui', 'members' => 'Tik prisijungusiems', 'all' => 'Visiems (ir neprisijungusiems)', 'off' => 'Niekam (išjungta)'];
 
-/** Kam rodomas mygtukas: all | members | off (numatyta: test svetainėje - visiems, oficialioje - prisijungusiems) */
+/** Kam rodomas mygtukas: staff | members | all | off (numatyta - tik treneriams ir adminui; tėvai ir lankytojai jo nemato) */
 function feedback_mode(): string
 {
     $mode = (string) site_setting('feedback_button', '');
-    return isset(FEEDBACK_SHOW[$mode]) ? $mode : (config('env') === 'live' ? 'members' : 'all');
+    return isset(FEEDBACK_SHOW[$mode]) ? $mode : 'staff';
 }
 
 function feedback_ready(): bool
@@ -208,7 +208,8 @@ function feedback_visible(?array $a): bool
     $mode = feedback_mode();
     $script = basename($_SERVER['SCRIPT_NAME'] ?? '');
     // Taikos bandymo nuoroda (be paskyros) - atsiliepimus palikti galima ir tada
-    return feedback_ready() && $mode !== 'off' && ($mode === 'all' || $a || varz_demo()) && !in_array($script, ['testas.php', 'egzaminas.php', 'testas-svecias.php'], true);
+    $who = $mode === 'all' || ($mode === 'members' && $a) || ($mode === 'staff' && $a && is_staff($a));
+    return feedback_ready() && $mode !== 'off' && ($who || varz_demo()) && !in_array($script, ['testas.php', 'egzaminas.php', 'testas-svecias.php'], true);
 }
 
 /** Mygtukas ir langas (visuose puslapiuose, apačioje kairėje). $site - jei kviečiama iš kitos svetainės (LTKF) */

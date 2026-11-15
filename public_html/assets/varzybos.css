@@ -1153,3 +1153,34 @@ body.vz[data-theme="nature"] .panel, body.vz[data-theme="mountains"] .panel, bod
 .dipl-up { cursor: pointer; }
 .podium h3 { display: flex; align-items: center; gap: 8px; }
 .podium h3 .dipl-btn { margin-left: auto; text-decoration: none; }
+/* v1.31: 4 tatamiai telpa viename ekrane - siauresni stulpeliai, kompaktiškos kortelės; ⠿ - tempti ir pirštu */
+.sched { grid-auto-columns: minmax(235px, 1fr); gap: 10px; }
+.area-head { padding: 9px 10px; gap: 4px; }
+.area-head .name { font-size: 1rem; }
+.area-list { padding: 8px; gap: 6px; }
+.card { padding: 7px 9px; gap: 4px; }
+.card.st-now { padding: 8px 10px; }
+.card-top { align-items: center; gap: 6px; }
+.card-name { overflow: hidden; }
+.card-name { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.25; }
+.card-grip { cursor: grab; touch-action: none; color: var(--muted); font-size: 1rem; line-height: 1; padding: 2px 2px 2px 0; user-select: none; }
+.card-grip:active { cursor: grabbing; }
+@media (hover: hover) and (pointer: fine) { .card-grip { opacity: .45; } .card:hover .card-grip { opacity: 1; } }
+.area-go { font-size: .82rem; padding: 5px 9px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.run-move { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.run-to { display: inline-flex; align-items: center; gap: 4px; }
+.run-to .seg-btn { padding: 4px 10px; }
+/* v1.31: prisegtas langelis - keičiamas dydis (kampas ◢, ir pirštu), „▦“ - visa lentelė, paspaudus vardą - nugalėtojas */
+.pin-win { display: flex; flex-direction: column; max-height: calc(100vh - 16px); }
+.pin-win .pin-body { flex: 1; min-height: 0; overflow: auto; }
+.pin-resize { position: absolute; right: 2px; bottom: 2px; width: 16px; height: 16px; cursor: nwse-resize; touch-action: none;
+  background: linear-gradient(135deg, transparent 50%, var(--line-2) 50%, var(--line-2) 60%, transparent 60%, transparent 70%, var(--line-2) 70%, var(--line-2) 80%, transparent 80%); }
+.pin-win.tree .pin-body h4 { margin: 8px 0 4px; font-size: .7rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.pin-ms { display: grid; gap: 4px; }
+.pin-m { display: grid; grid-template-columns: 18px minmax(0, 1fr) auto minmax(0, 1fr); gap: 6px; align-items: center; font-size: .82rem; padding: 4px 6px; border: 1px solid var(--line); border-radius: 8px; }
+.pin-m.done { border-color: #BFE3CD; }
+.pin-p { border: 0; background: none; padding: 2px 4px; border-radius: 6px; font: inherit; font-weight: 600; color: var(--ink); text-align: left; cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pin-m .pin-p:last-child { text-align: right; }
+button.pin-p:hover { background: var(--surface-2); }
+.pin-p.won { background: var(--green-soft); color: var(--green); }
+.pin-p.won::after { content: " ✓"; }

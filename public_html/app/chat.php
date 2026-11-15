@@ -199,7 +199,8 @@ function chat_widget_html(): string
 {
     $a = current_account();
     $script = basename($_SERVER['SCRIPT_NAME'] ?? '');
-    if (!$a || !is_active_account($a) || in_array($script, ['testas.php', 'pranesimas.php'], true)) {
+    // chat_off (db/035, Valdymas → Paskyros) - paskyra be pokalbių lango (pvz. programuotojo)
+    if (!$a || !is_active_account($a) || !empty($a['chat_off']) || in_array($script, ['testas.php', 'pranesimas.php'], true)) {
         return '';
     }
     try {

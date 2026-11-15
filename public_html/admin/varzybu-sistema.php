@@ -426,6 +426,7 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
       <div class="run-head">
         <button class="btn" type="button" id="run-back"><?= get('langas') ? '✕ Uždaryti langą' : '← Visas tvarkaraštis' ?></button>
         <div class="run-title"><b id="run-name"></b><span class="muted small" id="run-meta"></span></div>
+        <span class="run-move" id="run-move"></span>
         <span class="spacer"></span>
         <div class="seg run-views" role="group" aria-label="Vaizdas"><button type="button" class="seg-btn" data-runview="lines" title="Lentelė su linijomis">Lentelė</button><button type="button" class="seg-btn" data-runview="simple" title="Kas kovoja dabar ir kas ruošiasi">Paprastas</button></div>
         <?php if (!get('langas')): ?><button class="btn" type="button" id="run-pin" title="Prisegti mažą langelį ekrane - matysite ir kituose skirtukuose">📌 Prisegti</button><button class="btn" type="button" id="run-detach" title="Atidaryti atskirame lange (pvz. kitame ekrane); tvarkaraštyje ši rungtis bus pilka">Naujame lange ↗</button><?php else: ?><span id="run-detach" hidden></span><span id="run-pin" hidden></span><?php endif; ?>

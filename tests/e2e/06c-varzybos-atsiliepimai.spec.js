@@ -5,7 +5,7 @@ const { sql, login, nav, check, noJsErrors, flashes } = require('./helpers');
 
 test('feedback: visitor and member write, admin answers', async ({ browser }) => {
   sql('DELETE FROM feedback');
-  sql("DELETE FROM site_settings WHERE name = 'feedback_button'");
+  sql("REPLACE INTO site_settings (name, value) VALUES ('feedback_button', 'all')");   // numatyta - tik treneriams; čia tikrinami ir lankytojai
 
   // Lankytojas (test svetainėje mygtukas rodomas visiems)
   const v = await login(browser, null);

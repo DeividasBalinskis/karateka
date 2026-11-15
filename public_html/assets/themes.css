@@ -44,3 +44,32 @@ body.theme-dark .panel{background:rgba(255,255,255,0.88);}
 @media (max-width:1100px){ body.theme-dark .site-header .nav-menu, body.theme-dark .nav-menu{background:#1A1722;} }
 body.theme-dark .view-switch > summary{color:#ECE8F4; background:rgba(255,255,255,0.1);}
 body.theme-dark .site-header .logo img{background:rgba(255,255,255,0.92); border-radius:12px; padding:2px 6px;}
+
+/* ---------- v1.31: viršutinė juosta ir meniu pagal temą (ne visada rožinė) ---------- */
+body[data-theme]:not([data-theme="light"]) .site-header a.nav-page.is-current,
+body[data-theme]:not([data-theme="light"]) .sub-nav a.active,
+body[data-theme]:not([data-theme="light"]) .lang-switch a.active{color:var(--accent);}
+body[data-theme]:not([data-theme="light"]) .site-header a.nav-page::after{color:var(--accent);}
+body[data-theme]:not([data-theme="light"]) .site-header .nav-login.is-current{background:linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%); box-shadow:0 6px 16px rgba(0,0,0,0.18);}
+body[data-theme="nature"]    .site-header{background:linear-gradient(180deg, #CFE3EE 0%, #E4EEF0 100%);}
+body[data-theme="nature"]    .sub-nav{background:linear-gradient(90deg, #E2EEDD 0%, #D6E8D2 100%); border-top-color:rgba(47,125,79,0.15);}
+body[data-theme="mountains"] .site-header{background:linear-gradient(180deg, #D6E3EF 0%, #E9EFF6 100%);}
+body[data-theme="mountains"] .sub-nav{background:linear-gradient(90deg, #E2EAF3 0%, #D8E3EF 100%); border-top-color:rgba(47,93,138,0.15);}
+body[data-theme="sea"]       .site-header{background:linear-gradient(180deg, #CDEBF6 0%, #E4F5FA 100%);}
+body[data-theme="sea"]       .sub-nav{background:linear-gradient(90deg, #DDF0F6 0%, #CFE8F2 100%); border-top-color:rgba(30,111,158,0.15);}
+body[data-theme="dunes"]     .site-header{background:linear-gradient(180deg, #F6D7C0 0%, #FBE7D3 100%);}
+body[data-theme="dunes"]     .sub-nav{background:linear-gradient(90deg, #FCEBD8 0%, #F8DFC6 100%); border-top-color:rgba(180,87,46,0.15);}
+body[data-theme="sakura"]    .site-header{background:linear-gradient(180deg, #FBE4EC 0%, #FDF0F4 100%);}
+body[data-theme="sakura"]    .sub-nav{background:linear-gradient(90deg, #FBE6EE 0%, #F8DCE7 100%);}
+body[data-theme="autumn"]    .site-header{background:linear-gradient(180deg, #F8DEC0 0%, #FCECD8 100%);}
+body[data-theme="autumn"]    .sub-nav{background:linear-gradient(90deg, #FBE6CF 0%, #F6DABD 100%); border-top-color:rgba(181,84,31,0.15);}
+body[data-theme="winter"]    .site-header{background:linear-gradient(180deg, #E1ECF5 0%, #F3F7FB 100%);}
+body[data-theme="winter"]    .sub-nav{background:linear-gradient(90deg, #E8F0F6 0%, #DDE8F1 100%); border-top-color:rgba(47,82,99,0.15);}
+body[data-theme="dojo"]      .site-header{background:linear-gradient(180deg, #F3E9D5 0%, #EFE3CB 100%); border-bottom:3px solid #7A4E2C;}
+body[data-theme="dojo"]      .sub-nav{background:linear-gradient(90deg, #EDE1C9 0%, #E5D6B8 100%); border-top-color:rgba(122,78,44,0.2);}
+body.theme-dark .sub-nav{background:rgba(26,23,34,0.92); border-top-color:rgba(255,255,255,0.08);}
+body.theme-dark .sub-nav a{color:#D9D4E4;}
+body.theme-dark .sub-nav a:hover{background:rgba(255,255,255,0.08); color:#fff;}
+body.theme-dark .sub-nav a.active{background:#ECE8F4; color:#3E2C55;}
+body[data-theme="aurora"] .site-header{background:rgba(6,20,32,0.94);}
+body[data-theme="aurora"] .sub-nav{background:rgba(8,28,40,0.92);}

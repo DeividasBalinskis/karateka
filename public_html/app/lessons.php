@@ -344,8 +344,10 @@ function lesson_viewer(array $a): array
     }
     $members = $preview ? [$preview] : array_values(array_filter(account_members((int) $a['id']), function ($m) { return $m['status'] === 'active'; }));
     $own = [];
+    // Vienodi vardai (pvz. du vaikai „Test“) - su pavardės raide, kad būtų aišku, kieno diržas
+    $firstCount = array_count_values(array_map(function ($m) { return $m['first_name']; }, $members));
     foreach ($members as $m) {
-        $own[$m['belt_level'] !== null ? (int) $m['belt_level'] : 1][] = $m['first_name'];
+        $own[$m['belt_level'] !== null ? (int) $m['belt_level'] : 1][] = $m['first_name'] . ($firstCount[$m['first_name']] > 1 ? ' ' . mb_substr((string) $m['last_name'], 0, 1) . '.' : '');
     }
     ksort($own);
     $tags = [];

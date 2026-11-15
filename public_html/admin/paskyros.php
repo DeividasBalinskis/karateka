@@ -3,6 +3,30 @@
 require dirname(__DIR__) . '/app/bootstrap.php';
 $me = require_admin();
 
+// Nauja paskyra (pvz. kitam adminui): iškart aktyvi, slaptažodį įrašo adminas; „be pokalbių lango“ - db/035
+if (is_post() && post('action') === 'create') {
+    csrf_check();
+    $email = normalize_email(post('email'));
+    $role = in_array(post('role'), ['member', 'coach', 'admin'], true) ? post('role') : 'member';
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL) || trim(post('first_name')) === '' || mb_strlen((string) post('password')) < 6) {
+        flash('err', t('Įrašykite el. paštą, vardą ir bent 6 simbolių slaptažodį.'));
+    } elseif (q_value('SELECT 1 FROM accounts WHERE email = ?', [$email])) {
+        flash('err', t('Tokia paskyra jau yra:') . ' ' . $email);
+    } else {
+        $id = create_account($email, (string) post('password'), mb_substr(trim(post('first_name')), 0, 80), mb_substr(trim(post('last_name')), 0, 80), null, 'active');
+        q('UPDATE accounts SET role = ?, email_verified_at = NOW(), approved_at = NOW() WHERE id = ?', [$role, $id]);
+        if (!empty($_POST['chat_off'])) {
+            try {
+                q('UPDATE accounts SET chat_off = 1 WHERE id = ?', [$id]);
+            } catch (PDOException $ex) {
+                // db/035 dar neimportuotas
+            }
+        }
+        flash('ok', t('Paskyra sukurta:') . ' ' . $email);
+    }
+    redirect('admin/paskyros.php');
+}
+
 if (is_post()) {
     csrf_check();
     $id = (int) post('id');
@@ -11,6 +35,12 @@ if (is_post()) {
         if (post('action') === 'role' && in_array(post('role'), ['member', 'coach', 'admin'], true)) {
             q('UPDATE accounts SET role = ? WHERE id = ?', [post('role'), $id]);
             flash('ok', "Rolė pakeista: {$acc['first_name']} {$acc['last_name']}");
+        }
+        if (post('action') === 'chat') {
+            try {
+                q('UPDATE accounts SET chat_off = ? WHERE id = ?', [post('chat_off') === '1' ? 1 : 0, $id]);
+            } catch (PDOException $ex) {
+            }
         }
         if (post('action') === 'disable') {
             q('UPDATE accounts SET status = "disabled" WHERE id = ?', [$id]);
@@ -45,6 +75,19 @@ page_start(t('Paskyros'), ['admin' => true]);
   <h1 class="styled"><?= te('Paskyros') ?></h1>
   <p><?= te('Treneriai mato trenerio panelę. Administratorius dar gali keisti roles.') ?></p>
 </div>
+<details class="panel card form new-account">
+  <summary><strong><?= te('+ Nauja paskyra') ?></strong> <span class="muted small"><?= te('pvz. kitam adminui ar treneriui - iškart aktyvi') ?></span></summary>
+  <form method="post" class="inline-fields" style="margin-top:12px;" autocomplete="off">
+    <?= csrf_field() ?><input type="hidden" name="action" value="create">
+    <label><?= te('El. paštas') ?> <input type="email" name="email" required autocomplete="off"></label>
+    <label><?= te('Vardas') ?> <input name="first_name" required maxlength="80"></label>
+    <label><?= te('Pavardė') ?> <input name="last_name" maxlength="80"></label>
+    <label><?= te('Slaptažodis') ?> <input type="text" name="password" required minlength="6" autocomplete="new-password"></label>
+    <label><?= te('Rolė') ?> <select name="role"><?php foreach ($roleLabel as $k => $label): ?><option value="<?= $k ?>"<?= $k === 'admin' ? ' selected' : '' ?>><?= $label ?></option><?php endforeach; ?></select></label>
+    <label class="check"><input type="checkbox" name="chat_off" value="1"><span><?= te('Be pokalbių lango') ?></span></label>
+    <button class="btn btn-primary" type="submit"><?= te('Sukurti') ?></button>
+  </form>
+</details>
 <form method="get" class="panel card form inline-fields">
   <label><?= te('Paieška') ?> <input type="search" name="q" value="<?= e($search) ?>" placeholder="<?= te('Vardas arba el. paštas') ?>"></label>
   <button class="btn btn-ghost" type="submit"><?= te('Ieškoti') ?></button>
@@ -55,7 +98,11 @@ page_start(t('Paskyros'), ['admin' => true]);
     <tbody>
       <?php foreach ($rows as $r): $self = (int) $r['id'] === (int) $me['id']; ?>
         <tr>
-          <td><strong><?= e($r['first_name'] . ' ' . $r['last_name']) ?></strong><div class="muted small"><?= e($r['email']) ?></div></td>
+          <td><strong><?= e($r['first_name'] . ' ' . $r['last_name']) ?></strong><div class="muted small"><?= e($r['email']) ?></div>
+            <?php if ($r['role'] !== 'member' && array_key_exists('chat_off', $r)): ?>
+              <form method="post" class="small"><?= csrf_field() ?><input type="hidden" name="id" value="<?= (int) $r['id'] ?>"><input type="hidden" name="action" value="chat"><input type="hidden" name="chat_off" value="<?= $r['chat_off'] ? '0' : '1' ?>">
+                <button class="linkish" type="submit"><?= $r['chat_off'] ? te('💬 Įjungti pokalbių langą') : te('Išjungti pokalbių langą') ?></button></form>
+            <?php endif; ?></td>
           <td><span class="badge <?= $r['status'] === 'active' ? 'badge-ok' : 'badge-warn' ?>"><?= $statusLabel[$r['status']] ?></span></td>
           <td>
             <?php if ($self): ?>

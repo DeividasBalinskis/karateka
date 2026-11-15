@@ -2,14 +2,14 @@
 // meniu (Klubai, Komandos, Dalyviai, Kategorijos | Live tvarkaraštis, Rezultatai), Live tvarkaraštis: dabartinė rungtis,
 // vėlavimas varžybų dieną, rungties valdymas su „Toliau →“; testas be paskyros - el. paštas nebūtinas.
 const { test } = require('@playwright/test');
-const { sql, login, nav, check, noJsErrors } = require('./helpers');
+const { sql, login, nav, check, noJsErrors, day } = require('./helpers');
 
 test('Taika home, switcher, menu order, live schedule with current category and run panel', async ({ browser }) => {
   const a = await login(browser, 'info@karateka.lt', 1400, 900);
   await a.goto('admin/varzybos.php');
   await nav(a, () => a.click('text=🎲 Sukurti test varžybas'));
   const tid = +sql('SELECT MAX(id) FROM tournaments');
-  sql(`UPDATE tournaments SET starts_on = CURDATE() WHERE id = ${tid}`);
+  sql(`UPDATE tournaments SET starts_on = '${day(0)}' WHERE id = ${tid}`);   // šiandien Vilniaus laiku (ne DB serverio)
 
   // Pradžia: kortelė su veiksmais, partneriai apačioje
   await a.goto('admin/varzybos.php');
