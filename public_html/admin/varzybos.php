@@ -171,7 +171,7 @@ varz_html_head(t('Varžybos'), 'vz-home');
   <?php foreach (take_flashes() as $f): ?><div class="flash flash-<?= e($f['type']) ?>"><?= e(t($f['message'])) ?></div><?php endforeach; ?>
   <?php if ($demo): ?>
     <div class="varz-demo-note">
-      <b><?= te('👋 Sveiki,') ?> <?= e($me['first_name']) ?>!</b> <?= te('Tai Taikos varžybų sistemos bandymas: galite daryti viską, ką daro sekretoriatas ir organizatorius - kurti varžybas, dalyvius, kategorijas, vesti kovas, siųsti apdovanojimams.') ?>
+      <b><?= te('👋 Sveiki,') ?> <?= e($me['first_name']) ?>!</b> <?= te('Tai Budo varžybų sistemos bandymas: galite daryti viską, ką daro sekretoriatas ir organizatorius - kurti varžybas, dalyvius, kategorijas, vesti kovas, siųsti apdovanojimams.') ?>
       <?= te('Pradėkite nuo „🎲 Sukurti test varžybas“ - bus išgalvoti dalyviai ir dalis kovų. Pastebėjimus rašykite per') ?> <b><?= te('💡 Atsiliepimas') ?></b> <?= te('(apačioje kairėje) - galima įklijuoti ekrano nuotrauką (Ctrl+V).') ?>
     </div>
   <?php endif; ?>

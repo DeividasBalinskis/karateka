@@ -45,7 +45,7 @@ function theme_picker_html(string $scope, string $current, string $btnClass = ''
 {
     $html = '<div class="theme-pick" data-scope="' . e($scope) . '" data-api="' . e(url('tema.php')) . '" data-csrf="' . e(csrf_token()) . '">'
         . '<button type="button" class="tp-btn ' . e($btnClass) . '" aria-expanded="false" title="' . e(t('Tema')) . '">🎨<span class="tp-now">' . e(THEMES[$current][0]) . '</span></button>'
-        . '<div class="tp-panel" hidden role="group" aria-label="' . e(t('Tema')) . '"><div class="tp-title">' . e($scope === 'site' ? t('Svetainės tema (visiems)') : t('Taikos tema (visoms varžyboms)')) . '</div><div class="tp-grid">';
+        . '<div class="tp-panel" hidden role="group" aria-label="' . e(t('Tema')) . '"><div class="tp-title">' . e($scope === 'site' ? t('Svetainės tema (visiems)') : t('Budo tema (visoms varžyboms)')) . '</div><div class="tp-grid">';
     foreach (THEMES as $id => [$icon, $name, $dark, $scene]) {
         $bg = $scene !== '' ? "url('" . url('img/temos/' . $scene . '.svg') . "') center/cover" : ($dark ? '#15171D' : 'linear-gradient(135deg,#F3E8F1,#E4EAF7)');
         $html .= '<button type="button" class="tp-sw' . ($id === $current ? ' on' : '') . '" data-theme-id="' . $id . '" data-dark="' . ($dark ? 1 : 0) . '" aria-pressed="' . ($id === $current ? 'true' : 'false') . '">'

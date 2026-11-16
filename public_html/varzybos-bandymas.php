@@ -23,7 +23,7 @@ varz_html_head('Išbandyti', 'vz-public vz-demo-start');
 <header class="vz-top">
   <div class="vz-top-row">
     <span class="vz-brand"><span class="vz-logo" aria-hidden="true"></span><?= e(VARZ_NAME) ?></span>
-    <div class="vz-title"><h1>Varžybų sistemos bandymas</h1><div class="sub">Karateka · Taika</div></div>
+    <div class="vz-title"><h1>Varžybų sistemos bandymas</h1><div class="sub">Karateka · <?= e(VARZ_NAME) ?></div></div>
   <div class="vz-top-right"><?= render_lang_switch(tl_lang()) ?></div>
   </div>
 </header>

@@ -4,6 +4,13 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.34 - 2026-11-16 (varžybų sistema vadinasi „Budo“; Denio atsiliepimas #44)
+Duomenų bazės keisti nereikia (jei v1.33 DB atnaujinimas jau padarytas). Zip'o turinį išpakuokite **tiesiai į svetainės aplanką**.
+
+- Varžybų sistema **„Taika“ → „Budo“**: logotipas, puslapių pavadinimai, temų pasirinkimas, bandymo nuoroda, atsiliepimų sąrašas, vertimai EN/RU.
+  Nuorodos ir duomenys nesikeičia - viskas veikia kaip anksčiau.
+- „Apdovanota“ dabar išvaloma tą akimirką, kai grupė perburiama, keičiama sistema ar atstatomi rezultatai (#41 - patikimiau).
+
 ## v1.33 - 2026-11-16 (greitas naujo nario pridėjimas ir pakvietimas; Denio atsiliepimai #37-#43)
 **Duomenų bazė:** `db/036_nariai_pakvietimai.sql` - Valdymas → Šiandien → „Atnaujinkite duomenų bazę“.
 Zip'o turinį išpakuokite **tiesiai į svetainės aplanką** (ten, kur `index.php`).

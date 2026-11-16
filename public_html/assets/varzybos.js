@@ -1248,7 +1248,7 @@
     c.draw.scores = c.draw.scores || {};
     // Pasikeitė dalyviai, o kovų dar nebuvo - burtai traukiami iš naujo automatiškai
     var started = Object.keys(c.draw.results).length || (!isElim(c.draw.system) && scoreDone(c));
-    if (drawStale(c) && !c.draw.locked && !started) { c.draw = makeDraw(c, c.draw.system); save(); }
+    if (drawStale(c) && !c.draw.locked && !started) { c.draw = makeDraw(c, c.draw.system); clearAward(c); save(); }
     var dsel = document.getElementById('draw-system'), msel = document.getElementById('draw-medals');
     dsel.innerHTML = methodList(c).map(function (x) { return '<option value="' + x[0] + '">' + esc(x[1]) + '</option>'; }).join('');
     dsel.value = methodOf(c.draw.system);
@@ -1327,7 +1327,7 @@
     var same = c.draw && isElim(c.draw.system) && isElim(sys);
     if (started && !same && !confirm('Pakeitus sistemą, jau įrašyti kovų rezultatai ar balai dings. Tęsti?')) { render(); return; }
     snapshot();
-    if (same) { c.draw.system = sys; prune(c); } else { c.draw = makeDraw(c, sys); if (AW[c.id]) { delete AW[c.id]; if (CFG.awardsApi) setAward([c.id], ''); } }
+    if (same) { c.draw.system = sys; prune(c); } else { c.draw = makeDraw(c, sys); clearAward(c); }
     save(); render();
   }
   // Rungtis ar „komandinė“ pakeista: numatyta sistema, jei kovų dar nebuvo
@@ -1825,10 +1825,10 @@
     return total > 0 ? doneCount(c) >= total && pl.some(function (x) { return x[0] === 1; }) : pl.length > 0;
   }
   function catStatus(c, isNow) {
-    var aw = AW[c.id] && AW[c.id].st, fin = catFinished(c);
-    if (fin && aw === 'done') return 'awarded';   // perburta ar rezultatai ištrinti - nebe „apdovanota“
-    if (fin && aw === 'sent') return 'sent';
-    if (fin) return 'fin';
+    var aw = AW[c.id] && AW[c.id].st;
+    if (aw === 'done') return 'awarded';
+    if (aw === 'sent') return 'sent';
+    if (catFinished(c)) return 'fin';
     return isNow || (c.draw && !drawStale(c) && doneCount(c) > 0) ? 'run' : 'wait';
   }
   function stChip(st) { return '<span class="aw-chip aw-' + st + '">' + (st === 'sent' ? '🏅 ' : st === 'awarded' ? '✓ ' : '') + ST_LABEL[st] + '</span>'; }
@@ -2840,6 +2840,7 @@
       Object.keys(ids).forEach(function (k) { delete c.draw.results[k]; if (c.draw.scores) delete c.draw.scores[k]; });
       prune(c);
     }
+    clearAward(c);   // rezultatai ištrinti - nebe „apdovanota“
     save(); render();
   });
 

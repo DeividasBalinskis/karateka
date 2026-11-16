@@ -72,7 +72,7 @@ test('my tatami, next group, send to awards, awards tablet finishes the age grou
   await a.reload();
   await a.click('#tab-live');
   if (await a.locator('#run').isVisible()) await a.click('#run-back');
-  check('board shows awarded', /Užbaigta ir apdovanota/.test(await a.textContent('#sched')), (await a.textContent('#sched')).replace(/\s+/g, ' ').slice(0, 600));
+  check('board shows awarded', /Užbaigta ir apdovanota/.test(await a.textContent('#sched')));
   const share = sql(`SELECT share_token FROM tournaments WHERE id = ${tid}`);
   const pub = await (await p.request.get(`varzybos-gyvai.php?k=${share}&json=1`)).json();
   check('public sees awarded', pub.areas.some(ar => ar.cats.some(c => c.id === catId && c.aw === 'done')));
@@ -213,7 +213,7 @@ test('Taika test link: no account, only demo competitions, no real members, can 
   await g.fill('#fbText', 'Bandymas: patogu, bet norėčiau didesnių mygtukų');
   await g.press('#fbText', 'Enter');
   await g.waitForTimeout(800);
-  check('feedback saved with name', sql("SELECT CONCAT(name, '|', site) FROM feedback WHERE body LIKE 'Bandymas: patogu%'") === 'Tomas (Taikos bandymas)|taika');
+  check('feedback saved with name', sql("SELECT CONCAT(name, '|', site) FROM feedback WHERE body LIKE 'Bandymas: patogu%'") === 'Tomas (Budo bandymas)|taika');
   check('no js errors (guest)', !errs.length, errs.join('; '));
 
   // Išjungus nuorodą - prieiga baigiasi

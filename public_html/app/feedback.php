@@ -46,7 +46,7 @@ function feedback_status_badge(string $status): string
     return '<span class="badge ' . $class . '">' . e(t($label)) . '</span>';
 }
 
-const FEEDBACK_SITES = ['karateka' => 'karateka.lt', 'taika' => 'Taika', 'ltkf' => 'LTKF'];
+const FEEDBACK_SITES = ['karateka' => 'karateka.lt', 'taika' => 'Budo', 'ltkf' => 'LTKF'];
 const FEEDBACK_IMG_DIR = PUBLIC_DIR . '/uploads/feedback';
 const FEEDBACK_MAX_IMAGES = 40;
 
@@ -65,7 +65,7 @@ function feedback_add(?array $a, string $body, string $page, string $name = '', 
     }
     $_SESSION['fb_times'][] = time();
     if (!$a && ($demo = varz_demo())) {
-        $name = (trim($name) ?: $demo['name']) . ' (Taikos bandymas)';   // admin mato, kad tai bandantysis per nuorodą
+        $name = (trim($name) ?: $demo['name']) . ' (Budo bandymas)';   // admin mato, kad tai bandantysis per nuorodą
     } elseif (!$a && $site === 'ltkf' && ltkf_review()) {
         $name = (trim($name) ?: 'Svečias') . ' (LTKF peržiūra)';
     }
