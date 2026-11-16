@@ -13,8 +13,8 @@ $error = '';
 if (is_post() && $t) {
     csrf_check();
     $name = trim((string) post('name'));
-    if (mb_strlen($name) < 3 || strpos($name, ' ') === false) {
-        $error = 'Įrašykite vardą ir pavardę - kad būtų aišku, kas vedė varžybas.';
+    if (mb_strlen($name) < 2) {
+        $error = 'Įrašykite savo vardą - kad būtų aišku, kas vedė varžybas.';
     } else {
         varz_sekr_start($tid, $name);
         redirect('admin/varzybu-sistema.php?id=' . $tid . '#live');
@@ -39,7 +39,7 @@ varz_html_head('Sekretoriatas', 'vz-public vz-demo-start');
       <p>Su šia nuoroda vedate varžybas <b><?= e($t['title']) ?></b>: dalyviai, kategorijos, kovos, balai, apdovanojimai. Paskyros nereikia.</p>
       <p class="muted small">Pastebėjimus rašykite per 💡 (apačioje kairėje).</p>
       <?php if ($error): ?><div class="flash flash-err"><?= e($error) ?></div><?php endif; ?>
-      <label>Vardas ir pavardė <input class="sel" type="text" name="name" maxlength="80" required autofocus value="<?= e((string) post('name')) ?>" placeholder="pvz. Tomas Petrauskas"></label>
+      <label>Jūsų vardas <span class="muted small">(pavardė - nebūtina)</span> <input class="sel" type="text" name="name" maxlength="80" required autofocus value="<?= e((string) post('name')) ?>" placeholder="pvz. Tomas"></label>
       <button class="btn btn-primary" type="submit">Pradėti →</button>
     </form>
   <?php endif; ?>

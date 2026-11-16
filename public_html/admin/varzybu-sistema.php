@@ -287,7 +287,7 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
 <div class="share-panel" id="sekr-panel"<?= get('sekr') ? '' : ' hidden' ?>>
   <div class="sp-block">
     <b>🧑‍💼 Sekretoriato nuoroda (be paskyros)</b>
-    <p class="muted small">Atidaręs nuorodą žmogus įrašo vardą ir pavardę ir gali vesti šias varžybas: dalyviai, kategorijos, kovos, balai, apdovanojimai.
+    <p class="muted small">Atidaręs nuorodą žmogus įrašo savo vardą ir gali vesti šias varžybas: dalyviai, kategorijos, kovos, balai, apdovanojimai.
       Kitų varžybų, klubo narių duomenų ir karateka.lt valdymo nemato. Išjungus ar pakeitus nuorodą - prieiga baigiasi.</p>
     <?php if ($sekrUrl): ?>
       <div class="sp-row"><input class="sel sp-url" readonly value="<?= e($sekrUrl) ?>" id="sekr-url" aria-label="Sekretoriato nuoroda" onclick="this.select()"><button type="button" class="btn" data-copy="<?= e($sekrUrl) ?>">Kopijuoti</button></div>

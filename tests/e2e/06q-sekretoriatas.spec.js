@@ -5,7 +5,7 @@ const { sql, login, check, noJsErrors } = require('./helpers');
 
 const BASE_URL = process.env.BASE_URL || 'http://127.0.0.1:8088/';
 
-test('secretariat link: name + surname, only this competition, no member data; admin preview; turning off ends access', async ({ browser }) => {
+test('secretariat link: name only, only this competition, no member data; admin preview; turning off ends access', async ({ browser }) => {
   sql('DELETE FROM tournaments WHERE is_test = 1');
   const a = await login(browser, 'info@karateka.lt', 1400, 1000);
   await a.goto('admin/varzybos.php');
@@ -29,13 +29,13 @@ test('secretariat link: name + surname, only this competition, no member data; a
   const g = await ctx.newPage();
   await g.goto(link);
   check('entry shows the competition', (await g.textContent('h1')).length > 3);
-  await g.fill('input[name="name"]', 'Tomas');
+  await g.fill('input[name="name"]', 'T');
   await Promise.all([g.waitForNavigation(), g.click('button[type="submit"]')]);
-  check('surname required', /vardą ir pavardę/.test(await g.textContent('main')));
-  await g.fill('input[name="name"]', 'Tomas Petrauskas');
+  check('a name is required', /savo vardą/.test(await g.textContent('main')));
+  await g.fill('input[name="name"]', 'Tomas');   // pavardė nebūtina
   await Promise.all([g.waitForNavigation(), g.click('button[type="submit"]')]);
   check('lands in the competition', new RegExp(`admin/varzybu-sistema\\.php\\?id=${tid}`).test(g.url()), g.url());
-  check('name shown, no member data, no link management', /Tomas Petrauskas/.test(await g.textContent('.vz-sekr-who')) &&
+  check('name shown, no member data, no link management', /Tomas/.test(await g.textContent('.vz-sekr-who')) &&
     await g.evaluate(() => window.VARZ.members.length) === 0 && await g.locator('#sekr-toggle').count() === 0);
 
   // Gali vesti varžybas: pakeitimai išsaugomi

@@ -624,7 +624,7 @@ Kiek vėliavėlių gavo laimėjęs	How many flags the winner got	Сколько 
 Pagal rungtį: vėliavėlėmis, balais, ratų sistema	By event: flags, scores, round robin	По дисциплине: флажки, баллы, круговая
 Kiek trečių vietų ir kaip	How many third places and how	Сколько третьих мест и как
 🧑‍💼 Sekretoriato nuoroda (be paskyros)	🧑‍💼 Secretariat link (no account)	🧑‍💼 Ссылка для секретариата (без учётной записи)
-Atidaręs nuorodą žmogus įrašo vardą ir pavardę ir gali vesti šias varžybas: dalyviai, kategorijos, kovos, balai, apdovanojimai. Kitų varžybų, klubo narių duomenų ir karateka.lt valdymo nemato. Išjungus ar pakeitus nuorodą - prieiga baigiasi.	Whoever opens the link enters their name and surname and can run this competition: participants, categories, bouts, scores, awards. They do not see other competitions, club member data or karateka.lt admin. Turning the link off or changing it ends the access.	Открыв ссылку, человек вводит имя и фамилию и может вести эти соревнования: участники, категории, бои, баллы, награждения. Другие соревнования, данные членов клуба и управление karateka.lt он не видит. Если ссылку отключить или заменить — доступ прекращается.
+Atidaręs nuorodą žmogus įrašo savo vardą ir gali vesti šias varžybas: dalyviai, kategorijos, kovos, balai, apdovanojimai. Kitų varžybų, klubo narių duomenų ir karateka.lt valdymo nemato. Išjungus ar pakeitus nuorodą - prieiga baigiasi.	Whoever opens the link enters their name and can run this competition: participants, categories, bouts, scores, awards. They do not see other competitions, club member data or karateka.lt admin. Turning the link off or changing it ends the access.	Открыв ссылку, человек вводит своё имя и может вести эти соревнования: участники, категории, бои, баллы, награждения. Другие соревнования, данные членов клуба и управление karateka.lt он не видит. Если ссылку отключить или заменить — доступ прекращается.
 Sukurti sekretoriato nuorodą	Create a secretariat link	Создать ссылку для секретариата
 👁 Peržiūrėti kaip sekretoriatas	👁 View as the secretariat	👁 Посмотреть как секретариат
 Sekretoriatas	Secretariat	Секретариат
@@ -647,3 +647,7 @@ Pradėti →	Start →	Начать →
 Ji išjungta arba pakeista. Paprašykite naujos nuorodos varžybų organizatoriaus.	It was turned off or changed. Ask the competition organiser for a new link.	Её отключили или заменили. Попросите новую ссылку у организатора соревнований.
 Įrašykite vardą ir pavardę - kad būtų aišku, kas vedė varžybas.	Enter your name and surname - so it is clear who ran the competition.	Укажите имя и фамилию — чтобы было понятно, кто вёл соревнования.
 Nukopijuota ✓	Copied ✓	Скопировано ✓
+Įrašykite savo vardą - kad būtų aišku, kas vedė varžybas.	Enter your name - so it is clear who ran the competition.	Укажите своё имя — чтобы было понятно, кто вёл соревнования.
+(pavardė - nebūtina)	(surname optional)	(фамилия необязательна)
+pvz. Tomas	e.g. Tomas	напр. Томас
+Jūsų vardas	Your name	Ваше имя

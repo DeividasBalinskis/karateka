@@ -4,6 +4,11 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.36 - 2026-11-16 (sekretoriatui užtenka vardo)
+Duomenų bazės keisti nereikia. Zip'o turinį išpakuokite **tiesiai į svetainės aplanką**.
+
+- Prisijungiant per sekretoriato nuorodą **užtenka vardo** - pavardė nebūtina.
+
 ## v1.35 - 2026-11-16 (sekretoriato nuoroda varžyboms be paskyros)
 Duomenų bazės keisti nereikia. Zip'o turinį išpakuokite **tiesiai į svetainės aplanką**.
 
