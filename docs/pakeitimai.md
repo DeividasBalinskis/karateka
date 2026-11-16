@@ -4,6 +4,19 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.32 - 2026-11-16 (Denio atsiliepimai #31-#36: XP iš reitingo, kovos laikmatis, telefone kovos langas, raudona AKA, katos finalo eilė)
+Duomenų bazės keisti nereikia. Zip'o turinį išpakuokite **tiesiai į svetainės aplanką** (ten, kur `index.php`).
+
+- **XP iškart iš reitingo** (#31): Valdymas → XP → Reitingas - prie kiekvieno vardo mygtukas **„+XP“**. Pasirenki, už ką, kiek XP,
+  komentarą (nebūtina) → „Skirti“. Skaičius eilutėje iškart padidėja, matosi „✨ +5 XP · …“.
+- **Kovos laikmatis** (#32): atidarius kovą laikas iškart **0:10** (Jiyu ippon). Šablonas „Kova 2:00“ nuimtas.
+  Naujas šablonas **Enbu 0:00 ↑** - paprastas laikmatis nuo 0 (skaičiuoja į priekį, ekrane taip pat).
+- **Telefone kovos langas** (#33, #34): paspaudus +1 / +2 / +4 ekranas **nebeperšoka į viršų**. Langą galima nuslinkti **iki pat apačios**
+  („Baigti kovą“, „Laimėjo AKA / SHIRO“ nebelieka po naršyklės juosta ar lemputės mygtuku).
+- **AKA eilutė visa raudona** (#35): tinkluose ir kovų kortelėse AKA dalyvio eilutė visa raudona (ne tik briauna), SHIRO - balta.
+- **Katos finalo eilė** (#36): finale pirmas pasirodo tas, kurio pusfinalio balas **žemiausias**, paskutinis - geriausias.
+  Taip pat ir „Kas toliau“ sąraše. Po lentele paaiškinta.
+
 ## v1.31 - 2026-11-16 (žaidimas „Mano dojo“: herojai, gyvūnėliai, 4 žaidimai; Admin režimas; Denio atsiliepimai #18-#29)
 **Duomenų bazė:** `db/035_zaidimas.sql` - Valdymas → Šiandien → „Atnaujinkite duomenų bazę“.
 Zip'o turinį išpakuokite **tiesiai į svetainės aplanką** (ten, kur `index.php`).

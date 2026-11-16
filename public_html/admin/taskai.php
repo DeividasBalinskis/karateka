@@ -39,6 +39,20 @@ if (is_post()) {
         redirect('admin/taskai.php#skirti');
     }
 
+    // XP vienam nariui iš reitingo („+XP“ prie vardo). Atsakymas JSON.
+    if ($action === 'xp_one') {
+        header('Content-Type: application/json; charset=utf-8');
+        $cat = q_one('SELECT * FROM point_categories WHERE id = ? AND is_active = 1', [(int) post('category_id')]);
+        $pts = (int) post('points');
+        if (!$cat || isset(XP_AUTO_RULES[(string) $cat['code']]) || $pts < 1 || $pts > 1000) {
+            exit(json_encode(['ok' => false, 'error' => t('Pasirinkite, už ką, ir kiek XP (1-1000).')], JSON_UNESCAPED_UNICODE));
+        }
+        if (!award_xp_to_members([(int) post('member_id')], $cat, $pts, date('Y-m-d'), post('note') ?: null, (int) $me['id'])) {
+            exit(json_encode(['ok' => false, 'error' => t('Narys nerastas.')], JSON_UNESCAPED_UNICODE));
+        }
+        exit(json_encode(['ok' => true, 'points' => $pts, 'line' => '✨ +' . $pts . ' XP · ' . $cat['name'] . (post('note') !== '' ? ' · ' . mb_strimwidth(post('note'), 0, 80, '…') : '')], JSON_UNESCAPED_UNICODE));
+    }
+
     if ($action === 'save_categories' && is_admin()) {
         foreach ((array) ($_POST['name'] ?? []) as $id => $name) {
             $name = is_string($name) ? trim($name) : '';
@@ -129,7 +143,7 @@ page_start(t('XP'), ['admin' => true]);
 
 <div class="grid-2">
   <div class="stack">
-    <?= render_staff_ranking() ?>
+    <?= render_staff_ranking(true) ?>
     <div class="panel card">
       <h2><?= te('Paskutiniai skyrimai') ?></h2>
       <?php if (!$recent): ?><p class="muted small"><?= te('XP dar neskirta.') ?></p><?php endif; ?>

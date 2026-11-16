@@ -2732,4 +2732,6 @@ From 2013 he trained with the team of the traditional karate-do club "Sanrei", a
     'Pagalbinis instruktorius' => 'Assistant instructor',
     'Grupių pavadinimai (pagalbinius pažymėkite kortelėje):' => 'Group titles (mark assistants on their card):',
     'Rodyti žemėlapyje' => 'Show on map',
+    'Paspaudę vardą atidarysite nario puslapį.' => 'Tap a name to open the member\'s page.',
+    '„+XP“ prie vardo - skirti XP iškart.' => '“+XP” next to a name gives XP right away.',
 ];

@@ -248,7 +248,8 @@ function save_event_results(array $event, array $results, int $by): int
  * Treneriams: visas sezono reitingas vienoje kortelėje - skirtukai (amžiaus grupės / visas klubas),
  * Top 5 ryškiau, kiti slenkami, paieška pagal vardą, vardas veda į nario puslapį.
  */
-function render_staff_ranking(): string
+/** Reitingas treneriams; $give - prie kiekvieno vardo „+XP“ (skirti XP iškart iš sąrašo) */
+function render_staff_ranking(bool $give = false): string
 {
     [$from, $to, $label] = season_bounds();
     $choices = [];
@@ -264,6 +265,7 @@ function render_staff_ranking(): string
     $choices['klubas'] = ['club', null, t('Visas klubas')];
     $current = isset($choices[get('rt')]) ? get('rt') : array_key_first($choices);
     $rows = ranking($choices[$current], $from, $to);
+    $xpCats = $give ? manual_xp_categories() : [];
     ob_start();
     ?>
 <div class="panel card points-card">
@@ -281,11 +283,51 @@ function render_staff_ranking(): string
       <?php foreach ($rows as $r): ?>
         <li data-name="<?= e(mb_strtolower($r['first_name'] . ' ' . $r['last_name'])) ?>" class="<?= $r['rank'] <= 5 ? 'top5' : '' ?>">
           <span class="pos r<?= (int) $r['rank'] ?>"><?= (int) $r['rank'] ?></span><a href="<?= url('admin/nariai.php?id=' . (int) $r['member_id']) ?>"><?= e($r['first_name'] . ' ' . $r['last_name']) ?></a><span class="pts"><?= (int) $r['total'] ?></span>
+          <?php if ($xpCats): ?><button type="button" class="xp-btn rank-xp" data-member="<?= (int) $r['member_id'] ?>" title="<?= te('Skirti XP') ?>"><?= te('+XP') ?></button><?php endif; ?>
         </li>
       <?php endforeach; ?>
     </ol>
     <p class="hint" id="rankEmpty" style="display:none;"><?= te('Nieko nerasta.') ?></p>
-    <p class="hint" style="margin-top:8px;"><?= te('Su XP:') ?> <?= count($rows) ?>. Paspaudę vardą atidarysite nario puslapį.</p>
+    <p class="hint" style="margin-top:8px;"><?= te('Su XP:') ?> <?= count($rows) ?>. <?= te('Paspaudę vardą atidarysite nario puslapį.') ?><?php if ($xpCats): ?> <?= te('„+XP“ prie vardo - skirti XP iškart.') ?><?php endif; ?></p>
+    <?php if ($xpCats): ?>
+    <div class="xp-quick rank-quick" id="rankQuick" hidden>
+      <label><?= te('Už ką') ?>
+        <select id="rqCat"><?php foreach ($xpCats as $c): ?><option value="<?= (int) $c['id'] ?>" data-points="<?= (int) $c['points'] ?>"><?= e($c['name']) ?></option><?php endforeach; ?></select></label>
+      <label class="xp-pts"><?= te('XP') ?> <input type="number" id="rqPts" min="1" max="1000" value="<?= (int) $xpCats[0]['points'] ?>"></label>
+      <label class="xp-note"><?= te('Komentaras') ?> <span class="hint"><?= te('nebūtina, mato narys') ?></span><input type="text" id="rqNote" maxlength="190"></label>
+      <div class="row"><button type="button" class="btn btn-primary btn-sm" id="rqGive"><?= te('Skirti') ?></button><button type="button" class="btn btn-ghost btn-sm" id="rqCancel"><?= te('Atšaukti') ?></button></div>
+    </div>
+    <script>
+    // „+XP“ reitinge: langelis po nario eilute; skyrus - XP skaičius eilutėje padidėja ir matosi „✨ +5 XP · …“
+    (function () {
+      var box = document.getElementById('rankQuick'), cat = document.getElementById('rqCat'), pts = document.getElementById('rqPts'), note = document.getElementById('rqNote'), cur = null;
+      cat.addEventListener('change', function () { pts.value = cat.selectedOptions[0].dataset.points || 5; });
+      document.querySelectorAll('.rank-xp').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var li = btn.closest('li');
+          if (cur === li && !box.hidden) { box.hidden = true; return; }
+          cur = li; li.appendChild(box); box.hidden = false; note.value = ''; cat.focus();
+        });
+      });
+      document.getElementById('rqCancel').addEventListener('click', function () { box.hidden = true; });
+      document.getElementById('rqGive').addEventListener('click', function () {
+        var li = cur, data = new FormData();
+        data.append('_csrf', <?= json_encode(csrf_token()) ?>);
+        data.append('action', 'xp_one'); data.append('member_id', li.querySelector('.rank-xp').dataset.member);
+        data.append('category_id', cat.value); data.append('points', pts.value); data.append('note', note.value.trim());
+        fetch(<?= json_encode(url('admin/taskai.php')) ?>, { method: 'POST', body: data, credentials: 'same-origin', headers: { 'Accept': 'application/json' } })
+          .then(function (r) { return r.json(); })
+          .then(function (res) {
+            if (!res.ok) { alert(res.error || 'Nepavyko'); return; }
+            box.hidden = true;
+            var p = li.querySelector('.pts'); p.textContent = (+p.textContent || 0) + res.points;
+            var line = document.createElement('div'); line.className = 'xp-line just-saved'; line.textContent = res.line; li.appendChild(line);
+          })
+          .catch(function () { alert('Nepavyko išsaugoti - patikrinkite internetą.'); });
+      });
+    })();
+    </script>
+    <?php endif; ?>
     <script>
     (function () {
       // Paieška be lietuviškų raidžių skirtumo: "austeja" randa "Austėja"

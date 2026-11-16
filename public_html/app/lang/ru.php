@@ -2732,4 +2732,6 @@ Nuo 2013 m. treniravosi Tradicinio karate-do klubo „Sanrei“ komandoje, o 201
     'Pagalbinis instruktorius' => 'Помощник инструктора',
     'Grupių pavadinimai (pagalbinius pažymėkite kortelėje):' => 'Названия групп (помощников отметьте в карточке):',
     'Rodyti žemėlapyje' => 'Показать на карте',
+    'Paspaudę vardą atidarysite nario puslapį.' => 'Нажмите на имя, чтобы открыть страницу участника.',
+    '„+XP“ prie vardo - skirti XP iškart.' => '«+XP» рядом с именем — начислить XP сразу.',
 ];

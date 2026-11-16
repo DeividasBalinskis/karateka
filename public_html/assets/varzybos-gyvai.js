@@ -27,6 +27,7 @@
     var t = pick.d.timer; if (!t) return null;
     if (!t.running) return t.remaining;
     var elapsed = pick.src === 'srv' ? (Date.now() + offset) - pick.ms : Date.now() - pick.d.at;
+    if (t.up) return Math.min(30 * 60000, t.remaining + elapsed);   // Enbu: laikas nuo 0 į priekį
     return Math.max(0, t.remaining - elapsed);
   }
   function area(id) { return ((data && data.areas) || []).find(function (a) { return +a.id === +id; }) || null; }
@@ -84,7 +85,7 @@
       };
       stage = '<div class="scr-top"><span class="live-dot"></span><span><span class="disc d-' + esc(d.disc) + '"></span>' + esc(d.cat) + '</span><span>' + esc(d.round) + '</span>' +
         (d.bout ? '<span class="scr-pill">Kova ' + esc(d.bout) + '</span>' : '') + (d.to ? '<span class="scr-pill">iki ' + d.to + '</span>' : '') + '</div>' +
-        '<div class="scr-main">' + side('a') + (left !== null && d.mode !== 'score2' ? '<div class="scr-timer' + (left <= 0 ? ' over' : left <= 15000 ? ' last' : '') + '" id="scr-timer">' + fmt(left) + '</div>' : '') + side('b') + '</div>';
+        '<div class="scr-main">' + side('a') + (left !== null && d.mode !== 'score2' ? '<div class="scr-timer' + (d.timer && d.timer.up ? '' : left <= 0 ? ' over' : left <= 15000 ? ' last' : '') + '" id="scr-timer">' + fmt(left) + '</div>' : '') + side('b') + '</div>';
     } else {
       var m = nowPair(a);
       stage = m ? '<div class="scr-top"><span class="live-dot"></span><span><span class="disc d-' + esc(m.disc) + '"></span>' + esc(m.cat) + '</span><span>' + (m.no ? m.no + ' · ' : '') + esc(m.title) + '</span></div>' +
@@ -210,7 +211,7 @@
   function render() { if (!data && !Object.keys(local).length) return; if (CFG.screen) renderScreen(); else renderViewer(); }
   // Laikrodis tiksi tarp atnaujinimų
   setInterval(function () {
-    if (CFG.screen) { var el = document.getElementById('scr-timer'), p = liveFor(CFG.area); if (el && p) { var l = timeLeft(p); el.textContent = fmt(l); el.className = 'scr-timer' + (l <= 0 ? ' over' : l <= 15000 ? ' last' : ''); } return; }
+    if (CFG.screen) { var el = document.getElementById('scr-timer'), p = liveFor(CFG.area); if (el && p) { var l = timeLeft(p); el.textContent = fmt(l); el.className = 'scr-timer' + (p.d.timer && p.d.timer.up ? '' : l <= 0 ? ' over' : l <= 15000 ? ' last' : ''); } return; }
     root.querySelectorAll('[data-timer]').forEach(function (el) { var p = liveFor(el.dataset.timer); if (p) el.textContent = fmt(timeLeft(p)); });
   }, 250);
   function poll() {

@@ -341,7 +341,8 @@
   function scoreFinalists(c) {
     var r1 = scoreRank(c, 'scores', (c.draw.order || []).filter(function (id) { return person(c, id); }));
     if (r1.some(function (x) { return x.total === null; })) return [];
-    return r1.slice(0, Math.min(cfg(c).finalists, r1.length)).map(function (x) { return x.id; });
+    // Finale pasirodymo eilė: nuo žemiausio pusfinalio balo iki aukščiausio (geriausias - paskutinis)
+    return r1.slice(0, Math.min(cfg(c).finalists, r1.length)).map(function (x) { return x.id; }).reverse();
   }
   function scoreDone(c) {
     var ids = (c.draw.order || []).filter(function (id) { return person(c, id); });
@@ -1207,7 +1208,8 @@
     html += '<div class="draw-foot">' + placesHtml(c, catPlaces(c), 'Vietos atsiras, kai visi gaus balus.') +
       '<p class="hint">Įrašykite kiekvieno teisėjo balą be taško: 75 → 7.5. ' + (f.drop && f.judges >= 5 ? '* ' + (f.avg ? 'Vidurkis' : 'Suma') + ' be aukščiausio ir žemiausio balo - jie lieka matomi perbraukti. ' : '') +
       (f.rounds === 2 ? 'Finalininkų vietos - pusfinalio ir finalo ' + (f.avg ? 'vidurkių' : 'sumų') + ' suma; lygiųjų atveju - finalo ' + what + ', tada visų balų suma. ' : 'Lygiųjų atveju lemia visų balų suma. ') +
-      (c.discipline === 'kata' ? 'Kata - pasirinkite iš sąrašo ar įrašykite. ' : '') + 'Eilės tvarka - burtų; „Burti iš naujo“ ją sumaišo.</p></div>';
+      (c.discipline === 'kata' ? 'Kata - pasirinkite iš sąrašo ar įrašykite. ' : '') + 'Eilės tvarka - burtų; „Burti iš naujo“ ją sumaišo.' +
+      (f.rounds === 2 ? ' <b>Finale pasirodo nuo žemiausio pusfinalio balo iki aukščiausio.</b>' : '') + '</p></div>';
     view.innerHTML = html;
   }
   function renderDraw() {
@@ -1507,7 +1509,9 @@
       sa: saved.sa || 0, sb: saved.sb || 0, log: saved.log || [], i: saved.i || 0,
       ma: saved.ma || teamMembers(m.a), mb: saved.mb || teamMembers(m.b),
       parts: saved.parts || { a: { k: [], p: [] }, b: { k: [], p: [] } },
-      timer: { total: f.time * 1000, remaining: saved.remaining !== undefined ? saved.remaining : f.time * 1000, running: false, at: Date.now() }, winner: null };
+      timer: null, winner: null };
+    var kum = mode === 'kumite' || mode === 'team', t0 = saved.tTotal !== undefined ? saved.tTotal : kum ? 10000 : f.time * 1000;
+    B.timer = { total: t0, remaining: saved.remaining !== undefined ? saved.remaining : t0, running: false, at: Date.now(), up: !!saved.tUp, preset: saved.tPreset || (kum ? 'Jiyu ippon' : '') };
     liveMatch = { cat: c.id, mid: mid };
     boutEl.hidden = false; document.body.classList.add('bout-open-body');
     renderBout(); pushLive(); render();
@@ -1515,7 +1519,7 @@
   function keepBout() {
     // Nebaigtos kovos balai išsaugomi (perkrovus puslapį - tęsiama)
     var c = cat(B.cat); c.draw.bouts = c.draw.bouts || {};
-    c.draw.bouts[B.mid] = { sa: B.sa, sb: B.sb, log: B.log, i: B.i, ma: B.ma, mb: B.mb, parts: B.parts, remaining: timeLeft() };
+    c.draw.bouts[B.mid] = { sa: B.sa, sb: B.sb, log: B.log, i: B.i, ma: B.ma, mb: B.mb, parts: B.parts, remaining: timeLeft(), tTotal: B.timer.total, tUp: B.timer.up || undefined, tPreset: B.timer.preset || undefined };
     save();
   }
   function closeBout() {
@@ -1525,19 +1529,20 @@
     B = null; liveMatch = null; boutEl.hidden = true; document.body.classList.remove('bout-open-body');
     pushLive(area); render();
   }
-  function timeLeft() { var t = B.timer; return Math.max(0, t.running ? t.remaining - (Date.now() - t.at) : t.remaining); }
+  // Enbu (t.up): laikas skaičiuojamas nuo 0 į priekį; „remaining“ tada - jau praėjęs laikas
+  function timeLeft() { var t = B.timer; if (t.up) return Math.min(30 * 60000, t.running ? t.remaining + (Date.now() - t.at) : t.remaining); return Math.max(0, t.running ? t.remaining - (Date.now() - t.at) : t.remaining); }
   function fmtTime(ms) { var s = Math.ceil(ms / 1000), m = Math.floor(s / 60); s = s % 60; return m + ':' + (s < 10 ? '0' : '') + s; }
   var tickTimer = null, beeped = false;
   function toggleTimer() {
     var t = B.timer;
     if (t.running) { t.remaining = timeLeft(); t.running = false; clearInterval(tickTimer); }
-    else { if (timeLeft() <= 0) return; t.at = Date.now(); t.running = true; beeped = false; tickTimer = setInterval(tick, 200); }
+    else { if (!t.up && timeLeft() <= 0) return; t.at = Date.now(); t.running = true; beeped = false; tickTimer = setInterval(tick, 200); }
     t.at = Date.now(); renderTimer(); pushLive();
   }
   function setTime(ms) { var t = B.timer; t.remaining = Math.max(0, Math.min(ms, 30 * 60000)); t.at = Date.now(); if (t.running) { clearInterval(tickTimer); tickTimer = setInterval(tick, 200); } renderTimer(); pushLive(); }
   function tick() {
     if (!B) { clearInterval(tickTimer); return; }
-    if (timeLeft() <= 0 && B.timer.running) { B.timer.remaining = 0; B.timer.running = false; clearInterval(tickTimer); if (!beeped) { beep(); beeped = true; } pushLive(); }
+    if (!B.timer.up && timeLeft() <= 0 && B.timer.running) { B.timer.remaining = 0; B.timer.running = false; clearInterval(tickTimer); if (!beeped) { beep(); beeped = true; } pushLive(); }
     renderTimer();
   }
   function beep() {
@@ -1547,7 +1552,7 @@
     var el = document.getElementById('bt-timer'); if (!el || !B || el.tagName === 'INPUT') return;
     var left = timeLeft();
     el.textContent = fmtTime(left);
-    el.className = 'bt-timer' + (left <= 0 ? ' over' : left <= 15000 ? ' last' : '') + (B.timer.running ? ' running' : '');
+    el.className = 'bt-timer' + (B.timer.up ? ' up' : left <= 0 ? ' over' : left <= 15000 ? ' last' : '') + (B.timer.running ? ' running' : '');
     var tb = document.getElementById('bt-start'); if (tb) tb.textContent = B.timer.running ? '⏸ Sustabdyti' : '▶ Pradėti';
   }
   function sideHtml(side) {
@@ -1578,13 +1583,9 @@
     return '<div class="bt-psides">' + side('a') + side('b') + '</div>' +
       '<p class="hint">' + (cfg(c).drop && J >= 5 ? 'Aukščiausias ir žemiausias kiekvienos dalies balas atmetamas - jie lieka matomi perbraukti. ' : '') + 'Iš viso = Kata + Pritaikymas.</p>';
   }
-  // Kumite laiko šablonai: kategorijos laikas ir dažniausi (Jiyu ippon, Ko-Go - 10 s, Jiyu pratęsimas - 1:30)
-  var TIME_PRESETS = [['Jiyu ippon', 10], ['Ko-Go', 10], ['Jiyu pratęsimas', 90]];
-  function timePresets(c) {
-    var base = cfg(c).time, out = [['Kova', base]];
-    TIME_PRESETS.forEach(function (x) { out.push(x); });
-    return out;
-  }
+  // Kumite laiko šablonai: Jiyu ippon ir Ko-Go - 10 s (pradinis), Jiyu pratęsimas - 1:30, Enbu - paprastas laikmatis nuo 0 (skaičiuoja į priekį)
+  var TIME_PRESETS = [['Jiyu ippon', 10], ['Ko-Go', 10], ['Jiyu pratęsimas', 90], ['Enbu', 0, 1]];
+  function timePresets() { return TIME_PRESETS; }
   function renderBout() {
     if (!B) return;
     var c = cat(B.cat), area = areaOf(c), body, mode = B.mode, f = cfg(c);
@@ -1597,9 +1598,9 @@
       var mid = '<div class="bt-mid">' + (mode === 'team' ? '<div class="bt-round">Kova ' + (B.i + 1) + ' / ' + Math.max(B.ma.length, B.mb.length, 1) + '</div>' : '') +
         '<button type="button" class="bt-timer" id="bt-timer" title="Paspauskite ir įrašykite laiką (pvz. 1:30)"></button><div class="bt-tbtns"><button type="button" class="btn btn-primary" id="bt-start"></button><button type="button" class="btn" id="bt-reset" title="Iš naujo">↺ ' + fmtTime(B.timer.total) + '</button>' +
         '<button type="button" class="btn" data-dt="-10000">−10 s</button><button type="button" class="btn" data-dt="10000">+10 s</button></div>' +
-        (mode === 'kumite' || mode === 'team' ? '<div class="bt-presets" role="group" aria-label="Laiko šablonai">' + timePresets(c).map(function (x) {
-          var on = B.timer.preset ? B.timer.preset === x[0] : B.timer.total === x[1] * 1000 && x[0] === 'Kova';
-          return '<button type="button" class="btn btn-sm' + (on ? ' on' : '') + '" data-preset="' + x[1] + '" data-preset-name="' + esc(x[0]) + '">' + esc(x[0]) + ' <b>' + fmtTime(x[1] * 1000) + '</b></button>';
+        (mode === 'kumite' || mode === 'team' ? '<div class="bt-presets" role="group" aria-label="Laiko šablonai">' + timePresets().map(function (x) {
+          var on = B.timer.preset === x[0];
+          return '<button type="button" class="btn btn-sm' + (on ? ' on' : '') + '" data-preset="' + x[1] + '" data-preset-name="' + esc(x[0]) + '"' + (x[2] ? ' data-up="1" title="Paprastas laikmatis nuo 0"' : '') + '>' + esc(x[0]) + ' <b>' + fmtTime(x[1] * 1000) + (x[2] ? ' ↑' : '') + '</b></button>';
         }).join('') + '</div>' : '') +
         (mode === 'team' && B.log.length ? '<ol class="bt-log">' + B.log.map(function (l, j) { return '<li>' + (j + 1) + ' kova: ' + esc(l.an) + ' <b>' + l.a + ':' + l.b + '</b> ' + esc(l.bn) + '</li>'; }).join('') + '</ol>' : '') +
         '<p class="muted small">Tarpas - laikrodis</p></div>';
@@ -1610,8 +1611,12 @@
     var foot = '<div class="bt-foot">' + (mode === 'team' && !lastTeamBout ? '<button type="button" class="btn btn-primary" id="bt-next">Kita kova →</button>' : '') +
       (lastTeamBout ? '<button type="button" class="btn btn-primary" id="bt-finish">✓ Baigti kovą</button>' : '') +
       '<span class="spacer"></span><span class="muted small">' + (tie ? 'Lygiosios - nugalėtoją pasirinkite:' : 'Arba sprendimu (hantei):') + '</span><button type="button" class="btn" data-win="a">Laimėjo AKA</button><button type="button" class="btn" data-win="b">Laimėjo SHIRO</button></div>';
+    // Telefone: perpiešus (pvz. +1 taškas) lieka toje pačioje slinkimo vietoje
+    var oldCard = boutEl.querySelector('.bout-card'), keepY = oldCard ? oldCard.scrollTop : 0, keepWin = window.scrollY;
     boutEl.innerHTML = '<div class="bout-card">' + head + '<div class="bout-body">' + body + '</div>' + foot + '</div>';
     renderTimer();
+    if (keepY) boutEl.querySelector('.bout-card').scrollTop = keepY;
+    if (window.scrollY !== keepWin) window.scrollTo(0, keepWin);
   }
   function finishBout(forced) {
     var c = cat(B.cat), winner, txt, mode = B.mode;
@@ -1646,9 +1651,9 @@
     if (t.id === 'bt-timer') { editTimer(); return; }
     if (t.id === 'bt-reset') { if (B.timer.running) toggleTimer(); setTime(B.timer.total); return; }
     if (t.dataset.dt) { setTime(timeLeft() + +t.dataset.dt); return; }
-    if (t.dataset.preset) {
+    if (t.dataset.preset !== undefined) {
       if (B.timer.running) toggleTimer();
-      B.timer.total = +t.dataset.preset * 1000; B.timer.preset = t.dataset.presetName; setTime(B.timer.total); renderBout(); return;
+      B.timer.total = +t.dataset.preset * 1000; B.timer.preset = t.dataset.presetName; B.timer.up = !!t.dataset.up; setTime(B.timer.total); keepBout(); renderBout(); return;
     }
     if (t.dataset.pt) {
       var q = t.dataset.pt.split('|'), side = q[0], n = +q[1];
@@ -1732,7 +1737,7 @@
     var c = cat(B.cat), st = { area: areaOf(c).id, areaName: areaOf(c).name, cat: c.name, catId: c.id, disc: c.discipline, round: (B.no ? B.no + ' · ' : '') + B.title, mode: B.mode,
       aka: { name: pubName(B.a), club: (person(c, B.a) || {}).club || '' }, shiro: { name: pubName(B.b), club: (person(c, B.b) || {}).club || '' },
       sa: B.sa, sb: B.sb, winner: B.winner, at: Date.now(),
-      timer: { total: B.timer.total, remaining: timeLeft(), running: B.timer.running } };
+      timer: { total: B.timer.total, remaining: timeLeft(), running: B.timer.running, up: B.timer.up || undefined } };
     if (B.mode === 'team') { st.bout = (B.i + 1) + ' / ' + Math.max(B.ma.length, B.mb.length, 1); st.akaNow = pubName(B.ma[B.i]); st.shiroNow = pubName(B.mb[B.i]); }
     if (B.mode === 'sumo') st.to = cfg(c).sumoTo;
     if (B.mode === 'score2') {

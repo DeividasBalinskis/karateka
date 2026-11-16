@@ -1448,3 +1448,8 @@ tr.res-failed td{background:rgba(192,57,43,0.06);}
   .ev-chip{width:8px; height:8px; padding:0; border-radius:50%; font-size:0; background:var(--tc);}
   .ev-day.has{background:#fff;}
 }
+/* Reitingas su „+XP“ prie vardo (XP puslapis) */
+.ranking-all li{flex-wrap:wrap;}
+.ranking .rank-xp{min-height:32px; padding:4px 10px; font-size:0.8rem; border-radius:10px;}
+.ranking .rank-quick, .ranking .xp-line{flex-basis:100%;}
+.ranking .xp-line{font-size:0.85rem; color:#7A5A06; margin-top:-2px;}

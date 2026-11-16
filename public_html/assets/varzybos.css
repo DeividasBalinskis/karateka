@@ -228,6 +228,21 @@ body.is-dragging-name { cursor: grabbing; user-select: none; }
 .slot b { font-size: .93rem; }
 .slot .club { font-size: .76rem; color: var(--muted); }
 .slot.win { background: var(--green-soft); }
+/* AKA eilutė visa raudona, SHIRO - balta (ne tik briauna) */
+.slot.aka { background: linear-gradient(90deg, #D7263D, #C21F35); color: #fff; }
+.slot.aka .stripe { background: #9E1628; }
+.slot.aka .club { color: rgba(255, 255, 255, .82); }
+.slot.aka button:hover { background: rgba(255, 255, 255, .14); }
+.slot.aka button:disabled { background: none; }
+.slot.aka.win { background: linear-gradient(90deg, #B81E33, #A51A2E); box-shadow: inset 0 0 0 2px #7CD69B; }
+.slot.aka.win b::after { color: #C9F7D8; }
+.slot.aka.empty { background: #F6D3D8; color: var(--ink); }
+.slot.aka.empty .club, .slot.aka.empty b { color: #A0525C; }
+.slot.aka .flag-chip { background: rgba(255, 255, 255, .16); border-color: rgba(255, 255, 255, .5); color: #fff; }
+.slot.aka .flag-chip.on { background: #fff; border-color: #fff; color: #C21F35; }
+.slot.aka .m-score { color: #fff; }
+.slot.aka .m-score::placeholder { color: rgba(255, 255, 255, .7); }
+.slot.aka .m-score:hover, .slot.aka .m-score:focus { color: var(--ink); }
 .slot.win b::after { content: " ✓"; color: var(--green); }
 .slot.empty .club, .slot.empty b { color: #A6AEBB; font-weight: 400; }
 .slot.picked { outline: 3px solid #F2B705; outline-offset: -3px; }
@@ -374,7 +389,7 @@ body.is-dragging-name { cursor: grabbing; user-select: none; }
 .j-in.dropped { text-decoration: line-through; color: #9AA3B2; background: #F4F5F8; border-style: dashed; }
 body.bout-open-body { overflow: hidden; }
 .bout { position: fixed; inset: 0; z-index: 200; background: rgba(10, 12, 20, .72); display: grid; place-items: center; padding: 16px; }
-.bout-card { width: min(1180px, 100%); max-height: calc(100vh - 32px); overflow: auto; background: var(--bg); border-radius: 18px; box-shadow: 0 20px 60px rgba(0, 0, 0, .4); }
+.bout-card { width: min(1180px, 100%); max-height: calc(100vh - 32px); max-height: calc(100dvh - 32px); overflow: auto; overscroll-behavior: contain; overflow-anchor: none; background: var(--bg); border-radius: 18px; box-shadow: 0 20px 60px rgba(0, 0, 0, .4); }
 .bout-top { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 12px 16px; background: #12151C; color: #fff; border-radius: 18px 18px 0 0; }
 .bout-info { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
 .bout-top .btn { background: rgba(255, 255, 255, .1); border-color: transparent; color: #fff; }
@@ -1184,3 +1199,10 @@ body.vz[data-theme="nature"] .panel, body.vz[data-theme="mountains"] .panel, bod
 button.pin-p:hover { background: var(--surface-2); }
 .pin-p.won { background: var(--green-soft); color: var(--green); }
 .pin-p.won::after { content: " ✓"; }
+
+/* Telefone kovos langą galima nuslinkti iki pat apačios (virš naršyklės juostų ir plaukiojančių mygtukų) */
+@media (max-width: 720px) {
+  .bout { padding: 8px; place-items: start center; }
+  .bout-card { max-height: calc(100vh - 16px); max-height: calc(100dvh - 16px); }
+  .bout-card .bt-foot { padding-bottom: calc(84px + env(safe-area-inset-bottom, 0px)); }
+}
