@@ -4,6 +4,41 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.31 - 2026-11-16 (žaidimas „Mano dojo“: herojai, gyvūnėliai, 4 žaidimai; Admin režimas; Denio atsiliepimai #18-#29)
+**Duomenų bazė:** `db/035_zaidimas.sql` - Valdymas → Šiandien → „Atnaujinkite duomenų bazę“.
+Zip'o turinį išpakuokite **tiesiai į svetainės aplanką** (ten, kur `index.php`).
+
+**🏯 Mano dojo** (paskyros pradžia vietoj „Apžvalga“)
+- Kiekvienas vaikas turi **herojų**: 10 gyvūnų ir žmogus, keičiama lytis ir spalvos. Diržas - tikras iš nario duomenų, lygis - iš tikro XP.
+  **Mistiniai**: Raudonoji panda (8 lygis), Kitsunė (14), Jetis (20); Tengu, Vienaragis, Feniksas - reti, iš dovanų dėžių.
+- Viduryje - **herojaus pasaulis**: aplinka, namas, dekoracijos (tempiamos), laksto gyvūnėliai, naktį - žvaigždės, sezono dalelės.
+  Apačioje XP juosta, dešinėje savybės (Jėga, Vikrumas, Nuojauta, Ištvermė) - 3 taškai už lygį paskirstomi patiems.
+- Išskleidžiama: **Apranga**, **Inventorius** (144 daiktai: ginklai, kimono, diržo puošmenos, šukuosenos, aksesuarai, auros, spalvos, aplinkos,
+  namai, dekoracijos), **Gyvūnėliai** (6 pradiniai + 4 iš kiaušinių, maitinimas, į kovą), **Namai ir aplinka**, **📖 Kolekcija** (rinkiniai X / Y).
+- **🎁 Dovanų dėžės** (be pinigų): už kiekvieną lygį, renginį, 3 pergales per dieną, S įvertinimą ritme. Atsitiktinis daiktas, retumas spalva.
+- **🧪 Testavimas (adminui)**: savo herojui nustatyti lygį, diržą, gauti visus daiktus, +5 dėžės, pradėti iš naujo.
+
+**🎮 Žaidimai** (paskyroje skirtukas „Žaidimai“)
+- **⚔️ Karate kova** (kaip combats.ru): abu slapta renkasi techniką (jodan / chudan / gedan) ir gynybą; teisingas blokas - kontrataka,
+  Waza-ari, IPPON. **🏆 Jėgos** (savybės, daiktai, gyvūnėlis) ir **🎯 Gudrumo** (visi lygūs + 3 kortos) režimai, botai 3 sunkumų, reitingai.
+- **⚡ Greita kova** - realiu laiku: matai, kur smūgiuos, blokuok laiku; tobulas blokas = kontrataka, nutraukimai, kombo, reakcija ms.
+- **🔴 Keturi iš eilės** su gyvūnėlių kortomis (💣 🧱 🔄 ⏩) - su draugu ar botu.
+- **🥁 Kata ritmas** - būgnų ritmo žaidimas, 3 katos, savaitės top.
+- Kviesti galima bet kurį klubo žaidėją (kvietimas iššoka bet kuriame puslapyje). Rašyti vieni kitiems negalima - tik reakcijos 👏🔥 kovos metu.
+  Kitų dojo galima žiūrėti.
+
+**🛠 Admin režimas**
+- Adminai ir treneriai svetainę mato **kaip narys** (Mano dojo, žaidimai). Dešinėje viršuje jungiklis **„Admin“** - įjungus atsiranda
+  „Valdymas“ ir visi redagavimo mygtukai. Paskyroje atskiri langai: **🛠 Valdymas** (adminui) ir **👪 Tėvams** (tėvams).
+
+**Denio atsiliepimai #18-#29** (v1.30 pataisos)
+- Taikos tvarkaraštis kompaktiškesnis, 4 tatamiai, grupes galima tempti ir telefone; pradėti grupę dabar / perkelti iš grupės.
+- Prisegamas langas - keičiamo dydžio, rodo pilną tinklą, galima pažymėti nugalėtoją. Kumite +4 taškai.
+- Atsiliepimų langas fiksuoto pločio, rodomi 2 paskutiniai; mygtukas - tik treneriams. Naujienų reakcijos nebeuždengiamos.
+- Vienodi vaikų vardai rodomi su pavardės raide; pamokas galima ištrinti iš sąrašo ir peržiūros.
+- Treniruotėje - „+ Lankytojas, kurio dar nėra sąraše“. Valdyme - „+ Nauja paskyra“ (ir be pokalbių lango).
+- Antraštė ir skirtukai nusidažo pagal temą.
+
 ## v1.30 - 2026-11-15 (renginių registracija ir kalendorius, nauja gamta ir 3 naujos temos)
 **Duomenų bazė:** `db/034_renginiu_registracija.sql` - Valdymas → Šiandien → „Atnaujinkite duomenų bazę“.
 

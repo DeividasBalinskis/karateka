@@ -37,6 +37,8 @@ function ids() {
 async function login(browser, email, width = 1280, height = 900, password = PASSWORD, lang = 'lt') {
   const ctx = await browser.newContext({ baseURL: BASE_URL, viewport: { width, height } });
   if (lang !== 'lt') await ctx.addCookies([{ name: 'kalba', value: lang, url: BASE_URL }]);
+  // Treneriams / adminui - admin režimas įjungtas (redagavimo mygtukai), kaip anksčiau; žaidimo testai jį išjungia patys
+  await ctx.addCookies([{ name: 'adm', value: '1', url: BASE_URL }]);
   const page = await ctx.newPage();
   page.jsErrors = [];
   page.on('pageerror', e => page.jsErrors.push(e.message));

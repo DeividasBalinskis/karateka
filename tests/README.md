@@ -22,6 +22,7 @@ Browser tests (Playwright) and quick static checks. They run on every push in Gi
 | `e2e/06k-taika-tempimas-prisegimas.spec.js` | Drag a name onto another to swap (mouse and touch), drag performance order, pinned category window (pin, move, minimise, close, open), phone layout (participants as cards, ⋯ inside the card, no sideways scroll), themes on karateka.lt and Taika, EN/RU translation of Taika and LTKF |
 | `e2e/06l-denio-atsiliepimai-diplomai-tinklai.spec.js` | Delete a member from the quick view, remove tatami only for admin, + for an open year bound, age category template for all events, open category and back, Draws tab and for spectators, printable diplomas and filled Excel from a template (one sheet per diploma) |
 | `e2e/06m-renginiai-kalendorius-temos.spec.js` | Event registration button (link from the event form or found in the description), events calendar month grid and phone subscription (.ics), new themes (dunes, dojo, aurora) |
+| `e2e/06n-zaidimas.spec.js` | Admin mode switch (staff see the site as members), My dojo: hero editor, test panel, gift box, equipment, scenery, pet, mystical hero, collection; arena bot fight, quick fight, four in a row, kata rhythm; invite and accept; English |
 | `e2e/07-pages.spec.js` | Every page for every role at desktop and phone width: no PHP/JS errors, no horizontal scroll |
 | `e2e/08-test-data.spec.js` | One-time purge of old demo data (real people and content stay, backup first), test people generator, admin view switch (parent / child, belt), deleting test people and members (runs last) |
 
