@@ -58,6 +58,8 @@
     html += '<div class="dw-fx">' + particles(night) + '</div>';
     if (night || eve) html += '<div class="dw-night" style="opacity:' + (night ? 1 : .45) + '"></div>' + (night ? '<div class="dw-stars">' + stars() + '</div>' : '');
     html += '<div class="dw-name">' + esc(H.publicName || H.name) + ' · ' + T('Lygis') + ' ' + H.level + '</div>';
+    // Pirmą kartą - kvietimas susikurti herojų (ne iššokantis langas, kad neuždengtų kitų pranešimų)
+    if (!ro && !(H.look && +H.look.setup)) html += '<button type="button" class="dw-setup" data-act="editor">👋 ' + T('Susikurk savo herojų!') + '</button>';
     if (!ro) html += '<div class="dw-tools">' + (editing ? '<button type="button" class="g-btn sm primary" data-act="home-done">✓ ' + T('Baigti tvarkyti') + '</button>' : '<button type="button" class="g-btn sm" data-act="home-edit">🏡 ' + T('Tvarkyti') + '</button>') + '</div>';
     var w = $('.dw');
     w.style.backgroundImage = bg ? 'url(' + A.sceneUrl(bg.a.sc) + ')' : '';
@@ -296,7 +298,7 @@
     html += '<span class="sp"></span>';
     if (!ro) {
       html += '<button type="button" class="g-btn ' + (boxes ? 'gold gift-pulse' : '') + '" data-act="boxes">🎁 ' + T('Dovanos') + (boxes ? ' <span class="g-badge">' + boxes + '</span>' : '') + '</button>';
-      html += '<button type="button" class="g-btn" data-act="editor">✏️ ' + T('Išvaizda') + '</button>';
+      html += '<button type="button" class="g-btn' + (H.look && +H.look.setup ? '' : ' gold gift-pulse') + '" data-act="editor">✏️ ' + T('Išvaizda') + '</button>';
       html += '<label class="g-switch" title="' + esc(T('Ar kiti gali kviesti tave žaisti')) + '"><input type="checkbox" data-act="invites"' + (H.invites ? ' checked' : '') + '> ' + T('Priimu kvietimus') + '</label>';
     }
     $('.dojo-head').innerHTML = html;
@@ -514,5 +516,4 @@
   } else if (!ro && H.boxes && H.boxes.length) {
     toast('🎁 ' + T('Tavęs laukia dovanų dėžės:') + ' ' + H.boxes.length, ['🎁 ' + T('Atidaryti'), openBoxes]);
   }
-  if (!ro && !(H.look && +H.look.setup)) setTimeout(function () { editor(); }, 500);
 })();

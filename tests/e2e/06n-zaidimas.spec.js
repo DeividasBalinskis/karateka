@@ -29,8 +29,10 @@ test('my dojo: create the hero, test panel, gift box, equip, pet, collection', a
   resetGame('1=1');
   // Vaikas: pirmą kartą - herojaus kūrimas
   const k = await login(browser, 'jaunuolis@karateka.test', 1280, 900);
+  await k.waitForSelector('.dw-setup');
+  await k.click('.dw-setup');
   await k.waitForSelector('.gm .ed-sp');
-  check('first visit opens the hero editor', await k.locator('.gm h2', { hasText: 'Susikurk savo herojų' }).count() === 1);
+  check('first visit invites to create the hero', await k.locator('.gm h2', { hasText: 'Susikurk savo herojų' }).count() === 1);
   check('mystical heroes locked', await k.locator('.ed-sp button.locked').count() === 6);
   await k.click('.ed-sp button[data-sp=panda]');
   await k.fill('#ed-name', 'Pandutė');
@@ -53,7 +55,6 @@ test('my dojo: create the hero, test panel, gift box, equip, pet, collection', a
   const a = await login(browser, 'info@karateka.lt', 1280, 900);
   await a.goto('paskyra.php');
   await a.waitForSelector('#dojo .dojo-head');
-  if (await a.locator('.gm').count()) await a.click('.gm-x');
   await a.evaluate(() => { document.querySelector('#g-test').closest('details').open = true; });
   await a.fill('#t-lvl', '6'); await a.click('[data-test=level]'); await a.waitForTimeout(700);
   check('test level applied', (await a.textContent('.dojo-lvl')).includes('6'));
@@ -61,7 +62,7 @@ test('my dojo: create the hero, test panel, gift box, equip, pet, collection', a
   await a.click('[data-test=boxes]'); await a.waitForTimeout(700);
   await a.click('[data-act=boxes]', { force: true });
   await a.click('.box-gift');
-  await a.waitForSelector('.box-item', { timeout: 5000 });
+  await a.waitForSelector('#box-foot [data-b=ok]', { timeout: 8000 });
   check('gift box opened and shows an item', (await a.textContent('#box-hint')).trim().length > 2);
   await a.click('#box-foot [data-b=ok]');
   // Užsidėti ginklą ir pakeisti aplinką
@@ -141,7 +142,6 @@ test('game in English', async ({ browser }) => {
   const k = await login(browser, 'jaunuolis@karateka.test', 1280, 900, undefined, 'en');
   await k.goto('paskyra.php');
   await k.waitForSelector('#dojo .dojo-title');
-  if (await k.locator('.gm').count()) await k.click('.gm-x');
   check('dojo title translated', (await k.textContent('.dojo-title')).includes('My dojo'));
   check('stats translated', (await k.textContent('.dojo-side')).includes('Strength'));
   noJsErrors(k);

@@ -44,6 +44,7 @@
 .dw-decor .dw-f{position:absolute; top:-10px; left:-10px; width:22px; height:22px; border-radius:50%; border:0; background:#2E5FA8; color:#fff; cursor:pointer; display:none; line-height:22px; padding:0; font-size:12px;}
 .dw.editing .dw-decor .dw-x, .dw.editing .dw-decor .dw-f{display:block;}
 .dw-name{position:absolute; left:12px; top:10px; z-index:90; background:rgba(255,255,255,.85); border-radius:999px; padding:4px 12px; font-weight:700; font-size:.85rem; box-shadow:0 2px 8px rgba(0,0,0,.1);}
+.dw-setup{position:absolute; left:50%; top:16%; transform:translateX(-50%); z-index:92; border:0; border-radius:16px; padding:12px 20px; font:700 1.05rem 'Space Grotesk',sans-serif; color:#3A2600; background:linear-gradient(180deg,#FFD75E,#F2A516); box-shadow:0 6px 20px rgba(0,0,0,.25); cursor:pointer; animation:giftPulse 1.6s ease-in-out infinite; white-space:nowrap;}
 .dw-tools{position:absolute; right:10px; top:10px; z-index:90; display:flex; gap:6px;}
 .dw-say{position:absolute; z-index:95; transform:translate(-50%,-100%); background:#fff; border-radius:14px; padding:6px 12px; font-weight:800; font-size:.9rem; box-shadow:0 4px 14px rgba(0,0,0,.18); white-space:nowrap; animation:sayIn .25s ease-out; pointer-events:none;}
 .dw-say::after{content:""; position:absolute; left:50%; bottom:-7px; margin-left:-7px; border:7px solid transparent; border-bottom:0; border-top-color:#fff;}
@@ -205,7 +206,7 @@
 .box-rays{position:absolute; width:300px; height:300px; left:50%; top:50%; margin:-150px 0 0 -150px; background:repeating-conic-gradient(rgba(255,215,94,.55) 0 10deg, transparent 10deg 20deg); border-radius:50%; animation:spin 8s linear infinite; mask:radial-gradient(circle, #000 30%, transparent 70%); -webkit-mask:radial-gradient(circle, #000 30%, transparent 70%);}
 .box-item{position:relative; z-index:2; animation:popIn .5s cubic-bezier(.2,1.6,.4,1);}
 .box-item svg{width:150px; height:150px;}
-@keyframes popIn{from{transform:scale(0) rotate(-20deg)}to{transform:scale(1) rotate(0)}}
+@keyframes popIn{from{transform:scale(.4) rotate(-20deg); opacity:0}to{transform:scale(1) rotate(0); opacity:1}}
 .box-rar{display:inline-block; border-radius:999px; padding:2px 12px; font-weight:800; font-size:.8rem; color:#fff; background:var(--r1);}
 .box-rar.r2{background:var(--r2);} .box-rar.r3{background:var(--r3);} .box-rar.r4{background:linear-gradient(90deg,#F59E0B,#F2C14E); color:#3A2600;}
 .confetti{position:fixed; top:-10px; z-index:2100; width:8px; height:12px; pointer-events:none; animation:confetti 2.2s ease-in forwards;}
