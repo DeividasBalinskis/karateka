@@ -25,10 +25,17 @@
     monkey: { muz: '#F2D2B0', ear: 'monkey', mark: 'monkey', nose: '#6E4630', tail: 'monkey', feet: 'skinPaw' },
     eagle:  { muz: '#FFFFFF', ear: 'none', mark: 'eagle', nose: '#F2B705', tail: 'feathers', feet: 'talon' },
     dragon: { muz: '#BFE8C9', ear: 'dragon', mark: 'dragon', nose: '#2E6B4E', tail: 'dragon', feet: 'claw' },
-    human:  { muz: null, ear: 'human', mark: 'human', nose: null, tail: null, feet: 'human' }
+    human:  { muz: null, ear: 'human', mark: 'human', nose: null, tail: null, feet: 'human' },
+    // Mistiniai ir reti (piešiami pagal artimą rūšį + ypatingos detalės)
+    redpanda:    { base: 'cat', muz: '#FFF6EE', ear: 'round', mark: 'redpanda', nose: '#2A2321', tail: 'ringed', feet: 'pawDark', whisk: 1 },
+    kitsune:     { base: 'fox', muz: '#FFFFFF', ear: 'fox', mark: 'fox', nose: '#2A2321', tail: 'kitsune', feet: 'paw', whisk: 1, extra: 'kitsune' },
+    yeti:        { base: 'monkey', muz: '#A9C7E8', ear: 'none', mark: 'monkey', nose: '#4A6A8A', tail: null, feet: 'paw', extra: 'yeti' },
+    tengu:       { base: 'eagle', muz: '#FFFFFF', ear: 'none', mark: 'none', nose: '#F2B705', tail: 'feathers', feet: 'talon', head: 'fur', extra: 'tengu' },
+    unicorn:     { base: 'wolf', muz: '#FCEFF6', ear: 'cat', mark: 'none', nose: '#E58A9A', tail: 'unicorn', feet: 'hoof', extra: 'unicorn' },
+    phoenixbird: { base: 'eagle', muz: '#FFE08A', ear: 'none', mark: 'none', nose: '#F2B705', tail: 'flame', feet: 'talon', head: 'fur', extra: 'phoenix' }
   };
 
-  var SPC = { tiger: '#E8892B', lion: '#E0B04A', panda: '#F4F2EE', fox: '#E0712C', wolf: '#8C96A3', cat: '#9C8F86', rabbit: '#F2EEE8', monkey: '#8A5A3B', eagle: '#7A5236', dragon: '#3FA06A', human: '#F1C7A5' };
+  var SPC = { redpanda: '#C8562A', kitsune: '#F7F1E8', yeti: '#F2F4F7', tengu: '#2F3142', unicorn: '#FBF8FF', phoenixbird: '#E8501A', tiger: '#E8892B', lion: '#E0B04A', panda: '#F4F2EE', fox: '#E0712C', wolf: '#8C96A3', cat: '#9C8F86', rabbit: '#F2EEE8', monkey: '#8A5A3B', eagle: '#7A5236', dragon: '#3FA06A', human: '#F1C7A5' };
   function spColor(sp) { var S2 = window.GAME && GAME.catalog && GAME.catalog.species; return (S2 && S2[sp] && S2[sp].c) || SPC[sp] || '#E8892B'; }
 
   // ---------- Diržas ----------
@@ -43,12 +50,12 @@
   function hero(cfg, o) {
     o = o || {};
     var CAT = o.items || (window.GAME && GAME.catalog && GAME.catalog.items) || {};
-    var sp = SP[cfg.species] ? cfg.species : 'tiger', S = SP[sp], g = cfg.gender === 'f' ? 'f' : 'm';
+    var real = SP[cfg.species] ? cfg.species : 'tiger', S = SP[real], sp = S.base || real, g = cfg.gender === 'f' ? 'f' : 'm';
     var L = cfg.look || {}, E = cfg.equipped || {}, id = uid();
     var isH = sp === 'human';
-    var fur = o.ghost ? '#C9CDD3' : (isH ? (L.skin || '#F1C7A5') : (L.fur || spColor(sp)));
+    var fur = o.ghost ? '#C9CDD3' : (isH ? (L.skin || '#F1C7A5') : (L.fur || spColor(real)));
     var furD = shade(fur, -0.22), furL = shade(fur, 0.35), dark = lum(fur) < 0.35;
-    var muz = o.ghost ? '#E3E6EA' : (S.muz ? (sp === 'monkey' || sp === 'dragon' ? S.muz : (lum(fur) > 0.85 ? shade(fur, -0.06) : S.muz)) : fur);
+    var muz = o.ghost ? '#E3E6EA' : (S.muz ? (sp === 'monkey' || sp === 'dragon' || S.base ? S.muz : (lum(fur) > 0.85 ? shade(fur, -0.06) : S.muz)) : fur);
     var hairC = o.ghost ? '#9AA1AA' : (L.hair || (isH ? '#2B1D14' : shade(fur, -0.3)));
     var eyeC = L.eyes || '#5B3A1E';
     var it = function (slot) { var k = E[slot]; return k && CAT[k] ? CAT[k] : null; };
@@ -74,6 +81,7 @@
     if (bk && show('back')) b += back(bk.a, id, 'behind');
     // uodega
     if (S.tail && !o.only) b += tail(S.tail, fur, furD, id, sp);
+    if (S.extra === 'kitsune' && !o.only) b += '<g class="ga-spin" opacity=".9">' + [0, 120, 240].map(function (a) { var r = a * Math.PI / 180; return '<path d="M' + (100 + Math.cos(r) * 78).toFixed(0) + ' ' + (110 + Math.sin(r) * 86).toFixed(0) + ' q-7 -10 0 -20 q7 10 0 20 Z" fill="#7FD1FF" opacity=".85"/>'; }).join('') + '</g>';
     // kojos (kelnės)
     b += '<g class="ga-legs">' +
       '<path d="M74 176 L70 222 Q71 228 80 228 L92 228 Q97 228 97 222 L99 182 Z" fill="url(#' + id + 'kv)" stroke="' + shade(kc, -0.3) + '" stroke-width="1"/>' +
@@ -90,7 +98,7 @@
     var nk = it('neck');
     if (nk && show('neck')) b += neck(nk.a, id);
     // galva
-    b += '<g class="ga-head">' + head(sp, S, g, fur, furD, furL, muz, eyeC, hairC, id, it('hair'), it('head'), it('face'), dark, o) + '</g>';
+    b += '<g class="ga-head">' + head(sp, S, g, fur, furD, furL, muz, eyeC, hairC, id, it('hair'), it('head'), it('face'), dark, o, real) + '</g>';
     // kuprinė / vėliavėlė priekyje (diržai ant pečių)
     if (bk && show('back')) b += back(bk.a, id, 'front');
     // priekinė ranka su ginklu
@@ -108,7 +116,8 @@
     var s = '';
     [[84, 1], [116, -1]].forEach(function (f) {
       var x = f[0];
-      if (t === 'talon') s += '<path d="M' + (x - 12) + ' 232 l6 -6 l4 6 l4 -7 l4 7 l4 -6 l4 6 Z" fill="#E5A800" stroke="#8A6400" stroke-width="1"/>';
+      if (t === 'hoof') s += '<path d="M' + (x - 12) + ' 234 L' + (x - 10) + ' 224 L' + (x + 10) + ' 224 L' + (x + 12) + ' 234 Z" fill="#B9A6D9" stroke="#7E6AA8"/>';
+      else if (t === 'talon') s += '<path d="M' + (x - 12) + ' 232 l6 -6 l4 6 l4 -7 l4 7 l4 -6 l4 6 Z" fill="#E5A800" stroke="#8A6400" stroke-width="1"/>';
       else if (t === 'claw') s += '<path d="M' + (x - 13) + ' 233 q13 -13 26 0 Z" fill="' + c + '" stroke="' + shade(c, -0.35) + '" stroke-width="1"/><path d="M' + (x - 9) + ' 233 l-2 3 M' + x + ' 233 l0 3 M' + (x + 9) + ' 233 l2 3" stroke="#F2F2F2" stroke-width="2" stroke-linecap="round"/>';
       else s += '<ellipse cx="' + x + '" cy="231" rx="14" ry="6.5" fill="' + c + '" stroke="' + shade(c, -0.3) + '" stroke-width="1"/>' +
         (t === 'human' ? '' : '<path d="M' + (x - 5) + ' 228 v4 M' + x + ' 227 v5 M' + (x + 5) + ' 228 v4" stroke="' + shade(c, -0.35) + '" stroke-width="1" stroke-linecap="round"/>');
@@ -223,12 +232,16 @@
     } else if (t === 'monkey') s = '<path class="ga-tail" d="M126 200 Q172 214 168 176 Q164 150 148 158 Q140 166 150 170" stroke="' + fur + '" stroke-width="6" fill="none" stroke-linecap="round"/>';
     else if (t === 'puff') s = '<circle cx="128" cy="196" r="9" fill="' + (sp === 'panda' ? '#F4F2EE' : '#FFFFFF') + '" stroke="#DDD6CC"/>';
     else if (t === 'feathers') s = '<path d="M112 196 L150 214 L146 204 L156 206 L148 196 L156 192 L130 190 Z" fill="' + shade(fur, -0.15) + '" stroke="' + shade(fur, -0.4) + '"/>';
+    else if (t === 'ringed') { s = '<path class="ga-tail" d="M126 198 Q168 206 172 172 Q174 152 162 146" stroke="' + fur + '" stroke-width="15" fill="none" stroke-linecap="round"/>'; s += '<path d="M146 201 l2 -12 M160 194 l8 -9 M169 176 l12 -3 M168 158 l11 4" stroke="#7A2E14" stroke-width="5" stroke-linecap="round"/>'; }
+    else if (t === 'kitsune') { [-28, 0, 28].forEach(function (a) { s += '<g transform="rotate(' + a + ' 126 196)"><path class="ga-tail" d="M126 198 Q176 204 180 160 Q182 140 166 136 Q170 166 140 184 Z" fill="url(#' + id + 'fd)" stroke="' + shade(fur, -0.25) + '"/><path d="M166 136 Q182 142 180 160 Q172 146 160 146 Z" fill="#7FD1FF"/></g>'; }); }
+    else if (t === 'unicorn') s = '<path class="ga-tail" d="M126 196 Q164 196 170 220 Q150 206 132 204 Z" fill="#F7A8C4"/><path d="M128 196 Q160 186 176 204 Q156 198 134 202 Z" fill="#A5D8FF"/><path d="M128 194 Q150 176 172 186 Q150 186 132 198 Z" fill="#FFE08A"/>';
+    else if (t === 'flame') s = '<g class="ga-aura"><path d="M112 196 Q150 230 172 200 Q156 206 150 196 Q170 196 176 172 Q156 186 140 186 Z" fill="#FFB020"/><path d="M118 196 Q146 216 162 200 Q148 202 144 194 Z" fill="#FF5A1F"/></g>';
     else if (t === 'dragon') s = '<path class="ga-tail" d="M124 198 Q168 214 180 176 L188 160 Q176 168 172 176 Q164 196 132 190 Z" fill="url(#' + id + 'fd)" stroke="' + shade(fur, -0.35) + '"/><path d="M150 198 l4 -8 l4 6 M164 190 l6 -8 l2 8 M174 176 l8 -6 l-1 8" fill="#F2B705" stroke="#B88A00" stroke-width=".8"/>';
     return s;
   }
 
   // ---------- Galva ----------
-  function head(sp, S, g, fur, furD, furL, muz, eyeC, hairC, id, hairIt, headIt, faceIt, dark, o) {
+  function head(sp, S, g, fur, furD, furL, muz, eyeC, hairC, id, hairIt, headIt, faceIt, dark, o, real) {
     var s = '', cx = 100, cy = 80, hairT = hairIt ? hairIt.a.t : 'short', isH = sp === 'human';
     var ninja = headIt && headIt.a.t === 'ninja';
     // plaukai už galvos (ilgi, kasos, arklio uodega)
@@ -236,17 +249,25 @@
     // ausys (už galvos)
     s += ears(S.ear, sp, fur, furD, muz, g);
     if (sp === 'lion' && g === 'm') { var mc = shade(fur, -0.3), mane = ''; for (var i = 0; i < 16; i++) { var a = i * 22.5 * Math.PI / 180; mane += '<circle cx="' + (cx + Math.cos(a) * 50).toFixed(1) + '" cy="' + (cy + 8 + Math.sin(a) * 48).toFixed(1) + '" r="17" fill="' + (i % 2 ? mc : shade(mc, -0.12)) + '"/>'; } s += '<g stroke="' + shade(mc, -0.35) + '" stroke-width="1">' + mane + '</g><circle cx="' + cx + '" cy="' + (cy + 8) + '" r="50" fill="' + mc + '"/>'; }
-    if (sp === 'eagle') s += '<path d="M70 60 L58 44 L78 52 L76 36 L92 50 L100 32 L108 50 L124 36 L122 52 L142 44 L130 60 Z" fill="#FFFFFF" stroke="#D8D2C6"/>';
+    if (real === 'phoenixbird') s += '<g class="ga-aura"><path d="M66 58 Q50 20 72 6 Q70 30 84 40 Q80 10 100 -4 Q104 24 108 38 Q120 10 132 8 Q126 30 134 58 Z" fill="#FFB020"/><path d="M76 56 Q70 30 84 20 Q86 38 96 44 Q98 22 108 16 Q110 34 116 44 Q122 30 128 28 Q124 46 126 58 Z" fill="#FF5A1F"/></g>';
+    else if (sp === 'eagle') s += '<path d="M70 60 L58 44 L78 52 L76 36 L92 50 L100 32 L108 50 L124 36 L122 52 L142 44 L130 60 Z" fill="' + (S.head ? shade(fur, 0.1) : '#FFFFFF') + '" stroke="' + (S.head ? shade(fur, -0.3) : '#D8D2C6') + '"/>';
+    if (real === 'yeti') { var sh = ''; for (var yi = 0; yi < 14; yi++) { var ya = (yi / 13) * Math.PI + Math.PI; sh += '<path d="M' + (100 + Math.cos(ya) * 50).toFixed(0) + ' ' + (82 + Math.sin(ya) * 52).toFixed(0) + ' l' + (Math.cos(ya) * 12).toFixed(0) + ' ' + (Math.sin(ya) * 12 - 2).toFixed(0) + ' l6 4 Z" fill="' + fur + '" stroke="#D5DCE6"/>'; } s += sh; }
+    if (real === 'unicorn') s += '<path d="M128 40 Q150 52 152 92 Q140 74 132 70 Q146 96 140 118 Q128 92 122 86 Z" fill="#F7A8C4"/><path d="M126 46 Q140 60 140 86 Q132 70 124 66 Z" fill="#A5D8FF"/><path d="M122 44 Q130 56 132 70 Q126 62 118 58 Z" fill="#FFE08A"/>';
     if (sp === 'dragon') s += '<path d="M72 46 Q60 22 70 10 Q74 30 84 40 Z M128 46 Q140 22 130 10 Q126 30 116 40 Z" fill="#F2E3B6" stroke="#B8A26A"/>';
     // galvos forma
     var shape = sp === 'fox' || sp === 'wolf' ? 'M54 74 Q54 34 100 32 Q146 34 146 74 Q146 104 120 118 Q100 128 80 118 Q54 104 54 74 Z'
       : sp === 'eagle' ? 'M58 78 Q56 36 100 34 Q144 36 142 78 Q140 116 100 124 Q60 116 58 78 Z'
       : sp === 'dragon' ? 'M54 76 Q54 36 100 34 Q146 36 146 76 Q148 108 128 120 Q100 130 72 120 Q52 108 54 76 Z'
       : 'M54 78 Q54 34 100 33 Q146 34 146 78 Q146 118 100 124 Q54 118 54 78 Z';
-    var headFill = sp === 'eagle' ? '#FFFFFF' : 'url(#' + id + 'f)';
-    s += '<path d="' + shape + '" fill="' + headFill + '" stroke="' + (sp === 'eagle' ? '#D8D2C6' : shade(fur, -0.38)) + '" stroke-width="1.3"/>';
+    var whiteHead = sp === 'eagle' && !S.head;
+    var headFill = whiteHead ? '#FFFFFF' : 'url(#' + id + 'f)';
+    s += '<path d="' + shape + '" fill="' + headFill + '" stroke="' + (whiteHead ? '#D8D2C6' : shade(fur, -0.38)) + '" stroke-width="1.3"/>';
     // žymės ir snukis
     s += marks(S.mark, sp, fur, furD, muz, g, id);
+    if (real === 'kitsune') s += '<path d="M92 50 Q100 40 108 50 Q100 46 92 50 Z M66 92 q8 -2 12 4 M134 92 q-8 -2 -12 4 M68 98 q7 0 10 4 M132 98 q-7 0 -10 4" fill="#D7263D" stroke="#D7263D" stroke-width="2.4" stroke-linecap="round"/><circle cx="100" cy="56" r="3" fill="#D7263D"/>';
+    if (real === 'redpanda') s += '<path d="M64 92 Q72 120 100 122 Q128 120 136 92 Q122 108 100 108 Q78 108 64 92 Z" fill="#FFF6EE"/><ellipse cx="90" cy="102" rx="12" ry="9" fill="#FFF6EE"/><ellipse cx="110" cy="102" rx="12" ry="9" fill="#FFF6EE"/><path d="M68 66 q8 -6 16 -2 M132 66 q-8 -6 -16 -2" stroke="#FFF6EE" stroke-width="5" stroke-linecap="round"/><path d="M78 86 q-2 10 -8 16 M122 86 q2 10 8 16" stroke="#7A2E14" stroke-width="5" stroke-linecap="round"/>';
+    if (real === 'tengu') s += '<path d="M64 98 Q72 120 100 124 Q128 120 136 98 Q118 110 100 110 Q82 110 64 98 Z" fill="' + shade(fur, 0.12) + '"/>';
+    if (real === 'phoenixbird') s += '<path d="M60 96 Q70 122 100 126 Q130 122 140 96 Q120 112 100 112 Q80 112 60 96 Z" fill="#FFD36B" opacity=".9"/>';
     // akys
     if (!(headIt && headIt.a.t === 'ninja' && false)) s += eyes(eyeC, g, sp, id, dark);
     // nosis, burna, ūsai
@@ -258,6 +279,9 @@
     // veido daiktai ir galvos daiktai
     if (faceIt) s += faceItem(faceIt.a);
     if (headIt) s += headItem(headIt.a, id);
+    if (real === 'unicorn' && !(headIt && /ninja/.test(headIt.a.t))) s += '<path d="M98 36 Q132 28 148 58 Q140 52 130 52 Q144 66 146 88 Q132 68 118 62 Q124 50 98 44 Z" fill="#F7A8C4"/><path d="M100 36 Q126 32 138 52 Q128 48 120 50 Q128 58 130 70 Q120 58 108 54 Z" fill="#A5D8FF"/><path d="M100 36 Q118 34 126 46 Q116 44 108 48 Z" fill="#FFE08A"/>';
+    if (real === 'unicorn' && !(headIt && /kabuto|cap|ninja|crown/.test(headIt.a.t))) s += '<path d="M94 38 L100 2 L106 38 Z" fill="#FFE08A" stroke="#C99A1E" stroke-width="1.2"/><path d="M95.5 30 L104.5 26 M96.5 22 L103.5 18 M97.5 14 L102.5 11" stroke="#C99A1E" stroke-width="1.2"/>';
+    if (real === 'tengu' && !headIt) s += '<path d="M88 40 L100 26 L112 40 L108 46 L92 46 Z" fill="#17140F"/><path d="M100 26 L100 46" stroke="#C8372D" stroke-width="2"/>';
     return s;
   }
 
@@ -507,6 +531,7 @@
       case 'bg': return '<svg viewBox="0 0 160 100"><image href="' + sceneUrl(it.a.sc) + '" x="0" y="0" width="160" height="100" preserveAspectRatio="xMidYMax slice"/></svg>';
       case 'house': return house(it.a.t);
       case 'decor': return decor(it.a.t);
+      case 'species': return hero({ species: it.a.sp, gender: 'm', look: {}, equipped: { kimono: 'k_white' }, belt: 1 }, { crop: [20, -16, 160, 150] });
       case 'egg': return '<svg viewBox="0 0 40 46"><ellipse cx="20" cy="26" rx="15" ry="18" fill="#FFF6E0" stroke="#C9B48E"/><path d="M8 26 l6 -4 l6 4 l6 -4 l6 4" stroke="' + ({ owlet: '#9A7A5A', dragonling: '#4FB38A', axolotl: '#F7A8C4', phoenix: '#FF8A2A' }[it.a.pet] || '#888') + '" stroke-width="3" fill="none"/>' + star(28, 14, 3, '#F2C14E') + '</svg>';
     }
     return '';

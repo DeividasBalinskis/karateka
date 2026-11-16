@@ -444,3 +444,19 @@
 .rt-pad small{display:block; font-size:.75rem; font-weight:800;}
 .rt-pad.on{transform:translateY(4px); box-shadow:0 1px 0 rgba(0,0,0,.3); filter:brightness(1.25);}
 @media (max-width: 700px){ .rt-hero{display:none;} .rt-introw{flex-direction:column;} }
+
+/* Mistiniai personažai redaktoriuje, kolekcija */
+.ed-sp button.myst{background:linear-gradient(180deg,#FFFBEB,#fff);}
+.ed-sp button.myst.r4{background:linear-gradient(180deg,#FDF2FF,#FFF7E0);}
+.ed-sp button.locked{opacity:.6; cursor:not-allowed; filter:grayscale(.5);}
+.ed-sp button em{display:block; font-style:normal; font-size:.62rem; color:var(--muted);}
+.col-set{margin-bottom:12px;}
+.col-h{display:grid; grid-template-columns:1fr auto; gap:2px 8px; align-items:center; font-size:.85rem; margin-bottom:4px;}
+.col-h i{grid-column:1/-1; height:5px; border-radius:99px; background:linear-gradient(90deg,#F2A516 var(--p),#EEE9DE var(--p));}
+.col-set.done .col-h b::after{content:" 🏆";}
+.col-row{display:flex; flex-wrap:wrap; gap:4px;}
+.col-it{width:46px; height:46px; border-radius:10px; border:2px solid var(--r1,#9AA1AA); background:#fff; display:flex; align-items:center; justify-content:center; overflow:hidden;}
+.col-it svg{width:42px; height:42px;}
+.col-it.r2{border-color:var(--r2);} .col-it.r3{border-color:var(--r3);} .col-it.r4{border-color:var(--r4);}
+.col-it.no{border-style:dashed; background:#F3EFE6;}
+.col-it.no svg{filter:brightness(0) opacity(.18);}

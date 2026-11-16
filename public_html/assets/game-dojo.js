@@ -301,7 +301,29 @@
     }
     $('.dojo-head').innerHTML = html;
   }
-  function renderAll() { head(); world(); side(); xpBar(); renderEquip(); renderInv(); renderPets(); renderHome(); renderTest(); }
+  // Kolekcija: visi daiktai rinkiniais (turimi - spalvoti, neturimi - šešėliai), surinkta X iš Y
+  var SETS = [['species', '✨ Personažai'], ['weapon', '⚔️ Ginklai'], ['kimono', '🥋 Kimono'], ['belt', '🎗 Diržo puošmenos'], ['hair', '💇 Šukuosenos'], ['head', '🎩 Galvos apdangalai'],
+    ['face', '🥸 Veidui'], ['neck', '🏅 Kaklui'], ['hands', '🥊 Rankoms'], ['back', '🦸 Nugarai'], ['aura', '🌟 Auros'], ['paint', '🎨 Spalvos'], ['bg', '🌄 Aplinkos'], ['house', '🏠 Namai'], ['decor', '🏮 Dekoracijos'], ['pets', '🐾 Gyvūnėliai']];
+  function renderCol() {
+    var own = H.owned || {}, petsHave = {}, tot = 0, got = 0, html = '';
+    (H.pets || []).forEach(function (p) { petsHave[p.species] = 1; });
+    SETS.forEach(function (st) {
+      var keys = st[0] === 'pets' ? Object.keys(C.pets) : Object.keys(C.items).filter(function (k) { return item(k).slot === st[0]; });
+      var have = keys.filter(function (k) { return st[0] === 'pets' ? petsHave[k] : (own[k] || equippedKey(k)); });
+      tot += keys.length; got += have.length;
+      var done = have.length === keys.length;
+      html += '<div class="col-set' + (done ? ' done' : '') + '"><div class="col-h"><b>' + esc(T(st[1])) + '</b><span>' + have.length + ' / ' + keys.length + (done ? ' ✓' : '') + '</span><i style="--p:' + Math.round(have.length / keys.length * 100) + '%"></i></div><div class="col-row">' +
+        keys.map(function (k) {
+          var h = have.indexOf(k) >= 0;
+          if (st[0] === 'pets') return '<span class="col-it' + (h ? '' : ' no') + '" title="' + esc(C.pets[k].n) + '">' + A.pet(k) + '</span>';
+          var it = item(k);
+          return '<span class="col-it r' + it.r + (h ? '' : ' no') + '" title="' + esc(it.n + (h ? '' : ' · ' + (it.lvl ? T('Lygis') + ' ' + it.lvl : T('dovanų dėžėse')))) + '">' + A.itemIcon(k, it) + '</span>';
+        }).join('') + '</div></div>';
+    });
+    $('#g-col').innerHTML = '<p class="g-empty">' + T('Rink daiktus iš lygių ir dovanų dėžių. Šešėliai - dar nerasti. Užbaigtas rinkinys pažymimas ✓.') + '</p>' + html;
+    $('#g-col-cnt').textContent = got + ' / ' + tot;
+  }
+  function renderAll() { head(); world(); side(); xpBar(); renderEquip(); renderInv(); renderPets(); renderHome(); renderTest(); renderCol(); }
 
   function build() {
     root.innerHTML = '<div class="dojo-head"></div><div class="dojo-main"><div><div class="dw"></div><div class="dojo-xp"></div><div class="dojo-play"></div></div><aside class="dojo-side"></aside></div>' +
@@ -309,6 +331,7 @@
       (ro ? '' : '<details class="g-sec"><summary>🎒 ' + T('Inventorius') + ' <span class="cnt" id="g-inv-cnt"></span></summary><div class="g-sec-body" id="g-inv"></div></details>') +
       '<details class="g-sec"><summary>🐾 ' + T('Gyvūnėliai') + ' <span class="cnt" id="g-pets-cnt"></span></summary><div class="g-sec-body" id="g-pets"></div></details>' +
       (ro ? '' : '<details class="g-sec"><summary>🏡 ' + T('Namai ir aplinka') + '</summary><div class="g-sec-body" id="g-home"></div></details>') +
+      '<details class="g-sec"><summary>📖 ' + T('Kolekcija') + ' <span class="cnt" id="g-col-cnt"></span></summary><div class="g-sec-body" id="g-col"></div></details>' +
       (G.admin && !ro ? '<details class="g-sec g-test"><summary>🧪 ' + T('Testavimas (adminui)') + '</summary><div class="g-sec-body" id="g-test"></div></details>' : '');
     if (ro) { root.querySelector('#g-equip').parentNode.open = true; }
     bindWorld();
@@ -325,6 +348,7 @@
     if (sl === 'bg' || sl === 'house') html += on ? '' : '<button class="g-btn primary" data-do="place">' + T('Naudoti') + '</button>';
     if (sl === 'decor') html += '<button class="g-btn primary" data-do="decor">+ ' + T('Padėti į dojo') + '</button>';
     if (sl === 'paint') html += '<button class="g-btn primary" data-do="paint">🎨 ' + T('Dažyti') + '</button>';
+    if (sl === 'species') html += H.species === it.a.sp ? '<span class="g-empty">✓ ' + T('Tu jau esi šis personažas') + '</span>' : '<button class="g-btn gold" data-do="become">✨ ' + T('Tapti šiuo personažu') + '</button>';
     if (sl === 'egg') html += '<input type="text" id="egg-name" maxlength="30" placeholder="' + esc(T('Vardas')) + '" style="padding:8px 10px;border-radius:10px;border:1px solid rgba(23,20,15,.2);font:inherit"><button class="g-btn gold" data-do="hatch">🐣 ' + T('Išperinti') + '</button>';
     html += '<button class="g-btn" data-do="close">' + T('Uždaryti') + '</button></div>';
     var m = modal(html, 'sm');
@@ -337,6 +361,7 @@
       if (d === 'place') { var h = {}; h[sl] = k; save({ home: h }); }
       if (d === 'decor') { addDecor(k); }
       if (d === 'paint') { m.close(); return editor(it.a.c); }
+      if (d === 'become') { save({ species: it.a.sp, look: { fur: C.species[it.a.sp].c } }, '✨ ' + T('Naujas personažas!')).then(confetti); }
       if (d === 'hatch') { api({ action: 'hatch', item: k, name: (m.querySelector('#egg-name') || {}).value || '' }).then(function (r) { if (r.ok) { renderAll(); confetti(); toast('🐣 ' + T('Naujas gyvūnėlis!')); } }); }
       m.close();
     });
@@ -416,7 +441,10 @@
       var eq = Object.assign({}, H.equipped, { hair: d.hair });
       m.querySelector('#ed-prev').innerHTML = A.hero({ species: d.species, gender: d.gender, look: d.look, equipped: eq, belt: H.belt, name: d.name });
       var isH = d.species === 'human', f = '';
-      f += '<div class="ed-row"><span class="ed-lab">' + T('Kas tu?') + '</span><div class="ed-sp">' + Object.keys(C.species).map(function (k) { return '<button type="button" data-sp="' + k + '" class="' + (k === d.species ? 'sel' : '') + '"><span>' + C.species[k].e + '</span>' + esc(C.species[k].n) + '</button>'; }).join('') + '</div></div>';
+      f += '<div class="ed-row"><span class="ed-lab">' + T('Kas tu?') + '</span><div class="ed-sp">' + Object.keys(C.species).map(function (k) {
+        var sp = C.species[k], locked = sp.lock !== undefined && !own['sp_' + k];
+        return '<button type="button" data-sp="' + k + '" class="' + (k === d.species ? 'sel' : '') + (sp.lock !== undefined ? ' myst r' + sp.r : '') + (locked ? ' locked' : '') + '"' + (locked ? ' disabled title="' + esc(sp.lock ? T('Atsirakins') + ' ' + T('Lygis') + ' ' + sp.lock : T('Retas - randamas dovanų dėžėse')) + '"' : '') + '><span>' + (locked ? '🔒' : sp.e) + '</span>' + esc(sp.n) + (locked ? '<em>' + (sp.lock ? '⭐ ' + sp.lock : '🎁 ' + T('retas')) + '</em>' : '') + '</button>';
+      }).join('') + '</div></div>';
       f += '<div class="ed-row"><span class="ed-lab">' + T('Lytis') + '</span><div class="ed-seg"><button type="button" data-g="m" class="' + (d.gender === 'm' ? 'sel' : '') + '">♂ ' + T('Berniukas') + '</button><button type="button" data-g="f" class="' + (d.gender === 'f' ? 'sel' : '') + '">♀ ' + T('Mergaitė') + '</button></div></div>';
       f += isH ? '<div class="ed-row"><span class="ed-lab">' + T('Odos spalva') + '</span>' + sw('skin', C.skin) + '</div>' : '<div class="ed-row"><span class="ed-lab">' + T('Kailio spalva') + '</span>' + sw('fur', C.fur, paints) + '</div>';
       f += '<div class="ed-row"><span class="ed-lab">' + (isH ? T('Plaukai') : T('Kuokštas')) + '</span>' + sw('hair', C.hair, paints) + '</div>';

@@ -17,7 +17,16 @@ const GAME_SPECIES = [
     'eagle'  => ['Erelis', '🦅', '#6E4B2E'],
     'dragon' => ['Drakonas', '🐲', '#3FA37A'],
     'human'  => ['Žmogus', '🧑', '#F1C7A5'],
+    // Mistiniai ir reti: atsirakina pasiekus lygį arba randami dovanų dėžėse (žetonas „sp_…“)
+    'redpanda'    => ['Raudonoji panda', '🦝', '#C8562A'],
+    'kitsune'     => ['Kitsunė (dvasių lapė)', '🦊', '#F7F1E8'],
+    'yeti'        => ['Jetis', '❄️', '#F2F4F7'],
+    'tengu'       => ['Tengu (kalnų dvasia)', '🪶', '#2F3142'],
+    'unicorn'     => ['Vienaragis', '🦄', '#FBF8FF'],
+    'phoenixbird' => ['Feniksas', '🔥', '#E8501A'],
 ];
+// Kurie personažai užrakinti: lygis, nuo kurio atsirakina, arba 0 - tik iš dovanų dėžės (retas). [lygis, retumas]
+const GAME_SPECIES_LOCK = ['redpanda' => [8, 2], 'kitsune' => [14, 3], 'yeti' => [20, 3], 'tengu' => [0, 3], 'unicorn' => [0, 4], 'phoenixbird' => [0, 4]];
 // Laisvai pasirenkamos spalvos (kailis / oda, akys, plaukai); ypatingos - daiktai „paint“
 const GAME_FUR = ['#E8892B', '#D9A441', '#F4F2EE', '#E0712C', '#8A929C', '#C98A55', '#E9E2D8', '#8C5A3C', '#6E4B2E', '#3FA37A', '#3B3A3F', '#B8B2A7', '#F0C9A0', '#7A5BA6', '#4F86C6'];
 const GAME_SKIN = ['#F7D7C0', '#F1C7A5', '#E0AC86', '#C68A62', '#9C6644', '#6E4630'];
@@ -27,7 +36,7 @@ const GAME_STATS = ['str' => 'Jėga', 'agi' => 'Vikrumas', 'int' => 'Nuojauta', 
 const GAME_RARITY = [1 => 'Paprastas', 2 => 'Retas', 3 => 'Epinis', 4 => 'Legendinis'];
 const GAME_SLOTS = ['weapon' => 'Ginklas', 'kimono' => 'Kimono', 'belt' => 'Diržo puošmena', 'head' => 'Galva', 'face' => 'Veidas', 'neck' => 'Kaklas',
                     'hands' => 'Rankos', 'back' => 'Nugara', 'aura' => 'Aura', 'hair' => 'Šukuosena', 'paint' => 'Spalva', 'bg' => 'Aplinka', 'house' => 'Namas',
-                    'decor' => 'Dekoracija', 'egg' => 'Kiaušinis'];
+                    'decor' => 'Dekoracija', 'egg' => 'Kiaušinis', 'species' => 'Personažas'];
 // Gyvūnėliai: [vardas, ženkliukas, gebėjimas kovoje, galima pasirinkti pradžioje]
 const GAME_PETS = [
     'kitten'     => ['Kačiukas', '🐱', 'scratch', true],
@@ -170,6 +179,10 @@ function game_items(): array
               ['d_drum', 'Taiko būgnas', 2, 0, [0, 1]], ['d_crystal', 'Kristalas', 3, 0, [0, 0, 2]], ['d_statue', 'Auksinė statula', 4, 0, [1, 1, 1, 1]]] as [$k, $n, $r, $l, $s]) {
         $add($k, 'decor', $n, $r, $l, $s, ['t' => substr($k, 2)]);
     }
+    // ---------- Mistiniai personažai (žetonas leidžia juo tapti) ----------
+    foreach (GAME_SPECIES_LOCK as $sp => [$l, $r]) {
+        $add('sp_' . $sp, 'species', GAME_SPECIES[$sp][0], $r, $l, [], ['sp' => $sp]);
+    }
     // ---------- Kiaušiniai: išsiritę - retas gyvūnėlis ----------
     foreach (['owlet' => 3, 'dragonling' => 4, 'axolotl' => 3, 'phoenix' => 4] as $pet => $r) {
         $add('egg_' . $pet, 'egg', GAME_PETS[$pet][0] . ' (kiaušinis)', $r, 0, [], ['pet' => $pet]);
@@ -239,7 +252,8 @@ function game_hero_for_account(array $a): array
 
 function game_hero_create(string $name, array $owner, ?string $gender): int
 {
-    $species = array_keys(GAME_SPECIES)[random_int(0, count(GAME_SPECIES) - 2)];   // be žmogaus - pasirinks pats
+    $free = array_values(array_diff(array_keys(GAME_SPECIES), array_keys(GAME_SPECIES_LOCK), ['human']));
+    $species = $free[random_int(0, count($free) - 1)];   // atsitiktinis gyvūnas (ne žmogus ir ne mistinis) - pasirinks pats
     // Lytis: iš nario duomenų, o jei nežinoma - pagal vardo galūnę (-a, -ė - mergaitė); pakeisti galima redaktoriuje
     $g = $gender ? (strtoupper($gender[0]) === 'F' ? 'f' : 'm') : (preg_match('/(a|ė)$/u', mb_strtolower(trim($name))) ? 'f' : 'm');
     $look = ['fur' => GAME_SPECIES[$species][2], 'eyes' => GAME_EYES[0], 'hair' => GAME_HAIR[0], 'skin' => GAME_SKIN[1], 'setup' => 0];
@@ -564,7 +578,7 @@ function game_catalog_json(): array
     }
     $species = [];
     foreach (GAME_SPECIES as $k => $s) {
-        $species[$k] = ['n' => t($s[0]), 'e' => $s[1], 'c' => $s[2]];
+        $species[$k] = ['n' => t($s[0]), 'e' => $s[1], 'c' => $s[2]] + (isset(GAME_SPECIES_LOCK[$k]) ? ['lock' => GAME_SPECIES_LOCK[$k][0], 'r' => GAME_SPECIES_LOCK[$k][1]] : []);
     }
     $pets = [];
     foreach (GAME_PETS as $k => $p) {
@@ -587,7 +601,7 @@ function game_save_hero(array $hero, array $in): array
             $upd['name'] = mb_substr($n, 0, 24);
         }
     }
-    if (isset($in['species']) && isset(GAME_SPECIES[$in['species']])) {
+    if (isset($in['species']) && isset(GAME_SPECIES[$in['species']]) && (!isset(GAME_SPECIES_LOCK[$in['species']]) || !empty($owned['sp_' . $in['species']]))) {
         $upd['species'] = $in['species'];
     }
     if (isset($in['gender']) && in_array($in['gender'], ['m', 'f'], true)) {
