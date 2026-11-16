@@ -312,3 +312,41 @@ function busimi_renginiai(): array
     $today = date('Y-m-d');
     return array_values(array_filter(visi_renginiai(), function ($r) use ($today) { return ($r['iki'] ?: $r['nuo']) >= $today; }));
 }
+
+// ---------- Karateka sesija (tas pats serveris ir slapukas): ar žiūri karateka.lt adminas ----------
+
+/** Karateka sesijos duomenys - tik skaitomi (sesija neužrakinama) */
+function karateka_sesija(): array
+{
+    static $s = null;
+    if ($s === null) {
+        $s = [];
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            $s = $_SESSION;
+        } elseif (preg_match('/^[A-Za-z0-9,-]{20,128}$/', (string) ($_COOKIE['karateka_sid'] ?? ''))) {
+            session_name('karateka_sid');
+            if (@session_start(['read_and_close' => true])) {
+                $s = $_SESSION ?? [];
+            }
+        }
+    }
+    return $s;
+}
+
+/** Ar prisijungęs karateka.lt administratorius (tik jis mato nuorodą atgal į karateka.lt) */
+function karateka_adminas(): bool
+{
+    $id = (int) (karateka_sesija()['account_id'] ?? 0);
+    $db = $id ? karateka_db() : null;
+    if (!$db) {
+        return false;
+    }
+    try {
+        $st = $db->prepare('SELECT role, status FROM accounts WHERE id = ?');
+        $st->execute([$id]);
+        $r = $st->fetch(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+        return false;
+    }
+    return $r && $r['role'] === 'admin' && $r['status'] === 'active';
+}

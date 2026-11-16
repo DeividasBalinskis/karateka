@@ -66,6 +66,8 @@ function feedback_add(?array $a, string $body, string $page, string $name = '', 
     $_SESSION['fb_times'][] = time();
     if (!$a && ($demo = varz_demo())) {
         $name = (trim($name) ?: $demo['name']) . ' (Taikos bandymas)';   // admin mato, kad tai bandantysis per nuorodą
+    } elseif (!$a && $site === 'ltkf' && ltkf_review()) {
+        $name = (trim($name) ?: 'Svečias') . ' (LTKF peržiūra)';
     }
     try {
         q('INSERT INTO feedback (account_id, name, page, site, context, body) VALUES (?, ?, ?, ?, ?, ?)',
@@ -202,21 +204,43 @@ function feedback_site_now(): string
     return in_array(basename($script), $taika, true) || substr($script, -strlen('/admin/varzybos.php')) === '/admin/varzybos.php' ? 'taika' : 'karateka';
 }
 
-/** Ar rodyti mygtuką šiam žmogui */
-function feedback_visible(?array $a): bool
+/** LTKF peržiūros nuoroda federacijos nariams (be paskyros): admin → admin/ltkf-perziura.php; atsidarius - gali palikti atsiliepimus LTKF svetainėje */
+function ltkf_review_token(): string
+{
+    return (string) site_setting('ltkf_review_token', '');
+}
+
+function ltkf_review(): bool
+{
+    $tok = ltkf_review_token();
+    return $tok !== '' && hash_equals(hash('sha256', $tok), (string) ($_SESSION['ltkf_review'] ?? ''));
+}
+
+function ltkf_review_start(string $token): bool
+{
+    $tok = ltkf_review_token();
+    if ($tok === '' || !hash_equals($tok, $token)) {
+        return false;
+    }
+    $_SESSION['ltkf_review'] = hash('sha256', $tok);
+    return true;
+}
+
+/** Ar rodyti mygtuką šiam žmogui ($site - LTKF langui: peržiūros nuoroda leidžia ir be paskyros) */
+function feedback_visible(?array $a, ?string $site = null): bool
 {
     $mode = feedback_mode();
     $script = basename($_SERVER['SCRIPT_NAME'] ?? '');
     // Taikos bandymo nuoroda (be paskyros) - atsiliepimus palikti galima ir tada
     $who = $mode === 'all' || ($mode === 'members' && $a) || ($mode === 'staff' && $a && is_staff($a));
-    return feedback_ready() && $mode !== 'off' && ($who || varz_demo()) && !in_array($script, ['testas.php', 'egzaminas.php', 'testas-svecias.php'], true);
+    return feedback_ready() && $mode !== 'off' && ($who || varz_demo() || ($site === 'ltkf' && ltkf_review())) && !in_array($script, ['testas.php', 'egzaminas.php', 'testas-svecias.php'], true);
 }
 
 /** Mygtukas ir langas (visuose puslapiuose, apačioje kairėje). $site - jei kviečiama iš kitos svetainės (LTKF) */
 function feedback_widget_html(?string $site = null): string
 {
     $a = current_account();
-    if (!feedback_visible($a)) {
+    if (!feedback_visible($a, $site)) {
         return '';
     }
     $remote = $site !== null;   // kita svetainė (LTKF) - puslapio adresą paims naršyklė

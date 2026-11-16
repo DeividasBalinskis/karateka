@@ -72,7 +72,7 @@ test('my tatami, next group, send to awards, awards tablet finishes the age grou
   await a.reload();
   await a.click('#tab-live');
   if (await a.locator('#run').isVisible()) await a.click('#run-back');
-  check('board shows awarded', /Užbaigta ir apdovanota/.test(await a.textContent('#sched')));
+  check('board shows awarded', /Užbaigta ir apdovanota/.test(await a.textContent('#sched')), (await a.textContent('#sched')).replace(/\s+/g, ' ').slice(0, 600));
   const share = sql(`SELECT share_token FROM tournaments WHERE id = ${tid}`);
   const pub = await (await p.request.get(`varzybos-gyvai.php?k=${share}&json=1`)).json();
   check('public sees awarded', pub.areas.some(ar => ar.cats.some(c => c.id === catId && c.aw === 'done')));

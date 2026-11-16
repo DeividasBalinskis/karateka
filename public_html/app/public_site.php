@@ -147,19 +147,39 @@ function render_kids_locations(): string
 /** Bandomosios treniruotės formos vietų sąrašas */
 function render_trial_location_options(): string
 {
-    $html = '';
+    // Pirma rajonas (Viršuliškės, Pašilaičiai...), po juo - vietos ir kam skirta (vaikai, jaunimas, suaugusieji)
+    $byLoc = [];
     foreach (array_map('t', GROUP_CATEGORIES) as $cat => $catLabel) {
-        $locs = array_unique(array_filter(array_column(public_groups($cat), 'location')));
-        if (!$locs) {
-            continue;
+        foreach (array_unique(array_filter(array_column(public_groups($cat), 'location'))) as $l) {
+            $byLoc[$l][] = $catLabel;
         }
-        $html .= '<optgroup label="' . e($catLabel) . '">';
-        foreach ($locs as $l) {
-            $html .= '<option value="' . e($l . ' — ' . $catLabel) . '">' . e($l) . '</option>';
+    }
+    $byDistrict = [];
+    foreach ($byLoc as $l => $cats) {
+        $byDistrict[location_district($l)][$l] = $cats;
+    }
+    $plain = function (string $s): string { return strtr(mb_strtolower($s), ['ą' => 'a', 'č' => 'c', 'ę' => 'e', 'ė' => 'e', 'į' => 'i', 'š' => 's', 'ų' => 'u', 'ū' => 'u', 'ž' => 'z']); };
+    uksort($byDistrict, function ($a, $b) use ($plain) { return strcmp($plain($a), $plain($b)); });
+    $html = '';
+    foreach ($byDistrict as $district => $locs) {
+        $html .= '<optgroup label="' . e($district) . '">';
+        foreach ($locs as $l => $cats) {
+            $name = trim(preg_replace('/\s*\(' . preg_quote($district, '/') . '\)\s*$/u', '', $l));
+            $html .= '<option value="' . e($l . ' — ' . implode(', ', $cats)) . '">' . e($name . ' · ' . mb_strtolower(implode(', ', $cats))) . '</option>';
         }
         $html .= '</optgroup>';
     }
     return $html;
+}
+
+/** Rajonas iš vietos: skliaustuose, jei ne adresas („Avižienių gimnazija (Avižieniai)“), kitaip - paskutinis žodis („Sporto centras Viršuliškės“) */
+function location_district(string $loc): string
+{
+    if (preg_match('/\(([^()]*)\)\s*$/u', $loc, $m) && !preg_match('/\d/', $m[1])) {
+        return trim($m[1]);
+    }
+    $words = preg_split('/\s+/u', trim(preg_replace('/\s*\([^()]*\)\s*$/u', '', $loc)));
+    return (string) end($words);
 }
 
 // ---------- Tvarkaraščio ir kainų redagavimas (tik adminui; išsaugoma iš karto per admin/tvarkarastis.php) ----------

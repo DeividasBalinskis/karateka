@@ -4,6 +4,31 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.33 - 2026-11-16 (greitas naujo nario pridėjimas ir pakvietimas; Denio atsiliepimai #37-#43)
+**Duomenų bazė:** `db/036_nariai_pakvietimai.sql` - Valdymas → Šiandien → „Atnaujinkite duomenų bazę“.
+Zip'o turinį išpakuokite **tiesiai į svetainės aplanką** (ten, kur `index.php`).
+
+**👤 Naujas narys per kelias sekundes** (Valdymas → Nariai → „+ Naujas narys“)
+- Užtenka **vardo, pavardės ir gimimo metų ARBA grupės**. Tiksli data, grupė, diržas - vėliau (nario puslapyje).
+  Be metų - metai apytiksliai pagal grupę; nario puslapyje matosi „patikslinkite“.
+- **El. paštas (nebūtina):** jei paskyra jau yra - susiejama iš karto; jei nėra - išsiunčiamas **pakvietimas** susikurti prisijungimą.
+- **Be el. pašto** - nario puslapyje **nuoroda nukopijuoti** ir nusiųsti žinute (Messenger, SMS).
+- Atidaręs nuorodą žmogus pasirenka „Aš esu …“ arba „Aš - tėvai ar globėjai“, susikuria slaptažodį ir **iš karto susiejamas su tuo nariu**
+  (jau turintis paskyrą - prisijungia ir narys pridedamas prie jos). Nuoroda galioja 60 d., veikia vieną kartą.
+
+**🥋 Taika**
+- **Sistemos pavadintos pagal rungtį** (#37): „Kata vėliavėlėmis“, „Kata balais“, „Komandinė kata vėliavėlėmis / balais“, „Enbu balais“,
+  „Kumite - olimpinė“, „Fukugo“, „… - ratų sistema“. **Medaliai** - atskiras nustatymas (2 bronzos be kovos / kova dėl 3 vietos / paguoda).
+- Komandinės katos **finalas nebeperšoka į balus** - lieka toks, koks pasirinktas (Kata + Pritaikymas - tik jei pažymėta nustatymuose).
+- Paprastame vaizde **matosi, kas ruošiasi** (#38) - ir kai kita pora dar laukia šios kovos nugalėtojo, ar jau kita grupė.
+- Katos balų laukeliuose **juodas tekstas** (#39), vėliavėlių kovose - **„Laimėjo AKA / SHIRO“** mygtukai (#40).
+- Perburta ar iš naujo pradėta grupė **nebelieka „apdovanota“** (#41).
+
+**🌐 Svetainė ir LTKF**
+- Registracijoje vietos **pagal rajonus** (#42): Viršuliškės, Pašilaičiai…; prie vietos - kam skirta (vaikai, jaunimas, suaugusieji).
+- **LTKF peržiūros nuoroda** (#43): LTKF svetainėje adminui - „🔗 Peržiūros nuoroda“. Su ja federacijos nariai mato svetainę ir palieka
+  atsiliepimus (💡) be paskyros; nuorodos „← karateka.lt“ nemato - ją mato tik adminas.
+
 ## v1.32 - 2026-11-16 (Denio atsiliepimai #31-#36: XP iš reitingo, kovos laikmatis, telefone kovos langas, raudona AKA, katos finalo eilė)
 Duomenų bazės keisti nereikia. Zip'o turinį išpakuokite **tiesiai į svetainės aplanką** (ten, kur `index.php`).
 

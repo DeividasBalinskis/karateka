@@ -435,13 +435,11 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
       <div class="run-done" id="run-done" hidden></div>
     <div class="toolbar run-tools">
       <label>Kategorija <select class="sel" id="draw-cat"></select></label>
-      <label>Sistema <select class="sel" id="draw-system">
-        <option value="wkf">Olimpinė + paguoda (2 bronzos)</option>
-        <option value="bronze">Olimpinė + kova dėl 3 vietos</option>
-        <option value="plain">Olimpinė, 2 bronzos be kovos</option>
-        <option value="fukugo">Fukugo (kumite ir kitei pakaitomis)</option>
-        <option value="rr">Ratų sistema (visi su visais)</option>
-        <option value="score">Balai (teisėjų vertinimas)</option>
+      <label>Sistema <select class="sel" id="draw-system" title="Pagal rungtį: vėliavėlėmis, balais, ratų sistema"></select></label>
+      <label>Medaliai <select class="sel" id="draw-medals" title="Kiek trečių vietų ir kaip">
+        <option value="plain">2 bronzos be kovos</option>
+        <option value="bronze">Kova dėl 3 vietos</option>
+        <option value="wkf">Paguoda, 2 bronzos (WKF)</option>
       </select></label>
       <button class="btn" id="draw-swap" type="button" aria-pressed="false" title="Tempkite vardą ant kito - apsikeis vietomis">⇄ Keisti vietas</button>
       <button class="btn" id="draw-new" type="button" title="Naujas burtų traukimas (rezultatai dingsta)">Burti iš naujo</button>

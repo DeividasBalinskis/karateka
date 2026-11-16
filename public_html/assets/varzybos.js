@@ -14,6 +14,26 @@
     score: ['Balai', 'Teisėjai vertina balais, kraštiniai atmetami (matosi perbraukti). Enbu, kata.']
   };
   function isElim(sys) { return sys !== 'rr' && sys !== 'score'; }
+  // Sistemos pavadinimas pagal rungtį (Kata vėliavėlėmis, Kata balais, Enbu balais, Fukugo...); medalių variantas - atskiras nustatymas
+  var MEDALS = { plain: '2 bronzos be kovos', bronze: 'Kova dėl 3 vietos', wkf: 'Paguoda, 2 bronzos (WKF)' };
+  function methodOf(sys) { return sys === 'score' || sys === 'rr' || sys === 'fukugo' ? sys : 'elim'; }
+  function discName(c) {
+    var d = DISC[c.discipline] || c.discipline;
+    if (!c.team || c.discipline === 'enbu') return d;
+    return (c.discipline === 'kumite' || c.discipline === 'kihon' ? 'Komandinis ' : 'Komandinė ') + d.toLowerCase();
+  }
+  function methodList(c) {
+    var d = c.discipline, D = discName(c);
+    if (d === 'fukugo') return [['fukugo', 'Fukugo', 'Kumite ir kitei (vėliavėlės) pakaitomis, finalas - kumite.'], ['rr', 'Fukugo - ratų sistema', 'Visi su visais.']];
+    if (d === 'kumite' || d === 'sumo') return [['elim', D + ' - olimpinė', 'Lentelė, kovos su balais ir laiku.'], ['rr', D + ' - ratų sistema', 'Visi su visais.']];
+    return [['elim', D + ' vėliavėlėmis', 'Lentelė: laimėtoją teisėjai rodo vėliavėlėmis.'], ['score', D + ' balais', 'Teisėjai vertina balais, kraštiniai atmetami.'], ['rr', D + ' - ratų sistema', 'Visi su visais (vėliavėlės).']];
+  }
+  function sysName(c, sys) {
+    var m = methodOf(sys), it = methodList(c).filter(function (x) { return x[0] === m; })[0];
+    return (it ? it[1] : SYSTEMS[sys][0]) + (m === 'elim' ? ' · ' + MEDALS[sys] : '');
+  }
+  function elimDefault(c) { var f = cfg(c); return MEDALS[f.medals] ? f.medals : (c.team ? 'bronze' : 'plain'); }
+  function methodToSys(c, m) { return m === 'elim' ? elimDefault(c) : m; }
   // Numatyta sistema pagal rungtį (pasirinkus rungtį - nustatoma pati, kol kovų dar nebuvo)
   function defaultSystem(c) {
     if (c.discipline === 'enbu') return 'score';
@@ -22,7 +42,7 @@
   }
   function cfg(c) {
     c.cfg = c.cfg || {}; var f = c.cfg; f.judges = f.judges || 5; f.rounds = f.rounds || 1; f.finalists = f.finalists || 8; if (f.drop === undefined) f.drop = true;
-    f.time = f.time || (c.discipline === 'sumo' ? 60 : 120); f.sumoTo = f.sumoTo || 3; if (f.bunkai === undefined) f.bunkai = true;
+    f.time = f.time || (c.discipline === 'sumo' ? 60 : 120); f.sumoTo = f.sumoTo || 3; if (f.bunkaiFinal === undefined) f.bunkaiFinal = false;
     if (f.avg === undefined) f.avg = true;   // balų sistemoje: rato balas - teisėjų balų vidurkis (be kraštinių), ne suma
     return f;
   }
@@ -33,7 +53,7 @@
     if (d === 'sumo') return 'sumo';
     if (sys === 'fukugo' || d === 'fukugo') return m.left && m.left % 2 === 0 ? 'flags' : 'kumite';
     if (d === 'kumite') return c.team ? 'team' : 'kumite';
-    if (c.team && cfg(c).bunkai && (m.left === 1 || m.id === 'bronze') && isElim(sys)) return 'score2';
+    if (c.team && cfg(c).bunkaiFinal && (m.left === 1 || m.id === 'bronze') && isElim(sys)) return 'score2';   // tik jei įjungta nustatymuose
     return 'flags';
   }
   var MODE_NAME = { kumite: 'Kumite', team: 'Komandinis kumite', sumo: 'Sumo', flags: 'Vėliavėlės', score2: 'Kata + Pritaikymas' };
@@ -678,14 +698,17 @@
         '<div class="fmt-row"><span class="fmt-label">Rungtis</span><div class="fmt-ctl seg">' + Object.keys(DISC).map(function (d) {
           return '<button type="button" class="seg-btn' + (d === c.discipline ? ' on' : '') + '" data-disc="' + d + '"><span class="disc d-' + d + '"></span>' + DISC[d] + '</button>';
         }).join('') + '<label class="small team-chk"><input type="checkbox" id="cat-team"' + (c.team ? ' checked' : '') + '> Komandinė</label></div></div>' +
-        '<div class="fmt-row"><span class="fmt-label">Sistema</span><div class="fmt-ctl sys-cards">' + Object.keys(SYSTEMS).map(function (k2) {
-          return '<button type="button" class="sys-card' + (k2 === sys ? ' on' : '') + '" data-sys="' + k2 + '"><span class="sys-ico sys-' + k2 + '" aria-hidden="true"></span><b>' + SYSTEMS[k2][0] + '</b><span>' + SYSTEMS[k2][1] + '</span></button>';
-        }).join('') + '</div></div>' +
+        '<div class="fmt-row"><span class="fmt-label">Sistema</span><div class="fmt-ctl"><div class="sys-cards">' + methodList(c).map(function (x) {
+          var key = methodToSys(c, x[0]);
+          return '<button type="button" class="sys-card' + (methodOf(sys) === x[0] ? ' on' : '') + '" data-sys="' + key + '"><span class="sys-ico sys-' + key + '" aria-hidden="true"></span><b>' + esc(x[1]) + '</b><span>' + esc(x[2]) + '</span></button>';
+        }).join('') + '</div>' +
+        (methodOf(sys) === 'elim' ? '<label class="sys-medals">Medaliai <select class="sel" data-medals="1">' + Object.keys(MEDALS).map(function (k3) { return '<option value="' + k3 + '"' + (k3 === sys ? ' selected' : '') + '>' + MEDALS[k3] + '</option>'; }).join('') + '</select></label>' : '') +
+        '</div></div>' +
         '<div class="fmt-row"><span class="fmt-label">Kova</span><div class="fmt-ctl crit">' +
           '<label>Teisėjai <input class="sel num-in" type="number" min="1" max="15" data-cfg="judges" value="' + f.judges + '" title="Kiek teisėjų vertina (bet koks skaičius)"></label>' +
           (c.discipline === 'kumite' || c.discipline === 'fukugo' || c.discipline === 'sumo' ? '<label>Kovos laikas <select class="sel" data-cfg="time">' + [10, 30, 60, 90, 120, 150, 180].map(function (n) { return '<option value="' + n + '"' + (n === f.time ? ' selected' : '') + '>' + Math.floor(n / 60) + ':' + (n % 60 < 10 ? '0' : '') + (n % 60) + (n === 10 ? ' (Jiyu ippon, Ko-Go)' : '') + '</option>'; }).join('') + '</select></label>' : '') +
           (c.discipline === 'sumo' ? '<label>Laimi surinkęs <input class="sel num-in" type="number" min="1" max="20" data-cfg="sumoTo" value="' + f.sumoTo + '"> tšk.</label>' : '') +
-          (c.team && c.discipline !== 'kumite' ? '<label><input type="checkbox" data-cfg="bunkai"' + (f.bunkai ? ' checked' : '') + '> Finale ir dėl bronzos: Kata + Pritaikymas (balai)</label>' : '') +
+          (c.team && c.discipline !== 'kumite' && isElim(sys) ? '<label><input type="checkbox" data-cfg="bunkaiFinal"' + (f.bunkaiFinal ? ' checked' : '') + '> Finale ir dėl bronzos: Kata + Pritaikymas (balai)</label>' : '') +
           '<span class="muted small">' + MODE_NAME[boutMode(c, { left: 3 })] + (c.discipline === 'fukugo' ? ' / Kitei' : '') + '</span>' +
         '</div></div>' +
         '<div class="fmt-row"><span class="fmt-label">Kriterijai</span><div class="fmt-ctl crit">' +
@@ -783,6 +806,7 @@
     var t = e.target;
     if (t.id === 'cat-name') { c.name = t.value.trim() || c.name; c.customName = c.name !== critName(c); }
     else if (t.id === 'cat-team') { snapshot(); c.team = t.checked; applyDefaultSystem(c); }
+    else if (t.dataset.medals) { cfg(c).medals = t.value; setSystem(c, t.value); return; }
     else if (t.dataset.cfg) { snapshot(); var f0 = cfg(c); f0[t.dataset.cfg] = t.type === 'checkbox' ? t.checked : Math.max(1, parseInt(t.value, 10) || 1); if (f0.judges > 15) f0.judges = 15; }
     else if (t.dataset.crit) {
       snapshot(); c.crit = c.crit || {};
@@ -1119,7 +1143,7 @@
   }
   function drawHead(c, done, all) {
     return '<div class="draw-head"><h2><span class="disc d-' + c.discipline + '"></span>' + esc(c.name) + '</h2><span class="pill">' + c.competitors.length + ' dalyv.</span>' +
-      '<span class="pill sys">' + esc(SYSTEMS[c.draw.system][0]) + '</span><span class="pill ' + (done === all && all ? 'ok' : '') + '">' + (c.draw.system === 'score' ? 'Pasirodymai' : 'Kovos') + ': ' + done + ' / ' + all + '</span>' +
+      '<span class="pill sys">' + esc(sysName(c, c.draw.system)) + '</span><span class="pill ' + (done === all && all ? 'ok' : '') + '">' + (c.draw.system === 'score' ? 'Pasirodymai' : 'Kovos') + ': ' + done + ' / ' + all + '</span>' +
       (drawStale(c) ? '<span class="pill warn">Dalyviai pasikeitė – spauskite „Burti iš naujo“</span>' : '') + '</div>';
   }
   function renderElim(c, view) {
@@ -1225,7 +1249,10 @@
     // Pasikeitė dalyviai, o kovų dar nebuvo - burtai traukiami iš naujo automatiškai
     var started = Object.keys(c.draw.results).length || (!isElim(c.draw.system) && scoreDone(c));
     if (drawStale(c) && !c.draw.locked && !started) { c.draw = makeDraw(c, c.draw.system); save(); }
-    document.getElementById('draw-system').value = c.draw.system;
+    var dsel = document.getElementById('draw-system'), msel = document.getElementById('draw-medals');
+    dsel.innerHTML = methodList(c).map(function (x) { return '<option value="' + x[0] + '">' + esc(x[1]) + '</option>'; }).join('');
+    dsel.value = methodOf(c.draw.system);
+    if (msel) { msel.closest('label').style.display = methodOf(c.draw.system) === 'elim' ? '' : 'none'; msel.value = MEDALS[c.draw.system] ? c.draw.system : elimDefault(c); }
     var sw = document.getElementById('draw-swap'); sw.setAttribute('aria-pressed', swapMode ? 'true' : 'false'); sw.textContent = swapMode ? '✓ Baigti keitimą' : '⇄ Keisti vietas';
     document.getElementById('draw-view').classList.toggle('swap-mode', swapMode);
     document.getElementById('draw-swap').hidden = !isElim(c.draw.system);
@@ -1249,6 +1276,20 @@
       '<div class="sv-name">' + esc(p.name || '—') + '</div><div class="sv-club">' + esc(p.club || '') + (pp.birth ? ' · ' + pp.birth : '') + '</div>' +
       (belt && BELTS[belt] ? '<div class="sv-belt"><span style="background:' + BELTS[belt][2] + '"></span>' + esc(kyu(+belt)) + '</div>' : '') + '</div>';
   }
+  // Kai kita pora dar nežinoma (laukia šios kovos nugalėtojo) - rodoma, kas ruošiasi: žinomas dalyvis ir „šios kovos nugalėtojas“, arba kita grupė
+  function prepLater(c, cur) {
+    var nm = function (id) { return esc((person(c, id) || {}).name || ''); };
+    var all = isElim(c.draw.system) ? allMatches(bracket(c)) : [];
+    var nx = all.filter(function (x) { return x.id !== cur.id && !x.winner && !x.bye && (x.a || x.b); }).sort(function (x, y) { return (x.no || 99) - (y.no || 99); })[0];
+    if (nx) {
+      var one = nx.a || nx.b;
+      return '<div class="sv-prep"><b>Ruošiasi:</b> ' + esc(nx.title || matchTitle(c, nx)) + ' - <span class="sv-dot ' + (nx.a ? 'a' : 'b') + '"></span>' + nm(one) + ' <span class="muted">vs</span> <i>šios kovos nugalėtojas</i></div>';
+    }
+    var ng = nextGroup(c);
+    if (!ng) return '';
+    var up = upcoming(ng)[0], pair = up ? (up.b ? esc((person(ng, up.a) || {}).name || '') + ' <span class="muted">vs</span> ' + esc((person(ng, up.b) || {}).name || '') : esc((person(ng, up.a) || {}).name || '')) : '';
+    return '<div class="sv-prep"><b>Ruošiasi kita grupė:</b> ' + esc(ng.name) + (pair ? ' - ' + pair : '') + '</div>';
+  }
   function renderSimple(c, view) {
     var list = upcoming(c), m = list[0], prep = list[1];
     var nb = runNeighbours(c);
@@ -1270,13 +1311,13 @@
       return;
     }
     var mode = boutMode(c, m), flags = mode === 'flags';
-    var winBtn = function (side) { var id = side === 'a' ? m.a : m.b; return flags ? '<div class="sv-flags">' + flagChips(c, m, side) + '</div>' : '<button type="button" class="sv-win" data-m="' + m.id + '" data-p="' + id + '">Laimėjo ' + (side === 'a' ? 'AKA' : 'SHIRO') + '</button>'; };
+    var winBtn = function (side) { var id = side === 'a' ? m.a : m.b; return '<button type="button" class="sv-win" data-m="' + m.id + '" data-p="' + id + '">Laimėjo ' + (side === 'a' ? 'AKA' : 'SHIRO') + '</button>' + (flags ? '<div class="sv-flags" title="Kiek vėliavėlių gavo laimėjęs">' + flagChips(c, m, side) + '</div>' : ''); };
     view.innerHTML = '<div class="sv-meta"><b>' + esc(m.title || matchTitle(c, m)) + '</b>' + (m.no ? ' · kova ' + m.no : '') + ' · ' + MODE_NAME[mode] +
         (flags ? ' · <span class="muted">pažymėkite, kiek vėliavėlių gavo laimėjęs</span>' : '') +
         (mode !== 'flags' ? '<span class="spacer"></span><button type="button" class="btn" data-bout="' + m.id + '">▶ Kovos skydelis (balai, laikas)</button>' : '') + '</div>' +
       '<div class="sv"><div class="sv-side sv-a">' + svPerson(c, m.a, 'a') + winBtn('a') + '</div><div class="sv-vs">VS</div><div class="sv-side sv-b">' + svPerson(c, m.b, 'b') + winBtn('b') + '</div></div>' +
       (prep ? '<div class="sv-prep"><b>Ruošiasi:</b> <span class="sv-dot a"></span>' + esc((person(c, prep.a) || {}).name || '') + ' <span class="muted">vs</span> <span class="sv-dot b"></span>' + esc((person(c, prep.b) || {}).name || '') +
-        (list.length > 2 ? ' <span class="muted">· dar ' + (list.length - 2) + ' kov.</span>' : '') + '</div>' : '');
+        (list.length > 2 ? ' <span class="muted">· dar ' + (list.length - 2) + ' kov.</span>' : '') + '</div>' : prepLater(c, m));
   }
   document.getElementById('draw-view').addEventListener('click', function (e) { var g = e.target.closest('[data-run-go]'); if (g) goRun(g.dataset.runGo); });
   // Sistemos keitimas: olimpinės tarpusavyje - rezultatai lieka; į ratų ar balų - nauji burtai
@@ -1286,7 +1327,7 @@
     var same = c.draw && isElim(c.draw.system) && isElim(sys);
     if (started && !same && !confirm('Pakeitus sistemą, jau įrašyti kovų rezultatai ar balai dings. Tęsti?')) { render(); return; }
     snapshot();
-    if (same) { c.draw.system = sys; prune(c); } else if (c.competitors.length >= 2) c.draw = makeDraw(c, sys); else c.draw = makeDraw(c, sys);
+    if (same) { c.draw.system = sys; prune(c); } else { c.draw = makeDraw(c, sys); if (AW[c.id]) { delete AW[c.id]; if (CFG.awardsApi) setAward([c.id], ''); } }
     save(); render();
   }
   // Rungtis ar „komandinė“ pakeista: numatyta sistema, jei kovų dar nebuvo
@@ -1298,8 +1339,11 @@
     c.draw = c.competitors.length >= 2 ? makeDraw(c, sys) : null;
   }
   document.getElementById('draw-cat').addEventListener('change', function (e) { S.selected = e.target.value; picked = null; save(); render(); });
-  document.getElementById('draw-system').addEventListener('change', function (e) { setSystem(cat(S.selected), e.target.value); });
-  document.getElementById('draw-new').addEventListener('click', function () { var c = cat(S.selected); if (c.competitors.length < 2) return; snapshot(); c.draw = makeDraw(c, c.draw ? c.draw.system : defaultSystem(c)); picked = null; save(); render(); });
+  document.getElementById('draw-system').addEventListener('change', function (e) { var c = cat(S.selected); setSystem(c, methodToSys(c, e.target.value)); });
+  var drawMedals = document.getElementById('draw-medals');
+  if (drawMedals) drawMedals.addEventListener('change', function (e) { var c = cat(S.selected); cfg(c).medals = e.target.value; setSystem(c, e.target.value); });
+  function clearAward(c) { if (AW[c.id]) setAward([c.id], ''); }
+  document.getElementById('draw-new').addEventListener('click', function () { var c = cat(S.selected); if (c.competitors.length < 2) return; snapshot(); c.draw = makeDraw(c, c.draw ? c.draw.system : defaultSystem(c)); clearAward(c); picked = null; save(); render(); });
   document.getElementById('draw-swap').addEventListener('click', function () { swapMode = !swapMode; picked = null; render(); });
   document.getElementById('draw-lock').addEventListener('click', function () { var c = cat(S.selected); c.draw.locked = !c.draw.locked; swapMode = false; save(); render(); });
   document.getElementById('draw-undo').addEventListener('click', function () { undo(); save(); render(); });
@@ -1781,10 +1825,10 @@
     return total > 0 ? doneCount(c) >= total && pl.some(function (x) { return x[0] === 1; }) : pl.length > 0;
   }
   function catStatus(c, isNow) {
-    var aw = AW[c.id] && AW[c.id].st;
-    if (aw === 'done') return 'awarded';
-    if (aw === 'sent') return 'sent';
-    if (catFinished(c)) return 'fin';
+    var aw = AW[c.id] && AW[c.id].st, fin = catFinished(c);
+    if (fin && aw === 'done') return 'awarded';   // perburta ar rezultatai ištrinti - nebe „apdovanota“
+    if (fin && aw === 'sent') return 'sent';
+    if (fin) return 'fin';
     return isNow || (c.draw && !drawStale(c) && doneCount(c) > 0) ? 'run' : 'wait';
   }
   function stChip(st) { return '<span class="aw-chip aw-' + st + '">' + (st === 'sent' ? '🏅 ' : st === 'awarded' ? '✓ ' : '') + ST_LABEL[st] + '</span>'; }
@@ -2342,7 +2386,7 @@
       if (full) { o.id = m.id; o.ai = m.a || ''; o.bi = m.b || ''; }   // valdymui (prisegtame langelyje) - kovos ir dalyvių id
       return o;
     };
-    var out = { id: c.id, name: c.name, disc: c.discipline, sys: c.draw && SYSTEMS[c.draw.system] ? SYSTEMS[c.draw.system][0] : '', count: c.competitors.length, groups: [], places: [] };
+    var out = { id: c.id, name: c.name, disc: c.discipline, sys: c.draw && SYSTEMS[c.draw.system] ? sysName(c, c.draw.system) : '', count: c.competitors.length, groups: [], places: [] };
     if (!c.draw || drawStale(c) || c.competitors.length < 2) {
       out.people = c.competitors.map(function (p) { return { n: pubName(p.id), c: p.club }; });
       return out;

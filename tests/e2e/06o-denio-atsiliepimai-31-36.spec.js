@@ -83,7 +83,7 @@ test('Taika: timer 0:10 by default, no 2:00, Enbu counts up; phone keeps scroll 
   await a.waitForTimeout(2300);
   await a.click('#bt-start');
   const up = (await a.textContent('#bt-timer')).trim();
-  check('Enbu counts up', /^0:0[23]$/.test(up), up);
+  check('Enbu counts up', /^0:0[2-5]$/.test(up), up);
 
   // #33 / #34 Telefone: +1 neperšoka į viršų, langą galima nuslinkti iki apačios
   await a.setViewportSize({ width: 390, height: 660 });

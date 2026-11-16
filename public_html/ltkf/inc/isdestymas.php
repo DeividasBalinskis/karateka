@@ -83,7 +83,8 @@ function puslapis_pradzia(string $title, string $active = '', array $opt = []): 
 .karateka-bar a:hover{background:rgba(255,255,255,0.22);}
 .karateka-bar span{opacity:.75; font-weight:500;}
 </style>
-<div class="karateka-bar"><a href="../index.php">← karateka.lt</a><span>LTKF svetainė - juodraštis, matomas tik test svetainėje</span></div>
+<?php $karatekaAdminas = karateka_adminas(); ?>
+<div class="karateka-bar"><?php if ($karatekaAdminas): ?><a href="../index.php">← karateka.lt</a><span>LTKF svetainė - juodraštis, matomas tik test svetainėje</span><a href="../admin/ltkf-perziura.php" title="Nuoroda federacijos nariams: mato svetainę ir palieka atsiliepimus, karateka.lt nemato">🔗 Peržiūros nuoroda</a><?php else: ?><span>LTKF svetainės juodraštis peržiūrai. Pastabas palikite per 💡 apačioje kairėje.</span><?php endif; ?></div>
 <div class="tricolor" aria-hidden="true"><span></span><span></span><span></span></div>
 <?php if (n('demo')): ?>
 <div class="demo-bar">Juodraštis susitikimui. Vietos, pažymėtos <span class="chip chip-demo">Pavyzdys</span> ar [laužtiniuose skliaustuose], laukia tikrų duomenų.</div>

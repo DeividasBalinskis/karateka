@@ -1453,3 +1453,8 @@ tr.res-failed td{background:rgba(192,57,43,0.06);}
 .ranking .rank-xp{min-height:32px; padding:4px 10px; font-size:0.8rem; border-radius:10px;}
 .ranking .rank-quick, .ranking .xp-line{flex-basis:100%;}
 .ranking .xp-line{font-size:0.85rem; color:#7A5A06; margin-top:-2px;}
+/* Pakvietimas nariui be paskyros (nario puslapis) */
+.join-box{margin-top:12px; padding:12px 14px; border-radius:12px; background:rgba(168,92,126,0.08); border:1px solid rgba(168,92,126,0.2);}
+.join-box b{display:block; margin-bottom:4px;}
+.join-who{border:0; padding:0; margin:0 0 6px; display:grid; gap:6px;}
+.join-who legend{font-weight:700; margin-bottom:6px;}

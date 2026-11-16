@@ -91,7 +91,7 @@ test('competitions: test tournament, editor saves, public results, LTKF, points'
   // Kategorija: sistemos pasirinkimas kortelėmis (ratų, balų), tempimas iš dalyvių sąrašo
   await a.click('#tab-kategorijos');
   await a.click('[data-catview=\"edit\"]');   // viena kategorija (numatyta - struktūra)
-  check('system cards', await a.locator('.sys-card').count() === 6);   // olimpinės (3), fukugo, ratų, balai
+  check('system cards named by event', await a.locator('.sys-card').count() >= 2 && /vėliavėlėmis|balais|olimpinė|Fukugo/.test(await a.locator('.sys-card').first().innerText()));   // pagal rungtį; medaliai - atskirai
   const catId = await a.locator('#cat-list li[aria-current="true"]').getAttribute('data-drop-cat');
   await a.click('.sys-card[data-sys="rr"]');
   await a.waitForTimeout(1200);
@@ -101,6 +101,7 @@ test('competitions: test tournament, editor saves, public results, LTKF, points'
   await a.locator('.pool-item:has(.pi-add)').first().dragTo(a.locator('#cat-detail .drop-zone'), { targetPosition: { x: 200, y: 30 } });
   await a.waitForTimeout(800);
   check('drag from pool adds', await a.locator('#cat-detail tbody tr').count() === rowsBefore + 1);
+  if (!(await a.locator('.sys-card[data-sys="score"]').count())) await a.click('#cat-detail [data-disc="kata"]');   // balai - kata, kihon, enbu rungtims
   await a.click('.sys-card[data-sys="score"]');
   await a.click('#cat-draw');
   check('score table', await a.locator('.score-table .j-in').count() >= 5);

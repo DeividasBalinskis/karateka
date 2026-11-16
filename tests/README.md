@@ -24,6 +24,7 @@ Browser tests (Playwright) and quick static checks. They run on every push in Gi
 | `e2e/06m-renginiai-kalendorius-temos.spec.js` | Event registration button (link from the event form or found in the description), events calendar month grid and phone subscription (.ics), new themes (dunes, dojo, aurora) |
 | `e2e/06n-zaidimas.spec.js` | Admin mode switch (staff see the site as members), My dojo: hero editor, test panel, gift box, equipment, scenery, pet, mystical hero, collection; arena bot fight, quick fight, four in a row, kata rhythm; invite and accept; English |
 | `e2e/06o-denio-atsiliepimai-31-36.spec.js` | XP: „+XP“ right in the ranking list; Taika bout: timer starts at 0:10, no 2:00 preset, Enbu counts up from 0; on a phone +1 keeps the scroll and the window scrolls to the very bottom; AKA rows fully red; kata final order from the lowest semi-final score |
+| `e2e/06p-denio-atsiliepimai-37-43.spec.js` | Taika systems named by event, medals as a separate setting, team kata final stays with flags, simple view: who is preparing, winner buttons with flags, dark text in inputs, redraw clears awards; registration by district; LTKF review link; quick new member + invite link that connects the registering person |
 | `e2e/07-pages.spec.js` | Every page for every role at desktop and phone width: no PHP/JS errors, no horizontal scroll |
 | `e2e/08-test-data.spec.js` | One-time purge of old demo data (real people and content stay, backup first), test people generator, admin view switch (parent / child, belt), deleting test people and members (runs last) |
 

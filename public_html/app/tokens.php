@@ -7,6 +7,7 @@ const TOKEN_TTL = [
     'password_reset' => '+1 hour',
     'invite'         => '+14 days',
     'change_email'   => '+1 day',
+    'join'           => '+60 days',   // treneris pridėjo narį be paskyros: nuoroda susieja užsiregistravusį su juo
 ];
 
 /** Sukuria žetoną ir grąžina jo reikšmę (dedama į nuorodą) */

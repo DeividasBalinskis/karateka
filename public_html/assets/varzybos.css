@@ -1206,3 +1206,8 @@ button.pin-p:hover { background: var(--surface-2); }
   .bout-card { max-height: calc(100vh - 16px); max-height: calc(100dvh - 16px); }
   .bout-card .bt-foot { padding-bottom: calc(84px + env(safe-area-inset-bottom, 0px)); }
 }
+
+/* Paprastas vaizdas: įvedimo laukai tamsiame fone - juodas tekstas baltame laukelyje */
+.sv .kata-in, .sv .j-in, .sv input { color: #12151C; background: #fff; }
+.sv .sv-flags { display: flex; gap: 6px; justify-content: center; margin-top: 10px; }
+.sys-medals { display: inline-flex; align-items: center; gap: 8px; margin-top: 10px; font-size: .85rem; font-weight: 600; }

@@ -41,26 +41,46 @@ if (get('new') !== '' || post('action') === 'create') {
     }
     if (is_post()) {
         csrf_check();
+        // Užtenka vardo, pavardės ir gimimo metų ar grupės - visa kita galima papildyti vėliau
         $first = post('first_name');
         $last = post('last_name');
         $birth = date_from_input($_POST['birth_date'] ?? '');
+        $year = (int) post('birth_year');
         $group = (int) post('group_id');
-        $email = post('link_email');
+        $email = normalize_email(post('link_email'));
         $acc = $email !== '' ? account_by_email($email) : null;
-        if ($first === '' || $last === '' || !valid_birth_date($birth)) {
-            $errors[] = t('Įveskite vardą, pavardę ir gimimo datą.');
-        } elseif (!$group) {
-            $errors[] = t('Pasirinkite grupę.');
-        } elseif ($email !== '' && !$acc) {
-            $errors[] = t('Paskyros su tokiu el. paštu nėra. Palikite tuščią - susieti galėsite vėliau nario puslapyje.');
+        $precision = 0;
+        if (!valid_birth_date($birth)) {
+            $birth = '';
+            if ($year >= (int) date('Y') - 100 && $year <= (int) date('Y')) {
+                $birth = $year . '-01-01'; $precision = 1;
+            } elseif ($group) {
+                $birth = group_typical_birth_year($group) . '-01-01'; $precision = 2;
+            }
+        }
+        if ($first === '' || $last === '') {
+            $errors[] = t('Įrašykite vardą ir pavardę.');
+        } elseif ($birth === '') {
+            $errors[] = t('Įrašykite gimimo metus arba pasirinkite grupę.');
+        } elseif ($email !== '' && !$acc && !valid_email($email)) {
+            $errors[] = t('Įveskite teisingą el. paštą.');
         } else {
             $mid = create_member($first, $last, $birth, !empty($_POST['photo_consent']), belt_from_post('belt_level'));
-            q('UPDATE members SET group_id = ?, status = "active" WHERE id = ?', [$group, $mid]);
+            q('UPDATE members SET group_id = ?, status = "active" WHERE id = ?', [$group ?: null, $mid]);
+            set_birth_precision($mid, $precision);
+            $msg = t('Pridėtas (-a):') . " $first $last";
             if ($acc) {
                 link_member((int) $acc['id'], $mid, post('relation') === 'self' ? 'self' : 'parent');
+                $msg .= ' · ' . t('susieta su paskyra') . ' ' . $acc['email'];
+            } else {
+                $link = member_join_link(q_one('SELECT * FROM members WHERE id = ?', [$mid]), $email);
+                if ($link) {
+                    $_SESSION['join_link'][$mid] = $link;
+                    $msg .= ' · ' . ($email !== '' ? t('pakvietimas išsiųstas:') . ' ' . $email : t('pakvietimo nuorodą rasite žemiau - nusiųskite ją žinute'));
+                }
             }
-            flash('ok', "Pridėtas (-a): $first $last");
-            redirect('admin/nariai.php?id=' . $mid);
+            flash('ok', $msg);
+            redirect('admin/nariai.php?id=' . $mid . '#pakvietimas');
         }
     }
     page_start(t('Naujas narys'), ['admin' => true]);
@@ -71,24 +91,29 @@ if (get('new') !== '' || post('action') === 'create') {
     <form method="post" class="panel card form" style="max-width:720px;">
       <?= csrf_field() ?>
       <input type="hidden" name="action" value="create">
+      <p class="hint"><?= te('Užtenka vardo, pavardės ir gimimo metų arba grupės. Visa kita galima papildyti vėliau.') ?></p>
       <div class="form-row">
-        <label><?= te('Vardas') ?> <input type="text" name="first_name" value="<?= e(post('first_name')) ?>" required></label>
+        <label><?= te('Vardas') ?> <input type="text" name="first_name" value="<?= e(post('first_name')) ?>" required autofocus></label>
         <label><?= te('Pavardė') ?> <input type="text" name="last_name" value="<?= e(post('last_name')) ?>" required></label>
       </div>
-      <label><?= te('Gimimo data') ?> <?= date_parts_field('birth_date', $_POST['birth_date'] ?? null) ?></label>
       <div class="form-row">
-        <label><?= te('Grupė') ?> <select name="group_id" required><?= group_options((int) post('group_id') ?: null) ?></select></label>
+        <label><?= te('Gimimo metai') ?> <input type="number" name="birth_year" min="<?= (int) date('Y') - 100 ?>" max="<?= date('Y') ?>" inputmode="numeric" placeholder="<?= te('pvz. 2016') ?>" value="<?= e(post('birth_year')) ?>"></label>
+        <label><?= te('Grupė') ?> <select name="group_id"><option value=""><?= te('— vėliau —') ?></option><?= group_options((int) post('group_id') ?: null, false) ?></select></label>
+      </div>
+      <details<?= !empty($_POST['birth_date']['y']) ? ' open' : '' ?>><summary class="summary-link"><?= te('+ Tiksli gimimo data (nebūtina)') ?></summary>
+        <label style="margin-top:8px;"><?= te('Gimimo data') ?> <?= date_parts_field('birth_date', $_POST['birth_date'] ?? null, false) ?></label></details>
+      <div class="form-row">
         <label><?= te('Diržas') ?> <select name="belt_level"><?= belt_options(belt_from_post('belt_level'), t('— nežinau / dar neturi —')) ?></select></label>
       </div>
       <label class="check"><input type="checkbox" name="photo_consent" value="1" <?= !empty($_POST['photo_consent']) ? 'checked' : '' ?>>
         <span><?= te('Tėvai (ar pats narys) sutiko, kad klubas skelbtų nuotraukas') ?></span></label>
       <hr class="divider">
       <div class="form-row">
-        <label><?= te('Susieti su paskyra') ?> <span class="hint"><?= te('nebūtina - tėvų ar paties nario el. paštas, jei jau užsiregistravę') ?></span>
+        <label><?= te('El. paštas pakvietimui') ?> <span class="hint"><?= te('nebūtina - tėvų ar paties nario') ?></span>
           <input type="email" name="link_email" value="<?= e(post('link_email')) ?>"></label>
         <label><?= te('Kas tai') ?> <select name="relation"><option value="parent"><?= te('tėvų paskyra') ?></option><option value="self" <?= post('relation') === 'self' ? 'selected' : '' ?>>paties nario paskyra</option></select></label>
       </div>
-      <p class="hint"><?= te('Jei tėvai dar neturi paskyros - palikite tuščią. Kai užsiregistruos, susiekite nario puslapyje, kad tas pats vaikas nebūtų sukurtas du kartus.') ?></p>
+      <p class="hint"><?= te('Jei paskyra su šiuo el. paštu jau yra - susiesime iš karto. Jei nėra - išsiųsime pakvietimą susikurti prisijungimą. Be el. pašto gausite nuorodą, kurią galima nusiųsti žinute: užsiregistravęs per ją žmogus bus susietas su šiuo nariu.') ?></p>
       <div><button class="btn btn-primary" type="submit"><?= te('Pridėti narį') ?></button></div>
     </form>
     <?php
@@ -121,6 +146,23 @@ if ($id) {
         }
         flash('ok', (t('Ištrinta:') . ' ') . $m['first_name'] . ' ' . $m['last_name'] . ($gone ? ' ir paskyra ' . implode(', ', $gone) : '') . '.');
         redirect('admin/nariai.php');
+    }
+    // Pakvietimo nuoroda nariui be paskyros: el. paštu arba nukopijuoti ir nusiųsti žinute
+    if (is_post() && post('action') === 'join_invite') {
+        csrf_check();
+        $email = normalize_email(post('email'));
+        if ($email !== '' && !valid_email($email)) {
+            flash('err', t('Įveskite teisingą el. paštą.'));
+        } elseif ($email !== '' && ($acc = account_by_email($email))) {
+            link_member((int) $acc['id'], $id, post('relation') === 'self' ? 'self' : 'parent');
+            flash('ok', "Susieta su paskyra: {$acc['email']}");
+        } elseif ($link = member_join_link($m, $email)) {
+            $_SESSION['join_link'][$id] = $link;
+            flash('ok', $email !== '' ? t('Pakvietimas išsiųstas:') . ' ' . $email : t('Nuoroda sukurta - nukopijuokite ir nusiųskite.'));
+        } else {
+            flash('err', t('Pakvietimai veiks, kai bus atnaujinta duomenų bazė (Šiandien → „Atnaujinkite duomenų bazę“).'));
+        }
+        redirect('admin/nariai.php?id=' . $id . '#pakvietimas');
     }
     // Susieti esamą narį su tėvų / paties nario paskyra
     if (is_post() && post('action') === 'link_account') {
@@ -186,13 +228,14 @@ if ($id) {
             $errors[] = t('Įveskite vardą, pavardę ir gimimo datą.');
         } elseif (!in_array($status, ['pending', 'active', 'inactive'], true)) {
             $errors[] = t('Netinkama būsena.');
-        } elseif ($status === 'active' && !$group) {
-            $errors[] = t('Aktyviam nariui reikia grupės.');
-        } else {
+        } else {   // grupė gali būti ir vėliau (greitai pridėtas narys)
             $gender = in_array(post('gender'), ['M', 'F'], true) ? post('gender') : null;
             q('UPDATE members SET first_name = ?, last_name = ?, birth_date = ?, gender = ?, group_id = ?, status = ?, photo_consent = ?, belt_level = ? WHERE id = ?',
                 [$first, $last, $birth, $gender, $group, $status, !empty($_POST['photo_consent']) ? 1 : 0, belt_from_post('belt_level'), $id]);
             set_member_tags($id, (array) ($_POST['tags'] ?? []));
+            if ($birth !== $m['birth_date']) {
+                set_birth_precision($id, 0);   // data patikslinta
+            }
             flash('ok', t('Išsaugota.'));
             redirect('admin/nariai.php?id=' . $id);
         }
@@ -213,7 +256,7 @@ if ($id) {
           <label><?= te('Vardas') ?> <input type="text" name="first_name" value="<?= e($m['first_name']) ?>" required></label>
           <label><?= te('Pavardė') ?> <input type="text" name="last_name" value="<?= e($m['last_name']) ?>" required></label>
         </div>
-        <label><?= te('Gimimo data') ?> <span class="hint"><?= age_on($m['birth_date']) ?> m.</span>
+        <label><?= te('Gimimo data') ?> <span class="hint"><?= age_on($m['birth_date']) ?> m.<?= (int) ($m['birth_precision'] ?? 0) === 1 ? ' · ' . te('žinomi tik metai - patikslinkite') : ((int) ($m['birth_precision'] ?? 0) === 2 ? ' · ' . te('metai apytiksliai pagal grupę - patikslinkite') : '') ?></span>
           <?= date_parts_field('birth_date', $m['birth_date']) ?></label>
         <label><?= te('Grupė') ?> <select name="group_id"><?= group_options($m['group_id'] ? (int) $m['group_id'] : null) ?></select></label>
         <div class="form-row">
@@ -257,6 +300,21 @@ if ($id) {
           <?php endforeach; ?>
         </ul>
         <?php if ($m['parent_consent_at']): ?><p class="small muted" style="margin-top:10px;"><?= te('Tėvų sutikimas:') ?> <?= e($m['parent_consent_at']) ?></p><?php endif; ?>
+        <?php if (!$accounts): $jl = $_SESSION['join_link'][$id] ?? ''; ?>
+          <div class="join-box" id="pakvietimas">
+            <b><?= te('✉️ Pakviesti susikurti prisijungimą') ?></b>
+            <?php if ($jl): ?>
+              <p class="small muted"><?= te('Nusiųskite šią nuorodą žinute (Messenger, SMS). Užsiregistravęs per ją žmogus bus susietas su šiuo nariu.') ?></p>
+              <div class="row" style="gap:8px;flex-wrap:wrap;"><input type="text" readonly value="<?= e($jl) ?>" id="joinLink" onclick="this.select()" style="flex:1;min-width:220px;">
+                <button type="button" class="btn btn-sm" onclick="navigator.clipboard && navigator.clipboard.writeText(document.getElementById('joinLink').value).then(() => { this.textContent = '✓'; })"><?= te('Kopijuoti') ?></button></div>
+            <?php endif; ?>
+            <form method="post" class="form" style="margin-top:8px;">
+              <?= csrf_field() ?><input type="hidden" name="id" value="<?= $id ?>"><input type="hidden" name="action" value="join_invite">
+              <label><?= te('El. paštas') ?> <span class="hint"><?= te('nebūtina - be jo gausite nuorodą nukopijuoti') ?></span><input type="email" name="email"></label>
+              <div><button class="btn btn-sm" type="submit"><?= $jl ? te('Siųsti el. paštu / nauja nuoroda') : te('Sukurti pakvietimą') ?></button></div>
+            </form>
+          </div>
+        <?php endif; ?>
         <details style="margin-top:12px;">
           <summary class="summary-link"><?= te('+ Susieti su paskyra') ?></summary>
           <form method="post" class="form" style="margin-top:10px;">

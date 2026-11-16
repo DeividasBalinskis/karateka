@@ -189,6 +189,48 @@ function create_member(string $first, string $last, string $birthDate, bool $pho
     return (int) db()->lastInsertId();
 }
 
+/**
+ * Pakvietimo nuoroda nariui, kurį treneris pridėjo be paskyros: užsiregistravęs per ją (ar prisijungęs) susiejamas su šiuo nariu.
+ * Jei nurodytas el. paštas - nuoroda išsiunčiama ir laišku. Grąžina nuorodą (dar neatnaujinus DB - null).
+ */
+function member_join_link(array $m, string $email = ''): ?string
+{
+    $email = normalize_email($email);
+    try {
+        $token = token_create('join', $email, null, (int) $m['id']);
+    } catch (PDOException $ex) {
+        return null;   // dar neimportuotas db/036
+    }
+    $link = abs_url('jungtis.php?t=' . $token);
+    if ($email !== '' && valid_email($email)) {
+        send_mail($email, 'Kvietimas į karateka.lt — ' . $m['first_name'] . ' ' . $m['last_name'],
+            "Sveiki,\n\nVšĮ Karate Ateitis treneris pridėjo {$m['first_name']} {$m['last_name']} į klubo narių sistemą karateka.lt.\n"
+            . "Susikurkite prisijungimą - matysite tvarkaraštį, renginius, XP ir klubo žaidimą:\n\n" . $link . "\n\n"
+            . "Nuoroda galioja 60 dienų. Jei jau turite paskyrą karateka.lt - prisijunkite ir atidarykite nuorodą: narys bus pridėtas prie jūsų paskyros.");
+    }
+    return $link;
+}
+
+/** Gimimo datos tikslumas: 0 - tiksli, 1 - tik metai, 2 - apytiksliai pagal grupę (iki DB atnaujinimo - 0) */
+function set_birth_precision(int $memberId, int $p): void
+{
+    try {
+        q('UPDATE members SET birth_precision = ? WHERE id = ?', [$p, $memberId]);
+    } catch (PDOException $ex) {
+    }
+}
+
+/** Apytiksliai gimimo metai pagal grupę: dažniausi tos grupės narių metai, kitaip - pagal grupės tipą */
+function group_typical_birth_year(int $groupId): int
+{
+    $y = (int) q_value('SELECT YEAR(birth_date) y FROM members WHERE group_id = ? AND status = "active" GROUP BY y ORDER BY COUNT(*) DESC, y DESC LIMIT 1', [$groupId]);
+    if ($y) {
+        return $y;
+    }
+    $cat = (string) q_value('SELECT category FROM training_groups WHERE id = ?', [$groupId]);
+    return (int) date('Y') - ($cat === 'suauge' ? 30 : ($cat === 'jaunimas' ? 15 : 8));
+}
+
 function link_member(int $accountId, int $memberId, string $relation): void
 {
     q('INSERT IGNORE INTO account_members (account_id, member_id, relation) VALUES (?, ?, ?)', [$accountId, $memberId, $relation]);
