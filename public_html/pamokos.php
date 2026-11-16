@@ -43,7 +43,7 @@ if (is_post()) {
 }
 
 $v = lesson_viewer($a);
-$staffTools = $isStaff && !$v['preview'];
+$staffTools = $isStaff && admin_mode() && !$v['preview'];
 $folders = lesson_folders();
 $all = viewer_lessons($v);
 $navOpt = ['noindex' => true, 'section' => 'pamokos'];

@@ -1,0 +1,244 @@
+/* Žaidimas: „Mano dojo“, arena, keturi iš eilės, kata ritmas */
+:root{--r1:#9AA1AA; --r2:#3B82F6; --r3:#A855F7; --r4:#F59E0B;}
+.dojo{margin:0 0 22px;}
+.dojo-head{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:10px;}
+.dojo-title{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:1.35rem; margin:0; display:flex; align-items:center; gap:8px;}
+.dojo-lvl{display:inline-flex; align-items:center; gap:4px; background:#17140F; color:#fff; border-radius:999px; padding:3px 11px; font-size:.82rem; font-weight:700;}
+.dojo-head .sp{flex:1;}
+.dojo-heroes{display:flex; gap:4px; flex-wrap:wrap;}
+.dojo-heroes button{border:1px solid rgba(23,20,15,.16); background:rgba(255,255,255,.7); border-radius:999px; padding:4px 12px; font:inherit; font-size:.82rem; cursor:pointer;}
+.dojo-heroes button.active{background:var(--accent); color:#fff; border-color:var(--accent);}
+.g-btn{display:inline-flex; align-items:center; gap:6px; border:1px solid rgba(23,20,15,.16); background:rgba(255,255,255,.85); color:var(--ink); border-radius:10px; padding:7px 12px; font:inherit; font-size:.85rem; font-weight:600; cursor:pointer; text-decoration:none !important; transition:transform .12s, box-shadow .12s;}
+.g-btn:hover{transform:translateY(-1px); box-shadow:0 3px 10px rgba(0,0,0,.08);}
+.g-btn.primary{background:var(--accent); color:#fff; border-color:var(--accent);}
+.g-btn.gold{background:linear-gradient(180deg,#FFD75E,#F2A516); border-color:#D18E0C; color:#3A2600;}
+.g-btn.sm{padding:4px 9px; font-size:.78rem; border-radius:8px;}
+.g-btn[disabled]{opacity:.5; cursor:default; transform:none; box-shadow:none;}
+.g-badge{display:inline-flex; min-width:20px; height:20px; padding:0 6px; align-items:center; justify-content:center; border-radius:999px; background:#C8372D; color:#fff; font-size:.72rem; font-weight:800;}
+.gift-pulse{animation:giftPulse 1.6s ease-in-out infinite;}
+@keyframes giftPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
+
+/* Pasaulis + šoninė juosta */
+.dojo-main{display:grid; grid-template-columns:minmax(0,1fr) 300px; gap:14px; align-items:start;}
+.dw{position:relative; aspect-ratio:16/9; border-radius:18px; overflow:hidden; background:#9fc7e8 center bottom/cover no-repeat; box-shadow:0 8px 30px rgba(23,20,15,.16), inset 0 0 0 1px rgba(0,0,0,.06); user-select:none; -webkit-user-select:none; touch-action:pan-y;}
+.dw-ground{position:absolute; left:0; right:0; bottom:0; height:30%; background:linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.12));}
+.dw-night{position:absolute; inset:0; pointer-events:none; background:linear-gradient(180deg,rgba(10,16,48,.55),rgba(10,16,48,.25)); mix-blend-mode:multiply; transition:opacity 1s;}
+.dw-stars{position:absolute; inset:0 0 45% 0; pointer-events:none;}
+.dw-stars i{position:absolute; width:2px; height:2px; background:#fff; border-radius:50%; animation:twinkle 3s infinite;}
+@keyframes twinkle{0%,100%{opacity:.2}50%{opacity:1}}
+.dw-obj{position:absolute; transform:translateX(-50%); transform-origin:50% 100%;}
+.dw-obj svg{display:block; width:100%; height:auto; overflow:visible;}
+.dw-house{width:30%; left:20%; bottom:20%; z-index:5;}
+.dw-hero{width:19%; left:52%; bottom:5%; z-index:60; cursor:pointer;}
+.dw-pet{width:8.5%; z-index:58; transition:left 2.6s linear, bottom 2.6s linear; cursor:pointer;}
+.dw-pet.walk svg{animation:petHop .35s ease-in-out infinite alternate;}
+.dw-pet.flip svg{transform:scaleX(-1);}
+.dw-pet.walk.flip svg{animation-name:petHopF;}
+@keyframes petHop{from{transform:translateY(0)}to{transform:translateY(-6%)}}
+@keyframes petHopF{from{transform:scaleX(-1) translateY(0)}to{transform:scaleX(-1) translateY(-6%)}}
+.dw-decor{width:11%;}
+.dw-decor.flip svg{transform:scaleX(-1);}
+.dw.editing .dw-decor{cursor:grab; outline:2px dashed rgba(255,255,255,.85); outline-offset:2px; border-radius:6px;}
+.dw.editing .dw-decor.drag{cursor:grabbing; outline-color:#F2C14E;}
+.dw-decor .dw-x{position:absolute; top:-10px; right:-10px; width:22px; height:22px; border-radius:50%; border:0; background:#C8372D; color:#fff; font-weight:800; cursor:pointer; display:none; line-height:22px; padding:0; font-size:13px;}
+.dw-decor .dw-f{position:absolute; top:-10px; left:-10px; width:22px; height:22px; border-radius:50%; border:0; background:#2E5FA8; color:#fff; cursor:pointer; display:none; line-height:22px; padding:0; font-size:12px;}
+.dw.editing .dw-decor .dw-x, .dw.editing .dw-decor .dw-f{display:block;}
+.dw-name{position:absolute; left:12px; top:10px; z-index:90; background:rgba(255,255,255,.85); border-radius:999px; padding:4px 12px; font-weight:700; font-size:.85rem; box-shadow:0 2px 8px rgba(0,0,0,.1);}
+.dw-tools{position:absolute; right:10px; top:10px; z-index:90; display:flex; gap:6px;}
+.dw-say{position:absolute; z-index:95; transform:translate(-50%,-100%); background:#fff; border-radius:14px; padding:6px 12px; font-weight:800; font-size:.9rem; box-shadow:0 4px 14px rgba(0,0,0,.18); white-space:nowrap; animation:sayIn .25s ease-out; pointer-events:none;}
+.dw-say::after{content:""; position:absolute; left:50%; bottom:-7px; margin-left:-7px; border:7px solid transparent; border-bottom:0; border-top-color:#fff;}
+@keyframes sayIn{from{opacity:0; transform:translate(-50%,-80%) scale(.8)}to{opacity:1; transform:translate(-50%,-100%) scale(1)}}
+.dw-heart{position:absolute; z-index:96; pointer-events:none; font-size:1.3rem; animation:heartUp 1.2s ease-out forwards;}
+@keyframes heartUp{from{opacity:1; transform:translate(-50%,0) scale(.6)}to{opacity:0; transform:translate(-50%,-70px) scale(1.3)}}
+.dw-fx{position:absolute; inset:0; pointer-events:none; z-index:80; overflow:hidden;}
+.dw-fx i{position:absolute; top:-5%; display:block; animation:fall linear infinite;}
+@keyframes fall{from{transform:translate(0,0) rotate(0)}to{transform:translate(40px,115vh) rotate(360deg)}}
+.dw-fx i.fly{top:auto; animation:firefly ease-in-out infinite alternate;}
+@keyframes firefly{from{transform:translate(0,0); opacity:.2}to{transform:translate(30px,-40px); opacity:1}}
+
+/* Gyvi personažai */
+.ga-hero .ga-body, .ga-hero .ga-head, .ga-hero .ga-arm-front, .ga-hero .ga-arm-rear, .ga-hero .ga-belt{transform-box:view-box;}
+.live .ga-hero .ga-head{animation:headBob 3.2s ease-in-out infinite; transform-origin:100px 120px;}
+.live .ga-hero .ga-body, .live .ga-hero .ga-belt{animation:breathe 3.2s ease-in-out infinite; transform-origin:100px 186px;}
+.live .ga-hero .ga-arm-front{animation:guard 3.2s ease-in-out infinite; transform-origin:130px 130px;}
+.live .ga-hero .ga-eye{animation:blink 4.6s infinite; transform-box:fill-box; transform-origin:center;}
+.live .ga-hero .ga-tail{animation:tail 2.4s ease-in-out infinite; transform-box:fill-box; transform-origin:0% 60%;}
+.live .ga-hero .ga-spin{animation:spin 14s linear infinite; transform-origin:100px 120px;}
+.live .ga-hero .ga-aura{animation:auraP 1.6s ease-in-out infinite alternate; transform-box:fill-box; transform-origin:center bottom;}
+.live .ga-hero .ga-flick, .ga-flicker{animation:flick .5s steps(2) infinite;}
+.live .ga-hero .ga-wings{animation:wings 1.8s ease-in-out infinite; transform-box:fill-box; transform-origin:center;}
+.ga-glow{animation:glowP 2s ease-in-out infinite alternate;}
+@keyframes breathe{0%,100%{transform:scaleY(1)}50%{transform:scaleY(1.015)}}
+@keyframes headBob{0%,100%{transform:translateY(0)}50%{transform:translateY(1.6px)}}
+@keyframes guard{0%,100%{transform:rotate(0)}50%{transform:rotate(-2deg)}}
+@keyframes blink{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.1)}}
+@keyframes tail{0%,100%{transform:rotate(0)}50%{transform:rotate(-8deg)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes auraP{from{transform:scale(.97); opacity:.75}to{transform:scale(1.04); opacity:1}}
+@keyframes flick{50%{opacity:.4}}
+@keyframes wings{0%,100%{transform:scaleX(1)}50%{transform:scaleX(1.06)}}
+@keyframes glowP{from{opacity:.75}to{opacity:1}}
+.hero-jump{animation:heroJump .6s ease-out;}
+@keyframes heroJump{0%{transform:translateX(-50%) translateY(0)}40%{transform:translateX(-50%) translateY(-14%)}100%{transform:translateX(-50%) translateY(0)}}
+
+/* Šoninė: savybės */
+.g-card{background:rgba(255,255,255,.88); border-radius:16px; padding:14px 16px; box-shadow:0 2px 14px rgba(23,20,15,.07); border:1px solid rgba(23,20,15,.06);}
+.g-card + .g-card{margin-top:12px;}
+.g-card h3{font-size:.98rem; margin:0 0 8px; display:flex; align-items:center; gap:6px;}
+.g-stat{display:grid; grid-template-columns:24px 1fr auto 30px; align-items:center; gap:6px; margin:6px 0; font-size:.88rem;}
+.g-stat .bar{grid-column:2/4; height:6px; background:#EEE9DE; border-radius:99px; overflow:hidden; margin-top:-2px;}
+.g-stat .bar i{display:block; height:100%; border-radius:99px; background:linear-gradient(90deg,#2F6B5A,#5BB08F);}
+.g-stat b{font-variant-numeric:tabular-nums;}
+.g-stat .plus{width:28px; height:28px; border-radius:8px; border:0; background:#2F6B5A; color:#fff; font-weight:800; font-size:1rem; cursor:pointer;}
+.g-stat .plus[hidden]{display:block; visibility:hidden;}
+.g-stat .bon{color:#2E8B57; font-size:.75rem; font-weight:700;}
+.g-derived{display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin-top:10px;}
+.g-derived div{background:#F6F2E9; border-radius:10px; padding:6px 4px; text-align:center; font-size:.72rem; color:var(--muted);}
+.g-derived b{display:block; font-size:1.05rem; color:var(--ink);}
+.g-points{background:#FFF4D6; border:1px solid #F2D27A; border-radius:10px; padding:6px 10px; font-size:.82rem; margin-bottom:8px; display:flex; align-items:center; gap:8px; justify-content:space-between;}
+.g-games{display:grid; gap:8px; grid-template-columns:repeat(4,minmax(0,1fr)); margin-top:10px;}
+@media (max-width:1100px){.g-games{grid-template-columns:repeat(2,minmax(0,1fr));}}
+.g-game{display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:12px; text-decoration:none !important; color:#fff; font-weight:700; box-shadow:0 3px 10px rgba(0,0,0,.12); transition:transform .12s;}
+.g-game:hover{transform:translateY(-2px);}
+.g-game .gi{font-size:1.5rem;}
+.g-game{line-height:1.25; font-size:.92rem;}
+.g-game small{display:block; font-weight:500; opacity:.88; font-size:.74rem;}
+.g-game.kova{background:linear-gradient(135deg,#B42318,#7A1E18);}
+.g-game.keturi{background:linear-gradient(135deg,#2E5FA8,#1C3D73);}
+.g-game.ritmas{background:linear-gradient(135deg,#8A3FD1,#4B1E8A);}
+
+/* XP juosta */
+.dojo-xp{margin:12px 0 4px; display:flex; align-items:center; gap:12px; flex-wrap:wrap;}
+.dojo-xp .lv{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:1.05rem; white-space:nowrap;}
+.xp-track{flex:1; min-width:180px; height:16px; background:rgba(23,20,15,.1); border-radius:99px; overflow:hidden; position:relative;}
+.xp-track i{display:block; height:100%; background:linear-gradient(90deg,#F2A516,#FFD75E); border-radius:99px; transition:width 1s;}
+.xp-track span{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:.7rem; font-weight:800; color:#3A2600;}
+.dojo-xp .hint{font-size:.78rem; color:var(--muted);}
+
+/* Skiltys */
+.g-sec{background:rgba(255,255,255,.88); border-radius:16px; margin-top:10px; box-shadow:0 2px 14px rgba(23,20,15,.06); border:1px solid rgba(23,20,15,.06);}
+.g-sec > summary{list-style:none; cursor:pointer; padding:12px 16px; font-weight:700; display:flex; align-items:center; gap:8px; font-family:'Space Grotesk',sans-serif;}
+.g-sec > summary::-webkit-details-marker{display:none;}
+.g-sec > summary::after{content:"▾"; margin-left:auto; transition:transform .2s; color:var(--muted);}
+.g-sec[open] > summary::after{transform:rotate(180deg);}
+.g-sec > summary .cnt{font-family:Inter,sans-serif; font-size:.75rem; font-weight:600; color:var(--muted);}
+.g-sec-body{padding:0 16px 16px;}
+.g-slots{display:grid; grid-template-columns:repeat(auto-fill,minmax(92px,1fr)); gap:8px;}
+.g-slot{border:2px dashed rgba(23,20,15,.15); border-radius:12px; padding:6px; text-align:center; cursor:pointer; background:#FBF9F4; min-height:104px; display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:.72rem; color:var(--muted); font:inherit; font-size:.72rem;}
+.g-slot.on{border-style:solid; background:#fff;}
+.g-slot svg{width:58px; height:58px;}
+.g-slot b{display:block; color:var(--ink); font-size:.74rem; line-height:1.2; margin-top:2px;}
+.g-filters{display:flex; gap:4px; flex-wrap:wrap; margin-bottom:10px;}
+.g-filters button{border:1px solid rgba(23,20,15,.14); background:#fff; border-radius:999px; padding:4px 10px; font:inherit; font-size:.76rem; cursor:pointer;}
+.g-filters button.active{background:#17140F; color:#fff; border-color:#17140F;}
+.g-items{display:grid; grid-template-columns:repeat(auto-fill,minmax(104px,1fr)); gap:8px;}
+.g-item{position:relative; border:2px solid var(--r1); border-radius:12px; background:#fff; padding:6px 6px 8px; text-align:center; cursor:pointer; font:inherit; display:flex; flex-direction:column; align-items:center; gap:2px; transition:transform .12s;}
+.g-item:hover{transform:translateY(-2px);}
+.g-item.r2{border-color:var(--r2); box-shadow:0 0 0 3px rgba(59,130,246,.12);}
+.g-item.r3{border-color:var(--r3); box-shadow:0 0 0 3px rgba(168,85,247,.14);}
+.g-item.r4{border-color:var(--r4); box-shadow:0 0 0 3px rgba(245,158,11,.18); background:linear-gradient(180deg,#FFFBEB,#fff);}
+.g-item svg{width:64px; height:64px;}
+.g-item .nm{font-size:.74rem; font-weight:700; line-height:1.2;}
+.g-item .st{font-size:.66rem; color:#2E8B57; font-weight:700;}
+.g-item .eq{position:absolute; top:4px; right:4px; background:#2F6B5A; color:#fff; border-radius:999px; font-size:.6rem; padding:1px 6px; font-weight:800;}
+.g-item .qty{position:absolute; top:4px; left:4px; background:#17140F; color:#fff; border-radius:999px; font-size:.6rem; padding:1px 6px; font-weight:800;}
+.g-item.locked{opacity:.55; border-style:dashed; filter:grayscale(.7); cursor:default;}
+.g-item.locked .lk{position:absolute; inset:auto 0 32% 0; font-size:.7rem; font-weight:800; color:#17140F;}
+.g-sub{font-size:.8rem; font-weight:700; color:var(--muted); margin:14px 0 6px; text-transform:uppercase; letter-spacing:.04em;}
+.g-empty{color:var(--muted); font-size:.85rem; padding:6px 0;}
+
+/* Gyvūnėliai */
+.g-pets{display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:10px;}
+.g-pet{border:1px solid rgba(23,20,15,.1); border-radius:14px; padding:10px; display:grid; grid-template-columns:70px 1fr; gap:8px; align-items:center; background:#fff;}
+.g-pet.active{border:2px solid var(--accent); background:#F1F8F5;}
+.g-pet svg{width:70px; height:70px;}
+.g-pet .pn{font-weight:800;}
+.g-pet .pl{font-size:.74rem; color:var(--muted);}
+.g-pet .mood{height:6px; background:#EEE9DE; border-radius:99px; overflow:hidden; margin:4px 0;}
+.g-pet .mood i{display:block; height:100%; background:linear-gradient(90deg,#F06292,#FFB74D);}
+.g-pet .acts{grid-column:1/-1; display:flex; gap:4px; flex-wrap:wrap;}
+.g-starters{display:grid; grid-template-columns:repeat(auto-fill,minmax(96px,1fr)); gap:8px;}
+.g-starter{border:2px solid rgba(23,20,15,.1); border-radius:12px; background:#fff; padding:6px; cursor:pointer; font:inherit; font-size:.78rem; font-weight:700;}
+.g-starter.sel{border-color:var(--accent); background:#F1F8F5;}
+.g-starter svg{width:70px; height:70px; display:block; margin:0 auto;}
+
+/* Namai */
+.g-pick{display:grid; grid-template-columns:repeat(auto-fill,minmax(120px,1fr)); gap:8px;}
+.g-pick button{border:2px solid rgba(23,20,15,.1); border-radius:12px; background:#fff; padding:6px; cursor:pointer; font:inherit; font-size:.75rem; font-weight:700; display:flex; flex-direction:column; align-items:center; gap:3px;}
+.g-pick button.sel{border-color:var(--accent); box-shadow:0 0 0 3px rgba(47,107,90,.15);}
+.g-pick .bgthumb{width:100%; aspect-ratio:16/9; border-radius:8px; background:center bottom/cover no-repeat;}
+.g-pick svg{width:100%; height:64px;}
+.g-pick .st{color:#2E8B57; font-size:.66rem;}
+
+/* Langai */
+.gm{position:fixed; inset:0; z-index:2000; background:rgba(15,12,8,.55); display:flex; align-items:center; justify-content:center; padding:16px; animation:gmIn .2s;}
+@keyframes gmIn{from{opacity:0}to{opacity:1}}
+.gm-box{background:#FFFCF5; border-radius:20px; max-width:880px; width:100%; max-height:calc(100vh - 32px); overflow:auto; padding:20px; box-shadow:0 20px 60px rgba(0,0,0,.35); position:relative;}
+.gm-box.sm{max-width:420px; text-align:center;}
+.gm-x{position:absolute; top:10px; right:12px; border:0; background:none; font-size:1.5rem; cursor:pointer; color:var(--muted);}
+.gm h2{margin:0 0 12px; font-size:1.3rem;}
+.ed{display:grid; grid-template-columns:260px 1fr; gap:18px;}
+.ed-prev{background:radial-gradient(circle at 50% 40%,#fff,#EFE8D8); border-radius:16px; display:flex; align-items:center; justify-content:center; padding:10px; position:sticky; top:0;}
+.ed-prev svg{width:100%; max-width:240px; height:auto;}
+.ed-row{margin-bottom:12px;}
+.ed-row > label, .ed-lab{display:block; font-size:.78rem; font-weight:800; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); margin-bottom:5px;}
+.ed-sp{display:grid; grid-template-columns:repeat(auto-fill,minmax(66px,1fr)); gap:6px;}
+.ed-sp button{border:2px solid rgba(23,20,15,.1); border-radius:12px; background:#fff; padding:4px 2px; cursor:pointer; font:inherit; font-size:.68rem; font-weight:700;}
+.ed-sp button span{display:block; font-size:1.5rem; line-height:1.2;}
+.ed-sp button.sel, .ed-seg button.sel{border-color:var(--accent); background:#F1F8F5;}
+.ed-seg{display:flex; gap:6px;}
+.ed-seg button{border:2px solid rgba(23,20,15,.1); border-radius:10px; background:#fff; padding:6px 14px; cursor:pointer; font:inherit; font-weight:700;}
+.ed-sw{display:flex; flex-wrap:wrap; gap:6px;}
+.ed-sw button{width:30px; height:30px; border-radius:50%; border:2px solid rgba(0,0,0,.12); cursor:pointer; padding:0;}
+.ed-sw button.sel{outline:3px solid var(--accent); outline-offset:2px;}
+.ed-sw button.paint{box-shadow:inset 0 0 0 2px rgba(255,255,255,.7);}
+.ed input[type=text]{width:100%; padding:9px 12px; border-radius:10px; border:1px solid rgba(23,20,15,.2); font:inherit;}
+.gm-foot{display:flex; justify-content:flex-end; gap:8px; margin-top:14px;}
+
+/* Dovanų dėžė */
+.box-stage{position:relative; height:240px; display:flex; align-items:center; justify-content:center;}
+.box-gift{width:150px; cursor:pointer; transition:transform .2s;}
+.box-gift:hover{transform:scale(1.05) rotate(-2deg);}
+.box-gift.shake{animation:boxShake .7s ease-in-out;}
+@keyframes boxShake{0%,100%{transform:rotate(0)}15%{transform:rotate(-10deg)}30%{transform:rotate(9deg)}45%{transform:rotate(-8deg)}60%{transform:rotate(7deg)}75%{transform:rotate(-4deg)}}
+.box-gift.open .lid{transform:translate(0,-60px) rotate(-25deg); opacity:0; transition:transform .5s, opacity .5s .3s;}
+.box-rays{position:absolute; width:300px; height:300px; left:50%; top:50%; margin:-150px 0 0 -150px; background:repeating-conic-gradient(rgba(255,215,94,.55) 0 10deg, transparent 10deg 20deg); border-radius:50%; animation:spin 8s linear infinite; mask:radial-gradient(circle, #000 30%, transparent 70%); -webkit-mask:radial-gradient(circle, #000 30%, transparent 70%);}
+.box-item{position:relative; z-index:2; animation:popIn .5s cubic-bezier(.2,1.6,.4,1);}
+.box-item svg{width:150px; height:150px;}
+@keyframes popIn{from{transform:scale(0) rotate(-20deg)}to{transform:scale(1) rotate(0)}}
+.box-rar{display:inline-block; border-radius:999px; padding:2px 12px; font-weight:800; font-size:.8rem; color:#fff; background:var(--r1);}
+.box-rar.r2{background:var(--r2);} .box-rar.r3{background:var(--r3);} .box-rar.r4{background:linear-gradient(90deg,#F59E0B,#F2C14E); color:#3A2600;}
+.confetti{position:fixed; top:-10px; z-index:2100; width:8px; height:12px; pointer-events:none; animation:confetti 2.2s ease-in forwards;}
+@keyframes confetti{to{transform:translate(var(--dx),105vh) rotate(720deg)}}
+
+/* Pranešimas */
+.g-toast{position:fixed; left:50%; bottom:22px; transform:translateX(-50%); z-index:2200; background:#17140F; color:#fff; padding:12px 18px; border-radius:14px; box-shadow:0 10px 30px rgba(0,0,0,.3); font-weight:600; max-width:min(92vw,520px); display:flex; gap:10px; align-items:center; animation:toastIn .3s ease-out;}
+.g-toast .g-btn{flex-shrink:0;}
+@keyframes toastIn{from{transform:translate(-50%,30px); opacity:0}to{transform:translate(-50%,0); opacity:1}}
+.g-test{background:#FFF7E0; border:1px dashed #E0B640;}
+.g-test .row{display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:8px;}
+.g-test input, .g-test select{padding:6px 8px; border-radius:8px; border:1px solid rgba(23,20,15,.2); font:inherit; width:auto;}
+.g-switch{display:inline-flex; align-items:center; gap:8px; font-size:.85rem; cursor:pointer;}
+
+/* Kiti herojai (lobby, peržiūra) */
+.g-heroes{display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:10px;}
+.g-hcard{background:#fff; border-radius:14px; padding:8px; text-align:center; border:1px solid rgba(23,20,15,.08); box-shadow:0 2px 8px rgba(0,0,0,.05); display:flex; flex-direction:column; align-items:center; gap:4px;}
+.g-hcard svg.ga-hero{width:110px; height:132px;}
+.g-hcard .hn{font-weight:800; font-size:.88rem;}
+.g-hcard .hl{font-size:.72rem; color:var(--muted);}
+.g-hcard .acts{display:flex; gap:4px; flex-wrap:wrap; justify-content:center;}
+
+@media (max-width: 900px){
+  .dojo-main{grid-template-columns:1fr;}
+  .dw{aspect-ratio:4/3;}
+  .dw-hero{width:30%;}
+  .dw-pet{width:13%;}
+  .dw-decor{width:16%;}
+  .dw-house{width:42%; left:24%;}
+  .ed{grid-template-columns:1fr;}
+  .ed-prev{position:static;}
+  .ed-prev svg{max-width:170px;}
+}
+@media (prefers-reduced-motion: reduce){
+  .live .ga-hero *, .dw-fx i, .dw-pet svg{animation:none !important;}
+}

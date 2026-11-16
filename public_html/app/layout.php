@@ -5,6 +5,9 @@ function page_start(string $title, array $opt = []): void
 {
     $a = current_account();
     $admin = !empty($opt['admin']);
+    if ($admin && is_staff($a) && !admin_mode() && !headers_sent()) {
+        admin_mode_set(true);   // atidarius valdymo puslapį - admin režimas įsijungia
+    }
     $flashes = take_flashes();
     $css = url('assets/app.css') . '?v=' . @filemtime(PUBLIC_DIR . '/assets/app.css');
     ?>
@@ -117,7 +120,7 @@ function group_short_name(array $g): string
 /** Mygtukas "Redaguoti" viešuose puslapiuose - matomas tik treneriams */
 function staff_link(string $path, string $label = '✎ Redaguoti'): string
 {
-    if (!is_staff()) {
+    if (!staff_ui()) {
         return '';
     }
     return '<a class="staff-link" href="' . e(url($path)) . '">' . e(t($label)) . '</a>';
@@ -293,13 +296,22 @@ function admin_nav_current(): string
 /** Nario paskyros skirtukai */
 function account_nav_items(array $a): array
 {
-    $items = ['apzvalga' => [t('Apžvalga'), 'paskyra.php', account_attention_count((int) $a['id'])]];
+    $items = ['apzvalga' => [t('🏯 Mano dojo'), 'paskyra.php', account_attention_count((int) $a['id'])]];
     if ($a['status'] === 'active') {
-        foreach (account_nav_extra($a) as $key => $item) {
-            $items[$key] = $item;
+        $items['zaidimai'] = [t('🎮 Žaidimai'), 'arena.php'];
+        if (!is_staff($a) || account_members((int) $a['id'])) {
+            foreach (account_nav_extra($a) as $key => $item) {
+                $items[$key] = $item;
+            }
         }
     }
     $items['nustatymai'] = [t('Nustatymai'), 'paskyra.php?skiltis=nustatymai'];
+    // Skirtumai - atskiruose languose: tėvams (vaikai), treneriui / adminui (valdymas)
+    if (is_staff($a)) {
+        $items['valdymas'] = [t('🛠 Valdymas'), 'admin/', staff_attention_count((int) $a['id'])];
+    } elseif (array_filter(account_members((int) $a['id']), function ($m) { return $m['relation'] === 'parent'; })) {
+        $items['vaikai'] = [t('👪 Tėvams'), 'paskyra.php?skiltis=nustatymai#vaikai'];
+    }
     return $items;
 }
 
@@ -314,7 +326,7 @@ function account_nav_extra(array $a): array
 /** Treneriui skilties viršuje: ką čia galima sukurti ar sutvarkyti. $links = [[tekstas, kelias, pagrindinis?], ...] */
 function staff_bar(array $links): string
 {
-    if (!is_staff()) {
+    if (!staff_ui()) {
         return '';
     }
     $html = ('<div class="staff-bar"><span class="staff-bar-label">' . t('Treneriui') . '</span>');
@@ -379,12 +391,15 @@ function site_header(bool $home = false, ?string $area = null, ?string $tab = nu
       <li class="nav-account">
         <ul>
           <li class="lang-li"><?= render_lang_switch() ?></li>
-          <?php if (is_admin()): ?><li class="theme-li"><?= theme_picker_html('site', site_theme()) ?></li><?php endif; ?>
-          <?php if ($a && ($vs = render_view_switch())): ?><li class="vs-li"><?= $vs ?></li><?php endif; ?>
-          <?php if ($a && is_staff($a)): ?>
+          <?php if (is_admin() && admin_mode()): ?><li class="theme-li"><?= theme_picker_html('site', site_theme()) ?></li><?php endif; ?>
+          <?php if ($a && (admin_mode() || !is_staff($a)) && ($vs = render_view_switch())): ?><li class="vs-li"><?= $vs ?></li><?php endif; ?>
+          <?php if ($a && is_staff($a) && admin_mode()): ?>
             <li><a class="nav-login<?= $area === 'admin' ? ' is-current' : '' ?>" href="<?= url('admin/') ?>"><?= te('Valdymas') ?><?php if ($n = staff_attention_count((int) $a['id'])): ?><span class="count-badge nav-bubble" title="<?= te('Reikia padaryti: pranešimai, patvirtinimai ir kiti darbai') ?>"><?= $n ?></span><?php endif; ?></a></li>
           <?php elseif ($a): ?>
             <li><a class="nav-login<?= $area === 'account' ? ' is-current' : '' ?>" href="<?= url('paskyra.php' . (($am = account_attention_member((int) $a['id'])) ? '?m=' . $am : '')) ?>"><?= te('Mano paskyra') ?><?php if ($att = account_attention_count((int) $a['id'])): ?><span class="count-badge nav-bubble" title="<?= te('Nauji pranešimai, pastabos ar neatliktos užduotys') ?>"><?= $att ?></span><?php endif; ?></a></li>
+          <?php endif; ?>
+          <?php if ($a && is_staff($a)): ?>
+            <li class="adm-li"><?= admin_mode_toggle() ?></li>
           <?php endif; ?>
           <?php if ($a): ?>
             <li class="mobile-only">
@@ -406,6 +421,18 @@ function site_header(bool $home = false, ?string $area = null, ?string $tab = nu
 </header>
 <?php
     // Pranešimai ir darbai - tik raudonas skaičiukas ant „Valdymas“ (be juostos per ekraną)
+}
+
+/** Admin režimo jungiklis dešinėje viršutinės juostos pusėje (raudonas taškas - laukia darbų) */
+function admin_mode_toggle(): string
+{
+    $a = current_account();
+    $on = admin_mode();
+    $n = $on ? 0 : staff_attention_count((int) $a['id']);
+    return '<form method="post" action="' . e(url('admin-rezimas.php')) . '" class="adm-toggle">' . csrf_field()
+        . '<input type="hidden" name="back" value="' . e($_SERVER['REQUEST_URI'] ?? '') . '"><input type="hidden" name="on" value="' . ($on ? '0' : '1') . '">'
+        . '<button type="submit" class="adm-sw' . ($on ? ' is-on' : '') . '" aria-pressed="' . ($on ? 'true' : 'false') . '" title="' . e($on ? t('Išjungti admin režimą - matyti svetainę kaip nariui') : t('Įjungti admin režimą - redaguoti viską')) . '">'
+        . '<span class="adm-knob" aria-hidden="true"></span>' . e(t('Admin')) . ($n ? '<span class="count-badge nav-bubble">' . $n . '</span>' : '') . '</button></form>';
 }
 
 /** Treneriui: kiek laukia - pranešimai ir „Reikia padaryti“ punktai (patvirtinimai, rezultatai, žinutės...) */

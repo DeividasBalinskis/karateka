@@ -240,7 +240,8 @@ function game_hero_for_account(array $a): array
 function game_hero_create(string $name, array $owner, ?string $gender): int
 {
     $species = array_keys(GAME_SPECIES)[random_int(0, count(GAME_SPECIES) - 2)];   // be žmogaus - pasirinks pats
-    $g = $gender === 'F' ? 'f' : 'm';
+    // Lytis: iš nario duomenų, o jei nežinoma - pagal vardo galūnę (-a, -ė - mergaitė); pakeisti galima redaktoriuje
+    $g = $gender ? (strtoupper($gender[0]) === 'F' ? 'f' : 'm') : (preg_match('/(a|ė)$/u', mb_strtolower(trim($name))) ? 'f' : 'm');
     $look = ['fur' => GAME_SPECIES[$species][2], 'eyes' => GAME_EYES[0], 'hair' => GAME_HAIR[0], 'skin' => GAME_SKIN[1], 'setup' => 0];
     $eq = ['kimono' => 'k_white', 'belt' => 'b_plain', 'hair' => 'hr_short'];
     $home = ['bg' => 'bg_dojo', 'house' => 'hs_tent', 'decor' => []];
@@ -258,15 +259,18 @@ function game_hero_create(string $name, array $owner, ?string $gender): int
 function game_my_heroes(array $a): array
 {
     $out = [];
+    $self = false;
     foreach (account_members((int) $a['id']) as $m) {
         if ($m['status'] === 'active') {
             $h = game_hero_for_member((int) $m['id']);
             if ($h) {
                 $out[] = $h;
+                $self = $self || $m['relation'] === 'self';
             }
         }
     }
-    if (is_staff($a) || !$out) {
+    // Treneriui - savas herojus, nebent jis pats yra narys (tada jo nario herojus ir yra jo)
+    if ((is_staff($a) && !$self) || !$out) {
         array_unshift($out, game_hero_for_account($a));
     }
     return $out;

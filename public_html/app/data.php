@@ -176,7 +176,7 @@ function event_edit_link(int $id, string $back): string
 /** Treneriui prie renginio: redaguoti, dalyviai (dalyvaus / visi), rezultatai (prasidėjusiam) */
 function event_staff_actions(array $ev, string $back): string
 {
-    if (!is_staff()) {
+    if (!staff_ui()) {
         return '';
     }
     $id = (int) $ev['id'];

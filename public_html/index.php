@@ -81,7 +81,7 @@ foreach ($visible as $i => $b) {
   <script>window.HOME_API = <?= json_encode(['url' => url('admin/puslapis.php'), 'csrf' => csrf_token()]) ?>;</script>
   <script src="<?= e(asset_url('assets/vendor/sortable.min.js')) ?>"></script>
   <script src="<?= e(asset_url('assets/home-editor.js')) ?>"></script>
-<?php elseif (is_admin()): ?>
+<?php elseif (is_admin() && admin_mode()): ?>
   <a class="hb-fab" href="<?= url('index.php?redaguoti=1') ?>"><?= te('✎ Redaguoti puslapį') ?></a>
 <?php endif; ?>
 

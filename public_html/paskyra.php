@@ -132,8 +132,8 @@ $members = account_members($aid);
 // Treneriui grupės ir patvirtinimo nereikia: rodomi tik aktyvūs nariai (pvz. savo vaikai, jei treniruojasi)
 if ($isStaff) {
     $members = array_values(array_filter($members, function ($m) { return $m['status'] === 'active'; }));
-    if (!$members) {
-        redirect('admin/');   // treneriui be savo treniruojamų narių viskas (ir nustatymai) - "Paskyra" puslapyje
+    if (!$members && admin_mode() && $tab !== 'nustatymai') {
+        redirect('admin/');   // admin režime treneriui be savo treniruojamų narių - valdymas; kitaip - savo dojo kaip nariui
     }
 }
 $selected = null;
@@ -143,6 +143,28 @@ foreach ($members as $m) {
     }
 }
 $selected = $selected ?? ($members[0] ?? null);
+// „Mano dojo“: herojus - pasirinkto nario (vaiko), arba savas (treneriui, be narių). ?h= - perjungti herojų.
+require_once APP_DIR . '/game_ui.php';
+$dojoHero = null;
+$dojoHeroes = [];
+if ($tab === 'apzvalga' && $a['status'] === 'active' && game_ready()) {
+    $mineHeroes = game_my_heroes($a);
+    foreach ($mineHeroes as $h) {
+        if ((int) $h['id'] === (int) get('h')) {
+            $dojoHero = $h;
+            foreach ($members as $m) {
+                if ($h['member_id'] && (int) $m['id'] === (int) $h['member_id']) {
+                    $selected = $m;
+                }
+            }
+        }
+    }
+    if (!$dojoHero && $selected && $selected['status'] === 'active') {
+        $dojoHero = game_hero_for_member((int) $selected['id']);
+    }
+    $dojoHero = $dojoHero ?? $mineHeroes[0];
+    $dojoHeroes = $isStaff ? $mineHeroes : [];
+}
 // Vaikus prideda tėvai; treneriai - per Treneriams -> Nariai
 $isParent = !$isStaff && ((bool) array_filter($members, function ($m) { return $m['relation'] === 'parent'; }) || !array_filter($members, function ($m) { return $m['relation'] === 'self'; }));
 
@@ -199,7 +221,7 @@ page_start($tab === 'nustatymai' ? t('Nustatymai') : t('Mano paskyra'), ['noinde
 ?>
 <div class="account-top">
   <div>
-    <div class="eyebrow"><?= $tab === 'nustatymai' ? t('Nustatymai') : t('Apžvalga') ?></div>
+    <div class="eyebrow"><?= $tab === 'nustatymai' ? t('Nustatymai') : t('Mano dojo') ?></div>
     <div class="hello"><?= te('Sveiki,') ?> <?= e($a['first_name']) ?>!</div>
     <?= $selected && $active && $tab === 'apzvalga' ? belt_strip_html($selected) : '' ?>
   </div>
@@ -304,6 +326,10 @@ page_start($tab === 'nustatymai' ? t('Nustatymai') : t('Mano paskyra'), ['noinde
   </section>
 <?php endif; ?>
 
+
+<?php if ($dojoHero): ?>
+  <?= game_dojo_html($dojoHero, $dojoHeroes) ?>
+<?php endif; ?>
 
 <?php if ($isStaff): ?>
   <!-- Trenerio šeimos nariai (jei treniruojasi): taškai, pastabos, egzaminas - kaip mato narys. Visa kita - „Paskyra“ (Treneriams). -->
@@ -524,7 +550,7 @@ page_start($tab === 'nustatymai' ? t('Nustatymai') : t('Mano paskyra'), ['noinde
 <?php endif; ?>
 
 <?php if ($isParent && ($tab === 'nustatymai' || !$members)): ?>
-  <details class="panel card" style="margin-top:20px;" <?= !$members || ($errors && post('action') === 'add_kid') ? 'open' : '' ?>>
+  <details class="panel card" id="vaikai" style="margin-top:20px;" <?= !$members || ($errors && post('action') === 'add_kid') ? 'open' : '' ?>>
     <summary style="cursor:pointer; font-family:'Space Grotesk',sans-serif; font-weight:700;"><?= te('+ Pridėti vaiką') ?></summary>
     <form method="post" class="form" style="margin-top:16px;">
       <?= csrf_field() ?>

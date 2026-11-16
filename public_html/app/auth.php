@@ -37,6 +37,28 @@ function is_admin(?array $a = null): bool
     return is_active_account($a) && $a['role'] === 'admin';
 }
 
+/**
+ * Admin režimas (treneriui ir adminui): įjungus matomi „Valdymas“ ir redagavimo mygtukai visoje svetainėje.
+ * Išjungus - svetainė rodoma kaip paprastam nariui (Mano dojo, žaidimai). Pasirinkimas saugomas slapuke „adm“ (1 metai).
+ */
+function admin_mode(): bool
+{
+    return is_staff() && ($_COOKIE['adm'] ?? '') === '1';
+}
+
+function admin_mode_set(bool $on): void
+{
+    setcookie('adm', $on ? '1' : '0', ['expires' => time() + 365 * 86400, 'path' => (config('base_path') ?: '') . '/',
+        'secure' => !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off', 'httponly' => true, 'samesite' => 'Lax']);
+    $_COOKIE['adm'] = $on ? '1' : '0';
+}
+
+/** Rodyti trenerio įrankius (redaguoti, pridėti) - tik admin režime */
+function staff_ui(?array $a = null): bool
+{
+    return is_staff($a) && admin_mode();
+}
+
 function require_login(): array
 {
     $a = current_account();

@@ -28,6 +28,9 @@
     human:  { muz: null, ear: 'human', mark: 'human', nose: null, tail: null, feet: 'human' }
   };
 
+  var SPC = { tiger: '#E8892B', lion: '#E0B04A', panda: '#F4F2EE', fox: '#E0712C', wolf: '#8C96A3', cat: '#9C8F86', rabbit: '#F2EEE8', monkey: '#8A5A3B', eagle: '#7A5236', dragon: '#3FA06A', human: '#F1C7A5' };
+  function spColor(sp) { var S2 = window.GAME && GAME.catalog && GAME.catalog.species; return (S2 && S2[sp] && S2[sp].c) || SPC[sp] || '#E8892B'; }
+
   // ---------- Diržas ----------
   function beltColor(lvl) {
     var B = (window.GAME && GAME.catalog && GAME.catalog.belts) || {};
@@ -43,11 +46,10 @@
     var sp = SP[cfg.species] ? cfg.species : 'tiger', S = SP[sp], g = cfg.gender === 'f' ? 'f' : 'm';
     var L = cfg.look || {}, E = cfg.equipped || {}, id = uid();
     var isH = sp === 'human';
-    var fur = o.ghost ? '#C9CDD3' : (isH ? (L.skin || '#F1C7A5') : (L.fur || (o.species && o.species[sp] && o.species[sp].c) || '#E8892B'));
-    if (sp === 'panda' && !L.fur) fur = '#F4F2EE';
+    var fur = o.ghost ? '#C9CDD3' : (isH ? (L.skin || '#F1C7A5') : (L.fur || spColor(sp)));
     var furD = shade(fur, -0.22), furL = shade(fur, 0.35), dark = lum(fur) < 0.35;
     var muz = o.ghost ? '#E3E6EA' : (S.muz ? (sp === 'monkey' || sp === 'dragon' ? S.muz : (lum(fur) > 0.85 ? shade(fur, -0.06) : S.muz)) : fur);
-    var hairC = o.ghost ? '#9AA1AA' : (L.hair || '#2B1D14');
+    var hairC = o.ghost ? '#9AA1AA' : (L.hair || (isH ? '#2B1D14' : shade(fur, -0.3)));
     var eyeC = L.eyes || '#5B3A1E';
     var it = function (slot) { var k = E[slot]; return k && CAT[k] ? CAT[k] : null; };
     var kim = it('kimono') || { a: { c: '#F7F5EF', tr: '#E4DFD3' } }, kc = o.ghost && o.only !== 'kimono' ? '#E9EBEE' : kim.a.c, ktr = o.ghost && o.only !== 'kimono' ? '#D5D9DE' : kim.a.tr;
@@ -233,7 +235,7 @@
     if (isH || hairT !== 'short') s += hairBack(hairT, hairC, isH, g);
     // ausys (už galvos)
     s += ears(S.ear, sp, fur, furD, muz, g);
-    if (sp === 'lion' && g === 'm') { var mane = ''; for (var i = 0; i < 18; i++) { var a = i * 20 * Math.PI / 180; mane += (i ? ' L' : 'M') + (cx + Math.cos(a) * 62).toFixed(1) + ' ' + (cy + 6 + Math.sin(a) * 58).toFixed(1) + ' L' + (cx + Math.cos(a + 0.17) * 50).toFixed(1) + ' ' + (cy + 6 + Math.sin(a + 0.17) * 47).toFixed(1); } s += '<path d="' + mane + ' Z" fill="' + shade(fur, -0.32) + '" stroke="' + shade(fur, -0.5) + '" stroke-width="1"/>'; }
+    if (sp === 'lion' && g === 'm') { var mc = shade(fur, -0.3), mane = ''; for (var i = 0; i < 16; i++) { var a = i * 22.5 * Math.PI / 180; mane += '<circle cx="' + (cx + Math.cos(a) * 50).toFixed(1) + '" cy="' + (cy + 8 + Math.sin(a) * 48).toFixed(1) + '" r="17" fill="' + (i % 2 ? mc : shade(mc, -0.12)) + '"/>'; } s += '<g stroke="' + shade(mc, -0.35) + '" stroke-width="1">' + mane + '</g><circle cx="' + cx + '" cy="' + (cy + 8) + '" r="50" fill="' + mc + '"/>'; }
     if (sp === 'eagle') s += '<path d="M70 60 L58 44 L78 52 L76 36 L92 50 L100 32 L108 50 L124 36 L122 52 L142 44 L130 60 Z" fill="#FFFFFF" stroke="#D8D2C6"/>';
     if (sp === 'dragon') s += '<path d="M72 46 Q60 22 70 10 Q74 30 84 40 Z M128 46 Q140 22 130 10 Q126 30 116 40 Z" fill="#F2E3B6" stroke="#B8A26A"/>';
     // galvos forma
@@ -493,13 +495,13 @@
     var base = { species: 'human', gender: 'm', look: { skin: '#D7DBE0', hair: '#9AA1AA' }, equipped: { kimono: 'k_white', belt: 'b_plain' }, belt: 1 };
     var c = function (eq, crop, only) { var x = JSON.parse(JSON.stringify(base)); Object.assign(x.equipped, eq); return hero(x, { crop: crop, only: only, ghost: true }); };
     switch (it.slot) {
-      case 'weapon': return c({ weapon: key }, [120, 10, 80, 230], 'weapon');
+      case 'weapon': var wid = uid(); return '<svg viewBox="58 25 210 210" xmlns="http://www.w3.org/2000/svg"><defs><filter id="' + wid + 'gl" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="4"/></filter></defs><g transform="rotate(' + (it.a.t === 'bo' || it.a.t === 'jo' ? 38 : 20) + ' 163 130)">' + weapon(it.a, wid, 'behind') + weapon(it.a, wid, 'front') + '</g></svg>';
       case 'kimono': var k = JSON.parse(JSON.stringify(base)); k.equipped.kimono = key; return hero(k, { crop: [50, 108, 100, 100], only: 'kimono', ghost: true });
       case 'belt': var bb = JSON.parse(JSON.stringify(base)); bb.equipped.belt = key; bb.belt = 10; return hero(bb, { crop: [60, 150, 80, 60], only: 'belt', ghost: true });
       case 'head': case 'face': case 'hair': var e = {}; e[it.slot] = key; return c(e, [36, -10, 128, 140], it.slot);
       case 'neck': return c({ neck: key }, [64, 104, 72, 60], 'neck');
       case 'hands': return c({ hands: key }, [120, 110, 60, 50], 'hands');
-      case 'back': return c({ back: key }, [0, 0, 200, 240], 'back');
+      case 'back': return c({ back: key }, [10, 0, 180, 240], 'back');
       case 'aura': return c({ aura: key }, [0, 0, 200, 240], 'aura');
       case 'paint': return '<svg viewBox="0 0 40 40"><defs>' + rgrad('pc' + key, shade(it.a.c, 0.5), it.a.c) + '</defs><circle cx="20" cy="20" r="16" fill="url(#pc' + key + ')" stroke="' + shade(it.a.c, -0.35) + '"/><path d="M12 14 q6 -6 14 -2" stroke="#fff" stroke-width="2.5" fill="none" opacity=".7"/></svg>';
       case 'bg': return '<svg viewBox="0 0 160 100"><image href="' + sceneUrl(it.a.sc) + '" x="0" y="0" width="160" height="100" preserveAspectRatio="xMidYMax slice"/></svg>';
