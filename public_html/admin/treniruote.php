@@ -326,6 +326,7 @@ $evTile = function (array $ev, bool $showDate) use ($event, $evColors): string {
     <label><?= te('Data') ?> <input type="date" name="d" value="<?= e($date) ?>" onchange="this.form.submit()"></label>
     <?php if ($date !== date('Y-m-d')): ?><a class="small" href="<?= url('admin/treniruote.php' . ($group ? '?g=' . (int) $group['id'] : '')) ?>"><?= te('Šiandien') ?></a><?php endif; ?>
     <a class="small" href="<?= url('admin/treniruote.php?' . ($group ? 'g=' . (int) $group['id'] . '&' : '') . 'd=' . date('Y-m-d', strtotime($date . ' -1 day'))) ?>"><?= te('← Diena atgal') ?></a>
+    <a class="small gp-edit" href="<?= url('admin/grupes.php#nauja-grupe') ?>"><?= te('+ Nauja grupė') ?></a>
     <?php if (is_admin()): ?><a class="small gp-edit" href="<?= url('admin/grupes.php') ?>"><?= te('✎ Grupių pavadinimai ir spalvos') ?></a><?php endif; ?>
   </form>
   <?php if ($dayEvents): ?>

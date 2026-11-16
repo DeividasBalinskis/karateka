@@ -230,9 +230,10 @@ page_start(t('Grupės'), ['admin' => true]);
       <?php endforeach; ?>
     </ul>
   </div>
-  <form method="post" class="panel card form">
+  <form method="post" class="panel card form" id="nauja-grupe">
     <?= csrf_field() ?>
     <h2><?= te('Nauja grupė') ?></h2>
+    <p class="hint"><?= te('Pvz. „Teisėjams“ ar „Seminaras“: užtenka pavadinimo ir kategorijos, vietą ir tvarkaraštį galima pridėti vėliau.') ?></p>
     <?php group_form(post('action') === 'create' ? $_POST : [], 'create'); ?>
     <div><button class="btn btn-primary" type="submit"><?= te('Sukurti') ?></button></div>
   </form>

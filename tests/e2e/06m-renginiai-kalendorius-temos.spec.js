@@ -59,5 +59,6 @@ test('new themes in the picker: dunes, dojo, aurora (dark)', async ({ browser })
   const img = await a.request.get('img/temos/pasvaiste.svg');
   check('scene image', img.status() === 200);
   sql("DELETE FROM site_settings WHERE name = 'site_theme'");
+  sql("UPDATE accounts SET theme = NULL");
   noJsErrors(a);
 });

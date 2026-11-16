@@ -113,7 +113,7 @@ function notification_count(int $accountId): int
     static $cache = [];
     if (!isset($cache[$accountId])) {
         try {
-            $cache[$accountId] = (int) q_value('SELECT COUNT(*) FROM notifications WHERE account_id = ? AND important = 1 AND done_at IS NULL AND read_at IS NULL', [$accountId]);
+            $cache[$accountId] = (int) q_value('SELECT COUNT(*) FROM notifications WHERE account_id = ? AND important = 1 AND done_at IS NULL AND read_at IS NULL AND type <> \'feedback\'', [$accountId]);
         } catch (PDOException $ex) {
             $cache[$accountId] = 0;
         }

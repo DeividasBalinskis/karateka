@@ -38,6 +38,9 @@ if (!$trainings) {
 $todo = admin_todo_items();
 // Pranešimai: registracijos į egzaminą, pavėlavusieji, „Moku“ patvirtinimai, atšaukti sutikimai - sprendžiami čia pat
 $notifs = account_notifications((int) $me['id']);
+// Atsakymai į atsiliepimus - ne darbai: rodomi 2 naujausi, kiti išskleidžiami, ir „Supratau visus“
+$fbNotifs = array_values(array_filter($notifs, function ($n) { return $n['type'] === 'feedback'; }));
+$notifs = array_values(array_filter($notifs, function ($n) { return $n['type'] !== 'feedback'; }));
 
 $upcoming = q_all('SELECT * FROM events WHERE COALESCE(ends_on, starts_on) >= CURDATE() AND starts_on <= DATE_ADD(CURDATE(), INTERVAL 21 DAY) ORDER BY starts_on, start_time');
 
@@ -65,7 +68,6 @@ $todoCount = count($notifs) + count($todo);
         <div class="kicker" style="margin:0;"><?= te('Reikia padaryti') ?><?= ($nn = notification_count((int) $me['id'])) ? ' <span class="badge badge-new">' . $nn . ' nauj.</span>' : '' ?></div>
         <?php if ($notifs): ?><span class="small muted"><?= te('Patvirtinkite čia pat - punktas dings.') ?></span><?php endif; ?>
       </div>
-      <?= render_notifications($notifs, 'admin/#svarbu') ?>
       <?php if ($todo): ?>
         <ul class="notif-list">
           <?php foreach ($todo as [$text, $path, $btn]): ?>
@@ -74,7 +76,19 @@ $todoCount = count($notifs) + count($todo);
           <?php endforeach; ?>
         </ul>
       <?php endif; ?>
+      <?= render_notifications($notifs, 'admin/#svarbu') ?>
       <?php if (!$todoCount): ?><p class="all-done"><?= te('✓ Viskas padaryta') ?></p><?php endif; ?>
+      <?php if ($fbNotifs): ?>
+        <div class="fb-replies">
+          <div class="row between" style="gap:8px;flex-wrap:wrap;"><span class="small muted"><?= te('💡 Atsakymai į jūsų atsiliepimus') ?> (<?= count($fbNotifs) ?>)</span>
+            <form method="post" action="<?= url('pranesimas.php') ?>" class="inline-form"><?= csrf_field() ?><input type="hidden" name="action" value="done_feedback"><input type="hidden" name="back" value="admin/#svarbu">
+              <button class="btn btn-ghost btn-sm" type="submit"><?= te('Supratau visus') ?></button></form></div>
+          <?= render_notifications(array_slice($fbNotifs, 0, 2), 'admin/#svarbu') ?>
+          <?php if (count($fbNotifs) > 2): ?>
+            <details class="fb-more"><summary class="small"><?= te('Rodyti visus') ?> (<?= count($fbNotifs) - 2 ?>)</summary><?= render_notifications(array_slice($fbNotifs, 2), 'admin/#svarbu') ?></details>
+          <?php endif; ?>
+        </div>
+      <?php endif; ?>
     </section>
   </div>
 

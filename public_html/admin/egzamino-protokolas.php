@@ -29,6 +29,11 @@ if (is_post() && get('save')) {
     $in = json_decode((string) file_get_contents('php://input'), true) ?: [];
     $field = (string) ($in['field'] ?? '');
     $row = q_one('SELECT * FROM exam_protocol_rows WHERE id = ? AND event_id = ?', [(int) ($in['row'] ?? 0), $id]);
+    if ($row && preg_match('/^x\d{1,3}$/', $field)) {   // papildomas stulpelis
+        exam_set_extra($row, $field, mb_substr(trim((string) ($in['value'] ?? '')), 0, 60));
+        q('UPDATE exam_protocols SET updated_at = NOW() WHERE event_id = ?', [$id]);
+        exit(json_encode(['ok' => true]));
+    }
     if (!$row || !in_array($field, EXAM_ROW_FIELDS, true)) {
         http_response_code(400);
         exit(json_encode(['ok' => false]));
@@ -41,7 +46,7 @@ if (is_post() && get('save')) {
     } elseif ($field === 'name') {
         $v = mb_substr($v, 0, 160) ?: $row['name'];
     } else {
-        $v = $field === 'notes' ? mb_substr($v, 0, 2000) : mb_substr($v, 0, $field === 'seminars' ? 255 : 60);
+        $v = $field === 'notes' ? mb_substr($v, 0, 2000) : mb_substr($v, 0, $field === 'seminars' ? 255 : ($field === 'club' ? 120 : 60));
         $v = $v === '' ? null : $v;
     }
     q("UPDATE exam_protocol_rows SET $field = ? WHERE id = ?", [$v, (int) $row['id']]);
@@ -60,6 +65,37 @@ if (is_post()) {
             set_site_setting('exam_protocol_defaults', json_encode(['org' => post('org_name') ?: EXAM_ORG_DEFAULT, 'examiner' => post('examiner_name'), 'license' => post('examiner_license')], JSON_UNESCAPED_UNICODE));
             flash('ok', t('Protokolo antraštė išsaugota.'));
             break;
+        case 'cols':
+            // Įvertinimo stulpeliai: pervadinti, išimti (✕), pridėti naują
+            $cols = [];
+            foreach ((array) ($_POST['col_key'] ?? []) as $i => $k) {
+                $k = (string) $k;
+                if (!empty($_POST['col_del'][$i]) || !preg_match('/^(kihon|kata|kumite|test|x\d{1,3})$/', $k)) {
+                    continue;
+                }
+                $cols[] = [$k, mb_substr(trim((string) ($_POST['col_label'][$i] ?? '')), 0, 40) ?: $k];
+            }
+            if (trim(post('col_new')) !== '') {
+                $used = array_column($cols, 0);
+                foreach (exam_cols($p) as $c) {
+                    $used[] = $c[0];
+                }
+                $n = 1;
+                while (in_array('x' . $n, $used, true)) {
+                    $n++;
+                }
+                $cols[] = ['x' . $n, mb_substr(trim(post('col_new')), 0, 40)];
+            }
+            flash($cols && exam_cols_save($id, $cols) ? 'ok' : 'err', $cols ? t('Stulpeliai išsaugoti.') : t('Turi likti bent vienas įvertinimo stulpelis.'));
+            break;
+        case 'fed_send':
+            if (!fed_ready()) {
+                flash('err', t('Federacijos registras veiks, kai bus atnaujinta duomenų bazė (Šiandien → „Atnaujinkite duomenų bazę“).'));
+                break;
+            }
+            [$new, $old] = fed_send_protocol($event);
+            flash('ok', t('Protokolas išsiųstas Federacijai: naujų žmonių {n}, jau registre {o}. Numeriai - stulpelyje „Nr.“', ['n' => $new, 'o' => $old]));
+            break;
         case 'add_members':
             $n = exam_protocol_add_participants($event);
             flash('ok', $n ? t('Įtraukta dalyvių: {n}.', ['n' => $n]) : t('Naujų dalyvių nėra - visi užsiregistravę jau protokole.'));
@@ -69,7 +105,7 @@ if (is_post()) {
                 flash('err', t('Įrašykite vardą ir pavardę.'));
                 break;
             }
-            exam_protocol_add($event, ['name' => trim(post('name')), 'birth_date' => preg_match('/^\d{4}-\d{2}-\d{2}$/', post('birth_date')) ? post('birth_date') : null, 'kyu' => post('kyu') ?: null]);
+            exam_protocol_add($event, ['name' => trim(post('name')), 'birth_date' => preg_match('/^\d{4}-\d{2}-\d{2}$/', post('birth_date')) ? post('birth_date') : null, 'kyu' => post('kyu') ?: null, 'club' => trim(post('club')) ?: null]);
             flash('ok', t('Dalyvis įtrauktas.'));
             break;
         case 'delete_row':
@@ -110,6 +146,8 @@ if (is_post()) {
 
 $rows = exam_protocol_rows($id);
 $gone = exam_protocol_rows($id, true);
+$cols = exam_cols($p);
+$fedNo = fed_numbers_for_event($id);
 $passed = count(array_filter($rows, function ($r) { return $r['result'] === 'passed'; }));
 $failed = count(array_filter($rows, function ($r) { return $r['result'] === 'failed'; }));
 page_start(t('Egzamino protokolas') . ': ' . $event['title'], ['admin' => true, 'section' => 'renginiai']);
@@ -151,8 +189,22 @@ page_start(t('Egzamino protokolas') . ': ' . $event['title'], ['admin' => true, 
         <?= csrf_field() ?><input type="hidden" name="id" value="<?= $id ?>"><input type="hidden" name="action" value="add_row">
         <input type="text" name="name" placeholder="<?= te('Vardas Pavardė') ?>" required>
         <input type="date" name="birth_date" aria-label="<?= te('Gimimo data') ?>">
+        <input type="text" name="club" placeholder="<?= te('Klubas') ?>" style="width:140px;">
         <input type="text" name="kyu" placeholder="kyu" style="width:90px;">
         <button class="btn btn-sm" type="submit"><?= te('Įtraukti') ?></button>
+      </form>
+    </details>
+    <details class="prot-cols">
+      <summary class="btn btn-ghost btn-sm"><?= te('✎ Stulpeliai') ?></summary>
+      <form method="post" class="prot-cols-form">
+        <?= csrf_field() ?><input type="hidden" name="id" value="<?= $id ?>"><input type="hidden" name="action" value="cols">
+        <?php foreach ($cols as $i => [$k, $label]): ?>
+          <div class="row" style="gap:6px;"><input type="hidden" name="col_key[<?= $i ?>]" value="<?= e($k) ?>">
+            <input type="text" name="col_label[<?= $i ?>]" value="<?= e($label) ?>" maxlength="40" aria-label="<?= te('Stulpelio pavadinimas') ?>">
+            <label class="check small"><input type="checkbox" name="col_del[<?= $i ?>]" value="1"><span><?= te('išimti') ?></span></label></div>
+        <?php endforeach; ?>
+        <div class="row" style="gap:6px;"><input type="text" name="col_new" maxlength="40" placeholder="<?= te('+ naujas stulpelis, pvz. Bunkai') ?>"></div>
+        <button class="btn btn-primary btn-sm" type="submit"><?= te('Išsaugoti stulpelius') ?></button>
       </form>
     </details>
     <span class="spacer"></span>
@@ -172,19 +224,20 @@ page_start(t('Egzamino protokolas') . ': ' . $event['title'], ['admin' => true, 
   <div class="table-scroll">
   <table class="prot-table" id="protTable">
     <thead>
-      <tr><th rowspan="2">Nr.</th><th rowspan="2"><?= te('Vardas Pavardė') ?></th><th rowspan="2"><?= te('Gimimo data') ?></th><th rowspan="2">Kyu</th>
-        <th colspan="4"><?= te('Įvertinimas') ?></th><th rowspan="2"><?= te('Dalyvavimas seminaruose, stovyklose') ?></th><th rowspan="2"><?= te('Pastabos') ?></th><th rowspan="2"><?= te('Išlaikė / Neišlaikė') ?></th><th rowspan="2" class="no-print"></th></tr>
-      <tr><th>Kihon</th><th>Kata</th><th>Kumite</th><th><?= te('Testas') ?></th></tr>
+      <tr><th rowspan="2">Nr.</th><th rowspan="2"><?= te('Vardas Pavardė') ?></th><th rowspan="2"><?= te('Gimimo data') ?></th><th rowspan="2"><?= te('Klubas') ?></th><th rowspan="2">Kyu</th>
+        <th colspan="<?= count($cols) ?>"><?= te('Įvertinimas') ?></th><th rowspan="2"><?= te('Dalyvavimas seminaruose, stovyklose') ?></th><th rowspan="2"><?= te('Pastabos') ?></th><th rowspan="2"><?= te('Išlaikė / Neišlaikė') ?></th><th rowspan="2" class="no-print"></th></tr>
+      <tr><?php foreach ($cols as [$k, $label]): ?><th><?= e($label) ?></th><?php endforeach; ?></tr>
     </thead>
     <tbody>
     <?php foreach ($rows as $r): ?>
       <tr data-row="<?= (int) $r['id'] ?>" class="res-<?= e($r['result']) ?>">
-        <td class="prot-nr"><?= e($r['number']) ?></td>
+        <td class="prot-nr"><?= isset($fedNo[(int) $r['id']]) ? '<b title="' . te('Federacijos numeris') . '">' . e($fedNo[(int) $r['id']]) . '</b>' : '<span class="muted" title="' . te('Laikinas - Federacijos numeris bus suteiktas išsiuntus protokolą Federacijai') . '">' . e($r['number']) . '</span>' ?></td>
         <td><input class="pi" data-f="name" value="<?= e($r['name']) ?>" aria-label="<?= te('Vardas Pavardė') ?>"></td>
         <td><input class="pi" type="date" data-f="birth_date" value="<?= e((string) $r['birth_date']) ?>" aria-label="<?= te('Gimimo data') ?>"></td>
+        <td><input class="pi" data-f="club" value="<?= e((string) ($r['club'] ?? '')) ?>" aria-label="<?= te('Klubas') ?>"></td>
         <td><input class="pi pi-s" data-f="kyu" value="<?= e((string) $r['kyu']) ?>" aria-label="Kyu"></td>
-        <?php foreach (['kihon' => 'Kihon', 'kata' => 'Kata', 'kumite' => 'Kumite', 'test' => t('Testas')] as $f => $l): ?>
-          <td><input class="pi pi-s" data-f="<?= $f ?>" value="<?= e((string) $r[$f]) ?>" aria-label="<?= e($l) ?>"></td>
+        <?php foreach ($cols as [$f, $l]): ?>
+          <td><input class="pi pi-s pi-score" data-f="<?= e($f) ?>" value="<?= e(exam_cell($r, $f)) ?>" inputmode="decimal" aria-label="<?= e($l) ?>"></td>
         <?php endforeach; ?>
         <td><input class="pi" data-f="seminars" value="<?= e((string) $r['seminars']) ?>" aria-label="<?= te('Seminarai, stovyklos') ?>"></td>
         <td><textarea class="pi" data-f="notes" rows="1" aria-label="<?= te('Pastabos') ?>"><?= e((string) $r['notes']) ?></textarea></td>
@@ -200,7 +253,7 @@ page_start(t('Egzamino protokolas') . ': ' . $event['title'], ['admin' => true, 
         </td>
       </tr>
     <?php endforeach; ?>
-    <?php if (!$rows): ?><tr><td colspan="12" class="muted"><?= te('Dalyvių dar nėra - spauskite „+ Įtraukti užsiregistravusius“ arba „+ Kitas dalyvis“.') ?></td></tr><?php endif; ?>
+    <?php if (!$rows): ?><tr><td colspan="<?= 9 + count($cols) ?>" class="muted"><?= te('Dalyvių dar nėra - spauskite „+ Įtraukti užsiregistravusius“ arba „+ Kitas dalyvis“.') ?></td></tr><?php endif; ?>
     </tbody>
   </table>
   </div>
@@ -210,7 +263,14 @@ page_start(t('Egzamino protokolas') . ': ' . $event['title'], ['admin' => true, 
     <div><?= te('Licencijos Nr.') ?>: <b><?= e((string) $p['examiner_license'] ?: '__________') ?></b></div>
     <div><?= te('Egzaminatoriaus parašas') ?>: ______________________</div>
   </div>
-  <p class="small muted no-print"><?= te('Išlaikė') ?>: <b><?= $passed ?></b> · <?= te('Neišlaikė') ?>: <b><?= $failed ?></b> · <?= te('iš viso') ?> <?= count($rows) ?></p>
+  <p class="small muted no-print" id="protSum"><?= te('Išlaikė') ?>: <b id="sumPassed"><?= $passed ?></b> · <?= te('Neišlaikė') ?>: <b id="sumFailed"><?= $failed ?></b> · <?= te('iš viso') ?> <span id="sumAll"><?= count($rows) ?></span></p>
+
+  <?php if ($rows): ?>
+    <form method="post" class="no-print prot-fed"><?= csrf_field() ?><input type="hidden" name="id" value="<?= $id ?>"><input type="hidden" name="action" value="fed_send">
+      <button class="btn btn-primary btn-sm" type="submit"><?= !empty($p['fed_sent_at']) ? te('📨 Atnaujinti Federacijoje') : te('📨 Siųsti protokolą Federacijai') ?></button>
+      <span class="small muted"><?= !empty($p['fed_sent_at']) ? te('Išsiųsta') . ' ' . e(fmt_date(substr((string) $p['fed_sent_at'], 0, 10))) . '. ' : '' ?><?= te('Visi laikę įrašomi į Federacijos registrą; kiekvienas gauna nuolatinį numerį (pvz. 26.11.15-1).') ?></span>
+      <a class="small" href="<?= url('admin/federacija.php') ?>"><?= te('📒 Federacijos registras') ?></a></form>
+  <?php endif; ?>
 
   <?php if (is_admin($me) && $rows): ?>
     <form method="post" class="no-print"><?= csrf_field() ?><input type="hidden" name="id" value="<?= $id ?>"><input type="hidden" name="action" value="to_results">
@@ -252,6 +312,15 @@ page_start(t('Egzamino protokolas') . ': ' . $event['title'], ['admin' => true, 
     tr.className = 'res-' + (on ? b.dataset.res : '');
     var po = tr.querySelector('.print-only'); if (po) po.textContent = on ? b.textContent : '';   // spausdinant
     send(tr.dataset.row, 'result', on ? b.dataset.res : '');
+    // Apačioje - iškart perskaičiuota
+    document.getElementById('sumPassed').textContent = t.querySelectorAll('tr.res-passed').length;
+    document.getElementById('sumFailed').textContent = t.querySelectorAll('tr.res-failed').length;
+  });
+  // Balai be kablelio: įvedus antrą skaitmenį - kablelis pats (71 → 7.1); 10 lieka 10
+  t.addEventListener('input', function (e) {
+    if (!e.target.classList.contains('pi-score')) return;
+    var m = String(e.target.value).match(/^(\d)(\d)$/);
+    if (m && e.target.value !== '10') e.target.value = m[1] + '.' + m[2];
   });
   // Enter - į kitą laukelį (kaip lentelėje)
   t.addEventListener('keydown', function (e) {

@@ -12,7 +12,21 @@ if (!isset(THEMES[$theme])) {
     http_response_code(400);
     exit(json_encode(['ok' => false, 'error' => 'Tokios temos nėra.']));
 }
-if (post('scope') === 'site') {
+if (post('scope') === 'me') {
+    // Savo tema - išsaugoma paskyrai (prisijungus vėl - tokia pati); adminas gali ir visiems lankytojams
+    $a = current_account();
+    if (!$a) {
+        exit(json_encode(['ok' => true, 'local' => true]));
+    }
+    try {
+        q('UPDATE accounts SET theme = ? WHERE id = ?', [$theme, (int) $a['id']]);
+    } catch (PDOException $ex) {
+        // dar neimportuotas db/037
+    }
+    if (post('all') === '1' && is_admin()) {
+        set_site_setting('site_theme', $theme);
+    }
+} elseif (post('scope') === 'site') {
     if (!is_admin()) {
         http_response_code(403);
         exit(json_encode(['ok' => false, 'error' => t('Temą keičia administratorius.')]));

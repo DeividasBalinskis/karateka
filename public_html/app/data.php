@@ -529,7 +529,7 @@ function admin_todo_items(): array
     }
     // Įkelta nauja versija, o duomenų bazė dar neatnaujinta - vienu mygtuku
     if (is_admin() && db_update_pending()) {
-        $todo[] = [t('Atnaujinkite duomenų bazę naujai versijai'), 'admin/kopijos.php', t('Atnaujinti')];
+        array_unshift($todo, [t('Atnaujinkite duomenų bazę naujai versijai'), 'admin/kopijos.php', t('Atnaujinti')]);   // visada viršuje
     }
     // Atsarginė kopija: nepavyko arba nedaryta ilgiau nei 2 d.
     if (is_admin() && backup_auto()) {

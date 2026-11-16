@@ -39,7 +39,7 @@ function page_start(string $title, array $opt = []): void
 <link rel="stylesheet" href="<?= e(asset_url('assets/themes.css')) ?>">
 <?= i18n_js() ?>
 </head>
-<body<?= theme_body_attrs(site_theme(), $admin ? 'is-admin' : '') ?>>
+<body<?= theme_body_attrs(current_theme(), $admin ? 'is-admin' : '') ?>>
 <?php
     // Renginiai, Naujienos, Pamokos - viena vieta visiems (ir treneriui su redagavimo mygtukais), be trenerio skirtukų juostos
     $section = $opt['section'] ?? null;
@@ -372,6 +372,8 @@ function site_header(bool $home = false, ?string $area = null, ?string $tab = nu
 <header class="site-header">
   <nav>
     <a class="logo" href="<?= $home ? '#' : url('index.php') ?>"><img src="<?= url('img/logo.png') ?>" alt="<?= te('Karateka logotipas') ?>"><?php if (config('env') !== 'live'): ?><span class="ver-tag" title="<?= te('Svetainės versija (rodoma tik testuojant)') ?>">v<?= e(site_version()) ?><?= config('env') === 'local' ? (' ' . t('· local')) : '' ?></span><?php endif; ?></a>
+    <!-- Kalba ir tema - kairėje, visada matomos (tema išsaugoma paskyrai) -->
+    <div class="nav-prefs"><?= render_lang_switch() ?><?php if ($a): ?><span class="theme-li"><?= theme_picker_html('me', current_theme()) ?></span><?php endif; ?></div>
     <ul class="nav-list" id="navList">
       <!-- Vienas meniu: kairėje - pagrindinio puslapio skiltys (blokai su meniu pavadinimu), po skirtuko - kiti puslapiai (su ›) -->
       <li class="nav-main">
@@ -393,9 +395,7 @@ function site_header(bool $home = false, ?string $area = null, ?string $tab = nu
       <!-- Dešinėje: paskyra (ar „Išbandyti“ ir „Prisijungti“) - prisijungus „Išbandyti“ dingsta, meniu nepasislenka -->
       <li class="nav-account">
         <ul>
-          <li class="lang-li"><?= render_lang_switch() ?></li>
-          <?php if (is_admin() && admin_mode()): ?><li class="theme-li"><?= theme_picker_html('site', site_theme()) ?></li><?php endif; ?>
-          <?php if ($a && (admin_mode() || !is_staff($a)) && ($vs = render_view_switch())): ?><li class="vs-li"><?= $vs ?></li><?php endif; ?>
+          <?php if ($a && !is_staff($a) && ($vs = render_view_switch())): ?><li class="vs-li"><?= $vs ?></li><?php endif; ?>
           <?php if ($a && is_staff($a) && admin_mode()): ?>
             <li><a class="nav-login<?= $area === 'admin' ? ' is-current' : '' ?>" href="<?= url('admin/') ?>"><?= te('Valdymas') ?><?php if ($n = staff_attention_count((int) $a['id'])): ?><span class="count-badge nav-bubble" title="<?= te('Reikia padaryti: pranešimai, patvirtinimai ir kiti darbai') ?>"><?= $n ?></span><?php endif; ?></a></li>
           <?php elseif ($a): ?>
@@ -435,7 +435,8 @@ function admin_mode_toggle(): string
     return '<form method="post" action="' . e(url('admin-rezimas.php')) . '" class="adm-toggle">' . csrf_field()
         . '<input type="hidden" name="back" value="' . e($_SERVER['REQUEST_URI'] ?? '') . '"><input type="hidden" name="on" value="' . ($on ? '0' : '1') . '">'
         . '<button type="submit" class="adm-sw' . ($on ? ' is-on' : '') . '" aria-pressed="' . ($on ? 'true' : 'false') . '" title="' . e($on ? t('Išjungti admin režimą - matyti svetainę kaip nariui') : t('Įjungti admin režimą - redaguoti viską')) . '">'
-        . '<span class="adm-knob" aria-hidden="true"></span>' . e(t('Admin')) . ($n ? '<span class="count-badge nav-bubble">' . $n . '</span>' : '') . '</button></form>';
+        . '<span class="adm-knob" aria-hidden="true"></span>' . e(t('Admin')) . ($n ? '<span class="count-badge nav-bubble">' . $n . '</span>' : '') . '</button></form>'
+        . ($on && ($vs = render_view_switch(true)) ? $vs : '');   // ▾ - peržiūrėti kaip tėvai ar vaikas (viename valdiklyje su „Admin“)
 }
 
 /** Treneriui: kiek laukia - pranešimai ir „Reikia padaryti“ punktai (patvirtinimai, rezultatai, žinutės...) */

@@ -84,13 +84,15 @@ test('Taika fits a phone screen; ⋯ opens inside the card', async ({ browser })
 
 test('themes: one list for karateka.lt and Taika, picker everywhere it changes the look', async ({ browser }) => {
   const a = await login(browser, 'info@karateka.lt', 1300, 850);
-  // karateka.lt: adminas keičia viršuje (🎨), matosi visiems
+  // karateka.lt: tema išsaugoma paskyrai; adminas pažymėjęs - ir numatytoji visiems lankytojams
   await a.goto('index.php');
   await a.click('.theme-li .tp-btn');
   check('all themes shown at once', await a.locator('.theme-li .tp-sw').count() >= 10);
+  await a.check('.theme-li .tp-all-chk');
   await a.click('.theme-li [data-theme-id="nature"]');
   await a.waitForTimeout(400);
   check('site theme saved', sql("SELECT value FROM site_settings WHERE name = 'site_theme'") === 'nature');
+  check('saved to the account', sql("SELECT theme FROM accounts WHERE email = 'info@karateka.lt'") === 'nature');
   const g = await login(browser, null);
   await g.goto('index.php');
   check('visitors see the theme', await g.evaluate(() => document.body.dataset.theme) === 'nature' && await g.locator('.theme-pick').count() === 0);
@@ -105,6 +107,7 @@ test('themes: one list for karateka.lt and Taika, picker everywhere it changes t
   await a.goto('varzybu-rezultatai.php');
   check('public Taika page uses the theme', await a.evaluate(() => document.body.dataset.theme) === 'sea');
   sql("DELETE FROM site_settings WHERE name IN ('site_theme', 'taika_ui')");
+  sql("UPDATE accounts SET theme = NULL");
   noJsErrors(a, g);
 });
 
@@ -112,12 +115,14 @@ test('Taika and LTKF in English and Russian; switch back to Lithuanian in one cl
   const a = await login(browser, 'info@karateka.lt', 1300, 900);
   const tid = await newTest(a);
   await a.goto(`admin/varzybu-sistema.php?id=${tid}`);
+  await a.click('.vz-top .lang-dd > summary');
   await a.click('.vz-top .lang-switch a[lang=en]');
   await a.waitForTimeout(400);
   check('Taika tabs in English', /Participants/.test(await a.textContent('#tab-dalyviai')) && /Live schedule/.test(await a.textContent('#tab-live')));
   await a.click('#tab-live');
   await a.waitForTimeout(300);
   check('JS-made texts translated too', !/Visas tvarkaraštis|Paskirstyti tolygiai/.test(await a.textContent('#v-live')));
+  await a.click('.vz-top .lang-dd > summary');
   await a.click('.vz-top .lang-switch a[lang=ru]');
   await a.waitForTimeout(400);
   check('Taika in Russian', /Участники/.test(await a.textContent('#tab-dalyviai')));

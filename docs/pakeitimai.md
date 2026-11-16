@@ -4,6 +4,30 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.37 - 2026-11-17 (Denio atsiliepimai #45-#53: protokolas ir Federacijos registras, viršutinė juosta, instruktoriai redaguoja puslapį)
+**Duomenų bazė:** `db/037_federacija_temos.sql` - Valdymas → Šiandien → „Atnaujinkite duomenų bazę“ (dabar visada sąrašo viršuje).
+Zip'o turinį išpakuokite **tiesiai į svetainės aplanką**.
+
+**📋 Egzamino protokolas** (#50-#53)
+- Balai be kablelio: įvedus **71** atsiranda **7.1**.
+- Paspaudus „Išlaikė / Neišlaikė“ - skaičiai apačioje **atsinaujina iš karto**.
+- **✎ Stulpeliai**: įvertinimo stulpelius galima pervadinti, išimti ir pridėti naujų (pvz. „Bunkai“). Naujas stulpelis **Klubas**.
+- Antraštė: **LIETUVOS TRADICINIO KARATE DO FEDERACIJA**.
+- **📨 Siųsti protokolą Federacijai**: visi laikę įrašomi į **Federacijos registrą** (Valdymas → protokolas → „📒 Federacijos registras“).
+  Kiekvienas žmogus gauna **nuolatinį numerį** `26.11.15-1` (pirmo egzamino data + tos dienos eilė). Antrą kartą laikančiam - tas pats numeris.
+  Registre: paieška, egzaminų istorija su balais, Excel.
+
+**🔝 Viršutinė juosta** (#47-#49)
+- **Kalba** - matoma tik pasirinkta (LT ▾), kitos išsiskleidžia; kartu su **🎨 tema** - kairėje prie logotipo.
+- **Tema išsaugoma paskyrai** - prisijungus vėl tokia pati. Adminas gali pažymėti „Ir numatytoji visiems lankytojams“.
+- **„Admin“ ir „👁 Adminas“ sujungti**: dešinėje vienas jungiklis „Admin“ ir šalia ▾ - „Žiūrėti kaip: Adminas / Tėvai / Vaikas“.
+- Admin pradžioje „Reikia padaryti“: **DB atnaujinimas - visada viršuje**; atsakymai į atsiliepimus nebeužkemša sąrašo -
+  rodomi 2 naujausi, kiti išskleidžiami, „Supratau visus“; į raudoną skaičiuką nebeįskaičiuojami.
+
+**🌐 Svetainė** (#45, #46)
+- Pagrindinį puslapį redaguoti gali **adminas ir instruktoriai, kurių vardas yra instruktorių bloke** (pagal paskyros vardą ir pavardę).
+- „Treniruotė“ → **+ Nauja grupė** (pvz. „Teisėjams“): užtenka pavadinimo ir kategorijos.
+
 ## v1.36 - 2026-11-16 (sekretoriatui užtenka vardo)
 Duomenų bazės keisti nereikia. Zip'o turinį išpakuokite **tiesiai į svetainės aplanką**.
 

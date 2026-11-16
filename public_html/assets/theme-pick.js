@@ -14,7 +14,8 @@
     document.body.classList.toggle('theme-dark', sw.dataset.dark === '1');
     box.querySelectorAll('.tp-sw').forEach(function (x) { x.classList.toggle('on', x === sw); x.setAttribute('aria-pressed', x === sw); });
     box.querySelector('.tp-now').textContent = sw.querySelector('.tp-name').textContent.split(' ')[0];
-    var f = new FormData(); f.append('_csrf', box.dataset.csrf); f.append('scope', box.dataset.scope); f.append('theme', id);
+    var all = box.querySelector('.tp-all-chk');
+    var f = new FormData(); f.append('_csrf', box.dataset.csrf); f.append('scope', box.dataset.scope); f.append('theme', id); if (all && all.checked) f.append('all', '1');
     fetch(box.dataset.api, { method: 'POST', body: f, credentials: 'same-origin', headers: { 'X-CSRF-Token': box.dataset.csrf } }).catch(function () {});
   });
   document.addEventListener('keydown', function (e) {

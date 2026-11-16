@@ -95,12 +95,14 @@ function render_lang_switch(?string $cur = null): string
 {
     $cur = $cur ?? current_lang();
     $back = rawurlencode((string) ($_SERVER['REQUEST_URI'] ?? '/'));
-    $html = '<nav class="lang-switch" aria-label="' . e(t('Kalba')) . '">';
+    // Matoma tik pasirinkta kalba; paspaudus - kitos (išskleidžiama žemyn)
+    $html = '<details class="lang-dd"><summary class="lang-cur" title="' . e(t('Kalba')) . '" aria-label="' . e(t('Kalba')) . ': ' . e(LANGS[$cur] ?? $cur) . '">' . strtoupper($cur) . '<span class="lang-caret" aria-hidden="true">▾</span></summary>'
+        . '<nav class="lang-switch" aria-label="' . e(t('Kalba')) . '">';
     foreach (LANGS as $code => $name) {
         $html .= '<a href="' . e(url('kalba.php?l=' . $code . '&b=' . $back)) . '" lang="' . $code . '" hreflang="' . $code . '" title="' . e($name) . '"'
-            . ($code === $cur ? ' aria-current="true" class="active"' : '') . '>' . strtoupper($code) . '</a>';
+            . ($code === $cur ? ' aria-current="true" class="active"' : '') . '>' . strtoupper($code) . ' <span class="lang-name">' . e($name) . '</span></a>';
     }
-    return $html . '</nav>';
+    return $html . '</nav></details>';
 }
 
 // ---------- Datos ----------

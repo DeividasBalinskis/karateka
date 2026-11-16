@@ -296,3 +296,15 @@ span.chat-ctx{text-decoration:none;}
 .g-invite span{flex:1; min-width:180px;}
 .g-invite .g-btn{border:1px solid rgba(255,255,255,.3); background:rgba(255,255,255,.12); color:#fff; border-radius:8px; padding:5px 10px; font:inherit; font-size:.8rem; font-weight:700; cursor:pointer;}
 .g-invite .g-btn.gold{background:linear-gradient(180deg,#FFD75E,#F2A516); border-color:#D18E0C; color:#3A2600;}
+
+/* Kalbos pasirinkimas: matoma tik pasirinkta, kitos išsiskleidžia (karateka.lt, Budo, LTKF) */
+.lang-dd{position:relative;}
+.lang-dd > summary{list-style:none; cursor:pointer; display:inline-flex; align-items:center; gap:4px; padding:7px 10px; border-radius:10px; background:rgba(23,20,15,0.06); font:700 12px/1 'Inter', sans-serif; letter-spacing:0.04em; color:#4A453A;}
+.lang-dd > summary::-webkit-details-marker{display:none;}
+.lang-dd > summary:hover{background:rgba(23,20,15,0.12);}
+.lang-caret{font-size:10px; opacity:.6;}
+.lang-dd > .lang-switch{position:absolute; top:calc(100% + 6px); left:0; z-index:60; display:flex !important; flex-direction:column; min-width:150px; padding:6px; background:#fff; box-shadow:0 10px 30px rgba(0,0,0,.14); border-radius:12px;}
+.lang-dd > .lang-switch a{padding:9px 10px;}
+.lang-dd .lang-name{font-weight:500; letter-spacing:0; color:#8A8273; margin-left:4px;}
+.vz-top .lang-dd > .lang-switch{left:auto; right:0;}
+.vz-top .lang-dd > summary{background:rgba(255,255,255,.12); color:#fff;}

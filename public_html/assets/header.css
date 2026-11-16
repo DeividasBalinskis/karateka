@@ -177,3 +177,14 @@ html{scrollbar-gutter:stable;}
 .site-header .adm-sw.is-on .adm-knob{background:#E8590C;}
 .site-header .adm-sw.is-on .adm-knob::after{left:14px;}
 .site-header .adm-sw .nav-bubble{position:absolute; top:-7px; right:-7px; margin:0; box-shadow:0 0 0 2px #F7F4EC;}
+/* Kalba ir tema - kairėje prie logotipo; kalba - tik pasirinkta, kitos išsiskleidžia */
+.site-header .nav-prefs{display:flex; align-items:center; gap:6px;}
+/* „Admin“ ir „žiūrėti kaip“ - vienas valdiklis dešinėje */
+.site-header .adm-li{display:inline-flex; align-items:center; gap:2px;}
+.view-switch.vs-compact > summary{padding:8px 9px; border-radius:999px;}
+.view-switch.vs-compact .vs-panel{right:0; left:auto;}
+.vs-title{font-size:.75rem; font-weight:700; color:#8A8273; margin-bottom:6px;}
+.tp-all{display:flex; align-items:center; gap:6px; margin-top:8px; padding-top:8px; border-top:1px solid rgba(23,20,15,.1);}
+@media (max-width: 900px){ .site-header .nav-prefs{margin-right:auto; margin-left:8px;} }
+.site-header .lang-dd > nav.lang-switch{position:absolute; top:calc(100% + 6px); left:0; display:flex; flex-direction:column; gap:2px; padding:6px; min-width:150px; background:#fff; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,.14); z-index:60;}
+.site-header .nav-prefs .tp-panel{left:0; right:auto; transform:none;}

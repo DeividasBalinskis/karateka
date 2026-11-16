@@ -353,7 +353,8 @@ test('guest: event page, menu, contacts, instructors', async ({ browser }) => {
   // Meniu kapsulė - per vidurį tarp logotipo ir paskyros (vienodi tarpai), ir svečiui, ir prisijungus
   const gaps = pg => pg.evaluate(() => {
     const r = s => document.querySelector(s).getBoundingClientRect();
-    return [Math.round(r('.site-header .nav-main').left - r('.site-header .logo').right), Math.round(r('.site-header .nav-account').left - r('.site-header .nav-main').right)];
+    const left = document.querySelector('.site-header .nav-prefs') ? r('.site-header .nav-prefs').right : r('.site-header .logo').right;   // kalba ir tema - prie logotipo
+    return [Math.round(r('.site-header .nav-main').left - left), Math.round(r('.site-header .nav-account').left - r('.site-header .nav-main').right)];
   });
   const [gl, gr] = await gaps(g);
   check('guest menu evenly spaced', Math.abs(gl - gr) <= 3, gl + ' vs ' + gr);

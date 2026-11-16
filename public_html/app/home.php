@@ -157,9 +157,37 @@ function home_edit_mode(): bool
 {
     static $on = null;
     if ($on === null) {
-        $on = basename($_SERVER['SCRIPT_NAME'] ?? '') === 'index.php' && get('redaguoti') === '1' && is_admin();
+        $on = basename($_SERVER['SCRIPT_NAME'] ?? '') === 'index.php' && get('redaguoti') === '1' && home_can_edit();
     }
     return $on;
+}
+
+/** Kas gali redaguoti pagrindinį puslapį: adminas ir instruktoriai, kurių vardas yra instruktorių bloke (pagal paskyros vardą ir pavardę) */
+function home_can_edit(?array $a = null): bool
+{
+    $a = $a ?? current_account();
+    if (!$a || !is_active_account($a)) {
+        return false;
+    }
+    if (is_admin($a)) {
+        return true;
+    }
+    $key = function (string $n): string { return preg_replace('/\s+/u', ' ', mb_strtolower(trim($n))); };
+    $me = $key($a['first_name'] . ' ' . $a['last_name']);
+    if ($me === '') {
+        return false;
+    }
+    foreach (home_page() as $b) {
+        if ($b['type'] !== 'instructors') {
+            continue;
+        }
+        foreach ((array) ($b['d']['items'] ?? []) as $p) {
+            if (is_array($p) && $key((string) ($p['name'] ?? '')) === $me) {
+                return true;
+            }
+        }
+    }
+    return false;
 }
 
 /** Meniu nuorodos iš blokų su „meniu pavadinimu“: [[tekstas, #id, ar mygtukas]] */
@@ -486,14 +514,14 @@ function home_render_block(array $b): string
                 $more = '';
                 $bio = trim((string) ($p['bio'] ?? ''));
                 // Langas atsidaro tik jei yra ką parodyti (adminui - visada, kad matytų, kur įrašyti)
-                $hasMore = !$edit && ($bio !== '' || trim((string) ($p['role'] ?? '')) !== '' || is_admin());
+                $hasMore = !$edit && ($bio !== '' || trim((string) ($p['role'] ?? '')) !== '' || home_can_edit());
                 if ($hasMore) {
                     $more = '<template class="ins-more"><div class="ins-pop-photo">' . ($photo ? '<img src="' . e(url($photo)) . '" alt="">' : '<span>' . e(initials((string) $p['name'])) . '</span>') . '</div>'
                         . '<div class="ins-pop-body"><h3 id="insTitle">' . e((string) $p['name']) . '</h3>'
                         . ((string) $p['rank'] !== '' ? '<div class="ins-pop-rank">' . e((string) $p['rank']) . '</div>' : '')
                         . (trim((string) ($p['role'] ?? '')) !== '' ? '<div class="ins-pop-role">' . e((string) $p['role']) . '</div>' : '')
                         . '<div class="ins-pop-bio">' . ($bio !== '' ? home_text_html($bio)
-                            : (is_admin() ? ('<p class="ins-pop-hint">' . t('Lankytojams šis langas neatsidaro, kol nėra teksto. Įrašykite: ✎ Redaguoti puslapį → instruktoriaus kortelė → „Plačiau“.') . '</p>') : '')) . '</div></div></template>';
+                            : (home_can_edit() ? ('<p class="ins-pop-hint">' . t('Lankytojams šis langas neatsidaro, kol nėra teksto. Įrašykite: ✎ Redaguoti puslapį → instruktoriaus kortelė → „Plačiau“.') . '</p>') : '')) . '</div></div></template>';
                 }
                 return '<div class="panel instructor-card' . (!empty($p['lead']) ? ' lead' : '') . ' reveal"' . hb_item()
                     . ($hasMore ? ' role="button" tabindex="0" aria-haspopup="dialog" aria-label="' . e((string) $p['name']) . ' - daugiau informacijos" data-instructor' : '') . '>'

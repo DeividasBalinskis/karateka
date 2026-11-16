@@ -241,7 +241,7 @@ function view_switch(string $mode): void
 }
 
 /** Viršutinėje juostoje adminui: „Peržiūra: Adminas / Tėvai / Vaikas“, vaiko diržas */
-function render_view_switch(): string
+function render_view_switch(bool $compact = false): string
 {
     $admin = view_admin();
     if (!$admin) {
@@ -255,10 +255,10 @@ function render_view_switch(): string
     }
     $labels = ['admin' => t('Adminas'), 'parent' => t('Tėvai'), 'junior' => t('Vaikas')];
     $back = e($_SERVER['REQUEST_URI'] ?? '');
-    $html = '<details class="view-switch' . ($mode !== 'admin' ? ' is-test' : '') . '"><summary title="' . e(t('Peržiūrėti svetainę kaip tėvai ar vaikas (testinės paskyros)')) . '">'
-        . '<span class="vs-eye" aria-hidden="true">👁</span> ' . e($labels[$mode]) . ($belt ? ' · ' . e(BELTS[(int) $belt][0]) : '') . '</summary>'
+    $html = '<details class="view-switch' . ($mode !== 'admin' ? ' is-test' : '') . ($compact ? ' vs-compact' : '') . '"><summary title="' . e(t('Peržiūrėti svetainę kaip tėvai ar vaikas (testinės paskyros)')) . '"' . ($compact ? ' aria-label="' . e(t('Žiūrėti kaip')) . '"' : '') . '>'
+        . ($compact ? '<span aria-hidden="true">▾</span>' : '<span class="vs-eye" aria-hidden="true">👁</span> ' . e($labels[$mode]) . ($belt ? ' · ' . e(BELTS[(int) $belt][0]) : '')) . '</summary>'
         . '<form method="post" action="' . e(url('perziura.php')) . '" class="vs-panel">' . csrf_field() . '<input type="hidden" name="back" value="' . $back . '">'
-        . '<div class="vs-modes">';
+        . ($compact ? '<div class="vs-title">' . e(t('Žiūrėti kaip')) . '</div>' : '') . '<div class="vs-modes">';
     foreach ($labels as $k => $label) {
         $html .= '<button type="submit" name="mode" value="' . $k . '"' . ($k === $mode ? ' class="active" aria-pressed="true"' : '') . '>' . e($label) . '</button>';
     }

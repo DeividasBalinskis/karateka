@@ -2,7 +2,7 @@
 // Duomenų bazė (PDO, tik paruošti užklausos sakiniai)
 
 // Naujausias db/ failas, kurio reikia šiai svetainės versijai (pridėjus naują - pakeisti; tai tikrina ir testai)
-const DB_REQUIRED = '036_nariai_pakvietimai.sql';
+const DB_REQUIRED = '037_federacija_temos.sql';
 
 function db(): PDO
 {

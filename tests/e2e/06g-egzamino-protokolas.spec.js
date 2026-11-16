@@ -14,7 +14,7 @@ test('exam protocol: numbers, autosave, pass/fail, deleted number not reused, CS
   await a.goto(`admin/renginio-rezultatai.php?id=${ev}`);
   await nav(a, () => a.click('a:has-text("Egzamino protokolas")'));
   check('protocol page', /EGZAMINO PROTOKOLAS/.test(await a.locator('.prot-title').innerText()));
-  check('default organisation', /LIETUVOS TRADICINIO KARATE ASOCIACIJA/.test(await a.locator('.prot-org').innerText()));
+  check('default organisation', /LIETUVOS TRADICINIO KARATE DO FEDERACIJA/.test(await a.locator('.prot-org').innerText()));
 
   // Dalyviai ir numeriai
   await nav(a, () => a.click('button:has-text("Įtraukti užsiregistravusius")'));

@@ -24,6 +24,11 @@ $back = post('back');
 if (!preg_match('~^(admin/)?[\w-]*(\.php)?(\?[\w=&%.\-]*)?(#[\w-]*)?$~', $back) || $back === '') {
     $back = is_staff($a) ? 'admin/' : 'paskyra.php';
 }
+// Visi atsakymai į atsiliepimus - „Supratau“ vienu kartu
+if (post('action') === 'done_feedback') {
+    q('UPDATE notifications SET done_at = NOW(), read_at = COALESCE(read_at, NOW()) WHERE account_id = ? AND type = "feedback" AND done_at IS NULL', [(int) $a['id']]);
+    redirect($back);
+}
 $n = q_one('SELECT * FROM notifications WHERE id = ? AND account_id = ?', [(int) post('id'), (int) $a['id']]);
 if (!$n) {
     redirect($back);
