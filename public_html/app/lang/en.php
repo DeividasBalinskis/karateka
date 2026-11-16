@@ -2778,4 +2778,6 @@ From 2013 he trained with the team of the traditional karate-do club "Sanrei", a
     'nebūtina - be jo gausite nuorodą nukopijuoti' => 'optional - without it you get a link to copy',
     'Siųsti el. paštu / nauja nuoroda' => 'Send by email / new link',
     'Sukurti pakvietimą' => 'Create invitation',
+    'Sekretoriato nuoroda sukurta - nukopijuokite ir nusiųskite.' => 'Secretariat link created - copy it and send it.',
+    'Sekretoriato nuoroda išjungta - su ja nebeprisijungs.' => 'Secretariat link turned off - it can no longer be used to log in.',
 ];

@@ -66,6 +66,8 @@ function feedback_add(?array $a, string $body, string $page, string $name = '', 
     $_SESSION['fb_times'][] = time();
     if (!$a && ($demo = varz_demo())) {
         $name = (trim($name) ?: $demo['name']) . ' (Budo bandymas)';   // admin mato, kad tai bandantysis per nuorodą
+    } elseif (!$a && ($sk = varz_sekr())) {
+        $name = (trim($name) ?: $sk['name']) . ' (sekretoriatas)';
     } elseif (!$a && $site === 'ltkf' && ltkf_review()) {
         $name = (trim($name) ?: 'Svečias') . ' (LTKF peržiūra)';
     }
@@ -233,7 +235,7 @@ function feedback_visible(?array $a, ?string $site = null): bool
     $script = basename($_SERVER['SCRIPT_NAME'] ?? '');
     // Taikos bandymo nuoroda (be paskyros) - atsiliepimus palikti galima ir tada
     $who = $mode === 'all' || ($mode === 'members' && $a) || ($mode === 'staff' && $a && is_staff($a));
-    return feedback_ready() && $mode !== 'off' && ($who || varz_demo() || ($site === 'ltkf' && ltkf_review())) && !in_array($script, ['testas.php', 'egzaminas.php', 'testas-svecias.php'], true);
+    return feedback_ready() && $mode !== 'off' && ($who || varz_demo() || varz_sekr() || ($site === 'ltkf' && ltkf_review())) && !in_array($script, ['testas.php', 'egzaminas.php', 'testas-svecias.php'], true);
 }
 
 /** Mygtukas ir langas (visuose puslapiuose, apačioje kairėje). $site - jei kviečiama iš kitos svetainės (LTKF) */
@@ -259,7 +261,7 @@ function feedback_widget_html(?string $site = null): string
         . '<div class="fb-editing" id="fbEditing" hidden><span></span><button type="button" class="fb-link fb-del" title="' . e(t('Ištrinti šį atsiliepimą')) . '">🗑</button><button type="button" class="fb-link" id="fbNew">' . te('+ Naujas') . '</button></div>'
         . '<textarea id="fbText" rows="4" maxlength="' . FEEDBACK_MAX . '" placeholder="' . e(t('Kas negerai arba ką pakeisti? Ctrl+V - įklijuokite ekrano nuotrauką.')) . '" aria-label="' . e(t('Atsiliepimas')) . '"></textarea>'
         . '<div class="fb-imgs" id="fbImgs"></div>'
-        . ($a ? '' : '<input type="text" id="fbName" maxlength="120" value="' . e((string) (varz_demo()['name'] ?? '')) . '" placeholder="' . e(t('Vardas ar el. paštas (nebūtina)')) . '" aria-label="' . e(t('Vardas ar el. paštas (nebūtina)')) . '">')
+        . ($a ? '' : '<input type="text" id="fbName" maxlength="120" value="' . e((string) (varz_demo()['name'] ?? (varz_sekr()['name'] ?? ''))) . '" placeholder="' . e(t('Vardas ar el. paštas (nebūtina)')) . '" aria-label="' . e(t('Vardas ar el. paštas (nebūtina)')) . '">')
         . '<div class="fb-actions">'
         . ($cfg['images'] ? '<label class="fb-attach" title="' . e(t('Pridėti nuotraukų (arba Ctrl+V, ar nutempkite čia)')) . '">📎 ' . te('Nuotraukos') . '<input type="file" id="fbFile" accept="image/*" multiple hidden></label>' : '')
         . '<span class="fb-hint">' . te('Enter - išsaugoti ir naujas · Shift+Enter - nauja eilutė') . '</span>'

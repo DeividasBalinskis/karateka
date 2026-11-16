@@ -79,7 +79,49 @@ function varz_demo_start(string $token, string $name): bool
     return true;
 }
 
-/** Taikos puslapiams: treneris / adminas arba bandantysis per nuorodą (['demo' => true, 'id' => 0, ...]) */
+// ---------- Sekretoriato nuoroda (be paskyros): tik vienoms varžyboms, be klubo narių duomenų ----------
+
+function varz_sekr_token(int $tid): string
+{
+    return (string) site_setting('varz_sekr_' . $tid, '');
+}
+
+function varz_sekr_set(int $tid, bool $on): void
+{
+    set_site_setting('varz_sekr_' . $tid, $on ? bin2hex(random_bytes(12)) : '');
+}
+
+/** Kurių varžybų nuoroda (0 - neveikia) */
+function varz_sekr_find(string $token): int
+{
+    if (!preg_match('/^[0-9a-f]{24}$/', $token)) {
+        return 0;
+    }
+    $n = q_value("SELECT name FROM site_settings WHERE name LIKE 'varz\\_sekr\\_%' AND value = ?", [$token]);
+    return $n ? (int) substr((string) $n, 10) : 0;
+}
+
+/** Galiojanti sekretoriato sesija (['tid', 'name']) - šioms varžyboms ar bet kurioms; nuorodą pakeitus ar išjungus - baigiasi */
+function varz_sekr(?int $tid = null): ?array
+{
+    foreach ((array) ($_SESSION['varz_sekr'] ?? []) as $id => $s) {
+        if ($tid !== null && (int) $id !== $tid) {
+            continue;
+        }
+        $tok = varz_sekr_token((int) $id);
+        if ($tok !== '' && is_array($s) && hash_equals(hash('sha256', $tok), (string) ($s['tok'] ?? ''))) {
+            return ['tid' => (int) $id, 'name' => (string) ($s['name'] ?? '')];
+        }
+    }
+    return null;
+}
+
+function varz_sekr_start(int $tid, string $name): void
+{
+    $_SESSION['varz_sekr'][$tid] = ['tok' => hash('sha256', varz_sekr_token($tid)), 'name' => mb_substr(trim($name), 0, 80)];
+}
+
+/** Taikos puslapiams: treneris / adminas, bandantysis per nuorodą (['demo' => true, ...]) arba sekretoriatas (['sekr' => varžybų id, ...]) */
 function varz_require_access(): array
 {
     $a = current_account();
@@ -88,6 +130,14 @@ function varz_require_access(): array
     }
     if ($d = varz_demo()) {
         return ['id' => 0, 'role' => 'demo', 'demo' => true, 'first_name' => $d['name'], 'last_name' => '', 'email' => ''];
+    }
+    $tid = (int) get('id');
+    if ($s = varz_sekr()) {
+        $mine = $tid ? varz_sekr($tid) : null;
+        if (!$mine) {
+            redirect('admin/varzybu-sistema.php?id=' . $s['tid']);   // sekretoriatas mato tik savo varžybas
+        }
+        return ['id' => 0, 'role' => 'sekr', 'sekr' => $mine['tid'], 'first_name' => $mine['name'], 'last_name' => '', 'email' => ''];
     }
     return require_staff();
 }

@@ -6,6 +6,9 @@ require dirname(__DIR__) . '/app/bootstrap.php';
 require_once dirname(__DIR__) . '/app/diplomas.php';
 $me = varz_require_access();
 $demo = varz_is_demo($me);   // bandymo nuoroda: tik bandymo varžybos, be tikrų narių ir bendrų nustatymų
+$sekr = !empty($me['sekr']);   // sekretoriatas per nuorodą: tik šios varžybos, be klubo narių duomenų
+$preview = !$sekr && !$demo && is_staff() && get('kaip') === 'sekretoriatas';   // adminas žiūri, kaip mato sekretoriatas
+$asSekr = $sekr || $preview;
 current_lang('lt');   // varžybų valdymas kol kas lietuviškai
 
 $t = tournament_get((int) get('id'));
@@ -15,6 +18,17 @@ if ($t && $demo && empty($t['is_demo'])) {
 if (!$t) {
     flash('err', t('Varžybos nerastos.'));
     redirect('admin/varzybos.php');
+}
+
+// Sekretoriato nuoroda: sukurti / pakeisti / išjungti (treneris ar adminas)
+if (is_post() && in_array(post('action'), ['sekr_on', 'sekr_off'], true)) {
+    csrf_check();
+    if ($sekr || $demo) {
+        forbidden();
+    }
+    varz_sekr_set((int) $t['id'], post('action') === 'sekr_on');
+    flash('ok', post('action') === 'sekr_on' ? t('Sekretoriato nuoroda sukurta - nukopijuokite ir nusiųskite.') : t('Sekretoriato nuoroda išjungta - su ja nebeprisijungs.'));
+    redirect('admin/varzybu-sistema.php?id=' . (int) $t['id'] . '&sekr=1');
 }
 
 // Nauji užsiregistravę per nuorodą (JSON) - mygtukas „↻“ Dalyvių skirtuke
@@ -28,7 +42,7 @@ if (get('diplomai')) {
     if (is_post()) {
         csrf_check();
         header('Content-Type: application/json; charset=utf-8');
-        if ($demo) {
+        if ($demo || $sekr) {
             exit(json_encode(['ok' => false, 'error' => t('Bandymo nuorodoje šablono keisti negalima - jis bendras visoms varžyboms.')], JSON_UNESCAPED_UNICODE));
         }
         if (post('action') === 'delete') {
@@ -120,7 +134,7 @@ if (get('ui') && is_post()) {
     csrf_check();
     header('Content-Type: application/json; charset=utf-8');
     // Tema ir meniu bendri visiems - bandantysis jų nekeičia (jam pakeitimas galioja tik šiame lange)
-    exit(json_encode(['ok' => true, 'ui' => $demo ? varz_ui() : varz_ui_save(json_decode((string) file_get_contents('php://input'), true) ?: [])], JSON_UNESCAPED_UNICODE));
+    exit(json_encode(['ok' => true, 'ui' => $demo || $sekr ? varz_ui() : varz_ui_save(json_decode((string) file_get_contents('php://input'), true) ?: [])], JSON_UNESCAPED_UNICODE));
 }
 
 // Istorija: kopijų sąrašas (JSON) ir atkūrimas
@@ -191,9 +205,9 @@ $cfg = [
     'api' => url('admin/varzybu-sistema.php?id=' . (int) $t['id']), 'csrf' => csrf_token(), 'year' => (int) substr($t['starts_on'], 0, 4),
     'date' => $t['starts_on'], 'dateEnd' => $t['ends_on'] ?: $t['starts_on'],
     'popup' => get('langas') && get('cat') !== '' ? (string) get('cat') : null,   // atkabinta rungtis atskirame lange
-    'homeClub' => VARZ_HOME_CLUB, 'belts' => $belts, 'members' => $demo ? [] : varz_club_members(), 'state' => varz_drop_example_clubs(tournament_state($t)),
-    'clubContacts' => tournament_club_contacts((int) $t['id']), 'clubDirectory' => $demo ? [] : varz_club_directory(), 'demo' => $demo,
-    'admin' => is_admin() || $demo,
+    'homeClub' => VARZ_HOME_CLUB, 'belts' => $belts, 'members' => $demo || $asSekr ? [] : varz_club_members(), 'state' => varz_drop_example_clubs(tournament_state($t)),
+    'clubContacts' => tournament_club_contacts((int) $t['id']), 'clubDirectory' => $demo || $asSekr ? [] : varz_club_directory(), 'demo' => $demo, 'sekr' => $asSekr,
+    'admin' => (is_admin() && !$preview) || $demo,
     'diplomaApi' => url('admin/varzybu-sistema.php?id=' . (int) $t['id'] . '&diplomai=1'), 'diplomaTpl' => diploma_template(),   // tatamio šalinimas - tik pagrindiniam adminui (ir bandymo nuorodai)
 ];
 $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($t['ends_on'], true) : '');
@@ -213,12 +227,12 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
 <body<?= theme_body_attrs(varz_ui()['theme'], 'vz' . (get('langas') ? ' vz-popup' : '')) ?>>
 <header class="vz-top">
   <div class="vz-top-row">
-    <a class="vz-back" href="<?= url('admin/varzybos.php') ?>" title="Visos varžybos">←</a>
-    <a class="vz-brand" href="<?= url('admin/varzybos.php') ?>" title="Visos varžybos"><span class="vz-logo" aria-hidden="true"></span><?= e(VARZ_NAME) ?></a>
+    <?php if (!$asSekr): ?><a class="vz-back" href="<?= url('admin/varzybos.php') ?>" title="Visos varžybos">←</a><?php endif; ?>
+    <a class="vz-brand" href="<?= url($asSekr ? 'admin/varzybu-sistema.php?id=' . (int) $t['id'] . ($preview ? '&kaip=sekretoriatas' : '') : 'admin/varzybos.php') ?>" title="<?= $asSekr ? 'Šios varžybos' : 'Visos varžybos' ?>"><span class="vz-logo" aria-hidden="true"></span><?= e(VARZ_NAME) ?></a>
     <div class="vz-title">
       <div class="vz-switch">
         <h1 id="t-name"><?= e($t['title']) ?></h1>
-        <select id="t-switch" aria-label="Kitos varžybos" title="Pereiti į kitas varžybas">
+        <select id="t-switch" aria-label="Kitos varžybos" title="Pereiti į kitas varžybas"<?= $asSekr ? ' hidden' : '' ?>>
           <?php foreach (tournaments_list(true, $demo) as $o): ?><option value="<?= url('admin/varzybu-sistema.php?id=' . (int) $o['id']) ?>"<?= (int) $o['id'] === (int) $t['id'] ? ' selected' : '' ?>><?= e($o['title']) ?> · <?= e(fmt_date($o['starts_on'])) ?></option><?php endforeach; ?>
           <option value="<?= url('admin/varzybos.php') ?>">☰ Visos varžybos</option>
         </select>
@@ -228,7 +242,9 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
     <div class="vz-top-right">
       <?= render_lang_switch(tl_lang()) ?>
       <span class="save-state ok" id="save-state" role="status">Išsaugota ✓</span>
-      <?= theme_picker_html('taika', varz_ui()['theme'], 'vz-link') ?>
+      <?= $asSekr ? '' : theme_picker_html('taika', varz_ui()['theme'], 'vz-link') ?>
+      <?php if ($sekr): ?><span class="vz-link vz-sekr-who" title="Prisijungta per sekretoriato nuorodą">🧑‍💼 <?= e($me['first_name']) ?></span><?php endif; ?>
+      <?php if (!$asSekr && !$demo): ?><button type="button" class="vz-link" id="sekr-toggle" aria-expanded="false" title="Nuoroda sekretoriatui be paskyros">🧑‍💼<span class="hide-sm"> Sekretoriatas</span></button><?php endif; ?>
       <button type="button" class="vz-link" id="hist-toggle" aria-expanded="false" title="Atkurti, kaip buvo anksčiau">⟲<span class="hide-sm"> Istorija</span></button>
       <?php if ($shareUrl): ?><button type="button" class="vz-link" id="share-toggle" aria-expanded="false" title="Transliacija, ekranai, apdovanojimai, registracija">📡<span class="hide-sm"> Transliacija ir registracija</span></button><?php endif; ?>
       <a class="vz-link" href="<?= url('varzybu-rezultatai.php?id=' . (int) $t['id']) ?>" target="_blank" rel="noopener" title="Viešas rezultatų puslapis"><span class="hide-sm">Viešas puslapis </span>↗</a>
@@ -263,6 +279,41 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
     <div class="hist-list" id="hist-list"><p class="muted small">Kraunama…</p></div>
   </div>
 </div>
+<?php if ($preview): ?>
+<div class="sekr-preview"><b>👁 Peržiūra: taip šias varžybas mato sekretoriatas</b> <span>be paskyros, tik šios varžybos, be klubo narių duomenų ir bendrų nustatymų</span>
+  <a class="btn btn-sm" href="<?= url('admin/varzybu-sistema.php?id=' . (int) $t['id']) ?>">✕ Baigti peržiūrą</a></div>
+<?php endif; ?>
+<?php if (!$asSekr && !$demo): $sekrTok = varz_sekr_token((int) $t['id']); $sekrUrl = $sekrTok !== '' ? abs_url('varzybos-sekretoriatas.php?k=' . $sekrTok) : ''; ?>
+<div class="share-panel" id="sekr-panel"<?= get('sekr') ? '' : ' hidden' ?>>
+  <div class="sp-block">
+    <b>🧑‍💼 Sekretoriato nuoroda (be paskyros)</b>
+    <p class="muted small">Atidaręs nuorodą žmogus įrašo vardą ir pavardę ir gali vesti šias varžybas: dalyviai, kategorijos, kovos, balai, apdovanojimai.
+      Kitų varžybų, klubo narių duomenų ir karateka.lt valdymo nemato. Išjungus ar pakeitus nuorodą - prieiga baigiasi.</p>
+    <?php if ($sekrUrl): ?>
+      <div class="sp-row"><input class="sel sp-url" readonly value="<?= e($sekrUrl) ?>" id="sekr-url" aria-label="Sekretoriato nuoroda" onclick="this.select()"><button type="button" class="btn" data-copy="<?= e($sekrUrl) ?>">Kopijuoti</button></div>
+      <form method="post" class="sp-row"><?= csrf_field() ?>
+        <button class="btn" name="action" value="sekr_on" type="submit" onclick="return confirm('Sukurti naują nuorodą? Sena nebeveiks.')">↻ Nauja nuoroda</button>
+        <button class="btn btn-danger" name="action" value="sekr_off" type="submit">Išjungti</button></form>
+    <?php else: ?>
+      <form method="post" class="sp-row"><?= csrf_field() ?><button class="btn btn-primary" name="action" value="sekr_on" type="submit">Sukurti sekretoriato nuorodą</button></form>
+    <?php endif; ?>
+    <div class="sp-row"><a class="btn" href="<?= url('admin/varzybu-sistema.php?id=' . (int) $t['id'] . '&kaip=sekretoriatas') ?>" id="sekr-preview">👁 Peržiūrėti kaip sekretoriatas</a></div>
+  </div>
+</div>
+<script>
+(function () {
+  var b = document.getElementById('sekr-toggle'), p = document.getElementById('sekr-panel'); if (!b || !p) return;
+  b.setAttribute('aria-expanded', p.hidden ? 'false' : 'true');
+  b.addEventListener('click', function () { p.hidden = !p.hidden; b.setAttribute('aria-expanded', p.hidden ? 'false' : 'true'); });
+  p.addEventListener('click', function (e) {
+    var c = e.target.closest('[data-copy]'); if (!c) return;
+    var done = function () { var o = c.textContent; c.textContent = 'Nukopijuota ✓'; setTimeout(function () { c.textContent = o; }, 1500); };
+    if (navigator.clipboard) navigator.clipboard.writeText(c.dataset.copy).then(done, function () { document.getElementById('sekr-url').select(); });
+    else { document.getElementById('sekr-url').select(); document.execCommand('copy'); done(); }
+  });
+})();
+</script>
+<?php endif; ?>
 <div class="share-panel" id="share-panel" hidden>
   <div class="sp-block">
     <b>📺 Ekranai salėje</b>
@@ -295,7 +346,7 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
   <!-- DALYVIAI -->
   <section id="v-dalyviai" role="tabpanel" aria-labelledby="tab-dalyviai" hidden>
     <div class="toolbar">
-      <button class="btn btn-primary" id="ppl-members" type="button"<?= $demo ? ' hidden' : '' ?>>+ Karateka nariai</button>
+      <button class="btn btn-primary" id="ppl-members" type="button"<?= $demo || $asSekr ? ' hidden' : '' ?>>+ Karateka nariai</button>
       <input type="search" class="sel" id="ppl-search" placeholder="Ieškoti dalyvio" aria-label="Ieškoti dalyvio">
       <select class="sel" id="ppl-club" aria-label="Klubas"></select>
       <label class="small"><input type="checkbox" id="ppl-nocat"> Tik be kategorijos</label>

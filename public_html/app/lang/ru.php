@@ -2778,4 +2778,6 @@ Nuo 2013 m. treniravosi Tradicinio karate-do klubo „Sanrei“ komandoje, o 201
     'nebūtina - be jo gausite nuorodą nukopijuoti' => 'необязательно — без него получите ссылку для копирования',
     'Siųsti el. paštu / nauja nuoroda' => 'Отправить по e-mail / новая ссылка',
     'Sukurti pakvietimą' => 'Создать приглашение',
+    'Sekretoriato nuoroda sukurta - nukopijuokite ir nusiųskite.' => 'Ссылка для секретариата создана — скопируйте и отправьте.',
+    'Sekretoriato nuoroda išjungta - su ja nebeprisijungs.' => 'Ссылка для секретариата отключена — по ней больше не войти.',
 ];

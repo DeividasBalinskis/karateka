@@ -48,7 +48,7 @@ if (!is_post()) {
 }
 csrf_check();
 $wantsJson = stripos((string) ($_SERVER['HTTP_ACCEPT'] ?? ''), 'application/json') !== false;
-if (!feedback_ready() || feedback_mode() === 'off' || (feedback_mode() === 'members' && !$a && !varz_demo() && !(post('site') === 'ltkf' && ltkf_review()))) {
+if (!feedback_ready() || feedback_mode() === 'off' || (feedback_mode() === 'members' && !$a && !varz_demo() && !varz_sekr() && !(post('site') === 'ltkf' && ltkf_review()))) {
     $wantsJson ? $json(['ok' => false, 'error' => t('Atsiliepimai dar neįjungti.')], 403) : redirect('index.php');
 }
 $page = (string) post('page');

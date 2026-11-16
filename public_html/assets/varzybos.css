@@ -1211,3 +1211,8 @@ button.pin-p:hover { background: var(--surface-2); }
 .sv .kata-in, .sv .j-in, .sv input { color: #12151C; background: #fff; }
 .sv .sv-flags { display: flex; gap: 6px; justify-content: center; margin-top: 10px; }
 .sys-medals { display: inline-flex; align-items: center; gap: 8px; margin-top: 10px; font-size: .85rem; font-weight: 600; }
+/* Sekretoriato peržiūra ir prisijungęs sekretoriatas */
+.sekr-preview { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; padding: 10px 16px; background: #FFF4D6; color: #5A4300; border-bottom: 1px solid #F0D58A; font-size: .9rem; }
+.sekr-preview span { opacity: .8; }
+.sekr-preview .btn { margin-left: auto; }
+.vz-sekr-who { cursor: default; }

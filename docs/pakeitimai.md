@@ -4,6 +4,15 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.35 - 2026-11-16 (sekretoriato nuoroda varžyboms be paskyros)
+Duomenų bazės keisti nereikia. Zip'o turinį išpakuokite **tiesiai į svetainės aplanką**.
+
+- **🧑‍💼 Sekretoriatas** (varžybų puslapio viršuje): „Sukurti sekretoriato nuorodą“ → „Kopijuoti“ → nusiųsti.
+  Atidaręs nuorodą žmogus įrašo **vardą ir pavardę** ir veda **tik šias varžybas** (dalyviai, kategorijos, kovos, balai, apdovanojimai).
+  Paskyros nereikia. Kitų varžybų, klubo narių duomenų, bendrų nustatymų ir karateka.lt valdymo nemato. Pastabas palieka per 💡.
+- **👁 Peržiūrėti kaip sekretoriatas** - adminas mato tą patį, ką sekretoriatas (geltona juosta viršuje, „✕ Baigti peržiūrą“).
+- **↻ Nauja nuoroda** / **Išjungti** - sena nuoroda iškart nebeveikia, prisijungusieji atjungiami.
+
 ## v1.34 - 2026-11-16 (varžybų sistema vadinasi „Budo“; Denio atsiliepimas #44)
 Duomenų bazės keisti nereikia (jei v1.33 DB atnaujinimas jau padarytas). Zip'o turinį išpakuokite **tiesiai į svetainės aplanką**.
 
