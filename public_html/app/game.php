@@ -679,10 +679,19 @@ function game_save_hero(array $hero, array $in): array
 }
 
 /** Klubo personažai (arenai ir lankymuisi): vardas, lygis, diržas, išvaizda - be asmens duomenų */
+/** Herojai visiems aktyviems nariams (kad būtų galima pakviesti ir tuos, kurie dar neatsidarė žaidimo) */
+function game_ensure_heroes(int $limit = 400): void
+{
+    foreach (q_all('SELECT m.id, m.first_name, m.gender FROM members m LEFT JOIN game_heroes h ON h.member_id = m.id
+                     WHERE m.status = "active" AND h.id IS NULL LIMIT ' . (int) $limit) as $m) {
+        game_hero_create($m['first_name'], ['member_id' => (int) $m['id']], $m['gender'] ?? null);
+    }
+}
+
 function game_club_heroes(int $exceptId = 0, int $limit = 200): array
 {
     $rows = q_all('SELECT h.* FROM game_heroes h LEFT JOIN members m ON m.id = h.member_id LEFT JOIN accounts a ON a.id = h.account_id
-                    WHERE h.id <> ? AND (m.status = "active" OR a.status = "active") ORDER BY h.updated_at DESC, h.id DESC LIMIT ' . (int) $limit, [$exceptId]);
+                    WHERE h.id <> ? AND (m.status = "active" OR a.status = "active") ORDER BY h.updated_at IS NULL, h.updated_at DESC, h.id DESC LIMIT ' . (int) $limit, [$exceptId]);
     return array_map(function ($h) {
         $h = game_hero_decode($h);
         return ['id' => (int) $h['id'], 'name' => game_public_name($h), 'species' => $h['species'], 'gender' => $h['gender'], 'look' => $h['look'],

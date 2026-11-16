@@ -291,3 +291,8 @@ span.chat-ctx{text-decoration:none;}
   body.vz .fb-fab:hover .fb-fab-label, body.vz .fb-fab:focus-visible .fb-fab-label, body.vz .fb.open .fb-fab-label{max-width:160px; margin-left:8px;}
   body.vz .fb-panel{bottom:54px;}
 }
+/* Kvietimas žaisti (žaidimas) - bet kuriame puslapyje */
+.g-invite{position:fixed; left:50%; bottom:22px; transform:translateX(-50%); z-index:2200; background:#17140F; color:#fff; padding:10px 14px; border-radius:14px; box-shadow:0 10px 30px rgba(0,0,0,.3); font-weight:600; max-width:min(94vw,560px); display:flex; gap:8px; align-items:center; flex-wrap:wrap;}
+.g-invite span{flex:1; min-width:180px;}
+.g-invite .g-btn{border:1px solid rgba(255,255,255,.3); background:rgba(255,255,255,.12); color:#fff; border-radius:8px; padding:5px 10px; font:inherit; font-size:.8rem; font-weight:700; cursor:pointer;}
+.g-invite .g-btn.gold{background:linear-gradient(180deg,#FFD75E,#F2A516); border-color:#D18E0C; color:#3A2600;}

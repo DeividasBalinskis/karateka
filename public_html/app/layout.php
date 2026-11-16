@@ -63,6 +63,9 @@ function page_end(): void
 </footer>
 <?= page_widgets() ?>
 <script src="<?= e(asset_url('assets/header.js')) ?>"></script>
+<?php if (($acc = current_account()) && is_active_account($acc)): /* kvietimai žaisti - mažas langelis bet kuriame puslapyje */ ?>
+<script src="<?= e(asset_url('assets/game-invites.js')) ?>" data-api="<?= e(url('zaidimas.php')) ?>" data-csrf="<?= e(csrf_token()) ?>" data-arena="<?= e(url('arena.php')) ?>" data-keturi="<?= e(url('keturi.php')) ?>" defer></script>
+<?php endif; ?>
 </body>
 </html>
 <?php

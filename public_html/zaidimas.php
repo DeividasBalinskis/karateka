@@ -81,8 +81,8 @@ if (!is_post()) {
         $out(['ok' => true, 'match' => fight_view($m, $side)]);
     }
     if (isset($in['top'])) {   // ritmo žaidimo savaitės geriausi
-        $rows = q_all('SELECT s.hero_id, MAX(s.score) AS best, MAX(s.grade) AS grade FROM game_scores s WHERE s.game = "ritmas" AND s.song = ? AND s.created_at > DATE_SUB(NOW(), INTERVAL 7 DAY)
-                        GROUP BY s.hero_id ORDER BY best DESC LIMIT 10', [(string) ($in['song'] ?? '')]);
+        $rows = q_all('SELECT s.hero_id, MAX(s.score) AS best, MAX(s.grade) AS grade FROM game_scores s WHERE s.game = ? AND s.song = ? AND s.created_at > DATE_SUB(NOW(), INTERVAL 7 DAY)
+                        GROUP BY s.hero_id ORDER BY best DESC LIMIT 10', [($in['game'] ?? '') === 'greita' ? 'greita' : 'ritmas', (string) ($in['song'] ?? '')]);
         $out(['ok' => true, 'top' => array_map(function ($r) { $h = game_hero_row((int) $r['hero_id']); return ['name' => $h ? game_public_name($h) : '?', 'score' => (int) $r['best']]; }, $rows)]);
     }
     $out(['ok' => false, 'error' => 'unknown'], 400);
@@ -236,11 +236,25 @@ switch ($action) {
         }
         $out(['ok' => true, 'match' => fight_view(fight_match((int) $m['id']), $side)]);
     case 'score':
+        // Ritmo žaidimas (daina) arba „Greita kova“ (realiu laiku su botu: lygis, pergalė)
+        $game = ($in['game'] ?? '') === 'greita' ? 'greita' : 'ritmas';
         $song = preg_replace('/[^a-z0-9]/', '', (string) ($in['song'] ?? ''));
         $score = max(0, min(2000000, (int) ($in['score'] ?? 0)));
         $grade = in_array($in['grade'] ?? '', ['S', 'A', 'B', 'C', 'D'], true) ? $in['grade'] : 'D';
-        q('INSERT INTO game_scores (hero_id, game, song, score, grade) VALUES (?, "ritmas", ?, ?, ?)', [$hid, $song, $score, $grade]);
+        q('INSERT INTO game_scores (hero_id, game, song, score, grade) VALUES (?, ?, ?, ?, ?)', [$hid, $game, $song, $score, $grade]);
         $prize = '';
+        if ($game === 'greita') {
+            // Pergalė prieš botą įskaitoma į „3 pergalės per dieną“ (dovanų dėžė), reitingas nesikeičia
+            $win = !empty($in['win']);
+            q('INSERT INTO game_matches (game, mode, a_hero, b_hero, status, winner, updated_at) VALUES ("greita", ?, ?, NULL, "done", ?, NOW())',
+                [($in['mode'] ?? '') === 'fair' ? 'fair' : 'power', $hid, $win ? 1 : 2]);
+            if ($win) {
+                $before = game_box_count($hid);
+                game_daily_win_box(game_hero_row($hid));
+                $prize = game_box_count($hid) > $before ? 'box' : '';
+            }
+            $out(['ok' => true, 'prize' => $prize]);
+        }
         if ($grade === 'S' && q('INSERT IGNORE INTO game_boxes (hero_id, reason, title) VALUES (?, ?, ?)', [$hid, 'ritmas:' . $song, t('Kata ritmas: S įvertinimas')])->rowCount()) {
             $prize = 'box';
         }

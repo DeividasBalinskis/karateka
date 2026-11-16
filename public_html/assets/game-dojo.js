@@ -291,7 +291,7 @@
       '<p class="g-empty">' + T('Matai tik tu (adminas). Vaikų lygis ir diržas imami iš tikrų XP ir diržo.') + '</p>';
   }
   function head() {
-    var boxes = (H.boxes || []).length, html = '<h2 class="dojo-title">🏯 ' + esc(T('Mano dojo')) + '</h2><span class="dojo-lvl">⭐ ' + H.level + '</span>';
+    var boxes = (H.boxes || []).length, html = '<h2 class="dojo-title">🏯 ' + esc(ro ? (H.publicName || H.name) + ' · ' + T('Dojo') : T('Mano dojo')) + '</h2><span class="dojo-lvl">⭐ ' + H.level + '</span>';
     if ((G.heroes || []).length > 1) html += '<div class="dojo-heroes">' + G.heroes.map(function (h) { return '<button type="button" data-hero="' + h.id + '" class="' + (+h.id === +H.id ? 'active' : '') + '">' + esc(h.name) + '</button>'; }).join('') + '</div>';
     html += '<span class="sp"></span>';
     if (!ro) {
