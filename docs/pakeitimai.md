@@ -4,6 +4,30 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.39 - 2026-11-17 (Žaidimas pikseliais: lapė kaip tikras personažas, viena kovos arena, žaidimo mygtukai)
+Duomenų bazės atnaujinti nereikia. Zip'o turinį išpakuokite **tiesiai į svetainės aplanką**.
+
+**🦊 Pikselinis personažas** (vietoje apvalių piešinių)
+- Žaidime visur rodoma **pikselinė lapė (kitsunė)** - ta pati, kurią derinome: ploni kontūrai, liepsnos, uodegos.
+- Keičiasi pagal žaidėją: **kailio spalva**, **liepsnų spalva** („✏️ Išvaizda“), **kimono** (užsidėtas kimono nuspalvina drabužį,
+  yra naujas „Smaragdinis su sakuromis“), **diržas - tikras** (9 kyu baltas … juodas).
+- Treniruočių partneriai - kitų spalvų lapės (smėlinė, ruda, šešėlių su violetinėmis liepsnomis).
+- **Gyvūnėliai - pūkų gumulėliai** (11 formų, spalva pagal gyvūnėlį). Namai, dekoracijos ir daiktų ikonos - pikseliniai.
+- Priedai, kurių ant pikselinės lapės dar nėra (kepurės, auros, šukuosenos ir pan.), kol kas paslėpti - grįš, kai bus nupiešti.
+- Nauji personažai pridedami kaip paveikslėliai: variklis pats perdažo kailį, kimono, diržą ir liepsnas (`assets/game-pixel.js`).
+
+**⚔️ Kova vienoje arenoje**
+- Abu kovotojai - **tame pačiame pikseliniame dojo** (mėnesiena, žibintai), veidu vienas į kitą; savas visada kairėje.
+- Smūgių ir blokų lentelė - **ant arenos fono, kaip žaidimo sąsaja**. Pavadinimai su paaiškinimu:
+  „Kizami tsuki jodan [smūgis į galvą]“, „Mae geri chudan [spyris į pilvą]“, „Soto uke chudan [blokas nuo smūgio į pilvą]“.
+- **Ypatingi veiksmai** (Kiai, Zanshin, Kime) - atskiri mygtukai su ikonomis po lentele.
+- **Kovos eiga dešinėje** (kaip pokalbis): kas ką padarė, žala raudonai, gydymas žaliai, ėjimai atskirti. Reakcijos - po ja.
+- Telefone: kovotojai viršuje, lentelė žemiau (vis tiek ant arenos fono), kovos eiga - po arena.
+
+**🎮 Žaidimo mygtukai**
+- „Karate kova“, „Greita kova“, „Keturi iš eilės“, „Kata ritmas“ - tikri žaidimo mygtukai (įspaudžiami) su pikselinėmis ikonomis.
+- „Greita kova“ ir „Keturi iš eilės“ - ta pati pikselinė arena, lenta ir mygtukai.
+
 ## v1.38 - 2026-11-17 (Žaidimas: atskiras puslapis vaikams, viskas atrakinta testavimui, kova kaip combats)
 Duomenų bazės atnaujinti nereikia. Zip'o turinį išpakuokite **tiesiai į svetainės aplanką**.
 

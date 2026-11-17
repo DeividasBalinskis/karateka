@@ -11,8 +11,13 @@ function game_urls(): array
 /** Bendri žaidimo scenarijai ir stilius */
 function game_assets(): string
 {
-    return '<link rel="stylesheet" href="' . e(asset_url('assets/game.css')) . '">'
-        . '<script src="' . e(asset_url('assets/game-art.js')) . '"></script>';
+    // Pikselinis menas: duomenys (lapė, gyvūnėliai) + variklis, kuris pakeičia senus apvalius SVG personažus
+    return '<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">'
+        . '<link rel="stylesheet" href="' . e(asset_url('assets/game.css')) . '">'
+        . '<link rel="stylesheet" href="' . e(asset_url('assets/game-px.css')) . '">'
+        . '<script src="' . e(asset_url('assets/game-art.js')) . '"></script>'
+        . '<script src="' . e(asset_url('assets/game-px-data.js')) . '"></script>'
+        . '<script src="' . e(asset_url('assets/game-pixel.js')) . '"></script>';
 }
 
 /**

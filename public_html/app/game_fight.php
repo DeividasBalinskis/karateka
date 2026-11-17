@@ -58,8 +58,10 @@ function fight_bot_side(array $me, string $mode, string $lvl): array
     $names = ['easy' => t('Senpai Bambukas'), 'normal' => t('Sensei Makivara'), 'hard' => t('Meistras Drakonas')];
     $species = ['easy' => 'panda', 'normal' => 'monkey', 'hard' => 'dragon'][$lvl] ?? 'monkey';
     return ['hero' => 0, 'bot' => $lvl, 'name' => $names[$lvl] ?? $names['normal'], 'level' => $me['level'], 's' => $s, 'pet' => null,
-            'art' => ['species' => $species, 'gender' => 'm', 'look' => ['fur' => GAME_SPECIES[$species][2], 'eyes' => '#2B2B2B'],
-                      'equipped' => ['kimono' => $lvl === 'hard' ? 'k_black_red' : 'k_white', 'belt' => 'b_plain', 'head' => $lvl === 'easy' ? 'h_band_white' : 'h_band_red'],
+            // Pikselinės lapės: lengvas - smėlinė su žaliomis liepsnomis, vidutinis - ruda su oranžinėmis, sunkus - šešėlių lapė su violetinėmis
+            'art' => ['species' => $species, 'gender' => 'm', 'look' => ['fur' => ['easy' => '#E9D2A8', 'normal' => '#C8703A', 'hard' => '#3B3A4A'][$lvl] ?? '#C8703A',
+                                                                          'flame' => ['easy' => '#6EDC8C', 'normal' => '#FF9A3C', 'hard' => '#B46CFF'][$lvl] ?? '#FF9A3C', 'eyes' => '#2B2B2B'],
+                      'equipped' => ['kimono' => $lvl === 'hard' ? 'k_black_red' : ($lvl === 'normal' ? 'k_white' : 'k_emerald'), 'belt' => 'b_plain', 'head' => $lvl === 'easy' ? 'h_band_white' : 'h_band_red'],
                       'belt' => $lvl === 'hard' ? 12 : ($lvl === 'normal' ? 7 : 3), 'name' => $names[$lvl] ?? '']];
 }
 

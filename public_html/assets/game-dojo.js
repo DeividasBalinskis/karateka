@@ -179,11 +179,12 @@
     html += '</div>';
     $('.dojo-side').innerHTML = html;
     if (!ro && G.urls) {
+      var gb = function (cls, ic, url, name, sub) { return '<a class="g-game ' + cls + '" href="' + url + '"><span class="gi">' + (A.icon ? A.icon(ic) : '') + '</span><span>' + name + '<small>' + sub + '</small></span></a>'; };
       html = '<div class="g-games">' +
-        '<a class="g-game kova" href="' + G.urls.arena + '"><span class="gi">⚔️</span><span>' + T('Karate kova') + '<small>' + T('Pasirink, kur smūgiuoti ir ką ginti') + '</small></span></a>' +
-        '<a class="g-game kova" style="background:linear-gradient(135deg,#E8590C,#9A3412)" href="' + G.urls.greita + '"><span class="gi">⚡</span><span>' + T('Greita kova') + '<small>' + T('Reakcija: blokuok laiku ir kontratakuok') + '</small></span></a>' +
-        '<a class="g-game keturi" href="' + G.urls.keturi + '"><span class="gi">🔴</span><span>' + T('Keturi iš eilės') + '<small>' + T('Su gyvūnėlių kortomis') + '</small></span></a>' +
-        '<a class="g-game ritmas" href="' + G.urls.ritmas + '"><span class="gi">🥁</span><span>' + T('Kata ritmas') + '<small>' + T('Muša būgnai - daryk techniką laiku') + '</small></span></a>' +
+        gb('kova', 'kova', G.urls.arena, T('Karate kova'), T('Pasirink, kur smūgiuoti ir ką ginti')) +
+        gb('greita', 'greita', G.urls.greita, T('Greita kova'), T('Reakcija: blokuok laiku ir kontratakuok')) +
+        gb('keturi', 'keturi', G.urls.keturi, T('Keturi iš eilės'), T('Su gyvūnėlių kortomis')) +
+        gb('ritmas', 'ritmas', G.urls.ritmas, T('Kata ritmas'), T('Muša būgnai - daryk techniką laiku')) +
         '</div>';
       $('.dojo-play').innerHTML = html;
     }
@@ -197,7 +198,9 @@
   }
 
   // ---------- Skiltys ----------
-  var SLOT_ORDER = ['weapon', 'kimono', 'belt', 'hair', 'head', 'face', 'neck', 'hands', 'back', 'aura'];
+  // Pikselinis personažas kol kas rodo kimono (spalvą) ir tikrą diržą; kiti priedai (kepurės, auros…) grįš, kai bus nupiešti pikseliais
+  var PIXEL = !!A.pixel, HIDDEN = PIXEL ? ['belt', 'hair', 'head', 'face', 'neck', 'hands', 'back', 'aura', 'species'] : [];
+  var SLOT_ORDER = PIXEL ? ['weapon', 'kimono'] : ['weapon', 'kimono', 'belt', 'hair', 'head', 'face', 'neck', 'hands', 'back', 'aura'];
   function renderEquip() {
     var html = '<div class="g-slots">';
     SLOT_ORDER.forEach(function (sl) {
@@ -223,7 +226,7 @@
     return false;
   }
   function renderInv() {
-    var own = H.owned || {}, keys = Object.keys(own).filter(function (k) { return item(k); });
+    var own = H.owned || {}, keys = Object.keys(own).filter(function (k) { return item(k) && HIDDEN.indexOf(item(k).slot) < 0; });
     keys.sort(function (a, b) { var A1 = item(a), B1 = item(b); return SLOT_ORDER.concat(['paint', 'bg', 'house', 'decor', 'egg']).indexOf(A1.slot) - SLOT_ORDER.concat(['paint', 'bg', 'house', 'decor', 'egg']).indexOf(B1.slot) || B1.r - A1.r; });
     var html = '<div class="g-filters">' + FILTERS.map(function (f) { return '<button type="button" data-filt="' + f[0] + '" class="' + (filt === f[0] ? 'active' : '') + '">' + esc(T(f[1])) + '</button>'; }).join('') +
       (SLOT_ORDER.indexOf(filt) >= 0 ? '<button type="button" class="active">' + esc(C.slots[filt]) + '</button>' : '') + '</div><div class="g-items">';
@@ -308,8 +311,9 @@
     ['face', '🥸 Veidui'], ['neck', '🏅 Kaklui'], ['hands', '🥊 Rankoms'], ['back', '🦸 Nugarai'], ['aura', '🌟 Auros'], ['paint', '🎨 Spalvos'], ['bg', '🌄 Aplinkos'], ['house', '🏠 Namai'], ['decor', '🏮 Dekoracijos'], ['pets', '🐾 Gyvūnėliai']];
   function renderCol() {
     var own = H.owned || {}, petsHave = {}, tot = 0, got = 0, html = '';
+    var sets = SETS.filter(function (st) { return HIDDEN.indexOf(st[0]) < 0; });
     (H.pets || []).forEach(function (p) { petsHave[p.species] = 1; });
-    SETS.forEach(function (st) {
+    sets.forEach(function (st) {
       var keys = st[0] === 'pets' ? Object.keys(C.pets) : Object.keys(C.items).filter(function (k) { return item(k).slot === st[0]; });
       var have = keys.filter(function (k) { return st[0] === 'pets' ? petsHave[k] : (own[k] || equippedKey(k)); });
       tot += keys.length; got += have.length;
@@ -443,6 +447,14 @@
       var eq = Object.assign({}, H.equipped, { hair: d.hair });
       m.querySelector('#ed-prev').innerHTML = A.hero({ species: d.species, gender: d.gender, look: d.look, equipped: eq, belt: H.belt, name: d.name });
       var isH = d.species === 'human', f = '';
+      if (PIXEL) {
+        f += '<div class="ed-row"><span class="ed-lab">' + T('Kas tu?') + '</span><div class="ed-sp"><button type="button" class="sel" data-sp="kitsune"><span>🦊</span>' + esc(C.species.kitsune.n) + '</button></div><p class="g-empty" style="margin:6px 0 0">' + T('Kiti personažai atsiras, kai bus nupiešti pikseliais.') + '</p></div>';
+        f += '<div class="ed-row"><span class="ed-lab">' + T('Kailio spalva') + '</span>' + sw('fur', C.fur, paints) + '</div>';
+        f += '<div class="ed-row"><span class="ed-lab">' + T('Liepsnų spalva') + '</span>' + sw('flame', C.flame || []) + '</div>';
+        f += '<div class="ed-row"><label for="ed-name">' + T('Herojaus vardas') + '</label><input type="text" id="ed-name" maxlength="24" value="' + esc(d.name) + '"></div>';
+        m.querySelector('#ed-f').innerHTML = f;
+        return;
+      }
       f += '<div class="ed-row"><span class="ed-lab">' + T('Kas tu?') + '</span><div class="ed-sp">' + Object.keys(C.species).map(function (k) {
         var sp = C.species[k], locked = sp.lock !== undefined && !own['sp_' + k];
         return '<button type="button" data-sp="' + k + '" class="' + (k === d.species ? 'sel' : '') + (sp.lock !== undefined ? ' myst r' + sp.r : '') + (locked ? ' locked' : '') + '"' + (locked ? ' disabled title="' + esc(sp.lock ? T('Atsirakins') + ' ' + T('Lygis') + ' ' + sp.lock : T('Retas - randamas dovanų dėžėse')) + '"' : '') + '><span>' + (locked ? '🔒' : sp.e) + '</span>' + esc(sp.n) + (locked ? '<em>' + (sp.lock ? '⭐ ' + sp.lock : '🎁 ' + T('retas')) + '</em>' : '') + '</button>';
@@ -455,6 +467,7 @@
       f += '<div class="ed-row"><label for="ed-name">' + T('Herojaus vardas') + '</label><input type="text" id="ed-name" maxlength="24" value="' + esc(d.name) + '"></div>';
       m.querySelector('#ed-f').innerHTML = f;
     }
+    if (PIXEL) d.species = 'kitsune';
     if (paintColor) { d.look[d.species === 'human' ? 'hair' : 'fur'] = paintColor; }
     draw();
     m.addEventListener('input', function (e) { if (e.target.id === 'ed-name') d.name = e.target.value; });

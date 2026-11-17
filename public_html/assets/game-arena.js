@@ -43,8 +43,8 @@
       '</div><div class="ar-bots">' + ['easy', 'normal', 'hard'].map(function (l) { return '<div class="ar-bot"><b>' + { easy: '🐼 ' + T('Lengvas'), normal: '🐵 ' + T('Vidutinis'), hard: '🐲 ' + T('Sunkus') }[l] + '</b>' +
         '<button type="button" class="g-btn sm" data-bot="' + l + '" data-mode="power">🏆 ' + T('Jėgos') + '</button><button type="button" class="g-btn sm" data-bot="' + l + '" data-mode="fair">🎯 ' + T('Gudrumo') + '</button>' +
         '<button type="button" class="g-btn sm" data-bot="' + l + '" data-game="keturi">🔴 ' + T('Keturi') + '</button></div>'; }).join('') + '</div>' +
-      '<a class="g-game kova" style="margin-top:12px;background:linear-gradient(135deg,#E8590C,#9A3412)" href="' + R.urls.greita + '"><span class="gi">⚡</span><span>' + T('Greita kova') + '<small>' + T('Realiu laiku: matai, kur smūgiuos - blokuok laiku. Tobulas blokas = kontrataka!') + '</small></span></a>' +
-      '<a class="g-game ritmas" style="margin-top:8px" href="' + R.urls.ritmas + '"><span class="gi">🥁</span><span>' + T('Kata ritmas') + '<small>' + T('Muša būgnai - daryk techniką laiku') + '</small></span></a></section>';
+      '<a class="g-game greita" style="margin-top:14px" href="' + R.urls.greita + '"><span class="gi">' + A.icon('greita') + '</span><span>' + T('Greita kova') + '<small>' + T('Realiu laiku: matai, kur smūgiuos - blokuok laiku. Tobulas blokas = kontrataka!') + '</small></span></a>' +
+      '<a class="g-game ritmas" style="margin-top:14px" href="' + R.urls.ritmas + '"><span class="gi">' + A.icon('ritmas') + '</span><span>' + T('Kata ritmas') + '<small>' + T('Muša būgnai - daryk techniką laiku') + '</small></span></a></section>';
     html += '<section class="g-card"><h3>🏅 ' + T('Reitingai') + '</h3><div class="ar-tops">' + topList('power', '🏆 ' + T('Jėgos')) + topList('fair', '🎯 ' + T('Gudrumo')) + '</div></section>';
     html += '</div>';
     html += '<section class="g-card" id="zaidejai" style="margin-top:12px"><div class="row" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px"><h3 style="margin:0">⚔️ ' + T('Iššūkis klubo draugams') + '</h3>' +
@@ -102,15 +102,15 @@
   // =================== Kova ėjimais ===================
   var M = null, side = null, opp = null, seenTurn = 0, seenReact = 0, pick = { att: '', def: '', card: '' }, busy = false, animating = false, offset = 0, pollT = null, endShown = false;
   function fight() {
-    root.innerHTML = '<div class="fa"><div class="fa-top"><a class="g-btn sm" href="' + location.pathname + '">← ' + T('Arena') + '</a><span class="fa-mode" id="fa-mode"></span><span class="sp"></span><span class="fa-timer" id="fa-timer"></span></div>' +
-      // Kaip combats: kairėje ir dešinėje - kovotojai, per vidurį - lentelė, kur smūgiuoti ir ką blokuoti (savas - visada kairėje)
-      '<div class="fa-stage fa3" id="fa-stage">' +
-      ['a', 'mid', 'b'].map(function (x) {
-        if (x === 'mid') return '<div class="fa-mid"><div class="fa-turn" id="fa-turn"></div><div class="fa-panel" id="fa-panel"></div></div>';
-        return '<div class="fa-side ' + x + '"><div class="fa-hp ' + x + '" id="hp-' + x + '"></div><div class="fa-scene" style="background-image:url(' + A.sceneUrl('dojo') + ')"><div class="fa-f ' + x + '" id="f-' + x + '"></div></div></div>';
-      }).join('') + '<div class="fa-fx" id="fa-fx"></div></div>' +
-      '<div class="fa-reveal" id="fa-reveal"></div>' +
-      '<div class="fa-bottom"><div class="fa-log" id="fa-log"></div><div class="fa-react" id="fa-react">' + R.reactions.map(function (e) { return '<button type="button" data-react="' + e + '">' + e + '</button>'; }).join('') + '</div></div></div>';
+    // Viena arena: abu kovotojai tame pačiame fone (savas - kairėje), smūgių ir blokų lentelė - ant fono kaip žaidimo sąsaja,
+    // dešinėje - gyva kovos eiga (kas ką padarė, kiek žalos).
+    root.innerHTML = '<div class="fa pxui"><div class="fa-top"><a class="px-btn sm" href="' + location.pathname + '">◀ ' + T('Arena') + '</a><span class="fa-mode" id="fa-mode"></span><span class="sp"></span><span class="fa-timer" id="fa-timer"></span></div>' +
+      '<div class="fa-wrap"><div class="fa-stage fa-arena" id="fa-stage" style="background-image:url(' + A.sceneUrl('dojo') + ')">' +
+      '<div class="fa-hp a" id="hp-a"></div><div class="fa-turn" id="fa-turn"></div><div class="fa-hp b" id="hp-b"></div>' +
+      '<div class="fa-f a" id="f-a"></div><div class="fa-f b" id="f-b"></div>' +
+      '<div class="fa-ui"><div class="fa-panel" id="fa-panel"></div></div><div class="fa-fx" id="fa-fx"></div></div>' +
+      '<aside class="fa-side"><div class="fa-side-h">' + A.icon('kova') + ' ' + T('Kovos eiga') + '</div><div class="fa-log" id="fa-log"></div><div class="fa-reveal" id="fa-reveal"></div>' +
+      '<div class="fa-react" id="fa-react">' + R.reactions.map(function (e) { return '<button type="button" data-react="' + e + '">' + e + '</button>'; }).join('') + '</div></aside></div></div>';
     root.addEventListener('click', fightClick);
     document.addEventListener('keydown', fightKey);
     load(true);
@@ -157,18 +157,26 @@
     var st = M.state;
     ['a', 'b'].forEach(function (x) {
       var s = st.sides[x], hp = Math.max(0, st.hp[x]), mx = st.max[x], pct = Math.max(0, Math.round(hp / mx * 100));
-      $('#hp-' + x).innerHTML = '<div class="nm">' + (x === side ? '⭐ ' : '') + esc(s.name) + ' <small>' + T('Lygis') + ' ' + s.level + '</small></div><div class="bar"><i class="' + (pct < 30 ? 'low' : '') + '" style="width:' + pct + '%"></i><span>' + hp + ' / ' + mx + '</span></div>' +
-        (st.cards && st.cards[x] && Object.keys(st.cards[x]).length ? '<div class="cards">' + Object.keys(st.cards[x]).map(function (c) { return '<span class="' + (st.cards[x][c] ? '' : 'used') + '">' + esc(R.cards[c][0]) + '</span>'; }).join('') + '</div>' : '');
+      var pet = s.pet && C.pets[s.pet.species] ? '<div class="petab" title="' + esc(C.pets[s.pet.species].abn) + '">🐾 ' + esc(s.pet.name) + ': ' + esc(C.pets[s.pet.species].abn) + '</div>' : '';
+      $('#hp-' + x).innerHTML = '<div class="nm">' + (x === side ? '★ ' : '') + esc(s.name) + ' <small>' + T('Lygis') + ' ' + s.level + '</small></div><div class="bar"><i class="' + (pct < 30 ? 'low' : '') + '" style="width:' + pct + '%"></i><span>' + hp + ' / ' + mx + '</span></div>' +
+        (st.cards && st.cards[x] && Object.keys(st.cards[x]).length ? '<div class="cards">' + Object.keys(st.cards[x]).map(function (c) { return '<span class="' + (st.cards[x][c] ? '' : 'used') + '">' + esc(R.cards[c][0]) + '</span>'; }).join('') + '</div>' : '') + pet;
     });
     $('#fa-turn').textContent = M.status === 'done' ? '' : T('Ėjimas') + ' ' + st.turn;
   }
+  // Kovos eiga (kaip pokalbis): naujausia - apačioje; žala raudonai, gydymas žaliai
+  var LOG_IC = { hit: 'smugis', crit: 'kiai', block: 'blokas', miss: 'sabaki', end: 'kova' };
   function drawLog() {
-    var log = (M.state.log || []).slice(-14).reverse();
-    $('#fa-log').innerHTML = log.map(function (l) { return '<div class="ln k-' + l.k + (l.s === side ? ' mine' : '') + '"><small>' + l.n + '</small> ' + esc(l.t) + '</div>'; }).join('') || '<div class="g-empty">' + T('Pasirink smūgį ir gynybą, tada spausk „Kovoti!“.') + '</div>';
+    var log = (M.state.log || []).slice(-60), el = $('#fa-log'), last = 0;
+    el.innerHTML = log.map(function (l) {
+      var txt = esc(l.t).replace(/([−-]\d+)/g, '<b class="dmg">$1</b>').replace(/(\+\d+)/g, '<b class="heal">$1</b>');
+      var head = l.n !== last ? '<div class="tn">' + T('Ėjimas') + ' ' + l.n + '</div>' : ''; last = l.n;
+      return head + '<div class="ln k-' + l.k + (l.s === side ? ' mine' : ' opp') + '">' + (LOG_IC[l.k] ? A.icon(LOG_IC[l.k]) : '<span class="em">' + (l.k === 'pet' ? '🐾' : l.k === 'heal' ? '💚' : '•') + '</span>') + '<span>' + txt + '</span></div>';
+    }).join('') || '<div class="g-empty">' + T('Pasirink smūgį ir gynybą, tada spausk „Kovoti!“.') + '</div>';
+    el.scrollTop = el.scrollHeight;
   }
   function reveal(last) {
-    var mk = function (x) { var p = last[x]; if (!p || p === true) return ''; var at = R.attacks[p.att] || {}, df = R.defenses[p.def] || {}; return '<span>' + esc(M.state.sides[x].name) + ': 👊 <b>' + esc(at.n) + '</b> ' + ZI[at.z] + ' · 🛡 <b>' + esc(df.n) + '</b> ' + ZI[df.z] + (p.card ? ' · 🃏 ' + esc(R.cards[p.card][0]) : '') + '</span>'; };
-    $('#fa-reveal').innerHTML = '<small>' + T('Praeitas ėjimas') + ' (' + last.turn + '):</small> ' + mk(side) + mk(opp);
+    var mk = function (x) { var p = last[x]; if (!p || p === true) return ''; var at = R.attacks[p.att] || {}, df = R.defenses[p.def] || {}; return '<span class="' + (x === side ? 'mine' : 'opp') + '">' + esc(M.state.sides[x].name) + ': ' + A.icon('smugis') + ' <b>' + esc(at.n) + '</b> · ' + A.icon('blokas') + ' <b>' + esc(df.n) + '</b>' + (p.card ? ' · ' + esc(R.cards[p.card][0]) : '') + '</span>'; };
+    $('#fa-reveal').innerHTML = '<small>' + T('Praeitas ėjimas') + ' (' + last.turn + ')</small>' + mk(side) + mk(opp);
   }
   function drawPanel(timerOnly) {
     var st = M.state, el = $('#fa-panel');
@@ -180,24 +188,24 @@
       el.innerHTML = '<div class="fa-wait">✓ ' + T('Ėjimas pasirinktas.') + ' ' + (st.picks[opp] ? '' : '⏳ ' + T('Laukiama priešininko…')) + '</div>';
       return;
     }
-    // Lentelė: eilutės - lygiai (galva, kūnas, kojos, išsisukimas), kairėje - kur smūgiuoti, dešinėje - ką blokuoti
+    // Lentelė ant arenos: kairėje - kur smūgiuoti, dešinėje - ką blokuoti. Pavadinimas su lygiu ir paaiškinimu: „Kizami tsuki jodan [smūgis į galvą]“.
     var atts = Object.keys(R.attacks), defs = Object.keys(R.defenses);
-    var chk = function (kind, k, name, small, key) {
+    var DA = { kizami: T('smūgis į galvą'), gyaku: T('smūgis į pilvą'), maegeri: T('spyris į pilvą'), mawashi: T('spyris į galvą'), barai: T('pakirtimas į kojas') };
+    var DD = { age: T('blokas nuo smūgio į galvą'), soto: T('blokas nuo smūgio į pilvą'), gedan: T('blokas nuo smūgio į kojas'), sabaki: T('išsisukimas nuo bet kurio smūgio') };
+    var full = function (n, z) { return z && n.toLowerCase().indexOf(z) < 0 ? n + ' ' + z : n; };
+    var chk = function (kind, k, name, desc, zone, extra, key) {
       var on = pick[kind] === k;
-      return '<button type="button" class="fa-chk ' + kind + (on ? ' sel' : '') + '" data-' + kind + '="' + k + '" aria-pressed="' + on + '"><i class="box" aria-hidden="true"></i><b>' + esc(name) + '</b>' + (small ? '<small>' + small + '</small>' : '') + '<kbd>' + key + '</kbd></button>';
+      return '<button type="button" class="fa-chk ' + kind + (on ? ' sel' : '') + '" data-' + kind + '="' + k + '" aria-pressed="' + on + '"><i class="box" aria-hidden="true"></i>' +
+        '<span class="tx"><b>' + esc(name) + '</b><small>[' + esc(desc) + ']' + (extra ? ' <em>' + extra + '</em>' : '') + '</small></span>' + A.icon(zone || 'sabaki', 'zi') + '<kbd>' + key + '</kbd></button>';
     };
-    var html = '<div class="fa-board"><div class="fb-h"><span>👊 ' + T('Kur smūgiuoti?') + '</span><span></span><span>🛡 ' + T('Ką blokuoti?') + '</span></div>';
-    [{ z: 'jodan', ic: '🙂' }, { z: 'chudan', ic: '👕' }, { z: 'gedan', ic: '🦵' }, { z: '', ic: '🌀' }].forEach(function (row) {
-      html += '<div class="fb-row' + (row.z ? '' : ' sab') + '"><div class="fb-att">';
-      atts.forEach(function (k, i) { var a = R.attacks[k]; if (row.z && a.z === row.z) html += chk('att', k, a.n, '×' + a.p + (a.acc ? ' · ' + (a.acc > 0 ? '+' : '') + a.acc + '%' : ''), i + 1); });
-      html += '</div><div class="fb-zone"><span>' + row.ic + '</span><small>' + ZN[row.z] + '</small></div><div class="fb-def">';
-      defs.forEach(function (k, i) { var d = R.defenses[k]; if (d.z === row.z) html += chk('def', k, d.n, d.z ? T('+ kontrataka') : T('nuo bet kurio smūgio'), 'QWER'[i]); });
-      html += '</div></div>';
-    });
-    html += '</div>';
-    var cards = st.cards[side] || {};
-    if (Object.keys(cards).length) html += '<div class="g-sub">🃏 ' + T('Korta (vieną kartą per kovą)') + '</div><div class="fa-cards">' + Object.keys(cards).map(function (c) { return '<button type="button" class="fa-card' + (pick.card === c ? ' sel' : '') + '" data-card="' + c + '"' + (cards[c] ? '' : ' disabled') + '><b>' + esc(R.cards[c][0]) + '</b><small>' + esc(R.cards[c][1]) + '</small></button>'; }).join('') + '</div>';
-    html += '<div class="fa-go"><button type="button" class="g-btn primary fa-fight" data-go="1"' + (pick.att && pick.def ? '' : ' disabled') + '>⚔️ ' + T('Kovoti!') + ' <kbd>Enter</kbd></button></div>';
+    var html = '<div class="fa-board"><div class="fb-col"><div class="fb-h h-att">' + A.icon('smugis') + ' ' + T('Kur smūgiuoti?') + '</div>';
+    atts.forEach(function (k, i) { var a = R.attacks[k]; html += chk('att', k, full(a.n, a.z), DA[k] || ZN[a.z], a.z, '×' + a.p + (a.acc ? ' ' + (a.acc > 0 ? '+' : '') + a.acc + '%' : ''), i + 1); });
+    html += '</div><div class="fb-col"><div class="fb-h h-def">' + A.icon('blokas') + ' ' + T('Ką blokuoti?') + '</div>';
+    defs.forEach(function (k, i) { var d = R.defenses[k]; html += chk('def', k, full(d.n, d.z), DD[k] || ZN[d.z], d.z, '', 'QWER'[i]); });
+    html += '</div></div>';
+    var cards = st.cards[side] || {}, CI = { kiai: 'kiai', zanshin: 'zanshin', kime: 'kime' };
+    if (Object.keys(cards).length) html += '<div class="fa-cards"><span class="fc-h">' + T('Ypatingi veiksmai') + '</span>' + Object.keys(cards).map(function (c) { return '<button type="button" class="fa-card' + (pick.card === c ? ' sel' : '') + '" data-card="' + c + '"' + (cards[c] ? '' : ' disabled') + ' title="' + esc(R.cards[c][1]) + '">' + A.icon(CI[c] || 'kiai') + '<span><b>' + esc(R.cards[c][0]) + '</b><small>' + esc(R.cards[c][1]) + '</small></span></button>'; }).join('') + '</div>';
+    html += '<div class="fa-go"><button type="button" class="px-btn go fa-fight" data-go="1"' + (pick.att && pick.def ? '' : ' disabled') + '>' + A.icon('kova') + ' ' + T('Kovoti!') + ' <kbd>Enter</kbd></button></div>';
     el.innerHTML = html;
   }
   function fightClick(e) {
@@ -326,7 +334,7 @@
     g = { lv: lv, md: md, L: L, hp: { me: myS.hp, bot: botS.hp }, max: { me: myS.hp, bot: botS.hp }, dmg: { me: myS.dmg, bot: botS.dmg }, t0: 0, dur: 60000,
       bot: { state: 'idle', next: 0, zone: '', windStart: 0, hist: [] }, guard: { zone: '', until: 0, at: 0 }, atk: { until: 0, zone: '', strikeAt: 0 }, cdAtk: 0, cdGuard: 0,
       combo: 0, maxCombo: 0, lastHit: 0, perfect: 0, blocks: 0, hits: 0, taken: 0, dealt: 0, reacts: [], interrupts: 0, over: false };
-    var botArt = { species: L.sp, gender: 'm', look: { fur: C.species[L.sp].c, eyes: '#2B2B2B' }, equipped: { kimono: L.kim, belt: 'b_plain', head: lv === 'easy' ? 'h_band_white' : 'h_band_red' }, belt: L.belt, name: L.name };
+    var botArt = { species: L.sp, gender: 'm', look: { fur: { easy: '#E9D2A8', normal: '#C8703A', hard: '#3B3A4A' }[lv] || '#C8703A', flame: { easy: '#6EDC8C', normal: '#FF9A3C', hard: '#B46CFF' }[lv] || '#FF9A3C', eyes: '#2B2B2B' }, equipped: { kimono: lv === 'easy' ? 'k_emerald' : L.kim, belt: 'b_plain', head: lv === 'easy' ? 'h_band_white' : 'h_band_red' }, belt: L.belt, name: L.name };
     root.innerHTML = '<div class="fa gr"><div class="fa-top"><a class="g-btn sm" href="' + location.href + '">← ' + T('Atgal') + '</a><span class="fa-mode">⚡ ' + T('Greita kova') + ' · ' + L.n + '</span><span class="sp"></span><span class="fa-timer" id="gr-time">60 s</span></div>' +
       '<div class="fa-stage" id="fa-stage" style="background-image:url(' + A.sceneUrl('dojo') + ')"><div class="fa-hp a" id="hp-a"></div><div class="fa-hp b" id="hp-b"></div>' +
       '<div class="fa-f a me" id="f-a"><div class="fa-body live">' + heroSvg(artOf(me)) + '</div></div><div class="fa-f b" id="f-b"><div class="fa-body live">' + heroSvg(botArt) + '</div><div class="gr-tele" id="gr-tele"><svg viewBox="0 0 60 60"><circle cx="30" cy="30" r="26" class="trk"/><circle cx="30" cy="30" r="26" class="ring" id="gr-ring"/></svg><span id="gr-z"></span></div></div>' +

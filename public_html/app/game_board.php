@@ -38,7 +38,9 @@ function board_start_bot(array $hero, string $lvl): int
     $names = ['easy' => t('Senpai Bambukas'), 'normal' => t('Sensei Makivara'), 'hard' => t('Meistras Drakonas')];
     $lvl = isset($names[$lvl]) ? $lvl : 'normal';
     $b = ['hero' => 0, 'bot' => $lvl, 'name' => $names[$lvl], 'pet' => ['species' => 'owlet', 'name' => t('Pelėda'), 'color' => null], 'cards' => ['wall' => 1, 'bomb' => 1],
-          'art' => ['species' => ['easy' => 'panda', 'normal' => 'monkey', 'hard' => 'dragon'][$lvl], 'gender' => 'm', 'look' => [], 'equipped' => ['kimono' => 'k_white', 'belt' => 'b_plain'], 'belt' => 7, 'name' => $names[$lvl]]];
+          'art' => ['species' => ['easy' => 'panda', 'normal' => 'monkey', 'hard' => 'dragon'][$lvl], 'gender' => 'm',
+                    'look' => ['fur' => ['easy' => '#E9D2A8', 'normal' => '#C8703A', 'hard' => '#3B3A4A'][$lvl], 'flame' => ['easy' => '#6EDC8C', 'normal' => '#FF9A3C', 'hard' => '#B46CFF'][$lvl]],
+                    'equipped' => ['kimono' => $lvl === 'hard' ? 'k_black_red' : ($lvl === 'normal' ? 'k_white' : 'k_emerald'), 'belt' => 'b_plain'], 'belt' => 7, 'name' => $names[$lvl]]];
     $st = board_new_state($a, $b);
     $st['bot'] = $lvl;
     q('INSERT INTO game_matches (game, mode, a_hero, b_hero, status, state, updated_at) VALUES ("keturi", "fair", ?, NULL, "active", ?, NOW())', [(int) $hero['id'], json_encode($st, JSON_UNESCAPED_UNICODE)]);

@@ -29,6 +29,8 @@ const GAME_SPECIES = [
 const GAME_SPECIES_LOCK = ['redpanda' => [8, 2], 'kitsune' => [14, 3], 'yeti' => [20, 3], 'tengu' => [0, 3], 'unicorn' => [0, 4], 'phoenixbird' => [0, 4]];
 // Laisvai pasirenkamos spalvos (kailis / oda, akys, plaukai); ypatingos - daiktai „paint“
 const GAME_FUR = ['#E8892B', '#D9A441', '#F4F2EE', '#E0712C', '#8A929C', '#C98A55', '#E9E2D8', '#8C5A3C', '#6E4B2E', '#3FA37A', '#3B3A3F', '#B8B2A7', '#F0C9A0', '#7A5BA6', '#4F86C6'];
+// Pikselinės lapės liepsnų spalvos (pirma - originali žydra)
+const GAME_FLAME = ['#62C6DA', '#6EDC8C', '#FFD65C', '#FF9A3C', '#FF5A6E', '#F27FD0', '#B46CFF', '#F2F2F2'];
 const GAME_SKIN = ['#F7D7C0', '#F1C7A5', '#E0AC86', '#C68A62', '#9C6644', '#6E4630'];
 const GAME_EYES = ['#5B3A1E', '#2F6FA8', '#3E8E5A', '#7A5BA6', '#C88A1E', '#2B2B2B', '#C2410C'];
 const GAME_HAIR = ['#2B1D14', '#5A3A22', '#8C5A2B', '#D9A441', '#E8D9B0', '#B8432F', '#1F2A44', '#F2F2F2'];
@@ -95,6 +97,7 @@ function game_items(): array
     $add('k_white_gold', 'kimono', 'Baltas su auksu', 2, 0, [0, 0, 1, 0, 2], ['c' => '#F7F5EF', 'tr' => '#D4A62A']);
     $add('k_black_red', 'kimono', 'Juodas su raudonu', 2, 0, [1, 0, 0, 0, 2], ['c' => '#24232A', 'tr' => '#C8372D']);
     $add('k_sakura', 'kimono', 'Sakurų kimono', 2, 0, [0, 1, 0, 0, 1], ['c' => '#F9E1EA', 'tr' => '#D9708F', 'p' => 'sakura']);
+    $add('k_emerald', 'kimono', 'Smaragdinis su sakuromis', 2, 0, [0, 1, 0, 1, 1], ['c' => '#3EB680', 'tr' => '#F0BA40', 'p' => 'sakura']);
     $add('k_tiger', 'kimono', 'Tigro dryžiai', 2, 0, [1, 0, 0, 0, 1], ['c' => '#E8892B', 'tr' => '#2B1D14', 'p' => 'stripes']);
     $add('k_camo', 'kimono', 'Kamufliažas', 2, 0, [0, 1, 0, 0, 2], ['c' => '#6B7A4B', 'tr' => '#4A5533', 'p' => 'camo']);
     $add('k_dragon', 'kimono', 'Drakono kimono', 3, 0, [1, 0, 1, 0, 2], ['c' => '#1F3B2E', 'tr' => '#D4A62A', 'p' => 'dragon']);
@@ -597,7 +600,7 @@ function game_catalog_json(): array
     foreach (GAME_PETS as $k => $p) {
         $pets[$k] = ['n' => t($p[0]), 'e' => $p[1], 'ab' => $p[2], 'abn' => t(GAME_PET_ABILITY[$p[2]]), 'start' => $p[3] || GAME_UNLOCK_ALL];
     }
-    return ['items' => $items, 'species' => $species, 'pets' => $pets, 'fur' => GAME_FUR, 'skin' => GAME_SKIN, 'eyes' => GAME_EYES, 'hair' => GAME_HAIR,
+    return ['items' => $items, 'species' => $species, 'pets' => $pets, 'fur' => GAME_FUR, 'flame' => GAME_FLAME, 'skin' => GAME_SKIN, 'eyes' => GAME_EYES, 'hair' => GAME_HAIR,
             'stats' => array_map('t', GAME_STATS), 'rarity' => array_map('t', GAME_RARITY), 'slots' => array_map('t', GAME_SLOTS), 'decorMax' => GAME_DECOR_MAX,
             'belts' => array_map(function ($b) { return [$b[0], t($b[1]), $b[2]]; }, BELTS), 'scenes' => url('img/temos/'), 'unlockAll' => GAME_UNLOCK_ALL];
 }
@@ -629,7 +632,7 @@ function game_save_hero(array $hero, array $in): array
         }
         $ok = function ($c, array $list) use ($paints) { return is_string($c) && (in_array($c, $list, true) || in_array($c, $paints, true)); };
         $look = $hero['look'];
-        foreach (['fur' => GAME_FUR, 'eyes' => GAME_EYES, 'hair' => GAME_HAIR, 'skin' => GAME_SKIN] as $f => $list) {
+        foreach (['fur' => GAME_FUR, 'eyes' => GAME_EYES, 'hair' => GAME_HAIR, 'skin' => GAME_SKIN, 'flame' => GAME_FLAME] as $f => $list) {
             if (isset($in['look'][$f]) && $ok($in['look'][$f], $list)) {
                 $look[$f] = $in['look'][$f];
             }

@@ -34,15 +34,18 @@ test('my dojo: create the hero, test panel, gift box, equip, pet, collection', a
   await k.click('.dw-setup');
   await k.waitForSelector('.gm .ed-sp');
   check('first visit invites to create the hero', await k.locator('.gm h2', { hasText: 'Susikurk savo herojų' }).count() === 1);
-  check('testing: all heroes unlocked', await k.locator('.ed-sp button.locked').count() === 0);
-  await k.click('.ed-sp button[data-sp=panda]');
+  // Pikselinis personažas - lapė (kitsunė): renkamasi kailio ir liepsnų spalva
+  check('pixel hero: one character, fur and flame colours', await k.locator('.ed-sp button').count() === 1 && await k.locator('.ed-sw [data-sw=flame]').count() >= 6);
+  await k.click('.ed-sw [data-sw=fur][data-c="#F4F2EE"]');
+  await k.click('.ed-sw [data-sw=flame][data-c="#F27FD0"]');
   await k.fill('#ed-name', 'Pandutė');
   await k.click('[data-e=save]');
   await k.waitForTimeout(600);
   const kid = sql("SELECT h.species, h.name FROM game_heroes h JOIN account_members am ON am.member_id = h.member_id JOIN accounts a ON a.id = am.account_id WHERE a.email='jaunuolis@karateka.test' AND am.relation='self'");
-  check('hero saved', kid === 'panda\tPandutė', kid);
+  check('hero saved', kid === 'kitsune\tPandutė', kid);
+  check('flame colour saved', /F27FD0/.test(sql("SELECT look FROM game_heroes WHERE name = 'Pandutė'")));
   check('kid has no test panel', await k.locator('#g-test').count() === 0);
-  check('world with hero and XP bar', await k.locator('.dw .dw-hero svg').count() === 1 && await k.locator('.dojo-xp .xp-track').count() === 1);
+  check('world with hero and XP bar', await k.locator('.dw .dw-hero img.px-hero').count() === 1 && await k.locator('.dw .dw-hero svg').count() === 0 && await k.locator('.dojo-xp .xp-track').count() === 1);
   // Pirmas gyvūnėlis
   await k.evaluate(() => { document.querySelector('#g-pets').closest('details').open = true; });
   await k.click('[data-starter=bunny]');
@@ -80,10 +83,11 @@ test('my dojo: create the hero, test panel, gift box, equip, pet, collection', a
   await a.evaluate(() => { document.querySelector('#g-home').closest('details').open = true; });
   await a.click('#g-home [data-bg=bg_sakura]'); await a.waitForTimeout(600);
   check('scenery changed', (await a.getAttribute('.dw', 'style') || '').includes('sakura'));
-  // Mistinis personažas (turi visus daiktus - žetonas yra)
+  // Kimono keičia pikselinės lapės spalvą
   await a.click('#g-inv [data-filt=all]');
-  await a.click('#g-inv [data-item=sp_unicorn]'); await a.click('.gm [data-do=become]'); await a.waitForTimeout(700);
-  check('became a unicorn', sql("SELECT species FROM game_heroes WHERE account_id IS NULL AND member_id = (SELECT member_id FROM account_members am JOIN accounts x ON x.id = am.account_id WHERE x.email='info@karateka.lt' AND am.relation='self' LIMIT 1)") === 'unicorn' || sql("SELECT COUNT(*) FROM game_heroes WHERE species = 'unicorn'") !== '0');
+  await a.click('#g-inv [data-item=k_emerald]'); await a.click('.gm [data-do=equip]'); await a.waitForTimeout(600);
+  check('kimono equipped and the pixel hero repainted', await a.locator('#g-equip [data-slot=kimono].on').count() === 1 && /emerald/.test(sql("SELECT equipped FROM game_heroes WHERE account_id = (SELECT id FROM accounts WHERE email='info@karateka.lt') OR member_id IN (SELECT member_id FROM account_members am JOIN accounts x ON x.id = am.account_id WHERE x.email='info@karateka.lt' AND am.relation='self') LIMIT 1")));
+  check('not yet pixel slots are hidden', await a.locator('#g-equip [data-slot=head]').count() === 0 && await a.locator('#g-inv [data-item=sp_unicorn]').count() === 0);
   await a.evaluate(() => { document.querySelector('#g-col').closest('details').open = true; });
   check('collection shows progress', /\d+ \/ \d+/.test(await a.textContent('#g-col-cnt')));
   noJsErrors(a);
@@ -95,7 +99,11 @@ test('arena: fight a bot, quick fight, four in a row and kata rhythm', async ({ 
   check('lobby with club players', await k.locator('#ar-heroes .g-hcard').count() > 3);
   await nav(k, () => k.click('[data-bot=easy][data-mode=power]'));
   await k.waitForSelector('.fa-chk');
-  check('combats layout: me left, board in the middle, bot right', await k.locator('.fa3 .fa-side.a #f-a').count() === 1 && await k.locator('.fa3 .fa-mid .fa-board').count() === 1 && await k.locator('.fa3 .fa-side.b #f-b').count() === 1);
+  // Viena arena: abu pikseliniai kovotojai tame pačiame fone, lentelė - ant fono, kovos eiga - šone
+  check('one arena: both pixel fighters, board over the background, log on the side', await k.locator('.fa-arena #f-a img.px-hero').count() === 1 && await k.locator('.fa-arena #f-b img.px-hero').count() === 1
+    && await k.locator('.fa-arena .fa-ui .fa-board').count() === 1 && await k.locator('.fa-side #fa-log').count() === 1);
+  check('technique named with level and explanation', /Kizami tsuki jodan/.test(await k.textContent('.fa-chk[data-att=kizami] b')) && /\[smūgis į galvą\]/.test(await k.textContent('.fa-chk[data-att=kizami] small'))
+    && /\[blokas nuo smūgio į pilvą\]/.test(await k.textContent('.fa-chk[data-def=soto] small')));
   check('low HP at level 1', +(await k.textContent('#hp-a .bar span')).split('/')[1] < 40);
   await k.click('.fa-chk[data-att=gyaku]'); await k.click('.fa-chk[data-def=age]');
   check('checkboxes marked', await k.locator('.fa-chk.sel').count() === 2);
@@ -104,6 +112,7 @@ test('arena: fight a bot, quick fight, four in a row and kata rhythm', async ({ 
   const mid = +new URL(k.url()).searchParams.get('m');
   const st = JSON.parse(sql(`SELECT state FROM game_matches WHERE id = ${mid}`));
   check('turn resolved against the bot', st.turn === 2 && st.log.length >= 2, JSON.stringify(st.log.slice(0, 3)));
+  check('live log shows what happened', await k.locator('.fa-side #fa-log .ln').count() >= 2);
   // Kortos - tik gudrumo kovoje
   check('no cards in power mode', await k.locator('.fa-card').count() === 0);
   await k.click('[data-react="👏"]');
