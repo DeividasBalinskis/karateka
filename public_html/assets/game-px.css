@@ -90,8 +90,6 @@
 .fa-arena.flip .fa-f.a{right:1.5%; left:auto;} .fa-arena.flip .fa-f.b{left:1.5%; right:auto;}
 .fa-f .fa-body{filter:drop-shadow(0 3px 0 rgba(10,12,34,.35));}
 /* Pikselinė lapė žiūri į kairę: kairysis kovotojas apverčiamas */
-.fa-f.a .fa-body{transform:scaleX(-1);} .fa-f.b .fa-body{transform:none;}
-.fa-arena.flip .fa-f.a .fa-body{transform:none;} .fa-arena.flip .fa-f.b .fa-body{transform:scaleX(-1);}
 .fa-arena .fa-pet{position:absolute; bottom:0; width:30%;}
 .fa-arena .fa-f.a .fa-pet{left:auto; right:-18%; transform:scaleX(-1);} .fa-arena .fa-f.b .fa-pet{right:auto; left:-18%; transform:none;}
 .fa-arena.flip .fa-f.a .fa-pet{right:auto; left:-18%; transform:none;} .fa-arena.flip .fa-f.b .fa-pet{left:auto; right:-18%; transform:scaleX(-1);}
@@ -205,3 +203,213 @@
 .k4 .fa-card small{color:#F4DDB0;}
 .k4 .fa-card.sel{background:#C8821A; box-shadow:0 0 0 3px #FFD65C; transform:none;}
 .k4 .fa-log, .k4 .fa-react button{border-radius:0;}
+
+/* =====================================================================
+   v1.40: pasaulis = tik fonas; visa sąsaja - aplinkoje (medis, popierius, ritiniai)
+   ===================================================================== */
+:root{--tex:url(../img/zaidimas/tex/);}
+.wood, .dw-tool, .dw-sign, .dw-board, .pq-body, .px-wood{background:#8A5A36 url(../img/zaidimas/tex/mediena.png) 0 0/128px 64px repeat; image-rendering:pixelated;}
+.dw-wrap{position:relative; margin-bottom:10px;}
+.dojo .dw{position:relative; z-index:0; isolation:isolate; aspect-ratio:16/9; border-radius:0; background-size:cover; background-position:center bottom; box-shadow:0 0 0 3px #1A120C, 0 0 0 7px #5A3820, 0 0 0 10px #1A120C, 0 14px 0 6px rgba(26,18,12,.25);}
+.dojo .dw > *{image-rendering:auto;}
+.dojo .dw-hero{left:35%; bottom:3%; width:34%; height:62%; transform:translateX(-50%); display:flex; align-items:flex-end; justify-content:center;}
+.dojo .dw-hero img{width:100%; height:100%; object-fit:contain; object-position:bottom center;}
+.dojo .dw-hero img.px{image-rendering:pixelated;}
+.dojo .dw-pet{width:6.4%;}
+.px-char{display:block; image-rendering:auto; user-select:none; -webkit-user-drag:none; filter:drop-shadow(0 4px 0 rgba(10,8,20,.28));}
+.dw-ui{position:absolute; inset:0; pointer-events:none; z-index:20; font-family:'Pixelify Sans','Space Grotesk',sans-serif;}
+.dw-ui > *{pointer-events:auto;}
+/* Kabanti lentelė: vardas, lygis, XP */
+.dw-plaque{position:absolute; left:2.4%; top:0; width:24%; min-width:170px;}
+.pq-rope{position:absolute; top:0; height:14px; width:3px; background:repeating-linear-gradient(180deg,#D8B878 0 3px,#8A6A3A 3px 6px);}
+.pq-rope.l{left:16%;} .pq-rope.r{right:16%;}
+.pq-body{position:relative; margin-top:14px; padding:7px 10px 8px; color:#FFF3DC; text-shadow:0 2px 0 #3A2414; box-shadow:0 0 0 3px #2A1A10, inset 0 3px 0 rgba(255,255,255,.18), inset 0 -4px 0 rgba(0,0,0,.25), 0 6px 0 3px rgba(20,12,8,.35);}
+.pq-body b{display:block; font-size:1.02rem; letter-spacing:.02em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.pq-lv{font-size:.8rem; color:#FFD65C;}
+.pq-body .xp-track{position:relative; height:12px; margin:4px 0 2px; background:#2A1A10; box-shadow:0 0 0 2px #1A100A; border-radius:0; overflow:hidden;}
+.pq-body .xp-track i{display:block; height:100%; background:linear-gradient(180deg,#FFE58A 0 40%,#F2B23A 40%); border-radius:0;}
+.pq-body .xp-track span{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:.62rem; color:#fff; text-shadow:0 1px 0 #000;}
+.pq-body small{font:500 .62rem 'Inter',sans-serif; opacity:.85;}
+/* Įrankiai viršuje dešinėje: mediniai kvadratėliai su ikonomis */
+.dw-bar{position:absolute; right:2%; top:3%; display:flex; gap:7px; flex-wrap:wrap; justify-content:flex-end; max-width:56%;}
+.dw-tool{position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1px; width:58px; height:56px; border:0; cursor:pointer; padding:3px 2px 2px; color:#FFF3DC; font:600 .58rem 'Pixelify Sans',sans-serif; letter-spacing:.02em; text-shadow:0 1px 0 #2A1A10;
+         box-shadow:0 0 0 3px #2A1A10, inset 0 3px 0 rgba(255,255,255,.2), inset 0 -4px 0 rgba(0,0,0,.28), 0 5px 0 3px rgba(20,12,8,.35); transition:transform .06s, filter .1s;}
+.dw-tool .px-ic{width:28px; height:28px;}
+.dw-tool span{max-width:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.dw-tool:hover{filter:brightness(1.15);} .dw-tool:active{transform:translateY(3px);}
+.dw-tool em{position:absolute; top:-8px; right:-8px; min-width:20px; height:20px; padding:0 4px; display:grid; place-items:center; background:#D8413A; color:#fff; font:700 .7rem 'Pixelify Sans',sans-serif; font-style:normal; box-shadow:0 0 0 2px #2A1A10;}
+.dw-tool em.soft{background:#2A1A10; color:#FFD65C;} .dw-tool em.soft:empty{display:none;} .dw-tool em.wide{right:-12px; font-size:.58rem;}
+.dw-tool.glow{animation:toolGlow 1s steps(2) infinite;}
+@keyframes toolGlow{50%{box-shadow:0 0 0 3px #FFD65C, inset 0 3px 0 rgba(255,255,255,.2), inset 0 -4px 0 rgba(0,0,0,.28), 0 5px 0 3px rgba(20,12,8,.35);}}
+/* Lenta su savybėmis (stovi ant žemės šalia personažo) */
+.dw-board{position:absolute; left:55%; bottom:4%; width:20%; min-width:150px; padding:8px 9px 9px; border:0; cursor:pointer; text-align:left; color:#FFF3DC; font-family:'Pixelify Sans',sans-serif; text-shadow:0 2px 0 #2A1A10;
+          box-shadow:0 0 0 3px #2A1A10, inset 0 3px 0 rgba(255,255,255,.2), inset 0 -4px 0 rgba(0,0,0,.28); margin-bottom:22px; transition:transform .1s;}
+.dw-board:hover{transform:translateY(-3px);}
+.bd-leg{position:absolute; bottom:-25px; width:8px; height:25px; background:#4A2E1C; box-shadow:0 0 0 2px #2A1A10; z-index:-1;}
+.bd-leg.l{left:16%;} .bd-leg.r{right:16%;}
+.bd-h{display:block; font-size:.86rem; letter-spacing:.06em; text-transform:uppercase; color:#FFD65C; border-bottom:2px dotted rgba(255,243,220,.4); padding-bottom:3px; margin-bottom:4px;}
+.bd-h em{font-style:normal; background:#D8413A; color:#fff; padding:0 4px; margin-left:4px; font-size:.7rem; text-shadow:none;}
+.bd-big{display:flex; justify-content:space-between; gap:4px;}
+.bd-big > span{display:flex; align-items:center; gap:2px;} .bd-big .px-ic{width:20px; height:20px;} .bd-big b{font-size:1rem;}
+.bd-st{display:grid; grid-template-columns:1fr 1fr; gap:0 6px; margin-top:4px; font-size:.78rem;}
+.bd-more{display:block; text-align:right; font-size:.62rem; color:#FFD65C; margin-top:3px; opacity:.85;}
+/* Rodyklės į žaidimus */
+.dw-post{position:absolute; right:2.6%; bottom:3%; width:18%; min-width:148px; display:flex; flex-direction:column; gap:7px; align-items:stretch; padding-bottom:6px;}
+.dp-pole{position:absolute; left:50%; top:-14px; bottom:-10px; width:10px; transform:translateX(-50%); background:#4A2E1C; box-shadow:0 0 0 2px #2A1A10, inset 3px 0 0 #6A4428; z-index:-1;}
+.dw-sign{position:relative; display:flex; align-items:center; gap:6px; padding:5px 18px 5px 8px; color:#FFF3DC !important; text-decoration:none !important; font:700 .82rem 'Pixelify Sans',sans-serif; letter-spacing:.02em; text-shadow:0 2px 0 #2A1A10;
+         clip-path:polygon(0 0, calc(100% - 14px) 0, 100% 50%, calc(100% - 14px) 100%, 0 100%); box-shadow:inset 0 3px 0 rgba(255,255,255,.18), inset 0 -4px 0 rgba(0,0,0,.3); transition:transform .08s, filter .1s;}
+.dw-sign:nth-child(odd){clip-path:polygon(14px 0, 100% 0, 100% 100%, 14px 100%, 0 50%); padding:5px 8px 5px 18px; margin-left:8px; margin-right:-8px;}
+.dw-sign .px-ic{width:26px; height:26px; flex:none;}
+.dw-sign:hover{filter:brightness(1.15); transform:translateX(3px);}
+.dw-sign.kova{background-image:url(../img/zaidimas/tex/mediena-raudona.png);} .dw-sign.keturi{background-image:url(../img/zaidimas/tex/mediena-tamsi.png);}
+/* Ritinys: išsivynioja scenoje */
+.dw-scroll{position:absolute; left:5%; right:5%; top:17%; bottom:3%; z-index:40; display:flex; flex-direction:column; filter:drop-shadow(0 10px 0 rgba(20,12,8,.35));}
+.dw-scroll[hidden]{display:none;}
+.dw-scroll.unroll .sc-paper{animation:unroll .35s steps(7);}
+@keyframes unroll{from{clip-path:inset(0 0 100% 0)}to{clip-path:inset(0 0 0 0)}}
+.sc-rod{display:block; height:14px; margin:0 -14px; background:#5A3820 url(../img/zaidimas/tex/mediena-tamsi.png) 0 0/128px 64px; box-shadow:0 0 0 3px #1A100A, inset 0 3px 0 rgba(255,255,255,.18); position:relative; z-index:2;}
+.sc-rod::before, .sc-rod::after{content:""; position:absolute; top:-3px; width:14px; height:20px; background:#C8372D; box-shadow:0 0 0 3px #1A100A, inset 0 3px 0 #E85A4A;}
+.sc-rod::before{left:-12px;} .sc-rod::after{right:-12px;}
+.sc-paper{position:relative; flex:1; min-height:0; overflow:auto; background:#EADBB8 url(../img/zaidimas/tex/popierius.png) 0 0/64px 64px; image-rendering:pixelated; box-shadow:inset 6px 0 0 rgba(120,90,50,.18), inset -6px 0 0 rgba(120,90,50,.18); padding:12px 16px 16px; color:#2A1A10; scrollbar-color:#8A5A36 #EADBB8;}
+.sc-paper > *{image-rendering:auto;}
+.sc-title{margin:0 0 10px; font:700 1.25rem 'Pixelify Sans',sans-serif; display:flex; align-items:center; gap:8px; color:#5A2A1A;}
+.sc-title .px-ic{width:30px; height:30px;}
+.sc-x{position:sticky; float:right; top:0; width:34px; height:34px; border:0; cursor:pointer; font:700 1.3rem 'Pixelify Sans',sans-serif; color:#fff; background:#C8372D; box-shadow:0 0 0 3px #1A100A, inset 0 3px 0 #E85A4A, inset 0 -3px 0 #8A1E1E; z-index:3;}
+.sc-paper .g-sub{font-family:'Pixelify Sans',sans-serif; color:#5A2A1A;}
+.sc-paper .g-derived > div, .sc-paper .g-stat, .sc-paper .g-item, .sc-paper .g-slot, .sc-paper .g-pet, .sc-paper .g-starter, .sc-paper .col-set{background:rgba(255,250,236,.75); border-radius:0; box-shadow:0 0 0 2px rgba(90,56,32,.35);}
+.g-derived.big > div{display:flex; flex-direction:column; align-items:center;} .g-derived.big .px-ic{width:30px; height:30px;}
+.g-scenes{display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:10px;}
+.g-scenes button{border:0; padding:0 0 6px; cursor:pointer; background:#3A2414; color:#FFF3DC; font:600 .86rem 'Pixelify Sans',sans-serif; text-align:center; box-shadow:0 0 0 3px #1A100A; display:flex; flex-direction:column; gap:3px;}
+.g-scenes .bgthumb{display:block; aspect-ratio:16/9; background-size:cover; background-position:center bottom; image-rendering:pixelated;}
+.g-scenes .st{font:500 .64rem 'Inter',sans-serif; opacity:.8;}
+.g-scenes button.sel{box-shadow:0 0 0 3px #1A100A, 0 0 0 6px #FFD65C;}
+/* Išvaizda: personažų pasirinkimas */
+.ed-chars{display:grid; grid-template-columns:repeat(auto-fill,minmax(92px,1fr)); gap:6px; max-height:300px; overflow:auto; padding:4px;}
+.ed-chars button{display:flex; flex-direction:column; align-items:center; gap:2px; padding:4px 2px; border:0; cursor:pointer; background:#2A2440; color:#fff; font:600 .66rem 'Pixelify Sans',sans-serif; box-shadow:0 0 0 2px #14162E;}
+.ed-chars button img{width:84px; height:66px; object-fit:contain;}
+.ed-chars button.sel{box-shadow:0 0 0 2px #14162E, 0 0 0 5px #FFD65C; background:#3B3466;}
+.ed-prev img.px-char{width:100%; max-width:260px; height:220px; object-fit:contain; margin:0 auto;}
+/* Senos sekcijos nebenaudojamos */
+.dojo-main, .dojo-side, .dojo-xp, .dojo-play{display:none !important;}
+.dojo-head .g-btn, .dojo-head .g-switch{display:none;}
+@media (max-width: 760px){
+  .dojo .dw{aspect-ratio:3/4; background-size:cover; background-position:42% bottom;}
+  .dojo .dw-hero{left:36%; bottom:27%; width:62%; height:40%;}
+  .dojo .dw-pet{width:11%;}
+  .dw-plaque{width:46%; min-width:0; left:2%;}
+  .pq-body b{font-size:.86rem;}
+  .dw-bar{top:auto; bottom:auto; top:2%; right:2%; max-width:50%; gap:5px;}
+  .dw-tool{width:44px; height:42px;} .dw-tool span{display:none;} .dw-tool .px-ic{width:26px; height:26px;}
+  .dw-board{left:auto; right:3%; bottom:auto; top:44%; width:38%; min-width:0; margin-bottom:0;}
+  .bd-leg{display:none;}
+  .bd-st{grid-template-columns:1fr 1fr; font-size:.7rem;} .bd-big b{font-size:.84rem;} .bd-big .px-ic{width:16px; height:16px;}
+  .dw-post{left:2%; right:2%; width:auto; min-width:0; bottom:2%; display:grid; grid-template-columns:1fr 1fr; gap:6px;}
+  .dp-pole{display:none;}
+  .dw-sign, .dw-sign:nth-child(odd){clip-path:none; margin:0; padding:6px 8px; font-size:.78rem; box-shadow:0 0 0 2px #2A1A10, inset 0 3px 0 rgba(255,255,255,.18), inset 0 -4px 0 rgba(0,0,0,.3);}
+  .dw-scroll{left:2%; right:2%; top:22%;}
+}
+
+/* Kovotojai: veidu vienas į kitą (.flipx nustato JS pagal paveikslėlį), aukštis vienodas, plotis pagal personažą */
+.fa-f .fa-body{transform:none;} .fa-f .fa-body.flipx{transform:scaleX(-1);}
+.fa-stage .fa-f, .fa-arena .fa-f{height:50%; width:30%; display:flex; align-items:flex-end; justify-content:center;}
+.fa-f .fa-body{width:100%; height:100%; display:flex; align-items:flex-end; justify-content:center;}
+.fa-f .fa-body img{width:100%; height:100%; object-fit:contain; object-position:bottom center;}
+.fa-f .fa-body img.px{image-rendering:pixelated;}
+.fa-arena .fa-f.a, .fa-arena .fa-f.b{width:28%;}
+.fa-f.hit .fa-body img{filter:brightness(1.6) saturate(1.5) drop-shadow(0 0 0 #ff3b30);}
+
+/* ---------- Kovos lentelė: popierinės juostelės (ofuda) ant medinės lentos; pasirinkta - antspaudas ---------- */
+.fa-board{display:grid !important; grid-template-columns:minmax(0,1fr) 54px minmax(0,1fr); gap:5px 6px; align-items:stretch;
+          background:#5A3A2A url(../img/zaidimas/tex/mediena-tamsi.png) 0 0/128px 64px; image-rendering:pixelated; padding:8px;
+          box-shadow:0 0 0 3px #1A100A, inset 0 3px 0 rgba(255,255,255,.15), inset 0 -4px 0 rgba(0,0,0,.3), 0 6px 0 3px rgba(20,12,8,.4) !important;}
+.fa-board > *{image-rendering:auto;}
+.fa-board .fb-h{height:auto; padding:2px 2px 4px; color:#FFE9C0; text-shadow:0 2px 0 #1A100A; font:700 .82rem 'Pixelify Sans',sans-serif; letter-spacing:.04em; text-transform:uppercase;}
+.fa-board .fb-h.h-att{justify-content:flex-end; color:#FFB4A0;} .fa-board .fb-h.h-def{color:#B4D8FF;}
+.fb-cell{display:flex; flex-direction:column; gap:5px; justify-content:center; min-width:0;}
+.fb-zone{display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1px; background:rgba(26,16,10,.45); box-shadow:inset 0 0 0 2px rgba(255,233,192,.18);}
+.fb-zone .px-ic{width:30px; height:30px;} .fb-zone small{font:600 .6rem 'Pixelify Sans',sans-serif; color:#FFE9C0; text-transform:uppercase; letter-spacing:.04em;}
+.fa-board .fa-chk{display:flex; align-items:center; gap:6px; padding:6px 22px 6px 9px; min-height:44px; color:#2A1A10; text-align:left; cursor:pointer; border:0; border-radius:0; position:relative;
+                  background:#EADBB8 url(../img/zaidimas/tex/popierius.png) 0 0/64px 64px; image-rendering:pixelated;
+                  box-shadow:0 0 0 2px #1A100A, inset 0 -3px 0 rgba(120,90,50,.25) !important; transition:transform .08s;}
+.fa-board .fa-chk > *{image-rendering:auto;}
+.fa-board .fa-chk.def{border-left:6px solid #2E62B8;} .fa-board .fa-chk.att{border-right:6px solid #C0362F; padding:6px 9px 6px 22px; text-align:right; flex-direction:row-reverse;}
+.fa-board .fa-chk .tx{flex:1; min-width:0;}
+.fa-board .fa-chk b{display:block; font:700 .88rem 'Pixelify Sans',sans-serif; color:#2A1A10; letter-spacing:.01em;}
+.fa-board .fa-chk small{display:block; font:500 .66rem 'Inter',sans-serif; color:#6A4A2E;}
+.fa-board .fa-chk small em{font-style:normal; color:#A8322A; font-weight:700;}
+.fa-board .fa-chk kbd{position:absolute; top:2px; right:4px; left:auto; font:600 .54rem 'JetBrains Mono',monospace; background:none; border:0; color:#8A6A4A; padding:0;}
+.fa-board .fa-chk.att kbd{right:auto; left:4px;}
+.fa-board .fa-chk:hover{transform:translateY(-2px); filter:none;}
+.fa-board .fa-chk .seal{position:absolute; top:50%; width:30px; height:30px; margin-top:-15px; border-radius:50%; opacity:0; transform:scale(1.6) rotate(-14deg); transition:opacity .12s, transform .15s steps(3); pointer-events:none;}
+.fa-board .fa-chk.def .seal{right:5px; box-shadow:0 0 0 3px #2E62B8, inset 0 0 0 2px rgba(46,98,184,.5); background:rgba(46,98,184,.14);}
+.fa-board .fa-chk.att .seal{left:5px; box-shadow:0 0 0 3px #C0362F, inset 0 0 0 2px rgba(192,54,47,.5); background:rgba(192,54,47,.14);}
+.fa-board .fa-chk .seal::after{content:"✓"; position:absolute; inset:0; display:grid; place-items:center; font:900 1.1rem 'Pixelify Sans',sans-serif;}
+.fa-board .fa-chk.def .seal::after{color:#2E62B8;} .fa-board .fa-chk.att .seal::after{color:#C0362F;}
+.fa-board .fa-chk.sel{background:#FFF4D8 url(../img/zaidimas/tex/popierius.png) 0 0/64px 64px; transform:translateY(-2px); box-shadow:0 0 0 2px #1A100A, 0 0 0 5px #FFD65C !important;}
+.fa-board .fa-chk.sel .seal{opacity:1; transform:scale(1) rotate(-14deg);}
+.fa-board .fa-chk.def.sel{padding-right:40px;} .fa-board .fa-chk.att.sel{padding-left:40px;}
+/* Ypatingi veiksmai - medinės lentelės */
+.fa-arena .fa-cards{background:#5A3A2A url(../img/zaidimas/tex/mediena-tamsi.png) 0 0/128px 64px; image-rendering:pixelated; box-shadow:0 0 0 3px #1A100A !important;}
+.fa-arena .fa-cards > *{image-rendering:auto;}
+.fa-arena .fa-card{background:#8A5A36 url(../img/zaidimas/tex/mediena.png) 0 0/128px 64px; image-rendering:pixelated; color:#FFF3DC; text-shadow:0 2px 0 #2A1A10; box-shadow:0 0 0 2px #1A100A, inset 0 3px 0 rgba(255,255,255,.2), inset 0 -3px 0 rgba(0,0,0,.3) !important;}
+.fa-arena .fa-card > *{image-rendering:auto;}
+.fa-arena .fa-card small{color:#FFE9C0; text-shadow:none;}
+.fa-arena .fa-card.sel{box-shadow:0 0 0 2px #1A100A, 0 0 0 5px #FFD65C !important; transform:translateY(-2px);}
+.fa-arena .fa-go .px-btn.go{background:#C0362F url(../img/zaidimas/tex/mediena-raudona.png) 0 0/128px 64px; image-rendering:pixelated;}
+@media (max-width: 760px){
+  .fa-board{grid-template-columns:minmax(0,1fr) 34px minmax(0,1fr); gap:4px;}
+  .fb-zone .px-ic{width:22px; height:22px;} .fb-zone small{display:none;}
+  .fa-board .fa-chk{padding:5px 18px 5px 7px; min-height:38px;} .fa-board .fa-chk.att{padding:5px 7px 5px 18px;}
+  .fa-board .fa-chk b{font-size:.76rem;} .fa-board .fa-chk small{font-size:.6rem;}
+  .fa-board .fa-chk.def.sel{padding-right:34px;} .fa-board .fa-chk.att.sel{padding-left:34px;}
+  .fa-board .fa-chk .seal{width:24px; height:24px; margin-top:-12px;}
+}
+
+/* Žaidimų mygtukai (arena, keturi iš eilės): medinės lentelės su ikonomis, ne plokščios spalvos */
+.g-game{background:#8A5A36 url(../img/zaidimas/tex/mediena.png) 0 0/128px 64px !important; image-rendering:pixelated; color:#FFF3DC;}
+.g-game > *{image-rendering:auto;}
+.g-game.kova{background-image:url(../img/zaidimas/tex/mediena-raudona.png) !important;}
+.g-game.keturi, .g-game.ritmas{background-image:url(../img/zaidimas/tex/mediena-tamsi.png) !important;}
+.g-game .gi{background:#EADBB8 url(../img/zaidimas/tex/popierius.png) 0 0/64px 64px; box-shadow:0 0 0 3px #1A100A, inset 0 -3px 0 rgba(120,90,50,.3);}
+.k4-bot{background:#EADBB8 url(../img/zaidimas/tex/popierius.png) 0 0/64px 64px !important; image-rendering:pixelated; border:0 !important; border-radius:0 !important; box-shadow:0 0 0 3px #1A100A, 0 6px 0 3px rgba(20,12,8,.35); font-family:'Pixelify Sans',sans-serif;}
+.k4-bot > *{image-rendering:auto;}
+.ar-bot .g-btn, .fa-end .g-btn{border-radius:0;}
+@media (max-width: 760px){
+  .fa-arena .fa-f, .fa-arena .fa-f.a, .fa-arena .fa-f.b{top:0; bottom:auto; margin-top:20%; width:40%; height:auto; aspect-ratio:1/1;}
+}
+
+.dw-tool[data-pane].on{box-shadow:0 0 0 3px #FFD65C, inset 0 3px 0 rgba(255,255,255,.2), inset 0 -4px 0 rgba(0,0,0,.28);}
+/* Greita kova: popieriniai mygtukai su spalvota juostele (ne plokščios spalvos) */
+.gr-b, .gr-b.blk, .gr-b.atk{background:#EADBB8 url(../img/zaidimas/tex/popierius.png) 0 0/64px 64px; image-rendering:pixelated; color:#2A1A10; text-shadow:none;
+      box-shadow:0 0 0 3px #1A100A, inset 0 -4px 0 rgba(120,90,50,.28), 0 6px 0 3px rgba(20,12,8,.35);}
+.gr-b > *{image-rendering:auto;}
+.gr-b.blk{border-left:8px solid #2E62B8;} .gr-b.atk{border-left:8px solid #C0362F;}
+.gr-b.on{background-color:#FFF4D8; transform:translateY(4px); box-shadow:0 0 0 3px #1A100A, 0 0 0 6px #FFD65C;}
+.gr-b.warn{box-shadow:0 0 0 3px #1A100A, 0 0 0 7px #FFD65C, 0 6px 0 6px rgba(20,12,8,.35);}
+
+/* ---------- Arenos laukiamasis: aplinkoje (dojo fonas), skelbimai - popierius, mygtukai - medis ---------- */
+.arena[data-view="lobby"]{position:relative; padding:16px; background:#3A2418 url(../img/temos/px/dojo.png) center top/100% auto no-repeat; image-rendering:pixelated;
+  box-shadow:0 0 0 3px #1A120C, 0 0 0 7px #5A3820, 0 0 0 10px #1A120C; font-family:'Pixelify Sans','Space Grotesk',sans-serif;}
+.arena[data-view="lobby"] > *{image-rendering:auto;}
+.arena[data-view="lobby"] .ar-head{background:#8A5A36 url(../img/zaidimas/tex/mediena-tamsi.png) 0 0/128px 64px; image-rendering:pixelated; color:#FFF3DC; padding:8px 12px; text-shadow:0 2px 0 #1A100A; box-shadow:0 0 0 3px #1A100A, inset 0 3px 0 rgba(255,255,255,.15);}
+.arena[data-view="lobby"] .ar-head > *{image-rendering:auto;}
+.arena[data-view="lobby"] .ar-title{font-family:'Pixelify Sans',sans-serif; color:#FFD65C;} .arena[data-view="lobby"] .ar-sub{color:#FFE9C0;}
+.arena .ar-me{width:96px; height:84px;} .arena .ar-me img{width:100%; height:100%; object-fit:contain;}
+.arena[data-view="lobby"] .ar-head .g-btn{background:#8A5A36 url(../img/zaidimas/tex/mediena.png) 0 0/128px 64px; color:#FFF3DC; border:0; border-radius:0; box-shadow:0 0 0 3px #1A100A, inset 0 3px 0 rgba(255,255,255,.2); text-shadow:0 2px 0 #1A100A; font-family:'Pixelify Sans',sans-serif;}
+.arena[data-view="lobby"] .g-card, .arena[data-view="lobby"] .ar-invites{background:#EADBB8 url(../img/zaidimas/tex/popierius.png) 0 0/64px 64px; image-rendering:pixelated; border:0; border-radius:0; color:#2A1A10;
+  box-shadow:0 0 0 3px #1A100A, inset 6px 0 0 rgba(120,90,50,.15), inset -6px 0 0 rgba(120,90,50,.15), 0 8px 0 3px rgba(20,12,8,.35);}
+.arena[data-view="lobby"] .g-card > *, .arena[data-view="lobby"] .ar-invites > *{image-rendering:auto;}
+.arena[data-view="lobby"] .g-card h3{font-family:'Pixelify Sans',sans-serif; color:#5A2A1A; font-size:1.05rem;}
+.arena[data-view="lobby"] .ar-mode{border-radius:0; background:rgba(255,250,236,.7); box-shadow:0 0 0 2px rgba(90,56,32,.35);}
+.arena[data-view="lobby"] .ar-bot .g-btn, .arena[data-view="lobby"] .g-hcard .g-btn, .arena[data-view="lobby"] .ar-inv .g-btn{background:#8A5A36 url(../img/zaidimas/tex/mediena.png) 0 0/128px 64px; color:#FFF3DC; border:0; border-radius:0;
+  box-shadow:0 0 0 2px #1A100A, inset 0 2px 0 rgba(255,255,255,.2), inset 0 -3px 0 rgba(0,0,0,.25); text-shadow:0 1px 0 #1A100A; font-family:'Pixelify Sans',sans-serif;}
+.arena[data-view="lobby"] .ar-bot .g-btn:hover{filter:brightness(1.15);}
+.arena[data-view="lobby"] .g-hcard{background:rgba(255,250,236,.75); border-radius:0; box-shadow:0 0 0 2px rgba(90,56,32,.35);}
+.arena[data-view="lobby"] .g-hcard img.ga-hero{width:110px; height:96px; object-fit:contain;}
+.arena[data-view="lobby"] .g-empty{color:#6A4A2E;}
+.arena[data-view="lobby"] input[type=search]{border-radius:0 !important; border:2px solid #5A3820 !important; background:#FFF8E6;}
+@media (max-width:760px){ .arena[data-view="lobby"]{padding:8px; margin:0 -8px;} }
+
+.k4-hero img.ga-hero{width:100%; max-width:150px; height:130px; object-fit:contain; margin:0 auto;}
+.k4-hero .k4-pet{bottom:auto; top:96px;}
+@media (max-width:900px){ .k4-hero img.ga-hero{height:80px;} .k4-hero .k4-pet{top:52px;} }

@@ -25,6 +25,36 @@ const GAME_SPECIES = [
     'unicorn'     => ['Vienaragis', '🦄', '#FBF8FF'],
     'phoenixbird' => ['Feniksas', '🔥', '#E8501A'],
 ];
+// Pikseliniai personažai (žaidime rodomi šie): [vardas, į kurią pusę žiūri: r - dešinėn, l - kairėn, c - į priekį].
+// 'kitsune' - perdažoma pikselinė lapė (kailis, liepsnos, kimono, diržas); kiti - paveikslėliai img/zaidimas/herojai/<raktas>.webp
+const GAME_PX_CHARS = [
+    'kitsune' => ['Kitsunė (perdažoma)', 'l'],
+    'wtiger' => ['Baltasis tigras', 'r'],
+    'raven' => ['Varnas tengu', 'r'],
+    'crane' => ['Šventoji gervė', 'r'],
+    'swolf' => ['Dvasių vilkas', 'r'],
+    'gdragon' => ['Auksinis drakonas', 'r'],
+    'kitsune9' => ['Devynuodegė kitsunė', 'r'],
+    'frog' => ['Varlė vienuolė', 'l'],
+    'ram' => ['Kalnų išminčius', 'c'],
+    'jelly' => ['Medūza', 'c'],
+    'deer' => ['Dvasių elnias', 'r'],
+    'scat' => ['Šešėlių katė', 'r'],
+    'turtle' => ['Vėžlys meistras', 'r'],
+    'phoenix' => ['Feniksas', 'r'],
+    'panda' => ['Panda', 'c'],
+    'shark' => ['Ryklys', 'r'],
+    'ghost' => ['Dvasia', 'c'],
+    'lava' => ['Lavos golemas', 'c'],
+    'wdragon' => ['Vandens drakonas', 'r'],
+    'moonwolf' => ['Mėnulio vilkė', 'c'],
+    'moth' => ['Naktinis drugys', 'c'],
+    'tree' => ['Medžio dvasia', 'c'],
+    'stone' => ['Akmens golemas', 'c'],
+    'oni' => ['Oni', 'c'],
+    'weasel' => ['Sniego šeškas', 'r'],
+    'whale' => ['Kosminis banginis', 'r'],
+];
 // Kurie personažai užrakinti: lygis, nuo kurio atsirakina, arba 0 - tik iš dovanų dėžės (retas). [lygis, retumas]
 const GAME_SPECIES_LOCK = ['redpanda' => [8, 2], 'kitsune' => [14, 3], 'yeti' => [20, 3], 'tengu' => [0, 3], 'unicorn' => [0, 4], 'phoenixbird' => [0, 4]];
 // Laisvai pasirenkamos spalvos (kailis / oda, akys, plaukai); ypatingos - daiktai „paint“
@@ -162,10 +192,10 @@ function game_items(): array
         $add($k, 'paint', $n . ' spalva', $r, 0, [], ['c' => $c]);
     }
     // ---------- Aplinka (fonai), namai ir dekoracijos - irgi prideda savybių ----------
-    foreach ([['bg_dojo', 'Dojo salė', 1, 1, 'dojo', []], ['bg_nature', 'Miškas rūke', 1, 2, 'gamta', [0, 0, 0, 1]], ['bg_mountains', 'Kalnai', 1, 3, 'kalnai', [0, 0, 0, 1]],
-              ['bg_sakura', 'Sakurų sodas', 1, 4, 'sakura', [0, 0, 1]], ['bg_sea', 'Jūros krantas', 2, 5, 'jura', [0, 1]], ['bg_autumn', 'Rudens miškas', 2, 6, 'ruduo', [1]],
-              ['bg_winter', 'Žiemos kalnai', 2, 7, 'ziema', [0, 0, 0, 2]], ['bg_dunes', 'Kopos', 2, 9, 'kopos', [0, 1, 1]], ['bg_aurora', 'Šiaurės pašvaistė', 3, 0, 'pasvaiste', [0, 0, 2]],
-              ['bg_volcano', 'Ugnikalnis', 3, 0, 'vulkanas', [2]], ['bg_space', 'Kosmosas', 4, 0, 'kosmosas', [1, 1, 1, 1]]] as [$k, $n, $r, $l, $sc, $s]) {
+    foreach ([['bg_dojo', 'Mėnesienos dojo', 1, 1, 'dojo', []], ['bg_nature', 'Bambukų giraitė', 1, 2, 'gamta', [0, 0, 0, 1]], ['bg_mountains', 'Kalnų krioklys', 1, 3, 'kalnai', [0, 0, 0, 1]],
+              ['bg_sakura', 'Sakurų pagoda', 1, 4, 'sakura', [0, 0, 1]], ['bg_sea', 'Toris jūroje', 2, 5, 'jura', [0, 1]], ['bg_autumn', 'Rudens tiltelis', 2, 6, 'ruduo', [1]],
+              ['bg_winter', 'Žiemos šventykla', 2, 7, 'ziema', [0, 0, 0, 2]], ['bg_dunes', 'Kopų oazė', 2, 9, 'kopos', [0, 1, 1]], ['bg_aurora', 'Šiaurės pašvaistė', 3, 0, 'pasvaiste', [0, 0, 2]],
+              ['bg_volcano', 'Ugnikalnis', 3, 0, 'vulkanas', [2]], ['bg_space', 'Dvasių pasaulis', 4, 0, 'kosmosas', [1, 1, 1, 1]]] as [$k, $n, $r, $l, $sc, $s]) {
         $add($k, 'bg', $n, $r, $l, $s, ['sc' => $sc]);
     }
     foreach ([['hs_tent', 'Palapinė', 1, 1, []], ['hs_hut', 'Medinė trobelė', 1, 3, [0, 0, 0, 1]], ['hs_dojo', 'Mažasis dojo', 2, 5, [1]], ['hs_pagoda', 'Pagoda', 2, 8, [0, 0, 1]],
@@ -602,7 +632,8 @@ function game_catalog_json(): array
     }
     return ['items' => $items, 'species' => $species, 'pets' => $pets, 'fur' => GAME_FUR, 'flame' => GAME_FLAME, 'skin' => GAME_SKIN, 'eyes' => GAME_EYES, 'hair' => GAME_HAIR,
             'stats' => array_map('t', GAME_STATS), 'rarity' => array_map('t', GAME_RARITY), 'slots' => array_map('t', GAME_SLOTS), 'decorMax' => GAME_DECOR_MAX,
-            'belts' => array_map(function ($b) { return [$b[0], t($b[1]), $b[2]]; }, BELTS), 'scenes' => url('img/temos/'), 'unlockAll' => GAME_UNLOCK_ALL];
+            'belts' => array_map(function ($b) { return [$b[0], t($b[1]), $b[2]]; }, BELTS), 'scenes' => url('img/temos/'), 'unlockAll' => GAME_UNLOCK_ALL,
+            'chars' => array_map(function ($c) { return ['n' => t($c[0]), 'f' => $c[1]]; }, GAME_PX_CHARS), 'charImg' => url('img/zaidimas/herojai/')];
 }
 
 /** Išsaugoti išvaizdą / daiktus / namus (tik tai, ką turi) */
@@ -617,7 +648,9 @@ function game_save_hero(array $hero, array $in): array
             $upd['name'] = mb_substr($n, 0, 24);
         }
     }
-    if (isset($in['species']) && isset(GAME_SPECIES[$in['species']]) && (!isset(GAME_SPECIES_LOCK[$in['species']]) || !empty($owned['sp_' . $in['species']]))) {
+    if (isset($in['species']) && isset(GAME_PX_CHARS[$in['species']]) && GAME_UNLOCK_ALL) {
+        $upd['species'] = $in['species'];
+    } elseif (isset($in['species']) && isset(GAME_SPECIES[$in['species']]) && (!isset(GAME_SPECIES_LOCK[$in['species']]) || !empty($owned['sp_' . $in['species']]))) {
         $upd['species'] = $in['species'];
     }
     if (isset($in['gender']) && in_array($in['gender'], ['m', 'f'], true)) {

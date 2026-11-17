@@ -45,7 +45,7 @@ if (!$match) {
         <h2><?= te('🤖 Žaisti su treniruočių partneriu') ?></h2>
         <div class="k4-bots">
           <button class="k4-bot" name="bot" value="easy" type="submit">🐼<b><?= te('Senpai Bambukas') ?></b><small><?= te('Lengvas') ?></small></button>
-          <button class="k4-bot" name="bot" value="normal" type="submit">🐵<b><?= te('Sensei Makivara') ?></b><small><?= te('Vidutinis') ?></small></button>
+          <button class="k4-bot" name="bot" value="normal" type="submit">🐸<b><?= te('Sensei Makivara') ?></b><small><?= te('Vidutinis') ?></small></button>
           <button class="k4-bot" name="bot" value="hard" type="submit">🐲<b><?= te('Meistras Drakonas') ?></b><small><?= te('Sunkus') ?></small></button>
         </div>
         <p class="muted"><?= te('👫 Su draugu: arenoje prie klubo žaidėjo spausk 🔴.') ?> <a href="<?= url('arena.php?h=' . (int) $hero['id']) ?>#zaidejai"><?= te('Į areną') ?> →</a></p>

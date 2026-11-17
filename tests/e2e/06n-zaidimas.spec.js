@@ -32,10 +32,13 @@ test('my dojo: create the hero, test panel, gift box, equip, pet, collection', a
   await nav(k, () => k.click('.nav-game'));
   await k.waitForSelector('.dw-setup');
   await k.click('.dw-setup');
-  await k.waitForSelector('.gm .ed-sp');
+  await k.waitForSelector('.gm .ed-chars');
   check('first visit invites to create the hero', await k.locator('.gm h2', { hasText: 'Susikurk savo herojų' }).count() === 1);
   // Pikselinis personažas - lapė (kitsunė): renkamasi kailio ir liepsnų spalva
-  check('pixel hero: one character, fur and flame colours', await k.locator('.ed-sp button').count() === 1 && await k.locator('.ed-sw [data-sw=flame]').count() >= 6);
+  // 26 personažai (25 paveikslėliai + perdažoma lapė); lapei - kailio ir liepsnų spalva
+  check('character picker with the real characters', await k.locator('.ed-chars button').count() === 26 && await k.locator('.ed-chars img.px-char').count() === 25);
+  await k.click('.ed-chars [data-sp=kitsune]');
+  check('repaintable fox: fur and flame colours', await k.locator('.ed-sw [data-sw=flame]').count() >= 6);
   await k.click('.ed-sw [data-sw=fur][data-c="#F4F2EE"]');
   await k.click('.ed-sw [data-sw=flame][data-c="#F27FD0"]');
   await k.fill('#ed-name', 'Pandutė');
@@ -45,9 +48,15 @@ test('my dojo: create the hero, test panel, gift box, equip, pet, collection', a
   check('hero saved', kid === 'kitsune\tPandutė', kid);
   check('flame colour saved', /F27FD0/.test(sql("SELECT look FROM game_heroes WHERE name = 'Pandutė'")));
   check('kid has no test panel', await k.locator('#g-test').count() === 0);
-  check('world with hero and XP bar', await k.locator('.dw .dw-hero img.px-hero').count() === 1 && await k.locator('.dw .dw-hero svg').count() === 0 && await k.locator('.dojo-xp .xp-track').count() === 1);
+  check('world with hero and XP bar', await k.locator('.dw .dw-hero img.px-hero').count() === 1 && await k.locator('.dw .dw-hero svg').count() === 0 && await k.locator('.dw-ui .dw-plaque .xp-track').count() === 1);
   // Pirmas gyvūnėlis
-  await k.evaluate(() => { document.querySelector('#g-pets').closest('details').open = true; });
+  // Visa sąsaja aplinkoje: lenta su savybėmis, rodyklės į žaidimus, įrankiai; skiltys - ritinyje
+  check('UI inside the scene: stats board, game signs, tools', await k.locator('.dw-ui .dw-board').count() === 1 && await k.locator('.dw-ui .dw-post .dw-sign').count() === 4 && await k.locator('.dw-ui .dw-tool[data-pane=pets]').count() === 1);
+  check('no house or decorations in the world', await k.locator('.dw .dw-house, .dw .dw-decor').count() === 0);
+  await k.click('.dw-board'); await k.waitForTimeout(300);
+  check('stats unroll as a scroll', await k.locator('.dw-scroll:not([hidden]) [data-pane=stats]:not([hidden]) .g-stat').count() === 4);
+  await k.click('.sc-x');
+  await k.click('.dw-tool[data-pane=pets]');
   await k.click('[data-starter=bunny]');
   await k.fill('#g-pet-name', 'Ausytė');
   await k.click('[data-act=adopt]');
@@ -65,30 +74,32 @@ test('my dojo: create the hero, test panel, gift box, equip, pet, collection', a
   const a = await login(browser, 'info@karateka.lt', 1280, 900);
   await a.goto('dojo.php');
   await a.waitForSelector('#dojo .dojo-head');
-  await a.evaluate(() => { document.querySelector('#g-test').closest('details').open = true; });
+  await a.click('.dw-tool[data-pane=test]');
   await a.fill('#t-lvl', '6'); await a.click('[data-test=level]'); await a.waitForTimeout(700);
   check('test level applied', (await a.textContent('.dojo-lvl')).includes('6'));
   await a.click('[data-test=all]'); await a.waitForTimeout(900);
   await a.click('[data-test=boxes]'); await a.waitForTimeout(700);
-  await a.click('[data-act=boxes]', { force: true });
+  await a.click('.sc-x');
+  await a.click('[data-act=boxes]');
   await a.click('.box-gift');
   await a.waitForSelector('#box-foot [data-b=ok]', { timeout: 8000 });
   check('gift box opened and shows an item', (await a.textContent('#box-hint')).trim().length > 2);
   await a.click('#box-foot [data-b=ok]');
   // Užsidėti ginklą ir pakeisti aplinką
-  await a.evaluate(() => { document.querySelector('#g-inv').closest('details').open = true; });
+  await a.click('.dw-tool[data-pane=equip]');
   await a.click('#g-inv [data-filt=weapon]');
   await a.click('#g-inv [data-item=w_bo]'); await a.click('.gm [data-do=equip]'); await a.waitForTimeout(600);
   check('weapon equipped', await a.locator('#g-equip [data-slot=weapon].on').count() === 1);
-  await a.evaluate(() => { document.querySelector('#g-home').closest('details').open = true; });
+  await a.click('.dw-tool[data-pane=home]');
   await a.click('#g-home [data-bg=bg_sakura]'); await a.waitForTimeout(600);
   check('scenery changed', (await a.getAttribute('.dw', 'style') || '').includes('sakura'));
   // Kimono keičia pikselinės lapės spalvą
+  await a.click('.dw-tool[data-pane=equip]');
   await a.click('#g-inv [data-filt=all]');
   await a.click('#g-inv [data-item=k_emerald]'); await a.click('.gm [data-do=equip]'); await a.waitForTimeout(600);
   check('kimono equipped and the pixel hero repainted', await a.locator('#g-equip [data-slot=kimono].on').count() === 1 && /emerald/.test(sql("SELECT equipped FROM game_heroes WHERE account_id = (SELECT id FROM accounts WHERE email='info@karateka.lt') OR member_id IN (SELECT member_id FROM account_members am JOIN accounts x ON x.id = am.account_id WHERE x.email='info@karateka.lt' AND am.relation='self') LIMIT 1")));
   check('not yet pixel slots are hidden', await a.locator('#g-equip [data-slot=head]').count() === 0 && await a.locator('#g-inv [data-item=sp_unicorn]').count() === 0);
-  await a.evaluate(() => { document.querySelector('#g-col').closest('details').open = true; });
+  await a.click('.dw-tool[data-pane=col]');
   check('collection shows progress', /\d+ \/ \d+/.test(await a.textContent('#g-col-cnt')));
   noJsErrors(a);
 });
@@ -163,6 +174,7 @@ test('game in English', async ({ browser }) => {
   await k.goto('dojo.php');
   await k.waitForSelector('#dojo .dojo-title');
   check('dojo title translated', (await k.textContent('.dojo-title')).includes('My dojo'));
-  check('stats translated', (await k.textContent('.dojo-side')).includes('Strength'));
+  await k.click('.dw-board');
+  check('stats translated', (await k.textContent('#g-stats')).includes('Strength'));
   noJsErrors(k);
 });

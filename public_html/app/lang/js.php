@@ -282,4 +282,8 @@ return [
     'Ypatingi veiksmai',
     'Liepsnų spalva',
     'Kiti personažai atsiras, kai bus nupiešti pikseliais.',
+    'Kuprinė',
+    'Atverti',
+    'Kur gyvena tavo personažas? Pasirink vietą.',
+    'Aplinkos',
 ];

@@ -69,15 +69,27 @@
     var Bt = (window.GAME && GAME.catalog && GAME.catalog.belts) || {}, b = Bt[lvl] || Bt[String(lvl)];
     return b ? b[2] : null;
   }
+  // Seni (apvalūs) personažai → artimiausias naujas pikselinis
+  var OLD = { tiger: 'wtiger', lion: 'wtiger', fox: 'kitsune', wolf: 'swolf', cat: 'scat', rabbit: 'weasel', monkey: 'frog', eagle: 'raven', dragon: 'gdragon',
+    human: 'ghost', redpanda: 'kitsune', yeti: 'ram', tengu: 'raven', unicorn: 'deer', phoenixbird: 'phoenix' };
+  function chars() { return (window.GAME && GAME.catalog && GAME.catalog.chars) || {}; }
+  function charKey(sp) { var C2 = chars(); if (C2[sp]) return sp; sp = OLD[sp] || sp; return C2[sp] ? sp : 'kitsune'; }
+  /** Į kurią pusę žiūri personažas: 'r', 'l' arba 'c' */
+  function face(sp) { var c = chars()[charKey(sp)]; return c ? c.f : 'l'; }
   /** Personažas: cfg {species, look:{fur,flame}, equipped:{kimono}, belt}; o: {cls, items} */
   function hero(cfg, o) {
     o = o || {}; cfg = cfg || {};
+    var key = charKey(cfg.species);
+    if (key !== 'kitsune') {
+      var img = ((window.GAME && GAME.catalog && GAME.catalog.charImg) || '/img/zaidimas/herojai/') + key + '.webp';
+      return '<img class="px-char px-hero ga-hero' + (o.cls ? ' ' + o.cls : '') + '" data-face="' + face(key) + '" src="' + img + '" alt="" draggable="false">';
+    }
     var CAT = o.items || (window.GAME && GAME.catalog && GAME.catalog.items) || {}, L = cfg.look || {}, E = cfg.equipped || {};
     var kim = (E.kimono && CAT[E.kimono] && CAT[E.kimono].a) || { c: '#F7F5EF', tr: '#E4DFD3' };
     var SPC = (window.GAME && GAME.catalog && GAME.catalog.species) || {};
     var c = { fur: o.ghost ? '#C9CDD3' : (L.fur || (SPC[cfg.species] && SPC[cfg.species].c) || ''), flame: o.ghost ? '#AAB2C0' : (L.flame || ''), kimono: kim.c, trim: kim.tr, pattern: kim.p || '', belt: beltHex(cfg.belt) || '' };
-    var key = 'fox|' + [c.fur, c.flame, c.kimono, c.trim, c.pattern, c.belt].join('|');
-    return '<img class="px px-hero ga-hero' + (o.cls ? ' ' + o.cls : '') + '" src="' + paint(FOX, foxColors(c), key) + '" width="' + FOX.w + '" height="' + FOX.h + '" alt="" draggable="false">';
+    key = 'fox|' + [c.fur, c.flame, c.kimono, c.trim, c.pattern, c.belt].join('|');
+    return '<img class="px px-hero ga-hero' + (o.cls ? ' ' + o.cls : '') + '" data-face="l" src="' + paint(FOX, foxColors(c), key) + '" width="' + FOX.w + '" height="' + FOX.h + '" alt="" draggable="false">';
   }
 
   // ---------- Gyvūnėliai: pūkų gumulėliai ----------
@@ -117,5 +129,5 @@
   A.decor = function (t) { return spr('d-' + t); };
   A.sceneUrl = function (sc) { return base() + 'px/' + sc + '.png'; };
   A.icon = function (name, cls) { return '<img class="px px-ic' + (cls ? ' ' + cls : '') + '" src="' + base().replace('temos/', 'zaidimas/') + name + '.png" width="18" height="18" alt="" draggable="false">'; };
-  A.pixel = true;
+  A.pixel = true; A.face = face; A.charKey = charKey; A.chars = chars;
 })();

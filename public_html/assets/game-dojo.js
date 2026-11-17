@@ -4,7 +4,7 @@
   var G = window.GAME, root = document.getElementById('dojo');
   if (!G || !root) return;
   var C = G.catalog, A = window.GameArt, T = window.tr || function (s) { return s; };
-  var H = G.hero, ro = !!G.readOnly, filt = 'all', editing = false, pendAlloc = null;
+  var H = G.hero, ro = !!G.readOnly, filt = 'all', pendAlloc = null;
   var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
   var $ = function (s, el) { return (el || root).querySelector(s); };
   var STAT_IC = { str: '💪', agi: '⚡', int: '🧠', end: '🛡️' };
@@ -40,31 +40,20 @@
   }
   function beltName(n) { var b = C.belts[n] || C.belts[String(n)]; return b ? b[0] + ' · ' + b[1] : ''; }
 
-  // ---------- Pasaulis ----------
+  // ---------- Pasaulis: tik fonas (gamta / dvasinė vieta / dojo su vaizdu), personažas ir gyvūnėliai ----------
   function world() {
-    var home = H.home || {}, bg = item(home.bg), hs = item(home.house), html = '';
-    var hour = new Date().getHours(), night = hour >= 21 || hour < 6, eve = hour >= 18 && hour < 21;
-    html += '<div class="dw-ground"></div>';
-    if (hs) html += '<div class="dw-obj dw-house">' + A.house(hs.a.t) + '</div>';
-    (home.decor || []).forEach(function (d, i) {
-      var it = item(d.k); if (!it) return;
-      var y = +d.y, x = +d.x;
-      html += '<div class="dw-obj dw-decor' + (d.f ? ' flip' : '') + '" data-i="' + i + '" style="left:' + x + '%;bottom:' + (3 + y * 0.28).toFixed(1) + '%;z-index:' + (50 - Math.round(y / 2)) + ';transform:translateX(-50%) scale(' + (1 - y / 260).toFixed(2) + ')">' + A.decor(it.a.t) + '<button type="button" class="dw-f" title="' + esc(T('Apversti')) + '">⇄</button><button type="button" class="dw-x" title="' + esc(T('Nuimti')) + '">×</button></div>';
-    });
+    var home = H.home || {}, bg = item(home.bg), html = '';
+    var hour = new Date().getHours(), night = hour >= 21 || hour < 6;
     html += '<div class="dw-obj dw-hero live" title="' + esc(H.name) + '">' + A.hero(cfg(H)) + '</div>';
     (H.pets || []).forEach(function (p, i) {
-      html += '<div class="dw-obj dw-pet" data-pet="' + p.id + '" style="left:' + (25 + i * 13) % 80 + '%;bottom:' + (4 + (i * 7) % 12) + '%" title="' + esc(p.name) + '">' + A.pet(p.species, p.color) + '</div>';
+      html += '<div class="dw-obj dw-pet" data-pet="' + p.id + '" style="left:' + [22, 48, 14, 54, 8, 60][i % 6] + '%;bottom:' + (4 + (i * 5) % 9) + '%" title="' + esc(p.name) + '">' + A.pet(p.species, p.color) + '</div>';
     });
     html += '<div class="dw-fx">' + particles(night) + '</div>';
-    if (night || eve) html += '<div class="dw-night" style="opacity:' + (night ? 1 : .45) + '"></div>' + (night ? '<div class="dw-stars">' + stars() + '</div>' : '');
-    html += '<div class="dw-name">' + esc(H.publicName || H.name) + ' · ' + T('Lygis') + ' ' + H.level + '</div>';
     // Pirmą kartą - kvietimas susikurti herojų (ne iššokantis langas, kad neuždengtų kitų pranešimų)
     if (!ro && !(H.look && +H.look.setup)) html += '<button type="button" class="dw-setup" data-act="editor">👋 ' + T('Susikurk savo herojų!') + '</button>';
-    if (!ro) html += '<div class="dw-tools">' + (editing ? '<button type="button" class="g-btn sm primary" data-act="home-done">✓ ' + T('Baigti tvarkyti') + '</button>' : '<button type="button" class="g-btn sm" data-act="home-edit">🏡 ' + T('Tvarkyti') + '</button>') + '</div>';
     var w = $('.dw');
-    w.style.backgroundImage = bg ? 'url(' + A.sceneUrl(bg.a.sc) + ')' : '';
+    w.style.backgroundImage = 'url(' + A.sceneUrl(bg ? bg.a.sc : 'dojo') + ')';
     w.innerHTML = html;
-    w.classList.toggle('editing', editing);
     wander();
   }
   function stars() { var s = ''; for (var i = 0; i < 40; i++) s += '<i style="left:' + (Math.random() * 100).toFixed(1) + '%;top:' + (Math.random() * 100).toFixed(1) + '%;animation-delay:' + (Math.random() * 3).toFixed(1) + 's"></i>'; return s; }
@@ -119,87 +108,80 @@
     }
   }
 
-  // Dekoracijų tempimas (tvarkant namus)
-  var drag = null;
   function bindWorld() {
-    var w = $('.dw');
-    w.addEventListener('click', function (e) {
+    $('.dw').addEventListener('click', function (e) {
       var t = e.target;
       if (t.closest('[data-act]')) return;
-      var dec = t.closest('.dw-decor');
-      if (editing && dec) {
-        var i = +dec.dataset.i, decor = H.home.decor;
-        if (t.classList.contains('dw-x')) { decor.splice(i, 1); world(); renderHome(); return; }
-        if (t.classList.contains('dw-f')) { decor[i].f = decor[i].f ? 0 : 1; world(); return; }
-        return;
-      }
       var hero = t.closest('.dw-hero');
       if (hero) { hero.classList.remove('hero-jump'); void hero.offsetWidth; hero.classList.add('hero-jump'); say(hero, SAY[Math.floor(Math.random() * SAY.length)]); return; }
       var pet = t.closest('.dw-pet');
       if (pet) { hearts(pet); var p = (H.pets || []).filter(function (x) { return +x.id === +pet.dataset.pet; })[0]; if (p) say(pet, p.name + (p.can_feed && !ro ? ' 🍖?' : ' 💕')); }
     });
-    w.addEventListener('pointerdown', function (e) {
-      if (!editing) return;
-      var dec = e.target.closest('.dw-decor');
-      if (!dec || e.target.tagName === 'BUTTON') return;
-      e.preventDefault();
-      drag = { el: dec, i: +dec.dataset.i };
-      dec.classList.add('drag');
-      dec.setPointerCapture(e.pointerId);
-    });
-    w.addEventListener('pointermove', function (e) {
-      if (!drag) return;
-      var r = w.getBoundingClientRect();
-      var x = Math.max(3, Math.min(97, (e.clientX - r.left) / r.width * 100));
-      var b = Math.max(3, Math.min(31, (r.bottom - e.clientY) / r.height * 100 - 4));
-      var y = Math.max(0, Math.min(100, (b - 3) / 0.28));
-      var d = H.home.decor[drag.i]; d.x = Math.round(x * 10) / 10; d.y = Math.round(y * 10) / 10;
-      drag.el.style.left = x + '%'; drag.el.style.bottom = (3 + y * 0.28) + '%';
-      drag.el.style.zIndex = 50 - Math.round(y / 2);
-      drag.el.style.transform = 'translateX(-50%) scale(' + (1 - y / 260).toFixed(2) + ')';
-    });
-    var end = function () { if (drag) { drag.el.classList.remove('drag'); drag = null; } };
-    w.addEventListener('pointerup', end); w.addEventListener('pointercancel', end);
   }
 
-  // ---------- Savybės ----------
+  // ---------- Sąsaja aplinkoje ----------
+  // Kabanti lentelė (vardas, lygis, XP), lenta su savybėmis (paspaudus - ritinys), rodyklės į žaidimus, įrankiai viršuje.
+  var PANES = [['stats', 'savybes', 'Savybės'], ['equip', 'kuprine', 'Kuprinė'], ['pets', 'letena', 'Gyvūnėliai'], ['home', 'aplinka', 'Aplinka'], ['col', 'knyga', 'Kolekcija'], ['test', 'kolba', 'Testavimas (adminui)']];
+  function ui() {
+    var st = H.stats, x = H.xp, per = x.per || 100, pct = Math.min(100, Math.round(x.into / per * 100)), boxes = (H.boxes || []).length, html = '';
+    html += '<div class="dw-plaque"><i class="pq-rope l"></i><i class="pq-rope r"></i><div class="pq-body"><b>' + esc(H.publicName || H.name) + '</b><span class="pq-lv">⭐ ' + T('Lygis') + ' ' + H.level + '</span>' +
+      '<div class="xp-track"><i style="width:' + pct + '%"></i><span>' + x.into + ' / ' + per + ' XP</span></div><small>' + esc(beltName(H.belt)) + '</small></div></div>';
+    html += '<div class="dw-bar">';
+    if (!ro) {
+      html += '<button type="button" class="dw-tool' + (boxes ? ' glow' : '') + '" data-act="boxes" title="' + esc(T('Dovanos')) + '">' + A.icon('dovana') + '<span>' + T('Dovanos') + '</span>' + (boxes ? '<em>' + boxes + '</em>' : '') + '</button>';
+      html += '<button type="button" class="dw-tool' + (H.look && +H.look.setup ? '' : ' glow') + '" data-act="editor" title="' + esc(T('Išvaizda')) + '">' + A.icon('teptukas') + '<span>' + T('Išvaizda') + '</span></button>';
+    }
+    PANES.forEach(function (p) {
+      if (p[0] === 'stats' || (p[0] === 'test' && !(G.admin && !ro)) || (ro && p[0] === 'home')) return;
+      html += '<button type="button" class="dw-tool" data-pane="' + p[0] + '" title="' + esc(T(p[2])) + '">' + A.icon(p[1]) + '<span>' + esc(T(p[2])) + '</span>' + (p[0] === 'pets' ? '<em class="soft" id="g-pets-cnt"></em>' : p[0] === 'col' ? '<em class="soft wide" id="g-col-cnt"></em>' : '') + '</button>';
+    });
+    html += '</div>';
+    html += '<button type="button" class="dw-board" data-pane="stats" title="' + esc(T('Savybės')) + '"><span class="bd-h">' + T('Savybės') + (H.points > 0 && !ro ? ' <em>+' + H.points + '</em>' : '') + '</span>' +
+      '<span class="bd-big"><span>' + A.icon('sirdis') + '<b>' + st.hp + '</b></span><span>' + A.icon('smugis') + '<b>' + st.dmg[0] + '–' + st.dmg[1] + '</b></span><span>' + A.icon('blokas') + '<b>' + st.arm + '</b></span></span>' +
+      '<span class="bd-st">' + Object.keys(C.stats).map(function (k) { return '<span>' + STAT_IC[k] + ' ' + st.total[k] + '</span>'; }).join('') + '</span>' +
+      '<span class="bd-more">' + T('Atverti') + ' ▾</span><i class="bd-leg l"></i><i class="bd-leg r"></i></button>';
+    if (!ro && G.urls) {
+      var sg = function (cls, ic, url, name, sub) { return '<a class="dw-sign ' + cls + '" href="' + url + '" title="' + esc(sub) + '">' + A.icon(ic) + '<span>' + name + '</span></a>'; };
+      html += '<div class="dw-post"><i class="dp-pole"></i>' +
+        sg('kova', 'kova', G.urls.arena, T('Karate kova'), T('Pasirink, kur smūgiuoti ir ką ginti')) +
+        sg('greita', 'greita', G.urls.greita, T('Greita kova'), T('Reakcija: blokuok laiku ir kontratakuok')) +
+        sg('keturi', 'keturi', G.urls.keturi, T('Keturi iš eilės'), T('Su gyvūnėlių kortomis')) +
+        sg('ritmas', 'ritmas', G.urls.ritmas, T('Kata ritmas'), T('Muša būgnai - daryk techniką laiku')) + '</div>';
+    }
+    $('.dw-ui').innerHTML = html;
+    var open = ($('.dw-scroll') || {}).dataset; if (open && open.open) root.querySelectorAll('.dw-tool[data-pane="' + open.open + '"]').forEach(function (b) { b.classList.add('on'); });
+  }
   function side() {
     var st = H.stats, pts = ro ? 0 : (H.points - (pendAlloc ? sum(pendAlloc) : 0)), html = '';
     var max = Math.max(12, Math.max.apply(null, Object.keys(st.total).map(function (k) { return st.total[k] + (pendAlloc ? pendAlloc[k] : 0); })));
-    html += '<div class="g-card"><h3>📊 ' + T('Savybės') + '</h3>';
-    if (pts > 0 || pendAlloc) html += '<div class="g-points"><span>✨ ' + T('Laisvi taškai:') + ' <b>' + pts + '</b></span>' + (pendAlloc ? '<button type="button" class="g-btn sm primary" data-act="alloc-save">' + T('Išsaugoti') + '</button>' : '') + '</div>';
+    html += '<div class="g-derived big"><div>' + A.icon('sirdis') + '<b>' + st.hp + '</b>' + T('Gyvybės') + '</div><div>' + A.icon('smugis') + '<b>' + st.dmg[0] + '–' + st.dmg[1] + '</b>' + T('Smūgis') + '</div><div>' + A.icon('blokas') + '<b>' + st.arm + '</b>' + T('Apsauga') + '</div></div>';
+    if (pts > 0 || pendAlloc) html += '<div class="g-points"><span>✨ ' + T('Laisvi taškai:') + ' <b>' + pts + '</b></span>' + (pendAlloc ? '<button type="button" class="px-btn sm" data-act="alloc-save">' + T('Išsaugoti') + '</button>' : '') + '</div>';
     Object.keys(C.stats).forEach(function (k) {
       var add = pendAlloc ? pendAlloc[k] : 0, tot = st.total[k] + add, bon = st.total[k] - st.base[k];
       html += '<div class="g-stat"><span>' + STAT_IC[k] + '</span><span>' + esc(C.stats[k]) + (bon > 0 ? ' <span class="bon">+' + bon + '</span>' : '') + '</span><b>' + tot + (add ? ' <span class="bon">(+' + add + ')</span>' : '') + '</b>' +
         '<button type="button" class="plus" data-plus="' + k + '"' + (pts > 0 ? '' : ' hidden') + ' aria-label="+">+</button>' +
         '<div class="bar"><i style="width:' + Math.min(100, tot / max * 100).toFixed(0) + '%"></i></div></div>';
     });
-    html += '<div class="g-derived"><div><b>' + st.hp + '</b>❤️ ' + T('Gyvybės') + '</div><div><b>' + st.dmg[0] + '–' + st.dmg[1] + '</b>⚔️ ' + T('Smūgis') + '</div><div><b>' + st.arm + '</b>🪖 ' + T('Apsauga') + '</div></div>';
     html += '<div class="g-derived"><div><b>' + H.ratingPower + '</b>🏆 ' + T('Jėgos reitingas') + '</div><div><b>' + H.ratingFair + '</b>🎯 ' + T('Gudrumo reitingas') + '</div><div><b>' + H.wins + ':' + H.losses + '</b>' + T('Pergalės') + '</div></div>';
-    html += '</div>';
-    $('.dojo-side').innerHTML = html;
-    if (!ro && G.urls) {
-      var gb = function (cls, ic, url, name, sub) { return '<a class="g-game ' + cls + '" href="' + url + '"><span class="gi">' + (A.icon ? A.icon(ic) : '') + '</span><span>' + name + '<small>' + sub + '</small></span></a>'; };
-      html = '<div class="g-games">' +
-        gb('kova', 'kova', G.urls.arena, T('Karate kova'), T('Pasirink, kur smūgiuoti ir ką ginti')) +
-        gb('greita', 'greita', G.urls.greita, T('Greita kova'), T('Reakcija: blokuok laiku ir kontratakuok')) +
-        gb('keturi', 'keturi', G.urls.keturi, T('Keturi iš eilės'), T('Su gyvūnėlių kortomis')) +
-        gb('ritmas', 'ritmas', G.urls.ritmas, T('Kata ritmas'), T('Muša būgnai - daryk techniką laiku')) +
-        '</div>';
-      $('.dojo-play').innerHTML = html;
-    }
+    if (!ro) html += '<label class="g-switch" title="' + esc(T('Ar kiti gali kviesti tave žaisti')) + '"><input type="checkbox" data-act="invites"' + (H.invites ? ' checked' : '') + '> ' + T('Priimu kvietimus') + '</label>';
+    $('#g-stats').innerHTML = html;
   }
   function sum(o) { var s = 0; for (var k in o) s += o[k]; return s; }
-
-  function xpBar() {
-    var x = H.xp, per = x.per || 100, pct = Math.min(100, Math.round(x.into / per * 100));
-    $('.dojo-xp').innerHTML = '<span class="lv">⭐ ' + T('Lygis') + ' ' + H.level + '</span><div class="xp-track"><i style="width:' + pct + '%"></i><span>' + x.into + ' / ' + per + ' XP</span></div>' +
-      '<span class="hint">🥋 ' + esc(beltName(H.belt)) + ' · ' + T('XP gauni treniruotėse, renginiuose ir varžybose') + '</span>';
+  // Ritinys: išsivynioja scenoje ir rodo vieną skiltį
+  function openPane(name) {
+    var sc = $('.dw-scroll'), p = PANES.filter(function (x) { return x[0] === name; })[0];
+    if (!sc || !p) return;
+    sc.querySelectorAll('.sc-pane').forEach(function (el) { el.hidden = el.dataset.pane !== name; });
+    sc.querySelector('.sc-title').innerHTML = A.icon(p[1]) + ' ' + esc(T(p[2]));
+    sc.hidden = false; sc.classList.remove('unroll'); void sc.offsetWidth; sc.classList.add('unroll');
+    sc.dataset.open = name;
+    root.querySelectorAll('.dw-tool[data-pane]').forEach(function (b) { b.classList.toggle('on', b.dataset.pane === name); });
   }
+  function closePane() { var sc = $('.dw-scroll'); if (sc) { sc.hidden = true; sc.dataset.open = ''; } root.querySelectorAll('.dw-tool.on').forEach(function (b) { b.classList.remove('on'); }); }
 
   // ---------- Skiltys ----------
   // Pikselinis personažas kol kas rodo kimono (spalvą) ir tikrą diržą; kiti priedai (kepurės, auros…) grįš, kai bus nupiešti pikseliais
-  var PIXEL = !!A.pixel, HIDDEN = PIXEL ? ['belt', 'hair', 'head', 'face', 'neck', 'hands', 'back', 'aura', 'species'] : [];
+  var PIXEL = !!A.pixel, HIDDEN = PIXEL ? ['belt', 'hair', 'head', 'face', 'neck', 'hands', 'back', 'aura', 'species', 'house', 'decor'] : [];
   var SLOT_ORDER = PIXEL ? ['weapon', 'kimono'] : ['weapon', 'kimono', 'belt', 'hair', 'head', 'face', 'neck', 'hands', 'back', 'aura'];
   function renderEquip() {
     var html = '<div class="g-slots">';
@@ -211,7 +193,7 @@
     if (H.pet) html += '<div class="g-sub">' + T('Į kovą eina') + '</div><div class="g-pets">' + petCard(H.pet, true) + '</div>';
     $('#g-equip').innerHTML = html;
   }
-  var FILTERS = [['all', 'Viskas'], ['wear', 'Apranga'], ['weapon', 'Ginklai'], ['home', 'Namams'], ['paint', 'Spalvos'], ['egg', 'Kiaušiniai']];
+  var FILTERS = [['all', 'Viskas'], ['wear', 'Apranga'], ['weapon', 'Ginklai'], ['home', 'Aplinkos'], ['paint', 'Spalvos'], ['egg', 'Kiaušiniai']];
   function inFilter(sl) {
     if (filt === 'all') return true;
     if (filt === 'wear') return ['kimono', 'belt', 'head', 'face', 'neck', 'hands', 'back', 'aura', 'hair'].indexOf(sl) >= 0;
@@ -271,21 +253,16 @@
     if (eggs.length && !ro) html += '<div class="g-sub">🥚 ' + T('Kiaušiniai') + '</div><div class="g-items">' + eggs.map(function (k) { return '<button type="button" class="g-item r' + item(k).r + '" data-item="' + k + '">' + A.itemIcon(k, item(k)) + '<span class="nm">' + esc(item(k).n) + '</span><span class="st">' + T('Išperinti') + '</span></button>'; }).join('') + '</div>';
     if (pets.length && pets.length < 6 && !C.unlockAll) html += '<p class="g-empty" style="margin-top:8px">' + T('Daugiau gyvūnėlių - iš kiaušinių dovanų dėžėse (iki 6).') + '</p>';
     $('#g-pets').innerHTML = html;
-    $('#g-pets-cnt').textContent = pets.length;
+    $('#g-pets-cnt').textContent = pets.length || '';
   }
   function renderHome() {
     if (ro) return;
-    var own = H.owned || {}, home = H.home, html = '';
+    var own = H.owned || {}, home = H.home, cur = home.bg || '';
     var bgs = Object.keys(own).filter(function (k) { return item(k) && item(k).slot === 'bg'; });
-    var hss = Object.keys(own).filter(function (k) { return item(k) && item(k).slot === 'house'; });
-    var dcs = Object.keys(own).filter(function (k) { return item(k) && item(k).slot === 'decor'; });
-    html += '<div class="g-sub">🌄 ' + T('Aplinka') + '</div><div class="g-pick">' + bgs.map(function (k) { var it = item(k); return '<button type="button" data-bg="' + k + '" class="' + (home.bg === k ? 'sel' : '') + '"><span class="bgthumb" style="background-image:url(' + A.sceneUrl(it.a.sc) + ')"></span>' + esc(it.n) + '<span class="st">' + statTxt(it) + '</span></button>'; }).join('') + '</div>';
-    html += '<div class="g-sub">🏠 ' + T('Namas') + '</div><div class="g-pick">' + hss.map(function (k) { var it = item(k); return '<button type="button" data-house="' + k + '" class="' + (home.house === k ? 'sel' : '') + '">' + A.house(it.a.t) + esc(it.n) + '<span class="st">' + statTxt(it) + '</span></button>'; }).join('') + '</div>';
-    var placed = {}; (home.decor || []).forEach(function (d) { placed[d.k] = (placed[d.k] || 0) + 1; });
-    html += '<div class="g-sub">🏮 ' + T('Dekoracijos') + ' (' + (home.decor || []).length + ') · ' + T('savybes duoda iki') + ' ' + C.decorMax + '</div>';
-    html += dcs.length ? '<div class="g-pick">' + dcs.map(function (k) { var it = item(k), left = own[k] - (placed[k] || 0); return '<button type="button" data-decor="' + k + '"' + (left > 0 ? '' : ' disabled style="opacity:.5"') + '>' + A.decor(it.a.t) + esc(it.n) + '<span class="st">' + (left > 0 ? '+ ' + T('Padėti') : '✓ ' + T('Padėta')) + ' · ' + statTxt(it) + '</span></button>'; }).join('') + '</div>' : '<div class="g-empty">' + T('Dekoracijas rasi dovanų dėžėse ir pasiekęs naujus lygius.') + '</div>';
-    html += '<p class="g-empty" style="margin-top:8px">💡 ' + T('Paspausk „Tvarkyti“ ant paveikslo ir tempk daiktus, kur nori.') + '</p>';
-    $('#g-home').innerHTML = html;
+    $('#g-home').innerHTML = '<p class="g-empty">' + T('Kur gyvena tavo personažas? Pasirink vietą.') + '</p><div class="g-scenes">' + bgs.map(function (k) {
+      var it = item(k);
+      return '<button type="button" data-bg="' + k + '" class="' + (cur === k || (!cur && it.a.sc === 'dojo') ? 'sel' : '') + '"><span class="bgthumb" style="background-image:url(' + A.sceneUrl(it.a.sc) + ')"></span><b>' + esc(it.n) + '</b><span class="st">' + statTxt(it) + '</span></button>';
+    }).join('') + '</div>';
   }
   function renderTest() {
     var el = $('#g-test'); if (!el) return;
@@ -296,14 +273,8 @@
       '<p class="g-empty">' + T('Matai tik tu (adminas). Vaikų lygis ir diržas imami iš tikrų XP ir diržo.') + '</p>';
   }
   function head() {
-    var boxes = (H.boxes || []).length, html = '<h2 class="dojo-title">🏯 ' + esc(ro ? (H.publicName || H.name) + ' · ' + T('Dojo') : T('Mano dojo')) + '</h2><span class="dojo-lvl">⭐ ' + H.level + '</span>';
+    var html = '<h2 class="dojo-title">🏯 ' + esc(ro ? (H.publicName || H.name) + ' · ' + T('Dojo') : T('Mano dojo')) + '</h2><span class="dojo-lvl">⭐ ' + H.level + '</span>';
     if ((G.heroes || []).length > 1) html += '<div class="dojo-heroes">' + G.heroes.map(function (h) { return '<button type="button" data-hero="' + h.id + '" class="' + (+h.id === +H.id ? 'active' : '') + '">' + esc(h.name) + '</button>'; }).join('') + '</div>';
-    html += '<span class="sp"></span>';
-    if (!ro) {
-      html += '<button type="button" class="g-btn ' + (boxes ? 'gold gift-pulse' : '') + '" data-act="boxes">🎁 ' + T('Dovanos') + (boxes ? ' <span class="g-badge">' + boxes + '</span>' : '') + '</button>';
-      html += '<button type="button" class="g-btn' + (H.look && +H.look.setup ? '' : ' gold gift-pulse') + '" data-act="editor">✏️ ' + T('Išvaizda') + '</button>';
-      html += '<label class="g-switch" title="' + esc(T('Ar kiti gali kviesti tave žaisti')) + '"><input type="checkbox" data-act="invites"' + (H.invites ? ' checked' : '') + '> ' + T('Priimu kvietimus') + '</label>';
-    }
     $('.dojo-head').innerHTML = html;
   }
   // Kolekcija: visi daiktai rinkiniais (turimi - spalvoti, neturimi - šešėliai), surinkta X iš Y
@@ -329,17 +300,19 @@
     $('#g-col').innerHTML = '<p class="g-empty">' + T('Rink daiktus iš lygių ir dovanų dėžių. Šešėliai - dar nerasti. Užbaigtas rinkinys pažymimas ✓.') + '</p>' + html;
     $('#g-col-cnt').textContent = got + ' / ' + tot;
   }
-  function renderAll() { head(); world(); side(); xpBar(); renderEquip(); renderInv(); renderPets(); renderHome(); renderTest(); renderCol(); }
+  function renderAll() { head(); world(); ui(); side(); renderEquip(); renderInv(); renderPets(); renderHome(); renderTest(); renderCol(); }
 
   function build() {
-    root.innerHTML = '<div class="dojo-head"></div><div class="dojo-main"><div><div class="dw"></div><div class="dojo-xp"></div><div class="dojo-play"></div></div><aside class="dojo-side"></aside></div>' +
-      '<details class="g-sec"' + (ro ? ' open' : '') + '><summary>🥋 ' + T('Apranga') + '</summary><div class="g-sec-body" id="g-equip"></div></details>' +
-      (ro ? '' : '<details class="g-sec"><summary>🎒 ' + T('Inventorius') + ' <span class="cnt" id="g-inv-cnt"></span></summary><div class="g-sec-body" id="g-inv"></div></details>') +
-      '<details class="g-sec"><summary>🐾 ' + T('Gyvūnėliai') + ' <span class="cnt" id="g-pets-cnt"></span></summary><div class="g-sec-body" id="g-pets"></div></details>' +
-      (ro ? '' : '<details class="g-sec"><summary>🏡 ' + T('Namai ir aplinka') + '</summary><div class="g-sec-body" id="g-home"></div></details>') +
-      '<details class="g-sec"><summary>📖 ' + T('Kolekcija') + ' <span class="cnt" id="g-col-cnt"></span></summary><div class="g-sec-body" id="g-col"></div></details>' +
-      (G.admin && !ro ? '<details class="g-sec g-test"><summary>🧪 ' + T('Testavimas (adminui)') + '</summary><div class="g-sec-body" id="g-test"></div></details>' : '');
-    if (ro) { root.querySelector('#g-equip').parentNode.open = true; }
+    var pane = function (name, inner) { return '<section class="sc-pane" data-pane="' + name + '" hidden>' + inner + '</section>'; };
+    root.innerHTML = '<div class="dojo-head"></div><div class="dw-wrap"><div class="dw"></div><div class="dw-ui"></div>' +
+      '<div class="dw-scroll" hidden><i class="sc-rod top"></i><div class="sc-paper"><button type="button" class="sc-x" data-act="pane-close" aria-label="' + esc(T('Uždaryti')) + '">×</button><h3 class="sc-title"></h3><div class="sc-body">' +
+      pane('stats', '<div id="g-stats"></div>') +
+      pane('equip', '<div id="g-equip"></div>' + (ro ? '' : '<div class="g-sub">' + T('Inventorius') + ' <span class="cnt" id="g-inv-cnt"></span></div><div id="g-inv"></div>')) +
+      pane('pets', '<div id="g-pets"></div>') +
+      (ro ? '' : pane('home', '<div id="g-home"></div>')) +
+      pane('col', '<div id="g-col"></div>') +
+      (G.admin && !ro ? pane('test', '<div id="g-test"></div>') : '') +
+      '</div></div><i class="sc-rod bot"></i></div></div>';
     bindWorld();
     if (ro) { var noop = function () {}; renderInv = noop; renderHome = noop; }
     renderAll();
@@ -365,18 +338,11 @@
       if (d === 'equip') { eq[sl] = k; save({ equipped: eq }); }
       if (d === 'unequip') { eq[sl] = ''; save({ equipped: eq }); }
       if (d === 'place') { var h = {}; h[sl] = k; save({ home: h }); }
-      if (d === 'decor') { addDecor(k); }
       if (d === 'paint') { m.close(); return editor(it.a.c); }
       if (d === 'become') { save({ species: it.a.sp, look: { fur: C.species[it.a.sp].c } }, '✨ ' + T('Naujas personažas!')).then(confetti); }
       if (d === 'hatch') { api({ action: 'hatch', item: k, name: (m.querySelector('#egg-name') || {}).value || '' }).then(function (r) { if (r.ok) { renderAll(); confetti(); toast('🐣 ' + T('Naujas gyvūnėlis!')); } }); }
       m.close();
     });
-  }
-  function addDecor(k) {
-    var decor = (H.home.decor || []).slice();
-    if (decor.length >= 24) return toast(T('Daugiau vietos nėra.'));
-    decor.push({ k: k, x: Math.round(10 + Math.random() * 80), y: Math.round(10 + Math.random() * 70), f: 0 });
-    save({ home: { decor: decor } }).then(function () { if (!editing) { editing = true; world(); } });
   }
   function modal(html, cls) {
     var w = document.createElement('div'); w.className = 'gm';
@@ -448,11 +414,17 @@
       m.querySelector('#ed-prev').innerHTML = A.hero({ species: d.species, gender: d.gender, look: d.look, equipped: eq, belt: H.belt, name: d.name });
       var isH = d.species === 'human', f = '';
       if (PIXEL) {
-        f += '<div class="ed-row"><span class="ed-lab">' + T('Kas tu?') + '</span><div class="ed-sp"><button type="button" class="sel" data-sp="kitsune"><span>🦊</span>' + esc(C.species.kitsune.n) + '</button></div><p class="g-empty" style="margin:6px 0 0">' + T('Kiti personažai atsiras, kai bus nupiešti pikseliais.') + '</p></div>';
-        f += '<div class="ed-row"><span class="ed-lab">' + T('Kailio spalva') + '</span>' + sw('fur', C.fur, paints) + '</div>';
-        f += '<div class="ed-row"><span class="ed-lab">' + T('Liepsnų spalva') + '</span>' + sw('flame', C.flame || []) + '</div>';
+        var CH = C.chars || {};
+        f += '<div class="ed-row"><span class="ed-lab">' + T('Kas tu?') + '</span><div class="ed-chars">' + Object.keys(CH).map(function (k) {
+          return '<button type="button" data-sp="' + k + '" class="' + (k === d.species ? 'sel' : '') + '" title="' + esc(CH[k].n) + '">' + A.hero({ species: k, look: k === 'kitsune' ? d.look : {}, equipped: H.equipped, belt: H.belt }) + '<span>' + esc(CH[k].n) + '</span></button>';
+        }).join('') + '</div></div>';
+        if (d.species === 'kitsune') {
+          f += '<div class="ed-row"><span class="ed-lab">' + T('Kailio spalva') + '</span>' + sw('fur', C.fur, paints) + '</div>';
+          f += '<div class="ed-row"><span class="ed-lab">' + T('Liepsnų spalva') + '</span>' + sw('flame', C.flame || []) + '</div>';
+        }
         f += '<div class="ed-row"><label for="ed-name">' + T('Herojaus vardas') + '</label><input type="text" id="ed-name" maxlength="24" value="' + esc(d.name) + '"></div>';
         m.querySelector('#ed-f').innerHTML = f;
+        var selb = m.querySelector('.ed-chars .sel'); if (selb && selb.scrollIntoView) selb.scrollIntoView({ block: 'nearest' });
         return;
       }
       f += '<div class="ed-row"><span class="ed-lab">' + T('Kas tu?') + '</span><div class="ed-sp">' + Object.keys(C.species).map(function (k) {
@@ -467,13 +439,13 @@
       f += '<div class="ed-row"><label for="ed-name">' + T('Herojaus vardas') + '</label><input type="text" id="ed-name" maxlength="24" value="' + esc(d.name) + '"></div>';
       m.querySelector('#ed-f').innerHTML = f;
     }
-    if (PIXEL) d.species = 'kitsune';
+    if (PIXEL) d.species = A.charKey(d.species);
     if (paintColor) { d.look[d.species === 'human' ? 'hair' : 'fur'] = paintColor; }
     draw();
     m.addEventListener('input', function (e) { if (e.target.id === 'ed-name') d.name = e.target.value; });
     m.addEventListener('click', function (e) {
       var t = e.target.closest('button'); if (!t) return;
-      if (t.dataset.sp) { if (t.dataset.sp !== d.species) { d.species = t.dataset.sp; if (t.dataset.sp !== 'human') d.look.fur = C.species[t.dataset.sp].c; } draw(); }
+      if (t.dataset.sp) { if (t.dataset.sp !== d.species) { d.species = t.dataset.sp; if (!PIXEL && t.dataset.sp !== 'human') d.look.fur = C.species[t.dataset.sp].c; } draw(); }
       else if (t.dataset.g) { d.gender = t.dataset.g; draw(); }
       else if (t.dataset.sw) { d.look[t.dataset.sw] = t.dataset.c; draw(); }
       else if (t.dataset.hair) { d.hair = t.dataset.hair; draw(); }
@@ -485,18 +457,18 @@
   }
 
   root.addEventListener('click', function (e) {
-    var t = e.target.closest('[data-act],[data-plus],[data-slot],[data-filt],[data-item],[data-feed],[data-active],[data-rename],[data-release],[data-starter],[data-bg],[data-house],[data-decor],[data-test],[data-hero]');
-    if (!t || ro && !t.dataset.hero) return;
+    var t = e.target.closest('[data-act],[data-pane],[data-plus],[data-slot],[data-filt],[data-item],[data-feed],[data-active],[data-rename],[data-release],[data-starter],[data-bg],[data-house],[data-decor],[data-test],[data-hero],[data-ch]');
+    if (!t || ro && !t.dataset.hero && !t.dataset.pane && t.dataset.act !== 'pane-close') return;
     var a = t.dataset.act;
+    if (t.dataset.pane) return openPane(t.dataset.pane);
+    if (a === 'pane-close') return closePane();
     if (a === 'boxes') return openBoxes();
     if (a === 'editor') return editor();
-    if (a === 'home-edit') { editing = true; world(); var s = $('#g-home'); if (s) s.parentNode.open = true; return; }
-    if (a === 'home-done') { editing = false; return save({ home: { decor: H.home.decor } }, '✓ ' + T('Dojo sutvarkytas')); }
     if (a === 'alloc-save') { var al = {}; Object.keys(C.stats).forEach(function (k) { al[k] = (H.alloc[k] || 0) + (pendAlloc[k] || 0); }); pendAlloc = null; return save({ alloc: al }, '✓ ' + T('Taškai paskirstyti')); }
     if (a === 'adopt') { return api({ action: 'pet_adopt', species: starterPick, name: ($('#g-pet-name') || {}).value || '' }).then(function (d) { if (d.ok) { renderAll(); hearts($('.dw-pet') || $('.dw-hero')); toast('🐾 ' + T('Sveikas, naujas drauge!')); } }); }
     if (a === 'invites') return;
     if (t.dataset.plus) { pendAlloc = pendAlloc || { str: 0, agi: 0, int: 0, end: 0 }; pendAlloc[t.dataset.plus]++; return side(); }
-    if (t.dataset.slot) { filt = t.dataset.slot; var inv = $('#g-inv'); renderInv(); inv.parentNode.open = true; inv.scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
+    if (t.dataset.slot) { filt = t.dataset.slot; renderInv(); var inv = $('#g-inv'); if (inv) inv.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); return; }
     if (t.dataset.filt) { filt = t.dataset.filt; return renderInv(); }
     if (t.dataset.item) return itemMenu(t.dataset.item);
     if (t.dataset.feed) { return api({ action: 'pet_feed', id: t.dataset.feed }).then(function (d) { if (d.ok) { renderAll(); var el = root.querySelector('.dw-pet[data-pet="' + t.dataset.feed + '"]'); if (el) hearts(el); toast('🍖 ' + T('Skanu! Nuotaika pakilo.')); } }); }
@@ -506,7 +478,6 @@
     if (t.dataset.starter) { starterPick = t.dataset.starter; return renderPets(); }
     if (t.dataset.bg) return save({ home: { bg: t.dataset.bg } });
     if (t.dataset.house) return save({ home: { house: t.dataset.house } });
-    if (t.dataset.decor) return addDecor(t.dataset.decor);
     if (t.dataset.hero) { location.href = G.heroUrl.replace('HID', t.dataset.hero); return; }
     if (t.dataset.test) {
       var x = t.dataset.test, q = { action: 'test' };
@@ -523,6 +494,7 @@
     if (e.target.dataset.act === 'invites') save({ invites: e.target.checked ? 1 : 0 }, e.target.checked ? T('Kiti gali tave kviesti žaisti') : T('Kvietimai išjungti'));
   });
 
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !document.querySelector('.gm')) closePane(); });
   build();
   // Naujienos: naujas lygis, atsirakinę daiktai, dovanos
   if (!ro && G.news && G.news.length) {

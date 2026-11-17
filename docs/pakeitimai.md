@@ -4,6 +4,32 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.40 - 2026-11-17 (Žaidimas: tikri personažai, gražūs fonai, visa sąsaja aplinkoje)
+Duomenų bazės atnaujinti nereikia. Zip'o turinį išpakuokite **tiesiai į svetainės aplanką**.
+
+**🐯 25 nauji personažai** (iš atsiųsto paveikslo, nieko neperpiešta) + perdažoma pikselinė lapė
+- Baltasis tigras, Varnas tengu, Šventoji gervė, Dvasių vilkas, Auksinis drakonas, Devynuodegė kitsunė, Varlė vienuolė, Kalnų išminčius, Medūza,
+  Dvasių elnias, Šešėlių katė, Vėžlys meistras, Feniksas, Panda, Ryklys, Dvasia, Lavos golemas, Vandens drakonas, Mėnulio vilkė, Naktinis drugys,
+  Medžio dvasia, Akmens golemas, Oni, Sniego šeškas, Kosminis banginis.
+- „Išvaizda“ → „Kas tu?“ - visi personažai paveikslėliais. Kovoje personažai visada žiūri vienas į kitą.
+- Treniruočių partneriai: Panda (lengvas), Varlė vienuolė (vidutinis), Auksinis drakonas (sunkus).
+
+**🌄 Pasaulis be namo ir dekoracijų - tik gražūs pikseliniai fonai** (10 vietų + dojo)
+- Mėnesienos dojo (vaizdas pro langą į kalną), Sakurų pagoda, Toris jūroje, Kalnų krioklys, Bambukų giraitė, Žiemos šventykla,
+  Dvasių pasaulis (plūduriuojančios salos), Šiaurės pašvaistė, Rudens tiltelis, Ugnikalnis, Kopų oazė.
+
+**🪵 Visa sąsaja - aplinkoje**
+- Kabanti medinė lentelė: vardas, lygis, XP.
+- **Lenta su savybėmis** stovi ant žemės šalia personažo; paspaudus - išsivynioja **ritinys** su visomis savybėmis ir taškų paskirstymu.
+- **Rodyklės ant stulpo** į žaidimus: Karate kova, Greita kova, Keturi iš eilės, Kata ritmas.
+- Viršuje mediniai mygtukai su ikonomis: Dovanos, Išvaizda, Kuprinė, Gyvūnėliai, Aplinka, Kolekcija - viskas atsiveria ritinyje toje pačioje scenoje.
+- Arenos laukiamasis - dojo fone, skelbimai ant popieriaus, mygtukai mediniai.
+
+**⚔️ Kovos lentelė**
+- **Blokai kairėje, smūgiai dešinėje**, kiekviena eilutė - tas pats lygis: galva, pilvas, kojos, išsisukimas (blokas ir smūgis greta).
+- Mygtukai - **popierinės juostelės su tekstūra** (mėlyna juostelė - blokas, raudona - smūgis), pasirinkus - **antspaudas ✓**, ne spalvotas fonas.
+- Ypatingi veiksmai ir „Kovoti!“ - medinės lentelės. Greitos kovos mygtukai - irgi popieriniai.
+
 ## v1.39 - 2026-11-17 (Žaidimas pikseliais: lapė kaip tikras personažas, viena kovos arena, žaidimo mygtukai)
 Duomenų bazės atnaujinti nereikia. Zip'o turinį išpakuokite **tiesiai į svetainės aplanką**.
 
