@@ -11,7 +11,7 @@ $hero = game_hero_row((int) get('id'));
 if (!$hero) {
     not_found();
 }
-page_start(game_public_name($hero) . ' · ' . t('Dojo'), ['noindex' => true, 'account' => 'zaidimai']);
+page_start(game_public_name($hero) . ' · ' . t('Dojo'), ['noindex' => true, 'section' => 'zaidimas']);
 ?>
 <div class="row" style="display:flex; gap:8px; align-items:center; margin-bottom:10px; flex-wrap:wrap;">
   <a class="g-btn sm" href="<?= url('arena.php') ?>">← <?= te('Arena') ?></a>

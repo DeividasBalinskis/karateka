@@ -296,12 +296,18 @@ function admin_nav_current(): string
     return $map[$file] ?? $file;
 }
 
+/** Ar rodyti „🎮 Žaidimas“ viršutinėje juostoje (žaidimo lentelės jau sukurtos) */
+function game_nav_ready(): bool
+{
+    require_once APP_DIR . '/game.php';
+    return game_ready();
+}
+
 /** Nario paskyros skirtukai */
 function account_nav_items(array $a): array
 {
-    $items = ['apzvalga' => [t('🏯 Mano dojo'), 'paskyra.php', account_attention_count((int) $a['id'])]];
+    $items = ['apzvalga' => [t('Apžvalga'), 'paskyra.php', account_attention_count((int) $a['id'])]];
     if ($a['status'] === 'active') {
-        $items['zaidimai'] = [t('🎮 Žaidimai'), 'arena.php'];
         if (!is_staff($a) || account_members((int) $a['id'])) {
             foreach (account_nav_extra($a) as $key => $item) {
                 $items[$key] = $item;
@@ -389,6 +395,9 @@ function site_header(bool $home = false, ?string $area = null, ?string $tab = nu
           <li><a class="nav-page<?= $cur('naujienos') ?>" href="<?= url('naujienos.php') ?>"><?= te('Naujienos') ?></a></li>
           <?php if ($a && can_see_lessons($a)): ?>
             <li><a class="nav-page<?= $cur('pamokos') ?>" href="<?= url('pamokos.php') ?>"><?= te('Pamokos') ?></a></li>
+          <?php endif; ?>
+          <?php if ($a && is_active_account($a) && game_nav_ready()): ?>
+            <li><a class="nav-page nav-game<?= $cur('zaidimas') ?>" href="<?= url('dojo.php') ?>"><?= te('🎮 Žaidimas') ?></a></li>
           <?php endif; ?>
         </ul>
       </li>

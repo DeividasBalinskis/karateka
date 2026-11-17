@@ -262,4 +262,11 @@ return [
     '🥸 Veidui',
     '🦸 Nugarai',
     '🧱 Pasirink stulpelį, kurį užtverti priešininkui',
+    'Kur smūgiuoti?',
+    'Ką blokuoti?',
+    '+ kontrataka',
+    'nuo bet kurio smūgio',
+    'Paleisti',
+    'Paleisti šį gyvūnėlį?',
+    'Testavimui visi gyvūnėliai atrakinti - priimk dar vieną (iki 6).',
 ];

@@ -35,7 +35,8 @@ test('legacy demo purge keeps real people; test people, view switch, delete', as
   check('no placeholder video left', +sql("SELECT COUNT(*) FROM lesson_blocks WHERE youtube_id = 'dQw4w9WgXcQ'") + +sql("SELECT COUNT(*) FROM news_media WHERE youtube_id = 'dQw4w9WgXcQ'") === 0);
   check('real news stays, demo reaction gone', +sql(`SELECT COUNT(*) FROM news WHERE id = ${realNews}`) === 1
     && sql(`SELECT GROUP_CONCAT(emoji) FROM reactions WHERE news_id = ${realNews}`) === '👍');
-  check('kata lessons and belt folders stay', +sql("SELECT COUNT(*) FROM lesson_folders WHERE parent_id IS NULL AND belt_level IS NOT NULL") === 18);
+  // Diržų aplankai (9 kyu ... 1 kyu) lieka; dan aplankai sukuriami atidarius pamokas
+  check('kata lessons and belt folders stay', +sql("SELECT COUNT(*) FROM lesson_folders WHERE parent_id IS NULL AND belt_level BETWEEN 1 AND 9") === 9);
   check('referee test stays', +sql("SELECT COUNT(*) FROM quizzes WHERE audience = 'teisejas'") === 1);
   check('program used by real members kept', +sql("SELECT COUNT(*) FROM belt_requirements WHERE created_at = '2000-01-01 00:00:00'") >= 0);
   await a.goto('admin/');
@@ -92,7 +93,8 @@ test('legacy demo purge keeps real people; test people, view switch, delete', as
   check('parent view with 2 kids', await a.locator('.member-tabs a').count() === 2);
   await a.click('.view-switch summary');
   await nav(a, () => a.click('.vs-modes button[value=admin]'));
-  check('back to admin', /Adminas/.test(await a.locator('.view-switch summary').textContent()) && (await a.goto('admin/nariai.php')).status() === 200);
+  // Adminui (v1.37) „Žiūrėti kaip“ - kompaktiškas ▾ prie „Admin“ jungiklio
+  check('back to admin', await a.locator('.view-switch.is-test').count() === 0 && (await a.goto('admin/nariai.php')).status() === 200);
   const hacked = await a.request.post('perziura.php', { form: { _csrf: 'x', mode: 'junior' } });
   check('switch needs csrf', hacked.status() >= 400, hacked.status());
 

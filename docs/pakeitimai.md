@@ -4,6 +4,27 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.38 - 2026-11-17 (Žaidimas: atskiras puslapis vaikams, viskas atrakinta testavimui, kova kaip combats)
+Duomenų bazės atnaujinti nereikia. Zip'o turinį išpakuokite **tiesiai į svetainės aplanką**.
+
+**🎮 Žaidimas - atskiras puslapis** (viršutinėje juostoje, iškart po „Pamokos“)
+- Pagrindinis vaikų puslapis: langas, kuriame gyvena personažas su gyvūnėliais, namu ir gamta - viską galima keisti.
+- Dideli mygtukai: ⚔️ Karate kova, ⚡ Greita kova, 🔴 Keturi iš eilės, 🥁 Kata ritmas.
+- „Mano paskyra“ → „Apžvalga“: vietoje viso žaidimo - kortelė „🎮 Žaidimas → Žaisti“.
+
+**🔓 Testavimui viskas atrakinta** (vėliau - pagal lygius ir dovanų dėžes)
+- Visi personažai (ir mistiniai), daiktai, aplinkos, namai ir dekoracijos.
+- Gyvūnėliai: galima priimti bet kurį (iki 6) ir paleisti (👋), kad išbandytum kitus.
+- Išjungiama vienu nustatymu `GAME_UNLOCK_ALL` (`app/game.php`).
+
+**⚔️ Kova kaip combats**
+- Kairėje - tavo personažas, dešinėje - priešininkas (treniruočių partneris ar klubo draugas), per vidurį - lentelė su varnelėmis:
+  kur smūgiuoti (galva / kūnas / kojos) ir ką blokuoti (arba išsisukti).
+- Gyvybės pagal lygį: 1 lygyje ~25 (trumpos kovos), vėliau daugiau gyvybių ir stipresni smūgiai.
+
+**🔴 Keturi iš eilės** (4, ne 5)
+- Savas pradžios ekranas: 3 treniruočių partneriai (lengvas, vidutinis, sunkus), kaip pakviesti draugą, gyvūnėlių kortos (tavo pažymėta).
+
 ## v1.37 - 2026-11-17 (Denio atsiliepimai #45-#53: protokolas ir Federacijos registras, viršutinė juosta, instruktoriai redaguoja puslapį)
 **Duomenų bazė:** `db/037_federacija_temos.sql` - Valdymas → Šiandien → „Atnaujinkite duomenų bazę“ (dabar visada sąrašo viršuje).
 Zip'o turinį išpakuokite **tiesiai į svetainės aplanką**.

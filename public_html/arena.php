@@ -55,7 +55,7 @@ $cfg = [
     'turnSec' => FIGHT_TURN_SEC, 'urls' => game_urls() + ['view' => url('zaidejas.php?id=HID'), 'match' => url('arena.php?m=MID'), 'keturiMatch' => url('keturi.php?m=MID')],
 ];
 
-page_start(t('Žaidimai'), ['noindex' => true, 'account' => 'zaidimai']);
+page_start(t('Žaidimai'), ['noindex' => true, 'section' => 'zaidimas']);
 ?>
 <?= game_assets() ?>
 <div class="arena" id="arena" data-view="<?= e($view) ?>"><noscript><?= te('Žaidimui reikia JavaScript.') ?></noscript></div>

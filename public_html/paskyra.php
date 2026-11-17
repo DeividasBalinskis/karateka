@@ -143,10 +143,9 @@ foreach ($members as $m) {
     }
 }
 $selected = $selected ?? ($members[0] ?? null);
-// „Mano dojo“: herojus - pasirinkto nario (vaiko), arba savas (treneriui, be narių). ?h= - perjungti herojų.
+// Žaidimo kortelė: herojus - pasirinkto nario (vaiko), arba savas (treneriui, be narių). Pats žaidimas - dojo.php.
 require_once APP_DIR . '/game_ui.php';
 $dojoHero = null;
-$dojoHeroes = [];
 if ($tab === 'apzvalga' && $a['status'] === 'active' && game_ready()) {
     $mineHeroes = game_my_heroes($a);
     foreach ($mineHeroes as $h) {
@@ -163,7 +162,6 @@ if ($tab === 'apzvalga' && $a['status'] === 'active' && game_ready()) {
         $dojoHero = game_hero_for_member((int) $selected['id']);
     }
     $dojoHero = $dojoHero ?? $mineHeroes[0];
-    $dojoHeroes = $isStaff ? $mineHeroes : [];
 }
 // Vaikus prideda tėvai; treneriai - per Treneriams -> Nariai
 $isParent = !$isStaff && ((bool) array_filter($members, function ($m) { return $m['relation'] === 'parent'; }) || !array_filter($members, function ($m) { return $m['relation'] === 'self'; }));
@@ -221,7 +219,7 @@ page_start($tab === 'nustatymai' ? t('Nustatymai') : t('Mano paskyra'), ['noinde
 ?>
 <div class="account-top">
   <div>
-    <div class="eyebrow"><?= $tab === 'nustatymai' ? t('Nustatymai') : t('Mano dojo') ?></div>
+    <div class="eyebrow"><?= $tab === 'nustatymai' ? t('Nustatymai') : t('Apžvalga') ?></div>
     <div class="hello"><?= te('Sveiki,') ?> <?= e($a['first_name']) ?>!</div>
     <?= $selected && $active && $tab === 'apzvalga' ? belt_strip_html($selected) : '' ?>
   </div>
@@ -327,8 +325,13 @@ page_start($tab === 'nustatymai' ? t('Nustatymai') : t('Mano paskyra'), ['noinde
 <?php endif; ?>
 
 
-<?php if ($dojoHero): ?>
-  <?= game_dojo_html($dojoHero, $dojoHeroes) ?>
+<?php if ($dojoHero): $dh = game_hero_row((int) $dojoHero['id']); ?>
+  <!-- Personažas gyvena atskirame puslapyje „🎮 Žaidimas“ (viršutinėje juostoje) -->
+  <a class="panel card game-teaser" href="<?= url('dojo.php?h=' . (int) $dh['id']) ?>">
+    <span class="gt-ic" aria-hidden="true"><?= e(GAME_SPECIES[$dh['species']][1] ?? '🥋') ?></span>
+    <span><b><?= te('🎮 Žaidimas') ?></b><br><span class="muted"><?= te('Tavo personažas, gyvūnėliai, namas ir kovos') ?> · ⭐ <?= te('Lygis') ?> <?= game_level($dh) ?></span></span>
+    <span class="btn btn-primary"><?= te('Žaisti') ?> →</span>
+  </a>
 <?php endif; ?>
 
 <?php if ($isStaff): ?>

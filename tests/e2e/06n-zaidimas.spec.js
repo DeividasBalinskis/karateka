@@ -11,9 +11,9 @@ test('admin mode: admin sees the site as a member until the switch is on', async
   await a.goto('prisijungti.php');
   await a.fill('input[name=email]', 'info@karateka.lt'); await a.fill('input[name=password]', 'testas123');
   await nav(a, () => a.click('button[type=submit]'));
-  check('lands on own dojo', /paskyra\.php/.test(a.url()) && await a.locator('#dojo').count() === 1);
+  check('lands on own account with a link to the game', /paskyra\.php/.test(a.url()) && await a.locator('.game-teaser').count() === 1 && await a.locator('.nav-game').count() === 1);
   check('switch off, no Management link', await a.locator('.adm-sw:not(.is-on)').count() === 1 && await a.locator('.nav-account a[href$="admin/"]').count() === 0);
-  check('account tabs: dojo, games, management window', await a.locator('.sub-nav a', { hasText: 'Mano dojo' }).count() === 1 && await a.locator('.sub-nav a', { hasText: 'Žaidimai' }).count() === 1 && await a.locator('.sub-nav a', { hasText: 'Valdymas' }).count() === 1);
+  check('account tabs: overview, management window; game is in the top menu', await a.locator('.sub-nav a', { hasText: 'Apžvalga' }).count() === 1 && await a.locator('.sub-nav a', { hasText: 'Valdymas' }).count() === 1);
   await a.goto('renginiai.php');
   check('no staff tools in member view', await a.locator('.staff-bar').count() === 0);
   await nav(a, () => a.click('.adm-sw'));
@@ -29,11 +29,12 @@ test('my dojo: create the hero, test panel, gift box, equip, pet, collection', a
   resetGame('1=1');
   // Vaikas: pirmą kartą - herojaus kūrimas
   const k = await login(browser, 'jaunuolis@karateka.test', 1280, 900);
+  await nav(k, () => k.click('.nav-game'));
   await k.waitForSelector('.dw-setup');
   await k.click('.dw-setup');
   await k.waitForSelector('.gm .ed-sp');
   check('first visit invites to create the hero', await k.locator('.gm h2', { hasText: 'Susikurk savo herojų' }).count() === 1);
-  check('mystical heroes locked', await k.locator('.ed-sp button.locked').count() === 6);
+  check('testing: all heroes unlocked', await k.locator('.ed-sp button.locked').count() === 0);
   await k.click('.ed-sp button[data-sp=panda]');
   await k.fill('#ed-name', 'Pandutė');
   await k.click('[data-e=save]');
@@ -49,11 +50,17 @@ test('my dojo: create the hero, test panel, gift box, equip, pet, collection', a
   await k.click('[data-act=adopt]');
   await k.waitForTimeout(700);
   check('pet adopted and in the world', await k.locator('.dw-pet').count() === 1 && sql("SELECT COUNT(*) FROM game_pets WHERE name = 'Ausytė'") === '1');
+  // Testavimui - bet kuris gyvūnėlis (ir ne pradinis), galima paleisti
+  await k.click('[data-starter=dragonling]'); await k.fill('#g-pet-name', 'Ugnelė'); await k.click('[data-act=adopt]'); await k.waitForTimeout(700);
+  check('second (rare) pet adopted in testing', sql("SELECT COUNT(*) FROM game_pets WHERE name = 'Ugnelė' AND species = 'dragonling'") === '1');
+  const ug = sql("SELECT id FROM game_pets WHERE name = 'Ugnelė'");
+  await k.click(`[data-release="${ug}"]`); await k.waitForTimeout(700);
+  check('pet released', sql("SELECT COUNT(*) FROM game_pets WHERE name = 'Ugnelė'") === '0');
   noJsErrors(k);
 
   // Adminas: testavimo skydelis - lygis, visi daiktai, dėžės
   const a = await login(browser, 'info@karateka.lt', 1280, 900);
-  await a.goto('paskyra.php');
+  await a.goto('dojo.php');
   await a.waitForSelector('#dojo .dojo-head');
   await a.evaluate(() => { document.querySelector('#g-test').closest('details').open = true; });
   await a.fill('#t-lvl', '6'); await a.click('[data-test=level]'); await a.waitForTimeout(700);
@@ -87,10 +94,13 @@ test('arena: fight a bot, quick fight, four in a row and kata rhythm', async ({ 
   await k.goto('arena.php');
   check('lobby with club players', await k.locator('#ar-heroes .g-hcard').count() > 3);
   await nav(k, () => k.click('[data-bot=easy][data-mode=power]'));
-  await k.waitForSelector('.fa-opt');
-  await k.click('.fa-opt[data-att=gyaku]'); await k.click('.fa-opt[data-def=age]');
+  await k.waitForSelector('.fa-chk');
+  check('combats layout: me left, board in the middle, bot right', await k.locator('.fa3 .fa-side.a #f-a').count() === 1 && await k.locator('.fa3 .fa-mid .fa-board').count() === 1 && await k.locator('.fa3 .fa-side.b #f-b').count() === 1);
+  check('low HP at level 1', +(await k.textContent('#hp-a .bar span')).split('/')[1] < 40);
+  await k.click('.fa-chk[data-att=gyaku]'); await k.click('.fa-chk[data-def=age]');
+  check('checkboxes marked', await k.locator('.fa-chk.sel').count() === 2);
   await k.click('[data-go]');
-  await k.waitForSelector('.fa-opt, .fa-end', { timeout: 10000 });
+  await k.waitForSelector('.fa-chk, .fa-end', { timeout: 10000 });
   const mid = +new URL(k.url()).searchParams.get('m');
   const st = JSON.parse(sql(`SELECT state FROM game_matches WHERE id = ${mid}`));
   check('turn resolved against the bot', st.turn === 2 && st.log.length >= 2, JSON.stringify(st.log.slice(0, 3)));
@@ -106,8 +116,9 @@ test('arena: fight a bot, quick fight, four in a row and kata rhythm', async ({ 
   await k.keyboard.press('ArrowUp'); await k.keyboard.press('w');
   check('quick fight running', await k.locator('.gr-pad .gr-b').count() === 6 && /\d+ s/.test(await k.textContent('#gr-time')));
   // Keturi iš eilės prieš botą
-  await k.goto('arena.php');
-  await nav(k, () => k.click('[data-bot=easy][data-game=keturi]'));
+  await k.goto('keturi.php');
+  check('four in a row has its own start page', await k.locator('.k4-bot').count() === 3 && await k.locator('.k4-cardlist li').count() === 4);
+  await nav(k, () => k.click('.k4-bot[value=easy]'));
   await k.waitForSelector('.k4-col');
   await k.click('.k4-col[data-col="3"]');
   await k.waitForTimeout(800);
@@ -121,7 +132,7 @@ test('arena: fight a bot, quick fight, four in a row and kata rhythm', async ({ 
 test('invite another player: accept and fight', async ({ browser }) => {
   const k = await login(browser, 'jaunuolis@karateka.test', 1280, 900);
   const p = await login(browser, 'narys@karateka.test', 1280, 900);
-  await p.goto('paskyra.php');
+  await p.goto('dojo.php');
   const pid = +sql("SELECT h.id FROM game_heroes h JOIN account_members am ON am.member_id = h.member_id JOIN accounts a ON a.id = am.account_id WHERE a.email='narys@karateka.test' AND am.relation='self'");
   await k.goto('arena.php');
   await k.locator(`[data-inv="${pid}"][data-mode=fair]`).click();
@@ -140,7 +151,7 @@ test('invite another player: accept and fight', async ({ browser }) => {
 
 test('game in English', async ({ browser }) => {
   const k = await login(browser, 'jaunuolis@karateka.test', 1280, 900, undefined, 'en');
-  await k.goto('paskyra.php');
+  await k.goto('dojo.php');
   await k.waitForSelector('#dojo .dojo-title');
   check('dojo title translated', (await k.textContent('.dojo-title')).includes('My dojo'));
   check('stats translated', (await k.textContent('.dojo-side')).includes('Strength'));

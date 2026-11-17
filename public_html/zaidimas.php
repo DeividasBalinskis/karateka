@@ -99,7 +99,8 @@ switch ($action) {
     case 'pet_adopt':
         $pets = game_pets($hid);
         $sp = (string) ($in['species'] ?? '');
-        $starter = isset(GAME_PETS[$sp]) && GAME_PETS[$sp][3] && !$pets;   // pirmas - nemokamai, pasirenkamas iš pradinių
+        // Pirmas - nemokamai, pasirenkamas iš pradinių; testavimo laikotarpiu - bet kuris (iki 6)
+        $starter = isset(GAME_PETS[$sp]) && ((GAME_PETS[$sp][3] && !$pets) || (GAME_UNLOCK_ALL && count($pets) < 6));
         if (!$starter) {
             $out(['ok' => false, 'error' => t('Naujas gyvūnėlis - iš kiaušinio dovanų dėžėje.')]);
         }
@@ -120,6 +121,17 @@ switch ($action) {
     case 'pet_feed':
         $ok = game_pet_feed($hid, (int) ($in['id'] ?? 0));
         $out(['ok' => $ok, 'error' => $ok ? '' : t('Dar sotus - pamaitinti galima kas 3 valandas.'), 'hero' => game_hero_view(game_hero_row($hid))]);
+    case 'pet_release':
+        // Paleisti gyvūnėlį (testavimo laikotarpiu - kad galėtum išbandyti kitus)
+        if (!GAME_UNLOCK_ALL) {
+            $out(['ok' => false, 'error' => t('Negalima.')]);
+        }
+        $pid = (int) ($in['id'] ?? 0);
+        q('DELETE FROM game_pets WHERE id = ? AND hero_id = ?', [$pid, $hid]);
+        if ((int) $hero['pet_id'] === $pid) {
+            q('UPDATE game_heroes SET pet_id = (SELECT id FROM game_pets WHERE hero_id = ? ORDER BY id LIMIT 1) WHERE id = ?', [$hid, $hid]);
+        }
+        $out(['ok' => true, 'hero' => game_hero_view(game_hero_row($hid))]);
     case 'pet_rename':
         q('UPDATE game_pets SET name = ? WHERE id = ? AND hero_id = ?', [mb_substr(trim((string) ($in['name'] ?? '')) ?: 'Draugas', 0, 30), (int) ($in['id'] ?? 0), $hid]);
         $out(['ok' => true, 'hero' => game_hero_view(game_hero_row($hid))]);

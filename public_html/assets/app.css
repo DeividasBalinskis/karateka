@@ -1462,3 +1462,9 @@ tr.res-failed td{background:rgba(192,57,43,0.06);}
 .fb-replies{margin-top:14px; padding-top:10px; border-top:1px dashed rgba(23,20,15,0.15);}
 .fb-replies .notif-list{opacity:.85;}
 .fb-more summary{cursor:pointer; margin:6px 0;}
+/* Paskyra: kortelė į „🎮 Žaidimas“ (personažas gyvena atskirame puslapyje) */
+.game-teaser{display:flex; align-items:center; gap:14px; text-decoration:none; color:inherit; margin-top:14px; background:linear-gradient(135deg,#FFF7E6,#FDEBD3); border:2px solid #F2C14E;}
+.game-teaser:hover{transform:translateY(-1px);}
+.game-teaser .gt-ic{font-size:2.4rem; line-height:1;}
+.game-teaser > span:nth-child(2){flex:1;}
+@media (max-width:560px){ .game-teaser{flex-wrap:wrap;} .game-teaser .btn{width:100%; text-align:center;} }

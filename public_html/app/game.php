@@ -193,6 +193,9 @@ function game_items(): array
 /** Numatyti daiktai naujam personažui (visada turimi) */
 const GAME_START_ITEMS = ['k_white', 'b_plain', 'hr_short', 'bg_dojo', 'hs_tent'];
 const GAME_DECOR_MAX = 8;   // kiek dekoracijų skaičiuojasi savybėms
+// Testavimo laikotarpis: visi personažai, daiktai, aplinkos, namai ir gyvūnėliai atrakinti visiems (be lygių ir dovanų dėžių).
+// Kai dizainas bus baigtas - false, ir vėl veiks lygiai bei dovanų dėžės.
+const GAME_UNLOCK_ALL = true;
 
 // ---------- Personažas: kam priklauso, kas valdo ----------
 
@@ -354,7 +357,16 @@ function game_belt(array $hero): int
 /** Turimi daiktai [raktas => kiekis] */
 function game_owned(int $heroId): array
 {
-    return array_map('intval', q('SELECT item_key, qty FROM game_items WHERE hero_id = ?', [$heroId])->fetchAll(PDO::FETCH_KEY_PAIR));
+    $own = array_map('intval', q('SELECT item_key, qty FROM game_items WHERE hero_id = ?', [$heroId])->fetchAll(PDO::FETCH_KEY_PAIR));
+    if (GAME_UNLOCK_ALL) {
+        // Viskas atrakinta (kiaušiniai - ne: gyvūnėlius galima priimti tiesiai)
+        foreach (game_items() as $k => $it) {
+            if ($it['slot'] !== 'egg') {
+                $own[$k] = max($own[$k] ?? 0, $it['slot'] === 'decor' ? 3 : 1);
+            }
+        }
+    }
+    return $own;
 }
 
 /** Laisvi savybių taškai: 3 už kiekvieną lygį nuo 2-o */
@@ -407,8 +419,9 @@ function game_stats(array $hero): array
     }
     $lvl = game_level($hero);
     $belt = game_belt($hero);
-    $hp = 40 + $tot['end'] * 5 + $lvl * 3 + $belt * 2;
-    return ['base' => $base, 'total' => $tot, 'hp' => $hp, 'dmg' => [$dmg[0] + intdiv($tot['str'], 4), $dmg[1] + intdiv($tot['str'], 3)],
+    // Žemuose lygiuose - trumpos kovos (1 lygis ~25 gyvybės), aukštesniuose - daugiau gyvybių ir stipresni smūgiai
+    $hp = 10 + $lvl * 4 + $tot['end'] * 3 + $belt;
+    return ['base' => $base, 'total' => $tot, 'hp' => $hp, 'dmg' => [$dmg[0] + intdiv($tot['str'], 4) + intdiv($lvl, 6), $dmg[1] + intdiv($tot['str'], 3) + intdiv($lvl, 4)],
             'arm' => $arm + intdiv($tot['end'], 5), 'level' => $lvl, 'belt' => $belt];
 }
 
@@ -582,11 +595,11 @@ function game_catalog_json(): array
     }
     $pets = [];
     foreach (GAME_PETS as $k => $p) {
-        $pets[$k] = ['n' => t($p[0]), 'e' => $p[1], 'ab' => $p[2], 'abn' => t(GAME_PET_ABILITY[$p[2]]), 'start' => $p[3]];
+        $pets[$k] = ['n' => t($p[0]), 'e' => $p[1], 'ab' => $p[2], 'abn' => t(GAME_PET_ABILITY[$p[2]]), 'start' => $p[3] || GAME_UNLOCK_ALL];
     }
     return ['items' => $items, 'species' => $species, 'pets' => $pets, 'fur' => GAME_FUR, 'skin' => GAME_SKIN, 'eyes' => GAME_EYES, 'hair' => GAME_HAIR,
             'stats' => array_map('t', GAME_STATS), 'rarity' => array_map('t', GAME_RARITY), 'slots' => array_map('t', GAME_SLOTS), 'decorMax' => GAME_DECOR_MAX,
-            'belts' => array_map(function ($b) { return [$b[0], t($b[1]), $b[2]]; }, BELTS), 'scenes' => url('img/temos/')];
+            'belts' => array_map(function ($b) { return [$b[0], t($b[1]), $b[2]]; }, BELTS), 'scenes' => url('img/temos/'), 'unlockAll' => GAME_UNLOCK_ALL];
 }
 
 /** Išsaugoti išvaizdą / daiktus / namus (tik tai, ką turi) */

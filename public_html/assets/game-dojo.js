@@ -253,20 +253,20 @@
       '<div class="mood" title="' + esc(T('Nuotaika')) + '"><i style="width:' + p.mood + '%"></i></div><div class="pl">✨ ' + esc(P.abn || '') + '</div></div>' +
       (mini || ro ? '' : '<div class="acts">' + (p.can_feed ? '<button type="button" class="g-btn sm" data-feed="' + p.id + '">🍖 ' + T('Pamaitinti') + '</button>' : '<span class="pl">😊 ' + T('Sotus') + '</span>') +
         (active ? '' : '<button type="button" class="g-btn sm" data-active="' + p.id + '">⚔️ ' + T('Imti į kovą') + '</button>') +
-        '<button type="button" class="g-btn sm" data-rename="' + p.id + '">✏️</button></div>') + '</div>';
+        '<button type="button" class="g-btn sm" data-rename="' + p.id + '">✏️</button>' + (C.unlockAll ? '<button type="button" class="g-btn sm" data-release="' + p.id + '" title="' + esc(T('Paleisti')) + '">👋</button>' : '') + '</div>') + '</div>';
   }
   var starterPick = 'kitten';
   function renderPets() {
     var pets = H.pets || [], html = '';
     if (pets.length) html += '<div class="g-pets">' + pets.map(function (p) { return petCard(p); }).join('') + '</div>';
-    if (!pets.length && !ro) {
-      html += '<p class="g-empty">' + T('Pasirink pirmą gyvūnėlį - jis gyvens tavo dojo ir padės kovose.') + '</p><div class="g-starters">';
+    if (!ro && pets.length < 6 && (!pets.length || C.unlockAll)) {
+      html += '<p class="g-empty">' + (pets.length ? T('Testavimui visi gyvūnėliai atrakinti - priimk dar vieną (iki 6).') : T('Pasirink pirmą gyvūnėlį - jis gyvens tavo dojo ir padės kovose.')) + '</p><div class="g-starters">';
       Object.keys(C.pets).forEach(function (k) { if (C.pets[k].start) html += '<button type="button" class="g-starter' + (k === starterPick ? ' sel' : '') + '" data-starter="' + k + '">' + A.pet(k) + esc(C.pets[k].n) + '<br><small style="font-weight:500">✨ ' + esc(C.pets[k].abn) + '</small></button>'; });
       html += '</div><div class="row" style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap"><input type="text" id="g-pet-name" maxlength="30" placeholder="' + esc(T('Vardas')) + '" style="padding:8px 10px;border-radius:10px;border:1px solid rgba(23,20,15,.2);font:inherit"><button type="button" class="g-btn primary" data-act="adopt">🐾 ' + T('Priimti') + '</button></div>';
     }
     var eggs = Object.keys(H.owned || {}).filter(function (k) { return item(k) && item(k).slot === 'egg'; });
     if (eggs.length && !ro) html += '<div class="g-sub">🥚 ' + T('Kiaušiniai') + '</div><div class="g-items">' + eggs.map(function (k) { return '<button type="button" class="g-item r' + item(k).r + '" data-item="' + k + '">' + A.itemIcon(k, item(k)) + '<span class="nm">' + esc(item(k).n) + '</span><span class="st">' + T('Išperinti') + '</span></button>'; }).join('') + '</div>';
-    if (pets.length && pets.length < 6) html += '<p class="g-empty" style="margin-top:8px">' + T('Daugiau gyvūnėlių - iš kiaušinių dovanų dėžėse (iki 6).') + '</p>';
+    if (pets.length && pets.length < 6 && !C.unlockAll) html += '<p class="g-empty" style="margin-top:8px">' + T('Daugiau gyvūnėlių - iš kiaušinių dovanų dėžėse (iki 6).') + '</p>';
     $('#g-pets').innerHTML = html;
     $('#g-pets-cnt').textContent = pets.length;
   }
@@ -472,7 +472,7 @@
   }
 
   root.addEventListener('click', function (e) {
-    var t = e.target.closest('[data-act],[data-plus],[data-slot],[data-filt],[data-item],[data-feed],[data-active],[data-rename],[data-starter],[data-bg],[data-house],[data-decor],[data-test],[data-hero]');
+    var t = e.target.closest('[data-act],[data-plus],[data-slot],[data-filt],[data-item],[data-feed],[data-active],[data-rename],[data-release],[data-starter],[data-bg],[data-house],[data-decor],[data-test],[data-hero]');
     if (!t || ro && !t.dataset.hero) return;
     var a = t.dataset.act;
     if (a === 'boxes') return openBoxes();
@@ -488,6 +488,7 @@
     if (t.dataset.item) return itemMenu(t.dataset.item);
     if (t.dataset.feed) { return api({ action: 'pet_feed', id: t.dataset.feed }).then(function (d) { if (d.ok) { renderAll(); var el = root.querySelector('.dw-pet[data-pet="' + t.dataset.feed + '"]'); if (el) hearts(el); toast('🍖 ' + T('Skanu! Nuotaika pakilo.')); } }); }
     if (t.dataset.active) return save({ pet_id: +t.dataset.active }, '⚔️ ' + T('Gyvūnėlis eis į kovą su tavimi'));
+    if (t.dataset.release) { if (confirm(T('Paleisti šį gyvūnėlį?'))) api({ action: 'pet_release', id: t.dataset.release }).then(function () { renderAll(); }); return; }
     if (t.dataset.rename) { var p = (H.pets || []).filter(function (x) { return +x.id === +t.dataset.rename; })[0], nn = prompt(T('Naujas vardas'), p ? p.name : ''); if (nn) api({ action: 'pet_rename', id: t.dataset.rename, name: nn }).then(function () { renderAll(); }); return; }
     if (t.dataset.starter) { starterPick = t.dataset.starter; return renderPets(); }
     if (t.dataset.bg) return save({ home: { bg: t.dataset.bg } });

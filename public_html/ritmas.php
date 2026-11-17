@@ -15,7 +15,7 @@ foreach ($mine as $h) {
     }
 }
 $cfg = ['api' => url('zaidimas.php'), 'csrf' => csrf_token(), 'catalog' => game_catalog_json(), 'hero' => game_hero_view(game_hero_row((int) $hero['id'])), 'urls' => game_urls()];
-page_start(t('Kata ritmas'), ['noindex' => true, 'account' => 'zaidimai']);
+page_start(t('Kata ritmas'), ['noindex' => true, 'section' => 'zaidimas']);
 ?>
 <?= game_assets() ?>
 <div class="rt" id="rt"><noscript><?= te('Žaidimui reikia JavaScript.') ?></noscript></div>
