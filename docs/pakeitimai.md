@@ -23,6 +23,7 @@ Duomenų bazės atnaujinti nereikia (jei dar neįkelta v1.42 - reikia db/039). Z
 **Kita**
 - karateka.lt prisijungus: Treniruotės, Apie klubą, Kontaktai - vienas „Apie klubą ‹“, užvedus pelę išsiskleidžia į kairę.
 - Budo: „Tinklai“ perkelti į „🗂 Administracija“; žiūrovų puslapyje atskiros „Tinklai“ skilties nebėra (grupę atsidaro paieškoje ar sąraše).
+- Egzamino registracijos formoje virš laukelių - egzamino pavadinimas ir data (matosi ir nuslinkus).
 
 ## v1.42 - 2026-11-18 (Visų atsiliepimų peržiūra: kas buvo praleista)
 **Reikia atnaujinti duomenų bazę** (db/039): Valdymas → Šiandien → „Atnaujinkite duomenų bazę“. Zip'o turinį išpakuokite **tiesiai į svetainės aplanką**.

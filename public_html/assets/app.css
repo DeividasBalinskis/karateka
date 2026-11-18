@@ -1508,3 +1508,4 @@ tr.res-failed td{background:rgba(192,57,43,0.06);}
 .fee-rule{font-size:13px; font-weight:600; padding:3px 9px; border-radius:999px; background:rgba(47,107,90,.1);}
 .fee-set{border:1px dashed var(--line, rgba(0,0,0,.18)); border-radius:10px; padding:8px 12px; margin:10px 0;}
 .fee-set legend{font-weight:600; padding:0 4px;}
+.exam-su-what{margin:0 0 4px; padding:8px 12px; border-radius:10px; background:rgba(47,107,90,.08); font-size:15px;}

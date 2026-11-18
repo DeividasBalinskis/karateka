@@ -70,6 +70,7 @@ page_start(t('Registracija į egzaminą') . ': ' . tr_text($event['title']));
   <?php else: ?>
     <form method="post" class="panel card form exam-su-form" novalidate>
       <?= csrf_field() ?>
+      <p class="exam-su-what">📝 <b><?= e(tr_text($event['title'])) ?></b> · <?= e($when) ?></p>
       <?php if ($errors): ?><div class="flash flash-err" role="alert"><?= implode('<br>', array_map('e', $errors)) ?></div><?php endif; ?>
       <div class="form-row">
         <label><?= te('Vardas') ?> *<input type="text" name="first_name" value="<?= e($v['first_name']) ?>" required maxlength="80" autocomplete="given-name"></label>
