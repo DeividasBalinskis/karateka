@@ -62,7 +62,7 @@ if (is_post()) {
             }
         }
     }
-    flash('ok', $changes ? t('Rezultatai išsaugoti, XP atnaujinti.') : t('Pakeitimų nebuvo.'));
+    flash('ok', $changes ? t('Rezultatai išsaugoti, aktyvumo taškai atnaujinti.') : t('Pakeitimų nebuvo.'));
     redirect('admin/renginio-rezultatai.php?id=' . $id);
 }
 
@@ -96,7 +96,7 @@ page_start((t('Rezultatai:') . ' ') . $event['title'], ['admin' => true, 'sectio
 </div>
 
 <div class="panel card small" style="padding:16px 20px;">
-  <?= te('XP:') ?>
+  <?= te('Taškai:') ?>
   <?php foreach ($options as $key => $label):
       $sum = 0;
       foreach (result_category_codes($event, (string) $key) as $code) {
@@ -104,7 +104,7 @@ page_start((t('Rezultatai:') . ' ') . $event['title'], ['admin' => true, 'sectio
       } ?>
     <span class="badge"><?= e($label) ?>: <?= $sum ?></span>
   <?php endforeach; ?>
-  <?php if ($event['type'] === 'competition'): ?><div class="hint" style="margin-top:6px;"><?= te('Prizinė vieta = dalyvavimo + vietos XP.') ?></div><?php endif; ?>
+  <?php if ($event['type'] === 'competition'): ?><div class="hint" style="margin-top:6px;"><?= te('Prizinė vieta = dalyvavimo + vietos taškai.') ?></div><?php endif; ?>
 </div>
 
 <?php if ($event['type'] === 'competition' && varzybos_enabled()): ?>
@@ -150,7 +150,7 @@ page_start((t('Rezultatai:') . ' ') . $event['title'], ['admin' => true, 'sectio
   <div class="sticky-save">
     <button class="btn btn-primary btn-block" type="submit"><?= te('Išsaugoti rezultatus') ?></button>
   </div>
-  <?php else: ?><p class="small muted"><?= te('Rezultatus ir XP tvirtina administratorius.') ?></p><?php endif; ?>
+  <?php else: ?><p class="small muted"><?= te('Rezultatus ir aktyvumo taškus tvirtina administratorius.') ?></p><?php endif; ?>
 </form>
 <?php endif; ?>
 <?php

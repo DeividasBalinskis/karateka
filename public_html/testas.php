@@ -177,7 +177,7 @@ if (is_post()) {
     $res = grade_quiz_attempt($att, $quiz, $answers);
     // XP: už pirmą bandymą ir pirmą išlaikymą per sezoną (kiek - Treneriams -> Taškai)
     if (!$late && ($xp = award_quiz_points($res, $quiz, (int) $a['id']))) {
-        flash('ok', '+' . $xp . (' ' . t('XP už testą!')));
+        flash('ok', '+' . $xp . (' ' . t('Aktyvumo taškai už testą!')));
     }
     redirect('testas.php?rezultatas=' . (int) $res['id']);
 }

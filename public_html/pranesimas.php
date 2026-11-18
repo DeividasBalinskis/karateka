@@ -47,7 +47,7 @@ switch (post('action')) {
             forbidden();
         }
         if (post('action') === 'skill_approve') {
-            flash('ok', approve_skill((int) $n['member_id'], (int) $n['ref_id'], (int) $a['id']) ? t('Patvirtinta, XP skirti.') : t('Jau buvo patvirtinta.'));
+            flash('ok', approve_skill((int) $n['member_id'], (int) $n['ref_id'], (int) $a['id']) ? t('Patvirtinta, taškai skirti.') : t('Jau buvo patvirtinta.'));
         } else {
             reject_skill((int) $n['member_id'], (int) $n['ref_id']);
             flash('ok', t('Grąžinta - narys galės pažymėti dar kartą.'));

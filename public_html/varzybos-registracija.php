@@ -9,7 +9,7 @@ $t = tournament_by_token($k, 'reg');
 if (!$t) {
     not_found();
 }
-$open = !empty($t['reg_open']);
+$open = !empty($t['reg_open']) && reg_on('budo');
 $year = (int) date('Y');
 // Ir Karateka: jos nariai (ar tėvai) irgi gali registruotis per tą pačią nuorodą
 $clubs = array_values(array_unique(array_merge([VARZ_HOME_CLUB], array_map('strval', (array) (tournament_state($t)['clubs'] ?? [])))));

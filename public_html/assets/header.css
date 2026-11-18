@@ -201,3 +201,24 @@ html{scrollbar-gutter:stable;}
   .site-header .nav-onpage.folded:hover .fold-ic, .site-header .nav-onpage.folded:focus-within .fold-ic{transform:translateX(-3px);}
 }
 @media(max-width:1100px){ .site-header .nav-onpage .fold-ic{display:none;} }
+/* #97: be Admin slankiklio - „Žiūrėti kaip“ meniu ir aiškus grįžimas */
+.adm-sw.adm-back{width:auto; padding:8px 14px; gap:6px; background:#17140F; color:#fff; border-radius:12px; font-weight:700;}
+.adm-sw.adm-back .adm-knob{display:none;}
+.vs-member{padding:8px 12px 12px; border-top:1px solid rgba(23,20,15,.1);}
+.vs-member-btn{width:100%; border:1px solid rgba(23,20,15,.18); background:#fff; border-radius:10px; padding:8px 10px; font:600 14px inherit; cursor:pointer; text-align:left;}
+.vs-member-btn:hover{background:#F4F1EA;}
+/* Logotipo meniu: Karateka, Budo, LTKF (#91/#92) */
+.site-switch{position:relative; margin-left:-10px; z-index:60;}
+.site-switch > summary{list-style:none; cursor:pointer; width:22px; height:22px; display:grid; place-items:center; border-radius:6px; font-size:12px; color:#5b5446; background:rgba(23,20,15,.05);}
+.site-switch > summary::-webkit-details-marker{display:none;}
+.site-switch > summary:hover{background:rgba(23,20,15,.12);}
+.ss-panel{position:absolute; left:0; top:calc(100% + 8px); width:250px; display:grid; gap:4px; padding:8px; background:#FBF9F4; border-radius:14px; box-shadow:0 14px 36px rgba(23,20,15,.18); border:1px solid rgba(23,20,15,.08);}
+.ss-item{display:flex; align-items:center; gap:10px; padding:8px 10px; border-radius:10px; color:#17140F; text-decoration:none;}
+.ss-item:hover{background:rgba(23,20,15,.06); text-decoration:none;}
+.ss-item.is-cur{background:rgba(110,74,134,.08);}
+.ss-item img{width:34px; height:34px; object-fit:contain;}
+.ss-item b{display:block; font-size:15px;} .ss-item small{display:block; font-size:12px; color:#6b6457;}
+.ss-budo{width:34px; height:34px; display:grid; place-items:center; border-radius:50%; background:#D7263D; color:#fff; font-weight:800; font-size:17px; box-shadow:0 0 0 3px rgba(215,38,61,.2);}
+.ss-ltkf{color:#14213D;}
+.sub-nav-2{background:rgba(255,255,255,.55); border-top:0;}
+.sub-nav-2 a{font-size:13px; padding:7px 11px;}

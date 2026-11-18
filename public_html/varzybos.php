@@ -26,6 +26,9 @@ if (is_post()) {
                 }
                 break;
             case 'register':
+                if (!reg_on('budo')) {
+                    throw new RuntimeException(t('Registracija šiuo metu išjungta.'));
+                }
                 $cats = array_map('intval', (array) ($_POST['category_ids'] ?? []));
                 if (!$cats) {
                     throw new RuntimeException(t('Pažymėkite bent vieną kategoriją.'));
@@ -48,7 +51,7 @@ if (is_post()) {
 $error = null;
 $tournaments = [];
 try {
-    $tournaments = varzybos_open_tournaments();
+    $tournaments = reg_on('budo') ? varzybos_open_tournaments() : [];   // Nustatymai → Registracija
 } catch (RuntimeException $ex) {
     $error = $ex->getMessage();
 }

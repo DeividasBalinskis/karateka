@@ -38,13 +38,13 @@ test('past event attendance on the training page, XP for several, +XP', async ({
   check('+XP saved', +sql("SELECT COUNT(*) FROM point_awards pa JOIN point_categories pc ON pc.id = pa.category_id WHERE pc.code = 'help_coach'") === before + 1);
 
   // XP keliems: renginio dalyviai jau pažymėti; nauja kategorija čia pat
-  await nav(a, () => a.click('a:has-text("XP keliems")'));
+  await nav(a, () => a.click('a:has-text("Taškai keliems")'));
   check('event members preselected', await a.locator('#skirti input[name="members[]"]:checked').count() >= 3);
   await a.selectOption('#giveCat', 'new');
   await a.fill('input[name=new_name]', 'Pagalba renginyje (testas)');
   await a.fill('#givePts', '7');
   await nav(a, () => a.click('#skirti button[type=submit]'));
-  check('bulk XP flash', /Skirta \+7 XP/.test(await flashes(a)), await flashes(a));
+  check('bulk XP flash', /Skirta \+7 taškų/.test(await flashes(a)), await flashes(a));
   check('bulk XP rows', +sql("SELECT COUNT(*) FROM point_awards pa JOIN point_categories pc ON pc.id = pa.category_id WHERE pc.name = 'Pagalba renginyje (testas)'") >= 3);
   check('member notified', +sql("SELECT COUNT(*) FROM notifications WHERE type = 'xp_award'") >= 4);
 

@@ -30,7 +30,7 @@ function xp_check_level_up(int $memberId, int $before): void
     $m = q_one('SELECT first_name FROM members WHERE id = ?', [$memberId]);
     try {
         notify_member($memberId, 'level_up', ($m['first_name'] ?? 'Narys') . ' pasiekė ' . $new['level'] . ' lygį!',
-            'Surinkta ' . $after . ' XP. Iki ' . ($new['level'] + 1) . ' lygio - ' . $new['need'] . ' XP.', 'paskyra.php?m=' . $memberId, $new['level']);
+            t('Surinkta {a} aktyvumo taškų. Iki {l} lygio - {n}.', ['a' => $after, 'l' => $new['level'] + 1, 'n' => $new['need']]), 'paskyra.php?m=' . $memberId, $new['level']);
     } catch (PDOException $ex) {
         // dar neimportuotas db/021 - taškai skirti, tik be pranešimo
     }
@@ -46,7 +46,7 @@ function render_xp_card(array $member, bool $compact = false, bool $showBelt = t
     $beltName = t($beltName);
     return '<div class="xp-card' . ($compact ? ' compact' : '') . ($belt === 1 ? ' belt-light' : '') . '" style="--belt:' . e($color) . ';">'
         . '<div class="xp-level" title="' . e(t('Lygis')) . '"><span class="xp-level-n">' . $l['level'] . '</span><span class="xp-level-l">' . e(t('lygis')) . '</span></div>'
-        . '<div class="xp-main"><div class="xp-row"><strong>' . $l['xp'] . ' XP</strong><span class="xp-next">' . e(t('iki {n} lygio: {xp} XP', ['n' => $l['level'] + 1, 'xp' => $l['need']])) . '</span></div>'
+        . '<div class="xp-main"><div class="xp-row"><strong>' . $l['xp'] . ' ' . e(t('taškai')) . '</strong><span class="xp-next">' . e(t('iki {n} lygio: {xp} taškų', ['n' => $l['level'] + 1, 'xp' => $l['need']])) . '</span></div>'
         . '<div class="xp-bar" role="progressbar" aria-valuemin="0" aria-valuemax="' . $l['per'] . '" aria-valuenow="' . $l['into'] . '"><span style="width:' . $l['pct'] . '%"></span></div>'
         . ($showBelt ? '<div class="xp-belt">' . belt_icon_svg($belt) . ' ' . e(BELTS[$belt][0] . ' · ' . $beltName) . '</div>' : '') . '</div></div>';
 }
@@ -61,7 +61,7 @@ function request_skill(array $member, array $req, array $byAccount): void
         return;
     }
     q('INSERT INTO requirement_progress (member_id, requirement_id, status) VALUES (?, ?, "pending")', [(int) $member['id'], (int) $req['id']]);
-    notify_admins('skill_request', $member['first_name'] . ' ' . $member['last_name'] . ': „' . $req['title'] . '“ (+' . (int) $req['xp'] . ' XP)',
+    notify_admins('skill_request', $member['first_name'] . ' ' . $member['last_name'] . ': „' . $req['title'] . '“ (+' . (int) $req['xp'] . ' ' . t('taškai') . ')',
         'Pažymėjo „Moku“ (' . BELTS[(int) $req['belt_level']][0] . ', ' . (REQ_SECTIONS[$req['section']] ?? $req['section']) . ')'
         . ((int) $byAccount['id'] && $byAccount['first_name'] !== $member['first_name'] ? ' · pažymėjo ' . $byAccount['first_name'] : '') . '.',
         'admin/nariai.php?id=' . (int) $member['id'], (int) $member['id'], (int) $req['id']);

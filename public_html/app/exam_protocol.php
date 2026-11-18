@@ -283,3 +283,18 @@ function fed_send_protocol(array $event): array
     q('UPDATE exam_protocols SET fed_sent_at = NOW() WHERE event_id = ?', [(int) $event['id']]);
     return [$new, $old];
 }
+
+/** Balų vidurkis eilutei: skaitiniai įvertinimai 0-10 (be „Testas“ - jis procentais). null, jei balų dar nėra */
+function exam_row_avg(array $r, array $cols): ?float
+{
+    $sum = 0.0;
+    $n = 0;
+    foreach ($cols as [$k]) {
+        $v = str_replace(',', '.', trim(exam_cell($r, $k)));
+        if ($k !== 'test' && is_numeric($v) && (float) $v >= 0 && (float) $v <= 10) {
+            $sum += (float) $v;
+            $n++;
+        }
+    }
+    return $n ? round($sum / $n, 2) : null;
+}

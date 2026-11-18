@@ -7,6 +7,13 @@ $me = require_staff();
 $errors = [];
 if (is_post()) {
     csrf_check();
+    if (post('action') === 'reg_toggles' && is_admin($me)) {
+        // Registracijos mygtukai: pažymėta = rodomas; nepažymėtos vietos išjungiamos
+        $on = array_map('strval', (array) ($_POST['reg'] ?? []));
+        set_site_setting('reg_off', json_encode(array_values(array_diff(array_keys(REG_PLACES), $on))));
+        flash('ok', t('Registracijos nustatymai išsaugoti.'));
+        redirect('admin/nustatymai.php#registracija');
+    }
     handle_account_settings($me, 'admin/nustatymai.php', $errors);
 }
 $ownMembers = (int) q_value('SELECT COUNT(*) FROM account_members am JOIN members m ON m.id = am.member_id WHERE am.account_id = ? AND m.status = "active"', [(int) $me['id']]);
@@ -19,10 +26,10 @@ $settings = [
         [t('Tvarkaraštis ir kainos'), 'admin/tvarkarastis.php', t('Visų grupių laikai ir kainos - rodoma ir pagrindiniame puslapyje.'), true],
         [t('Atšauktos treniruotės ir atostogos'), 'admin/atsaukimai.php', t('Dienos be treniruočių, pranešimas nariams.'), true],
         [t('Vertimai (EN / RU)'), 'admin/vertimai.php', t('Jūsų tekstai anglų ir rusų kalbomis: naujienos, renginiai, pamokos, pagrindinis puslapis.'), true],
-        [t('XP ir lygiai'), 'admin/taskai.php', t('Už ką ir kiek XP, kiek XP vienam lygiui; skirti XP keliems iš karto.'), true],
+        [t('Aktyvumo taškai ir lygiai'), 'admin/taskai.php', t('Už ką ir kiek taškų, kiek taškų vienam lygiui; skirti taškus keliems iš karto.'), true],
     ],
     'Egzaminai' => [
-        [t('Egzaminų programa'), 'admin/programa.php', t('Ką reikia mokėti kiekvienam diržui ir kiek XP už punktą.'), true],
+        [t('Egzaminų programa'), 'admin/programa.php', t('Ką reikia mokėti kiekvienam diržui ir kiek aktyvumo taškų už punktą.'), true],
     ],
     'Sistema' => [
         [t('Paskyros ir rolės'), 'admin/paskyros.php', t('Kas yra treneris, kas administratorius.'), is_admin()],
@@ -50,6 +57,20 @@ page_start(t('Nustatymai'), ['admin' => true]);
         <?php endforeach; ?>
       </section>
     <?php endforeach; ?>
+    <?php if (is_admin($me)): ?>
+      <section class="panel card settings-group reg-toggles" id="registracija">
+        <div class="kicker"><?= te('Registracija') ?></div>
+        <p class="small muted" style="margin:0 0 8px;"><?= te('Išjungus - registracijos mygtukas dingsta, o puslapis sako, kad registracija išjungta.') ?></p>
+        <form method="post" class="reg-tg-form">
+          <?= csrf_field() ?><input type="hidden" name="action" value="reg_toggles">
+          <?php foreach (REG_PLACES as $k => [$label, $desc]): ?>
+            <label class="tg-row"><input type="checkbox" class="tg" name="reg[]" value="<?= e($k) ?>"<?= reg_on($k) ? ' checked' : '' ?> onchange="this.form.submit()">
+              <span><b><?= e(t($label)) ?></b><small><?= e(t($desc)) ?></small></span></label>
+          <?php endforeach; ?>
+          <noscript><button class="btn btn-primary btn-sm" type="submit"><?= te('Išsaugoti') ?></button></noscript>
+        </form>
+      </section>
+    <?php endif; ?>
   </div>
   <aside class="settings-side">
     <?= render_account_settings($me, 'paskyra', t('Mano paskyra')) ?>

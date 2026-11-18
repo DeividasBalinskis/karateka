@@ -20,6 +20,10 @@ if (!$ev || !$m || !account_relation((int) $a['id'], $memberId) || !in_array($st
     flash('err', t('Nepavyko - renginys ar narys nerastas.'));
     redirect($back);
 }
+if (!reg_on('events')) {
+    flash('err', t('Registracija šiuo metu išjungta.'));
+    redirect($back);
+}
 if (!is_active_account($a) || !member_can_respond($ev, $m)) {
     flash('err', t('Į šį renginį registruotis nebegalima. Jei reikia - parašykite treneriui.'));
     redirect($back);

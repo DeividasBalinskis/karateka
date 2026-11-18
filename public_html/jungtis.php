@@ -86,7 +86,7 @@ page_start(t('Kvietimas'), ['narrow' => true, 'noindex' => true]);
 <div class="panel card join-card">
   <div class="eyebrow"><?= te('Kvietimas į karateka.lt') ?></div>
   <h1 class="styled"><?= e($name) ?></h1>
-  <p class="muted"><?= te('Treneris pridėjo šį narį į klubo sistemą. Susikurkite prisijungimą - matysite tvarkaraštį, renginius, XP ir klubo žaidimą.') ?></p>
+  <p class="muted"><?= te('Treneris pridėjo šį narį į klubo sistemą. Susikurkite prisijungimą - matysite tvarkaraštį, renginius, aktyvumo taškus ir klubo žaidimą.') ?></p>
   <?= form_errors($errors) ?>
   <form method="post" class="form" style="margin-top:14px;">
     <?= csrf_field() ?>

@@ -73,9 +73,11 @@ page_start(t('Prisijungti'), ['narrow' => true, 'noindex' => true]);
     <button class="btn btn-primary btn-block" type="submit"><?= te('Prisijungti') ?></button>
   </form>
   <p class="small" style="margin-top:12px; text-align:center;"><a href="<?= url('slaptazodis.php') ?>"><?= te('Pamiršote slaptažodį?') ?></a></p>
+  <?php if (reg_on('join')): ?>
   <hr class="divider">
   <p class="muted small" style="text-align:center; margin-bottom:10px;"><?= te('Neturite paskyros?') ?></p>
   <a class="btn btn-ghost btn-block" href="<?= url('registracija.php') ?>"><?= te('Sukurti paskyrą') ?></a>
+  <?php endif; ?>
 </div>
 <?php
 page_end();

@@ -226,6 +226,9 @@ function member_can_referee(array $ev, array $m): bool
  */
 function render_event_rsvp(array $ev, array $members, string $back): string
 {
+    if (!reg_on('events')) {   // Nustatymai → Registracija
+        return '';
+    }
     $rows = '';
     foreach ($members as $m) {
         if ($m['status'] !== 'active') {

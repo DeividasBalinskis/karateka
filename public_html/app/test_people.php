@@ -241,7 +241,7 @@ function view_switch(string $mode): void
 }
 
 /** Viršutinėje juostoje adminui: „Peržiūra: Adminas / Tėvai / Vaikas“, vaiko diržas */
-function render_view_switch(bool $compact = false): string
+function render_view_switch(bool $compact = false, string $extra = ''): string
 {
     $admin = view_admin();
     if (!$admin) {
@@ -267,5 +267,5 @@ function render_view_switch(bool $compact = false): string
         $html .= ('<label class="vs-belt">' . t('Test Junior diržas') . '<select name="belt" onchange="this.form.requestSubmit ? this.form.requestSubmit() : this.form.submit()">')
             . belt_options($belt !== null && $belt !== false ? (int) $belt : null, t('— be diržo —')) . '</select></label>';
     }
-    return $html . '</form></details>';
+    return $html . '</form>' . $extra . '</details>';
 }

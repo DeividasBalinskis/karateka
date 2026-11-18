@@ -32,7 +32,7 @@ if (get('new') !== '' || post('action') === 'create') {
         csrf_check();
         $reqId = (int) post('req_id');
         if (post('op') === 'approve') {
-            flash('ok', approve_skill($id, $reqId, (int) $me['id']) ? t('Patvirtinta, XP skirti.') : t('Jau buvo patvirtinta.'));
+            flash('ok', approve_skill($id, $reqId, (int) $me['id']) ? t('Patvirtinta, taškai skirti.') : t('Jau buvo patvirtinta.'));
         } elseif (post('op') === 'reject') {
             reject_skill($id, $reqId);
             flash('ok', t('Grąžinta - narys galės pažymėti dar kartą.'));
@@ -183,13 +183,13 @@ if ($id) {
             $date = post('awarded_on');
             if ($cat && DateTime::createFromFormat('!Y-m-d', $date)) {
                 award_points($id, $cat, $date, null, post('note'), (int) $me['id']);
-                flash('ok', "Skirta +{$cat['points']} XP: {$cat['name']}");
+                flash('ok', t('Skirta +{n} taškų: {c}', ['n' => $cat['points'], 'c' => $cat['name']]));
             } else {
                 flash('err', t('Pasirinkite kategoriją ir datą.'));
             }
         } else {
             q('DELETE FROM point_awards WHERE id = ? AND member_id = ?', [(int) post('award_id'), $id]);
-            flash('ok', t('XP pašalinti.'));
+            flash('ok', t('Taškai pašalinti.'));
         }
         redirect('admin/nariai.php?id=' . $id . '#taskai');
     }
@@ -210,7 +210,7 @@ if ($id) {
         csrf_check();
         $reqId = (int) post('req_id');
         if (post('op') === 'approve') {
-            flash('ok', approve_skill($id, $reqId, (int) $me['id']) ? t('Patvirtinta, XP skirti.') : t('Jau buvo patvirtinta.'));
+            flash('ok', approve_skill($id, $reqId, (int) $me['id']) ? t('Patvirtinta, taškai skirti.') : t('Jau buvo patvirtinta.'));
         } elseif (post('op') === 'reject') {
             reject_skill($id, $reqId);
             flash('ok', t('Grąžinta - narys galės pažymėti dar kartą.'));
@@ -355,9 +355,9 @@ if ($id) {
         <h2><?= te('Lankomumas') ?></h2>
         <?= render_attendance($id) ?>
         <hr class="divider">
-        <h2><?= te('XP ir lygis') ?></h2>
+        <h2><?= te('Aktyvumo taškai ir lygis') ?></h2>
         <?= render_xp_card($m) ?>
-        <p class="small muted"><?= e($seasonLabel) ?>: <strong><?= member_points_total($id, $from, $to) ?></strong> <?= te('· iš viso (XP):') ?> <strong><?= member_points_total($id) ?></strong></p>
+        <p class="small muted"><?= e($seasonLabel) ?>: <strong><?= member_points_total($id, $from, $to) ?></strong> <?= te('· iš viso (taškų):') ?> <strong><?= member_points_total($id) ?></strong></p>
         <?php if (!$history): ?><p class="muted small" style="margin-top:8px;"><?= te('Taškų dar nėra.') ?></p><?php endif; ?>
         <ul class="list small">
           <?php foreach ($history as $h): ?>

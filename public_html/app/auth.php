@@ -43,7 +43,7 @@ function is_admin(?array $a = null): bool
  */
 function admin_mode(): bool
 {
-    return is_staff() && ($_COOKIE['adm'] ?? '') === '1';
+    return is_staff() && ($_COOKIE['adm'] ?? '1') === '1';   // treneriui - numatytai įjungta (#97)
 }
 
 function admin_mode_set(bool $on): void

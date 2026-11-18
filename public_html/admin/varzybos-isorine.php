@@ -42,7 +42,7 @@ if ($connected) {
 // Varžybų renginiai karateka.lt, dar nesusieti - kad būtų galima susieti su esamomis varžybomis
 $unlinked = q_all('SELECT id, title, starts_on FROM events WHERE type = "competition" AND tournament_id IS NULL AND starts_on >= DATE_SUB(CURDATE(), INTERVAL 60 DAY) ORDER BY starts_on');
 
-page_start(t('Varžybos'), ['admin' => true]);
+page_start(t('Budo'), ['admin' => true]);
 ?>
 <div class="page-head row between" style="flex-wrap:wrap; gap:10px; align-items:flex-end;">
   <div>

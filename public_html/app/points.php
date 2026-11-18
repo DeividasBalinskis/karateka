@@ -276,24 +276,24 @@ function render_staff_ranking(bool $give = false): string
     <?php endforeach; ?>
   </div>
   <?php if (!$rows): ?>
-    <p class="muted"><?= te('Šį sezoną XP dar niekas neturi.') ?></p>
+    <p class="muted"><?= te('Šį sezoną aktyvumo taškų dar niekas neturi.') ?></p>
   <?php else: ?>
     <input type="search" class="rank-search" id="rankSearch" placeholder="<?= te('Ieškoti pagal vardą ar pavardę') ?>" aria-label="<?= te('Ieškoti reitinge') ?>">
     <ol class="ranking ranking-all" id="rankAll">
       <?php foreach ($rows as $r): ?>
         <li data-name="<?= e(mb_strtolower($r['first_name'] . ' ' . $r['last_name'])) ?>" class="<?= $r['rank'] <= 5 ? 'top5' : '' ?>">
           <span class="pos r<?= (int) $r['rank'] ?>"><?= (int) $r['rank'] ?></span><a href="<?= url('admin/nariai.php?id=' . (int) $r['member_id']) ?>"><?= e($r['first_name'] . ' ' . $r['last_name']) ?></a><span class="pts"><?= (int) $r['total'] ?></span>
-          <?php if ($xpCats): ?><button type="button" class="xp-btn rank-xp" data-member="<?= (int) $r['member_id'] ?>" title="<?= te('Skirti XP') ?>"><?= te('+XP') ?></button><?php endif; ?>
+          <?php if ($xpCats): ?><button type="button" class="xp-btn rank-xp" data-member="<?= (int) $r['member_id'] ?>" title="<?= te('Skirti taškus') ?>"><?= te('+ Taškai') ?></button><?php endif; ?>
         </li>
       <?php endforeach; ?>
     </ol>
     <p class="hint" id="rankEmpty" style="display:none;"><?= te('Nieko nerasta.') ?></p>
-    <p class="hint" style="margin-top:8px;"><?= te('Su XP:') ?> <?= count($rows) ?>. <?= te('Paspaudę vardą atidarysite nario puslapį.') ?><?php if ($xpCats): ?> <?= te('„+XP“ prie vardo - skirti XP iškart.') ?><?php endif; ?></p>
+    <p class="hint" style="margin-top:8px;"><?= te('Su taškais:') ?> <?= count($rows) ?>. <?= te('Paspaudę vardą atidarysite nario puslapį.') ?><?php if ($xpCats): ?> <?= te('„+ Taškai“ prie vardo - skirti taškų iškart.') ?><?php endif; ?></p>
     <?php if ($xpCats): ?>
     <div class="xp-quick rank-quick" id="rankQuick" hidden>
       <label><?= te('Už ką') ?>
         <select id="rqCat"><?php foreach ($xpCats as $c): ?><option value="<?= (int) $c['id'] ?>" data-points="<?= (int) $c['points'] ?>"><?= e($c['name']) ?></option><?php endforeach; ?></select></label>
-      <label class="xp-pts"><?= te('XP') ?> <input type="number" id="rqPts" min="1" max="1000" value="<?= (int) $xpCats[0]['points'] ?>"></label>
+      <label class="xp-pts"><?= te('Aktyvumo taškai') ?> <input type="number" id="rqPts" min="1" max="1000" value="<?= (int) $xpCats[0]['points'] ?>"></label>
       <label class="xp-note"><?= te('Komentaras') ?> <span class="hint"><?= te('nebūtina, mato narys') ?></span><input type="text" id="rqNote" maxlength="190"></label>
       <div class="row"><button type="button" class="btn btn-primary btn-sm" id="rqGive"><?= te('Skirti') ?></button><button type="button" class="btn btn-ghost btn-sm" id="rqCancel"><?= te('Atšaukti') ?></button></div>
     </div>
@@ -359,14 +359,14 @@ const XP_AUTO_RULES = [
     'seminar'       => 'Pažymėjus „Buvo“ seminare ar stovykloje',
     'comp_lt'       => 'Varžybos Lietuvoje: pažymėjus „Buvo“ arba įvedus rezultatus',
     'comp_abroad'   => 'Varžybos užsienyje: pažymėjus „Buvo“ arba įvedus rezultatus',
-    'place1_lt'     => 'Įvedus varžybų rezultatus (prie dalyvavimo XP)',
-    'place2_lt'     => 'Įvedus varžybų rezultatus (prie dalyvavimo XP)',
-    'place3_lt'     => 'Įvedus varžybų rezultatus (prie dalyvavimo XP)',
-    'place1_abroad' => 'Įvedus varžybų rezultatus (prie dalyvavimo XP)',
-    'place2_abroad' => 'Įvedus varžybų rezultatus (prie dalyvavimo XP)',
-    'place3_abroad' => 'Įvedus varžybų rezultatus (prie dalyvavimo XP)',
+    'place1_lt'     => 'Įvedus varžybų rezultatus (prie dalyvavimo taškų)',
+    'place2_lt'     => 'Įvedus varžybų rezultatus (prie dalyvavimo taškų)',
+    'place3_lt'     => 'Įvedus varžybų rezultatus (prie dalyvavimo taškų)',
+    'place1_abroad' => 'Įvedus varžybų rezultatus (prie dalyvavimo taškų)',
+    'place2_abroad' => 'Įvedus varžybų rezultatus (prie dalyvavimo taškų)',
+    'place3_abroad' => 'Įvedus varžybų rezultatus (prie dalyvavimo taškų)',
     'exam'          => 'Renginio rezultatuose pažymėjus „Išlaikė“',
-    'skill'         => 'Treneriui patvirtinus „Moku“ - XP nurodytas prie kiekvieno punkto',
+    'skill'         => 'Treneriui patvirtinus „Moku“ - taškai nurodyti prie kiekvieno punkto',
     'test_attempt'  => 'Pirmas testo bandymas per sezoną',
     'test_pass'     => 'Pirmą kartą per sezoną išlaikius testą',
 ];
@@ -390,7 +390,7 @@ function award_xp_to_members(array $memberIds, array $category, int $points, str
             continue;
         }
         award_points($mid, $category, $date, null, $note, $by, $points);
-        notify_member($mid, 'xp_award', '+' . $points . ' XP: ' . $category['name'], $note ?: null, 'paskyra.php?m=' . $mid, null, false);
+        notify_member($mid, 'xp_award', '+' . $points . ' ' . t('taškai') . ': ' . $category['name'], $note ?: null, 'paskyra.php?m=' . $mid, null, false);
         $n++;
     }
     return $n;

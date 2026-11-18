@@ -29,8 +29,8 @@ function save_coach_note(array $m, array $me, string $date, string $text, ?strin
         [$m['id'], $me['id'], $groupId, $eventId, $date, $text, $yt, $lessonId, $isTask ? 1 : 0]);
 }
 
-// Paskutinė pasirinkta grupė įsimenama, kad salėje nereikėtų rinktis kiekvieną kartą
-$groupId = (int) (get('g') ?: post('g') ?: ($_SESSION['notes_group'] ?? 0));
+// Atidarius „Treniruotė“ - visos grupės (pasirinkti); grupė - tik kai ji nurodyta (#87)
+$groupId = (int) (get('g') ?: post('g'));
 $date = get('d') ?: post('d') ?: date('Y-m-d');
 if (!DateTime::createFromFormat('!Y-m-d', $date)) {
     $date = date('Y-m-d');
@@ -67,12 +67,12 @@ if (is_post()) {
         $pts = (int) post('points');
         $mid = (int) post('member_id');
         if (!$cat || $pts < 1 || $pts > 1000) {
-            exit(json_encode(['ok' => false, 'error' => t('Pasirinkite, už ką, ir kiek XP (1-1000).')], JSON_UNESCAPED_UNICODE));
+            exit(json_encode(['ok' => false, 'error' => t('Pasirinkite, už ką, ir kiek taškų (1-1000).')], JSON_UNESCAPED_UNICODE));
         }
         if (!award_xp_to_members([$mid], $cat, $pts, $date, post('note') ?: null, (int) $me['id'])) {
             exit(json_encode(['ok' => false, 'error' => t('Narys nerastas.')], JSON_UNESCAPED_UNICODE));
         }
-        exit(json_encode(['ok' => true, 'line' => '✨ +' . $pts . ' XP · ' . $cat['name'] . (post('note') !== '' ? ' · ' . mb_strimwidth(post('note'), 0, 80, '…') : ''),
+        exit(json_encode(['ok' => true, 'line' => '✨ +' . $pts . ' ' . t('taškai') . ' · ' . $cat['name'] . (post('note') !== '' ? ' · ' . mb_strimwidth(post('note'), 0, 80, '…') : ''),
             'total' => member_points_total($mid)], JSON_UNESCAPED_UNICODE));
     }
 
@@ -284,7 +284,7 @@ page_start(t('Treniruotė'), ['admin' => true]);
 ?>
 <div class="page-head">
   <h1 class="styled"><?= te('Treniruotė') ?></h1>
-  <p><?= te('Pasirinkite grupę ar renginį ir dieną (galima ir praėjusią), pažymėkite, kas buvo, parašykite pastabą ar skirkite XP.') ?></p>
+  <p><?= te('Pasirinkite grupę ar renginį ir dieną (galima ir praėjusią), pažymėkite, kas buvo, parašykite pastabą ar skirkite aktyvumo taškų.') ?></p>
 </div>
 
 <?php
@@ -374,7 +374,7 @@ $evTile = function (array $ev, bool $showDate) use ($event, $evColors): string {
     <div class="att-bar">
       <span><?= te('Buvo:') ?> <strong id="attPresent"><?= count(array_filter($att)) ?></strong> <?= te('iš') ?> <span id="attTotal"><?= $event ? count(array_filter($members, function ($m) { return $m['ep_status'] !== 'declined'; })) : count($members) ?></span></span>
       <button type="button" class="btn btn-primary btn-sm" id="attAll" data-action="<?= $event ? 'ev_attendance_all' : 'attendance_all' ?>"><?= $event ? t('✓ Visi dalyvaujantys buvo') : t('✓ Visi buvo') ?></button>
-      <a class="btn btn-ghost btn-sm" href="<?= url('admin/taskai.php?' . ($event ? 'e=' . $eventId : 'g=' . $groupId) . '&d=' . $date . '#skirti') ?>"><?= te('✨ XP keliems') ?></a>
+      <a class="btn btn-ghost btn-sm" href="<?= url('admin/taskai.php?' . ($event ? 'e=' . $eventId : 'g=' . $groupId) . '&d=' . $date . '#skirti') ?>"><?= te('✨ Taškai keliems') ?></a>
       <?php if ($group && !$hasTraining && !training_cancelled($groupId, $date)): ?><span class="hint"><?= te('Pagal tvarkaraštį šią dieną šios grupės treniruotės nėra - patikrinkite datą.') ?></span><?php endif; ?>
       <?php if ($event): ?><a class="small" href="<?= url('admin/renginio-dalyviai.php?id=' . $eventId) ?>"><?= te('Dalyvių sąrašas →') ?></a><?php endif; ?>
       <?php if ($group && !$event && is_admin() && $date >= date('Y-m-d') && !training_cancelled((int) $group['id'], $date)): ?><a class="small cancel-btn" href="<?= url('admin/atsaukimai.php?g=' . (int) $group['id'] . '&d=' . $date . '#naujas') ?>"><?= te('Atšaukti šią treniruotę') ?></a><?php endif; ?>
@@ -392,7 +392,7 @@ $evTile = function (array $ev, bool $showDate) use ($event, $evColors): string {
             <?php // „Buvo“ - dešinėje: laikant telefoną dešine ranka, nykščiu lengviau pasiekti ?>
             <button type="button" class="att-btn no<?= $a1 === 0 || $a1 === '0' ? ' on' : '' ?>" data-v="0"><?= te('✗ Nebuvo') ?></button>
             <button type="button" class="att-btn yes<?= $a1 === 1 || $a1 === '1' ? ' on' : '' ?>" data-v="1"><?= te('✓ Buvo') ?></button>
-            <button type="button" class="xp-btn" data-member="<?= (int) $m['id'] ?>" title="<?= te('Skirti XP') ?>"><?= te('+XP') ?></button>
+            <button type="button" class="xp-btn" data-member="<?= (int) $m['id'] ?>" title="<?= te('Skirti taškus') ?>"><?= te('+ Taškai') ?></button>
           </div>
           <?php if ($visitPrice): ?><div class="fee-line" data-fee="<?= (int) $m['id'] ?>">💶 <?= e(group_fee_text($group, $monthFees[(int) $m['id']] ?? null, substr($date, 0, 7))) ?></div><?php endif; ?>
           <?php foreach ($todayXp[$m['id']] ?? [] as $x): ?>
@@ -470,7 +470,7 @@ $evTile = function (array $ev, bool $showDate) use ($event, $evColors): string {
   <div class="xp-quick" id="xpQuick" hidden>
     <label><?= te('Už ką') ?>
       <select id="xpCat"><?php foreach ($xpCats as $c): ?><option value="<?= (int) $c['id'] ?>" data-points="<?= (int) $c['points'] ?>"><?= e($c['name']) ?></option><?php endforeach; ?></select></label>
-    <label class="xp-pts"><?= te('XP') ?> <input type="number" id="xpPts" min="1" max="1000" value="<?= (int) $xpCats[0]['points'] ?>"></label>
+    <label class="xp-pts"><?= te('Aktyvumo taškai') ?> <input type="number" id="xpPts" min="1" max="1000" value="<?= (int) $xpCats[0]['points'] ?>"></label>
     <label class="xp-note"><?= te('Komentaras') ?> <span class="hint"><?= te('nebūtina, mato narys') ?></span><input type="text" id="xpNote" maxlength="190"></label>
     <div class="row"><button type="button" class="btn btn-primary btn-sm" id="xpGive"><?= te('Skirti') ?></button><button type="button" class="btn btn-ghost btn-sm" id="xpCancel"><?= te('Atšaukti') ?></button>
       <a class="small" href="<?= url('admin/taskai.php#kategorijos') ?>"><?= te('+ nauja kategorija') ?></a></div>

@@ -24,7 +24,7 @@ test('admin: new group from Training, feedback replies folded, one Admin control
   check('feedback replies: 2 shown, the rest folded', await a.locator('.fb-replies > .notif-list .notif').count() === 2 && await a.locator('.fb-replies details.fb-more .notif').count() >= 2);
   await nav(a, () => a.click('.fb-replies button:has-text("Supratau visus")'));
   check('all marked read', +sql(`SELECT COUNT(*) FROM notifications WHERE account_id = ${aid} AND type = 'feedback' AND done_at IS NULL`) === 0);
-  check('one admin control with “view as”', await a.locator('.adm-li .adm-sw').count() === 1 && await a.locator('.adm-li .view-switch').count() === 1 && await a.locator('.vs-li').count() === 0);
+  check('one admin control with “view as” (incl. as a member)', await a.locator('.adm-li .view-switch').count() === 1 && await a.locator('.adm-li .vs-member-btn').count() === 1 && await a.locator('.vs-li').count() === 0);
   check('language: only the chosen one, on the left', /LT/.test(await a.locator('.nav-prefs .lang-dd > summary').innerText()));
 
   await a.goto('admin/treniruote.php');

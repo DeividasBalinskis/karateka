@@ -30,7 +30,10 @@ test('feedback: visitor and member write, admin answers', async ({ browser }) =>
   // Adminas: skaičiukas, sąrašas, atsakymas
   const a = await login(browser, 'info@karateka.lt');
   await a.goto('admin/');
-  check('nav badge', (await a.locator('.sub-nav a[href*="atsiliepimai.php"]').textContent()).includes('2'));
+  check('nav badge on Nustatymai (feedback is in its second row)', +((await a.locator('.sub-nav a[href$="admin/nustatymai.php"]').first().textContent()).match(/\d+/) || [0])[0] >= 2);
+  await a.goto('admin/nustatymai.php');
+  check('second row badge', (await a.locator('.sub-nav-2 a[href*="atsiliepimai.php"]').textContent()).includes('2'));
+  await a.goto('admin/');
   check('todo line', /Nauji atsiliepimai apie svetainę: 2/.test(await a.locator('body').textContent()));
   await a.goto('admin/atsiliepimai.php');
   check('both listed', await a.locator('.fb-card').count() === 2);

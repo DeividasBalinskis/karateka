@@ -6,13 +6,15 @@
 require __DIR__ . '/app/bootstrap.php';
 
 $k = (string) (get('k') ?: post('k'));
-$quiz = quiz_by_share_token($k);
+// Iš asmeninio egzamino puslapio (mano-egzaminas.php, &e=): testas veikia ir neatidarius dalijimosi, rezultatas - į protokolą
+$examRow = exam_row_by_token((string) (get('e') ?: post('e')));
+$quiz = quiz_by_share_token($k) ?: ($examRow && preg_match('/^[a-f0-9]{24}$/', $k) ? q_one('SELECT * FROM quizzes WHERE share_token = ? AND is_published = 1', [$k]) : null);
 if (!$quiz) {
     not_found();
 }
 $qzId = (int) $quiz['id'];
 $kid = (bool) $quiz['kids_mode'];
-$self = 'testas-svecias.php?k=' . $k;
+$self = 'testas-svecias.php?k=' . $k . ($examRow ? '&e=' . $examRow['token'] : '');
 $errors = [];
 $result = null;
 $state = $_SESSION['guest_quiz'][$qzId] ?? null;
@@ -66,6 +68,14 @@ if (is_post()) {
         $total = count($review);
         $passed = $total > 0 && 100 * $score >= (int) $quiz['pass_percent'] * $total;
         $email = (string) ($state['email'] ?? '');
+        if ($examRow && $total && !$late) {
+            // Egzamino protokole - stulpelis „Testas“ (geriausias rezultatas)
+            $pct = (int) round(100 * $score / $total);
+            $prev = (int) preg_replace('/\D.*$/u', '', ltrim((string) $examRow['test']));
+            if ($examRow['test'] === null || $examRow['test'] === '' || $pct >= $prev) {
+                q('UPDATE exam_protocol_rows SET test = ? WHERE id = ?', [$pct . ' %' . ($passed ? ' ✓' : ''), (int) $examRow['id']]);
+            }
+        }
         q('INSERT INTO quiz_guest_attempts (quiz_id, name, club, email, score, total, passed) VALUES (?, ?, ?, ?, ?, ?, ?)',
             [$qzId, $state['name'], $state['club'] !== '' ? $state['club'] : null, $email !== '' ? $email : null, $score, $total, $passed ? 1 : 0]);
         $mailed = false;
@@ -138,7 +148,7 @@ elseif ($state):
   </div>
   <?php if ($left !== null): ?><div class="quiz-timer" id="quizTimer" data-left="<?= $left ?>" title="<?= te('Liko laiko') ?>">⏱ <?= sprintf('%d:%02d', intdiv($left, 60), $left % 60) ?></div><?php endif; ?>
   <form method="post" class="quiz-form <?= $kid ? 'kid' : '' ?>" id="quizForm">
-    <?= csrf_field() ?><input type="hidden" name="k" value="<?= e($k) ?>"><input type="hidden" name="action" value="finish">
+    <?= csrf_field() ?><input type="hidden" name="k" value="<?= e($k) ?>"><?= $examRow ? '<input type="hidden" name="e" value="' . e($examRow['token']) . '">' : '' ?><input type="hidden" name="action" value="finish">
     <?php foreach ($ids as $n => $id): $q = $qs[$id]; $ans = $q['answers']; shuffle($ans); ?>
       <fieldset class="panel card quiz-q">
         <legend class="kicker"><?= $n + 1 ?> / <?= count($ids) ?></legend>
@@ -192,10 +202,10 @@ else:
   </div>
   <?= form_errors($errors) ?>
   <form method="post" class="panel card form" id="guestStart">
-    <?= csrf_field() ?><input type="hidden" name="k" value="<?= e($k) ?>"><input type="hidden" name="action" value="start">
+    <?= csrf_field() ?><input type="hidden" name="k" value="<?= e($k) ?>"><?= $examRow ? '<input type="hidden" name="e" value="' . e($examRow['token']) . '">' : '' ?><input type="hidden" name="action" value="start">
     <div style="position:absolute; left:-9999px;" aria-hidden="true"><input type="text" name="website" tabindex="-1" autocomplete="off"></div>
     <div class="form-row">
-      <label><?= te('Vardas ir pavardė') ?> <input type="text" name="name" maxlength="120" required autocomplete="name" value="<?= e(post('name')) ?>"></label>
+      <label><?= te('Vardas ir pavardė') ?> <input type="text" name="name" maxlength="120" required autocomplete="name" value="<?= e(post('name') ?: ($examRow['name'] ?? '')) ?>"></label>
       <label><?= te('Klubas') ?> <span class="hint"><?= te('nebūtina') ?></span><input type="text" name="club" maxlength="120" value="<?= e(post('club')) ?>"></label>
     </div>
     <label><?= te('El. paštas') ?> <span class="hint"><?= te('nebūtina - atsiųsime rezultatą') ?></span><input type="email" name="email" maxlength="190" autocomplete="email" value="<?= e(post('email')) ?>"></label>

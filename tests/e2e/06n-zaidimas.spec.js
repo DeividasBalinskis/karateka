@@ -5,23 +5,21 @@ const { sql, login, nav, check, noJsErrors, BASE_URL } = require('./helpers');
 
 const resetGame = (where) => { sql(`DELETE FROM game_heroes WHERE ${where}`); };
 
-test('admin mode: admin sees the site as a member until the switch is on', async ({ browser }) => {
+test('admin mode: on by default; view as a member from the menu, clear way back', async ({ browser }) => {
   const a = await login(browser, null, 1280, 900);
   await a.context().clearCookies();
   await a.goto('prisijungti.php');
   await a.fill('input[name=email]', 'info@karateka.lt'); await a.fill('input[name=password]', 'testas123');
   await nav(a, () => a.click('button[type=submit]'));
   check('lands on own account with a link to the game', /paskyra\.php/.test(a.url()) && await a.locator('.game-teaser').count() === 1 && await a.locator('.nav-game').count() === 1);
-  check('switch off, no Management link', await a.locator('.adm-sw:not(.is-on)').count() === 1 && await a.locator('.nav-account a[href$="admin/"]').count() === 0);
-  check('account tabs: overview, management window; game is in the top menu', await a.locator('.sub-nav a', { hasText: 'Apžvalga' }).count() === 1 && await a.locator('.sub-nav a', { hasText: 'Valdymas' }).count() === 1);
+  check('no on/off slider; Management link and view menu', await a.locator('.adm-sw.is-on, .adm-knob:visible').count() === 0 && await a.locator('.nav-account a[href$="admin/"]').count() === 1 && await a.locator('.adm-li .view-switch').count() === 1);
   await a.goto('renginiai.php');
-  check('no staff tools in member view', await a.locator('.staff-bar').count() === 0);
-  await nav(a, () => a.click('.adm-sw'));
-  check('switch on: staff tools back', await a.locator('.adm-sw.is-on').count() === 1 && await a.locator('.staff-bar').count() === 1 && await a.locator('.nav-account a[href$="admin/"]').count() === 1);
-  await nav(a, () => a.click('.adm-sw'));
-  check('switch off again', await a.locator('.staff-bar').count() === 0);
-  await a.goto('admin/');
-  check('opening management turns admin mode on', await a.locator('.adm-sw.is-on').count() === 1);
+  check('staff tools by default', await a.locator('.staff-bar').count() === 1);
+  await a.click('.adm-li .view-switch > summary');
+  await nav(a, () => a.click('.vs-member-btn'));
+  check('member view: no staff tools, clear way back', await a.locator('.staff-bar').count() === 0 && await a.locator('.adm-back').count() === 1);
+  await nav(a, () => a.click('.adm-back'));
+  check('back to management view', await a.locator('.staff-bar').count() === 1 && await a.locator('.adm-back').count() === 0);
   noJsErrors(a);
 });
 

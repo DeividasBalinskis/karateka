@@ -110,7 +110,7 @@ return [
     'Lygūs',
     'Lytis',
     'Mano dojo',
-    'Matai tik tu (adminas). Vaikų lygis ir diržas imami iš tikrų XP ir diržo.',
+    'Matai tik tu (adminas). Vaikų lygis ir diržas imami iš tikrų aktyvumo taškų ir diržo.',
     'Meistras Drakonas',
     'Mergaitė',
     'Muša būgnai - daryk techniką laiku',

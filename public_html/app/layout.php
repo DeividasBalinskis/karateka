@@ -44,7 +44,7 @@ function page_start(string $title, array $opt = []): void
     // Renginiai, Naujienos, Pamokos - viena vieta visiems (ir treneriui su redagavimo mygtukais), be trenerio skirtukų juostos
     $section = $opt['section'] ?? null;
     site_header(false, $admin && !$section ? 'admin' : (!empty($opt['account']) ? 'account' : null), $opt['account'] ?? null, $section); ?>
-<main class="page <?= !empty($opt['narrow']) ? 'narrow' : '' ?>">
+<main class="page <?= !empty($opt['narrow']) ? 'narrow' : '' ?><?= !empty($opt['wide']) ? ' wide' : '' ?>">
 <?php foreach ($flashes as $f): ?>
   <div class="flash flash-<?= e($f['type']) ?>"><?= e(t($f['message'])) ?></div>
 <?php endforeach; ?>
@@ -251,40 +251,43 @@ function render_app_install_card(): string
         . ('<p class="small">' . t('Karateka gali atsidaryti kaip programėlė - su ikona telefono ekrane, be naršyklės juostos.') . '</p>')
         . ('<button type="button" class="btn btn-primary btn-sm" data-install-app hidden>' . t('Įdiegti programėlę') . '</button>')
         . ('<ul class="app-steps small muted"><li><strong>' . t('Android (Chrome):') . '</strong> ' . t('meniu ⋮ → „Įdiegti programą“ (ar „Pridėti prie pradžios ekrano“).') . '</li>')
-        . ('<li><strong>' . t('iPhone (Safari):') . '</strong> ' . t('„Bendrinti“ → „Į pradžios ekraną“.') . '</li></ul></div>');
+        . ('<li><strong>' . t('iPhone (Safari):') . '</strong> ' . t('„Bendrinti“ → „Į pradžios ekraną“.') . '</li>')
+        . ('<li><strong>' . t('Jei rodo „Nesaugi programa užblokuota“:') . '</strong> ' . t('tai Google apsauga (Play Protect) taip įvertina svetainės ženkliuką. Spauskite „Supratau“, tada naršyklės meniu ⋮ → „Pridėti prie pradžios ekrano“ → „Sukurti nuorodą“ - veiks taip pat.') . '</li></ul></div>');
 }
 
-/** Treneriams: skirtukai po viršutine juosta [raktas => [pavadinimas, kelias, skaičiukas]] */
+/** Treneriams: skirtukai po viršutine juosta [raktas => [pavadinimas, kelias, skaičiukas]].
+ *  Kasdieniai darbai viršuje; retai naudojami (nariai, taškai, testai, patvirtinimai, atsiliepimai) - „Nustatymų“ antroje eilėje (#95).
+ *  Budo (varžybos) ir LTKF - per logotipo meniu (#91/#92). */
 function admin_nav_items(): array
 {
     $items = [
-        'siandien'   => [t('Šiandien'), 'admin/'],
+        'siandien'   => [t('Pradžia'), 'admin/'],
         'treniruote' => [t('Treniruotė'), 'admin/treniruote.php'],
-        'nariai'     => [t('Nariai'), 'admin/nariai.php'],
-        'xp'         => [t('XP'), 'admin/taskai.php'],
-        // Žinutės - tik pokalbio lange (mygtukas apačioje dešinėje); grupės, tvarkaraštis, taškai, paskyros - „Nustatymai“
+        'egzaminai'  => [t('Egzaminai'), 'admin/egzaminai.php'],
     ];
-    $items['varzybos'] = [t('Varžybos'), 'admin/varzybos.php'];   // ir kai sistema dar neprijungta - puslapis paaiškina
-    $items['egzaminai'] = [t('Egzaminai'), 'admin/egzaminai.php'];   // egzaminatoriui: visi egzaminai, protokolai, registracija
-    // Renginiai, naujienos ir pamokos tvarkomi savo skiltyse (viršutinėje juostoje), čia nedubliuojama
-    foreach (ADMIN_NAV_EXTRA as $key => $item) {
-        if (empty($item[2]) || is_admin()) {
-            $items[$key] = [$item[0], $item[1]];
-        }
-    }
-    $items['patvirtinimai'] = [t('Patvirtinimai'), 'admin/patvirtinimai.php', pending_approvals_count()];
     if (is_admin()) {
-        $items['atsiliepimai'] = [t('Atsiliepimai'), 'admin/atsiliepimai.php', feedback_new_count()];
+        $items['pranesimai'] = [t('Pranešimai'), 'admin/pranesimai.php'];
     }
-    $items['nustatymai'] = [t('Nustatymai'), 'admin/nustatymai.php'];
+    $sub = admin_settings_items();
+    $items['nustatymai'] = [t('Nustatymai'), 'admin/nustatymai.php', array_sum(array_map(function ($i) { return (int) ($i[2] ?? 0); }, $sub))];
     return $items;
 }
 
-// Vėliau pridėti skirtukai: [raktas => [pavadinimas, kelias, tik adminui]]
-const ADMIN_NAV_EXTRA = [
-    'testai'     => ['Testai', 'admin/testai.php', false],
-    'pranesimai' => ['Pranešimai', 'admin/pranesimai.php', true],   // ir SMS (admin/sms.php)
-];
+/** „Nustatymų“ antra eilė: retai naudojami skyriai su skaičiukais */
+function admin_settings_items(): array
+{
+    $items = [
+        'nustatymai'    => [t('Bendri'), 'admin/nustatymai.php'],
+        'nariai'        => [t('Nariai'), 'admin/nariai.php'],
+        'xp'            => [t('Aktyvumo taškai'), 'admin/taskai.php'],
+        'testai'        => [t('Testai'), 'admin/testai.php'],
+        'patvirtinimai' => [t('Patvirtinimai'), 'admin/patvirtinimai.php', pending_approvals_count()],
+    ];
+    if (is_admin()) {
+        $items['atsiliepimai'] = [t('Atsiliepimai'), 'admin/atsiliepimai.php', feedback_new_count()];
+    }
+    return $items;
+}
 
 /** Kuris trenerio skirtukas aktyvus (pagal failą) */
 function admin_nav_current(): string
@@ -292,9 +295,18 @@ function admin_nav_current(): string
     $file = basename($_SERVER['SCRIPT_NAME'] ?? '', '.php');
     $map = ['index' => 'siandien', 'renginio-rezultatai' => 'renginiai', 'varzybu-rezultatai' => 'varzybos', 'renginio-dalyviai' => 'renginiai', 'programa' => 'nustatymai',
             'varzybos-sso' => 'varzybos', 'varzybos-isorine' => 'varzybos', 'varzybu-dalyviai' => 'varzybos', 'varzybu-sistema' => 'varzybos', 'sms' => 'pranesimai',
-            'grupes' => 'nustatymai', 'tvarkarastis' => 'nustatymai', 'taskai' => 'xp', 'paskyros' => 'nustatymai', 'kopijos' => 'nustatymai', 'atsaukimai' => 'nustatymai', 'testavimas' => 'nustatymai', 'vertimai' => 'nustatymai',
+            'grupes' => 'nustatymai', 'tvarkarastis' => 'nustatymai', 'taskai' => 'nustatymai', 'paskyros' => 'nustatymai', 'kopijos' => 'nustatymai', 'atsaukimai' => 'nustatymai', 'testavimas' => 'nustatymai', 'vertimai' => 'nustatymai',
+            'nariai' => 'nustatymai', 'testai' => 'nustatymai', 'patvirtinimai' => 'nustatymai', 'atsiliepimai' => 'nustatymai',
             'pirmas-adminas' => 'siandien', 'egzaminai' => 'egzaminai', 'egzamino-protokolas' => 'egzaminai', 'federacija' => 'egzaminai'];
     return $map[$file] ?? $file;
+}
+
+/** Kuris „Nustatymų“ antros eilės skyrius aktyvus */
+function admin_settings_current(): string
+{
+    $file = basename($_SERVER['SCRIPT_NAME'] ?? '', '.php');
+    $map = ['taskai' => 'xp', 'nariai' => 'nariai', 'testai' => 'testai', 'patvirtinimai' => 'patvirtinimai', 'atsiliepimai' => 'atsiliepimai'];
+    return $map[$file] ?? 'nustatymai';
 }
 
 /** Ar rodyti „🎮 Žaidimas“ viršutinėje juostoje (žaidimo lentelės jau sukurtos) */
@@ -371,6 +383,9 @@ function site_header(bool $home = false, ?string $area = null, ?string $tab = nu
     $subNav = '';
     if ($a && $area === 'admin' && is_staff($a)) {
         $subNav = render_sub_nav(t('Treneriams'), admin_nav_items(), admin_nav_current());
+        if (admin_nav_current() === 'nustatymai') {
+            $subNav .= str_replace('class="sub-nav"', 'class="sub-nav sub-nav-2"', render_sub_nav(t('Nustatymai'), admin_settings_items(), admin_settings_current()));
+        }
     } elseif ($a && $area === 'account') {
         $subNav = render_sub_nav(t('Mano paskyra'), account_nav_items($a), (string) $tab);
     }
@@ -379,6 +394,16 @@ function site_header(bool $home = false, ?string $area = null, ?string $tab = nu
 <header class="site-header">
   <nav>
     <a class="logo" href="<?= $home ? '#' : url('index.php') ?>"><img src="<?= url('img/logo.png') ?>" alt="<?= te('Karateka logotipas') ?>"><?php if (config('env') !== 'live'): ?><span class="ver-tag" title="<?= te('Svetainės versija (rodoma tik testuojant)') ?>">v<?= e(site_version()) ?><?= config('env') === 'local' ? (' ' . t('· local')) : '' ?></span><?php endif; ?></a>
+    <?php if ($a && is_staff($a)): ?>
+      <!-- Kitos sistemos: Budo varžybos ir LTKF - per logotipo meniu (#91/#92) -->
+      <details class="site-switch"><summary title="<?= te('Kitos sistemos: Budo varžybos, LTKF') ?>" aria-label="<?= te('Kitos sistemos') ?>">▾</summary>
+        <div class="ss-panel">
+          <a href="<?= url('index.php') ?>" class="ss-item is-cur"><img src="<?= url('img/logo.png') ?>" alt=""><span><b>Karateka</b><small><?= te('klubo svetainė') ?></small></span></a>
+          <a href="<?= url('admin/varzybos.php') ?>" class="ss-item"><span class="ss-budo" aria-hidden="true">武</span><span><b>Budo</b><small><?= te('varžybų sistema') ?></small></span></a>
+          <a href="<?= url('ltkf/') ?>" class="ss-item"><svg class="ss-ltkf" width="34" height="34" viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="22.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M14 31 L24 13 L34 31" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/><path d="M18 26 H30" stroke="currentColor" stroke-width="2.4"/><rect x="11" y="34" width="8.6" height="2.6" fill="#F2B705"/><rect x="19.7" y="34" width="8.6" height="2.6" fill="#00704A"/><rect x="28.4" y="34" width="8.6" height="2.6" fill="#C1272D"/></svg><span><b>LTKF</b><small><?= te('federacijos svetainė') ?></small></span></a>
+        </div>
+      </details>
+    <?php endif; ?>
     <!-- Kalba ir tema - kairėje, visada matomos (tema išsaugoma paskyrai) -->
     <div class="nav-prefs"><?= render_lang_switch() ?><?php if ($a): ?><span class="theme-li"><?= theme_picker_html('me', current_theme()) ?></span><?php endif; ?></div>
     <ul class="nav-list" id="navList">
@@ -446,11 +471,18 @@ function admin_mode_toggle(): string
     $a = current_account();
     $on = admin_mode();
     $n = $on ? 0 : staff_attention_count((int) $a['id']);
-    return '<form method="post" action="' . e(url('admin-rezimas.php')) . '" class="adm-toggle">' . csrf_field()
-        . '<input type="hidden" name="back" value="' . e($_SERVER['REQUEST_URI'] ?? '') . '"><input type="hidden" name="on" value="' . ($on ? '0' : '1') . '">'
-        . '<button type="submit" class="adm-sw' . ($on ? ' is-on' : '') . '" aria-pressed="' . ($on ? 'true' : 'false') . '" title="' . e($on ? t('Išjungti admin režimą - matyti svetainę kaip nariui') : t('Įjungti admin režimą - redaguoti viską')) . '">'
-        . '<span class="adm-knob" aria-hidden="true"></span>' . e(t('Admin')) . ($n ? '<span class="count-badge nav-bubble">' . $n . '</span>' : '') . '</button></form>'
-        . ($on && ($vs = render_view_switch(true)) ? $vs : '');   // ▾ - peržiūrėti kaip tėvai ar vaikas (viename valdiklyje su „Admin“)
+    // Be slankiklio (#97): įjungus - tik ▾ „Žiūrėti kaip“ (ten ir „Narys - be redagavimo“); kaip narys - aiškus mygtukas grįžti
+    $form = function (string $to, string $cls, string $label) {
+        return '<form method="post" action="' . e(url('admin-rezimas.php')) . '" class="adm-toggle">' . csrf_field()
+            . '<input type="hidden" name="back" value="' . e($_SERVER['REQUEST_URI'] ?? '') . '"><input type="hidden" name="on" value="' . $to . '">'
+            . '<button type="submit" class="' . $cls . '">' . $label . '</button></form>';
+    };
+    if (!$on) {
+        return $form('1', 'adm-sw adm-back', '🛠 ' . e(t('Grįžti į valdymą')) . ($n ? '<span class="count-badge nav-bubble">' . $n . '</span>' : ''));
+    }
+    $member = '<div class="vs-member">' . $form('0', 'vs-member-btn', '👤 ' . e(t('Kaip narys (be redagavimo)'))) . '<p class="vs-hint">' . e(t('Svetainė be trenerio mygtukų - kaip ją mato nariai. Grįžti - mygtuku „Grįžti į valdymą“.')) . '</p></div>';
+    $vs = render_view_switch(true, $member);
+    return $vs !== '' ? $vs : '<details class="view-switch vs-compact"><summary aria-label="' . e(t('Žiūrėti kaip')) . '"><span aria-hidden="true">▾</span></summary><div class="vs-panel"><div class="vs-title">' . e(t('Žiūrėti kaip')) . '</div></div>' . $member . '</details>';
 }
 
 /** Treneriui: kiek laukia - pranešimai ir „Reikia padaryti“ punktai (patvirtinimai, rezultatai, žinutės...) */

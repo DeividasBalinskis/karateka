@@ -5,6 +5,12 @@ require __DIR__ . '/app/bootstrap.php';
 if (current_account()) {
     redirect('paskyra.php');
 }
+if (!reg_on('join')) {   // Nustatymai → Registracija: naujų paskyrų kūrimas išjungtas
+    page_start(t('Registracija'), ['narrow' => true]);
+    echo '<div class="panel card"><h1>' . te('Registracija') . '</h1><p class="muted">' . te('Naujų paskyrų registracija šiuo metu išjungta. Jei norite treniruotis - parašykite info@karateka.lt.') . '</p></div>';
+    page_end();
+    exit;
+}
 
 const MAX_KIDS = 6;
 

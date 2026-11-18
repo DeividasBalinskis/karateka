@@ -71,6 +71,21 @@ function event_last_day(array $ev): string
     return (string) ($ev['ends_on'] ?: $ev['starts_on']);
 }
 
+// Registracijos mygtukai: Nustatymai → „Registracija“ - kiekvieną vietą galima išjungti (mygtukas dingsta, puslapis sako „išjungta“)
+const REG_PLACES = [
+    'events' => ['Renginiai', 'Mygtukai „Registruotis“ ir „Dalyvausiu“ renginiuose ir kalendoriuje.'],
+    'exam'   => ['Egzaminai', 'Registracija į egzaminą per nuorodą (be paskyros).'],
+    'join'   => ['Naujos paskyros', 'Mygtukas „Sukurti paskyrą“ ir registracijos puslapis.'],
+    'budo'   => ['Varžybos (Budo)', 'Registracija į varžybas: kitų klubų nuoroda ir narių registracija.'],
+];
+
+/** Ar registracija toje vietoje įjungta (numatytai - taip) */
+function reg_on(string $place): bool
+{
+    $off = json_decode((string) site_setting('reg_off', '[]'), true);
+    return !(is_array($off) && in_array($place, $off, true));
+}
+
 function event_reg_button(array $ev, string $class = 'btn btn-primary btn-sm', bool $onPage = false): string
 {
     // Kiekvienas būsimas renginys: „Registruotis“ (išorinė forma, egzamino nuoroda žmonėms be paskyros arba „Dalyvausiu“ renginio puslapyje),
@@ -79,13 +94,16 @@ function event_reg_button(array $ev, string $class = 'btn btn-primary btn-sm', b
         return '';
     }
     $url = event_reg_url($ev);
-    if ($url !== '') {
+    if ($url !== '' && reg_on('events')) {
         return '<a class="' . e($class) . ' event-reg" href="' . e($url) . '" target="_blank" rel="noopener">' . e(t('📝 Registracija →')) . '</a>';
     }
     $acc = current_account();
     $member = $acc && is_active_account($acc) && !is_staff($acc);
-    if ($ev['type'] === 'exam' && !$member && ($l = exam_signup_link((int) $ev['id'])) && exam_signup_open($ev, $l)) {
+    if ($ev['type'] === 'exam' && !$member && reg_on('exam') && ($l = exam_signup_link((int) $ev['id'])) && exam_signup_open($ev, $l)) {
         return '<a class="' . e($class) . ' event-reg" href="' . e(exam_signup_url($l)) . '">' . e(t('📝 Registruotis į egzaminą')) . '</a>';
+    }
+    if (!reg_on('events')) {
+        return '';
     }
     if (!empty($ev['registration']) && date('Y-m-d') <= event_deadline($ev)) {
         return $onPage ? '' : '<a class="' . e($class) . ' event-reg" href="' . e(url('renginys.php?id=' . (int) $ev['id'] . '#registracija')) . '">' . e(t('📝 Registruotis')) . '</a>';

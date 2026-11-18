@@ -93,7 +93,8 @@ page_start(tr_text($ev['title']), ['section' => 'renginiai', 'description' => $e
           <p class="muted"><?= te('Renginys jau įvyko.') ?></p>
         <?php elseif ($members): ?>
           <?php $rsvp = render_event_rsvp($ev, $members, $back); ?>
-          <?= $rsvp ?: ('<p class="muted small">' . t('Šis renginys skirtas kitoms grupėms')) . (!empty($ev['invited_only']) ? (' ' . t('(tik pakviestiems)')) : '') . '.</p>' . event_deadline_html($ev) ?>
+          <?php if (!reg_on('events')): ?><p class="muted small"><?= te('Registracija šiuo metu išjungta.') ?></p>
+          <?php else: ?><?= $rsvp ?: ('<p class="muted small">' . t('Šis renginys skirtas kitoms grupėms')) . (!empty($ev['invited_only']) ? (' ' . t('(tik pakviestiems)')) : '') . '.</p>' . event_deadline_html($ev) ?><?php endif; ?>
         <?php elseif ($isStaff): ?>
           <?= event_deadline_html($ev) ?>
           <p class="small"><?= te('Dalyvauja:') ?> <strong><?= (int) $going ?></strong><?= $counts['late'] ? (' ' . t('(iš jų pavėlavę:') . ' ') . (int) $counts['late'] . ')' : '' ?> <?= te('· pakviesti, neatsakė:') ?> <?= (int) $counts['invited'] ?> <?= te('· negalės:') ?> <?= (int) $counts['declined'] ?></p>

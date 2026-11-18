@@ -157,7 +157,7 @@ page_start(t('Egzaminas'), ['noindex' => true, 'account' => 'egzaminas']);
     <?php if ($reqTotal): ?>
       <div class="progress big" title="Moku <?= $reqDone ?> iš <?= $reqTotal ?>"><span style="width:<?= (int) round(100 * $reqDone / $reqTotal) ?>%"></span></div>
       <p class="small muted" style="margin:4px 0 0;"><?= te('Moku') ?> <?= $reqDone ?> <?= te('iš') ?> <?= $reqTotal ?><?= $reqPending ? ' · ' . $reqPending . ' laukia trenerio patvirtinimo' : '' ?><?= $reqDone === $reqTotal ? (' ' . t('- puiku, esi pasiruošęs (-usi)! 🎉')) : '' ?></p>
-      <p class="small muted" style="margin:2px 0 0;"><?= te('Paspausk ☆, kai moki. Treneris patvirtins - ir gausi XP.') ?></p>
+      <p class="small muted" style="margin:2px 0 0;"><?= te('Paspausk ☆, kai moki. Treneris patvirtins - ir gausi aktyvumo taškų.') ?></p>
     <?php endif; ?>
     <?php if (!$reqs): ?>
       <p class="muted" style="margin-top:14px;"><?= te('Šio diržo programos treneris dar neįkėlė.') ?></p>
