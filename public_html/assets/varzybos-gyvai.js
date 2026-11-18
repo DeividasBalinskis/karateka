@@ -72,13 +72,26 @@
   // Kas kovoja dabar: kovos skydelis (balai, laikrodis) arba, jei jis neatidarytas, pirmoji laukianti kova
   function nowPair(a) { var n = upNext(a); return n.length ? n[0] : null; }
 
+  // Kata balais (#103): dabartinis dalyvis, kata, teisėjų balai (atmesti - perbraukti), rezultatas; šalia - geriausi
+  function scoreStage(d, name) {
+    var pf = d.perf || {}, dr = pf.dropped || [];
+    return '<div class="scr-top"><span class="scr-area">' + esc(name) + '</span><span class="live-dot"></span><span><span class="disc d-' + esc(d.disc) + '"></span>' + esc(d.cat) + '</span><span>' + esc(d.round) + '</span></div>' +
+      '<div class="scr-main scr-scoreview"><div class="scr-side aka scr-perf"><div class="scr-tag">Pasirodo</div><div class="scr-name">' + esc(d.aka.name) + '</div><div class="scr-club">' + esc(d.aka.club) + '</div>' +
+      (pf.kata ? '<div class="scr-kata">' + esc(pf.kata) + '</div>' : '') +
+      '<div class="scr-judges">' + (pf.scores || []).map(function (v, i) { return '<span class="' + (dr.indexOf(i) >= 0 ? 'dropped' : '') + (v == null ? ' empty' : '') + '"><small>T' + (i + 1) + '</small>' + (v == null ? '–' : esc(v)) + '</span>'; }).join('') + '</div>' +
+      '<div class="scr-total"><small>' + esc(pf.label || 'Suma') + '</small>' + (pf.total == null ? '–' : esc(pf.total)) + '</div></div>' +
+      '<div class="scr-board"><b>Rezultatai</b>' + ((d.board || []).length ? '<ol>' + d.board.map(function (r) { return '<li><span class="scr-pl p' + Math.min(r.pl, 4) + '">' + r.pl + '</span><span class="scr-bn">' + esc(r.n) + ' <small>' + esc(r.c) + '</small></span><b>' + esc(r.s) + '</b></li>'; }).join('') + '</ol>' : '<p>Balų dar nėra.</p>') + '</div></div>';
+  }
+
   // ---------- Tatamio ekranas (televizorius) ----------
   function renderScreen() {
     var a = area(CFG.area), pick = liveFor(CFG.area), name = a ? a.name : (pick ? pick.d.areaName : 'TATAMIS'), stage;
     var next = upNext(a).slice(pick ? 0 : 1, (pick ? 0 : 1) + 3), prep = next[0] || null;
     // Kas ruošiasi (kita pora): AKA langelyje - kitas AKA, SHIRO langelyje - kitas SHIRO
     var prepHtml = function (s) { var who = prep && (s === 'a' ? prep.a : prep.b); return who ? '<div class="scr-prep">Ruošiasi: <b>' + esc(who) + '</b></div>' : ''; };
-    if (pick) {
+    if (pick && pick.d.mode === 'score') {
+      stage = scoreStage(pick.d, name);
+    } else if (pick) {
       var d = pick.d, left = timeLeft(pick), win = d.winner;
       var side = function (s) {
         var who = s === 'a' ? d.aka : d.shiro, sc = s === 'a' ? d.sa : d.sb, now = s === 'a' ? d.akaNow : d.shiroNow;
@@ -111,7 +124,10 @@
       var pick = liveFor(a.id), now = '';
       if (pick) {
         var d = pick.d, left = timeLeft(pick);
-        now = '<div class="gv-now"><div class="gv-now-top"><span class="live-dot"></span> Dabar · ' + esc(d.cat) + ' · ' + esc(d.round) + (d.bout ? ' · kova ' + esc(d.bout) : '') + '</div>' +
+        if (d.mode === 'score') now = '<div class="gv-now"><div class="gv-now-top"><span class="live-dot"></span> Dabar · ' + esc(d.cat) + ' · ' + esc(d.round) + '</div>' +
+          '<div class="gv-board"><span class="gv-n aka-t">' + esc(d.aka.name) + (d.perf && d.perf.kata ? ' <small class="muted">' + esc(d.perf.kata) + '</small>' : '') + '</span><b class="gv-s">' + esc(d.perf && d.perf.total != null ? d.perf.total : '–') + '</b></div>' +
+          ((d.board || []).length ? '<ol class="gv-score">' + d.board.slice(0, 3).map(function (r) { return '<li><span>' + r.pl + '. ' + esc(r.n) + ' <span class="muted">' + esc(r.c) + '</span></span><b>' + esc(r.s) + '</b></li>'; }).join('') + '</ol>' : '') + '</div>';
+        else now = '<div class="gv-now"><div class="gv-now-top"><span class="live-dot"></span> Dabar · ' + esc(d.cat) + ' · ' + esc(d.round) + (d.bout ? ' · kova ' + esc(d.bout) : '') + '</div>' +
           '<div class="gv-board"><span class="gv-n aka-t">' + esc(d.aka.name) + '</span><b class="gv-s">' + (d.mode === 'score2' ? (d.parts.a.tk != null && d.parts.a.tp != null ? (d.parts.a.tk + d.parts.a.tp).toFixed(1) : '–') : d.sa) + '</b>' +
           (left !== null && d.mode !== 'score2' ? '<span class="gv-t" data-timer="' + a.id + '">' + fmt(left) + '</span>' : '<span class="gv-t">:</span>') +
           '<b class="gv-s">' + (d.mode === 'score2' ? (d.parts.b.tk != null && d.parts.b.tp != null ? (d.parts.b.tk + d.parts.b.tp).toFixed(1) : '–') : d.sb) + '</b><span class="gv-n">' + esc(d.shiro.name) + '</span></div>' +

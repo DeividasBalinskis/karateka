@@ -4,7 +4,7 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
-## v1.44 - 2026-11-18 (Atsiliepimai #86-#97, egzaminai be paskyros, nauja kova bandymams)
+## v1.44 - 2026-11-18 (Atsiliepimai #86-#103, egzaminai be paskyros, nauja kova bandymams)
 **Reikia atnaujinti duomenų bazę: db/040** (Pradžia → „Atnaujinkite duomenų bazę“). Zip'o turinį išpakuokite **tiesiai į svetainės aplanką**.
 
 **📋 Egzaminai**
@@ -30,6 +30,10 @@ Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar
 
 **🥋 Budo**
 - Dalyvių skiltyje: „🧪 +100 testinių“ (išgalvoti dalyviai iš kitų klubų, sudedami į kategorijas) ir „Ištrinti testinius“.
+- Kata balais rodoma ekrane ir žiūrovams: kas pasirodo, kata, teisėjų balai (atmesti - perbraukti), suma, rezultatų lentelė (#103).
+- „Grupė baigta“ (vietos, „Siųsti apdovanojimams“, „Sekanti grupė“, „🎓 Diplomai“) - kortelė dešinėje ekrano pusėje, nereikia slinkti į viršų (#99).
+- Įrašius balą vaizdas nebeperšoka į viršų (planšetėje) (#100).
+- Laikui pasibaigus pačiam - po 3 s laikmatis atsistato (#101); mygtukas „Jiyu / Pratęsimas 1:30“ (#98).
 
 **🧪 Nauja kova (bandymai)** - Dojo → „Nauja kova“
 - Kaip combats.ru: viduryje personažas ir gyvūnėlis, aplink - ginklas, kairė ranka (skydas +1 gynyba arba antras ginklas +1 smūgis), šarvai, stebuklingi daiktai (akis, meškiukas, antytė…).

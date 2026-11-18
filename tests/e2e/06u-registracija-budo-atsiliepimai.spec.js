@@ -85,3 +85,49 @@ test('feedback: own list per browser even on a shared account, all list is read 
   sql(`DELETE FROM feedback WHERE id = ${fid}`);
   noJsErrors(b);
 });
+
+test('Budo: kata scores on the screen, Jiyu / Pratęsimas, timer resets itself, group done panel on the side', async ({ browser }) => {
+  const a = await login(browser, 'info@karateka.lt', 1400, 900);
+  await a.goto('admin/varzybos.php');
+  await Promise.all([a.waitForNavigation(), a.click('text=🎲 Sukurti test varžybas')]);
+  const tid = +sql('SELECT MAX(id) FROM tournaments');
+  await a.goto(`admin/varzybu-sistema.php?id=${tid}`);
+  await a.waitForTimeout(1500);
+  const st = JSON.parse(sql(`SELECT state FROM tournaments WHERE id = ${tid}`));
+  const kata = st.categories.find(c => c.discipline === 'kata' && !c.team && c.competitors.length >= 2);
+  const kumite = st.categories.find(c => c.discipline === 'kumite' && !c.team && c.competitors.length >= 2);
+  check('test categories exist', !!kata && !!kumite);
+
+  // Kata balais: įrašius balą - ekrane dalyvis, teisėjų balai ir rezultatas
+  await a.click('#tab-live');
+  await a.locator(`[data-open-cat="${kata.id}"]`).first().click();
+  await a.selectOption('#draw-system', 'score');
+  await a.waitForTimeout(400);
+  const first = a.locator('#draw-view .j-in[data-sp]').first();
+  await first.fill('75'); await a.waitForTimeout(300);
+  await a.waitForTimeout(800);
+  const live = sql(`SELECT data FROM tournament_live WHERE tournament_id = ${tid} LIMIT 1`);
+  check('score pushed live', /"mode":"score"/.test(live) && /7\.5/.test(live), live.slice(0, 200));
+  const area = JSON.parse(live).area;
+  const share = sql(`SELECT share_token FROM tournaments WHERE id = ${tid}`);
+  const scr = await login(browser, null, 1280, 720);
+  await scr.goto(`varzybos-gyvai.php?k=${share}&ekranas=1&tatami=${area}`);
+  await scr.waitForSelector('.scr-judges');
+  check('screen shows judge scores', /7\.5/.test(await scr.textContent('.scr-judges')) && await scr.locator('.scr-board').count() === 1);
+
+  // Kumite: laiko šablonas „Jiyu / Pratęsimas“; pasibaigus laikui - po 3 s atsistato
+  await a.click('#run-back');
+  await a.locator(`[data-open-cat="${kumite.id}"]`).first().click();
+  await a.waitForTimeout(300);
+  await a.locator('#draw-view .bout-open').first().click();
+  check('preset renamed', await a.locator('.bt-presets button', { hasText: 'Jiyu / Pratęsimas' }).count() === 1);
+  await a.locator('.bt-presets button', { hasText: 'Jiyu ippon' }).click();
+  await a.click('#bt-start');
+  await a.waitForTimeout(11500);
+  check('time is over', (await a.textContent('#bt-timer')).trim() === '0:00');
+  await a.waitForTimeout(3500);
+  check('timer reset by itself', (await a.textContent('#bt-timer')).trim() === '0:10', await a.textContent('#bt-timer'));
+  await a.click('#bt-close');
+  sql(`DELETE FROM tournaments WHERE id = ${tid}`);
+  noJsErrors(a, scr);
+});
