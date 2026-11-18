@@ -15,7 +15,7 @@ puslapis_pradzia('Klubai', 'klubai', ['head' =>
 <section class="page-head"><div class="wrap">
   <p class="eyebrow">Federacijos nariai</p>
   <h1>Klubai</h1>
-  <p class="lead">Raskite tradicinio karatė klubą savo mieste. Visi klubai treniruoja pagal tą pačią egzaminų programą ir dalyvauja federacijos varžybose.</p>
+  <p class="lead">Raskite tradicinio karate klubą savo mieste. Visi klubai treniruoja pagal tą pačią egzaminų programą ir dalyvauja federacijos varžybose.</p>
 </div></section>
 
 <section class="wrap section">
@@ -55,7 +55,7 @@ puslapis_pradzia('Klubai', 'klubai', ['head' =>
   </div>
 
   <div class="cta-band">
-    <div><h2>Jūsų klubo nėra sąraše?</h2><p>Federacijos nariu gali tapti kiekvienas tradicinio karatė klubas Lietuvoje.</p></div>
+    <div><h2>Jūsų klubo nėra sąraše?</h2><p>Federacijos nariu gali tapti kiekvienas tradicinio karate klubas Lietuvoje.</p></div>
     <a class="btn btn-primary" href="klubams.php">Kaip įstoti</a>
   </div>
 </section>

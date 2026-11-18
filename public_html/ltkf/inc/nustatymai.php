@@ -4,7 +4,7 @@
 //   <?php return ['varzybos' => ['url' => 'https://varzybos.ltkf.lt', 'public_url' => 'https://varzybos.ltkf.lt', 'key' => '...']];
 
 $n = [
-    'pavadinimas' => 'Lietuvos tradicinio karatė federacija',
+    'pavadinimas' => 'Lietuvos tradicinio karate federacija',
     'trumpas'     => 'LTKF',
     'el_pastas'   => 'info@ltkf.lt',      // [patikslinti]
     'telefonas'   => '[telefonas]',

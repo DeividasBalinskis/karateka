@@ -6,7 +6,18 @@ date_default_timezone_set('Europe/Vilnius');
 function n(string $key, $default = null)
 {
     static $n = null;
-    $n = $n ?? require __DIR__ . '/nustatymai.php';
+    if ($n === null) {
+        $n = require __DIR__ . '/nustatymai.php';
+        // Redaguojami pavadinimas ir kontaktai („🎨 Išvaizda ir kontaktai“)
+        if (function_exists('ltkf_nust')) {
+            foreach (['pavadinimas', 'el_pastas', 'telefonas'] as $k) {
+                $v = trim((string) (ltkf_nust()[$k] ?? ''));
+                if ($v !== '') {
+                    $n[$k] = $v;
+                }
+            }
+        }
+    }
     return $n[$key] ?? $default;
 }
 

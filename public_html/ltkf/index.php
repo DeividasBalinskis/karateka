@@ -13,8 +13,8 @@ puslapis_pradzia('', 'index');
 <section class="hero">
   <div class="wrap hero-grid">
     <div class="hero-text">
-      <p class="eyebrow">Lietuvos tradicinio karatė federacija</p>
-      <h1>Tradicinis karatė Lietuvoje – vienoje vietoje</h1>
+      <p class="eyebrow">Lietuvos tradicinio karate federacija</p>
+      <h1>Tradicinis karate Lietuvoje – vienoje vietoje</h1>
       <p class="lead">Federacija vienija klubus, rengia varžybas ir seminarus, ruošia teisėjus ir rūpinasi vienoda egzaminų programa.</p>
       <div class="hero-actions">
         <a class="btn btn-primary" href="kalendorius.php">Varžybų kalendorius</a>

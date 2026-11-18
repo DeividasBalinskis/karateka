@@ -1,6 +1,6 @@
 # LTKF svetainė (juodraštis)
 
-Lietuvos tradicinio karatė federacijos svetainė. Paprastas PHP, be duomenų bazės.
+Lietuvos tradicinio karate federacijos svetainė. Paprastas PHP, be duomenų bazės.
 
 - Paleidimas kompiuteryje: `docker compose up -d` projekto šaknyje → http://localhost:8089
   (arba be Docker: `php -S localhost:8089 -t ltkf`)

@@ -7,7 +7,7 @@ puslapis_pradzia('Apie federaciją', 'apie');
 <section class="page-head"><div class="wrap">
   <p class="eyebrow">Federacija</p>
   <h1>Apie mus</h1>
-  <p class="lead">Lietuvos tradicinio karatė federacija vienija klubus, kurie puoselėja tradicinį karatė: techniką, discipliną ir pagarbą.</p>
+  <p class="lead">Lietuvos tradicinio karate federacija vienija klubus, kurie puoselėja tradicinį karate: techniką, discipliną ir pagarbą.</p>
 </div></section>
 
 <section class="wrap section two-col">

@@ -3,7 +3,7 @@
 return [
     ['id' => 'nauja-svetaine', 'pavadinimas' => 'Kuriama nauja federacijos svetainė', 'data' => '2026-10-23', 'santrauka' => 'Vienoje vietoje: klubai, varžybų kalendorius, rezultatai, teisėjai ir dokumentai.',
      'tekstas' => [
-        'Kuriame naują Lietuvos tradicinio karatė federacijos svetainę. Joje klubai ras varžybų kalendorių, rezultatus, taisykles ir dokumentus, o tėvai ir sportininkai - artimiausią klubą.',
+        'Kuriame naują Lietuvos tradicinio karate federacijos svetainę. Joje klubai ras varžybų kalendorių, rezultatus, taisykles ir dokumentus, o tėvai ir sportininkai - artimiausią klubą.',
         'Varžybų registracija ir rezultatai ateis tiesiai iš varžybų sistemos, todėl tos pačios informacijos nereikės vesti du kartus.',
         'Pastabas ir pasiūlymus siųskite el. paštu ' . 'info@ltkf.lt' . ' [patikslinti].',
      ], 'pavyzdys' => true],

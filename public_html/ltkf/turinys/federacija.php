@@ -9,7 +9,7 @@ return [
         ['pareigos' => 'Techninės komisijos pirmininkas', 'vardas' => '[vardas, pavardė]'],
     ],
     'rekvizitai' => [
-        'Pavadinimas'         => 'Lietuvos tradicinio karatė-do federacija [patikslinti pagal registrą]',
+        'Pavadinimas'         => 'Lietuvos tradicinio karate-do federacija [patikslinti pagal registrą]',
         'Juridinio asmens kodas' => '[kodas]',
         'Adresas'             => '[adresas]',
         'Banko sąskaita'      => '[LT00 0000 0000 0000 0000]',

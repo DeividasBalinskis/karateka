@@ -8,6 +8,7 @@ if (!is_array($karatekaConfig) || ($karatekaConfig['env'] ?? 'live') === 'live')
 // Puslapio rėmas: viršus su meniu ir apačia. puslapis_pradzia('Klubai', 'klubai') ... puslapis_pabaiga()
 
 require_once __DIR__ . '/pagalbines.php';
+require_once __DIR__ . '/redagavimas.php';
 
 const MENIU = [
     'index'       => ['Pradžia', 'index.php'],
@@ -60,7 +61,14 @@ function ltkf_kalbos(): string
 
 function puslapis_pradzia(string $title, string $active = '', array $opt = []): void
 {
+    ob_start();   // puslapis surenkamas, kad prieš išsiunčiant būtų pritaikyti redaktorių pakeitimai (inc/redagavimas.php)
     $full = $title === '' ? n('pavadinimas') : $title . ' – ' . n('trumpas');
+    $nu = ltkf_nust();
+    $heroCss = '';
+    if (!empty($nu['hero_img']) || !empty($nu['hero_color'])) {
+        $heroCss = '<style>.hero{' . (!empty($nu['hero_color']) && preg_match('/^#[0-9a-f]{6}$/i', $nu['hero_color']) ? 'background-color:' . $nu['hero_color'] . ';' : '')
+            . (!empty($nu['hero_img']) ? 'background-image:linear-gradient(90deg,rgba(10,20,40,.78),rgba(10,20,40,.35)),url(' . e($nu['hero_img']) . ');background-size:cover;background-position:center;' : '') . '}</style>';
+    }
     $lang = $opt['lang'] ?? 'lt';
     ?><!doctype html>
 <html lang="<?= e($lang) ?>">
@@ -68,10 +76,11 @@ function puslapis_pradzia(string $title, string $active = '', array $opt = []): 
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title><?= e($full) ?></title>
-<meta name="description" content="<?= e($opt['description'] ?? 'Lietuvos tradicinio karatė federacija: klubai, varžybų kalendorius, rezultatai, teisėjai ir dokumentai.') ?>">
+<meta name="description" content="<?= e($opt['description'] ?? 'Lietuvos tradicinio karate federacija: klubai, varžybų kalendorius, rezultatai, teisėjai ir dokumentai.') ?>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="assets/ltkf.css?v=2">
+<link rel="stylesheet" href="assets/ltkf.css?v=<?= (int) @filemtime(dirname(__DIR__) . '/assets/ltkf.css') ?>">
+<?= $heroCss ?>
 <?= $opt['head'] ?? '' ?>
 <?= $lang === 'lt' ? ltkf_vertimas() : '' ?>
 </head>
@@ -94,8 +103,9 @@ function puslapis_pradzia(string $title, string $active = '', array $opt = []): 
     <a class="brand" href="index.php"><?= logotipas() ?><span class="brand-text"><b><?= e(n('trumpas')) ?></b><small><?= e(n('pavadinimas')) ?></small></span></a>
     <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="main-nav">Meniu</button>
     <nav id="main-nav" class="main-nav" aria-label="Pagrindinis meniu">
-      <?php foreach (MENIU as $key => [$label, $href]): if ($key === 'index') continue; ?>
-        <a href="<?= e($href) ?>"<?= $key === $active ? ' aria-current="page"' : '' ?>><?= e($label) ?></a>
+      <?php $here = basename((string) ($_SERVER['SCRIPT_NAME'] ?? '')) . (isset($_GET['p']) ? '?p=' . $_GET['p'] : ''); ?>
+      <?php foreach (ltkf_meniu() as [$label, $href]): ?>
+        <a href="<?= e($href) ?>"<?= $href === $here || ($active !== '' && $href === $active . '.php') ? ' aria-current="page"' : '' ?>><?= e($label) ?></a>
       <?php endforeach; ?>
       <?= ltkf_kalbos() ?>
     </nav>
@@ -123,7 +133,7 @@ function puslapis_pabaiga(): void
 <?php endif; ?>
 <footer class="site-footer">
   <div class="wrap footer-grid">
-    <div class="footer-brand"><?= logotipas(40) ?><div><b><?= e(n('pavadinimas')) ?></b><p>Vienija tradicinio karatė klubus Lietuvoje: varžybos, teisėjai, egzaminai, rinktinė.</p></div></div>
+    <div class="footer-brand"><?= logotipas(40) ?><div><b><?= e(n('pavadinimas')) ?></b><p>Vienija tradicinio karate klubus Lietuvoje: varžybos, teisėjai, egzaminai, rinktinė.</p></div></div>
     <div><h3>Federacija</h3><a href="apie.php">Apie mus</a><a href="klubams.php">Klubams: narystė</a><a href="dokumentai.php">Dokumentai</a></div>
     <div><h3>Sportas</h3><a href="kalendorius.php">Kalendorius</a><a href="rezultatai.php">Rezultatai</a><a href="teisejai.php">Teisėjai</a></div>
     <div><h3>Kontaktai</h3><span><?= e(n('el_pastas')) ?></span><span><?= e(n('telefonas')) ?></span><a href="kontaktai.php">Rekvizitai</a></div>
@@ -135,9 +145,34 @@ function puslapis_pabaiga(): void
 <link rel="stylesheet" href="../assets/widgets.css?v=<?= (int) @filemtime(dirname(__DIR__, 2) . '/assets/widgets.css') ?>">
 <script>window.FB_REMOTE = '../atsiliepimas.php?widget=1&site=ltkf';</script>
 <script src="../assets/feedback.js?v=<?= (int) @filemtime(dirname(__DIR__, 2) . '/assets/feedback.js') ?>" defer></script>
+<?= ltkf_editor_ui(ltkf_slug()) ?>
 </body>
 </html>
 <?php
+    echo ltkf_finish((string) ob_get_clean());
+}
+
+/** Pritaiko redaktorių pakeitimus surinktam puslapiui: <main> - puslapio tekstai, skiltys, blokai; apačia - bendri tekstai */
+function ltkf_finish(string $html): string
+{
+    $edit = ltkf_edit_mode();
+    $slug = ltkf_slug();
+    $a = strpos($html, '<main>');
+    $b = strrpos($html, '</main>');
+    if ($a !== false && $b !== false && $b > $a) {
+        $inner = substr($html, $a + 6, $b - $a - 6);
+        $html = substr($html, 0, $a + 6) . ltkf_apply($inner, ltkf_page($slug), $edit, true) . substr($html, $b);
+    }
+    $fa = strpos($html, '<footer class="site-footer">');
+    $fb = strpos($html, '</footer>', (int) $fa);
+    if ($fa !== false && $fb !== false) {
+        $inner = substr($html, $fa + 28, $fb - $fa - 28);
+        $html = substr($html, 0, $fa + 28) . ltkf_apply($inner, ltkf_page('_bendri'), $edit, false) . substr($html, $fb);
+    }
+    if ($edit) {
+        $html = str_replace('<body>', '<body class="ltkf-edit">', $html);
+    }
+    return $html;
 }
 
 /** Renginio kortelė: datos ženklas, tipas, pavadinimas, vieta, veiksmas */

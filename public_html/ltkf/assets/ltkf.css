@@ -292,3 +292,29 @@ a.partner-card:hover { box-shadow: var(--shadow-2); transform: translateY(-2px);
 .lang-sw { display: inline-flex; gap: 2px; padding: 3px; border-radius: 10px; background: rgba(0, 0, 0, .05); margin-left: 6px; }
 .lang-sw a { padding: 5px 8px; border-radius: 8px; font-weight: 700; font-size: .78rem; text-decoration: none; color: inherit; opacity: .7; }
 .lang-sw a.on { background: #fff; opacity: 1; box-shadow: 0 1px 2px rgba(0, 0, 0, .15); }
+
+/* Redaktorių pridėti blokai */
+.lb-zone{display:flow-root;}
+.lb-zone:empty{display:none;}
+.lb{margin:18px 0;}
+.lb-h{font-family:'Barlow Condensed',sans-serif;}
+.lb-img{margin:18px 0;} .lb-img img{display:block; width:100%; height:auto; border-radius:12px;}
+.lb-img.w-half{max-width:560px;} .lb-img.w-small{max-width:320px;}
+.lb-img figcaption{color:var(--muted,#5A6884); font-size:.92rem; margin-top:6px;}
+.lb-gallery{display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:10px;}
+.lb-gallery img{display:block; width:100%; aspect-ratio:4/3; object-fit:cover; border-radius:10px;}
+.lb-video{position:relative; aspect-ratio:16/9; max-width:900px;} .lb-video iframe{position:absolute; inset:0; width:100%; height:100%; border:0; border-radius:12px;}
+.lb-files-h{margin:18px 0 6px;}
+.lb-cards .benefit img{display:block; width:100%; aspect-ratio:16/9; object-fit:cover; border-radius:8px; margin-bottom:8px;}
+.lb-btn{margin:14px 0;}
+/* Failų dėžė */
+.inbox-form{display:grid; gap:10px; max-width:720px;}
+.inbox-form textarea{width:100%; box-sizing:border-box; font:inherit; padding:8px 10px; border:1px solid rgba(15,27,51,.25); border-radius:8px; margin-top:4px;}
+.inbox-drop{display:block; border:2px dashed rgba(15,27,51,.3); border-radius:12px; padding:22px; text-align:center; cursor:pointer; background:rgba(15,27,51,.03);}
+.inbox-drop.over{border-color:#C1272D; background:rgba(193,39,45,.06);}
+.inbox-drop input{display:block; margin:0 auto 8px;}
+.inbox-list{list-style:none; padding:0; margin:0; display:grid; gap:8px;}
+.inbox-list li{display:flex; gap:12px; align-items:flex-start; padding:10px 12px; border:1px solid rgba(15,27,51,.12); border-radius:12px; background:#fff;}
+.inbox-list li.is-done{opacity:.55;}
+.inbox-main{flex:1; min-width:0; overflow-wrap:anywhere;}
+.inbox-acts{display:flex; gap:6px; flex-wrap:wrap;}
