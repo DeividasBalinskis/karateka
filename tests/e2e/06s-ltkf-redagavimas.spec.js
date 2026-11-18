@@ -99,8 +99,8 @@ test('LTKF: menu and title edited in place, section background, delete and resto
   await press(a.locator('.lb-zone[data-zone="po-0"] .ed-add-btn')); await press(a.locator('.lb-zone[data-zone="po-0"] [data-type=sec]'));
   await press(a.locator('.lb-zone[data-zone="po-0"] .ed-block [data-f=title]')); await a.keyboard.press('Control+A'); await a.keyboard.type('Rinktinė');
   const sections = await a.locator('main > section[data-sec]').count();
-  await press(a.locator('.ed-bar [data-a=save]')); await a.waitForTimeout(1500);
-  check('saved', /Išsaugota/.test(await a.textContent('#edStatus')));
+  await press(a.locator('.ed-bar [data-a=save]')); await a.waitForTimeout(2500);   // išėmus meniu punktą puslapis persikrauna pats
+  check('saved', sql("SELECT COUNT(*) FROM ltkf_pages WHERE slug = 'index'") === '1');
   await a.goto('ltkf/index.php');
   const navs = await a.locator('.main-nav > a').allTextContents();
   check('menu item renamed and removed in place', navs.includes('Klubai ir mokyklos') && navs.length === 7, navs.join('|'));

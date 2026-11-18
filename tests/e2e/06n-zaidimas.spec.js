@@ -182,7 +182,7 @@ test('game in English', async ({ browser }) => {
   const k = await login(browser, 'jaunuolis@karateka.test', 1280, 900, undefined, 'en');
   await k.goto('dojo.php');
   await k.waitForSelector('#dojo .dojo-title');
-  check('dojo title translated', (await k.textContent('.dojo-title')).includes('My dojo'));
+  check('dojo title and tools translated', (await k.textContent('.dojo-title')).includes('Dojo') && !/Dovanos/.test(await k.textContent('.dw-bar')));
   await k.click('.dw-board');
   check('stats translated', (await k.textContent('#g-stats')).includes('Strength'));
   noJsErrors(k);

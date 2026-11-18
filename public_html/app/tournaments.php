@@ -183,7 +183,9 @@ function varz_ui_save(array $in): array
         $ui['theme'] = $in['theme'];
     }
     if (isset($in['menu']) && is_array($in['menu'])) {
-        $tabs = ['klubai', 'komandos', 'dalyviai', 'kategorijos', 'tinklai', 'live', 'rezultatai'];
+        // Viršutinis meniu: Tvarkaraštis, Rezultatai, Administracija (v1.41+); pavadinimus galima keisti ir Administracijos skirtukams
+        $tabs = ['live', 'rezultatai', 'admin'];
+        $named = ['klubai', 'komandos', 'dalyviai', 'kategorijos', 'tinklai', 'live', 'rezultatai', 'admin'];
         $order = array_values(array_unique(array_intersect((array) ($in['menu']['order'] ?? []), $tabs)));
         // Nauji skirtukai (pvz. „Tinklai“ nuo v1.29) įterpiami po savo numatyto kaimyno, kad sena tvarka neprapultų
         foreach ($tabs as $i => $tab) {
@@ -194,7 +196,7 @@ function varz_ui_save(array $in): array
         }
         $names = [];
         foreach ((array) ($in['menu']['names'] ?? []) as $k => $v) {
-            if (in_array($k, $tabs, true) && trim((string) $v) !== '') {
+            if (in_array($k, $named, true) && trim((string) $v) !== '') {
                 $names[$k] = mb_substr(trim((string) $v), 0, 40);
             }
         }
