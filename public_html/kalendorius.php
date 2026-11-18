@@ -45,6 +45,6 @@ foreach ($rows as $ev) {
 $ics .= "END:VCALENDAR\r\n";
 
 header('Content-Type: text/calendar; charset=utf-8');
-header('Content-Disposition: inline; filename="karateka-renginiai.ics"');
+header('Content-Disposition: ' . (get('failas') ? 'attachment' : 'inline') . '; filename="karateka-renginiai.ics"');   // ?failas=1 - atsisiųsti (Samsung ir kt. Android)
 header('Cache-Control: public, max-age=1800');
 echo $ics;

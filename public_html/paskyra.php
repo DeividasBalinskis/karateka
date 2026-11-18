@@ -390,6 +390,11 @@ page_start($tab === 'nustatymai' ? t('Nustatymai') : t('Mano paskyra'), ['noinde
           <?= render_schedule_lines(schedule_lines(group_schedule((int) $selected['group_id']))) ?>
           <div class="kicker" style="margin-top:14px;"><?= te('Lankomumas') ?></div>
           <?= render_attendance((int) $selected['id']) ?>
+          <?php // Mokestis pagal lankomumą (jei grupei nustatyta kaina už treniruotę): šio mėnesio suma
+          $fg = !empty($selected['group_id']) ? q_one('SELECT * FROM training_groups WHERE id = ?', [(int) $selected['group_id']]) : null;
+          if ($fg && group_visit_price($fg)): $ym = date('Y-m'); $ff = group_month_fees($fg, $ym)[(int) $selected['id']] ?? null; $vp = group_visit_price($fg); ?>
+            <p class="fee-line" style="font-size:15px;">💶 <b><?= e(group_fee_text($fg, $ff, $ym)) ?></b><?= $vp['cap'] !== null ? ' <span class="muted small">· ' . te('ne daugiau kaip {s} per mėn.', ['s' => money_fmt($vp['cap'])]) . '</span>' : '' ?></p>
+          <?php endif; ?>
         <?php else: ?>
           <h2><?= e($selected['first_name'] . ' ' . $selected['last_name']) ?></h2>
           <p class="muted">

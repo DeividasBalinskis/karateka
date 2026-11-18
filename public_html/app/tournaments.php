@@ -557,6 +557,23 @@ function tournament_by_token(string $token, string $kind): ?array
     }
 }
 
+/** YouTube transliacija: iš nuorodos - įterpimo adresas (vaizdo įrašas arba kanalo tiesioginė transliacija) ir nuoroda žiūrėti. */
+function tournament_stream(array $t): ?array
+{
+    $url = trim((string) ($t['stream_url'] ?? ''));
+    if ($url === '' || !preg_match('~^https?://~i', $url)) {
+        return null;
+    }
+    $embed = null;
+    if (preg_match('~(?:youtu\.be/|youtube\.com/(?:watch\?(?:.*&)?v=|live/|embed/|shorts/))([A-Za-z0-9_-]{11})~', $url, $m)) {
+        $embed = 'https://www.youtube-nocookie.com/embed/' . $m[1];
+    } elseif (preg_match('~youtube\.com/channel/(UC[A-Za-z0-9_-]{22})~', $url, $m)) {
+        $embed = 'https://www.youtube.com/embed/live_stream?channel=' . $m[1];
+    }
+    $at = !empty($t['stream_at']) ? strtotime((string) $t['stream_at']) : null;
+    return ['url' => $url, 'embed' => $embed, 'at' => $at ?: null, 'soon' => $at && $at > time()];
+}
+
 /** Kas vyksta ant tatamio dabar (iš kovos skydelio): išsaugoma su serverio laiku (ms) - laikrodžiui ekranuose */
 function tournament_live_set(int $id, int $area, array $data): void
 {

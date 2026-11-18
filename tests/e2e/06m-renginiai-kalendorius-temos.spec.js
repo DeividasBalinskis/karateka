@@ -39,7 +39,8 @@ test('events calendar: month grid, next month, subscription for phones', async (
   const title = await g.textContent('.ev-cal-head h2');
   await nav(g, () => g.click('.ev-cal-head a[aria-label]:last-of-type'));
   check('next month', (await g.textContent('.ev-cal-head h2')) !== title);
-  check('phone subscription link', /^webcal:\/\//.test(await g.getAttribute('.ev-ics', 'href')));
+  check('phone subscription: Google, Apple (webcal) and .ics file', await g.locator('.ev-ics a[href^="webcal://"]').count() === 1
+    && await g.locator('.ev-ics a[href*="calendar.google.com"]').count() === 1 && await g.locator('.ev-ics a[href*="kalendorius.php?failas=1"]').count() === 1);
   const res = await g.request.get('kalendorius.php');
   const ics = await res.text();
   check('ics feed', res.headers()['content-type'].includes('text/calendar') && /BEGIN:VCALENDAR/.test(ics) && ics.includes('Vasaros stovykla (e2e)') && !ics.includes('Tik nariams (e2e)'));

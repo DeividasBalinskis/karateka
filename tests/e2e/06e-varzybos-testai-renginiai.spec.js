@@ -11,7 +11,7 @@ test('Taika: club contacts, 6 judges, Enter through scores; registration for Kar
   const tid = +sql('SELECT MAX(id) FROM tournaments');
 
   // Klubai: tik LTKF klubai, „☎ Kontaktai“ (Karatekos - iš LTKF sąrašo), įrašytas telefonas išsaugomas
-  await a.click('#tab-klubai');
+  await a.click('#tab-admin'); await a.click('#tab-klubai');
   await a.waitForSelector('[data-club-contacts]');
   const clubs = await a.$$eval('[data-club-contacts]', bs => bs.map(b => b.dataset.clubContacts).sort().join(', '));
   check('only LTKF clubs', clubs === 'Karate akademija, Karateka, Sanrei, Takami, Vilniaus karate mokykla', clubs);
@@ -23,7 +23,7 @@ test('Taika: club contacts, 6 judges, Enter through scores; registration for Kar
   check('club contact saved', /\+370 600 00001/.test(sql(`SELECT state FROM tournaments WHERE id = ${tid}`)));
 
   // Balai: 6 teisėjai galimi; Enter - kitas teisėjas, po paskutinio - kitas dalyvis
-  await a.click('#tab-kategorijos');
+  await a.click('#tab-admin'); await a.click('#tab-kategorijos');
   await a.click('[data-catview=\"edit\"]');   // viena kategorija (numatyta - struktūra)
   await a.waitForSelector('#cat-list button');
   await a.locator('#cat-list button').first().click();
@@ -37,11 +37,13 @@ test('Taika: club contacts, 6 judges, Enter through scores; registration for Kar
   const first = a.locator('#draw-view .j-in[data-j="0"]').first();
   const sp = await first.getAttribute('data-sp');
   await first.fill('7');
-  for (const v of ['7.5', '8']) {
-    await a.keyboard.press('Enter');
-    await a.waitForTimeout(120);
-    await a.keyboard.type(v);
-  }
+  await a.keyboard.press('Enter');   // vienas skaitmuo - laukia, Enter - kitas teisėjas
+  await a.waitForTimeout(120);
+  await a.keyboard.type('75');       // 75 → 7.5 ir pats pereina prie kito teisėjo (#61/#67)
+  await a.waitForTimeout(200);
+  const auto = await a.evaluate(() => ({ j: document.activeElement.dataset.j, prev: (document.querySelector('#draw-view .j-in[data-j="1"]') || {}).value }));
+  check('full score jumps to the next judge by itself', auto.j === '2' && auto.prev === '7.5', JSON.stringify(auto));
+  await a.keyboard.type('8');
   await a.keyboard.press('Enter');
   await a.waitForTimeout(200);
   const focus = await a.evaluate(() => ({ sp: document.activeElement.dataset.sp, j: document.activeElement.dataset.j }));

@@ -158,7 +158,11 @@ if (is_post()) {
         }
         $rows = q('SELECT member_id, present FROM attendance WHERE training_date = ? AND member_id IN (SELECT id FROM members WHERE group_id = ? AND status = "active")',
             [$date, $groupId])->fetchAll(PDO::FETCH_KEY_PAIR);
-        exit(json_encode(['ok' => true, 'marks' => $rows, 'present' => count(array_filter($rows)), 'total' => count($ids)]));
+        $fees = [];
+        foreach (group_month_fees($group, substr($date, 0, 7)) + array_fill_keys(array_map('intval', $ids), null) as $mid => $f) {
+            $fees[$mid] = group_fee_text($group, $f, substr($date, 0, 7));
+        }
+        exit(json_encode(['ok' => true, 'marks' => $rows, 'present' => count(array_filter($rows)), 'total' => count($ids), 'fees' => $fees]));
     }
 
     // Viena pastaba (paspaudus Enter) - atsakymas JSON, puslapis neperkraunamas
@@ -235,6 +239,9 @@ foreach (q_all('SELECT id, title, belt_level FROM lessons ORDER BY belt_level IS
 }
 // Šios treniruotės lankomumo žymos: [member_id => 1 buvo / 0 nebuvo]
 $att = $group ? q('SELECT member_id, present FROM attendance WHERE training_date = ? AND group_id = ?', [$date, $groupId])->fetchAll(PDO::FETCH_KEY_PAIR) : [];
+// Mokestis pagal lankomumą (jei grupei nustatyta kaina už apsilankymą): mėnesio suma kiekvienam
+$visitPrice = $group && !$event ? group_visit_price($group) : null;
+$monthFees = $visitPrice ? group_month_fees($group, substr($date, 0, 7)) : [];
 if ($event) {
     $att = [];
     foreach ($members as $m) {
@@ -283,13 +290,15 @@ page_start(t('Treniruotė'), ['admin' => true]);
 <?php
 // Grupės - spalvoti kvadratai: pirma tos, kurios treniruojasi pasirinktą dieną (su laiku), po to visos pagal kategoriją
 $tileGroups = q_all('SELECT g.*, (SELECT COUNT(*) FROM members m WHERE m.group_id = g.id AND m.status = "active") AS members_count,
-                            (SELECT MIN(s.start_time) FROM schedule s WHERE s.group_id = g.id AND s.weekday = ?) AS day_time
-                       FROM training_groups g WHERE g.is_active = 1 ORDER BY g.sort_order, g.name', [(int) date('N', strtotime($date))]);
+                            (SELECT MIN(s.start_time) FROM schedule s WHERE s.group_id = g.id AND s.weekday = ?) AS day_time,
+                            (SELECT COUNT(*) FROM attendance at WHERE at.group_id = g.id AND at.training_date = ?) AS marked
+                       FROM training_groups g WHERE g.is_active = 1 ORDER BY g.sort_order, g.name', [(int) date('N', strtotime($date)), $date]);
 $tile = function (array $g) use ($group, $date): string {
     $on = $group && (int) $group['id'] === (int) $g['id'];
     return '<a class="group-tile' . ($on ? ' on' : '') . '" style="--gc:' . e(group_color($g)) . '" href="' . e(url('admin/treniruote.php?g=' . (int) $g['id'] . '&d=' . $date)) . '"'
         . ($on ? ' aria-current="true"' : '') . '><span class="gt-name">' . e(group_short_name($g)) . '</span>'
-        . '<span class="gt-meta">' . ($g['day_time'] ? '<b>' . e(fmt_time($g['day_time'])) . '</b> · ' : '') . (int) $g['members_count'] . ' nar.</span>'
+        . '<span class="gt-meta">' . ($g['day_time'] ? '<b>' . e(fmt_time($g['day_time'])) . '</b> · ' : '') . (int) $g['members_count'] . ' nar.'
+        . ((int) $g['marked'] ? ' · <span class="gt-done" title="' . e(t('Lankomumas pažymėtas')) . '">✓ ' . (int) $g['marked'] . '</span>' : '') . '</span>'
         . (training_cancelled((int) $g['id'], $date) ? ('<span class="gt-off">' . t('atšaukta') . '</span>') : '') . '</a>';
 };
 $todayTiles = array_filter($tileGroups, function ($g) { return $g['day_time'] !== null; });
@@ -339,7 +348,7 @@ $evTile = function (array $ev, bool $showDate) use ($event, $evColors): string {
   <?php endif; ?>
   <?php if ($todayTiles): ?>
     <div class="kicker"><?= $date === date('Y-m-d') ? t('Šiandien treniruojasi') : (t('Treniruojasi') . ' ') . e(mb_strtolower(weekday_names()[(int) date('N', strtotime($date))])) ?></div>
-    <div class="group-tiles"><?php foreach ($todayTiles as $g) { echo $tile($g); } ?></div>
+    <div class="group-tiles today-tiles"><?php foreach ($todayTiles as $g) { echo $tile($g); } ?></div>
   <?php endif; ?>
   <?php foreach (array_map('t', GROUP_CATEGORIES) as $cat => $catLabel): $list = array_filter($tileGroups, function ($g) use ($cat) { return $g['category'] === $cat; }); if (!$list) { continue; } ?>
     <div class="kicker"><?= e($catLabel) ?></div>
@@ -368,6 +377,8 @@ $evTile = function (array $ev, bool $showDate) use ($event, $evColors): string {
       <a class="btn btn-ghost btn-sm" href="<?= url('admin/taskai.php?' . ($event ? 'e=' . $eventId : 'g=' . $groupId) . '&d=' . $date . '#skirti') ?>"><?= te('✨ XP keliems') ?></a>
       <?php if ($group && !$hasTraining && !training_cancelled($groupId, $date)): ?><span class="hint"><?= te('Pagal tvarkaraštį šią dieną šios grupės treniruotės nėra - patikrinkite datą.') ?></span><?php endif; ?>
       <?php if ($event): ?><a class="small" href="<?= url('admin/renginio-dalyviai.php?id=' . $eventId) ?>"><?= te('Dalyvių sąrašas →') ?></a><?php endif; ?>
+      <?php if ($group && !$event && is_admin() && $date >= date('Y-m-d') && !training_cancelled((int) $group['id'], $date)): ?><a class="small cancel-btn" href="<?= url('admin/atsaukimai.php?g=' . (int) $group['id'] . '&d=' . $date . '#naujas') ?>"><?= te('Atšaukti šią treniruotę') ?></a><?php endif; ?>
+      <?php if ($visitPrice): ?><span class="fee-rule" title="<?= te('Nustatoma: Nustatymai → Grupės') ?>">💶 <?= e(money_fmt($visitPrice['price'])) ?> <?= te('už treniruotę') ?><?= $visitPrice['cap'] !== null ? ', ' . te('ne daugiau kaip {s} per mėn.', ['s' => money_fmt($visitPrice['cap'])]) : '' ?></span><?php endif; ?>
     </div>
     <p class="hint" style="margin-bottom:10px;"><?= te('Lankomumas išsaugomas iškart paspaudus „Nebuvo“ / „Buvo“ (paspaudus dar kartą - žyma nuimama). Pastaba: parašykite ir spauskite') ?> <strong><?= te('Enter') ?></strong> <?= te('-
       vaikas ir tėvai ją iškart mato paskyroje („Svarbu“). „Užduotis“ - vaikas pažymės „Atlikau“.') ?></p>
@@ -383,6 +394,7 @@ $evTile = function (array $ev, bool $showDate) use ($event, $evColors): string {
             <button type="button" class="att-btn yes<?= $a1 === 1 || $a1 === '1' ? ' on' : '' ?>" data-v="1"><?= te('✓ Buvo') ?></button>
             <button type="button" class="xp-btn" data-member="<?= (int) $m['id'] ?>" title="<?= te('Skirti XP') ?>"><?= te('+XP') ?></button>
           </div>
+          <?php if ($visitPrice): ?><div class="fee-line" data-fee="<?= (int) $m['id'] ?>">💶 <?= e(group_fee_text($group, $monthFees[(int) $m['id']] ?? null, substr($date, 0, 7))) ?></div><?php endif; ?>
           <?php foreach ($todayXp[$m['id']] ?? [] as $x): ?>
             <div class="note-existing xp-line">✨ +<?= (int) $x['points'] ?> XP · <?= e($x['category_name']) ?><?= $x['note'] ? ' · ' . e(mb_strimwidth($x['note'], 0, 80, '…')) : '' ?></div>
           <?php endforeach; ?>
@@ -558,6 +570,7 @@ $evTile = function (array $ev, bool $showDate) use ($event, $evColors): string {
           box.querySelector('.no').classList.toggle('on', String(v) === '0');
         });
         document.getElementById('attPresent').textContent = res.present;
+        if (res.fees) document.querySelectorAll('[data-fee]').forEach(function (el) { if (res.fees[el.dataset.fee] !== undefined) el.textContent = '💶 ' + res.fees[el.dataset.fee]; });
         if (res.total !== undefined && document.getElementById('attTotal')) document.getElementById('attTotal').textContent = res.total;
       })
       .catch(function () { alert('Nepavyko išsaugoti lankomumo - patikrinkite internetą.'); });

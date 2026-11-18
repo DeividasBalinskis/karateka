@@ -57,4 +57,8 @@ CREATE TABLE IF NOT EXISTS exam_signups (
 ALTER TABLE training_groups ADD COLUMN IF NOT EXISTS price_visit DECIMAL(6,2) NULL;
 ALTER TABLE training_groups ADD COLUMN IF NOT EXISTS price_cap DECIMAL(7,2) NULL;
 
+-- Varžybų transliacija YouTube: nuoroda (vaizdo įrašas ar kanalas) ir kada prasidės
+ALTER TABLE tournaments ADD COLUMN IF NOT EXISTS stream_url VARCHAR(255) NULL;
+ALTER TABLE tournaments ADD COLUMN IF NOT EXISTS stream_at DATETIME NULL;
+
 INSERT IGNORE INTO db_versija (failas) VALUES ('038_ltkf_turinys_egzamino_registracija.sql');

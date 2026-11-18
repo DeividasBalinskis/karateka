@@ -59,7 +59,7 @@ test('competition: kumite bout panel, live link and screen, club registration, D
   await a.goto('admin/varzybos.php');
   await nav(a, () => a.click('text=🎲 Sukurti test varžybas'));
   const tid = +sql('SELECT MAX(id) FROM tournaments');
-  await a.click('#tab-kategorijos');   // sukūrus atsidaro Live tvarkaraštis
+  await a.click('#tab-admin'); await a.click('#tab-kategorijos');   // sukūrus atsidaro Live tvarkaraštis
   await a.click('[data-catview=\"edit\"]');   // viena kategorija (numatyta - struktūra)
   await a.waitForSelector('#cat-list button');
   check('default system by discipline', /2 trečios/.test(await a.locator('#cat-list').innerText()));
@@ -119,7 +119,7 @@ test('competition: kumite bout panel, live link and screen, club registration, D
   await c.check('input[name=consent_privacy]');
   await nav(c, () => c.click('form.reg-form button[type=submit]'));
   check('registration stored', sql(`SELECT CONCAT(status, '|', parent_phone, '|', photo_ok, '|', consent_at IS NOT NULL) FROM tournament_entries WHERE tournament_id = ${tid}`) === 'new|+370 611 22333|0|1');
-  await a.click('#tab-dalyviai');
+  await a.click('#tab-admin'); await a.click('#tab-dalyviai');
   await a.click('#en-refresh');
   await a.waitForSelector('#en-add-all');
   await a.click('#en-add-all');
@@ -141,8 +141,8 @@ test('competition: kumite bout panel, live link and screen, club registration, D
   await v.waitForSelector('.gv-sheet:not([hidden]) .gv-sheet-body p');
   await v.waitForFunction(() => /dalyv\./.test(document.querySelector('.gv-sheet-body').innerText), null, { timeout: 8000 }).catch(() => {});   // grupė įkeliama atskirai
   check('viewer opens group', /dalyv\./.test(await v.locator('.gv-sheet-body').innerText()));
-  await scr.waitForSelector('.scr-glist li');
-  check('screen lists tatami groups', await scr.locator('.scr-glist li').count() >= 2);
+  await scr.waitForSelector('.scr-stage .scr-area');
+  check('screen: tatami name on top, no group list for spectators', await scr.locator('.scr-glist').count() === 0 && (await scr.locator('.scr-foot').innerText()).includes('Toliau'));
 
   // DB atnaujinimas vienu mygtuku: trūkstamo failo nėra - mygtuko nėra; ištrynus žymą - mygtukas ir importas
   await a.goto('admin/kopijos.php');

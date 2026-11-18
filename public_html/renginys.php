@@ -74,9 +74,21 @@ page_start(tr_text($ev['title']), ['section' => 'renginiai', 'description' => $e
     </div>
 
     <aside class="stack">
-      <div class="panel card ep-reg">
+      <div class="panel card ep-reg" id="registracija">
         <div class="kicker"><?= te('Registracija') ?></div>
-        <?php if (!$past && ($regBtn = event_reg_button($ev, 'btn btn-primary ep-reg-link'))): ?><p><?= $regBtn ?></p><?php endif; ?>
+        <?php if (!$past && ($regBtn = event_reg_button($ev, 'btn btn-primary ep-reg-link', true))): ?><p><?= $regBtn ?></p><?php endif; ?>
+        <?php if ($isStaff && !$past && $ev['type'] === 'exam' && exam_signup_ready()): $suL = exam_signup_link($id); ?>
+          <div class="ep-su small">
+            <?php if ($suL): ?>
+              <b><?= te('Registracijos nuoroda (be paskyros):') ?></b>
+              <div class="row" style="gap:6px; margin-top:4px;"><input type="text" readonly value="<?= e(exam_signup_url($suL)) ?>" onclick="this.select()" style="flex:1; min-width:0;" aria-label="<?= te('Registracijos nuoroda') ?>">
+                <button type="button" class="btn btn-sm" onclick="var i=this.previousElementSibling;i.select();(navigator.clipboard?navigator.clipboard.writeText(i.value):document.execCommand('copy'));this.textContent='✓';"><?= te('Kopijuoti') ?></button></div>
+              <a href="<?= url('admin/egzamino-protokolas.php?id=' . $id . '#registracija') ?>"><?= te('Kas užsiregistravo, kvietimai el. paštu →') ?></a>
+            <?php else: ?>
+              <a class="btn btn-ghost btn-sm" href="<?= url('admin/egzamino-protokolas.php?id=' . $id . '#registracija') ?>"><?= te('🔗 Sukurti registracijos nuorodą') ?></a>
+            <?php endif; ?>
+          </div>
+        <?php endif; ?>
         <?php if ($past): ?>
           <p class="muted"><?= te('Renginys jau įvyko.') ?></p>
         <?php elseif ($members): ?>

@@ -39,7 +39,7 @@ test('swap names by dragging, reorder score order, pin a category window', async
   // Prisegti: mygtukas, langelis matosi kituose skirtukuose, tempiamas, išlieka perkrovus
   await a.click('#run-pin');
   await a.waitForSelector('.pin-win');
-  await a.click('#tab-dalyviai');
+  await a.click('#tab-admin'); await a.click('#tab-dalyviai');
   check('pin visible on another tab', await a.locator('.pin-win').isVisible());
   const head = a.locator('.pin-win .pin-head');
   const hb = await head.boundingBox();
@@ -72,11 +72,12 @@ test('Taika fits a phone screen; ⋯ opens inside the card', async ({ browser })
   check('⋯ opens inside the card', body.y + body.height <= card.y + card.height + 1, JSON.stringify([card, body]));
   await a.goto(`admin/varzybu-sistema.php?id=${tid}`);
   for (const tab of ['klubai', 'komandos', 'dalyviai', 'kategorijos', 'live', 'rezultatai']) {
+    if (!(await a.locator('#tab-' + tab).isVisible())) await a.click('#tab-admin');
     await a.click('#tab-' + tab); await a.waitForTimeout(200);
     const w = await a.evaluate(() => Math.max(document.documentElement.scrollWidth, document.body.scrollWidth));
     check('no sideways scroll: ' + tab, w <= 386, String(w));
   }
-  await a.click('#tab-dalyviai');
+  await a.click('#tab-admin'); await a.click('#tab-dalyviai');
   check('participants as cards', await a.locator('.ppl-table thead').isHidden());
   sql('DELETE FROM tournaments WHERE is_test = 1');
   noJsErrors(a);
@@ -118,7 +119,7 @@ test('Taika and LTKF in English and Russian; switch back to Lithuanian in one cl
   await a.click('.vz-top .lang-dd > summary');
   await a.click('.vz-top .lang-switch a[lang=en]');
   await a.waitForTimeout(400);
-  check('Taika tabs in English', /Participants/.test(await a.textContent('#tab-dalyviai')) && /Live schedule/.test(await a.textContent('#tab-live')));
+  check('Taika tabs in English', /Participants/.test(await a.textContent('#tab-dalyviai')) && /Schedule/.test(await a.textContent('#tab-live')));
   await a.click('#tab-live');
   await a.waitForTimeout(300);
   check('JS-made texts translated too', !/Visas tvarkaraštis|Paskirstyti tolygiai/.test(await a.textContent('#v-live')));

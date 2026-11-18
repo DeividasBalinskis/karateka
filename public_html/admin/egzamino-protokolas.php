@@ -128,6 +128,24 @@ if (is_post()) {
             $n = save_event_results($event, $res, (int) $me['id']);
             flash('ok', t('Perkelta į renginio rezultatus (XP).') . ($n ? '' : ' ' . t('Pakeitimų nebuvo.')));
             break;
+        case 'su_create':
+            flash(exam_signup_link($id, true) ? 'ok' : 'err', exam_signup_ready() ? t('Registracijos nuoroda sukurta - nukopijuokite ir išsiųskite.') : t('Atnaujinkite duomenų bazę (Šiandien → „Atnaujinkite duomenų bazę“).'));
+            break;
+        case 'su_toggle':
+            if ($l = exam_signup_link($id)) {
+                q('UPDATE exam_signup_links SET is_open = ? WHERE event_id = ?', [(int) $l['is_open'] ? 0 : 1, $id]);
+                flash('ok', (int) $l['is_open'] ? t('Registracija uždaryta.') : t('Registracija atidaryta.'));
+            }
+            break;
+        case 'su_invite':
+            $l = exam_signup_link($id, true);
+            if (!$l) {
+                break;
+            }
+            [$sent, $fail, $bad] = exam_signup_invite($event, $l, (string) post('people'), trim((string) post('note')), trim($me['first_name'] . ' ' . $me['last_name']) . "\nKarateka");
+            flash($sent && !$fail && !$bad ? 'ok' : 'err', t('Kvietimų išsiųsta: {n}.', ['n' => $sent]) . ($fail ? ' ' . t('Nepavyko išsiųsti: {n}.', ['n' => $fail]) : '')
+                . ($bad ? ' ' . t('Be el. pašto (praleista): {l}', ['l' => implode('; ', array_slice($bad, 0, 5))]) : ''));
+            break;
         case 'email':
             $to = trim(post('to'));
             if (!filter_var($to, FILTER_VALIDATE_EMAIL)) {
@@ -146,14 +164,17 @@ if (is_post()) {
 
 $rows = exam_protocol_rows($id);
 $gone = exam_protocol_rows($id, true);
+$suLink = exam_signup_link($id);
+$suList = $suLink ? exam_signups($id) : [];
+$suOpen = exam_signup_open($event, $suLink);
 $cols = exam_cols($p);
 $fedNo = fed_numbers_for_event($id);
 $passed = count(array_filter($rows, function ($r) { return $r['result'] === 'passed'; }));
 $failed = count(array_filter($rows, function ($r) { return $r['result'] === 'failed'; }));
-page_start(t('Egzamino protokolas') . ': ' . $event['title'], ['admin' => true, 'section' => 'renginiai']);
+page_start(t('Egzamino protokolas') . ': ' . $event['title'], ['admin' => true, 'section' => 'egzaminai']);
 ?>
 <div class="no-print">
-  <a class="small" href="<?= url('renginiai.php#e' . $id) ?>"><?= te('← Renginiai') ?></a> · <a class="small" href="<?= url('admin/renginio-rezultatai.php?id=' . $id) ?>"><?= te('Rezultatai ir XP') ?></a>
+  <a class="small" href="<?= url('admin/egzaminai.php') ?>"><?= te('← Egzaminavimas') ?></a> · <a class="small" href="<?= url('renginys.php?id=' . $id) ?>"><?= te('Renginys') ?></a> · <a class="small" href="<?= url('admin/renginio-rezultatai.php?id=' . $id) ?>"><?= te('Rezultatai ir XP') ?></a>
 </div>
 
 <div class="prot-sheet">
@@ -220,6 +241,53 @@ page_start(t('Egzamino protokolas') . ': ' . $event['title'], ['admin' => true, 
       </form>
     </details>
   </div>
+
+  <!-- Registracija per nuorodą: žmonėms be paskyros (vardas, pavardė, el. paštas) - iškart atsiranda protokole -->
+  <details class="panel card no-print prot-su" id="registracija"<?= $suLink && !$suList ? ' open' : '' ?>>
+    <summary><b><?= te('🔗 Registracija per nuorodą ir kvietimai') ?></b>
+      <?php if ($suLink): ?><span class="badge<?= $suOpen ? ' ok' : '' ?>"><?= $suOpen ? te('atidaryta') : te('uždaryta') ?></span>
+        <?php $signed = count(array_filter($suList, function ($x) { return $x['signed_at']; })); ?>
+        <span class="small muted"><?= te('užsiregistravo: {n}', ['n' => $signed]) ?><?= count($suList) > $signed ? ' · ' . te('pakviesti, dar neužsiregistravo: {n}', ['n' => count($suList) - $signed]) : '' ?></span>
+      <?php endif; ?></summary>
+    <?php if (!exam_signup_ready()): ?>
+      <p class="muted small"><?= te('Veiks, kai bus atnaujinta duomenų bazė (Šiandien → „Atnaujinkite duomenų bazę“).') ?></p>
+    <?php elseif (!$suLink): ?>
+      <p class="small"><?= te('Žmonės be paskyros (pvz. kitų klubų) užsiregistruoja patys: vardas, pavardė, el. paštas. Jie iškart atsiranda šiame protokole.') ?></p>
+      <form method="post"><?= csrf_field() ?><input type="hidden" name="id" value="<?= $id ?>"><input type="hidden" name="action" value="su_create">
+        <button class="btn btn-primary btn-sm" type="submit"><?= te('Sukurti registracijos nuorodą') ?></button></form>
+    <?php else: $suUrl = exam_signup_url($suLink); ?>
+      <p class="small"><?= te('Nusiųskite nuorodą bet kam (Messenger, el. paštu). Užsiregistravę iškart atsiranda protokole.') ?></p>
+      <div class="row" style="gap:6px; flex-wrap:wrap;">
+        <input type="text" readonly value="<?= e($suUrl) ?>" class="su-url" aria-label="<?= te('Registracijos nuoroda') ?>" onclick="this.select()">
+        <button type="button" class="btn btn-sm" data-copy="<?= e($suUrl) ?>"><?= te('Kopijuoti') ?></button>
+        <a class="btn btn-ghost btn-sm" href="<?= e($suUrl) ?>" target="_blank" rel="noopener"><?= te('Atidaryti ↗') ?></a>
+        <form method="post"><?= csrf_field() ?><input type="hidden" name="id" value="<?= $id ?>"><input type="hidden" name="action" value="su_toggle">
+          <button class="btn btn-ghost btn-sm" type="submit"><?= (int) $suLink['is_open'] ? te('Uždaryti registraciją') : te('Atidaryti registraciją') ?></button></form>
+      </div>
+      <?php if (!$suOpen && (int) $suLink['is_open']): ?><p class="small muted"><?= te('Registracija nevyksta: praėjo registracijos terminas arba egzaminas jau įvyko.') ?></p><?php endif; ?>
+      <details class="su-invite">
+        <summary class="btn btn-ghost btn-sm"><?= te('✉ Pakviesti el. paštu') ?></summary>
+        <form method="post" class="form" style="margin-top:8px;">
+          <?= csrf_field() ?><input type="hidden" name="id" value="<?= $id ?>"><input type="hidden" name="action" value="su_invite">
+          <label><?= te('Kam (po vieną eilutėje: Vardas Pavardė, el. paštas)') ?>
+            <textarea name="people" rows="4" required placeholder="Jonas Jonaitis, jonas@pastas.lt&#10;petras@pastas.lt"></textarea></label>
+          <label><?= te('Žinutė (nebūtina)') ?><textarea name="note" rows="2" maxlength="1000"></textarea></label>
+          <button class="btn btn-primary btn-sm" type="submit"><?= te('Siųsti kvietimus') ?></button>
+        </form>
+      </details>
+      <?php if ($suList): ?>
+        <div class="table-scroll"><table class="su-table">
+          <thead><tr><th><?= te('Vardas Pavardė') ?></th><th><?= te('El. paštas') ?></th><th><?= te('Klubas') ?></th><th>Kyu</th><th><?= te('Būsena') ?></th></tr></thead>
+          <tbody>
+          <?php foreach ($suList as $x): ?>
+            <tr><td><?= e(trim($x['first_name'] . ' ' . $x['last_name'])) ?: '<span class="muted">—</span>' ?></td><td class="small"><?= e($x['email']) ?></td>
+              <td class="small"><?= e((string) $x['club']) ?></td><td class="small"><?= e((string) $x['kyu']) ?></td>
+              <td class="small"><?= $x['signed_at'] ? '✓ ' . te('užsiregistravo') . ' ' . e(substr((string) $x['signed_at'], 5, 11)) : '✉ ' . te('pakviestas') . ' ' . e(substr((string) $x['invited_at'], 5, 11)) ?></td></tr>
+          <?php endforeach; ?>
+          </tbody></table></div>
+      <?php endif; ?>
+    <?php endif; ?>
+  </details>
 
   <div class="table-scroll">
   <table class="prot-table" id="protTable">
@@ -321,6 +389,13 @@ page_start(t('Egzamino protokolas') . ': ' . $event['title'], ['admin' => true, 
     if (!e.target.classList.contains('pi-score')) return;
     var m = String(e.target.value).match(/^(\d)(\d)$/);
     if (m && e.target.value !== '10') e.target.value = m[1] + '.' + m[2];
+  });
+  // Registracijos nuorodos kopijavimas
+  document.querySelectorAll('[data-copy]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var done = function () { var o = b.textContent; b.textContent = '✓'; setTimeout(function () { b.textContent = o; }, 1500); };
+      if (navigator.clipboard) navigator.clipboard.writeText(b.dataset.copy).then(done, function () {}); else { b.previousElementSibling.select(); document.execCommand('copy'); done(); }
+    });
   });
   // Enter - į kitą laukelį (kaip lentelėje)
   t.addEventListener('keydown', function (e) {

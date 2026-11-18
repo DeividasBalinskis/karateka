@@ -36,7 +36,7 @@ test('Taika: remove tatami only for admin, + for open year, template for all eve
   check('coach does not see remove tatami', await c.locator('#sched .area').count() > 0 && await c.locator('#sched [data-del-area]').count() === 0);
 
   // Kategorijų struktūra: tuščia metų riba - „+“, „→“ atidaro kategoriją, „← Grįžti į kategorijas“ - atgal
-  await a.click('#tab-kategorijos');
+  await a.click('#tab-admin'); await a.click('#tab-kategorijos');
   await a.click('[data-catview="ov"]');
   await a.waitForSelector('#ov-cols .ovb');
   check('empty year shows +', await a.locator('#ov-cols .ov-in[placeholder="+"]').count() > 0);
@@ -51,7 +51,7 @@ test('Taika: remove tatami only for admin, + for open year, template for all eve
   // Šablonas: išsaugoti iš Kata, pritaikyti Kumite ir Kihon - blokai sukuriami iš karto
   sql("UPDATE site_settings SET value = JSON_REMOVE(value, '$.tpl') WHERE name = 'taika_ui' AND JSON_VALID(value)");
   await a.reload();
-  await a.click('#tab-kategorijos');
+  await a.click('#tab-admin'); await a.click('#tab-kategorijos');
   await a.click('#ov-tpl summary');
   await a.click('#ov-tpl-body [data-tpl-save="kata"]');
   await a.waitForTimeout(800);
@@ -84,7 +84,7 @@ test('Taika: Draws tab and for spectators, diplomas printable and from an Excel 
   check('age groups listed', groups > 3, groups);
   await a.locator('#tk-groups .tk-g').nth(2).click();
   check('group categories shown', await a.locator('#tk-view .tk-cat').count() >= 1);
-  check('who fights whom', await a.locator('#tk-view .gv-m, #tk-view .gv-score li, #tk-view .gv-people li').count() > 0);
+  check('who fights whom (tree or list)', await a.locator('#tk-view .tk-m, #tk-view .gv-m, #tk-view .gv-score li, #tk-view .gv-people li').count() > 0);
   await a.locator('#tk-view [data-tk-open]').first().click();
   check('opens in live', await a.locator('#run').isVisible());
 
@@ -95,7 +95,7 @@ test('Taika: Draws tab and for spectators, diplomas printable and from an Excel 
   await v.waitForSelector('.gv-tk [data-cat^="grp:"]');
   await v.locator('.gv-tk [data-cat^="grp:"]').nth(2).click();
   await v.waitForSelector('.gv-sheet .tk-cat');
-  check('spectators see the draws', await v.locator('.gv-sheet .gv-m, .gv-sheet .gv-score li, .gv-sheet .gv-people li').count() > 0);
+  check('spectators see the draws (tree too)', await v.locator('.gv-sheet .tk-m, .gv-sheet .gv-m, .gv-sheet .gv-score li, .gv-sheet .gv-people li').count() > 0);
 
   // Diplomai be šablono - paprasti spausdinami
   sql("DELETE FROM site_settings WHERE name = 'taika_diploma'");

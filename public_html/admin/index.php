@@ -40,6 +40,8 @@ $todo = admin_todo_items();
 $notifs = account_notifications((int) $me['id']);
 // Atsakymai į atsiliepimus - ne darbai: rodomi 2 naujausi, kiti išskleidžiami, ir „Supratau visus“
 $fbNotifs = array_values(array_filter($notifs, function ($n) { return $n['type'] === 'feedback'; }));
+// Iš viršaus žemyn 1, 2, 3 - pagal atsiliepimo numerį (seniausias viršuje)
+usort($fbNotifs, function ($x, $y) { return ((int) ($x['ref_id'] ?: 0) <=> (int) ($y['ref_id'] ?: 0)) ?: ((int) $x['id'] <=> (int) $y['id']); });
 $notifs = array_values(array_filter($notifs, function ($n) { return $n['type'] !== 'feedback'; }));
 
 $upcoming = q_all('SELECT * FROM events WHERE COALESCE(ends_on, starts_on) >= CURDATE() AND starts_on <= DATE_ADD(CURDATE(), INTERVAL 21 DAY) ORDER BY starts_on, start_time');
@@ -93,31 +95,18 @@ $todoCount = count($notifs) + count($todo);
   </div>
 
   <div class="dash-side">
-    <div class="panel card">
-      <div class="kicker"><?= te('Šiandienos treniruotės') ?></div>
+    <!-- Treniruotės - vienoje vietoje (skirtukas „Treniruotė“); čia tik trumpai, kiek jų šiandien -->
+    <?php $tMarked = count(array_filter($trainings, function ($t) { return (int) $t['marked'] > 0; }));
+      $tOff = count(array_filter($trainings, function ($t) use ($today) { return (bool) training_cancelled((int) $t['group_id'], $today); })); ?>
+    <a class="panel card today-trainings" href="<?= url('admin/treniruote.php') ?>">
+      <span class="kicker" style="margin:0;"><?= te('Treniruotės') ?></span>
       <?php if ($trainings): ?>
-        <ul class="list today-list">
-          <?php foreach ($trainings as $t): $done = (int) $t['marked'] > 0; $off = training_cancelled((int) $t['group_id'], $today); ?>
-            <li class="row<?= $off ? ' is-cancelled' : '' ?>">
-              <span class="t-time"><?= $t['start_time'] ? e(fmt_time($t['start_time'])) : '–' ?><?= $t['end_time'] ? '<small>' . e(fmt_time($t['end_time'])) . '</small>' : '' ?></span>
-              <span>
-                <strong><span class="group-dot" style="background:<?= e(group_color(['id' => $t['group_id'], 'color' => $t['group_color']])) ?>"></span><?= e($t['group_name']) ?></strong>
-                <div class="muted small"><?= e($t['location'] ?: '') ?><?= $t['location'] ? ' · ' : '' ?><?= (int) $t['members_count'] ?> nar.<?= $done ? (' ' . t('· pažymėta') . ' ') . (int) $t['marked'] : '' ?>
-                  <?php if (is_admin() && !$done && !$off): ?> · <a class="cancel-btn" href="<?= url('admin/atsaukimai.php?g=' . (int) $t['group_id'] . '&d=' . $today . '#naujas') ?>"><?= te('atšaukti') ?></a><?php endif; ?></div>
-                <?php if ($off): ?><div class="cancel-tag"><?= te('Atšaukta ·') ?> <?= e($off['reason']) ?></div><?php endif; ?>
-              </span>
-              <?php if ($off): ?>
-                <a class="btn btn-sm btn-ghost" href="<?= url('admin/atsaukimai.php') ?>"><?= te('Atšaukimai') ?></a>
-              <?php else: ?>
-                <a class="btn btn-sm <?= $done ? 'btn-ghost' : 'btn-primary' ?>" href="<?= url('admin/treniruote.php?g=' . (int) $t['group_id'] . '&d=' . $today) ?>"><?= $done ? t('Pastabos') : t('Lankomumas') ?></a>
-              <?php endif; ?>
-            </li>
-          <?php endforeach; ?>
-        </ul>
+        <span class="tt-line"><b><?= te('Šiandien: {n}', ['n' => count($trainings)]) ?></b><?= $tMarked ? ' · ' . te('pažymėta {n}', ['n' => $tMarked]) : '' ?><?= $tOff ? ' · ' . te('atšaukta {n}', ['n' => $tOff]) : '' ?></span>
       <?php else: ?>
-        <p class="muted"><?= te('Šiandien treniruočių nėra.') ?><?php if ($nextDay): ?> <?= te('Artimiausios -') ?> <?= e(mb_strtolower(weekday_names()[(int) date('N', strtotime($nextDay))])) ?>, <?= e(fmt_date($nextDay)) ?><?php endif; ?></p>
+        <span class="tt-line muted"><?= te('Šiandien treniruočių nėra.') ?><?php if ($nextDay): ?> <?= te('Artimiausios -') ?> <?= e(mb_strtolower(weekday_names()[(int) date('N', strtotime($nextDay))])) ?>, <?= e(fmt_date($nextDay)) ?><?php endif; ?></span>
       <?php endif; ?>
-    </div>
+      <span class="btn btn-primary btn-sm"><?= te('🥋 Lankomumas →') ?></span>
+    </a>
 
     <div class="panel card">
       <div class="row between" style="margin-bottom:6px;">

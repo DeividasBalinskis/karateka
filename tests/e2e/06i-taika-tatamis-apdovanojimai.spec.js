@@ -87,7 +87,7 @@ test('kata scores: auto decimal, kata per round, final = semi + final; kumite ti
   await Promise.all([a.waitForNavigation(), a.click('text=🎲 Sukurti test varžybas')]);
   const tid = +sql('SELECT MAX(id) FROM tournaments');
   await a.goto(`admin/varzybu-sistema.php?id=${tid}`);
-  await a.click('#tab-kategorijos');
+  await a.click('#tab-admin'); await a.click('#tab-kategorijos');
 
   // Rikiavimas: didėjančia / mažėjančia
   await a.click('#ov-sort [data-sort="count"]');
@@ -164,13 +164,12 @@ test('tatami screen on a phone does not jump to the top', async ({ browser }) =>
   const p = await browser.newPage({ viewport: { width: 390, height: 760 } });
   await p.goto(`varzybos-gyvai.php?k=${share}&ekranas=1&tatami=1`);
   await p.waitForSelector('.scr-stage');
-  const stageFirst = await p.evaluate(() => document.querySelector('.scr-stage').getBoundingClientRect().top < document.querySelector('.scr-groups').getBoundingClientRect().top);
-  check('phone: current bout on top, groups below', stageFirst);
+  check('phone: current bout shown, no groups list', await p.locator('.scr-groups').count() === 0 && await p.locator('.scr-stage .scr-main').isVisible());
   await p.evaluate(() => window.scrollTo(0, 500));
   const y0 = await p.evaluate(() => window.scrollY);
   await p.waitForTimeout(3500);
   const y = await p.evaluate(() => window.scrollY);
-  check('scroll position kept', y0 > 100 && Math.abs(y - y0) < 5, y0 + ' → ' + y);
+  check('scroll position kept', Math.abs(y - y0) < 5, y0 + ' → ' + y);
   await p.close();
   sql('DELETE FROM tournaments WHERE is_test = 1');
   noJsErrors(a);

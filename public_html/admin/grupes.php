@@ -29,6 +29,16 @@ function group_from_post(array &$errors): array
     return $g;
 }
 
+/** Kaina už apsilankymą ir mėnesio riba (db/038; be jo - praleidžiama) */
+function group_save_visit_price(int $id): void
+{
+    $num = function (string $k): ?float { $v = str_replace(',', '.', trim((string) post($k))); return is_numeric($v) && (float) $v > 0 ? round((float) $v, 2) : null; };
+    try {
+        q('UPDATE training_groups SET price_visit = ?, price_cap = ? WHERE id = ?', [$num('price_visit'), $num('price_cap'), $id]);
+    } catch (PDOException $ex) {
+    }
+}
+
 if (is_post()) {
     csrf_check();
     $action = post('action');
@@ -37,14 +47,17 @@ if (is_post()) {
         $g = group_from_post($errors);
         if (!$errors) {
             q('INSERT INTO training_groups (name, category, location, sort_order, is_active, place_type, label, price_note, color) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', array_values($g));
+            $newId = (int) db()->lastInsertId();
+            group_save_visit_price($newId);
             flash('ok', t('Grupė sukurta. Pridėkite tvarkaraštį.'));
-            redirect('admin/grupes.php?id=' . db()->lastInsertId());
+            redirect('admin/grupes.php?id=' . $newId);
         }
     }
     if ($action === 'update' && $id) {
         $g = group_from_post($errors);
         if (!$errors) {
             q('UPDATE training_groups SET name = ?, category = ?, location = ?, sort_order = ?, is_active = ?, place_type = ?, label = ?, price_note = ?, color = ? WHERE id = ?', array_merge(array_values($g), [$id]));
+            group_save_visit_price($id);
             flash('ok', t('Išsaugota.'));
             redirect('admin/grupes.php?id=' . $id);
         }
@@ -103,6 +116,14 @@ function group_form(array $g, string $action): void
     </div>
     <label><?= te('Šios grupės kaina') ?> <span class="hint"><?= te('nebūtina - jei kitokia nei kategorijos (pvz. mokykloje), rodoma prie vietos tvarkaraščio') ?></span>
       <input type="text" name="price_note" value="<?= e($g['price_note'] ?? '') ?>" maxlength="120" placeholder="<?= te('pvz. 45 €/mėn. (1 kartą per savaitę)') ?>"></label>
+    <fieldset class="fee-set">
+      <legend><?= te('Mokestis pagal lankomumą') ?> <span class="hint"><?= te('nebūtina - pvz. darželiui: 6 € už kiekvieną lankytą treniruotę, per mėnesį ne daugiau kaip 35 €') ?></span></legend>
+      <div class="form-row">
+        <label><?= te('Kaina už treniruotę (€)') ?><input type="text" inputmode="decimal" name="price_visit" value="<?= e(isset($g['price_visit']) && $g['price_visit'] !== null ? rtrim(rtrim((string) $g['price_visit'], '0'), '.') : '') ?>" placeholder="6"></label>
+        <label><?= te('Daugiausia per mėnesį (€)') ?><input type="text" inputmode="decimal" name="price_cap" value="<?= e(isset($g['price_cap']) && $g['price_cap'] !== null ? rtrim(rtrim((string) $g['price_cap'], '0'), '.') : '') ?>" placeholder="35"></label>
+      </div>
+      <p class="hint"><?= te('Suma kaupiasi pagal pažymėtą lankomumą („✓ Buvo“) ir matoma „Treniruotė“ puslapyje prie kiekvieno nario.') ?></p>
+    </fieldset>
     <div class="color-field">
       <label><?= te('Spalva') ?> <span class="hint"><?= te('grupės kvadratas „Treniruotė“ puslapyje') ?></span>
         <input type="color" name="color" value="<?= e(isset($g['id']) ? group_color($g) : '#2F6B5A') ?>"></label>

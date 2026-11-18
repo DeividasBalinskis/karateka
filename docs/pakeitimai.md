@@ -4,6 +4,41 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.41 - 2026-11-18 (LTKF - redaguojama svetainė, Budo - paprastesnis meniu ir paieška, egzamino registracija be paskyros)
+**Reikia atnaujinti duomenų bazę** (db/038): Valdymas → Šiandien → „Atnaujinkite duomenų bazę“. Zip'o turinį išpakuokite **tiesiai į svetainės aplanką**.
+
+**✏️ LTKF svetainė - redaguojama pačių**
+- Bet kurį tekstą galima keisti tiesiai puslapyje, skiltis paslėpti, tarp skilčių pridėti blokus: tekstą, nuotrauką, galeriją, failus, mygtuką, YouTube vaizdo įrašą, korteles.
+- Meniu: pridėti, ištrinti, pervadinti, sukeisti vietomis; nauji puslapiai; išvaizda (pagrindinės nuotraukos fonas, spalva), kontaktai; „Atšaukti“ grąžina ankstesnį variantą.
+- 📥 Failų dėžė: neradote, kur įdėti - įmeskite failus su žinute, vėliau sudėsime.
+- Redaktorių nuorodos be paskyros: Valdymas → LTKF peržiūra → „Redaktoriai“ (sukurti, nukopijuoti, išjungti).
+- „Karatė“ → „Karate“ visur LTKF svetainėje.
+
+**🥋 Budo varžybos - paprasčiau**
+- Meniu: **Tvarkaraštis** (pagrindinė vieta - ten dirba ir sekretoriatas), Rezultatai, Tinklai ir **🗂 Administracija** (Klubai, Komandos, Dalyviai, Kategorijos - viename lange).
+- Paieška tvarkaraštyje: įrašius vardą, klubą ar kategoriją - rodoma, kur ir kada; kitos kortelės pritemsta. Žiūrovų puslapyje - „🔎 Rask save“.
+- Tinklai - medis (stulpeliai pagal ratus), su paaiškinimu; žiūrovams - tas pats.
+- Naršyklės „Atgal“ ir „←“ grįžta į ankstesnį langą, o ne išmeta iš varžybų.
+- Kata balai: tik vienas skaitmuo po kablelio, įvedus pilną balą (pvz. 7.7) - pats pereina į kitą langelį; „Vidurkis (ne suma)“ panaikintas.
+- Ratų sistemos lentelėje - surinkti taškai (vėliavėlės) vietoj „+/−“.
+- Pasibaigus laikui - garsus gongas.
+- Tatamio ekranas: be kairiojo sąrašo (žiūrovams nereikia), AKA ir SHIRO langeliuose - kas ruošiasi.
+- „Perkelti į 1 2 3“ liko tik pilname tvarkaraštyje.
+- 📡 Transliacija: YouTube nuoroda ir data - žiūrovų puslapyje vaizdas arba „Transliacija prasidės …“.
+
+**📝 Egzaminai**
+- Registracija į egzaminą per nuorodą žmonėms be paskyros: vardas, pavardė, el. paštas (+ nebūtina: gimimo data, klubas, kyu, telefonas). Užsiregistravęs iškart atsiranda protokole.
+- Protokole: „🔗 Registracija per nuorodą ir kvietimai“ - nuoroda, uždaryti / atidaryti, kvietimai el. paštu, kas užsiregistravo.
+- **📋 Egzaminavimas** viršutinėje juostoje treneriams: visi egzaminai su protokolu, registracija ir rezultatais.
+
+**Karateka - pagal atsiliepimus**
+- Prie kiekvieno būsimo renginio - „📝 Registruotis“; uždarius ar praėjus terminui - „Registracija uždaryta“.
+- „📲 Į telefono kalendorių“: Google (Android, Samsung), iPhone arba .ics failas.
+- Grupėse - mokestis pagal lankomumą (pvz. darželiui 6 € už treniruotę, ne daugiau kaip 35 € per mėn.); suma matoma „Treniruotė“ puslapyje ir tėvams paskyroje.
+- Treniruotės vienoje vietoje - „Treniruotė“ skirtuke („Šiandien“ - tik trumpai, kiek jų ir nuoroda).
+- Testai: „Visi banko klausimai“ ir iki 255 klausimų.
+- Atsakymai į atsiliepimus - iš viršaus žemyn 1, 2, 3; prisijungimo puslapyje - ką rasite prisijungę.
+
 ## v1.40 - 2026-11-17 (Žaidimas: tikri personažai, gražūs fonai, visa sąsaja aplinkoje)
 Duomenų bazės atnaujinti nereikia. Zip'o turinį išpakuokite **tiesiai į svetainės aplanką**.
 

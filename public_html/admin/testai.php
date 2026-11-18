@@ -128,7 +128,7 @@ if (is_post()) {
             'audience' => isset(QUIZ_AUDIENCE[post('audience')]) ? post('audience') : 'karateka',
             'belt_level' => belt_from_post('belt_level'),
             'description' => post('description') ?: null,
-            'question_count' => max(1, min(100, (int) post('question_count'))),
+            'question_count' => !empty($_POST['all_questions']) ? 0 : max(1, min(255, (int) post('question_count'))),   // 0 - visi banko klausimai
             'pass_percent' => max(1, min(100, (int) post('pass_percent'))),
             'time_limit' => max(0, min(180, (int) post('time_limit'))),
             'kids_mode' => !empty($_POST['kids_mode']) ? 1 : 0,
@@ -251,7 +251,8 @@ if ($id || get('id') === 'new' || get('new')) {
           <?php foreach (array_map('t', QUIZ_AUDIENCE) as $k => $label): ?><option value="<?= $k ?>" <?= $quiz['audience'] === $k ? 'selected' : '' ?>><?= e($label) ?></option><?php endforeach; ?>
         </select></label>
         <label id="qBelt"><?= te('Kuriam diržui') ?> <span class="hint"><?= te('kurį gaus išlaikęs') ?></span><select name="belt_level"><?= belt_options($quiz['belt_level'] !== null ? (int) $quiz['belt_level'] : null, t('Visiems diržams')) ?></select></label>
-        <label><?= te('Klausimų teste') ?> <span class="hint"><?= te('atsitiktinai iš banko') ?><?= $id ? (' ' . t('(skirtingų:') . ' ') . $distinct . ')' : '' ?></span><input type="number" name="question_count" id="qCount" min="1" max="100" value="<?= (int) $quiz['question_count'] ?>"></label>
+        <label><?= te('Klausimų teste') ?> <span class="hint"><?= te('atsitiktinai iš banko') ?><?= $id ? (' ' . t('(skirtingų:') . ' ') . $distinct . ')' : '' ?></span><input type="number" name="question_count" id="qCount" min="1" max="255" value="<?= (int) $quiz['question_count'] ?: max(1, (int) ($distinct ?? 10)) ?>"<?= (int) $quiz['question_count'] === 0 ? ' disabled' : '' ?>>
+          <span class="check small"><input type="checkbox" name="all_questions" value="1" id="qAll"<?= (int) $quiz['question_count'] === 0 ? ' checked' : '' ?>> <span><?= te('Visi banko klausimai') ?></span></span></label>
       </div>
       <div class="form-row three">
         <label><?= te('Reikia surinkti, %') ?> <span class="hint" id="qNeed"></span><input type="number" name="pass_percent" id="qPercent" min="1" max="100" value="<?= (int) $quiz['pass_percent'] ?>"></label>
@@ -272,7 +273,9 @@ if ($id || get('id') === 'new' || get('new')) {
         function u() { b.style.display = s.value === 'karateka' ? '' : 'none'; } s.addEventListener('change', u); u(); })();
       // "= 40 iš 50": kiek teisingų atsakymų reikia
       (function () { var c = document.getElementById('qCount'), p = document.getElementById('qPercent'), max = <?= $id ? $distinct : 100 ?>;
-        function u() { var n = Math.min(parseInt(c.value, 10) || 0, max || 0), pct = parseInt(p.value, 10) || 0;
+        var all = document.getElementById('qAll');
+        if (all) all.addEventListener('change', function () { c.disabled = all.checked; u(); });
+        function u() { var n = all && all.checked ? max : Math.min(parseInt(c.value, 10) || 0, max || 0), pct = parseInt(p.value, 10) || 0;
           document.getElementById('qNeed').textContent = n && pct ? '= ' + Math.ceil(n * pct / 100) + ' teisingų iš ' + n : ''; }
         c.addEventListener('input', u); p.addEventListener('input', u); u(); })();
     </script>
@@ -345,7 +348,7 @@ if ($id || get('id') === 'new' || get('new')) {
       </details>
 
       <h2 id="klausimai" style="margin:28px 0 12px;"><?= te('Klausimai (') ?><?= count($all) ?>)</h2>
-      <?php if ($distinct < (int) $quiz['question_count']): ?>
+      <?php if ((int) $quiz['question_count'] > 0 && $distinct < (int) $quiz['question_count']): ?>
         <p class="small muted"><?= te('Banke skirtingų klausimų (') ?><?= $distinct ?><?= te(') mažiau nei teste (') ?><?= (int) $quiz['question_count'] ?><?= te(') - kol kas bus užduodami visi esami.') ?></p>
       <?php endif; ?>
       <datalist id="quizTopics"><?php foreach (array_unique(array_filter(array_column($all, 'topic'))) as $t): ?><option value="<?= e($t) ?>"><?php endforeach; ?></datalist>
@@ -449,7 +452,7 @@ page_start(t('Testai'), ['admin' => true]);
           <?= $qz['belt_level'] ? belt_chip((int) $qz['belt_level']) : '' ?>
           <?php if (!$qz['is_published']): ?><span class="badge badge-warn">nepaskelbtas</span><?php endif; ?>
           <a href="?id=<?= (int) $qz['id'] ?>"><strong><?= e($qz['title']) ?></strong></a>
-          <div class="muted small"><?= (int) $qz['qcount'] ?> <?= te('klaus. banke · teste') ?> <?= (int) $qz['question_count'] ?> <?= te('· reikia') ?> <?= (int) $qz['pass_percent'] ?> %<?= !empty($qz['time_limit']) ? ' · ' . (int) $qz['time_limit'] . ' min.' : '' ?> <?= te('· laikė') ?> <?= (int) $qz['attempts'] ?><?= te(', išlaikė') ?> <?= (int) $qz['passes'] ?></div>
+          <div class="muted small"><?= (int) $qz['qcount'] ?> <?= te('klaus. banke · teste') ?> <?= (int) $qz['question_count'] ?: te('visi') ?> <?= te('· reikia') ?> <?= (int) $qz['pass_percent'] ?> %<?= !empty($qz['time_limit']) ? ' · ' . (int) $qz['time_limit'] . ' min.' : '' ?> <?= te('· laikė') ?> <?= (int) $qz['attempts'] ?><?= te(', išlaikė') ?> <?= (int) $qz['passes'] ?></div>
         </span>
         <a class="btn btn-ghost btn-sm" href="?id=<?= (int) $qz['id'] ?>"><?= te('Keisti') ?></a>
       </li>

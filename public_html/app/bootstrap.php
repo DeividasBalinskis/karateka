@@ -58,6 +58,7 @@ require APP_DIR . '/varzybos.php';
 require APP_DIR . '/participants.php';
 require APP_DIR . '/exams.php';
 require APP_DIR . '/exam_protocol.php';
+require APP_DIR . '/exam_signup.php';
 require APP_DIR . '/xlsx.php';
 require APP_DIR . '/themes.php';
 require APP_DIR . '/tl.php';

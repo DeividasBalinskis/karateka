@@ -79,6 +79,7 @@ test('competitions: test tournament, editor saves, public results, LTKF, points'
 
   // Valdymas: skirtukai veikia, test mygtukas užbaigia visas kovas
   for (const tab of ['klubai', 'komandos', 'dalyviai', 'kategorijos', 'live', 'rezultatai']) {
+    if (['klubai', 'komandos', 'dalyviai', 'kategorijos'].includes(tab) && !(await a.locator('#tab-' + tab).isVisible())) await a.click('#tab-admin');
     await a.click('#tab-' + tab);
     check('tab ' + tab, await a.locator('#v-' + tab).isVisible());
   }
@@ -89,7 +90,7 @@ test('competitions: test tournament, editor saves, public results, LTKF, points'
   check('all finished after simulate', all.categories.filter(c => c.count >= 2).every(c => c.finished));
 
   // Kategorija: sistemos pasirinkimas kortelėmis (ratų, balų), tempimas iš dalyvių sąrašo
-  await a.click('#tab-kategorijos');
+  await a.click('#tab-admin'); await a.click('#tab-kategorijos');
   await a.click('[data-catview=\"edit\"]');   // viena kategorija (numatyta - struktūra)
   check('system cards named by event', await a.locator('.sys-card').count() >= 2 && /vėliavėlėmis|balais|olimpinė|Fukugo/.test(await a.locator('.sys-card').first().innerText()));   // pagal rungtį; medaliai - atskirai
   const catId = await a.locator('#cat-list li[aria-current="true"]').getAttribute('data-drop-cat');
@@ -111,7 +112,7 @@ test('competitions: test tournament, editor saves, public results, LTKF, points'
   check('score total shown', /\d+\.\d/.test(await a.locator('.score-table tbody tr').first().locator('td').nth(-2).textContent()));
 
   // Kategorijos sudaromos iš naujo mygtuku; dalyvio diržo keitimas išsaugomas
-  await a.click('#tab-dalyviai');
+  await a.click('#tab-admin'); await a.click('#tab-dalyviai');
   const pid = await a.locator('[data-p-belt]').first().getAttribute('data-p-belt');
   await a.locator(`[data-p-belt="${pid}"]`).selectOption('12');
   await a.waitForTimeout(1500);

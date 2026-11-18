@@ -1216,3 +1216,54 @@ button.pin-p:hover { background: var(--surface-2); }
 .sekr-preview span { opacity: .8; }
 .sekr-preview .btn { margin-left: auto; }
 .vz-sekr-who { cursor: default; }
+
+/* v1.41: Administracija (paruošimo skirtukai), paieška tvarkaraštyje, tinklų medis */
+.tabs-sub{background:rgba(0,0,0,.18); padding-top:4px; padding-bottom:4px;}
+.tabs-sub[hidden]{display:none;}
+.tabs-sub-hint{font-size:.76rem; opacity:.75; margin-left:8px; align-self:center;}
+.sched-q{min-width:220px; flex:0 1 320px;}
+.sched-found{margin:8px 0 12px; padding:10px 12px; border:2px solid #F2C14E; border-radius:12px; background:var(--surface);}
+.sched-found .sf-head{margin-bottom:6px;}
+.sf-list{display:grid; gap:5px;}
+.sf-row{display:flex; flex-wrap:wrap; gap:4px 10px; align-items:center; text-align:left; border:1px solid var(--line); background:var(--bg, #fff); color:inherit; border-radius:9px; padding:7px 10px; cursor:pointer; font:inherit;}
+.sf-row:hover{border-color:#F2C14E;}
+.sf-where{display:inline-flex; gap:6px; align-items:center; font-size:.86rem;}
+.card.sq-dim{opacity:.35;}
+.card.sq-hit{box-shadow:0 0 0 3px #F2C14E;}
+.card-people .sq-me{background:#FFF3C4; color:#17140F; border-radius:6px; padding:0 4px; font-weight:700;}
+.tk-explain{margin:0 0 12px; padding:10px 14px; border-radius:12px; background:var(--surface); border:1px solid var(--line); font-size:.9rem;}
+.tk-tree{display:flex; gap:26px; overflow-x:auto; padding:4px 2px 10px; align-items:stretch;}
+.tk-col{display:flex; flex-direction:column; min-width:210px; flex:0 0 auto;}
+.tk-col h4{margin:0 0 8px; font-size:.78rem; text-transform:uppercase; letter-spacing:.05em; opacity:.75;}
+.tk-col-body{flex:1; display:flex; flex-direction:column; justify-content:space-around; gap:12px;}
+.tk-m{position:relative; border:1px solid var(--line); border-radius:10px; background:var(--surface); overflow:visible;}
+.tk-m.done{border-color:#BFE3CD;}
+.tk-col:not(.last) .tk-m::after{content:""; position:absolute; right:-27px; top:50%; width:26px; border-top:2px solid var(--line);}
+.tk-no{display:block; font-size:.68rem; opacity:.6; padding:3px 8px 0;}
+.tk-p{display:flex; gap:6px; align-items:baseline; padding:4px 8px; font-size:.86rem; border-left:4px solid transparent;}
+.tk-p.aka{border-left-color:#D62D20;} .tk-p.shiro{border-left-color:#D9D4C7;}
+.tk-p b{flex:0 1 auto; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.tk-p small{opacity:.6; flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.tk-p.won b{color:#1E7D46;} .tk-p.lost{opacity:.55;}
+.tk-p i{font-style:normal; color:#1E7D46; font-weight:800;}
+/* Tatamio ekranas be kairiojo sąrašo (#72) ir „Ruošiasi“ langeliuose (#71) */
+.scr2.solo { grid-template-columns: minmax(0, 1fr); }
+.scr2.solo .scr-top .scr-area { font-size: 1.15em; font-weight: 800; letter-spacing: .06em; color: #F7D27A; margin-right: 6px; }
+.scr-prep { margin-top: 1.2vh; padding: .5vh 1.4vw; border-radius: 10px; background: rgba(0,0,0,.22); font-size: clamp(15px, 2vw, 32px); font-weight: 600; }
+.scr-side.shiro .scr-prep { background: rgba(18,21,28,.08); }
+.scr-prep b { font-weight: 800; }
+.scr-foot { display: flex; flex-wrap: wrap; gap: 6px 18px; align-items: baseline; }
+.scr-end-r { margin-left: auto; color: #9AA3B2; font-weight: 600; }
+/* Žiūrovų puslapis: transliacija ir „Rask save“ */
+.gv-stream, .gv-find { max-width: 1100px; margin: 14px auto 0; padding: 12px 14px; }
+.gv-stream h2 { margin: 0 0 8px; font-size: 18px; display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+.gv-video { position: relative; aspect-ratio: 16 / 9; border-radius: 12px; overflow: hidden; background: #000; }
+.gv-video iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.gv-soon { font-size: 18px; margin: 6px 0; }
+.gv-find { display: grid; gap: 8px; }
+.gv-find-l { font-weight: 700; font-size: 17px; }
+.gv-find .sel { width: 100%; font-size: 16px; padding: 10px 12px; }
+.gv-found { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.gv-found li { border: 1px solid var(--line, rgba(0,0,0,.12)); border-radius: 10px; padding: 8px 10px; }
+.gf-cat { display: flex; width: 100%; align-items: center; gap: 6px; margin-top: 6px; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--line, rgba(0,0,0,.12)); background: var(--panel-2, rgba(0,0,0,.03)); color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.gf-where { margin-left: auto; font-weight: 700; white-space: nowrap; }

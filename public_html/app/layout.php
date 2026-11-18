@@ -292,7 +292,7 @@ function admin_nav_current(): string
     $map = ['index' => 'siandien', 'renginio-rezultatai' => 'renginiai', 'varzybu-rezultatai' => 'varzybos', 'renginio-dalyviai' => 'renginiai', 'programa' => 'nustatymai',
             'varzybos-sso' => 'varzybos', 'varzybos-isorine' => 'varzybos', 'varzybu-dalyviai' => 'varzybos', 'varzybu-sistema' => 'varzybos', 'sms' => 'pranesimai',
             'grupes' => 'nustatymai', 'tvarkarastis' => 'nustatymai', 'taskai' => 'xp', 'paskyros' => 'nustatymai', 'kopijos' => 'nustatymai', 'atsaukimai' => 'nustatymai', 'testavimas' => 'nustatymai', 'vertimai' => 'nustatymai',
-            'pirmas-adminas' => 'siandien'];
+            'pirmas-adminas' => 'siandien', 'egzaminai' => 'egzaminai', 'egzamino-protokolas' => 'egzaminai', 'federacija' => 'egzaminai'];
     return $map[$file] ?? $file;
 }
 
@@ -395,6 +395,9 @@ function site_header(bool $home = false, ?string $area = null, ?string $tab = nu
           <li><a class="nav-page<?= $cur('naujienos') ?>" href="<?= url('naujienos.php') ?>"><?= te('Naujienos') ?></a></li>
           <?php if ($a && can_see_lessons($a)): ?>
             <li><a class="nav-page<?= $cur('pamokos') ?>" href="<?= url('pamokos.php') ?>"><?= te('Pamokos') ?></a></li>
+          <?php endif; ?>
+          <?php if ($a && is_staff($a)): ?>
+            <li><a class="nav-page<?= $cur('egzaminai') ?>" href="<?= url('admin/egzaminai.php') ?>"><?= te('Egzaminavimas') ?></a></li>
           <?php endif; ?>
           <?php if ($a && is_active_account($a) && game_nav_ready()): ?>
             <li><a class="nav-page nav-game<?= $cur('zaidimas') ?>" href="<?= url('dojo.php') ?>"><?= te('🎮 Žaidimas') ?></a></li>

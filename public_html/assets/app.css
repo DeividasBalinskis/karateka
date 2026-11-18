@@ -1468,3 +1468,43 @@ tr.res-failed td{background:rgba(192,57,43,0.06);}
 .game-teaser .gt-ic{font-size:2.4rem; line-height:1;}
 .game-teaser > span:nth-child(2){flex:1;}
 @media (max-width:560px){ .game-teaser{flex-wrap:wrap;} .game-teaser .btn{width:100%; text-align:center;} }
+/* Egzamino registracija per nuorodą */
+.prot-su{margin:10px 0;}
+.prot-su summary{cursor:pointer; display:flex; flex-wrap:wrap; gap:8px; align-items:center;}
+.prot-su .badge.ok{background:#E3F4EA; color:#0B6B3A;}
+.su-url{flex:1; min-width:240px; font-size:13px;}
+.su-table{width:100%; margin-top:8px;}
+.su-table td, .su-table th{padding:5px 8px; text-align:left;}
+.exam-su{max-width:640px; margin:0 auto; display:grid; gap:14px;}
+.exam-su h1{margin:4px 0;}
+.exam-su-form{display:grid; gap:10px;}
+.exam-su-more summary{cursor:pointer; font-weight:600; margin:4px 0;}
+.exam-su-ok h2{color:#0B6B3A; margin-top:0;}
+.event-reg.reg-closed{cursor:default; opacity:.75; border-style:dashed; pointer-events:none;}
+.ep-su{margin-top:10px; padding-top:10px; border-top:1px dashed var(--line, rgba(0,0,0,.15)); display:grid; gap:6px;}
+/* Egzaminavimas: visų egzaminų sąrašas */
+.exam-list{display:grid; gap:10px;}
+.exam-list-h{margin:14px 0 2px; font-size:18px;}
+.exam-item{display:flex; flex-wrap:wrap; gap:10px 16px; align-items:center; justify-content:space-between;}
+.exam-item.is-past{opacity:.85;}
+.exam-item-main{display:grid; gap:2px; min-width:220px; flex:1;}
+.exam-item-title{font-weight:700; font-size:17px;}
+.exam-item-acts{display:flex; flex-wrap:wrap; gap:6px;}
+.exam-item .badge.ok{background:#E3F4EA; color:#0B6B3A;}
+.ev-ics{position:relative;}
+.ev-ics summary{cursor:pointer; list-style:none; color:var(--accent, #C1272D);}
+.ev-ics summary::-webkit-details-marker{display:none;}
+.ev-ics-menu{position:absolute; right:0; top:calc(100% + 6px); z-index:30; display:grid; gap:6px; width:min(300px, 86vw); padding:10px 12px; background:var(--card, #fff); border:1px solid var(--line, rgba(0,0,0,.12)); border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,.15); font-weight:500;}
+.ev-ics-menu a{display:block; padding:8px 10px; border-radius:8px; background:var(--panel-2, rgba(0,0,0,.04));}
+.ev-ics-menu .muted{font-size:12px;}
+.login-intro{color:var(--muted, #5b6476); margin:-4px 0 16px; line-height:1.5;}
+/* Šiandien: treniruotės - tik nuoroda į „Treniruotė“ (viena vieta) */
+.today-trainings{display:flex; flex-wrap:wrap; align-items:center; gap:8px 14px; text-decoration:none; color:inherit;}
+.today-trainings .tt-line{flex:1; min-width:160px;}
+.today-trainings:hover{box-shadow:0 6px 20px rgba(0,0,0,.08);}
+.gt-done{font-weight:700;}
+/* Mokestis pagal lankomumą */
+.fee-line{font-size:13px; color:var(--muted, #5b6476); margin-top:4px;}
+.fee-rule{font-size:13px; font-weight:600; padding:3px 9px; border-radius:999px; background:rgba(47,107,90,.1);}
+.fee-set{border:1px dashed var(--line, rgba(0,0,0,.18)); border-radius:10px; padding:8px 12px; margin:10px 0;}
+.fee-set legend{font-weight:600; padding:0 4px;}

@@ -168,11 +168,17 @@ function tag_qualification(int $memberId, string $tag): ?array
                    ORDER BY qa.finished_at DESC LIMIT 1', [$memberId, $tag]);
 }
 
+/** Kiek klausimų teste: 0 - visi banko klausimai */
+function quiz_limit(array $quiz): int
+{
+    return (int) $quiz['question_count'] > 0 ? (int) $quiz['question_count'] : 100000;
+}
+
 /** Naujas bandymas: atsitiktiniai klausimai iš banko (iš temos - vienas). Su laiko limitu įrašoma, iki kada baigti. */
 function start_quiz_attempt(array $quiz, int $memberId, int $accountId): int
 {
     $ids = array_keys(quiz_pick_questions(quiz_questions_full((int) $quiz['id'])));
-    $ids = array_slice($ids, 0, max(1, (int) $quiz['question_count']));
+    $ids = array_slice($ids, 0, quiz_limit($quiz));
     $params = [(int) $quiz['id'], $memberId, $accountId, implode(',', $ids), count($ids)];
     $minutes = (int) ($quiz['time_limit'] ?? 0);
     if ($minutes > 0) {

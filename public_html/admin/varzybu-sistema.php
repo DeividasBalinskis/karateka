@@ -85,6 +85,19 @@ if (is_post() && (get('live') || get('entries') || get('reg'))) {
             q('UPDATE tournament_entries SET status = ? WHERE tournament_id = ? AND id IN (' . implode(',', $ids) . ')',
                 [($in['status'] ?? '') === 'rejected' ? 'rejected' : 'added', (int) $t['id']]);
         }
+    } elseif (array_key_exists('stream_url', $in)) {
+        // YouTube transliacija: nuoroda ir pradžios laikas (tuščia - nerodoma)
+        $su = trim((string) $in['stream_url']);
+        if ($su !== '' && !preg_match('~^https?://~i', $su)) {
+            $su = 'https://' . $su;
+        }
+        $sa = trim((string) ($in['stream_at'] ?? ''));
+        $sa = preg_match('/^\d{4}-\d{2}-\d{2}(?:[T ]\d{2}:\d{2})?$/', $sa) ? str_replace('T', ' ', strlen($sa) === 10 ? $sa . 'T10:00' : $sa) . ':00' : null;
+        try {
+            q('UPDATE tournaments SET stream_url = ?, stream_at = ? WHERE id = ?', [$su !== '' ? mb_substr($su, 0, 255) : null, $sa, (int) $t['id']]);
+        } catch (PDOException $ex) {
+            exit(json_encode(['ok' => false, 'error' => 'Atnaujinkite duomenų bazę (db/038).']));
+        }
     } else {
         q('UPDATE tournaments SET reg_open = ? WHERE id = ?', [!empty($in['open']) ? 1 : 0, (int) $t['id']]);
     }
@@ -250,16 +263,21 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
       <a class="vz-link" href="<?= url('varzybu-rezultatai.php?id=' . (int) $t['id']) ?>" target="_blank" rel="noopener" title="Viešas rezultatų puslapis"><span class="hide-sm">Viešas puslapis </span>↗</a>
     </div>
   </div>
-  <nav class="tabs" role="tablist" aria-label="Dalys">
+  <!-- Pagrindinė vieta - tvarkaraštis (ten dirba ir sekretoriatas); paruošimas (klubai, komandos, dalyviai, kategorijos) - viename skirtuke „Administracija“ -->
+  <nav class="tabs" id="tabs" role="tablist" aria-label="Dalys">
+    <button role="tab" id="tab-live" aria-selected="false" aria-controls="v-live" class="tab-live"><span class="live-dot" aria-hidden="true"></span>Tvarkaraštis</button>
+    <button role="tab" id="tab-rezultatai" aria-selected="false" aria-controls="v-rezultatai"><span class="tab-n">🏅</span>Rezultatai</button>
+    <button role="tab" id="tab-tinklai" aria-selected="false" aria-controls="v-tinklai" title="Kiekvienos kategorijos burtų lentelė (medis): kas su kuo kovoja ir kas laimėjo"><span class="tab-n">🤼</span>Tinklai</button>
+    <span class="tabs-sep" aria-hidden="true"></span>
+    <button role="tab" id="tab-admin" aria-selected="false" class="tab-admin" title="Paruošimas: klubai, komandos, dalyviai, kategorijos"><span class="tab-n">🗂</span>Administracija</button>
+    <button type="button" class="tab-cfg" id="menu-cfg" aria-expanded="false" title="Meniu: pervadinti, sukeisti vietomis">⚙</button>
+  </nav>
+  <nav class="tabs tabs-sub" id="tabs-sub" role="tablist" aria-label="Administracija" hidden>
     <button role="tab" id="tab-klubai" aria-selected="false" aria-controls="v-klubai"><span class="tab-n">1</span>Klubai</button>
     <button role="tab" id="tab-komandos" aria-selected="false" aria-controls="v-komandos"><span class="tab-n">2</span>Komandos</button>
     <button role="tab" id="tab-dalyviai" aria-selected="false" aria-controls="v-dalyviai"><span class="tab-n">3</span>Dalyviai</button>
     <button role="tab" id="tab-kategorijos" aria-selected="false" aria-controls="v-kategorijos"><span class="tab-n">4</span>Kategorijos</button>
-    <span class="tabs-sep" aria-hidden="true"></span>
-    <button role="tab" id="tab-tinklai" aria-selected="false" aria-controls="v-tinklai"><span class="tab-n">🤼</span>Tinklai</button>
-    <button role="tab" id="tab-live" aria-selected="false" aria-controls="v-live" class="tab-live"><span class="live-dot" aria-hidden="true"></span>Live tvarkaraštis</button>
-    <button role="tab" id="tab-rezultatai" aria-selected="false" aria-controls="v-rezultatai"><span class="tab-n">🏅</span>Rezultatai</button>
-    <button type="button" class="tab-cfg" id="menu-cfg" aria-expanded="false" title="Meniu: pervadinti, sukeisti vietomis">⚙</button>
+    <span class="tabs-sub-hint">Paruošimas prieš varžybas. Varžybų dieną dirbama „Tvarkaraštyje“.</span>
   </nav>
 </header>
 <div class="share-panel menu-panel" id="menu-panel" hidden>
@@ -328,6 +346,13 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
     <div class="sp-row"><input class="sel sp-url" readonly value="<?= e($awardsUrl) ?>" aria-label="Apdovanojimų nuoroda"><button type="button" class="btn" data-copy="<?= e($awardsUrl) ?>">Kopijuoti</button><a class="btn" href="<?= e($awardsUrl) ?>" target="_blank" rel="noopener">Atidaryti ↗</a></div>
   </div>
   <?php endif; ?>
+  <div class="sp-block">
+    <b>🎥 YouTube transliacija</b>
+    <p class="muted small">Įklijuokite YouTube vaizdo įrašo (ar suplanuotos transliacijos) arba kanalo nuorodą ir datą. Žiūrovų puslapyje bus vaizdas, o iki pradžios - „Transliacija prasidės …“.</p>
+    <div class="sp-row"><input class="sel sp-url" id="stream-url" type="url" placeholder="https://youtube.com/live/… arba kanalo nuoroda" value="<?= e((string) ($t['stream_url'] ?? '')) ?>" aria-label="YouTube nuoroda">
+      <input class="sel" id="stream-at" type="datetime-local" value="<?= !empty($t['stream_at']) ? e(str_replace(' ', 'T', substr((string) $t['stream_at'], 0, 16))) : '' ?>" aria-label="Transliacijos pradžia">
+      <button type="button" class="btn btn-primary" id="stream-save">Išsaugoti</button></div>
+  </div>
   <div class="sp-block">
     <b>🔗 Nuoroda žiūrovams</b>
     <p class="muted small">Tėvai ir kiti klubai telefone mato, kas vyksta ant kiekvieno tatamio, kas eina toliau ir rezultatus.</p>
@@ -438,11 +463,12 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
 
   <!-- TINKLAI (Draws): amžiaus grupės → kas su kuo kovoja visose tos grupės rungtyse; žiūrovams tas pats - transliacijos nuorodoje -->
   <section id="v-tinklai" role="tabpanel" aria-labelledby="tab-tinklai" hidden>
+    <p class="tk-explain"><b>🤼 Tinklai</b> - kiekvienos kategorijos burtų lentelė (medis): kas su kuo kovoja, kas laimėjo ir kas eina toliau.
+      Čia tik peržiūra ir spausdinimas - kovos vedamos <b>„Tvarkaraštyje“</b> (atidarius kategoriją). Žiūrovai tą patį mato transliacijos nuorodoje.</p>
     <div class="tk-layout">
       <div class="panel tk-side"><h2>Amžiaus grupės</h2><div class="tk-groups" id="tk-groups"></div></div>
       <div class="tk-view" id="tk-view"></div>
     </div>
-    <p class="hint">Čia - tik peržiūra: kas su kuo kovoja ir kas laimėjo. Žiūrovams tas pats matosi transliacijos nuorodoje („📡 Transliacija ir registracija“) - skiltyje „Tinklai“.</p>
   </section>
 
   <!-- LIVE TVARKARAŠTIS: tatamiai ir rungtys; atidarius rungtį - jos valdymas (lentelė, kovos, balai) -->
@@ -450,6 +476,7 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
     <div class="live-board" id="live-board">
       <div class="toolbar live-bar">
         <b class="live-clock" id="live-clock" title="Dabar"></b>
+        <input type="search" class="sel sched-q" id="sched-q" placeholder="🔍 Rask dalyvį, klubą ar kategoriją" aria-label="Paieška tvarkaraštyje" autocomplete="off">
         <span class="seg area-seg" id="area-seg" role="group" aria-label="Rodomas tatamis" title="Šiame kompiuteryje (planšetėje) rodomas tik pasirinktas tatamis"></span>
         <span class="muted small" id="live-legend">Paspauskite rungtį - atsidarys jos valdymas. Tempkite rungtis tarp tatamių.</span>
         <span class="spacer"></span>
@@ -469,6 +496,7 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
         </details>
       </div>
       <div class="area-pick" id="area-pick" hidden></div>
+      <div class="sched-found" id="sched-found" hidden></div>
       <div class="sched" id="sched"></div>
       <p class="hint">Laikai persiskaičiuoja patys pagal kovų skaičių ir trukmę. Varžybų dieną matosi, ar tatamis vėluoja.</p>
     </div>

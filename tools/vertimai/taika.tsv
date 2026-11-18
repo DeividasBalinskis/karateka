@@ -651,3 +651,37 @@ Nukopijuota ✓	Copied ✓	Скопировано ✓
 (pavardė - nebūtina)	(surname optional)	(фамилия необязательна)
 pvz. Tomas	e.g. Tomas	напр. Томас
 Jūsų vardas	Your name	Ваше имя
+Tvarkaraštis	Schedule	Расписание
+Administracija	Administration	Администрирование
+Paruošimas: klubai, komandos, dalyviai, kategorijos	Preparation: clubs, teams, participants, categories	Подготовка: клубы, команды, участники, категории
+Paruošimas prieš varžybas. Varžybų dieną dirbama „Tvarkaraštyje“.	Preparation before the competition. On competition day, work in the “Schedule”.	Подготовка перед соревнованиями. В день соревнований работают в «Расписании».
+Kiekvienos kategorijos burtų lentelė (medis): kas su kuo kovoja ir kas laimėjo	Each category's draw (tree): who fights whom and who won	Сетка каждой категории (дерево): кто с кем бьётся и кто победил
+- kiekvienos kategorijos burtų lentelė (medis): kas su kuo kovoja, kas laimėjo ir kas eina toliau. Čia tik peržiūra ir spausdinimas - kovos vedamos	- each category's draw (tree): who fights whom, who won and who goes on. View and print only - bouts are run in the	- сетка каждой категории (дерево): кто с кем бьётся, кто победил и кто проходит дальше. Здесь только просмотр и печать - бои ведутся в
+„Tvarkaraštyje“	“Schedule”	«Расписании»
+(atidarius kategoriją). Žiūrovai tą patį mato transliacijos nuorodoje.	(open the category). Spectators see the same on the broadcast link.	(открыв категорию). Зрители видят то же по ссылке трансляции.
+🎥 YouTube transliacija	🎥 YouTube stream	🎥 Трансляция YouTube
+Įklijuokite YouTube vaizdo įrašo (ar suplanuotos transliacijos) arba kanalo nuorodą ir datą. Žiūrovų puslapyje bus vaizdas, o iki pradžios - „Transliacija prasidės …“.	Paste a YouTube video (or scheduled stream) or channel link and the date. The spectators' page shows the video, and before the start - “The stream starts …”.	Вставьте ссылку на видео YouTube (или запланированную трансляцию) или канал и дату. На странице зрителей будет видео, а до начала - «Трансляция начнётся …».
+https://youtube.com/live/… arba kanalo nuoroda	https://youtube.com/live/… or channel link	https://youtube.com/live/… или ссылка на канал
+YouTube nuoroda	YouTube link	Ссылка YouTube
+Transliacijos pradžia	Stream start	Начало трансляции
+Transliacija išsaugota ✓	Stream saved ✓	Трансляция сохранена ✓
+🔍 Rask dalyvį, klubą ar kategoriją	🔍 Find a participant, club or category	🔍 Найти участника, клуб или категорию
+Rasta: {#}	Found: {#}	Найдено: {#}
+Paspauskite - atsidarys kategorija.	Tap to open the category.	Нажмите - откроется категория.
+Nieko nerasta - patikrinkite vardą ar klubą.	Nothing found - check the name or club.	Ничего не найдено - проверьте имя или клуб.
+baigta	finished	завершено
+Visų kovų taškai (vėliavėlės) kartu	Total points of all bouts (flags)	Сумма очков всех боёв (флажки)
+Skirtumas {#}	Difference {#}	Разница {#}
+Skirtumas +{#}	Difference +{#}	Разница +{#}
+Skirtumas -{#}	Difference -{#}	Разница -{#}
+Ruošiasi:	Preparing:	Готовится:
+Pabaiga apie {#}	Ends about {#}	Конец около {#}
+🎥 Transliacija	🎥 Live stream	🎥 Трансляция
+Transliacija prasidės	The stream starts	Трансляция начнётся
+prasidės	starts	начнётся
+▶ Žiūrėti YouTube ↗	▶ Watch on YouTube ↗	▶ Смотреть на YouTube ↗
+🔎 Rask save	🔎 Find yourself	🔎 Найди себя
+Vardas, pavardė arba klubas	Name, surname or club	Имя, фамилия или клуб
+Nerasta. Patikrinkite vardą ar pavardę.	Not found. Check the name or surname.	Не найдено. Проверьте имя или фамилию.
+✓ baigta	✓ finished	✓ завершено
+Transliacija	Stream	Трансляция

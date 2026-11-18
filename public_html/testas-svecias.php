@@ -34,7 +34,7 @@ if (is_post()) {
             $errors[] = t('Per daug bandymų. Pabandykite vėliau.');
         }
         if (!$errors) {
-            $ids = array_slice(array_keys(quiz_pick_questions(quiz_questions_full($qzId))), 0, max(1, (int) $quiz['question_count']));
+            $ids = array_slice(array_keys(quiz_pick_questions(quiz_questions_full($qzId))), 0, quiz_limit($quiz));
             if (!$ids) {
                 $errors[] = t('Šiame teste dar nėra klausimų.');
             } else {
@@ -187,7 +187,7 @@ else:
     <div class="eyebrow"><?= te('Testas') ?></div>
     <h1 class="styled"><?= e($quiz['title']) ?></h1>
     <?php if ($quiz['description']): ?><p><?= e($quiz['description']) ?></p><?php endif; ?>
-    <p class="muted"><?= min($count, (int) $quiz['question_count']) ?> <?= te('klausimų, reikia bent') ?> <?= (int) $quiz['pass_percent'] ?> % <?= te('teisingų') ?><?= !empty($quiz['time_limit']) ? ' · ' . (int) $quiz['time_limit'] . ' ' . t('min.') : '' ?>.
+    <p class="muted"><?= min($count, quiz_limit($quiz)) ?> <?= te('klausimų, reikia bent') ?> <?= (int) $quiz['pass_percent'] ?> % <?= te('teisingų') ?><?= !empty($quiz['time_limit']) ? ' · ' . (int) $quiz['time_limit'] . ' ' . t('min.') : '' ?>.
       <?= te('Atsakymus ir rezultatą pamatysi pabaigoje.') ?></p>
   </div>
   <?= form_errors($errors) ?>

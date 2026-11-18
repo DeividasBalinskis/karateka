@@ -18,8 +18,12 @@ test('Taika home, switcher, menu order, live schedule with current category and 
   await nav(a, () => a.locator(`#t${tid} .varz-actions > a.btn-primary`).click());
 
   // Meniu tvarka ir perjungimas į kitas varžybas
-  const tabs = await a.$$eval('.tabs [role=tab]', bs => bs.map(b => b.id.replace('tab-', '')).join(','));
-  check('menu order', tabs === 'klubai,komandos,dalyviai,kategorijos,tinklai,live,rezultatai', tabs);
+  // Tvarkaraštis - pirmas (pagrindinė vieta), Klubai / Komandos / Dalyviai / Kategorijos - viename „Administracija“ lange
+  const tabs = await a.$$eval('#tabs [role=tab]', bs => bs.map(b => b.id.replace('tab-', '')).join(','));
+  check('menu order', tabs === 'live,rezultatai,tinklai,admin', tabs);
+  const sub = await a.$$eval('#tabs-sub [role=tab]', bs => bs.map(b => b.id.replace('tab-', '')).join(','));
+  check('administration sub-tabs', sub === 'klubai,komandos,dalyviai,kategorijos', sub);
+  check('opens on the schedule', await a.locator('#v-live').isVisible() && !(await a.locator('#tabs-sub').isVisible()));
   check('switcher lists competitions', await a.locator('#t-switch option').count() >= 2);
 
   // Live tvarkaraštis: dabartinė rungtis, varžybų dieną - ar tatamis vėluoja
@@ -46,7 +50,7 @@ test('Taika home, switcher, menu order, live schedule with current category and 
   check('back to board', await a.locator('#live-board').isVisible());
 
   // Kategorijos → „Valdyti →“ atidaro tą rungtį Live tvarkaraštyje
-  await a.click('#tab-kategorijos');
+  await a.click('#tab-admin'); await a.click('#tab-kategorijos');
   await a.click('[data-catview=\"edit\"]');   // viena kategorija (numatyta - struktūra)
   await a.locator('#cat-list button').nth(1).click();
   await a.click('#cat-draw');
@@ -82,7 +86,7 @@ test('categories structure: all disciplines, edit years and gender in place, ope
   await nav(a, () => a.click('text=🎲 Sukurti test varžybas'));
   const tid = +sql('SELECT MAX(id) FROM tournaments');
   const state = () => JSON.parse(sql(`SELECT state FROM tournaments WHERE id = ${tid}`));
-  await a.click('#tab-kategorijos');
+  await a.click('#tab-admin'); await a.click('#tab-kategorijos');
   await a.click('[data-catview="ov"]');
   await a.waitForSelector('#ov-cols .ov-col[data-ov-col="kata"]');
   check('columns per discipline', await a.locator('#ov-cols .ov-col[data-ov-col]').count() >= 3);
@@ -181,7 +185,7 @@ test('live schedule: fixed time, rename, participants; simple bout view; detache
   await pop.waitForURL(/langas=1/);
   await pop.waitForSelector('#run:not([hidden])');
   check('popup shows the category', (await pop.textContent('#run-name')).includes('Finalinė kata'));
-  check('popup without menu', !(await pop.locator('.tabs').isVisible()));
+  check('popup without menu', !(await pop.locator('#tabs').isVisible()));
   await a.waitForTimeout(500);
   check('detached greyed on board', await a.locator(`#sched .card.detached[data-c="${cid}"]`).count() === 1);
   await pop.close({ runBeforeUnload: true });
@@ -203,7 +207,7 @@ test('history restore, category reset from a round, themes and menu customizatio
   // Pakeitimas ir „kaip prieš 5 min.“
   sql(`UPDATE tournament_versions SET created_at = NOW() - INTERVAL 10 MINUTE WHERE tournament_id = ${tid}`);
   const n0 = state().categories.length;
-  await a.click('#tab-kategorijos');
+  await a.click('#tab-admin'); await a.click('#tab-kategorijos');
   await a.click('[data-catview="ov"]');
   await a.click('[data-ov-new="kata"]');
   await a.waitForTimeout(1500);
@@ -233,14 +237,14 @@ test('history restore, category reset from a round, themes and menu customizatio
   check('theme saved', JSON.parse(sql("SELECT value FROM site_settings WHERE name = 'taika_ui'")).theme === 'volcano');
   await a.click('#menu-cfg');
   await a.fill('[data-menu-name="live"]', 'Varžybų diena');
-  await a.locator('[data-menu-up]').nth(1).click();   // Komandos ↑ - pirmos
+  await a.locator('[data-menu-up]').nth(1).click();   // Rezultatai ↑ - pirmi
   await a.click('#menu-save');
   await a.waitForTimeout(600);
   await a.reload();
   check('theme applied', await a.evaluate(() => document.body.dataset.theme) === 'volcano');
   check('tab renamed', /Varžybų diena/.test(await a.textContent('#tab-live')));
-  const order = await a.$$eval('.tabs [role=tab]', bs => bs.map(b => b.id.replace('tab-', '')).join(','));
-  check('tab order changed', order.startsWith('komandos,klubai'), order);
+  const order = await a.$$eval('#tabs [role=tab]', bs => bs.map(b => b.id.replace('tab-', '')).join(','));
+  check('tab order changed', order.startsWith('rezultatai,live'), order);
   sql("DELETE FROM site_settings WHERE name = 'taika_ui'");
   sql('DELETE FROM tournaments WHERE is_test = 1');
   noJsErrors(a);

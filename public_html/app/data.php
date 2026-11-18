@@ -71,10 +71,26 @@ function event_last_day(array $ev): string
     return (string) ($ev['ends_on'] ?: $ev['starts_on']);
 }
 
-function event_reg_button(array $ev, string $class = 'btn btn-primary btn-sm'): string
+function event_reg_button(array $ev, string $class = 'btn btn-primary btn-sm', bool $onPage = false): string
 {
+    // Kiekvienas būsimas renginys: „Registruotis“ (išorinė forma, egzamino nuoroda žmonėms be paskyros arba „Dalyvausiu“ renginio puslapyje),
+    // o kai registracija uždaryta (rankiniu būdu ar praėjus terminui) - „Registracija uždaryta“
+    if (event_last_day($ev) < date('Y-m-d')) {
+        return '';
+    }
     $url = event_reg_url($ev);
-    return $url === '' ? '' : '<a class="' . e($class) . ' event-reg" href="' . e($url) . '" target="_blank" rel="noopener">' . e(t('📝 Registracija →')) . '</a>';
+    if ($url !== '') {
+        return '<a class="' . e($class) . ' event-reg" href="' . e($url) . '" target="_blank" rel="noopener">' . e(t('📝 Registracija →')) . '</a>';
+    }
+    $acc = current_account();
+    $member = $acc && is_active_account($acc) && !is_staff($acc);
+    if ($ev['type'] === 'exam' && !$member && ($l = exam_signup_link((int) $ev['id'])) && exam_signup_open($ev, $l)) {
+        return '<a class="' . e($class) . ' event-reg" href="' . e(exam_signup_url($l)) . '">' . e(t('📝 Registruotis į egzaminą')) . '</a>';
+    }
+    if (!empty($ev['registration']) && date('Y-m-d') <= event_deadline($ev)) {
+        return $onPage ? '' : '<a class="' . e($class) . ' event-reg" href="' . e(url('renginys.php?id=' . (int) $ev['id'] . '#registracija')) . '">' . e(t('📝 Registruotis')) . '</a>';
+    }
+    return '<span class="' . e(str_replace('btn-primary', 'btn-ghost', $class)) . ' event-reg reg-closed" aria-disabled="true">' . e(t('Registracija uždaryta')) . '</span>';
 }
 
 function render_event(array $ev): string

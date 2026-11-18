@@ -3,7 +3,7 @@
   // Varžybos gyvai (varzybos-gyvai.php): žiūrovų puslapis ir tatamio ekranas. Duomenys - iš serverio kas 1-3 s,
   // o tame pačiame kompiuteryje atidarytas ekranas gauna kovos skydelio pakeitimus iškart (BroadcastChannel).
   var CFG = window.GYVAI || {}, root = document.getElementById('gyvai');
-  var data = null, offset = 0, local = {}, failed = 0, lastHtml = '', lastCur = null;
+  var data = null, offset = 0, local = {}, failed = 0, lastHtml = '';
   var MODE = { kumite: 'Kumite', team: 'Komandinis kumite', sumo: 'Sumo', flags: 'Vėliavėlės', score2: 'Kata + Pritaikymas' };
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
   function fmt(ms) { var s = Math.ceil(Math.max(0, ms) / 1000), m = Math.floor(s / 60); s %= 60; return m + ':' + (s < 10 ? '0' : '') + s; }
@@ -75,38 +75,33 @@
   // ---------- Tatamio ekranas (televizorius) ----------
   function renderScreen() {
     var a = area(CFG.area), pick = liveFor(CFG.area), name = a ? a.name : (pick ? pick.d.areaName : 'TATAMIS'), stage;
+    var next = upNext(a).slice(pick ? 0 : 1, (pick ? 0 : 1) + 3), prep = next[0] || null;
+    // Kas ruošiasi (kita pora): AKA langelyje - kitas AKA, SHIRO langelyje - kitas SHIRO
+    var prepHtml = function (s) { var who = prep && (s === 'a' ? prep.a : prep.b); return who ? '<div class="scr-prep">Ruošiasi: <b>' + esc(who) + '</b></div>' : ''; };
     if (pick) {
       var d = pick.d, left = timeLeft(pick), win = d.winner;
       var side = function (s) {
         var who = s === 'a' ? d.aka : d.shiro, sc = s === 'a' ? d.sa : d.sb, now = s === 'a' ? d.akaNow : d.shiroNow;
         return '<div class="scr-side ' + (s === 'a' ? 'aka' : 'shiro') + (win === s ? ' won' : win ? ' lost' : '') + '"><div class="scr-tag">' + (s === 'a' ? 'AKA' : 'SHIRO') + (win === s ? ' · LAIMĖJO' : '') + '</div>' +
           '<div class="scr-name">' + esc(who.name) + '</div><div class="scr-club">' + esc(who.club) + '</div>' + (now ? '<div class="scr-now">Kovoja: <b>' + esc(now) + '</b></div>' : '') +
-          (d.mode === 'score2' ? '<div class="scr-parts">' + partsHtml(d.parts[s]) + '</div>' : '<div class="scr-score">' + sc + '</div>') + '</div>';
+          (d.mode === 'score2' ? '<div class="scr-parts">' + partsHtml(d.parts[s]) + '</div>' : '<div class="scr-score">' + sc + '</div>') + prepHtml(s) + '</div>';
       };
-      stage = '<div class="scr-top"><span class="live-dot"></span><span><span class="disc d-' + esc(d.disc) + '"></span>' + esc(d.cat) + '</span><span>' + esc(d.round) + '</span>' +
+      stage = '<div class="scr-top"><span class="scr-area">' + esc(name) + '</span><span class="live-dot"></span><span><span class="disc d-' + esc(d.disc) + '"></span>' + esc(d.cat) + '</span><span>' + esc(d.round) + '</span>' +
         (d.bout ? '<span class="scr-pill">Kova ' + esc(d.bout) + '</span>' : '') + (d.to ? '<span class="scr-pill">iki ' + d.to + '</span>' : '') + '</div>' +
         '<div class="scr-main">' + side('a') + (left !== null && d.mode !== 'score2' ? '<div class="scr-timer' + (d.timer && d.timer.up ? '' : left <= 0 ? ' over' : left <= 15000 ? ' last' : '') + '" id="scr-timer">' + fmt(left) + '</div>' : '') + side('b') + '</div>';
     } else {
       var m = nowPair(a);
-      stage = m ? '<div class="scr-top"><span class="live-dot"></span><span><span class="disc d-' + esc(m.disc) + '"></span>' + esc(m.cat) + '</span><span>' + (m.no ? m.no + ' · ' : '') + esc(m.title) + '</span></div>' +
-          '<div class="scr-main scr-pair"><div class="scr-side aka"><div class="scr-tag">AKA</div><div class="scr-name">' + esc(m.a) + '</div><div class="scr-club">' + esc(m.ac) + '</div></div>' +
-          (m.b ? '<div class="scr-vs">prieš</div><div class="scr-side shiro"><div class="scr-tag">SHIRO</div><div class="scr-name">' + esc(m.b) + '</div><div class="scr-club">' + esc(m.bc) + '</div></div>' : '') + '</div>'
-        : '<div class="scr-empty"><div class="scr-title">' + esc(CFG.title) + '</div><p>Šiame tatamyje kovų nebeliko.</p></div>';
+      stage = m ? '<div class="scr-top"><span class="scr-area">' + esc(name) + '</span><span class="live-dot"></span><span><span class="disc d-' + esc(m.disc) + '"></span>' + esc(m.cat) + '</span><span>' + (m.no ? m.no + ' · ' : '') + esc(m.title) + '</span></div>' +
+          '<div class="scr-main scr-pair"><div class="scr-side aka"><div class="scr-tag">AKA</div><div class="scr-name">' + esc(m.a) + '</div><div class="scr-club">' + esc(m.ac) + '</div>' + prepHtml('a') + '</div>' +
+          (m.b ? '<div class="scr-vs">prieš</div><div class="scr-side shiro"><div class="scr-tag">SHIRO</div><div class="scr-name">' + esc(m.b) + '</div><div class="scr-club">' + esc(m.bc) + '</div>' + prepHtml('b') + '</div>' : '') + '</div>'
+        : '<div class="scr-top"><span class="scr-area">' + esc(name) + '</span></div><div class="scr-empty"><div class="scr-title">' + esc(CFG.title) + '</div><p>Šiame tatamyje kovų nebeliko.</p></div>';
     }
-    var next = upNext(a).slice(pick ? 0 : 1, (pick ? 0 : 1) + 3);
-    var html = '<div class="scr2"><aside class="scr-groups"><div class="scr-area">' + esc(name) + '</div>' + groupsList(a, 'scr-glist') +
-      (a && a.end ? '<p class="scr-end">Pabaiga apie ' + esc(a.end) + '</p>' : '') + '</aside>' +
-      '<section class="scr-stage">' + stage + '<div class="scr-foot"><b>Toliau:</b> ' + (next.map(function (x) { return esc(x.a) + (x.b ? ' – ' + esc(x.b) : '') + ' <span class="muted">(' + esc(x.cat) + ')</span>'; }).join(' · ') || '—') + '</div></section></div>';
+    // Žiūrovams kairiojo grupių sąrašo nereikia - kategorija matosi viršuje (#72)
+    var html = '<div class="scr2 solo"><section class="scr-stage">' + stage + '<div class="scr-foot"><b>Toliau:</b> ' + (next.map(function (x) { return esc(x.a) + (x.b ? ' – ' + esc(x.b) : '') + ' <span class="muted">(' + esc(x.cat) + ')</span>'; }).join(' · ') || '—') +
+      (a && a.end ? '<span class="scr-end-r">Pabaiga apie ' + esc(a.end) + '</span>' : '') + '</div></section></div>';
     if (html === lastHtml) return;   // nieko nepasikeitė - nepiešiama iš naujo (telefone puslapis nešokinėja)
     lastHtml = html;
-    // Grupių sąrašas slenkamas tik savo viduje (ne visas puslapis) ir tik pasikeitus dabartinei grupei
-    var old = root.querySelector('.scr-glist'), keep = old ? old.scrollTop : 0;
     root.innerHTML = html;
-    var list = root.querySelector('.scr-glist'), cur = list && list.querySelector('.cur'), curId = cur ? cur.querySelector('[data-cat]').dataset.cat : null;
-    if (!list) return;
-    list.scrollTop = keep;
-    if (cur && curId !== lastCur && list.scrollHeight > list.clientHeight + 4) list.scrollTop = Math.max(0, cur.offsetTop - list.offsetTop - (list.clientHeight - cur.offsetHeight) / 2);
-    lastCur = curId;
   }
 
   // ---------- Žiūrovams (telefone) ----------
@@ -174,13 +169,24 @@
       });
       return html;
   }
+  // Atkrintamosios: medis (stulpeliai pagal ratus), kaip valdyme „Tinklai“; kitos sistemos - sąrašu
+  function treeHtml(b) {
+    var rounds = (b.groups || []).filter(function (g) { return g.round !== undefined && g.matches; });
+    if (!rounds.length) return bracketHtml(b);
+    var side = function (m, k) { var won = m.w === k; return '<div class="tk-p ' + (k === 'a' ? 'aka' : 'shiro') + (won ? ' won' : m.w ? ' lost' : '') + '"><b>' + esc(m[k] || '…') + '</b><small>' + esc(m[k + 'c']) + '</small>' + (won ? '<i>✓</i>' : '') + '</div>'; };
+    return (b.places && b.places.length ? bracketHtml({ places: b.places }) : '') + '<div class="tk-tree">' + rounds.map(function (g, i) {
+      return '<div class="tk-col' + (i === rounds.length - 1 ? ' last' : '') + '"><h4>' + esc(g.t) + '</h4><div class="tk-col-body">' + g.matches.map(function (m) {
+        return '<div class="tk-m' + (m.w ? ' done' : '') + '"><span class="tk-no">' + esc(m.no) + (m.s ? ' · ' + esc(m.s) : '') + '</span>' + side(m, 'a') + side(m, 'b') + '</div>';
+      }).join('') + '</div></div>';
+    }).join('') + '</div>' + bracketHtml({ groups: (b.groups || []).filter(function (g) { return g.round === undefined; }) });
+  }
   function loadCat(id) {
     if (String(id).indexOf('grp:') === 0) { loadGroup(id.slice(4)); return; }
     fetch(CFG.json + '&cat=' + encodeURIComponent(id), { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (d) {
       if (openCat !== id) return;
       var b = d.bracket;
       if (!b) { sheet.querySelector('.gv-sheet-body').innerHTML = '<p class="muted">Grupės duomenų dar nėra.</p>'; return; }
-      sheet.querySelector('.gv-sheet-body').innerHTML = '<p class="muted small">' + esc(b.sys) + ' · ' + b.count + ' dalyv.</p>' + bracketHtml(b);
+      sheet.querySelector('.gv-sheet-body').innerHTML = '<p class="muted small">' + esc(b.sys) + ' · ' + b.count + ' dalyv.</p>' + treeHtml(b);
     }).catch(function () {});
   }
   // Tinklai: visa amžiaus grupė - visos jos rungtys (kas su kuo kovoja)
@@ -189,7 +195,7 @@
       if (openCat !== 'grp:' + key) return;
       var cats = d.cats || [];
       sheet.querySelector('.gv-sheet-body').innerHTML = cats.length ? cats.map(function (b) {
-        return '<section class="panel tk-cat"><div class="tk-cat-head"><span class="disc d-' + esc(b.disc) + '"></span><b>' + esc(b.name) + '</b><span class="muted small">' + (b.tatami ? esc(b.tatami) + ' · ' : '') + esc(b.sys) + ' · ' + b.count + ' dalyv.</span></div>' + bracketHtml(b) + '</section>';
+        return '<section class="panel tk-cat"><div class="tk-cat-head"><span class="disc d-' + esc(b.disc) + '"></span><b>' + esc(b.name) + '</b><span class="muted small">' + (b.tatami ? esc(b.tatami) + ' · ' : '') + esc(b.sys) + ' · ' + b.count + ' dalyv.</span></div>' + treeHtml(b) + '</section>';
       }).join('') : '<p class="muted">Grupės duomenų dar nėra.</p>';
     }).catch(function () {});
   }
@@ -207,6 +213,30 @@
     var b = e.target.closest('[data-cat]'); if (!b || CFG.screen) return;
     openSheet(b.dataset.cat, b.dataset.title);
   });
+
+  // ---------- „Rask save“: dalyvio grupės, tatamis ir laikas ----------
+  var fq = document.getElementById('gv-q'), fbox = document.getElementById('gv-found'), fTimer = null, fSeq = 0;
+  if (fq) {
+    fq.addEventListener('input', function () {
+      clearTimeout(fTimer);
+      var q = fq.value.trim();
+      if (q.length < 2) { fbox.innerHTML = ''; return; }
+      fTimer = setTimeout(function () {
+        var my = ++fSeq;
+        fetch(CFG.json + '&find=' + encodeURIComponent(q), { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (d) {
+          if (my !== fSeq) return;
+          var list = d.found || [];
+          fbox.innerHTML = list.length ? '<ul class="gv-found">' + list.map(function (f) {
+            return '<li><div class="gf-who"><b>' + esc(f.name) + '</b> <span class="muted small">' + esc(f.club) + '</span></div>' + f.cats.map(function (c) {
+              return '<button type="button" class="gf-cat" data-cat="' + esc(c.id) + '" data-title="' + esc(c.name) + '"><span class="disc d-' + esc(c.disc) + '"></span>' + esc(c.name) +
+                '<span class="gf-where">' + (c.finished ? '✓ baigta' : (c.area ? esc(c.area) : '') + (c.start ? ' · ~' + esc(c.start) : '')) + '</span></button>';
+            }).join('') + '</li>';
+          }).join('') + '</ul>' : '<p class="muted small">Nerasta. Patikrinkite vardą ar pavardę.</p>';
+        }).catch(function () {});
+      }, 250);
+    });
+    fbox.addEventListener('click', function (e) { var b = e.target.closest('[data-cat]'); if (b) openSheet(b.dataset.cat, b.dataset.title); });
+  }
 
   function render() { if (!data && !Object.keys(local).length) return; if (CFG.screen) renderScreen(); else renderViewer(); }
   // Laikrodis tiksi tarp atnaujinimų

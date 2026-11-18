@@ -70,7 +70,7 @@ test('Taika: systems named by event, medals separate, team kata final stays with
   check('kata names', kumNames.includes('Kata balais') && kumNames.includes('Kata vėliavėlėmis'), kumNames.join(' | '));
 
   // Kategorijos nustatymuose - tie patys pavadinimai ir „Medaliai“ (jei kategorijos langas atidarytas)
-  await a.click('#tab-kategorijos');
+  await a.click('#tab-admin'); await a.click('#tab-kategorijos');
   await a.waitForTimeout(400);
   if (await a.locator('#cat-detail .sys-card').count()) {
     const cards = await a.locator('#cat-detail .sys-card b').allInnerTexts();

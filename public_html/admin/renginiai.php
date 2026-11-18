@@ -7,7 +7,7 @@ $edit = get('edit') ?: post('edit');
 $errors = [];
 // Iš kur atėjo redaguoti (viešas renginių puslapis ar pagrindinis) - ten ir grąžinama
 $back = get('back') ?: post('back');
-$backPages = ['renginiai' => 'renginiai.php', 'index' => 'index.php#renginiai'];
+$backPages = ['renginiai' => 'renginiai.php', 'index' => 'index.php#renginiai', 'egzaminai' => 'admin/egzaminai.php'];
 $back = isset($backPages[$back]) ? $back : '';
 function back_after_save(string $back, array $backPages, int $id = 0): void
 {

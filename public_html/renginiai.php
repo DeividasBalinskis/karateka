@@ -56,7 +56,17 @@ $n = 0;   // eilės nr. animacijai (laipteliai)
     <a href="<?= e($qs(['vaizdas' => '', 'men' => ''])) ?>" class="<?= $cal ? '' : 'active' ?>"><?= te('☰ Sąrašas') ?></a>
     <a href="<?= e($qs(['vaizdas' => 'kalendorius'])) ?>" class="<?= $cal ? 'active' : '' ?>"><?= te('📅 Kalendorius') ?></a>
   </nav>
-  <a class="ev-ics small" href="<?= e(preg_replace('~^https?://~', 'webcal://', abs_url('kalendorius.php'))) ?>" title="<?= te('Visi renginiai atsiras jūsų telefono ar Google kalendoriuje ir atsinaujins patys') ?>"><?= te('📲 Į telefono kalendorių') ?></a>
+  <?php $webcal = preg_replace('~^https?://~', 'webcal://', abs_url('kalendorius.php')); ?>
+  <!-- Ne visi telefonai supranta webcal:// (pvz. Samsung) - todėl pasirinkimas: Google, iPhone, failas -->
+  <details class="ev-ics small">
+    <summary title="<?= te('Visi renginiai atsiras jūsų telefono ar Google kalendoriuje ir atsinaujins patys') ?>"><?= te('📲 Į telefono kalendorių') ?></summary>
+    <div class="ev-ics-menu">
+      <a href="https://calendar.google.com/calendar/render?cid=<?= e(rawurlencode($webcal)) ?>" target="_blank" rel="noopener"><?= te('Google kalendorius (Android, Samsung)') ?></a>
+      <a href="<?= e($webcal) ?>"><?= te('iPhone / Apple kalendorius') ?></a>
+      <a href="<?= e(url('kalendorius.php?failas=1')) ?>"><?= te('Atsisiųsti failą (.ics)') ?></a>
+      <span class="muted"><?= te('Google kalendoriuje renginiai atsinaujins patys; atsisiųstas failas - tik dabartiniai renginiai.') ?></span>
+    </div>
+  </details>
 </div>
 
 <?php if ($invites): ?>

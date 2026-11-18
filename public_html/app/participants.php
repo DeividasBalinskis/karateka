@@ -301,3 +301,51 @@ function member_short_name(array $m, array $all): string
     $same = count(array_filter($all, function ($x) use ($m) { return $x['first_name'] === $m['first_name']; }));
     return $m['first_name'] . ($same > 1 ? ' ' . mb_substr((string) ($m['last_name'] ?? ''), 0, 1) . '.' : '');
 }
+
+// ---------- Mokestis pagal lankomumą (db/038): pvz. darželiui 6 € už treniruotę, per mėnesį ne daugiau kaip 35 € ----------
+
+/** Grupės kaina už apsilankymą: ['price' => 6.0, 'cap' => 35.0|null] arba null, jei nenustatyta */
+function group_visit_price(array $g): ?array
+{
+    $p = isset($g['price_visit']) ? (float) $g['price_visit'] : 0.0;
+    if ($p <= 0) {
+        return null;
+    }
+    $cap = isset($g['price_cap']) && (float) $g['price_cap'] > 0 ? (float) $g['price_cap'] : null;
+    return ['price' => $p, 'cap' => $cap];
+}
+
+/** Mėnesio sumos grupės nariams: [member_id => ['visits' => 3, 'sum' => 18.0, 'capped' => false]] ($ym - 'Y-m') */
+function group_month_fees(array $g, string $ym): array
+{
+    $pr = group_visit_price($g);
+    if (!$pr) {
+        return [];
+    }
+    $out = [];
+    $rows = q('SELECT member_id, COUNT(*) FROM attendance WHERE group_id = ? AND present = 1 AND training_date BETWEEN ? AND LAST_DAY(?) GROUP BY member_id',
+        [(int) $g['id'], $ym . '-01', $ym . '-01'])->fetchAll(PDO::FETCH_KEY_PAIR);
+    foreach ($rows as $mid => $n) {
+        $sum = $n * $pr['price'];
+        $capped = $pr['cap'] !== null && $sum >= $pr['cap'];
+        $out[(int) $mid] = ['visits' => (int) $n, 'sum' => $capped ? $pr['cap'] : $sum, 'capped' => $capped];
+    }
+    return $out;
+}
+
+function money_fmt(float $v): string
+{
+    return rtrim(rtrim(number_format($v, 2, ',', ' '), '0'), ',') . ' €';
+}
+
+/** Trumpas tekstas: „Lapkritis: 3 × 6 € = 18 €“ arba „… = 35 € (riba)“ */
+function group_fee_text(array $g, ?array $fee, string $ym): string
+{
+    $pr = group_visit_price($g);
+    if (!$pr) {
+        return '';
+    }
+    $n = $fee['visits'] ?? 0;
+    $month = mb_convert_case(month_names()[(int) substr($ym, 5, 2)] ?? $ym, MB_CASE_TITLE);
+    return $month . ': ' . $n . ' × ' . money_fmt($pr['price']) . ' = ' . money_fmt($fee['sum'] ?? 0.0) . (!empty($fee['capped']) ? ' (' . t('riba') . ')' : '');
+}

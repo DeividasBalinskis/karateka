@@ -25,6 +25,54 @@ if (get('json')) {
         }
         exit(json_encode(['ok' => true, 'cats' => $list], JSON_UNESCAPED_UNICODE));
     }
+    // Paieška „Rask save“: kuriose grupėse dalyvis, ant kurio tatamio ir kada grupė prasideda
+    if (get('find') !== '') {
+        $fold = function (string $x): string {
+            $x = mb_strtolower($x);
+            return strtr($x, ['ą' => 'a', 'č' => 'c', 'ę' => 'e', 'ė' => 'e', 'į' => 'i', 'š' => 's', 'ų' => 'u', 'ū' => 'u', 'ž' => 'z']);
+        };
+        $q = $fold(trim((string) get('find')));
+        $where = [];
+        foreach ((array) ($r['areas'] ?? []) as $a) {
+            foreach ((array) ($a['cats'] ?? []) as $c) {
+                $where[(string) ($c['id'] ?? '')] = ['area' => (string) ($a['name'] ?? ''), 'start' => (string) ($c['start'] ?? '')];
+            }
+        }
+        $found = [];
+        if (mb_strlen($q) >= 2) {
+            foreach ((array) ($r['categories'] ?? []) as $c) {
+                $b = $r['brackets'][(string) ($c['id'] ?? '')] ?? null;
+                if (!$b) {
+                    continue;
+                }
+                $names = [];
+                foreach ((array) ($b['people'] ?? []) as $p) {
+                    $names[] = [(string) ($p['n'] ?? ''), (string) ($p['c'] ?? '')];
+                }
+                foreach ((array) ($b['groups'] ?? []) as $g) {
+                    foreach ((array) ($g['rows'] ?? []) as $p) {
+                        $names[] = [(string) ($p['n'] ?? ''), (string) ($p['c'] ?? '')];
+                    }
+                    foreach ((array) ($g['matches'] ?? []) as $m) {
+                        $names[] = [(string) ($m['a'] ?? ''), (string) ($m['ac'] ?? '')];
+                        $names[] = [(string) ($m['b'] ?? ''), (string) ($m['bc'] ?? '')];
+                    }
+                }
+                foreach ($names as [$n, $club]) {
+                    if ($n === '' || $n === '…' || strpos($fold($n . ' ' . $club), $q) === false) {
+                        continue;
+                    }
+                    $k = $n . '|' . $club;
+                    $found[$k] = $found[$k] ?? ['name' => $n, 'club' => $club, 'cats' => []];
+                    $w = $where[(string) $c['id']] ?? ['area' => (string) ($c['tatami'] ?? ''), 'start' => ''];
+                    $found[$k]['cats'][(string) $c['id']] = ['id' => (string) $c['id'], 'name' => (string) $c['name'], 'disc' => (string) ($c['discipline'] ?? ''),
+                        'area' => $w['area'], 'start' => $w['start'], 'finished' => !empty($c['finished'])];
+                }
+            }
+        }
+        $out = array_map(function ($f) { $f['cats'] = array_values($f['cats']); return $f; }, array_slice(array_values($found), 0, 30));
+        exit(json_encode(['ok' => true, 'found' => $out], JSON_UNESCAPED_UNICODE));
+    }
     // Viena grupė (atidarius iš sąrašo): kovos pagal ratus ir vietos
     if (get('cat') !== '') {
         $b = $r['brackets'][(string) get('cat')] ?? null;
@@ -82,6 +130,25 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
     <div class="vz-top-right"><?= render_lang_switch(tl_lang()) ?></div>
   </div>
 </header>
+<?php endif; ?>
+<?php if (!$screen):
+    $stream = tournament_stream($t); ?>
+<?php if ($stream): ?>
+<section class="panel gv-stream" id="gv-stream">
+  <h2>🎥 Transliacija<?php if ($stream['at']): ?> <span class="muted small"><?= $stream['soon'] ? 'prasidės ' : '' ?><?= e(fmt_date(date('Y-m-d', $stream['at']))) ?> <?= e(date('H:i', $stream['at'])) ?></span><?php endif; ?></h2>
+  <?php if ($stream['embed']): ?>
+    <div class="gv-video"><iframe src="<?= e($stream['embed']) ?>" title="Transliacija" loading="lazy" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe></div>
+  <?php elseif ($stream['soon']): ?>
+    <p class="gv-soon">Transliacija prasidės <b><?= e(fmt_date(date('Y-m-d', $stream['at']))) ?> <?= e(date('H:i', $stream['at'])) ?></b>.</p>
+  <?php endif; ?>
+  <p><a class="btn" href="<?= e($stream['url']) ?>" target="_blank" rel="noopener">▶ Žiūrėti YouTube ↗</a></p>
+</section>
+<?php endif; ?>
+<section class="panel gv-find">
+  <label class="gv-find-l" for="gv-q">🔎 Rask save</label>
+  <input type="search" class="sel" id="gv-q" placeholder="Vardas, pavardė arba klubas" autocomplete="off" aria-label="Ieškoti dalyvio">
+  <div id="gv-found" aria-live="polite"></div>
+</section>
 <?php endif; ?>
 <main id="gyvai" aria-live="polite"><p class="muted">Kraunama…</p></main>
 <script>window.GYVAI = <?= json_encode($cfg, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP) ?>;</script>

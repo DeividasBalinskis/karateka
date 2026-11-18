@@ -51,6 +51,7 @@ page_start(t('Prisijungti'), ['narrow' => true, 'noindex' => true]);
 ?>
 <div class="panel card">
   <h1 class="styled"><?= te('Prisijungti') ?></h1>
+  <p class="login-intro"><?= te('Mūsų klubo platformoje galėsite matyti jums aktualius renginius, registracijas, sąskaitas, dokumentus. Taip pat jūsų lauks jau paruošta pasirengimo egzaminams ir varžyboms video medžiaga.') ?></p>
   <?php if ($error): ?><div class="flash flash-err"><?= e($error) ?></div><?php endif; ?>
   <?php if ($resendFor): ?>
     <form method="post" class="form" style="margin-bottom:18px;">

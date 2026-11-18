@@ -207,7 +207,7 @@ page_start(t('Egzaminas'), ['noindex' => true, 'account' => 'egzaminas']);
             <span>
               <?php if ($qz['audience'] !== 'karateka'): ?><span class="badge badge-tag"><?= e(t(QUIZ_AUDIENCE[$qz['audience']])) ?></span><?php endif; ?>
               <strong><?= e($qz['title']) ?></strong>
-              <div class="muted small"><?= min((int) $qz['question_count'], (int) $qz['questions_total']) ?> <?= te('klausimų · reikia ≥') ?> <?= (int) $qz['pass_percent'] ?> %<?= !empty($qz['time_limit']) ? ' · ' . (int) $qz['time_limit'] . ' min.' : '' ?></div>
+              <div class="muted small"><?= min(quiz_limit($qz), (int) $qz['questions_total']) ?> <?= te('klausimų · reikia ≥') ?> <?= (int) $qz['pass_percent'] ?> %<?= !empty($qz['time_limit']) ? ' · ' . (int) $qz['time_limit'] . ' min.' : '' ?></div>
             </span>
             <?php if ($ok): ?><span class="badge badge-ok"><?= te('✓ Išlaikytas') ?></span><?php elseif ($best): ?><span class="badge">geriausias <?= attempt_percent($best) ?> %</span><?php endif; ?>
           </div>
