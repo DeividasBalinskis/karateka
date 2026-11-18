@@ -10,7 +10,7 @@ function n(string $key, $default = null)
         $n = require __DIR__ . '/nustatymai.php';
         // Redaguojami pavadinimas ir kontaktai („🎨 Išvaizda ir kontaktai“)
         if (function_exists('ltkf_nust')) {
-            foreach (['pavadinimas', 'el_pastas', 'telefonas'] as $k) {
+            foreach (['pavadinimas', 'trumpas', 'el_pastas', 'telefonas'] as $k) {
                 $v = trim((string) (ltkf_nust()[$k] ?? ''));
                 if ($v !== '') {
                     $n[$k] = $v;

@@ -318,3 +318,12 @@ a.partner-card:hover { box-shadow: var(--shadow-2); transform: translateY(-2px);
 .inbox-list li.is-done{opacity:.55;}
 .inbox-main{flex:1; min-width:0; overflow-wrap:anywhere;}
 .inbox-acts{display:flex; gap:6px; flex-wrap:wrap;}
+/* Skilties fonas ir „Nauja skiltis su fonu“ blokas */
+section.lb-bg{border-radius:0;}
+.lb-light, .lb-light h1, .lb-light h2, .lb-light h3, .lb-light p, .lb-light li, .lb-light .eyebrow, .lb-light .lead{color:#fff !important;}
+.lb-light a:not(.btn){color:#FFE08A;}
+.lb-sec{margin:28px 0; padding:40px 28px; border-radius:16px; background-color:#F4F1EA; background-size:cover; background-position:center;}
+.lb-sec-in{max-width:860px; margin:0 auto;}
+.lb-sec h2{margin-top:0;}
+.lb-sec.lb-light{text-shadow:0 1px 3px rgba(0,0,0,.45);}
+@media (max-width:640px){ .lb-sec{padding:28px 18px;} }

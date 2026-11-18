@@ -3011,4 +3011,5 @@ Nuo 2013 m. treniravosi Tradicinio karate-do klubo „Sanrei“ komandoje, o 201
     'Į kovą galima pasiimti 2 gyvūnėlius' => 'В бой можно взять 2 питомцев',
     'vietoj' => 'вместо',
     'Gyvūnėlis liks namie' => 'Питомец останется дома',
+    '🏯 Dojo' => '🏯 Додзё',
 ];

@@ -420,3 +420,56 @@
 .fa-arena .fa-f .fa-pet.p2{width:24%; bottom:22%;}
 .petab.skillab{background:rgba(255,215,90,.25);}
 .ln.k-skill{color:#B8860B; font-weight:700;}
+
+/* =====================================================================
+   v1.43: Dojo - rėmas aplink buveinę, šviesios lentelės (matosi ant bet kokio fono), lygis ir XP apačioje, vienodas UI (#80, #84)
+   ===================================================================== */
+.dw-frame{position:relative; padding:14px; margin:6px 0 18px; background:#7A4E2E url(../img/zaidimas/tex/mediena.png) 0 0/128px 64px repeat; image-rendering:pixelated;
+  box-shadow:0 0 0 3px #1A120C, inset 0 0 0 3px #E9C27A, inset 0 0 0 6px #6B4226, 0 10px 0 4px rgba(26,18,12,.22);}
+.dw-frame .fr-c{position:absolute; width:22px; height:22px; z-index:3; background:#F2C14E; box-shadow:0 0 0 3px #1A120C, inset -4px -4px 0 #B07A1E, inset 4px 4px 0 #FFE59A;}
+.dw-frame .fr-c.tl{left:-6px; top:-6px;} .dw-frame .fr-c.tr{right:-6px; top:-6px;} .dw-frame .fr-c.bl{left:-6px; bottom:-6px;} .dw-frame .fr-c.br{right:-6px; bottom:-6px;}
+.dw-frame .dw-wrap{margin:0;}
+.dw-frame .dojo .dw, .dojo .dw-frame .dw{box-shadow:0 0 0 3px #1A120C, 0 0 0 6px #E9C27A, 0 0 0 9px #1A120C;}
+/* Lygis ir XP - po buveine */
+.dw-foot{display:flex; align-items:center; gap:14px; margin-top:14px; padding:10px 14px; background:#F3E3C0 url(../img/zaidimas/tex/popierius.png) 0 0/128px 128px repeat; color:#2A1A10;
+  font-family:'Pixelify Sans','Space Grotesk',sans-serif; box-shadow:0 0 0 3px #1A120C, inset 0 3px 0 rgba(255,255,255,.5), inset 0 -4px 0 rgba(120,80,40,.25);}
+.dw-foot:empty{display:none;}
+.df-name{display:flex; flex-direction:column; min-width:0;}
+.df-name b{font-size:1.15rem; line-height:1.1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.df-name small{font:600 .78rem 'Inter',sans-serif; opacity:.75;}
+.df-lv{flex:none; padding:4px 10px; background:#2A1A10; color:#FFD65C; font-size:1rem; box-shadow:0 0 0 2px #1A120C;}
+.dw-foot .df-xp{position:relative; flex:1; min-width:120px; height:22px; background:#3A2414; box-shadow:0 0 0 3px #1A120C; overflow:hidden;}
+.dw-foot .df-xp i{display:block; height:100%; background:linear-gradient(180deg,#FFE58A 0 45%,#F2B23A 45%);}
+.dw-foot .df-xp span{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:.85rem; color:#fff; text-shadow:0 1px 0 #000, 0 0 3px #000;}
+/* Šviesi mediena + tamsus tekstas: lentelės nepasimeta ant tamsaus ar ryškaus fono */
+.dw-tool, .dw-board{background-image:linear-gradient(rgba(255,236,200,.5), rgba(255,236,200,.5)), url(../img/zaidimas/tex/mediena.png); background-size:auto, 128px 64px;
+  color:#2A1A10; text-shadow:0 1px 0 rgba(255,255,255,.55); box-shadow:0 0 0 3px #1A120C, inset 0 0 0 2px #FFE7B0, inset 0 -4px 0 rgba(90,56,32,.35), 0 5px 0 2px rgba(10,8,20,.4);}
+.dw-tool:hover, .dw-board:hover{filter:brightness(1.06);}
+.dw-tool{width:76px; height:70px; gap:3px; font-size:.74rem; font-weight:700;}
+.dw-tool .px-ic{width:32px; height:32px;}
+.dw-bar{gap:9px; max-width:62%;}
+.dw-tool[data-pane].on{box-shadow:0 0 0 3px #1A120C, 0 0 0 6px #FFD65C, inset 0 0 0 2px #FFE7B0;}
+.dw-board{width:24%; min-width:190px; padding:10px 12px 11px;}
+.dw-board .bd-h{color:#7A2E10; border-bottom-color:rgba(42,26,16,.35); font-size:.95rem;}
+.dw-board .bd-big b{font-size:1.15rem;} .dw-board .bd-big .px-ic{width:24px; height:24px;}
+.dw-board .bd-st{font-size:.9rem;}
+.dw-board .bd-more{color:#7A2E10; font-size:.72rem;}
+.dw-sign{font-size:.95rem; padding-top:7px; padding-bottom:7px; box-shadow:0 0 0 3px #1A120C, inset 0 3px 0 rgba(255,255,255,.22), inset 0 -4px 0 rgba(0,0,0,.3), 0 5px 0 2px rgba(10,8,20,.4);}
+.dw-sign .px-ic{width:30px; height:30px;}
+@media (max-width: 760px){
+  .dw-frame{padding:8px;}
+  .dw-frame .fr-c{width:14px; height:14px;}
+  .dw-foot{flex-wrap:wrap; gap:8px 10px; padding:8px 10px;}
+  .dw-foot .df-xp{flex-basis:100%;}
+  .dw-tool{width:50px; height:48px;} .dw-tool .px-ic{width:28px; height:28px;}
+  .dw-board{min-width:0; width:40%;}
+  .dw-board .bd-st{font-size:.74rem;} .dw-board .bd-big b{font-size:.9rem;}
+}
+.dw-foot .df-xp, .dw-foot .df-xp i{border-radius:0;}
+.dw-tool{font-size:.78rem;}
+@media (max-width: 760px){
+  .dw-bar{max-width:64%; gap:6px;}
+  .dw-tool{width:42px; height:40px;} .dw-tool .px-ic{width:24px; height:24px;}
+  .dw-tool em{top:-6px; right:-6px; min-width:16px; height:16px; font-size:.6rem;}
+  .dw-setup{top:auto; bottom:44%; font-size:.9rem; padding:9px 14px;}
+}

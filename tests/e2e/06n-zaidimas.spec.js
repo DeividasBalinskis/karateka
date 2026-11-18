@@ -49,7 +49,7 @@ test('my dojo: create the hero, test panel, gift box, equip, pet, collection', a
   check('hero saved', kid === 'kitsune\tPandutė', kid);
   check('flame colour saved', /F27FD0/.test(sql("SELECT look FROM game_heroes WHERE name = 'Pandutė'")));
   check('kid has no test panel', await k.locator('#g-test').count() === 0);
-  check('world with hero and XP bar', await k.locator('.dw .dw-hero img.px-hero').count() === 1 && await k.locator('.dw .dw-hero svg').count() === 0 && await k.locator('.dw-ui .dw-plaque .xp-track').count() === 1);
+  check('world with hero and XP bar', await k.locator('.dw .dw-hero img.px-hero').count() === 1 && await k.locator('.dw .dw-hero svg').count() === 0 && await k.locator('.dw-foot .df-xp').count() === 1);
   // Pirmas gyvūnėlis
   // Visa sąsaja aplinkoje: lenta su savybėmis, rodyklės į žaidimus, įrankiai; skiltys - ritinyje
   check('UI inside the scene: stats board, game signs, tools', await k.locator('.dw-ui .dw-board').count() === 1 && await k.locator('.dw-ui .dw-post .dw-sign').count() === 4 && await k.locator('.dw-ui .dw-tool[data-pane=pets]').count() === 1);
@@ -83,7 +83,7 @@ test('my dojo: create the hero, test panel, gift box, equip, pet, collection', a
   await a.waitForSelector('#dojo .dojo-head');
   await a.click('.dw-tool[data-pane=test]');
   await a.fill('#t-lvl', '6'); await a.click('[data-test=level]'); await a.waitForTimeout(700);
-  check('test level applied', (await a.textContent('.dojo-lvl')).includes('6'));
+  check('test level applied', (await a.textContent('.df-lv')).includes('6'));
   await a.click('[data-test=all]'); await a.waitForTimeout(900);
   await a.click('[data-test=boxes]'); await a.waitForTimeout(700);
   await a.click('.sc-x');

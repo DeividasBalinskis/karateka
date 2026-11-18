@@ -78,7 +78,7 @@ test('Taika: Draws tab and for spectators, diplomas printable and from an Excel 
   await a.waitForTimeout(1500);
 
   // Tinklai: amžiaus grupės, paspaudus - visos tos grupės rungtys su poromis
-  await a.click('#tab-tinklai');
+  await a.click('#tab-admin'); await a.click('#tab-tinklai');   // Tinklai - Administracijoje (#81)
   await a.waitForSelector('#tk-groups .tk-g');
   const groups = await a.locator('#tk-groups .tk-g').count();
   check('age groups listed', groups > 3, groups);
@@ -88,14 +88,16 @@ test('Taika: Draws tab and for spectators, diplomas printable and from an Excel 
   await a.locator('#tk-view [data-tk-open]').first().click();
   check('opens in live', await a.locator('#run').isVisible());
 
-  // Žiūrovams: transliacijos nuorodoje - „Tinklai“
+  // Žiūrovams atskiros „Tinklai“ skilties nebėra (#81), bet paspaudus grupę sąraše - matosi, kas su kuo kovoja
   const share = sql(`SELECT share_token FROM tournaments WHERE id = ${tid}`);
   const v = await login(browser, null, 390, 844);
   await v.goto(`varzybos-gyvai.php?k=${share}`);
-  await v.waitForSelector('.gv-tk [data-cat^="grp:"]');
-  await v.locator('.gv-tk [data-cat^="grp:"]').nth(2).click();
-  await v.waitForSelector('.gv-sheet .tk-cat');
-  check('spectators see the draws (tree too)', await v.locator('.gv-sheet .tk-m, .gv-sheet .gv-m, .gv-sheet .gv-score li, .gv-sheet .gv-people li').count() > 0);
+  await v.waitForSelector('.gv-glist button');
+  check('no separate draws section for spectators', await v.locator('.gv-tk').count() === 0);
+  await v.locator('.gv-glist button').first().click();
+  await v.waitForSelector('.gv-sheet:not([hidden]) .gv-sheet-body');
+  await v.waitForFunction(() => /dalyv\./.test(document.querySelector('.gv-sheet-body').innerText), null, { timeout: 8000 }).catch(() => {});
+  check('a group opens with who fights whom', await v.locator('.gv-sheet .tk-m, .gv-sheet .gv-m, .gv-sheet .gv-score li, .gv-sheet .gv-people li').count() > 0);
 
   // Diplomai be šablono - paprasti spausdinami
   sql("DELETE FROM site_settings WHERE name = 'taika_diploma'");

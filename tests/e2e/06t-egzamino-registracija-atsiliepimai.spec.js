@@ -79,6 +79,12 @@ test('exam signup link for people without an account, invitations, exam list for
   await v.goto('renginiai.php');
   check('open registration: Registruotis', await v.locator('.event', { hasText: 'E2E uždaryta registracija' }).locator('a.event-reg', { hasText: 'Registruotis' }).count() === 1);
 
+  // Prisijungus: pagrindinio puslapio skiltys - vienas „Apie klubą ‹“, užvedus išsiskleidžia (#78)
+  await a.goto('index.php');
+  check('logged-in menu folded into one item', await a.locator('.nav-onpage.folded .fold-main').count() === 1);
+  await a.hover('.nav-onpage.folded');
+  await a.waitForTimeout(400);
+  check('hover unfolds the other sections', await a.locator('.nav-onpage.folded li:not(.fold-main) a').first().isVisible());
   // Prisijungimo puslapyje - ką rasite prisijungę
   await v.goto('prisijungti.php');
   check('login page explains what is inside', /renginius, registracijas, sąskaitas, dokumentus/.test(await v.textContent('.login-intro')));

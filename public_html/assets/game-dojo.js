@@ -124,8 +124,11 @@
   var PANES = [['stats', 'savybes', 'Savybės'], ['equip', 'kuprine', 'Kuprinė'], ['pets', 'letena', 'Gyvūnėliai'], ['home', 'aplinka', 'Aplinka'], ['col', 'knyga', 'Kolekcija'], ['test', 'kolba', 'Testavimas (adminui)']];
   function ui() {
     var st = H.stats, x = H.xp, per = x.per || 100, pct = Math.min(100, Math.round(x.into / per * 100)), boxes = (H.boxes || []).length, html = '';
-    html += '<div class="dw-plaque"><i class="pq-rope l"></i><i class="pq-rope r"></i><div class="pq-body"><b>' + esc(H.publicName || H.name) + '</b><span class="pq-lv">⭐ ' + T('Lygis') + ' ' + H.level + '</span>' +
-      '<div class="xp-track"><i style="width:' + pct + '%"></i><span>' + x.into + ' / ' + per + ' XP</span></div><small>' + esc(beltName(H.belt)) + '</small></div></div>';
+    // Vardas, lygis ir XP - po buveine (kaip anksčiau paskyroje), kad neuždengtų vaizdo (#84)
+    var foot = $('.dw-foot');
+    if (foot) foot.innerHTML = '<div class="df-name"><b>' + esc(H.publicName || H.name) + '</b><small>' + esc(beltName(H.belt)) + '</small></div>' +
+      '<span class="df-lv">⭐ ' + T('Lygis') + ' ' + H.level + '</span>' +
+      '<div class="xp-track df-xp"><i style="width:' + pct + '%"></i><span>' + x.into + ' / ' + per + ' XP</span></div>';
     html += '<div class="dw-bar">';
     if (!ro) {
       html += '<button type="button" class="dw-tool' + (boxes ? ' glow' : '') + '" data-act="boxes" title="' + esc(T('Dovanos')) + '">' + A.icon('dovana') + '<span>' + T('Dovanos') + '</span>' + (boxes ? '<em>' + boxes + '</em>' : '') + '</button>';
@@ -175,7 +178,9 @@
     if (!sc || !p) return;
     sc.querySelectorAll('.sc-pane').forEach(function (el) { el.hidden = el.dataset.pane !== name; });
     sc.querySelector('.sc-title').innerHTML = A.icon(p[1]) + ' ' + esc(T(p[2]));
-    sc.hidden = false; sc.classList.remove('unroll'); void sc.offsetWidth; sc.classList.add('unroll');
+    var again = !sc.hidden && sc.dataset.open === name;   // jau atvertas tas pats - be animacijos iš naujo
+    sc.hidden = false;
+    if (!again) { sc.classList.remove('unroll'); void sc.offsetWidth; sc.classList.add('unroll'); }
     sc.dataset.open = name;
     root.querySelectorAll('.dw-tool[data-pane]').forEach(function (b) { b.classList.toggle('on', b.dataset.pane === name); });
   }
@@ -276,7 +281,7 @@
       '<p class="g-empty">' + T('Matai tik tu (adminas). Vaikų lygis ir diržas imami iš tikrų XP ir diržo.') + '</p>';
   }
   function head() {
-    var html = '<h2 class="dojo-title">🏯 ' + esc(ro ? (H.publicName || H.name) + ' · ' + T('Dojo') : T('Mano dojo')) + '</h2><span class="dojo-lvl">⭐ ' + H.level + '</span>';
+    var html = '<h2 class="dojo-title">🏯 ' + esc(ro ? (H.publicName || H.name) + ' · ' + T('Dojo') : T('Dojo')) + '</h2>';
     if ((G.heroes || []).length > 1) html += '<div class="dojo-heroes">' + G.heroes.map(function (h) { return '<button type="button" data-hero="' + h.id + '" class="' + (+h.id === +H.id ? 'active' : '') + '">' + esc(h.name) + '</button>'; }).join('') + '</div>';
     $('.dojo-head').innerHTML = html;
   }
@@ -307,7 +312,7 @@
 
   function build() {
     var pane = function (name, inner) { return '<section class="sc-pane" data-pane="' + name + '" hidden>' + inner + '</section>'; };
-    root.innerHTML = '<div class="dojo-head"></div><div class="dw-wrap"><div class="dw"></div><div class="dw-ui"></div>' +
+    root.innerHTML = '<div class="dojo-head"></div><div class="dw-frame"><i class="fr-c tl"></i><i class="fr-c tr"></i><i class="fr-c bl"></i><i class="fr-c br"></i><div class="dw-wrap"><div class="dw"></div><div class="dw-ui"></div>' +
       '<div class="dw-scroll" hidden><i class="sc-rod top"></i><div class="sc-paper"><button type="button" class="sc-x" data-act="pane-close" aria-label="' + esc(T('Uždaryti')) + '">×</button><h3 class="sc-title"></h3><div class="sc-body">' +
       pane('stats', '<div id="g-stats"></div>') +
       pane('equip', '<div id="g-equip"></div>' + (ro ? '' : '<div class="g-sub">' + T('Inventorius') + ' <span class="cnt" id="g-inv-cnt"></span></div><div id="g-inv"></div>')) +
@@ -315,7 +320,7 @@
       (ro ? '' : pane('home', '<div id="g-home"></div>')) +
       pane('col', '<div id="g-col"></div>') +
       (G.admin && !ro ? pane('test', '<div id="g-test"></div>') : '') +
-      '</div></div><i class="sc-rod bot"></i></div></div>';
+      '</div></div><i class="sc-rod bot"></i></div></div><div class="dw-foot"></div></div>';
     bindWorld();
     if (ro) { var noop = function () {}; renderInv = noop; renderHome = noop; }
     renderAll();
@@ -463,6 +468,7 @@
     var t = e.target.closest('[data-act],[data-pane],[data-plus],[data-slot],[data-filt],[data-item],[data-feed],[data-active],[data-rename],[data-release],[data-starter],[data-bg],[data-house],[data-decor],[data-test],[data-hero],[data-ch]');
     if (!t || ro && !t.dataset.hero && !t.dataset.pane && t.dataset.act !== 'pane-close') return;
     var a = t.dataset.act;
+    if (t.classList.contains('sc-pane')) return;   // paspaudimas pačiame ritinyje - ne mygtukas (#79)
     if (t.dataset.pane) return openPane(t.dataset.pane);
     if (a === 'pane-close') return closePane();
     if (a === 'boxes') return openBoxes();

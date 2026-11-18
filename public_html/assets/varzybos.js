@@ -394,7 +394,7 @@
   // Live tvarkaraštis: tatamių lenta; atidarius rungtį - jos valdymas (buvusios „Lentelės“), „Toliau →“ - kita rungtis.
   var tabs = ['klubai', 'komandos', 'dalyviai', 'kategorijos', 'tinklai', 'live', 'rezultatai'];
   // Viršutinis meniu: pagrindinė vieta - tvarkaraštis; paruošimo skirtukai (klubai … kategorijos) - „Administracijoje“
-  var TOP = ['live', 'rezultatai', 'tinklai', 'admin'], SUB = ['klubai', 'komandos', 'dalyviai', 'kategorijos'];
+  var TOP = ['live', 'rezultatai', 'admin'], SUB = ['klubai', 'komandos', 'dalyviai', 'kategorijos', 'tinklai'];   // Tinklai - Administracijoje (#81)
   var lastSub = 'dalyviai';
   try { lastSub = sessionStorage.getItem(KEY + '-sub') || 'dalyviai'; } catch (e) {}
   // Išsaugota meniu tvarka be naujų skirtukų - jie įterpiami po numatyto kaimyno

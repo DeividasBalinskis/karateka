@@ -117,6 +117,23 @@ switch ($action) {
             if (array_key_exists('hidden', $in)) {
                 $d['hidden'] = array_values(array_unique(array_map('strval', array_filter((array) $in['hidden'], 'is_scalar'))));
             }
+            if (array_key_exists('deleted', $in)) {
+                $d['deleted'] = array_values(array_unique(array_map('strval', array_filter((array) $in['deleted'], function ($v) { return is_scalar($v) && preg_match('/^\d{1,3}$/', (string) $v); }))));
+            }
+            if (array_key_exists('secbg', $in)) {
+                $bgs = [];
+                foreach ((array) $in['secbg'] as $k => $bg) {
+                    if (!preg_match('/^\d{1,3}$/', (string) $k) || !is_array($bg)) {
+                        continue;
+                    }
+                    $c = preg_match('/^#[0-9a-fA-F]{6}$/', (string) ($bg['c'] ?? '')) ? (string) $bg['c'] : '';
+                    $img = preg_match('~^\.\./uploads/ltkf/[A-Za-z0-9._-]+$~', (string) ($bg['img'] ?? '')) ? (string) $bg['img'] : '';
+                    if ($c !== '' || $img !== '') {
+                        $bgs[(string) $k] = ['c' => $c, 'img' => $img, 'light' => !empty($bg['light']) ? 1 : 0];
+                    }
+                }
+                $d['secbg'] = $bgs;
+            }
             if (array_key_exists('blocks', $in)) {
                 $blocks = [];
                 foreach ((array) $in['blocks'] as $zone => $list) {
@@ -188,7 +205,7 @@ switch ($action) {
     case 'settings':
         $in = (array) json_decode((string) ($_POST['nust'] ?? '{}'), true);
         $cur = (array) json_decode((string) site_setting('ltkf_nust', '{}'), true);
-        foreach (['pavadinimas' => 160, 'el_pastas' => 120, 'telefonas' => 60] as $k => $max) {
+        foreach (['pavadinimas' => 160, 'trumpas' => 30, 'el_pastas' => 120, 'telefonas' => 60] as $k => $max) {
             if (array_key_exists($k, $in)) {
                 $cur[$k] = mb_substr(trim((string) $in[$k]), 0, $max);
             }

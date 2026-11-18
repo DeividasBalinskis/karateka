@@ -70,3 +70,37 @@ section:hover > .ed-sec-tg{opacity:1;}
 @media (max-width:700px){ .ed-status{flex-basis:100%; order:10;} .ed-who{display:none;} .ed-bar{gap:5px;} .ed-b{padding:6px 9px; font-size:13px;} body.ltkf-edit{padding-bottom:150px;} }
 .ltkf-edit .fb{bottom:76px !important;}
 @media (max-width:700px){ .ltkf-edit .fb{bottom:132px !important;} }
+/* v1.43: didesnė redagavimo sąsaja (#83), antraštė ir meniu redaguojami (#82) */
+.ed-bar{font-size:16px; padding:12px 18px; gap:8px 10px;}
+.ed-b{padding:10px 16px; font-size:15px; border-radius:10px;}
+.ed-who{font-size:15px;}
+.ed-status{font-size:14px;}
+.ed-inbox{flex-direction:column; align-items:flex-start; gap:0; line-height:1.15; background:#F2B705 !important; border-color:#F2B705 !important; color:#14213D !important;}
+.ed-inbox small{font-weight:500; font-size:12px; opacity:.85;}
+body.ltkf-edit{padding-bottom:104px;}
+.ed-sec-tools{position:absolute; top:10px; right:10px; z-index:25; display:flex; flex-wrap:wrap; gap:6px; justify-content:flex-end; max-width:min(560px, 92%);}
+.ed-sec-tools > button{border:0; background:rgba(15,27,51,.9); color:#fff; font:700 14px/1 'Source Sans 3',sans-serif; padding:10px 14px; border-radius:9px; cursor:pointer; box-shadow:0 4px 14px rgba(0,0,0,.25);}
+.ed-sec-tools > button:hover{background:#C1272D;}
+.ed-sec-tools > button[hidden]{display:none;}
+.ed-bgpop{flex-basis:100%; display:flex; flex-wrap:wrap; gap:8px; align-items:center; padding:10px 12px; background:#fff; color:#14213D; border-radius:10px; box-shadow:0 10px 30px rgba(0,0,0,.25); font:600 14px 'Source Sans 3',sans-serif;}
+.ed-bgpop[hidden]{display:none;}
+.ed-bgpop button{border:1px solid rgba(15,27,51,.2); background:#F4F1EA; border-radius:8px; padding:7px 11px; cursor:pointer; font:inherit;}
+.ed-bgpop input[type=color]{width:42px; height:30px; border:0; padding:0; vertical-align:middle;}
+.ltkf-edit section.lb-deleted{max-height:84px; overflow:hidden; opacity:.55; background-image:repeating-linear-gradient(135deg,rgba(193,39,45,.12) 0 12px,transparent 12px 24px) !important;}
+.ltkf-edit section.lb-deleted::after{content:'Ištrinta skiltis - lankytojai jos nemato'; position:absolute; left:16px; top:18px; font:700 15px 'Source Sans 3',sans-serif; color:#C1272D; background:#fff; padding:6px 10px; border-radius:8px;}
+.ltkf-edit section.lb-deleted .ed-sec-tools{opacity:1;}
+/* Pridėti bloką / skiltį - aiškiau matosi */
+.ed-add-btn{opacity:1; font-size:15px; padding:10px; border-width:2px; color:#3D4A66;}
+.ed-types button{font-size:15px; padding:10px 14px;}
+/* Antraštė: pavadinimas ir meniu punktai */
+.ltkf-edit .ed-txt-h{outline:1px dashed rgba(193,39,45,.45); outline-offset:2px; cursor:text;}
+.ltkf-edit .ed-txt-h:focus{outline:2px solid #C1272D;}
+.ltkf-edit .main-nav > a{position:relative;}
+.ed-navtools{display:none; position:absolute; top:-12px; right:-6px; gap:2px; z-index:5;}
+.ltkf-edit .main-nav > a:hover .ed-navtools, .ltkf-edit .main-nav > a:focus-within .ed-navtools{display:inline-flex;}
+.ed-navtools button{width:24px; height:24px; border:0; border-radius:50%; background:#0F1B33; color:#fff; font:700 13px/1 sans-serif; cursor:pointer;}
+.ed-navtools button[data-nav=del]{background:#C1272D;}
+.ed-navlab[contenteditable]{outline:2px solid #C1272D; outline-offset:2px; border-radius:3px; padding:0 2px;}
+.ed-navadd{border:2px dashed rgba(15,27,51,.3); background:transparent; border-radius:8px; padding:6px 10px; font:700 13px 'Source Sans 3',sans-serif; color:#3D4A66; cursor:pointer;}
+.ed-navadd:hover{border-color:#C1272D; color:#C1272D;}
+@media (max-width:700px){ .ed-sec-tools{position:static; margin:8px; justify-content:flex-start;} body.ltkf-edit{padding-bottom:180px;} }

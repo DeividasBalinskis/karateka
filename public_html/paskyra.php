@@ -326,10 +326,10 @@ page_start($tab === 'nustatymai' ? t('Nustatymai') : t('Mano paskyra'), ['noinde
 
 
 <?php if ($dojoHero): $dh = game_hero_row((int) $dojoHero['id']); ?>
-  <!-- Personažas gyvena atskirame puslapyje „🎮 Žaidimas“ (viršutinėje juostoje) -->
+  <!-- Personažas gyvena atskirame puslapyje „🏯 Dojo“ (viršutinėje juostoje) -->
   <a class="panel card game-teaser" href="<?= url('dojo.php?h=' . (int) $dh['id']) ?>">
     <span class="gt-ic" aria-hidden="true"><?= e(GAME_SPECIES[$dh['species']][1] ?? '🥋') ?></span>
-    <span><b><?= te('🎮 Žaidimas') ?></b><br><span class="muted"><?= te('Tavo personažas, gyvūnėliai, namas ir kovos') ?> · ⭐ <?= te('Lygis') ?> <?= game_level($dh) ?></span></span>
+    <span><b><?= te('🏯 Dojo') ?></b><br><span class="muted"><?= te('Tavo personažas, gyvūnėliai, namas ir kovos') ?> · ⭐ <?= te('Lygis') ?> <?= game_level($dh) ?></span></span>
     <span class="btn btn-primary"><?= te('Žaisti') ?> →</span>
   </a>
 <?php endif; ?>

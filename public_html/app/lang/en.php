@@ -3011,4 +3011,5 @@ From 2013 he trained with the team of the traditional karate-do club "Sanrei", a
     'Į kovą galima pasiimti 2 gyvūnėlius' => 'You can take 2 pets into battle',
     'vietoj' => 'instead of',
     'Gyvūnėlis liks namie' => 'The pet will stay at home',
+    '🏯 Dojo' => '🏯 Dojo',
 ];

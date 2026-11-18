@@ -17,7 +17,7 @@ foreach ($mine as $h) {
     }
 }
 
-page_start(t('Žaidimas'), ['noindex' => true, 'section' => 'zaidimas']);
+page_start(t('Dojo'), ['noindex' => true, 'section' => 'zaidimas']);
 ?>
 <div class="game-page">
   <?= game_dojo_html($hero, $mine) ?>

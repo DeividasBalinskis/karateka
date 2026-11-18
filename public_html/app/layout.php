@@ -387,8 +387,12 @@ function site_header(bool $home = false, ?string $area = null, ?string $tab = nu
         <?php $cta = null; $onpage = [];
         foreach (home_nav() as [$label, $anchor, $isCta]) { $isCta ? $cta = [$label, $anchor] : $onpage[] = [$label, $anchor]; } ?>
         <?php if ($onpage): ?>
-          <ul class="nav-group nav-onpage" aria-label="<?= te('Pagrindinis puslapis') ?>">
-            <?php foreach ($onpage as [$label, $anchor]): ?><li><a class="nav-link" href="<?= $h . e($anchor) ?>"><?= e(t($label)) ?></a></li><?php endforeach; ?>
+          <?php // Prisijungusiems pagrindinio puslapio skiltys suskleistos į vieną „Apie klubą ‹“ - užvedus pelę išsiskleidžia į kairę (#78)
+            $fold = $a && count($onpage) > 1;
+            $mainIdx = 0;
+            foreach ($onpage as $i => [$label, $anchor]) { if ($anchor === '#apie') { $mainIdx = $i; } } ?>
+          <ul class="nav-group nav-onpage<?= $fold ? ' folded' : '' ?>" aria-label="<?= te('Pagrindinis puslapis') ?>">
+            <?php foreach ($onpage as $i => [$label, $anchor]): ?><li<?= $fold && $i === $mainIdx ? ' class="fold-main"' : '' ?>><a class="nav-link" href="<?= $h . e($anchor) ?>"><?= e(t($label)) ?><?= $fold && $i === $mainIdx ? '<span class="fold-ic" aria-hidden="true">‹</span>' : '' ?></a></li><?php endforeach; ?>
           </ul>
         <?php endif; ?>
         <ul class="nav-group nav-pages" aria-label="<?= te('Puslapiai') ?>">
@@ -398,7 +402,7 @@ function site_header(bool $home = false, ?string $area = null, ?string $tab = nu
             <li><a class="nav-page<?= $cur('pamokos') ?>" href="<?= url('pamokos.php') ?>"><?= te('Pamokos') ?></a></li>
           <?php endif; ?>
           <?php if ($a && is_active_account($a) && game_nav_ready()): ?>
-            <li><a class="nav-page nav-game<?= $cur('zaidimas') ?>" href="<?= url('dojo.php') ?>"><?= te('🎮 Žaidimas') ?></a></li>
+            <li><a class="nav-page nav-game<?= $cur('zaidimas') ?>" href="<?= url('dojo.php') ?>"><?= te('🏯 Dojo') ?></a></li>
           <?php endif; ?>
         </ul>
       </li>

@@ -4,6 +4,26 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.43 - 2026-11-18 (Atsiliepimai #78-#84: Dojo, LTKF redagavimas, meniu)
+Duomenų bazės atnaujinti nereikia (jei dar neįkelta v1.42 - reikia db/039). Zip'o turinį išpakuokite **tiesiai į svetainės aplanką**.
+
+**🏯 Dojo** (buvęs „Žaidimas“)
+- Meniu ir puslapis vadinasi „Dojo“.
+- Vardas, lygis ir XP - po buveine (nebeuždengia vaizdo); aplink buveinę - rėmas su auksiniais kampais.
+- Lentelės šviesios, užrašai didesni ir tamsūs - matosi ant bet kokio fono; įrankių mygtukai didesni ir vienodi.
+- Paspaudus ritinio (pvz. Kolekcijos) viduje, jis nebeatsidaro iš naujo su animacija.
+
+**✏️ LTKF redagavimas**
+- Antraštėje: svetainės pavadinimas ir meniu punktai keičiami tiesiai (✎ pervadinti, × išimti, „＋ Punktas“); partnerių juostos tekstai - irgi.
+- Prie kiekvienos skilties: 🎨 Fonas (spalva ar nuotrauka, šviesus tekstas), 🙈 Slėpti, 🗑 Ištrinti (galima grąžinti).
+- Naujas blokas „🧱 Nauja skiltis su fonu“: pavadinimas, tekstas, fono spalva ar nuotrauka.
+- Didesnė redagavimo juosta ir mygtukai; „📥 Failų dėžė - įmesk failus ir komentarą“ geltonas ir aiškus.
+- Pataisyta: po paslėpta skiltimi pridėti blokai lankytojams nebedingsta.
+
+**Kita**
+- karateka.lt prisijungus: Treniruotės, Apie klubą, Kontaktai - vienas „Apie klubą ‹“, užvedus pelę išsiskleidžia į kairę.
+- Budo: „Tinklai“ perkelti į „🗂 Administracija“; žiūrovų puslapyje atskiros „Tinklai“ skilties nebėra (grupę atsidaro paieškoje ar sąraše).
+
 ## v1.42 - 2026-11-18 (Visų atsiliepimų peržiūra: kas buvo praleista)
 **Reikia atnaujinti duomenų bazę** (db/039): Valdymas → Šiandien → „Atnaujinkite duomenų bazę“. Zip'o turinį išpakuokite **tiesiai į svetainės aplanką**.
 

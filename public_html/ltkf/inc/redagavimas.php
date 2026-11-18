@@ -148,8 +148,10 @@ function ltkf_apply(string $html, array $page, bool $edit, bool $zones): string
 {
     $texts = (array) ($page['texts'] ?? []);
     $hidden = array_map('strval', (array) ($page['hidden'] ?? []));
+    $deleted = array_map('strval', (array) ($page['deleted'] ?? []));
+    $secbg = (array) ($page['secbg'] ?? []);
     $blocks = (array) ($page['blocks'] ?? []);
-    if (!$edit && !$texts && !$hidden && !array_filter($blocks)) {
+    if (!$edit && !$texts && !$hidden && !$deleted && !$secbg && !array_filter($blocks)) {
         return $html;
     }
     if (!class_exists('DOMDocument')) {
@@ -212,10 +214,33 @@ function ltkf_apply(string $html, array $page, bool $edit, bool $zones): string
             }
             $key = (string) $i;
             $ch->setAttribute('data-sec', $key);
+            // Skilties fonas (spalva ar nuotrauka) ir ištrinta skiltis (redaguojant - suskleista su „Grąžinti“)
+            if (isset($secbg[$key]) && is_array($secbg[$key])) {
+                $bg = $secbg[$key];
+                $style = trim(substr(ltkf_bg_style((string) ($bg['c'] ?? ''), (string) ($bg['img'] ?? '')), 8, -1));
+                if ($style !== '') {
+                    $ch->setAttribute('style', html_entity_decode($style, ENT_QUOTES) . ';' . $ch->getAttribute('style'));
+                    $ch->setAttribute('class', trim($ch->getAttribute('class') . ' lb-bg' . (!empty($bg['light']) ? ' lb-light' : '')));
+                }
+                if ($edit) {
+                    $ch->setAttribute('data-bg', json_encode(['c' => (string) ($bg['c'] ?? ''), 'img' => (string) ($bg['img'] ?? ''), 'light' => !empty($bg['light'])]));
+                }
+            }
+            if (in_array($key, $deleted, true)) {
+                if ($edit) {
+                    $ch->setAttribute('class', trim($ch->getAttribute('class') . ' lb-deleted'));
+                } else {
+                    ltkf_zone_insert($doc, $root, $ch, 'po-' . $i, $blocks, $edit, true);   // po skiltimi pridėti blokai lieka
+                    $root->removeChild($ch);
+                    $i++;
+                    continue;
+                }
+            }
             if (in_array($key, $hidden, true)) {
                 if ($edit) {
                     $ch->setAttribute('class', trim($ch->getAttribute('class') . ' lb-hidden'));
                 } else {
+                    ltkf_zone_insert($doc, $root, $ch, 'po-' . $i, $blocks, $edit, true);   // po paslėpta skiltimi pridėti blokai lieka
                     $root->removeChild($ch);
                     $i++;
                     continue;
@@ -274,6 +299,19 @@ function ltkf_zone_node(DOMDocument $doc, string $zone, array $blocks, bool $edi
 
 // ---------- Blokai ----------
 
+/** Fono stilius skilčiai: spalva ir (ar) nuotrauka (tik iš uploads/ltkf arba https) */
+function ltkf_bg_style(string $c, string $img): string
+{
+    $st = [];
+    if (preg_match('/^#[0-9a-fA-F]{6}$/', $c)) {
+        $st[] = 'background-color:' . $c;
+    }
+    if ($img !== '' && preg_match('~^(\.\./uploads/ltkf/[A-Za-z0-9._/-]+|https://[^\s"\'()<>]+)$~', $img)) {
+        $st[] = 'background-image:url(' . $img . ');background-size:cover;background-position:center';
+    }
+    return $st ? ' style="' . e(implode(';', $st)) . '"' : '';
+}
+
 function ltkf_size(int $b): string
 {
     return $b >= 1048576 ? number_format($b / 1048576, 1, ',', '') . ' MB' : max(1, (int) round($b / 1024)) . ' KB';
@@ -326,6 +364,10 @@ function ltkf_blocks_html(array $blocks): string
                 if ($id = ltkf_youtube_id((string) ($b['url'] ?? ''))) {
                     $h .= '<div class="lb lb-video"><iframe src="https://www.youtube-nocookie.com/embed/' . e($id) . '" title="YouTube" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>';
                 }
+                break;
+            case 'sec':
+                $h .= '<section class="lb lb-sec' . (!empty($b['light']) ? ' lb-light' : '') . '"' . ltkf_bg_style((string) ($b['c'] ?? ''), (string) ($b['img'] ?? '')) . '><div class="lb-sec-in">'
+                    . (($b['title'] ?? '') !== '' ? '<h2>' . e($b['title']) . '</h2>' : '') . '<div class="prose">' . ltkf_clean_html((string) ($b['html'] ?? '')) . '</div></div></section>';
                 break;
             case 'cards':
                 $items = array_filter((array) ($b['items'] ?? []), function ($i) { return is_array($i) && (($i['title'] ?? '') !== '' || ($i['text'] ?? '') !== ''); });

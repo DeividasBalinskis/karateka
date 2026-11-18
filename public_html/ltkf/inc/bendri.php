@@ -5,7 +5,7 @@ const LTKF_PAGES = [
     'index' => 'Pradžia', 'apie' => 'Apie', 'klubai' => 'Klubai', 'klubams' => 'Klubams: narystė', 'kalendorius' => 'Kalendorius', 'rezultatai' => 'Rezultatai',
     'teisejai' => 'Teisėjai', 'dokumentai' => 'Dokumentai', 'naujienos' => 'Naujienos', 'kontaktai' => 'Kontaktai',
 ];
-const LTKF_BLOCK_TYPES = ['h', 'text', 'img', 'gallery', 'files', 'btn', 'video', 'cards'];
+const LTKF_BLOCK_TYPES = ['h', 'text', 'img', 'gallery', 'files', 'btn', 'video', 'cards', 'sec'];
 // Numatytasis meniu (kol redaktoriai jo nekeitė)
 const LTKF_MENIU_NUMATYTAS = [['Apie', 'apie.php'], ['Klubai', 'klubai.php'], ['Kalendorius', 'kalendorius.php'], ['Rezultatai', 'rezultatai.php'], ['Teisėjai', 'teisejai.php'], ['Dokumentai', 'dokumentai.php'], ['Naujienos', 'naujienos.php'], ['Kontaktai', 'kontaktai.php']];
 
@@ -108,6 +108,10 @@ function ltkf_clean_block($b): ?array
             break;
         case 'btn': $out += ['label' => $s($b['label'] ?? '', 120), 'href' => ltkf_safe_href($s($b['href'] ?? '', 500)), 'style' => ($b['style'] ?? '') === 'ghost' ? 'ghost' : '']; break;
         case 'video': $out['url'] = $s($b['url'] ?? '', 300); break;
+        case 'sec':   // nauja skiltis su fonu: pavadinimas, tekstas, fono spalva ar nuotrauka, šviesus tekstas
+            $out += ['title' => $s($b['title'] ?? '', 200), 'html' => ltkf_clean_html(mb_substr((string) ($b['html'] ?? ''), 0, 60000)),
+                     'c' => preg_match('/^#[0-9a-fA-F]{6}$/', (string) ($b['c'] ?? '')) ? $b['c'] : '', 'img' => $src($b['img'] ?? ''), 'light' => !empty($b['light']) ? 1 : 0];
+            break;
         case 'cards': $out['items'] = array_values(array_filter(array_map(function ($i) use ($s, $src) { return is_array($i) ? ['title' => $s($i['title'] ?? '', 200), 'text' => $s($i['text'] ?? '', 2000), 'img' => $src($i['img'] ?? '')] : null; }, (array) ($b['items'] ?? [])))); break;
     }
     return $out;

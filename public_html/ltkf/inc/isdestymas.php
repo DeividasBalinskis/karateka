@@ -163,6 +163,15 @@ function ltkf_finish(string $html): string
         $inner = substr($html, $a + 6, $b - $a - 6);
         $html = substr($html, 0, $a + 6) . ltkf_apply($inner, ltkf_page($slug), $edit, true) . substr($html, $b);
     }
+    // Partnerių juosta - bendra visiems puslapiams (tekstai redaguojami kaip poraštė)
+    $pa = strpos($html, '<section class="partners-band"');
+    if ($pa !== false) {
+        $pb = strpos($html, '</section>', $pa);
+        $ps = strpos($html, '>', $pa) + 1;
+        if ($pb !== false && $ps < $pb) {
+            $html = substr($html, 0, $ps) . ltkf_apply(substr($html, $ps, $pb - $ps), ltkf_page('_bendri'), $edit, false) . substr($html, $pb);
+        }
+    }
     $fa = strpos($html, '<footer class="site-footer">');
     $fb = strpos($html, '</footer>', (int) $fa);
     if ($fa !== false && $fb !== false) {

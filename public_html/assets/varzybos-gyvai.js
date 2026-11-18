@@ -128,11 +128,7 @@
           return '<li><span class="nx-cat"><span class="disc d-' + esc(x.disc) + '"></span>' + esc(x.cat) + ' · ' + (x.no ? x.no + ' · ' : '') + esc(x.title) + '</span><span class="nx-who"><b class="aka-t">' + esc(x.a) + '</b>' + (x.b ? ' <span class="muted">prieš</span> <b>' + esc(x.b) + '</b>' : '') + '</span></li>';
         }).join('') + '</ol>' : '') + '</section>';
     }).join('') + '</div>';
-    var gseen = {}, groups = [];
-    ((data && data.cats) || []).forEach(function (c) { var k = c.group || ('c' + c.id); if (!gseen[k]) { gseen[k] = 1; groups.push({ key: k, name: c.groupName || c.name, y: +(String(k).match(/\d{4}/g) || [0]).pop() || 0 }); } });
-    groups.sort(function (a, b) { return b.y - a.y || a.name.localeCompare(b.name); });
-    if (groups.length) html += '<section class="panel gv-res"><h2>🤼 Tinklai <span class="muted small">kas su kuo kovoja - pasirinkite amžiaus grupę</span></h2><div class="gv-tk">' +
-      groups.map(function (g) { return '<button type="button" class="btn" data-cat="grp:' + esc(g.key) + '" data-title="' + esc(g.name) + '">' + esc(g.name) + '</button>'; }).join('') + '</div></section>';
+    // Atskiros „Tinklai“ skilties žiūrovams nebėra (#81): savo grupę randa „Rask save“ arba paspaudę grupę tatamio sąraše
     var medals = (data && data.medals) || [], fin = ((data && data.cats) || []).filter(function (c) { return c.places.length; });
     html += '<section class="panel gv-res"><h2>Klubų medaliai</h2>' + (medals.length ? '<table><thead><tr><th class="num">#</th><th>Klubas</th><th class="num">🥇</th><th class="num">🥈</th><th class="num">🥉</th></tr></thead><tbody>' +
       medals.slice(0, 15).map(function (m, i) { return '<tr><td class="num">' + (i + 1) + '</td><td>' + esc(m.club) + '</td><td class="num">' + m.g + '</td><td class="num">' + m.s + '</td><td class="num">' + m.b + '</td></tr>'; }).join('') + '</tbody></table>'

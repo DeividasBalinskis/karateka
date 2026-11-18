@@ -267,9 +267,8 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
   <nav class="tabs" id="tabs" role="tablist" aria-label="Dalys">
     <button role="tab" id="tab-live" aria-selected="false" aria-controls="v-live" class="tab-live"><span class="live-dot" aria-hidden="true"></span>Tvarkaraštis</button>
     <button role="tab" id="tab-rezultatai" aria-selected="false" aria-controls="v-rezultatai"><span class="tab-n">🏅</span>Rezultatai</button>
-    <button role="tab" id="tab-tinklai" aria-selected="false" aria-controls="v-tinklai" title="Kiekvienos kategorijos burtų lentelė (medis): kas su kuo kovoja ir kas laimėjo"><span class="tab-n">🤼</span>Tinklai</button>
     <span class="tabs-sep" aria-hidden="true"></span>
-    <button role="tab" id="tab-admin" aria-selected="false" class="tab-admin" title="Paruošimas: klubai, komandos, dalyviai, kategorijos"><span class="tab-n">🗂</span>Administracija</button>
+    <button role="tab" id="tab-admin" aria-selected="false" class="tab-admin" title="Paruošimas: klubai, komandos, dalyviai, kategorijos, tinklai"><span class="tab-n">🗂</span>Administracija</button>
     <button type="button" class="tab-cfg" id="menu-cfg" aria-expanded="false" title="Meniu: pervadinti, sukeisti vietomis">⚙</button>
   </nav>
   <nav class="tabs tabs-sub" id="tabs-sub" role="tablist" aria-label="Administracija" hidden>
@@ -277,6 +276,7 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
     <button role="tab" id="tab-komandos" aria-selected="false" aria-controls="v-komandos"><span class="tab-n">2</span>Komandos</button>
     <button role="tab" id="tab-dalyviai" aria-selected="false" aria-controls="v-dalyviai"><span class="tab-n">3</span>Dalyviai</button>
     <button role="tab" id="tab-kategorijos" aria-selected="false" aria-controls="v-kategorijos"><span class="tab-n">4</span>Kategorijos</button>
+    <button role="tab" id="tab-tinklai" aria-selected="false" aria-controls="v-tinklai" title="Kiekvienos kategorijos burtų lentelė (medis): kas su kuo kovoja ir kas laimėjo"><span class="tab-n">🤼</span>Tinklai</button>
     <span class="tabs-sub-hint">Paruošimas prieš varžybas. Varžybų dieną dirbama „Tvarkaraštyje“.</span>
   </nav>
 </header>
@@ -464,7 +464,7 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
   <!-- TINKLAI (Draws): amžiaus grupės → kas su kuo kovoja visose tos grupės rungtyse; žiūrovams tas pats - transliacijos nuorodoje -->
   <section id="v-tinklai" role="tabpanel" aria-labelledby="tab-tinklai" hidden>
     <p class="tk-explain"><b>🤼 Tinklai</b> - kiekvienos kategorijos burtų lentelė (medis): kas su kuo kovoja, kas laimėjo ir kas eina toliau.
-      Čia tik peržiūra ir spausdinimas - kovos vedamos <b>„Tvarkaraštyje“</b> (atidarius kategoriją). Žiūrovai tą patį mato transliacijos nuorodoje.</p>
+      Čia tik peržiūra ir spausdinimas - kovos vedamos <b>„Tvarkaraštyje“</b> (atidarius kategoriją).</p>
     <div class="tk-layout">
       <div class="panel tk-side"><h2>Amžiaus grupės</h2><div class="tk-groups" id="tk-groups"></div></div>
       <div class="tk-view" id="tk-view"></div>

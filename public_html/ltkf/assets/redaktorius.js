@@ -4,7 +4,8 @@
 (function () {
   'use strict';
   var C = window.LTKF_ED; if (!C) return;
-  var main = document.querySelector('main'), foot = document.querySelector('footer.site-footer');
+  var main = document.querySelector('main'), foot = document.querySelector('footer.site-footer'), partners = document.querySelector('.partners-band');
+  var header = document.querySelector('header.site-header');
   var dirty = false, hidden = [];
   var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
   var norm = function (s) { return String(s || '').replace(/[\s ]+/g, ' ').trim(); };
@@ -20,9 +21,9 @@
     '<button type="button" class="ed-b" data-a="menu">☰ Meniu</button>' +
     '<button type="button" class="ed-b" data-a="look">🎨 Išvaizda ir kontaktai</button>' +
     '<button type="button" class="ed-b" data-a="newpage">📄 Naujas puslapis</button>' +
-    '<a class="ed-b" href="failai.php" target="_blank">📥 Failų dėžė</a>' +
+    '<a class="ed-b ed-inbox" href="failai.php" target="_blank" title="Neradote, kur įdėti? Įmeskite failus ir parašykite komentarą - vėliau sudėsime">📥 Failų dėžė <small>įmesk failus ir komentarą</small></a>' +
     (C.custom ? '<button type="button" class="ed-b ed-danger" data-a="delpage">🗑 Ištrinti puslapį</button>' : '') +
-    '<span class="ed-status" id="edStatus">Spauskite bet kurį tekstą ir rašykite. Skiltis galima paslėpti, tarp jų - pridėti blokų.</span>' +
+    '<span class="ed-status" id="edStatus">Spauskite bet kurį tekstą (ir meniu) ir rašykite. Prie skilties - 🎨 fonas, 🙈 slėpti, 🗑 ištrinti; tarp skilčių - „+ Pridėti“.</span>' +
     '<button type="button" class="ed-b ed-exit" data-a="exit">✓ Baigti</button>';
   document.body.appendChild(bar);
   var statusEl = bar.querySelector('#edStatus');
@@ -52,8 +53,43 @@
       el.dataset.cur = norm(el.innerText);
     });
   }
-  prepareTexts(main); prepareTexts(foot);
-  document.addEventListener('input', function (e) { if (e.target.closest && e.target.closest('main, footer, .ed-modal')) mark(); });
+  prepareTexts(main); prepareTexts(foot); prepareTexts(partners);
+  document.addEventListener('input', function (e) { if (e.target.closest && e.target.closest('main, footer, .partners-band, header, .ed-modal')) mark(); });
+
+  // ---------- Antraštė: pavadinimas ir meniu punktai keičiami tiesiai (#82) ----------
+  var brandB = header && header.querySelector('.brand-text b'), brandS = header && header.querySelector('.brand-text small');
+  [[brandB, 'trumpas'], [brandS, 'pavadinimas']].forEach(function (x) {
+    if (!x[0]) return;
+    x[0].setAttribute('contenteditable', 'true'); x[0].classList.add('ed-txt-h'); x[0].dataset.nust = x[1]; x[0].dataset.cur = norm(x[0].innerText);
+  });
+  var navLinks = header ? Array.prototype.filter.call(header.querySelectorAll('.main-nav > a'), function (a) { return !a.closest('.lang-sw'); }) : [];
+  navLinks.forEach(function (a, i) {
+    a.dataset.mi = i; a.dataset.cur = norm(a.innerText);
+    var t = document.createElement('span'); t.className = 'ed-navtools ed-ui';
+    t.innerHTML = '<button type="button" data-nav="ren" title="Pervadinti">✎</button><button type="button" data-nav="del" title="Išimti iš meniu">×</button>';
+    a.appendChild(t);
+  });
+  if (header && header.querySelector('.main-nav')) {
+    var addNav = document.createElement('button'); addNav.type = 'button'; addNav.className = 'ed-navadd ed-ui'; addNav.textContent = '＋ Punktas'; addNav.title = 'Pridėti meniu punktą';
+    var lsw = header.querySelector('.main-nav .lang-sw'); header.querySelector('.main-nav').insertBefore(addNav, lsw || null);
+    addNav.addEventListener('click', function () { menuModal(true); });
+  }
+  var navDel = [];
+  if (header) header.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-nav]');
+    if (b) {
+      e.preventDefault(); e.stopPropagation();
+      var a = b.closest('a'), lab = a.firstChild;
+      if (b.dataset.nav === 'del') { if (confirm('Išimti „' + norm(a.dataset.cur) + '“ iš meniu?')) { navDel.push(+a.dataset.mi); a.hidden = true; mark(); } return; }
+      var span = a.querySelector('.ed-navlab');
+      if (!span) { span = document.createElement('span'); span.className = 'ed-navlab'; while (a.firstChild && a.firstChild !== a.querySelector('.ed-navtools')) span.appendChild(a.firstChild); a.insertBefore(span, a.firstChild); }
+      span.setAttribute('contenteditable', 'true'); span.focus();
+      var r = document.createRange(); r.selectNodeContents(span); var sl = getSelection(); sl.removeAllRanges(); sl.addRange(r);
+      return;
+    }
+    if (e.target.closest('.ed-navlab[contenteditable], .ed-txt-h')) e.preventDefault();
+  }, true);
+  if (header) header.addEventListener('keydown', function (e) { if (e.key === 'Enter' && e.target.closest('.ed-navlab, .ed-txt-h')) { e.preventDefault(); e.target.blur(); } });
   document.addEventListener('paste', function (e) {
     var el = e.target.closest && e.target.closest('.ed-txt, .ed-plain');
     if (!el) return;
@@ -70,24 +106,56 @@
   document.addEventListener('click', function (e) {
     var a = e.target.closest && e.target.closest('main a[href], footer a[href], header a[href]');
     if (a && !e.target.closest('.ed-ui, .ed-modal')) {
+      if (a.closest('header') && (e.target.closest('.ed-navlab[contenteditable], .ed-txt-h, .ed-navtools'))) { e.preventDefault(); return; }
       if (a.closest('header') && !a.closest('.lang-sw')) { if (dirty && !confirm('Yra neišsaugotų pakeitimų. Išeiti?')) { e.preventDefault(); return; } dirty = false; return; }
       e.preventDefault();
     }
   }, true);
 
   // ---------- Skiltys: slėpti / rodyti ----------
+  // Kiekvienai skilčiai: 🎨 fonas, 🙈 slėpti / 👁 rodyti, 🗑 ištrinti (ištrinta - suskleista, galima grąžinti) (#83)
+  function applyBg(sec) {
+    var bg = sec._bg || {};
+    sec.style.backgroundColor = bg.c || '';
+    sec.style.backgroundImage = bg.img ? 'url(' + bg.img + ')' : '';
+    sec.style.backgroundSize = bg.img ? 'cover' : ''; sec.style.backgroundPosition = bg.img ? 'center' : '';
+    sec.classList.toggle('lb-bg', !!(bg.c || bg.img)); sec.classList.toggle('lb-light', !!bg.light);
+  }
   main.querySelectorAll(':scope > section[data-sec]').forEach(function (sec) {
-    var b = document.createElement('button');
-    b.type = 'button'; b.className = 'ed-sec-tg ed-ui';
-    var upd = function () { var h = sec.classList.contains('lb-hidden'); b.textContent = h ? '👁 Rodyti skiltį' : '🙈 Slėpti skiltį'; b.title = h ? 'Lankytojai šios skilties nemato' : 'Paslėpti šią skiltį nuo lankytojų'; };
-    b.addEventListener('click', function () { sec.classList.toggle('lb-hidden'); upd(); mark(); });
+    try { sec._bg = JSON.parse(sec.getAttribute('data-bg') || 'null') || {}; } catch (x) { sec._bg = {}; }
+    var tools = document.createElement('div'); tools.className = 'ed-sec-tools ed-ui';
+    tools.innerHTML = '<button type="button" data-st="bg" title="Skilties fonas: spalva ar nuotrauka">🎨 Fonas</button><button type="button" data-st="hide"></button><button type="button" data-st="del"></button>' +
+      '<div class="ed-bgpop" hidden><label>Spalva <input type="color" data-bg="c" value="' + esc(sec._bg.c || '#f4f1ea') + '"></label><button type="button" data-st="img">📷 Nuotrauka</button>' +
+      '<label class="ed-check"><input type="checkbox" data-bg="light"' + (sec._bg.light ? ' checked' : '') + '> Šviesus tekstas</label><button type="button" data-st="nobg">✕ Be fono</button></div>';
+    var upd = function () {
+      var h = sec.classList.contains('lb-hidden'), d = sec.classList.contains('lb-deleted');
+      var hb = tools.querySelector('[data-st=hide]'), db = tools.querySelector('[data-st=del]');
+      hb.textContent = h ? '👁 Rodyti' : '🙈 Slėpti'; hb.title = h ? 'Lankytojai šios skilties nemato' : 'Paslėpti šią skiltį nuo lankytojų'; hb.hidden = d;
+      db.textContent = d ? '↺ Grąžinti skiltį' : '🗑 Ištrinti'; db.title = d ? 'Grąžinti ištrintą skiltį' : 'Ištrinti visą skiltį (galima grąžinti)';
+    };
+    tools.addEventListener('click', function (e) {
+      var b = e.target.closest('[data-st]'); if (!b) return;
+      var st = b.dataset.st, pop = tools.querySelector('.ed-bgpop');
+      if (st === 'bg') { pop.hidden = !pop.hidden; return; }
+      if (st === 'hide') { sec.classList.toggle('lb-hidden'); upd(); mark(); }
+      if (st === 'del') { if (sec.classList.contains('lb-deleted') || confirm('Ištrinti visą šią skiltį? Lankytojai jos nebematys (galima grąžinti).')) { sec.classList.toggle('lb-deleted'); upd(); mark(); } }
+      if (st === 'nobg') { sec._bg = {}; applyBg(sec); mark(); }
+      if (st === 'img') picker('image/jpeg,image/png,image/webp', false, function (fs) { if (fs[0]) upload('image', fs[0]).then(function (d) { if (d.ok) { sec._bg.img = d.url; applyBg(sec); mark(); } }); });
+    });
+    tools.addEventListener('input', function (e) {
+      var k = e.target.dataset.bg; if (!k) return;
+      if (k === 'c') sec._bg.c = e.target.value;
+      if (k === 'light') sec._bg.light = e.target.checked;
+      applyBg(sec); mark();
+    });
+    tools.addEventListener('change', function (e) { if (e.target.dataset.bg === 'light') { sec._bg.light = e.target.checked; applyBg(sec); mark(); } });
     if (getComputedStyle(sec).position === 'static') sec.style.position = 'relative';
-    sec.appendChild(b); upd();
+    sec.appendChild(tools); upd();
   });
 
   // ---------- Blokai ----------
   var TYPES = [['h', 'Antraštė', '🔠'], ['text', 'Tekstas', '📝'], ['img', 'Nuotrauka', '🖼️'], ['gallery', 'Galerija', '🖼️🖼️'], ['files', 'Failai (dokumentai)', '📎'],
-    ['btn', 'Mygtukas / nuoroda', '🔗'], ['video', 'Vaizdo įrašas (YouTube)', '▶️'], ['cards', 'Kortelės', '🗂️']];
+    ['btn', 'Mygtukas / nuoroda', '🔗'], ['video', 'Vaizdo įrašas (YouTube)', '▶️'], ['cards', 'Kortelės', '🗂️'], ['sec', 'Nauja skiltis su fonu', '🧱']];
   var TNAME = {}; TYPES.forEach(function (t) { TNAME[t[0]] = t[2] + ' ' + t[1]; });
   function picker(accept, multiple, cb) {
     var i = document.createElement('input'); i.type = 'file'; i.accept = accept || ''; i.multiple = !!multiple;
@@ -139,6 +207,14 @@
         h = '<input type="text" data-f="url" placeholder="YouTube nuoroda (įrašo ar transliacijos)" value="' + esc(b.url || '') + '">' +
           (id ? '<div class="lb-video"><iframe src="https://www.youtube-nocookie.com/embed/' + id + '" loading="lazy" allowfullscreen></iframe></div>' : '<div class="ed-ph">Įklijuokite YouTube nuorodą</div>');
         break;
+      case 'sec':
+        h = '<section class="lb-sec' + (b.light ? ' lb-light' : '') + '" style="' + (b.c ? 'background-color:' + esc(b.c) + ';' : '') + (b.img ? 'background-image:url(' + esc(b.img) + ');background-size:cover;background-position:center;' : '') + '"><div class="lb-sec-in">' +
+          '<h2 class="ed-plain" contenteditable="true" data-f="title">' + esc(b.title || '') + '</h2>' +
+          '<div class="ed-rt">' + [['bold', '<b>B</b>'], ['italic', '<i>I</i>'], ['h3', 'H3'], ['p', '¶'], ['ul', '• Sąrašas'], ['link', '🔗 Nuoroda']].map(function (x) { return '<button type="button" data-rt="' + x[0] + '">' + x[1] + '</button>'; }).join('') + '</div>' +
+          '<div class="prose ed-rich" contenteditable="true">' + (b.html || '<p>Įrašykite tekstą…</p>') + '</div></div></section>' +
+          '<div class="ed-row"><label>Fono spalva <input type="color" data-f="c" value="' + esc(b.c || '#f4f1ea') + '"></label><button type="button" class="ed-b" data-up="secimg">📷 Fono nuotrauka</button>' +
+          (b.img ? '<button type="button" class="ed-b" data-rm="secimg">✕ Be nuotraukos</button>' : '') + '<label class="ed-check"><input type="checkbox" data-f="light"' + (b.light ? ' checked' : '') + '> Šviesus tekstas</label></div>';
+        break;
       case 'cards':
         h = '<div class="benefits">' + (b.items || []).map(function (i, k) {
           return '<div class="benefit ed-card">' + (i.img ? '<img src="' + esc(i.img) + '" alt="">' : '') + '<input type="text" data-ci="' + k + '" data-cf="title" placeholder="Antraštė" value="' + esc(i.title || '') + '">' +
@@ -167,6 +243,7 @@
     if (t === 'gallery') b.imgs = [];
     if (t === 'files') b.items = [];
     if (t === 'cards') b.items = [{ title: 'Antraštė', text: 'Tekstas' }];
+    if (t === 'sec') { b.title = 'Nauja skiltis'; b.html = '<p>Įrašykite tekstą…</p>'; b.c = '#f4f1ea'; }
     return b;
   }
   main.addEventListener('click', function (e) {
@@ -186,6 +263,8 @@
     if (t.dataset.bk === 'down' && blk.nextElementSibling && blk.nextElementSibling.classList.contains('ed-block')) { blk.parentNode.insertBefore(blk.nextElementSibling, blk); mark(); return; }
     if (t.dataset.bk === 'del') { if (confirm('Ištrinti šį bloką?')) { blk.remove(); mark(); } return; }
     if (t.dataset.rt) return richCmd(blk.querySelector('.ed-rich'), t.dataset.rt);
+    if (t.dataset.rm === 'secimg') { b.img = ''; renderBody(blk); mark(); return; }
+    if (t.dataset.up === 'secimg') return picker('image/jpeg,image/png,image/webp', false, function (fs) { if (fs[0]) upload('image', fs[0]).then(function (d) { if (d.ok) { b.img = d.url; renderBody(blk); mark(); } }); });
     if (t.dataset.rm !== undefined) {
       var k = +t.dataset.rm;
       if (b.t === 'gallery') b.imgs.splice(k, 1);
@@ -206,14 +285,19 @@
   main.addEventListener('input', function (e) {
     var blk = e.target.closest('.ed-block'); if (!blk) return;
     var b = blk._b, t = e.target;
-    if (t.dataset.f) { b[t.dataset.f] = t.isContentEditable ? t.innerText : t.value; if (b.t === 'video' && t.dataset.f === 'url') { clearTimeout(blk._vt); blk._vt = setTimeout(function () { renderBody(blk); }, 700); } }
+    if (t.dataset.f && t.type !== 'checkbox') { b[t.dataset.f] = t.isContentEditable ? t.innerText : t.value; if (b.t === 'video' && t.dataset.f === 'url') { clearTimeout(blk._vt); blk._vt = setTimeout(function () { renderBody(blk); }, 700); } }
+    if (b.t === 'sec' && t.dataset.f === 'c') { var sp = blk.querySelector('.lb-sec'); if (sp) sp.style.backgroundColor = t.value; }
     if (t.dataset.fi !== undefined) b.items[+t.dataset.fi].name = t.value;
     if (t.dataset.ci !== undefined) b.items[+t.dataset.ci][t.dataset.cf] = t.value;
     if (t.classList.contains('ed-rich')) b.html = t.innerHTML;
   });
   main.addEventListener('change', function (e) {
     var blk = e.target.closest('.ed-block'); if (!blk) return;
-    if (e.target.dataset.f) { blk._b[e.target.dataset.f] = e.target.value; if (e.target.dataset.f === 'w') renderBody(blk); mark(); }
+    if (e.target.dataset.f) {
+      blk._b[e.target.dataset.f] = e.target.type === 'checkbox' ? (e.target.checked ? 1 : 0) : e.target.value;
+      if (e.target.dataset.f === 'w' || blk._b.t === 'sec') { if (blk._b.t === 'sec') blk._b.html = blk.querySelector('.ed-rich').innerHTML; renderBody(blk); }
+      mark();
+    }
   });
   function richCmd(box, cmd) {
     box.focus();
@@ -233,20 +317,49 @@
     document.querySelectorAll('.ed-txt').forEach(function (el) {
       var now = el.innerText.replace(/ /g, ' ').replace(/\n{3,}/g, '\n\n').trim();
       if (norm(now) === el.dataset.cur) return;
-      (el.closest('footer') ? bendri : pages[C.slug]).texts[el.getAttribute('data-o')] = now;
+      (el.closest('footer, .partners-band') ? bendri : pages[C.slug]).texts[el.getAttribute('data-o')] = now;
     });
     main.querySelectorAll(':scope > section[data-sec].lb-hidden').forEach(function (s) { pages[C.slug].hidden.push(s.dataset.sec); });
+    pages[C.slug].deleted = []; pages[C.slug].secbg = {};
+    main.querySelectorAll(':scope > section[data-sec]').forEach(function (s) {
+      if (s.classList.contains('lb-deleted')) pages[C.slug].deleted.push(s.dataset.sec);
+      var bg = s._bg || {}; if (bg.c || bg.img) pages[C.slug].secbg[s.dataset.sec] = { c: bg.c || '', img: bg.img || '', light: bg.light ? 1 : 0 };
+    });
     zones.forEach(function (z) {
-      var list = Array.prototype.map.call(z.querySelectorAll(':scope > .ed-block'), function (el) { var b = el._b; if (b.t === 'text') b.html = el.querySelector('.ed-rich').innerHTML; if (b.t === 'h') b.text = el.querySelector('[data-f=text]').innerText; return b; });
+      var list = Array.prototype.map.call(z.querySelectorAll(':scope > .ed-block'), function (el) { var b = el._b; if (b.t === 'text' || b.t === 'sec') b.html = el.querySelector('.ed-rich').innerHTML; if (b.t === 'h') b.text = el.querySelector('[data-f=text]').innerText; if (b.t === 'sec') b.title = el.querySelector('[data-f=title]').innerText; return b; });
       if (list.length) pages[C.slug].blocks[z.dataset.zone] = list;
     });
     if (Object.keys(bendri.texts).length) pages._bendri = bendri;
     var h1 = main.querySelector('h1'); if (C.custom && h1) pages[C.slug].title = norm(h1.innerText);
     return pages;
   }
+  // Antraštė: pakeistas pavadinimas -> nustatymai, pakeisti ar išimti meniu punktai -> meniu
+  function saveHeader() {
+    var jobs = [], nust = {};
+    [brandB, brandS].forEach(function (el) { if (el && norm(el.innerText) !== el.dataset.cur) nust[el.dataset.nust] = norm(el.innerText); });
+    if (Object.keys(nust).length) jobs.push(post({ action: 'settings', nust: JSON.stringify(nust) }).then(function (d) { if (d.ok) [brandB, brandS].forEach(function (el) { if (el) el.dataset.cur = norm(el.innerText); }); return d; }));
+    var changed = navDel.length > 0;
+    var items = (C.menu || []).map(function (it, i) {
+      var a = navLinks[i]; if (!a) return it;
+      var lab = a.querySelector('.ed-navlab'), txt = norm(lab ? lab.innerText : a.dataset.cur);
+      if (txt !== a.dataset.cur) changed = true;
+      return { l: txt || it.l, h: it.h };
+    }).filter(function (it, i) { return navDel.indexOf(i) < 0; });
+    if (changed) jobs.push(post({ action: 'menu', menu: JSON.stringify(items) }).then(function (d) {
+      if (d.ok) {
+        var reload = navDel.length > 0;
+        C.menu = items; navDel = [];
+        navLinks.forEach(function (a) { var lab = a.querySelector('.ed-navlab'); a.dataset.cur = norm(lab ? lab.innerText : a.dataset.cur); if (lab) lab.removeAttribute('contenteditable'); });
+        if (reload) setTimeout(function () { location.reload(); }, 600);   // išimti punktai - meniu iš naujo
+      }
+      return d;
+    }));
+    return Promise.all(jobs).then(function (rs) { return rs.filter(function (r) { return !r.ok; })[0] || { ok: true }; });
+  }
   function save() {
     say('Saugoma…');
-    return post({ action: 'save', pages: JSON.stringify(collect()) }).then(function (d) {
+    return Promise.all([post({ action: 'save', pages: JSON.stringify(collect()) }), saveHeader()]).then(function (rs) {
+      var d = rs[0].ok ? rs[1] : rs[0];
       if (!d.ok) { say(d.error || 'Nepavyko išsaugoti', true); return d; }
       dirty = false; bar.classList.remove('dirty');
       document.querySelectorAll('.ed-txt').forEach(function (el) { el.dataset.cur = norm(el.innerText); });
@@ -267,7 +380,7 @@
     return C.pages.map(function (p) { return '<option value="' + esc(p.h) + '"' + (p.h === sel ? ' selected' : '') + '>' + esc(p.n) + (p.custom ? ' (naujas)' : '') + '</option>'; }).join('') +
       '<option value="__url"' + (sel && !C.pages.some(function (p) { return p.h === sel; }) ? ' selected' : '') + '>Kita nuoroda…</option>';
   }
-  function menuModal() {
+  function menuModal(withNew) {
     var row = function (i) {
       var known = C.pages.some(function (p) { return p.h === i.h; });
       return '<li class="ed-mi"><span class="ed-drag">⠿</span><input type="text" class="mi-l" value="' + esc(i.l) + '" placeholder="Pavadinimas"><select class="mi-s">' + pageOptions(i.h) + '</select>' +
@@ -278,6 +391,7 @@
       post({ action: 'menu', menu: JSON.stringify(items) }).then(function (d) { if (d.ok) { C.menu = items; m.remove(); say('✓ Meniu išsaugotas.'); setTimeout(function () { location.reload(); }, 400); } else alert(d.error); });
     });
     var ul = m.querySelector('.ed-menu');
+    if (withNew === true) setTimeout(function () { var ab = m.querySelector('[data-mi=add]'); if (ab) ab.click(); }, 0);
     m.addEventListener('change', function (e) { if (e.target.classList.contains('mi-s')) e.target.parentNode.querySelector('.mi-u').hidden = e.target.value !== '__url'; });
     m.addEventListener('click', function (e) {
       var b = e.target.closest('[data-mi]'); if (!b) return;

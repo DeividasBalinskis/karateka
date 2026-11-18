@@ -20,9 +20,9 @@ test('Taika home, switcher, menu order, live schedule with current category and 
   // Meniu tvarka ir perjungimas į kitas varžybas
   // Tvarkaraštis - pirmas (pagrindinė vieta), Klubai / Komandos / Dalyviai / Kategorijos - viename „Administracija“ lange
   const tabs = await a.$$eval('#tabs [role=tab]', bs => bs.map(b => b.id.replace('tab-', '')).join(','));
-  check('menu order', tabs === 'live,rezultatai,tinklai,admin', tabs);
+  check('menu order', tabs === 'live,rezultatai,admin', tabs);
   const sub = await a.$$eval('#tabs-sub [role=tab]', bs => bs.map(b => b.id.replace('tab-', '')).join(','));
-  check('administration sub-tabs', sub === 'klubai,komandos,dalyviai,kategorijos', sub);
+  check('administration sub-tabs', sub === 'klubai,komandos,dalyviai,kategorijos,tinklai', sub);
   check('opens on the schedule', await a.locator('#v-live').isVisible() && !(await a.locator('#tabs-sub').isVisible()));
   check('switcher lists competitions', await a.locator('#t-switch option').count() >= 2);
 

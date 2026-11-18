@@ -13,14 +13,14 @@ test('LTKF: edit any text, hide a section, add blocks, footer text, new page in 
   check('edit button for admin', await a.locator('.ed-fab').count() === 1);
   check('Karate, not Karatė', !/aratė/.test(await a.textContent('body')));
   await a.goto('ltkf/index.php?redaguoti=1');
-  check('texts editable, zones and section toggles', await a.locator('.ed-txt').count() > 30 && await a.locator('.lb-zone').count() >= 3 && await a.locator('.ed-sec-tg').count() >= 3);
+  check('texts editable, zones and section toggles', await a.locator('.ed-txt').count() > 30 && await a.locator('.lb-zone').count() >= 3 && await a.locator('.ed-sec-tools [data-st=hide]').count() >= 3);
   await press(a.locator('main h1').first()); await a.keyboard.press('Control+A'); await a.keyboard.type('Tradicinis karate Lietuvoje');
   await press(a.locator('.lb-zone[data-zone="po-0"] .ed-add-btn')); await press(a.locator('.lb-zone[data-zone="po-0"] [data-type=text]'));
   await press(a.locator('.lb-zone[data-zone="po-0"] .ed-rich')); await a.keyboard.press('Control+A'); await a.keyboard.type('Sveiki atvykę!');
   await press(a.locator('.lb-zone[data-zone="po-0"] .ed-add-btn')); await press(a.locator('.lb-zone[data-zone="po-0"] [data-type=btn]'));
   await a.locator('.lb-zone[data-zone="po-0"] [data-f=label]').fill('Registracija'); await a.locator('.lb-zone[data-zone="po-0"] [data-f=href]').fill('kalendorius.php');
   const before = await a.locator('main > section').count();
-  await press(a.locator('main > section[data-sec] > .ed-sec-tg').nth(1));
+  await press(a.locator('main > section[data-sec] > .ed-sec-tools [data-st=hide]').nth(1));
   await press(a.locator('footer .footer-brand p')); await a.keyboard.press('Control+A'); await a.keyboard.type('Vienija klubus visoje Lietuvoje.');
   await press(a.locator('.ed-bar [data-a=save]')); await a.waitForTimeout(800);
   check('saved', /Išsaugota/.test(await a.textContent('#edStatus')));
@@ -75,3 +75,46 @@ test('LTKF editor link: name only, look and contacts, file box; switching the li
   sql("DELETE FROM site_settings WHERE name IN ('ltkf_nust', 'ltkf_editors', 'ltkf_menu')"); sql('DELETE FROM ltkf_pages'); sql('DELETE FROM ltkf_files');
   noJsErrors(a);
 });
+
+test('LTKF: menu and title edited in place, section background, delete and restore a section, new section with background', async ({ browser }) => {
+  sql('DELETE FROM ltkf_pages'); sql("DELETE FROM site_settings WHERE name IN ('ltkf_menu', 'ltkf_nust')");
+  const a = await login(browser, 'info@karateka.lt', 1300, 900);
+  await a.goto('ltkf/index.php?redaguoti=1');
+  check('bigger editor bar with a clear file box', await a.locator('.ed-bar .ed-inbox small', { hasText: 'įmesk failus ir komentarą' }).count() === 1);
+  // Meniu punktas - pervadinamas tiesiai antraštėje, kitas išimamas
+  const nav = a.locator('.main-nav > a').nth(1);
+  await nav.hover(); await nav.locator('[data-nav=ren]').click();
+  await a.keyboard.press('Control+A'); await a.keyboard.type('Klubai ir mokyklos'); await a.keyboard.press('Enter');
+  const last = a.locator('.main-nav > a').nth(7); await last.hover(); await last.locator('[data-nav=del]').click();
+  // Svetainės pavadinimas antraštėje
+  await press(a.locator('.brand-text b')); await a.keyboard.press('Control+A'); await a.keyboard.type('LTKF.lt');
+  // Skilties fonas ir šviesus tekstas; kita skiltis - ištrinama
+  const s1 = a.locator('main > section[data-sec]').nth(1);
+  await press(s1.locator('[data-st=bg]'));
+  await s1.locator('input[data-bg=c]').evaluate(e => { e.value = '#1f3a5f'; e.dispatchEvent(new Event('input', { bubbles: true })); });
+  await s1.locator('input[data-bg=light]').evaluate(e => { e.checked = true; e.dispatchEvent(new Event('change', { bubbles: true })); });
+  await press(a.locator('main > section[data-sec]').nth(2).locator('[data-st=del]'));
+  check('deleted section folds in the editor', await a.locator('main > section.lb-deleted').count() === 1);
+  // Nauja skiltis su fonu
+  await press(a.locator('.lb-zone[data-zone="po-0"] .ed-add-btn')); await press(a.locator('.lb-zone[data-zone="po-0"] [data-type=sec]'));
+  await press(a.locator('.lb-zone[data-zone="po-0"] .ed-block [data-f=title]')); await a.keyboard.press('Control+A'); await a.keyboard.type('Rinktinė');
+  const sections = await a.locator('main > section[data-sec]').count();
+  await press(a.locator('.ed-bar [data-a=save]')); await a.waitForTimeout(1500);
+  check('saved', /Išsaugota/.test(await a.textContent('#edStatus')));
+  await a.goto('ltkf/index.php');
+  const navs = await a.locator('.main-nav > a').allTextContents();
+  check('menu item renamed and removed in place', navs.includes('Klubai ir mokyklos') && navs.length === 7, navs.join('|'));
+  check('site title changed', (await a.textContent('.brand-text b')).trim() === 'LTKF.lt');
+  check('section background with light text', await a.locator('main > section.lb-bg.lb-light').count() === 1);
+  check('deleted section hidden for visitors', await a.locator('main > section:not(.lb-sec)').count() === sections - 1);
+  check('new section with background', (await a.textContent('main .lb-sec h2')).trim() === 'Rinktinė');
+  // Grąžinti ištrintą skiltį
+  await a.goto('ltkf/index.php?redaguoti=1');
+  await press(a.locator('main > section.lb-deleted [data-st=del]'));
+  await press(a.locator('.ed-bar [data-a=save]')); await a.waitForTimeout(1200);
+  await a.goto('ltkf/index.php');
+  check('restored section visible again', await a.locator('main > section:not(.lb-sec)').count() === sections);
+  sql('DELETE FROM ltkf_pages'); sql("DELETE FROM site_settings WHERE name IN ('ltkf_menu', 'ltkf_nust')");
+  noJsErrors(a);
+});
+
