@@ -103,6 +103,8 @@ test('my dojo: create the hero, test panel, gift box, equip, pet, collection', a
   // Kimono keičia pikselinės lapės spalvą
   await a.click('.dw-tool[data-pane=equip]');
   await a.click('#g-inv [data-filt=all]');
+  // Lėtame serveryje ritinys gali būti persipiešęs ir užsidaręs - atidaromas dar kartą
+  if (!(await a.locator('#g-inv [data-item=k_emerald]').isVisible())) { await a.click('.dw-tool[data-pane=equip]'); await a.click('#g-inv [data-filt=all]'); }
   await a.click('#g-inv [data-item=k_emerald]'); await a.click('.gm [data-do=equip]'); await a.waitForTimeout(600);
   check('kimono equipped and the pixel hero repainted', await a.locator('#g-equip [data-slot=kimono].on').count() === 1 && /emerald/.test(sql("SELECT equipped FROM game_heroes WHERE account_id = (SELECT id FROM accounts WHERE email='info@karateka.lt') OR member_id IN (SELECT member_id FROM account_members am JOIN accounts x ON x.id = am.account_id WHERE x.email='info@karateka.lt' AND am.relation='self') LIMIT 1")));
   check('not yet pixel slots are hidden', await a.locator('#g-equip [data-slot=head]').count() === 0 && await a.locator('#g-inv [data-item=sp_unicorn]').count() === 0);
