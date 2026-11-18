@@ -17,7 +17,7 @@ test('exam protocol: numbers, autosave, pass/fail, deleted number not reused, CS
   check('default organisation', /LIETUVOS TRADICINIO KARATE DO FEDERACIJA/.test(await a.locator('.prot-org').innerText()));
 
   // Dalyviai ir numeriai
-  await nav(a, () => a.click('button:has-text("Įtraukti užsiregistravusius")'));
+  await nav(a, () => a.click('button:has-text("Klubo nariai iš renginio")'));
   const numbers = await a.locator('.prot-nr').allInnerTexts();
   check('three participants numbered', numbers.length === 3 && numbers.every((n, i) => n === `${prefix}-0${i + 1}`), numbers.join(','));
 
@@ -31,7 +31,7 @@ test('exam protocol: numbers, autosave, pass/fail, deleted number not reused, CS
   check('autosaved', sql(`SELECT CONCAT(kata, '|', result) FROM exam_protocol_rows WHERE id = ${rid}`) === '9|passed');
 
   // Antraštė: kyu, egzaminatorius - prisimenamas kitam protokolui
-  await a.click('.prot-head-form summary');
+  await a.click('#daugiau > summary');   // antraštė - „⚙ Daugiau“ skiltyje
   await a.fill('input[name=kyu_label]', '8-5');
   await a.fill('input[name=examiner_name]', 'Giedrius Dranevičius');
   await a.fill('input[name=examiner_license]', 'LT-007');

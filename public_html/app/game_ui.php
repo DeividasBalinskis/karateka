@@ -5,7 +5,7 @@ require_once APP_DIR . '/game.php';
 /** Žaidimų puslapių adresai (naršyklei) */
 function game_urls(): array
 {
-    return ['arena' => url('arena.php'), 'greita' => url('arena.php?greita=1'), 'keturi' => url('keturi.php'), 'ritmas' => url('ritmas.php'), 'dojo' => url('dojo.php')];
+    return ['arena' => url('arena.php'), 'greita' => url('arena.php?greita=1'), 'keturi' => url('keturi.php'), 'ritmas' => url('ritmas.php'), 'dojo' => url('dojo.php'), 'lab' => url('kova-bandymai.php')];
 }
 
 /** Bendri žaidimo scenarijai ir stilius */

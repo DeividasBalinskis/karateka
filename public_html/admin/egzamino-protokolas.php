@@ -217,6 +217,7 @@ page_start(t('Egzamino protokolas') . ': ' . $event['title'], ['admin' => true, 
         <input type="text" name="name" placeholder="<?= te('Vardas Pavardė') ?>" required>
         <input type="date" name="birth_date" aria-label="<?= te('Gimimo data') ?>">
         <input type="tel" name="phone" placeholder="<?= te('Telefonas') ?>">
+        <input type="text" name="club" placeholder="<?= te('Klubas') ?>" style="width:130px;">
         <input type="text" name="kyu" placeholder="kyu" list="kyuList" style="width:90px;">
         <button class="btn btn-sm" type="submit"><?= te('Įtraukti') ?></button>
       </form>
@@ -300,7 +301,7 @@ page_start(t('Egzamino protokolas') . ': ' . $event['title'], ['admin' => true, 
 
   <?php if ($rows): ?>
     <div class="row no-print prot-after">
-      <form method="post"><?= csrf_field() ?><input type="hidden" name="id" value="<?= $id ?>"><input type="hidden" name="action" value="fed_send">
+      <form method="post" class="prot-fed"><?= csrf_field() ?><input type="hidden" name="id" value="<?= $id ?>"><input type="hidden" name="action" value="fed_send">
         <button class="btn btn-primary btn-sm" type="submit"><?= !empty($p['fed_sent_at']) ? te('📨 Atnaujinti Federacijoje') : te('📨 Siųsti protokolą Federacijai') ?></button></form>
       <?php if (is_admin($me)): ?>
         <form method="post"><?= csrf_field() ?><input type="hidden" name="id" value="<?= $id ?>"><input type="hidden" name="action" value="to_results">

@@ -9,6 +9,8 @@
     var fab = $('fbFab'), panel = $('fbPanel'), text = $('fbText'), imgs = $('fbImgs'), state = $('fbState');
     var list = $('fbList'), mine = $('fbMine'), editing = $('fbEditing'), fileIn = $('fbFile'), nameIn = $('fbName');
     var cur = { id: 0, images: [] }, items = [], timer = null, chain = Promise.resolve(), loaded = false;
+    // „Mano“ - tik savo (taisyti), „Visi“ - kitų irgi, bet tik skaityti
+    var tab = 'mine', allItems = [], openAll = {};
 
     function setState(t, cls) { state.textContent = t; state.className = 'fb-state ' + (cls || ''); }
     function context() {
@@ -30,8 +32,20 @@
     // ---------- Sąrašas ----------
     // Matomi tik 2 naujausi (ir šiuo metu taisomas); kiti - paspaudus „Rodyti visus“
     var showAll = false;
+    function renderAll() {
+      list.innerHTML = allItems.length ? allItems.map(function (it) {
+        var o = !!openAll[it.id];
+        return '<li class="fb-item fb-ro' + (o ? ' open' : '') + '" data-all-id="' + it.id + '" tabindex="0" role="button" title="Paspauskite - visas tekstas">' +
+          '<div class="fb-item-top"><span class="fb-item-title">' + esc(it.title) + '</span>' + (it.images.length ? '<span class="fb-item-img">🖼 ' + it.images.length + '</span>' : '') + '</div>' +
+          '<div class="fb-item-meta"><span>' + esc(it.author || '') + (it.mine ? ' · jūsų' : '') + ' · ' + esc(it.date) + '</span><span class="fb-st st-' + esc(it.status) + '">' + esc(it.statusLabel) + '</span></div>' +
+          (o ? '<div class="fb-ro-body">' + esc(it.body).replace(/\n/g, '<br>') + '</div>' + (it.images.length ? '<div class="fb-ro-imgs">' + it.images.map(function (im) { return '<a href="' + esc(im.full) + '" target="_blank" rel="noopener"><img src="' + esc(im.thumb) + '" alt=""></a>'; }).join('') + '</div>' : '') : '') +
+          (it.reply ? '<div class="fb-reply"><b>Atsakymas:</b> ' + esc(it.reply) + '</div>' : '') + '</li>';
+      }).join('') : '<li class="muted small">Atsiliepimų dar nėra.</li>';
+    }
     function renderList() {
-      mine.hidden = !items.length;
+      if (tab === 'all') { renderAll(); return; }
+      mine.hidden = !items.length && !mine.querySelector('.fb-tabs');
+      if (!items.length) { list.innerHTML = '<li class="muted small">Čia bus tik jūsų atsiliepimai. Kitų - „Visi“.</li>'; return; }
       var shown = showAll ? items : items.filter(function (it, i) { return i < 2 || it.id === cur.id; });
       list.innerHTML = shown.map(function (it) {
         return '<li class="fb-item' + (it.id === cur.id ? ' on' : '') + '" data-id="' + it.id + '" tabindex="0" role="button" title="Paspauskite - taisyti">' +
@@ -41,7 +55,19 @@
       }).join('') + (items.length > shown.length ? '<li><button type="button" class="fb-more" data-fb-all>Rodyti visus (' + items.length + ') ↓</button></li>'
         : showAll && items.length > 2 ? '<li><button type="button" class="fb-more" data-fb-all>Rodyti tik naujausius ↑</button></li>' : '');
     }
+    mine.addEventListener('click', function (e) {
+      var tb = e.target.closest('[data-fb-tab]'); if (!tb) return;
+      tab = tb.getAttribute('data-fb-tab');
+      mine.querySelectorAll('[data-fb-tab]').forEach(function (b) { b.classList.toggle('on', b === tb); });
+      if (tab === 'all') {
+        list.innerHTML = '<li class="muted small">Kraunama…</li>';
+        fetch(cfg.api + (cfg.api.indexOf('?') === -1 ? '?' : '&') + 'list=1&all=1', { credentials: 'same-origin', headers: { Accept: 'application/json' } })
+          .then(function (r) { return r.json(); }).then(function (d) { allItems = d.items || []; renderList(); }).catch(function () {});
+      } else renderList();
+    });
     list.addEventListener('click', function (e) {
+      var ro = e.target.closest('[data-all-id]');
+      if (ro) { if (!e.target.closest('a')) { var id = +ro.getAttribute('data-all-id'); openAll[id] = !openAll[id]; renderAll(); } e.stopPropagation(); return; }
       if (!e.target.closest('[data-fb-all]')) return;
       e.stopPropagation(); showAll = !showAll; renderList();
     }, true);

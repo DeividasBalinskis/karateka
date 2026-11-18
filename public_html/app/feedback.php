@@ -81,6 +81,9 @@ function feedback_add(?array $a, string $body, string $page, string $name = '', 
             [$a ? (int) $a['id'] : null, $a ? null : (mb_substr(trim($name), 0, 120) ?: null), mb_substr($page, 0, 255) ?: null, mb_substr($body, 0, FEEDBACK_MAX)]);
     }
     $id = (int) db()->lastInsertId();
+    if (feedback_writer_ready()) {
+        q('UPDATE feedback SET writer = ? WHERE id = ?', [feedback_writer(), $id]);
+    }
     if (!$a) {
         $_SESSION['fb_own'][] = $id;   // neprisijungęs gali taisyti tik savo (šios naršyklės) atsiliepimus
     }
@@ -101,11 +104,43 @@ function feedback_images_ready(): bool
     return $ok;
 }
 
-/** Ar šis žmogus gali taisyti / matyti atsiliepimą: autorius, adminas arba (neprisijungęs) šios sesijos autorius */
+// ---------- Kas rašė: naršyklės žymė (slapukas fbw, db/040) ----------
+// Net jei keli žmonės naudoja tą pačią paskyrą, kiekvienas mato („Mano“) ir taiso tik tai, ką parašė pats. „Visi“ - tik skaityti.
+
+function feedback_writer_ready(): bool
+{
+    static $ok = null;
+    if ($ok === null) {
+        try {
+            q_value('SELECT writer FROM feedback LIMIT 1');
+            $ok = true;
+        } catch (PDOException $ex) {
+            $ok = false;
+        }
+    }
+    return $ok;
+}
+
+/** Šios naršyklės žymė (sukuriama pirmą kartą; slapukas 2 metams) */
+function feedback_writer(): string
+{
+    $w = (string) ($_COOKIE['fbw'] ?? '');
+    if (!preg_match('/^[a-f0-9]{32}$/', $w)) {
+        $w = bin2hex(random_bytes(16));
+        if (!headers_sent()) {
+            setcookie('fbw', $w, ['expires' => time() + 2 * 365 * 86400, 'path' => '/', 'httponly' => true, 'samesite' => 'Lax', 'secure' => !empty($_SERVER['HTTPS'])]);
+        }
+        $_COOKIE['fbw'] = $w;
+    }
+    return $w;
+}
+
+/** Ar šis žmogus gali taisyti atsiliepimą: tik autorius (paskyra + ta pati naršyklė) arba (neprisijungęs) šios sesijos autorius. Adminas kitų tekstų netaiso. */
 function feedback_can_edit(?array $a, array $f): bool
 {
-    if ($a && (is_admin($a) || (int) $f['account_id'] === (int) $a['id'])) {
-        return true;
+    if ($a && (int) $f['account_id'] === (int) $a['id']) {
+        $w = (string) ($f['writer'] ?? '');
+        return $w === '' || hash_equals($w, feedback_writer());   // seni (be žymės) - paskyros savininkui
     }
     return !$a && !$f['account_id'] && in_array((int) $f['id'], array_map('intval', (array) ($_SESSION['fb_own'] ?? [])), true);
 }
@@ -127,19 +162,32 @@ function feedback_image_url(array $img, bool $thumb = false): string
     return url('atsiliepimas.php?img=' . (int) $img['id'] . ($thumb ? '&thumb=1' : ''));
 }
 
+/** „Visi“ (tik skaityti): treneriams ir adminui - visų, kitiems - visi savo paskyros. Su autoriumi. */
+function feedback_all(?array $a, int $limit = 60): array
+{
+    if (!$a) {
+        return feedback_mine(null, $limit);
+    }
+    return q_all('SELECT f.*, a.first_name, a.last_name FROM feedback f LEFT JOIN accounts a ON a.id = f.account_id'
+        . (is_staff($a) ? '' : ' WHERE f.account_id = ' . (int) $a['id']) . ' ORDER BY f.id DESC LIMIT ' . $limit);
+}
+
 /** Atsiliepimas JSON (langui): tekstas, pavadinimas, nuotraukos */
 function feedback_json(array $f): array
 {
     return ['id' => (int) $f['id'], 'title' => feedback_title($f), 'body' => (string) $f['body'], 'status' => $f['status'], 'statusLabel' => t(FEEDBACK_STATUS[$f['status']][0] ?? ''),
             'reply' => (string) $f['reply'], 'page' => (string) $f['page'], 'site' => (string) ($f['site'] ?? ''), 'date' => fmt_date(substr($f['created_at'], 0, 10)),
-            'images' => array_map(function ($i) { return ['id' => (int) $i['id'], 'thumb' => feedback_image_url($i, true), 'full' => feedback_image_url($i)]; }, feedback_images((int) $f['id']))];
+            'images' => array_map(function ($i) { return ['id' => (int) $i['id'], 'thumb' => feedback_image_url($i, true), 'full' => feedback_image_url($i)]; }, feedback_images((int) $f['id'])),
+            'author' => trim((string) ($f['first_name'] ?? '') . ' ' . (string) ($f['last_name'] ?? '')) ?: (string) ($f['name'] ?? ''), 'mine' => feedback_can_edit(current_account(), $f)];
 }
 
-/** Paskutiniai šio žmogaus atsiliepimai (langui) */
+/** Paskutiniai šio žmogaus atsiliepimai (langui): paskyros ir šios naršyklės */
 function feedback_mine(?array $a, int $limit = 30): array
 {
     if ($a) {
-        return q_all('SELECT * FROM feedback WHERE account_id = ? ORDER BY id DESC LIMIT ' . $limit, [(int) $a['id']]);
+        return feedback_writer_ready()
+            ? q_all('SELECT * FROM feedback WHERE account_id = ? AND writer = ? ORDER BY id DESC LIMIT ' . $limit, [(int) $a['id'], feedback_writer()])
+            : q_all('SELECT * FROM feedback WHERE account_id = ? ORDER BY id DESC LIMIT ' . $limit, [(int) $a['id']]);
     }
     $ids = array_map('intval', (array) ($_SESSION['fb_own'] ?? []));
     return $ids ? q_all('SELECT * FROM feedback WHERE account_id IS NULL AND id IN (' . implode(',', $ids) . ') ORDER BY id DESC LIMIT ' . $limit) : [];
@@ -267,7 +315,8 @@ function feedback_widget_html(?string $site = null): string
         . '<span class="fb-hint">' . te('Enter - išsaugoti ir naujas · Shift+Enter - nauja eilutė') . '</span>'
         . '<button class="btn btn-primary btn-sm fb-send" type="button" id="fbSend">' . te('Išsaugoti') . '</button></div>'
         . '</div>'
-        . '<div class="fb-mine" id="fbMine" hidden><div class="fb-mine-title">' . te('Jūsų atsiliepimai') . '</div><ul class="fb-list" id="fbList"></ul></div>'
+        . '<div class="fb-mine" id="fbMine"><div class="fb-mine-title">' . ($a ? '<div class="fb-tabs" role="tablist"><button type="button" class="on" data-fb-tab="mine">' . te('Mano') . '</button><button type="button" data-fb-tab="all">' . te('Visi') . '</button></div>'
+            : te('Jūsų atsiliepimai')) . '</div><ul class="fb-list" id="fbList"></ul></div>'
         . ($cfg['admin'] ? '<a class="fb-admin" href="' . e($cfg['admin']) . '">' . te('Visi atsiliepimai →') . '</a>' : '')
         . '</div></div></div><script src="' . e(asset_url('assets/feedback.js')) . '" defer></script>';
 }

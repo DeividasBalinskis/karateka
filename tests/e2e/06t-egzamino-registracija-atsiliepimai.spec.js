@@ -14,59 +14,84 @@ test('exam signup link for people without an account, invitations, exam list for
   await a.goto('admin/');
   check('coach tabs have Egzaminai', await a.locator('.sub-nav a[href*="admin/egzaminai.php"]').count() === 1);
   await a.goto('admin/egzaminai.php');
-  const item = a.locator('.exam-item', { hasText: 'E2E egzaminas' });
+  const item = a.locator('.exam-row', { hasText: 'E2E egzaminas' });
   check('exam listed', await item.count() === 1);
   await nav(a, () => item.locator('a', { hasText: 'Protokolas' }).click());
 
-  // Protokole: sukurti registracijos nuorodą
-  if (!(await a.locator('#registracija button:has-text("Sukurti registracijos nuorodą")').isVisible())) await a.locator('#registracija > summary').click();
+  // Protokole („⚙ Daugiau“): sukurti registracijos nuorodą
+  const more = async () => { if (!(await a.locator('#registracija').isVisible())) await a.locator('#daugiau > summary').click(); };
+  await more();
   await nav(a, () => a.click('button:has-text("Sukurti registracijos nuorodą")'));
   const token = sql(`SELECT token FROM exam_signup_links WHERE event_id = ${eid}`);
   check('link created', /^[a-f0-9]{24}$/.test(token), token);
+  await more();
   check('link shown with copy', (await a.inputValue('#registracija .su-url')).includes('egzamino-registracija.php?k=' + token));
 
   // Kvietimai el. paštu: eilutė be el. pašto praleidžiama
-  if (!(await a.locator('.su-invite').isVisible())) await a.locator('#registracija > summary').click();
   await a.locator('.su-invite > summary').click();
   await a.fill('.su-invite textarea[name=people]', 'Petras Kviestinis, petras.e2e@example.com\nbe pasto');
   await nav(a, () => a.click('.su-invite button[type=submit]'));
   check('invite result reported', /Kvietimų išsiųsta: \d/.test(await a.locator('.flash').allTextContents().then(t => t.join(' '))));
   check('line without e-mail skipped', /be pasto/.test(await a.locator('.flash').allTextContents().then(t => t.join(' '))));
 
-  // Žmogus be paskyros: renginio puslapyje - „Registruotis į egzaminą“, forma - vardas, pavardė, el. paštas
+  // Žmogus be paskyros: renginio puslapyje - „Registruotis į egzaminą“; forma - tik vardas, pavardė, gimimo data, telefonas
   const v = await login(browser, null, 390, 844);
   await v.goto(`renginys.php?id=${eid}`);
   check('event page: register for the exam', await v.locator('.ep-reg a', { hasText: 'Registruotis į egzaminą' }).count() === 1);
   await nav(v, () => v.locator('.ep-reg a', { hasText: 'Registruotis į egzaminą' }).click());
+  check('only 4 fields', await v.locator('.exam-su-form input:not([type=hidden]):not([name=website])').count() === 4 && await v.locator('.exam-su-form input[name=email]').count() === 0);
   await nav(v, () => v.click('button:has-text("Registruotis į egzaminą")'));
   check('required fields checked', await v.locator('.flash-err').count() === 1);
   await v.fill('input[name=first_name]', 'Ona');
   await v.fill('input[name=last_name]', 'Svečiūtė');
-  await v.fill('input[name=email]', 'ona.e2e@example.com');
-  await v.locator('.exam-su-more > summary').click();
-  await v.fill('input[name=club]', 'Kitas klubas');
-  await v.selectOption('select[name=kyu]', '8 kyu');
-  await v.check('input[name=consent]');
+  await v.fill('input[name=birth_date]', '2015-04-03');
+  await v.fill('input[name=phone]', '+370 600 00002');
   await nav(v, () => v.click('button:has-text("Registruotis į egzaminą")'));
   check('signed up', await v.locator('.exam-su-ok').count() === 1);
-  const row = sql(`SELECT CONCAT(name, '|', club, '|', kyu) FROM exam_protocol_rows WHERE event_id = ${eid} AND deleted_at IS NULL`);
-  check('in the protocol at once', row === 'Ona Svečiūtė|Kitas klubas|8 kyu', row);
-  check('signup stored', +sql(`SELECT COUNT(*) FROM exam_signups WHERE event_id = ${eid} AND email = 'ona.e2e@example.com' AND signed_at IS NOT NULL`) === 1);
+  const row = sql(`SELECT CONCAT(name, '|', birth_date, '|', phone) FROM exam_protocol_rows WHERE event_id = ${eid} AND deleted_at IS NULL`);
+  check('in the protocol at once', row === 'Ona Svečiūtė|2015-04-03|+370 600 00002', row);
+  check('signup stored', +sql(`SELECT COUNT(*) FROM exam_signups WHERE event_id = ${eid} AND first_name = 'Ona' AND signed_at IS NOT NULL`) === 1);
   check('staff notified', +sql("SELECT COUNT(*) FROM notifications WHERE type = 'exam_registration' AND title LIKE '%Ona Svečiūtė%'") >= 1);
-  // Tas pats el. paštas dar kartą - atnaujina, ne dubliuoja
+
+  // Asmeninis egzamino puslapis be paskyros: pasirenka diržą - atsiranda protokole
+  await nav(v, () => v.click('.exam-su-mine a.btn'));
+  check('my exam page', await v.locator('.my-exam').count() === 1 && /Labas, Ona/.test(await v.textContent('.my-exam-hero')));
+  await nav(v, () => v.selectOption('select[name=belt]', '2'));
+  check('belt saved to protocol', sql(`SELECT kyu FROM exam_protocol_rows WHERE event_id = ${eid}`) === '8 kyu');
+  const myUrl = v.url();
+
+  // Tas pats vardas ir gimimo data dar kartą - atnaujina, ne dubliuoja
   await v.goto(`egzamino-registracija.php?k=${token}`);
   await v.fill('input[name=first_name]', 'Ona');
-  await v.fill('input[name=last_name]', 'Svečiūtė-Kitokia');
-  await v.fill('input[name=email]', 'ona.e2e@example.com');
-  await v.check('input[name=consent]');
+  await v.fill('input[name=last_name]', 'Svečiūtė');
+  await v.fill('input[name=birth_date]', '2015-04-03');
+  await v.fill('input[name=phone]', '+370 600 00003');
   await nav(v, () => v.click('button:has-text("Registruotis į egzaminą")'));
-  check('same e-mail updates, no duplicate', +sql(`SELECT COUNT(*) FROM exam_protocol_rows WHERE event_id = ${eid} AND deleted_at IS NULL`) === 1
-    && sql(`SELECT name FROM exam_protocol_rows WHERE event_id = ${eid}`) === 'Ona Svečiūtė-Kitokia');
+  check('same person updates, no duplicate', +sql(`SELECT COUNT(*) FROM exam_protocol_rows WHERE event_id = ${eid} AND deleted_at IS NULL`) === 1
+    && sql(`SELECT phone FROM exam_protocol_rows WHERE event_id = ${eid}`) === '+370 600 00003');
 
-  // Protokole - kas užsiregistravo; uždarius - „Registracija uždaryta“
+  // Pamiršo nuorodą: vardas pavardė + gimimo data → savo puslapis
+  await v.goto(`egzamino-registracija.php?k=${token}`);
+  await v.locator('#rasti > summary').click();
+  await v.fill('#rasti input[name=name]', 'ona svečiūtė');
+  await v.fill('#rasti input[name=birth_date]', '2015-04-03');
+  await nav(v, () => v.click('#rasti button[type=submit]'));
+  check('found my exam', v.url().split('#')[0] === myUrl.split('#')[0], v.url());
+
+  // Protokole - kas užsiregistravo; − / + po 0,1 ir vidurkis; uždarius - „Registracija uždaryta“
   await a.goto(`admin/egzamino-protokolas.php?id=${eid}`);
-  check('protocol lists signups', await a.locator('.su-table tr', { hasText: 'ona.e2e@example.com' }).count() === 1);
-  if (!(await a.locator('#registracija button:has-text("Uždaryti registraciją")').isVisible())) await a.locator('#registracija > summary').click();
+  const pr = a.locator('#protTable tr[data-row]').first();
+  await pr.locator('td.sc').first().locator('.sc-b[data-d="1"]').click();
+  await pr.locator('td.sc').first().locator('.sc-b[data-d="1"]').click();
+  await pr.locator('td.sc').nth(1).locator('.sc-b[data-d="-1"]').click();
+  await a.waitForTimeout(900);
+  check('plus/minus by 0.1', sql(`SELECT CONCAT(kihon, '|', kata) FROM exam_protocol_rows WHERE event_id = ${eid}`) === '5.1|5', sql(`SELECT CONCAT(kihon, '|', kata) FROM exam_protocol_rows WHERE event_id = ${eid}`));
+  check('average counted', (await pr.locator('.avg').textContent()).trim() === '5.05');
+  await pr.locator('[data-pay]').click(); await a.waitForTimeout(500);
+  check('paid marked', sql(`SELECT paid_at IS NOT NULL FROM exam_protocol_rows WHERE event_id = ${eid}`) === '1');
+  check('personal link in the protocol', (await pr.locator('.pr-link').getAttribute('data-copy')).includes('mano-egzaminas.php?t='));
+  await more();
+  check('protocol lists signups', await a.locator('.su-table tr', { hasText: 'Ona Svečiūtė' }).count() === 1);
   await nav(a, () => a.click('#registracija button:has-text("Uždaryti registraciją")'));
   await v.goto(`egzamino-registracija.php?k=${token}`);
   check('closed link says so', /Registracija uždaryta/.test(await v.textContent('.exam-su')));

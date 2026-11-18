@@ -149,7 +149,8 @@
         sg('kova', 'kova', G.urls.arena, T('Karate kova'), T('Pasirink, kur smūgiuoti ir ką ginti')) +
         sg('greita', 'greita', G.urls.greita, T('Greita kova'), T('Reakcija: blokuok laiku ir kontratakuok')) +
         sg('keturi', 'keturi', G.urls.keturi, T('Keturi iš eilės'), T('Su gyvūnėlių kortomis')) +
-        sg('ritmas', 'ritmas', G.urls.ritmas, T('Kata ritmas'), T('Muša būgnai - daryk techniką laiku')) + '</div>';
+        sg('ritmas', 'ritmas', G.urls.ritmas, T('Kata ritmas'), T('Muša būgnai - daryk techniką laiku')) +
+        (G.urls.lab ? sg('lab', 'kova', G.urls.lab, T('Nauja kova 🧪'), T('Bandymai: apranga, kortos, gyvūnėliai')) : '') + '</div>';
     }
     $('.dw-ui').innerHTML = html;
     var open = ($('.dw-scroll') || {}).dataset; if (open && open.open) root.querySelectorAll('.dw-tool[data-pane="' + open.open + '"]').forEach(function (b) { b.classList.add('on'); });

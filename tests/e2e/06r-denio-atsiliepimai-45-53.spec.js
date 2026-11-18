@@ -58,7 +58,7 @@ test('exam protocol: decimal, live counts, editable columns, club, send to the F
   check('counts update right away', (await a.textContent('#sumPassed')).trim() === '1');
 
   // Stulpeliai: pridėti „Bunkai“, išimti „Testas“
-  await a.click('.prot-cols summary');
+  await a.click('#daugiau > summary');   // stulpeliai - „⚙ Daugiau“ skiltyje
   await a.fill('.prot-cols input[name="col_new"]', 'Bunkai');
   const labels = await a.locator('.prot-cols input[name^="col_label"]').evaluateAll(els => els.map(e => e.value));
   await a.check(`.prot-cols input[name="col_del[${labels.indexOf('Testas')}]"]`);

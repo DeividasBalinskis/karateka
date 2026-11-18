@@ -372,6 +372,8 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
   <section id="v-dalyviai" role="tabpanel" aria-labelledby="tab-dalyviai" hidden>
     <div class="toolbar">
       <button class="btn btn-primary" id="ppl-members" type="button"<?= $demo || $asSekr ? ' hidden' : '' ?>>+ Karateka nariai</button>
+      <button class="btn btn-test" id="ppl-test100" type="button"<?= $asSekr ? ' hidden' : '' ?> title="Išgalvoti dalyviai iš kitų klubų - patikrinti, kaip veikia su daug dalyvių">🧪 +100 testinių</button>
+      <button class="btn btn-xs" id="ppl-test-del" type="button" hidden>Ištrinti testinius</button>
       <input type="search" class="sel" id="ppl-search" placeholder="Ieškoti dalyvio" aria-label="Ieškoti dalyvio">
       <select class="sel" id="ppl-club" aria-label="Klubas"></select>
       <label class="small"><input type="checkbox" id="ppl-nocat"> Tik be kategorijos</label>

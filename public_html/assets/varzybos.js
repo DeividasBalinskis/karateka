@@ -954,6 +954,7 @@
 
   // ---------- Dalyviai (kaip Kihapp „Individuals“) ----------
   function renderPeople() {
+    testButtons();
     var clubSel = document.getElementById('ppl-club'), newClub = document.getElementById('ppl-new-club');
     clubSel.innerHTML = '<option value="">Visi klubai</option>' + S.clubs.map(function (k) { return '<option' + (k === pplClub ? ' selected' : '') + '>' + esc(k) + '</option>'; }).join('');
     newClub.innerHTML = S.clubs.map(function (k) { return '<option' + (k === pplClub ? ' selected' : '') + '>' + esc(k) + '</option>'; }).join('');
@@ -1012,6 +1013,48 @@
     }
     if (!t.dataset.pRm) return;
     snapshot(); removeFromCat(t.dataset.pRm, t.dataset.c); save(); render();
+  });
+
+  // ---------- 🧪 +100 testinių dalyvių: išgalvoti vaikai ir suaugę iš kitų klubų (pažymėti test: true, ištrinami vienu mygtuku) ----------
+  var TEST_FIRST = { M: ['Jonas', 'Lukas', 'Matas', 'Domas', 'Tomas', 'Paulius', 'Rokas', 'Kajus', 'Nojus', 'Augustas', 'Ignas', 'Dovydas', 'Herkus', 'Benas', 'Jokūbas', 'Adomas'],
+    F: ['Ona', 'Ieva', 'Gabija', 'Emilija', 'Austėja', 'Kamilė', 'Urtė', 'Gustė', 'Liepa', 'Saulė', 'Rugilė', 'Smiltė', 'Viltė', 'Elzė', 'Luknė', 'Goda'] };
+  var TEST_LAST = ['Kazlauskas', 'Petrauskas', 'Jankauskas', 'Stankevičius', 'Vasiliauskas', 'Žukauskas', 'Butkus', 'Paulauskas', 'Urbonas', 'Kavaliauskas',
+    'Navickas', 'Rimkus', 'Balčiūnas', 'Mockus', 'Šimkus', 'Lukoševičius', 'Morkūnas', 'Grigas', 'Sakalauskas', 'Vaitkus'];
+  function testFemale(l) { return /ius$/.test(l) ? l.replace(/ius$/, 'iūtė') : l.replace(/as$/, 'aitė').replace(/us$/, 'utė').replace(/is$/, 'ytė'); }
+  function rnd(a) { return a[Math.floor(Math.random() * a.length)]; }
+  function testCount() { return S && S.people ? Object.keys(S.people).filter(function (k) { return S.people[k].test; }).length : 0; }
+  function testButtons() { var n = testCount(), d = document.getElementById('ppl-test-del'); if (d) { d.hidden = !n; d.textContent = 'Ištrinti testinius (' + n + ')'; } }
+  document.getElementById('ppl-test100').addEventListener('click', function () {
+    if (!confirm('Pridėti 100 išgalvotų dalyvių iš kitų klubų? Jie pažymėti kaip testiniai - vėliau ištrinsite vienu mygtuku.')) return;
+    snapshot();
+    var clubs = S.clubs.filter(function (c) { return c !== HOME; });
+    if (!clubs.length) { clubs = ['Testo klubas A', 'Testo klubas B', 'Testo klubas C']; clubs.forEach(function (c) { if (S.clubs.indexOf(c) === -1) S.clubs.push(c); }); }
+    var used = {}, ids = [];
+    Object.keys(S.people).forEach(function (k) { used[S.people[k].name] = true; });
+    for (var i = 0; i < 100; i++) {
+      var g = Math.random() < 0.5 ? 'M' : 'F', name = '';
+      for (var guard = 0; guard < 40; guard++) { var l = rnd(TEST_LAST); name = rnd(TEST_FIRST[g]) + ' ' + (g === 'F' ? testFemale(l) : l); if (!used[name]) break; }
+      if (used[name]) name += ' ' + (i + 1);
+      used[name] = true;
+      var age = rnd([6, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13, 14, 15, 16, 17, 19, 24, 31, 38]);
+      var belt = Math.max(1, Math.min(12, Math.round((age - 5) / 1.6) + Math.floor(Math.random() * 4) - 1));
+      var id = newId('x') + i;
+      S.people[id] = { id: id, name: name, club: rnd(clubs), birth: YEAR - age, gender: g, belt: belt, member: null, test: true };
+      ids.push(id);
+    }
+    if (!S.categories.some(function (c) { return !c.team; })) autoCategories();   // kategorijų dar nėra - sudaromos
+    else toastPlaced(ids);                                                     // yra - kiekvienas į tinkamas
+    save(); render(); testButtons();
+    toast('Pridėta 100 testinių dalyvių. Ištrinti - „Ištrinti testinius“.');
+  });
+  document.getElementById('ppl-test-del').addEventListener('click', function () {
+    var n = testCount(); if (!n || !confirm('Ištrinti visus testinius dalyvius (' + n + ') iš varžybų ir kategorijų?')) return;
+    snapshot();
+    var gone = {};
+    Object.keys(S.people).forEach(function (k) { if (S.people[k].test) { gone[k] = true; delete S.people[k]; } });
+    S.categories.forEach(function (c) { c.competitors = c.competitors.filter(function (x) { return !gone[x.id]; }); });
+    Object.keys(S.teams).forEach(function (k) { S.teams[k].members = S.teams[k].members.filter(function (m) { return !gone[m]; }); });
+    save(); render(); testButtons();
   });
 
   // ---------- Dalyvis - į tinkamas grupes (pakeitus gimimo metus, lytį ar diržą, pridėjus naują) ----------
