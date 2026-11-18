@@ -69,6 +69,51 @@ const GAME_RARITY = [1 => 'Paprastas', 2 => 'Retas', 3 => 'Epinis', 4 => 'Legend
 const GAME_SLOTS = ['weapon' => 'Ginklas', 'kimono' => 'Kimono', 'belt' => 'Diržo puošmena', 'head' => 'Galva', 'face' => 'Veidas', 'neck' => 'Kaklas',
                     'hands' => 'Rankos', 'back' => 'Nugara', 'aura' => 'Aura', 'hair' => 'Šukuosena', 'paint' => 'Spalva', 'bg' => 'Aplinka', 'house' => 'Namas',
                     'decor' => 'Dekoracija', 'egg' => 'Kiaušinis', 'species' => 'Personažas'];
+// Personažų gebėjimai (tik jėgos kovose): kiekvienas personažas turi savo. Tikimybė suveikti per ėjimą - 10 %,
+// ir +1 % už kas 2 pergales su tuo personažu (iki 25 %) - kuo daugiau kovoji su juo, tuo jis stipresnis.
+const GAME_SKILLS = [
+    'pounce'  => ['Šuolis', 'Smūgis 60 % stipresnis'],
+    'counter' => ['Atkirtis', 'Užblokavęs atsako dvigubai stipriau'],
+    'evade'   => ['Šešėlis', 'Visiškai išvengia smūgio'],
+    'heal'    => ['Gydymas', 'Atgauna 4–8 gyvybių'],
+    'pierce'  => ['Kiaurai', 'Smūgio negalima užblokuoti'],
+    'drain'   => ['Siurbimas', 'Atgauna pusę padarytos žalos'],
+    'burn'    => ['Ugnis', 'Papildomai 3–7 žalos'],
+    'thorns'  => ['Spygliai', 'Grąžina pusę gautos žalos'],
+    'focus'   => ['Susikaupimas', 'Smūgis tikrai Waza-ari'],
+    'stone'   => ['Akmuo', 'Gauta žala perpus mažesnė'],
+];
+const GAME_CHAR_SKILL = [
+    'kitsune' => 'focus', 'wtiger' => 'pounce', 'raven' => 'evade', 'crane' => 'heal', 'swolf' => 'drain', 'gdragon' => 'burn',
+    'kitsune9' => 'evade', 'frog' => 'counter', 'ram' => 'stone', 'jelly' => 'thorns', 'deer' => 'heal', 'scat' => 'evade',
+    'turtle' => 'stone', 'phoenix' => 'burn', 'panda' => 'counter', 'shark' => 'drain', 'ghost' => 'pierce', 'lava' => 'burn',
+    'wdragon' => 'pierce', 'moonwolf' => 'pounce', 'moth' => 'drain', 'tree' => 'thorns', 'stone' => 'stone', 'oni' => 'counter',
+    'weasel' => 'pierce', 'whale' => 'heal',
+];
+const GAME_SKILL_BASE = 10;
+const GAME_SKILL_MAX = 25;
+
+/** Personažo gebėjimas ir tikimybė pagal pergales su juo: ['code','n','d','p','wins'] */
+function game_skill(array $hero): array
+{
+    $code = GAME_CHAR_SKILL[$hero['species']] ?? 'focus';
+    $wins = (int) (($hero['char_wins'] ?? [])[$hero['species']] ?? 0);
+    return ['code' => $code, 'n' => t(GAME_SKILLS[$code][0]), 'd' => t(GAME_SKILLS[$code][1]), 'wins' => $wins,
+            'p' => min(GAME_SKILL_MAX, GAME_SKILL_BASE + intdiv($wins, 2))];
+}
+
+/** Pergalė su dabartiniu personažu - jo gebėjimas suveiks dažniau */
+function game_char_win(int $heroId): void
+{
+    $h = game_hero_row($heroId);
+    if (!$h || !array_key_exists('char_wins', $h)) {
+        return;   // dar be db/039
+    }
+    $cw = $h['char_wins'];
+    $cw[$h['species']] = (int) ($cw[$h['species']] ?? 0) + 1;
+    q('UPDATE game_heroes SET char_wins = ? WHERE id = ?', [json_encode($cw), $heroId]);
+}
+
 // Gyvūnėliai: [vardas, ženkliukas, gebėjimas kovoje, galima pasirinkti pradžioje]
 const GAME_PETS = [
     'kitten'     => ['Kačiukas', '🐱', 'scratch', true],
@@ -256,6 +301,9 @@ function game_hero_decode(array $h): array
 {
     foreach (['look', 'equipped', 'home', 'alloc'] as $f) {
         $h[$f] = json_decode((string) $h[$f], true) ?: [];
+    }
+    if (array_key_exists('char_wins', $h)) {
+        $h['char_wins'] = json_decode((string) $h['char_wins'], true) ?: [];
     }
     return $h;
 }
@@ -594,15 +642,20 @@ function game_hero_view(array $hero, bool $own = true): array
     $xp = game_xp($hero);
     $st = game_stats($hero);
     $pets = game_pets($hid);
-    $active = null;
+    $active = $active2 = null;
     foreach ($pets as $p) {
         if ((int) $p['id'] === (int) $hero['pet_id']) {
             $active = $p;
+        } elseif (!empty($hero['pet2_id']) && (int) $p['id'] === (int) $hero['pet2_id']) {
+            $active2 = $p;
         }
+    }
+    if (!$active && $active2) {
+        [$active, $active2] = [$active2, null];
     }
     $out = ['id' => $hid, 'name' => $hero['name'], 'publicName' => game_public_name($hero), 'species' => $hero['species'], 'gender' => $hero['gender'],
             'look' => $hero['look'], 'equipped' => $hero['equipped'], 'home' => $hero['home'], 'level' => $xp['level'], 'xp' => $xp, 'belt' => game_belt($hero),
-            'stats' => $st, 'pet' => $active, 'pets' => $pets, 'ratingPower' => (int) $hero['rating_power'], 'ratingFair' => (int) $hero['rating_fair'],
+            'stats' => $st, 'pet' => $active, 'pet2' => $active2, 'skill' => game_skill($hero), 'pets' => $pets, 'ratingPower' => (int) $hero['rating_power'], 'ratingFair' => (int) $hero['rating_fair'],
             'wins' => (int) $hero['wins'], 'losses' => (int) $hero['losses'], 'invites' => (bool) $hero['invites']];
     if ($own) {
         $out['owned'] = game_owned($hid);
@@ -633,7 +686,7 @@ function game_catalog_json(): array
     return ['items' => $items, 'species' => $species, 'pets' => $pets, 'fur' => GAME_FUR, 'flame' => GAME_FLAME, 'skin' => GAME_SKIN, 'eyes' => GAME_EYES, 'hair' => GAME_HAIR,
             'stats' => array_map('t', GAME_STATS), 'rarity' => array_map('t', GAME_RARITY), 'slots' => array_map('t', GAME_SLOTS), 'decorMax' => GAME_DECOR_MAX,
             'belts' => array_map(function ($b) { return [$b[0], t($b[1]), $b[2]]; }, BELTS), 'scenes' => url('img/temos/'), 'unlockAll' => GAME_UNLOCK_ALL,
-            'chars' => array_map(function ($c) { return ['n' => t($c[0]), 'f' => $c[1]]; }, GAME_PX_CHARS), 'charImg' => url('img/zaidimas/herojai/')];
+            'chars' => array_combine(array_keys(GAME_PX_CHARS), array_map(function ($c, $k) { $sk = GAME_CHAR_SKILL[$k] ?? 'focus'; return ['n' => t($c[0]), 'f' => $c[1], 's' => t(GAME_SKILLS[$sk][0]), 'sd' => t(GAME_SKILLS[$sk][1])]; }, GAME_PX_CHARS, array_keys(GAME_PX_CHARS))), 'charImg' => url('img/zaidimas/herojai/')];
 }
 
 /** Išsaugoti išvaizdą / daiktus / namus (tik tai, ką turi) */
@@ -729,6 +782,25 @@ function game_save_hero(array $hero, array $in): array
         $pid = (int) $in['pet_id'];
         if (!$pid || q_value('SELECT 1 FROM game_pets WHERE id = ? AND hero_id = ?', [$pid, (int) $hero['id']])) {
             $upd['pet_id'] = $pid ?: null;
+        }
+    }
+    // Į kovą - iki 2 gyvūnėlių: paspaudus imamas (jei abi vietos užimtos - pakeičia antrą), dar kartą - paliekamas namie
+    if (isset($in['pet_toggle']) && array_key_exists('pet2_id', $hero)) {
+        $pid = (int) $in['pet_toggle'];
+        if ($pid && q_value('SELECT 1 FROM game_pets WHERE id = ? AND hero_id = ?', [$pid, (int) $hero['id']])) {
+            $p1 = (int) $hero['pet_id'];
+            $p2 = (int) $hero['pet2_id'];
+            if ($pid === $p1) {
+                [$p1, $p2] = [$p2, 0];
+            } elseif ($pid === $p2) {
+                $p2 = 0;
+            } elseif (!$p1) {
+                $p1 = $pid;
+            } else {
+                $p2 = $pid;
+            }
+            $upd['pet_id'] = $p1 ?: null;
+            $upd['pet2_id'] = $p2 ?: null;
         }
     }
     if (isset($in['invites'])) {

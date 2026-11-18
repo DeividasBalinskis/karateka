@@ -149,7 +149,8 @@
     var st = M.state;
     ['a', 'b'].forEach(function (x) {
       var s = st.sides[x], el = $('#f-' + x);
-      el.innerHTML = '<div class="fa-body live">' + heroSvg(s.art) + '</div>' + (s.pet ? '<div class="fa-pet" title="' + esc(s.pet.name) + '">' + A.pet(s.pet.species, s.pet.color) + '</div>' : '');
+      var pl = s.pets || (s.pet ? [s.pet] : []);
+      el.innerHTML = '<div class="fa-body live">' + heroSvg(s.art) + '</div>' + pl.map(function (p, i) { return '<div class="fa-pet' + (i ? ' p2' : '') + '" title="' + esc(p.name) + '">' + A.pet(p.species, p.color) + '</div>'; }).join('');
       el.classList.toggle('me', x === side);
       // Kairėje stovintis turi žiūrėti į dešinę, dešinėje - į kairę
       var left = x === side, f = A.face ? A.face(s.art.species) : 'l';
@@ -160,7 +161,8 @@
     var st = M.state;
     ['a', 'b'].forEach(function (x) {
       var s = st.sides[x], hp = Math.max(0, st.hp[x]), mx = st.max[x], pct = Math.max(0, Math.round(hp / mx * 100));
-      var pet = s.pet && C.pets[s.pet.species] ? '<div class="petab" title="' + esc(C.pets[s.pet.species].abn) + '">🐾 ' + esc(s.pet.name) + ': ' + esc(C.pets[s.pet.species].abn) + '</div>' : '';
+      var pet = (s.pets || (s.pet ? [s.pet] : [])).filter(function (p) { return C.pets[p.species]; }).map(function (p) { return '<div class="petab" title="' + esc(C.pets[p.species].abn) + '">🐾 ' + esc(p.name) + ': ' + esc(C.pets[p.species].abn) + '</div>'; }).join('') +
+        (s.skill ? '<div class="petab skillab" title="' + esc(T('Personažo gebėjimas: suveikia dažniau, kuo daugiau pergalių su šiuo personažu')) + '">✨ ' + esc(s.skill.n) + ' · ' + s.skill.p + '%</div>' : '');
       $('#hp-' + x).innerHTML = '<div class="nm">' + (x === side ? '★ ' : '') + esc(s.name) + ' <small>' + T('Lygis') + ' ' + s.level + '</small></div><div class="bar"><i class="' + (pct < 30 ? 'low' : '') + '" style="width:' + pct + '%"></i><span>' + hp + ' / ' + mx + '</span></div>' +
         (st.cards && st.cards[x] && Object.keys(st.cards[x]).length ? '<div class="cards">' + Object.keys(st.cards[x]).map(function (c) { return '<span class="' + (st.cards[x][c] ? '' : 'used') + '">' + esc(R.cards[c][0]) + '</span>'; }).join('') + '</div>' : '') + pet;
     });
@@ -173,7 +175,7 @@
     el.innerHTML = log.map(function (l) {
       var txt = esc(l.t).replace(/([−-]\d+)/g, '<b class="dmg">$1</b>').replace(/(\+\d+)/g, '<b class="heal">$1</b>');
       var head = l.n !== last ? '<div class="tn">' + T('Ėjimas') + ' ' + l.n + '</div>' : ''; last = l.n;
-      return head + '<div class="ln k-' + l.k + (l.s === side ? ' mine' : ' opp') + '">' + (LOG_IC[l.k] ? A.icon(LOG_IC[l.k]) : '<span class="em">' + (l.k === 'pet' ? '🐾' : l.k === 'heal' ? '💚' : '•') + '</span>') + '<span>' + txt + '</span></div>';
+      return head + '<div class="ln k-' + l.k + (l.s === side ? ' mine' : ' opp') + '">' + (LOG_IC[l.k] ? A.icon(LOG_IC[l.k]) : '<span class="em">' + (l.k === 'pet' ? '🐾' : l.k === 'heal' ? '💚' : l.k === 'skill' ? '✨' : '•') + '</span>') + '<span>' + txt + '</span></div>';
     }).join('') || '<div class="g-empty">' + T('Pasirink smūgį ir gynybą, tada spausk „Kovoti!“.') + '</div>';
     el.scrollTop = el.scrollHeight;
   }
@@ -257,7 +259,7 @@
       if (i >= list.length) { animating = false; return done(); }
       var l = list[i++], x = l.s, y = x === 'a' ? 'b' : 'a', fx = $('#fa-' + 'fx');
       var num = (l.t.match(/[−-](\d+)/) || [])[1];
-      if (l.k === 'hit' || l.k === 'crit' || /−\d+/.test(l.t) && l.k !== 'block' && l.k !== 'heal' && l.k !== 'pet') {
+      if (l.k === 'hit' || l.k === 'crit' || /−\d+/.test(l.t) && l.k !== 'block' && l.k !== 'heal' && l.k !== 'pet' && l.k !== 'skill') {
         cls('#f-' + x, 'lunge'); setTimeout(function () { cls('#f-' + y, 'hit'); if (num) pop(y, '−' + num, 'dmg'); if (/Waza-ari/.test(l.t)) pop(y, 'Waza-ari!', 'big'); if (/KIAI/.test(l.t)) pop(x, 'KIAI!', 'big'); }, 180);
       } else if (l.k === 'block') {
         cls('#f-' + y, 'lunge'); setTimeout(function () { cls('#f-' + x, 'block'); pop(x, '🛡', 'icon'); if (num) setTimeout(function () { cls('#f-' + y, 'hit'); pop(y, '−' + num, 'dmg'); }, 250); }, 160);
@@ -265,6 +267,7 @@
         cls('#f-' + y, 'lunge'); cls('#f-' + x, 'dodge'); pop(x, T('Išsisuko!'), 'txt');
       } else if (l.k === 'pet') { cls('#f-' + x + ' .fa-pet', 'petjump'); pop(x, '🐾', 'icon'); }
       else if (l.k === 'heal') { pop(x, '+' + (l.t.match(/\+(\d+)/) || [0, ''])[1], 'heal'); }
+      else if (l.k === 'skill') { pop(x, '✨ ' + (l.t.split(': ')[1] || '').split(' - ')[0], 'txt'); var hm = l.t.match(/\+(\d+)$/); if (hm) setTimeout(function () { pop(x, '+' + hm[1], 'heal'); }, 300); }
       else if (l.k === 'end') { if (/IPPON/.test(l.t)) { var b = document.createElement('div'); b.className = 'fa-ippon'; b.textContent = 'IPPON!'; fx.appendChild(b); setTimeout(function () { b.remove(); }, 1800); } }
       var ln = document.createElement('div'); ln.className = 'fa-flash'; ln.textContent = l.t; fx.appendChild(ln); setTimeout(function () { ln.remove(); }, 1400);
       setTimeout(step, l.k === 'end' ? 1400 : 950);
@@ -288,7 +291,8 @@
     var rt = st.rating ? st.rating[side] : null, bot = st.sides[opp].bot;
     var html = '<div class="fa-end ' + (iWon ? 'win' : draw ? 'draw' : 'lose') + '"><div class="big">' + (iWon ? '🏆 IPPON! ' + T('Laimėjai!') : draw ? '🤝 ' + T('Lygiosios!') : '🙇 ' + T('Šįkart nepavyko. Oss - kitą kartą!')) + '</div>' +
       (rt !== null && rt !== undefined ? '<div>' + (M.mode === 'fair' ? '🎯 ' : '🏆 ') + T('Reitingas') + ' <b>' + (rt > 0 ? '+' : '') + rt + '</b></div>' : '') +
-      (st.sides[side].pet ? '<div>🐾 ' + esc(st.sides[side].pet.name) + ' +' + (iWon ? 6 : 3) + ' XP</div>' : '') +
+      (st.sides[side].pets || (st.sides[side].pet ? [st.sides[side].pet] : [])).map(function (p) { return '<div>🐾 ' + esc(p.name) + ' +' + (iWon ? 6 : 3) + ' XP</div>'; }).join('') +
+      (iWon && st.sides[side].skill ? '<div>✨ ' + esc(st.sides[side].skill.n) + ': ' + T('meistriškumas +1 pergalė') + '</div>' : '') +
       '<div class="gm-foot" style="justify-content:center">' + (bot ? '<button class="g-btn gold" data-again="' + bot + '">🔁 ' + T('Revanšas') + '</button>' : '') + '<a class="g-btn" href="' + location.pathname + '">⚔️ ' + T('Į areną') + '</a><a class="g-btn" href="' + R.urls.dojo + '">🏯 ' + T('Į dojo') + '</a></div></div>';
     $('#fa-panel').innerHTML = html;
     if (iWon) confetti();

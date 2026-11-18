@@ -286,4 +286,13 @@ return [
     'Atverti',
     'Kur gyvena tavo personažas? Pasirink vietą.',
     'Aplinkos',
+    'Personažo gebėjimas: suveikia dažniau, kuo daugiau pergalių su šiuo personažu',
+    'meistriškumas +1 pergalė',
+    'Suveikia jėgos kovose. Kas 2 pergalės su šiuo personažu - +1 % (iki 25 %).',
+    'Tikimybė',
+    'pergalių su šiuo personažu',
+    'Palikti namie',
+    'Į kovą galima pasiimti 2 gyvūnėlius',
+    'vietoj',
+    'Gyvūnėlis liks namie',
 ];

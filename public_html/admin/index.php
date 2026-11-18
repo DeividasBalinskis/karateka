@@ -85,10 +85,11 @@ $todoCount = count($notifs) + count($todo);
           <div class="row between" style="gap:8px;flex-wrap:wrap;"><span class="small muted"><?= te('💡 Atsakymai į jūsų atsiliepimus') ?> (<?= count($fbNotifs) ?>)</span>
             <form method="post" action="<?= url('pranesimas.php') ?>" class="inline-form"><?= csrf_field() ?><input type="hidden" name="action" value="done_feedback"><input type="hidden" name="back" value="admin/#svarbu">
               <button class="btn btn-ghost btn-sm" type="submit"><?= te('Supratau visus') ?></button></form></div>
-          <?= render_notifications(array_slice($fbNotifs, 0, 2), 'admin/#svarbu') ?>
+          <?php // Tvarka iš viršaus žemyn 1, 2, 3 (#59), bet matomi 2 naujausi (#47) - senesni išskleidžiami virš jų ?>
           <?php if (count($fbNotifs) > 2): ?>
-            <details class="fb-more"><summary class="small"><?= te('Rodyti visus') ?> (<?= count($fbNotifs) - 2 ?>)</summary><?= render_notifications(array_slice($fbNotifs, 2), 'admin/#svarbu') ?></details>
+            <details class="fb-more"><summary class="small"><?= te('Rodyti ankstesnius') ?> (<?= count($fbNotifs) - 2 ?>)</summary><?= render_notifications(array_slice($fbNotifs, 0, -2), 'admin/#svarbu') ?></details>
           <?php endif; ?>
+          <?= render_notifications(array_slice($fbNotifs, -2), 'admin/#svarbu') ?>
         </div>
       <?php endif; ?>
     </section>

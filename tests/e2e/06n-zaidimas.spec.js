@@ -37,6 +37,7 @@ test('my dojo: create the hero, test panel, gift box, equip, pet, collection', a
   // Pikselinis personažas - lapė (kitsunė): renkamasi kailio ir liepsnų spalva
   // 26 personažai (25 paveikslėliai + perdažoma lapė); lapei - kailio ir liepsnų spalva
   check('character picker with the real characters', await k.locator('.ed-chars button').count() === 26 && await k.locator('.ed-chars img.px-char').count() === 25);
+  check('each character shows its own skill', await k.locator('.ed-chars .ed-sk').count() === 26);
   await k.click('.ed-chars [data-sp=kitsune]');
   check('repaintable fox: fur and flame colours', await k.locator('.ed-sw [data-sw=flame]').count() >= 6);
   await k.click('.ed-sw [data-sw=fur][data-c="#F4F2EE"]');
@@ -55,6 +56,7 @@ test('my dojo: create the hero, test panel, gift box, equip, pet, collection', a
   check('no house or decorations in the world', await k.locator('.dw .dw-house, .dw .dw-decor').count() === 0);
   await k.click('.dw-board'); await k.waitForTimeout(300);
   check('stats unroll as a scroll', await k.locator('.dw-scroll:not([hidden]) [data-pane=stats]:not([hidden]) .g-stat').count() === 4);
+  check('character skill with chance on the stats board', /Susikaupimas[\s\S]*10%/.test(await k.locator('.dw-scroll [data-pane=stats] .g-skill').textContent()));
   await k.click('.sc-x');
   await k.click('.dw-tool[data-pane=pets]');
   await k.click('[data-starter=bunny]');
@@ -66,6 +68,11 @@ test('my dojo: create the hero, test panel, gift box, equip, pet, collection', a
   await k.click('[data-starter=dragonling]'); await k.fill('#g-pet-name', 'Ugnelė'); await k.click('[data-act=adopt]'); await k.waitForTimeout(700);
   check('second (rare) pet adopted in testing', sql("SELECT COUNT(*) FROM game_pets WHERE name = 'Ugnelė' AND species = 'dragonling'") === '1');
   const ug = sql("SELECT id FROM game_pets WHERE name = 'Ugnelė'");
+  // Į kovą - 2 gyvūnėliai; paspaudus dar kartą - lieka namie
+  await k.click(`[data-active="${ug}"]`); await k.waitForTimeout(700);
+  check('two pets go to battle', sql(`SELECT COUNT(*) FROM game_heroes WHERE name = 'Pandutė' AND pet_id IS NOT NULL AND pet2_id = ${ug}`) === '1');
+  await k.click(`[data-active="${ug}"]`); await k.waitForTimeout(700);
+  check('second pet stays home again', sql("SELECT COUNT(*) FROM game_heroes WHERE name = 'Pandutė' AND pet2_id IS NULL") === '1');
   await k.click(`[data-release="${ug}"]`); await k.waitForTimeout(700);
   check('pet released', sql("SELECT COUNT(*) FROM game_pets WHERE name = 'Ugnelė'") === '0');
   noJsErrors(k);

@@ -162,6 +162,8 @@
         '<button type="button" class="plus" data-plus="' + k + '"' + (pts > 0 ? '' : ' hidden') + ' aria-label="+">+</button>' +
         '<div class="bar"><i style="width:' + Math.min(100, tot / max * 100).toFixed(0) + '%"></i></div></div>';
     });
+    if (H.skill) html += '<div class="g-skill" title="' + esc(T('Suveikia jėgos kovose. Kas 2 pergalės su šiuo personažu - +1 % (iki 25 %).')) + '">✨ <b>' + esc(H.skill.n) + '</b> - ' + esc(H.skill.d) +
+      '<br><small>' + T('Tikimybė') + ' ' + H.skill.p + '% · ' + T('pergalių su šiuo personažu') + ': ' + H.skill.wins + '</small></div>';
     html += '<div class="g-derived"><div><b>' + H.ratingPower + '</b>🏆 ' + T('Jėgos reitingas') + '</div><div><b>' + H.ratingFair + '</b>🎯 ' + T('Gudrumo reitingas') + '</div><div><b>' + H.wins + ':' + H.losses + '</b>' + T('Pergalės') + '</div></div>';
     if (!ro) html += '<label class="g-switch" title="' + esc(T('Ar kiti gali kviesti tave žaisti')) + '"><input type="checkbox" data-act="invites"' + (H.invites ? ' checked' : '') + '> ' + T('Priimu kvietimus') + '</label>';
     $('#g-stats').innerHTML = html;
@@ -190,7 +192,7 @@
       html += '<button type="button" class="g-slot' + (it ? ' on' : '') + '" data-slot="' + sl + '">' + (it ? A.itemIcon(k, it) + '<b>' + esc(it.n) + '</b>' : '<span style="font-size:1.6rem;opacity:.35">＋</span>') + '<span>' + esc(C.slots[sl]) + '</span></button>';
     });
     html += '</div>';
-    if (H.pet) html += '<div class="g-sub">' + T('Į kovą eina') + '</div><div class="g-pets">' + petCard(H.pet, true) + '</div>';
+    if (H.pet) html += '<div class="g-sub">' + T('Į kovą eina') + ' (' + (H.pet2 ? 2 : 1) + '/2)</div><div class="g-pets">' + petCard(H.pet, true) + (H.pet2 ? petCard(H.pet2, true) : '') + '</div>';
     $('#g-equip').innerHTML = html;
   }
   var FILTERS = [['all', 'Viskas'], ['wear', 'Apranga'], ['weapon', 'Ginklai'], ['home', 'Aplinkos'], ['paint', 'Spalvos'], ['egg', 'Kiaušiniai']];
@@ -232,12 +234,13 @@
     $('#g-inv-cnt').textContent = keys.length;
   }
   function petCard(p, mini) {
-    var P = C.pets[p.species] || {}, active = H.pet && +H.pet.id === +p.id;
+    var P = C.pets[p.species] || {}, active = (H.pet && +H.pet.id === +p.id) || (H.pet2 && +H.pet2.id === +p.id);
     return '<div class="g-pet' + (active ? ' active' : '') + '" data-pet-card="' + p.id + '">' + A.pet(p.species, p.color) +
       '<div><div class="pn">' + esc(p.name) + '</div><div class="pl">' + esc(P.n || '') + ' · ' + T('Lygis') + ' ' + p.level + '</div>' +
       '<div class="mood" title="' + esc(T('Nuotaika')) + '"><i style="width:' + p.mood + '%"></i></div><div class="pl">✨ ' + esc(P.abn || '') + '</div></div>' +
       (mini || ro ? '' : '<div class="acts">' + (p.can_feed ? '<button type="button" class="g-btn sm" data-feed="' + p.id + '">🍖 ' + T('Pamaitinti') + '</button>' : '<span class="pl">😊 ' + T('Sotus') + '</span>') +
-        (active ? '' : '<button type="button" class="g-btn sm" data-active="' + p.id + '">⚔️ ' + T('Imti į kovą') + '</button>') +
+        (active ? '<button type="button" class="g-btn sm" data-active="' + p.id + '" title="' + esc(T('Palikti namie')) + '">🏠 ' + T('Palikti namie') + '</button>'
+          : '<button type="button" class="g-btn sm" data-active="' + p.id + '" title="' + esc(T('Į kovą galima pasiimti 2 gyvūnėlius')) + '">⚔️ ' + T('Imti į kovą') + (H.pet && H.pet2 ? ' (' + T('vietoj') + ' ' + esc(H.pet2.name) + ')' : '') + '</button>') +
         '<button type="button" class="g-btn sm" data-rename="' + p.id + '">✏️</button>' + (C.unlockAll ? '<button type="button" class="g-btn sm" data-release="' + p.id + '" title="' + esc(T('Paleisti')) + '">👋</button>' : '') + '</div>') + '</div>';
   }
   var starterPick = 'kitten';
@@ -416,7 +419,7 @@
       if (PIXEL) {
         var CH = C.chars || {};
         f += '<div class="ed-row"><span class="ed-lab">' + T('Kas tu?') + '</span><div class="ed-chars">' + Object.keys(CH).map(function (k) {
-          return '<button type="button" data-sp="' + k + '" class="' + (k === d.species ? 'sel' : '') + '" title="' + esc(CH[k].n) + '">' + A.hero({ species: k, look: k === 'kitsune' ? d.look : {}, equipped: H.equipped, belt: H.belt }) + '<span>' + esc(CH[k].n) + '</span></button>';
+          return '<button type="button" data-sp="' + k + '" class="' + (k === d.species ? 'sel' : '') + '" title="' + esc(CH[k].n + (CH[k].s ? ' · ✨ ' + CH[k].s + ': ' + CH[k].sd : '')) + '">' + A.hero({ species: k, look: k === 'kitsune' ? d.look : {}, equipped: H.equipped, belt: H.belt }) + '<span>' + esc(CH[k].n) + '</span>' + (CH[k].s ? '<small class="ed-sk">✨ ' + esc(CH[k].s) + '</small>' : '') + '</button>';
         }).join('') + '</div></div>';
         if (d.species === 'kitsune') {
           f += '<div class="ed-row"><span class="ed-lab">' + T('Kailio spalva') + '</span>' + sw('fur', C.fur, paints) + '</div>';
@@ -472,7 +475,10 @@
     if (t.dataset.filt) { filt = t.dataset.filt; return renderInv(); }
     if (t.dataset.item) return itemMenu(t.dataset.item);
     if (t.dataset.feed) { return api({ action: 'pet_feed', id: t.dataset.feed }).then(function (d) { if (d.ok) { renderAll(); var el = root.querySelector('.dw-pet[data-pet="' + t.dataset.feed + '"]'); if (el) hearts(el); toast('🍖 ' + T('Skanu! Nuotaika pakilo.')); } }); }
-    if (t.dataset.active) return save({ pet_id: +t.dataset.active }, '⚔️ ' + T('Gyvūnėlis eis į kovą su tavimi'));
+    if (t.dataset.active) {
+      var on = (H.pet && +H.pet.id === +t.dataset.active) || (H.pet2 && +H.pet2.id === +t.dataset.active);
+      return save({ pet_toggle: +t.dataset.active }, on ? '🏠 ' + T('Gyvūnėlis liks namie') : '⚔️ ' + T('Gyvūnėlis eis į kovą su tavimi'));
+    }
     if (t.dataset.release) { if (confirm(T('Paleisti šį gyvūnėlį?'))) api({ action: 'pet_release', id: t.dataset.release }).then(function () { renderAll(); }); return; }
     if (t.dataset.rename) { var p = (H.pets || []).filter(function (x) { return +x.id === +t.dataset.rename; })[0], nn = prompt(T('Naujas vardas'), p ? p.name : ''); if (nn) api({ action: 'pet_rename', id: t.dataset.rename, name: nn }).then(function () { renderAll(); }); return; }
     if (t.dataset.starter) { starterPick = t.dataset.starter; return renderPets(); }

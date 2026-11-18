@@ -413,3 +413,10 @@
 .k4-hero img.ga-hero{width:100%; max-width:150px; height:130px; object-fit:contain; margin:0 auto;}
 .k4-hero .k4-pet{bottom:auto; top:96px;}
 @media (max-width:900px){ .k4-hero img.ga-hero{height:80px;} .k4-hero .k4-pet{top:52px;} }
+/* Personažo gebėjimas ir antras gyvūnėlis kovoje (v1.42) */
+.g-skill{margin:8px 0; padding:8px 10px; background:rgba(255,236,170,.35); box-shadow:0 0 0 2px rgba(150,104,30,.35); font-size:13px; line-height:1.35;}
+.g-skill small{opacity:.8;}
+.ed-chars .ed-sk{display:block; font-size:10px; line-height:1.1; opacity:.85; margin-top:2px;}
+.fa-arena .fa-f .fa-pet.p2{width:24%; bottom:22%;}
+.petab.skillab{background:rgba(255,215,90,.25);}
+.ln.k-skill{color:#B8860B; font-weight:700;}

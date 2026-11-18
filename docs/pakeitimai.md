@@ -4,6 +4,18 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.42 - 2026-11-18 (Visų atsiliepimų peržiūra: kas buvo praleista)
+**Reikia atnaujinti duomenų bazę** (db/039): Valdymas → Šiandien → „Atnaujinkite duomenų bazę“. Zip'o turinį išpakuokite **tiesiai į svetainės aplanką**.
+
+**🎮 Žaidimas - tai, ko prašėte, bet nebuvo padaryta**
+- Kiekvienas personažas turi savo gebėjimą (pvz. Baltasis tigras - „Šuolis“, Dvasia - „Kiaurai“, Vėžlys - „Akmuo“). Jis suveikia jėgos kovose.
+  Tikimybė - 10 %, ir +1 % už kas 2 pergales su tuo personažu (iki 25 %): kuo daugiau kovoji su juo, tuo jis stipresnis.
+  Gebėjimas matomas personažo pasirinkime, savybių lentoje ir kovoje (✨ kovos žurnale).
+- Į kovą galima pasiimti **2 gyvūnėlius** - abu padeda savo gebėjimais. „🏠 Palikti namie“ - grąžina.
+
+**Pataisyta**
+- Atsakymai į atsiliepimus: matomi 2 naujausi (#47), tvarka iš viršaus 1, 2, 3 (#59); ankstesni - „Rodyti ankstesnius“.
+
 ## v1.41 - 2026-11-18 (LTKF - redaguojama svetainė, Budo - paprastesnis meniu ir paieška, egzamino registracija be paskyros)
 **Reikia atnaujinti duomenų bazę** (db/038): Valdymas → Šiandien → „Atnaujinkite duomenų bazę“. Zip'o turinį išpakuokite **tiesiai į svetainės aplanką**.
 
