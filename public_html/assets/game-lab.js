@@ -174,14 +174,14 @@
 
   // ----- Pasiruošimas: viduryje personažas ir gyvūnėlis, aplink - daiktai -----
   function slot(kind, key, idx, label, inner, sub) {
-    return '<button type="button" class="ls ls-' + kind + (inner ? '' : ' empty') + '" data-slot="' + kind + '" data-i="' + (idx || 0) + '"><span class="ls-l">' + esc(label) + '</span>' +
+    return '<button type="button" class="ls lsk-' + kind + (inner ? '' : ' empty') + '" data-slot="' + kind + '" data-i="' + (idx || 0) + '"><span class="ls-l">' + esc(label) + '</span>' +
       '<span class="ls-in">' + (inner || '+') + '</span>' + (sub ? '<span class="ls-s">' + esc(sub) + '</span>' : '') + '</button>';
   }
   function prepHtml() {
     var v = V(), f = fighter(mySrc()), w = WEAPONS[S.gear.w], two = w && w[3], left = '', right = '', bottom = '';
     left += slot('w', S.gear.w, 0, 'Ginklas', wImg(S.gear.w), w[0] + ' · ' + w[1] + '-' + w[2] + (two ? ' · dvirankis' : ''));
     var l = S.gear.l;
-    left += two ? '<div class="ls ls-l locked"><span class="ls-l">Kairė ranka</span><span class="ls-in">🔒</span><span class="ls-s">Dvirankis ginklas</span></div>'
+    left += two ? '<div class="ls lsk-l locked"><span class="ls-l">Kairė ranka</span><span class="ls-in">🔒</span><span class="ls-s">Dvirankis ginklas</span></div>'
       : slot('l', l, 0, 'Kairė ranka', l ? (SHIELDS[l] ? '<span class="ls-emo">' + SHIELDS[l][1] + '</span>' : wImg(l)) : '', l ? (SHIELDS[l] ? SHIELDS[l][0] + ' · +1 gynyba' : WEAPONS[l][0] + ' · +1 smūgis') : 'Skydas arba antras ginklas');
     if (v.armor) left += slot('a', S.gear.a, 0, 'Šarvai', '<span class="ls-emo">' + ARMORS[S.gear.a][1] + '</span>', ARMORS[S.gear.a][0] + (ARMORS[S.gear.a][2] ? ' · +' + ARMORS[S.gear.a][2] + ' ❤' : ''));
     for (var i = 0; i < v.magic; i++) { var m = MAGIC[S.magic[i]]; right += slot('m', S.magic[i], i, 'Stebuklingas daiktas', m ? '<span class="ls-emo">' + m[1] + '</span>' : '', m ? m[0] : 'tuščia'); }

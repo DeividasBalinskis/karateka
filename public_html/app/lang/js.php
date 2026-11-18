@@ -295,4 +295,6 @@ return [
     'Į kovą galima pasiimti 2 gyvūnėlius',
     'vietoj',
     'Gyvūnėlis liks namie',
+    'Nauja kova 🧪',
+    'Bandymai: apranga, kortos, gyvūnėliai',
 ];

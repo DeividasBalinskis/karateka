@@ -3134,4 +3134,7 @@ From 2013 he trained with the team of the traditional karate-do club "Sanrei", a
     'Registracija į egzaminą per nuorodą (be paskyros).' => 'Exam registration by link (without an account).',
     'Mygtukas „Sukurti paskyrą“ ir registracijos puslapis.' => 'The "Create account" button and the registration page.',
     'Registracija į varžybas: kitų klubų nuoroda ir narių registracija.' => 'Competition registration: the link for other clubs and member registration.',
+    'Nauja kova 🧪' => 'New fight 🧪',
+    'Bandymai: apranga, kortos, gyvūnėliai' => 'Trials: gear, cards, pets',
+    'Nauja kova (bandymai)' => 'New fight (trials)',
 ];

@@ -50,7 +50,7 @@ test('my dojo: create the hero, test panel, gift box, equip, pet, collection', a
   check('world with hero and XP bar', await k.locator('.dw .dw-hero img.px-hero').count() === 1 && await k.locator('.dw .dw-hero svg').count() === 0 && await k.locator('.dw-foot .df-xp').count() === 1);
   // Pirmas gyvūnėlis
   // Visa sąsaja aplinkoje: lenta su savybėmis, rodyklės į žaidimus, įrankiai; skiltys - ritinyje
-  check('UI inside the scene: stats board, game signs, tools', await k.locator('.dw-ui .dw-board').count() === 1 && await k.locator('.dw-ui .dw-post .dw-sign').count() === 4 && await k.locator('.dw-ui .dw-tool[data-pane=pets]').count() === 1);
+  check('UI inside the scene: stats board, game signs, tools', await k.locator('.dw-ui .dw-board').count() === 1 && await k.locator('.dw-ui .dw-post .dw-sign').count() === 5 && await k.locator('.dw-ui .dw-tool[data-pane=pets]').count() === 1);
   check('no house or decorations in the world', await k.locator('.dw .dw-house, .dw .dw-decor').count() === 0);
   await k.click('.dw-board'); await k.waitForTimeout(300);
   check('stats unroll as a scroll', await k.locator('.dw-scroll:not([hidden]) [data-pane=stats]:not([hidden]) .g-stat').count() === 4);

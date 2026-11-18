@@ -1,0 +1,220 @@
+/* 🧪 Nauja kova (bandymai), assets/game-lab.js: pikselinė, kaip esamas žaidimas - tamsi naktis, auksas, storas kontūras */
+.lab{--ink:#1B1D3A; --panel:#23264A; --panel2:#2C3060; --line:#5A66A8; --gold:#FFD65C; --red:#FF5A6E; --blue:#5CC8FF; --green:#6EDC8C;
+  font-family:'Pixelify Sans','Space Grotesk',system-ui,sans-serif; color:#F3F0FF; background:radial-gradient(ellipse at 50% 0%, #3A3F7A 0%, #1B1D3A 70%);
+  border-radius:18px; padding:14px; box-shadow:0 0 0 4px #0F1026, 0 18px 40px rgba(0,0,0,.35); position:relative; overflow:hidden; min-height:560px;}
+.lab button{font-family:inherit;}
+.lab .muted{color:#A9AED6;}
+.lab img.px{image-rendering:pixelated;}
+
+/* Variantų perjungimas ◀ ▶ */
+.lab-top{display:flex; align-items:stretch; gap:10px; margin-bottom:14px;}
+.lab-arr{flex:0 0 54px; border:0; border-radius:12px; background:var(--gold); color:#3A2A00; font-size:24px; cursor:pointer; box-shadow:0 0 0 3px #0F1026, inset 0 -4px 0 rgba(0,0,0,.25);}
+.lab-arr:hover{filter:brightness(1.08); transform:translateY(-1px);}
+.lab-arr:active{transform:translateY(1px);}
+.lab-vt{flex:1; display:grid; gap:2px; text-align:center; padding:8px 12px; background:var(--panel); border-radius:12px; box-shadow:0 0 0 3px #0F1026;}
+.lab-vt b{font-size:1.25rem; color:var(--gold); letter-spacing:.02em;}
+.lab-vn{font-size:.75rem; color:#A9AED6; letter-spacing:.1em;}
+.lab-vd{font-size:.85rem; color:#D8DBF5;}
+.lab-dots{display:flex; gap:6px; justify-content:center; margin-top:4px;}
+.lab-dots i{width:10px; height:10px; border-radius:2px; background:#4A4F86; cursor:pointer;}
+.lab-dots i.on{background:var(--gold);}
+
+/* Pasiruošimas: viduryje personažas, aplink daiktai */
+.lab-prep{display:grid; grid-template-columns:minmax(150px, 1fr) minmax(220px, 1.4fr) minmax(170px, 1fr); gap:14px; align-items:start;}
+.lab-col{display:grid; gap:10px;}
+.ls{display:grid; grid-template-columns:58px 1fr; grid-template-rows:auto auto; gap:2px 10px; align-items:center; text-align:left; padding:8px; border:0; border-radius:12px; cursor:pointer; color:inherit;
+  background:linear-gradient(180deg, var(--panel2), var(--panel)); box-shadow:0 0 0 3px #0F1026, inset 0 2px 0 rgba(255,255,255,.08);}
+.ls:hover{box-shadow:0 0 0 3px var(--gold);}
+.ls-l{grid-column:2; font-size:.7rem; letter-spacing:.08em; text-transform:uppercase; color:#A9AED6;}
+.ls-in{grid-column:1; grid-row:1 / span 2; width:58px; height:58px; display:flex; align-items:center; justify-content:center; border-radius:10px; background:#15173A; box-shadow:inset 0 0 0 2px var(--line); font-size:26px; color:#6E74B0;}
+.ls-s{grid-column:2; font-size:.88rem; font-weight:600;}
+.ls.empty .ls-in{border:2px dashed var(--line); box-shadow:none;}
+.ls.locked{opacity:.55; cursor:default;}
+.ls-emo{font-size:30px; line-height:1;}
+.lab-wi{width:46px !important; height:46px !important; object-fit:contain;}
+.lab-doll{display:grid; gap:8px; justify-items:center;}
+.lab-stage{position:relative; width:100%; min-height:300px; display:flex; align-items:flex-end; justify-content:center; padding-bottom:18px;
+  background:radial-gradient(ellipse at 50% 92%, rgba(255,214,92,.35) 0 22%, transparent 23%), radial-gradient(circle at 50% 40%, rgba(92,200,255,.18), transparent 60%);}
+.lab-stage .lab-hero{width:auto; max-width:72%; max-height:290px; object-fit:contain; filter:drop-shadow(0 8px 0 rgba(0,0,0,.35));}
+.lab-pets{position:absolute; right:2%; bottom:12px; display:flex; gap:4px; align-items:flex-end;}
+.lab-pets.n2, .lab-pets.n3{right:-2%;}
+.lab-petbtn{border:0; background:none; padding:0; cursor:pointer;}
+.lab-pet{display:inline-block; width:calc(84px * var(--ps, 1)); transition:width .3s;}
+.lab-pet.big{width:96px;}
+.lab-pet img.px{width:100%; height:auto;}
+.lab-egg{display:grid; justify-items:center; gap:2px; border:0; background:none; color:#fff; font-size:46px; cursor:pointer; animation:eggWob 1.6s infinite;}
+.lab-egg span{font-size:.7rem; max-width:110px; line-height:1.15;}
+@keyframes eggWob{0%,100%{transform:rotate(0);} 20%{transform:rotate(-8deg);} 40%{transform:rotate(8deg);} 60%{transform:rotate(0);}}
+.lab-name{display:flex; align-items:center; gap:8px; font-weight:700; flex-wrap:wrap; justify-content:center;}
+.lab-name span{font-size:.75rem; color:#A9AED6;}
+.lab-name input{width:130px; accent-color:var(--gold);}
+.lab-name b{color:var(--gold);}
+.lab-stats{display:grid; grid-template-columns:1fr 1fr; gap:6px; padding:10px; border-radius:12px; background:var(--panel); box-shadow:0 0 0 3px #0F1026;}
+.lab-stats div{display:grid;}
+.lab-stats b{font-size:1.15rem; color:var(--gold);}
+.lab-stats span{font-size:.72rem; color:#C9CCEE;}
+.lab-kinds{display:grid; gap:3px; font-size:.75rem; color:#C9CCEE; padding:8px 10px; border-radius:10px; background:rgba(255,255,255,.05);}
+.lab-kinds b{color:#fff;}
+.lab-bottom{display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-top:14px;}
+.lab-petinfo{flex-basis:100%; display:flex; flex-wrap:wrap; gap:6px 16px; justify-content:center; font-size:.82rem; color:#D8DBF5;}
+.lab-acts{display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-top:16px;}
+.lab-btn{border:0; border-radius:12px; padding:10px 18px; font-weight:700; font-size:1rem; cursor:pointer; box-shadow:0 0 0 3px #0F1026, inset 0 -4px 0 rgba(0,0,0,.25);}
+.lab-btn.go{background:linear-gradient(180deg, #FFE38A, var(--gold)); color:#3A2A00;}
+.lab-btn.ghost{background:var(--panel2); color:#fff;}
+.lab-btn:disabled{opacity:.45; cursor:not-allowed;}
+.lab-btn:not(:disabled):hover{transform:translateY(-1px); filter:brightness(1.06);}
+
+/* Kortos: pikselinis piešinys, retumo rėmelis, tikimybė */
+.lc{position:relative; width:118px; height:168px; border-radius:12px; padding:8px 7px 6px; display:grid; grid-template-rows:auto 1fr auto auto auto; justify-items:center; gap:2px; text-align:center;
+  background:linear-gradient(160deg, var(--c1), var(--c2)); color:#1B1D3A; box-shadow:0 0 0 3px #0F1026, inset 0 0 0 3px var(--rc), 0 6px 0 rgba(0,0,0,.3); overflow:hidden;}
+.lc::after{content:""; position:absolute; inset:0; background:linear-gradient(115deg, transparent 30%, rgba(255,255,255,.55) 45%, transparent 60%); transform:translateX(-120%); pointer-events:none;}
+.lc.r3::after{animation:lcShine 3.2s infinite;}
+.lc.r3{box-shadow:0 0 0 3px #0F1026, inset 0 0 0 3px var(--rc), 0 0 18px rgba(255,212,59,.6), 0 6px 0 rgba(0,0,0,.3);}
+@keyframes lcShine{0%,60%{transform:translateX(-120%);} 100%{transform:translateX(120%);}}
+.lc-ch{position:absolute; top:5px; right:6px; font-size:.68rem; font-weight:700; background:rgba(15,16,38,.75); color:var(--gold); padding:1px 5px; border-radius:6px;}
+.lc-art{width:64px; height:76px; image-rendering:pixelated; background:rgba(255,255,255,.35); border-radius:6px; box-shadow:inset 0 0 0 2px rgba(15,16,38,.25); margin-top:6px;}
+.lc-ic{position:absolute; top:4px; left:6px; font-size:16px;}
+.lc-n{font-size:.86rem; line-height:1.05;}
+.lc-d{font-size:.6rem; line-height:1.15; color:#1B1D3A;}
+.lc-r{font-size:.55rem; letter-spacing:.06em; text-transform:uppercase; opacity:.8;}
+.lc.mini{width:62px; height:88px; padding:4px 3px; gap:0;}
+.lc.mini .lc-art{width:34px; height:40px; margin-top:8px;}
+.lc.mini .lc-d, .lc.mini .lc-r{display:none;}
+.lc.mini .lc-n{font-size:.6rem;}
+.lc.mini .lc-ch{font-size:.5rem; top:2px; right:2px; padding:0 3px;}
+.lc.mini .lc-ic{font-size:11px; top:1px; left:2px;}
+.lc.glow{animation:lcGlow 1.4s ease; z-index:3;}
+@keyframes lcGlow{0%{transform:scale(1); filter:brightness(1);} 25%{transform:scale(1.35) translateY(-10px); filter:brightness(1.6) drop-shadow(0 0 14px #FFF7C2);} 100%{transform:scale(1); filter:brightness(1);}}
+.lc-slot{border:0; background:none; padding:0; cursor:pointer; border-radius:12px;}
+.lc-slot:hover .lc{transform:translateY(-3px);}
+.lc-slot.empty{width:118px; height:168px; border:3px dashed var(--line); color:#A9AED6; font-weight:700;}
+
+/* Pasirinkimo langas */
+.lab-pick{position:absolute; inset:0; z-index:20; background:rgba(10,11,30,.72); display:flex; align-items:center; justify-content:center; padding:14px;}
+.lp-box{width:min(760px, 100%); max-height:100%; overflow:auto; background:var(--panel); border-radius:14px; box-shadow:0 0 0 3px #0F1026, 0 0 0 6px var(--line); padding:12px;}
+.lp-h{display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;}
+.lp-h b{color:var(--gold);}
+.lp-x{border:0; background:#3A3F7A; color:#fff; width:34px; height:34px; border-radius:8px; font-size:20px; cursor:pointer;}
+.lp-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(130px, 1fr)); gap:8px;}
+.lp-grid.cards{grid-template-columns:repeat(auto-fill, minmax(124px, 1fr)); justify-items:center;}
+.lp-o{display:grid; justify-items:center; gap:3px; padding:10px 6px; border:0; border-radius:10px; background:var(--panel2); color:#fff; cursor:pointer; box-shadow:0 0 0 2px #0F1026; text-align:center;}
+.lp-o b{font-size:.85rem;}
+.lp-o span{font-size:.7rem; color:#C9CCEE;}
+.lp-o.on, .lp-o:hover{box-shadow:0 0 0 3px var(--gold);}
+.lp-card{border:0; background:none; padding:3px; border-radius:14px; cursor:pointer;}
+.lp-card.on{box-shadow:0 0 0 3px var(--gold);}
+
+/* Kiaušinis ir kortų paketas */
+.lab-hatch{position:absolute; inset:0; z-index:30; background:rgba(10,11,30,.8); display:flex; align-items:center; justify-content:center;}
+.lh-box{display:grid; justify-items:center; gap:8px; padding:24px; border-radius:16px; background:var(--panel); box-shadow:0 0 0 3px #0F1026, 0 0 0 6px var(--gold); text-align:center; max-width:340px;}
+.lh-box.wide{max-width:520px;}
+.lh-egg{font-size:90px; animation:eggWob .5s infinite;}
+.lh-egg.crack{animation:eggCrack .7s forwards;}
+@keyframes eggCrack{0%{transform:scale(1);} 50%{transform:scale(1.25) rotate(10deg); filter:brightness(1.5);} 100%{transform:scale(.2); opacity:0;}}
+.lh-t{font-size:1.4rem; color:var(--gold);}
+.lh-pet{animation:petPop .6s cubic-bezier(.2,1.6,.4,1);}
+@keyframes petPop{0%{transform:scale(0);} 100%{transform:scale(1);}}
+.lh-cards{display:flex; gap:10px; flex-wrap:wrap; justify-content:center;}
+.lh-flip{animation:flipIn .6s both;}
+@keyframes flipIn{0%{transform:rotateY(90deg) scale(.6); opacity:0;} 100%{transform:rotateY(0) scale(1); opacity:1;}}
+
+/* Kova */
+.lab-fight{display:grid; grid-template-columns:1fr minmax(240px, 300px) 1fr; gap:12px; align-items:start;}
+.lf{display:grid; gap:6px; padding:10px; border-radius:14px; background:rgba(35,38,74,.75); box-shadow:0 0 0 3px #0F1026; position:relative;}
+.lf-hp{position:relative; height:22px; border-radius:6px; background:#3B1220; box-shadow:0 0 0 2px #0F1026; overflow:hidden;}
+.lf-hp span{position:absolute; inset:0 auto 0 0; background:linear-gradient(180deg, #8CF0A8, #2FB560); transition:width .6s;}
+.lf-en .lf-hp span{background:linear-gradient(180deg, #FF9AA8, #E23A52);}
+.lf-hp b{position:relative; display:block; text-align:center; font-size:.8rem; line-height:22px; text-shadow:0 1px 0 #000;}
+.lf-name{font-weight:700;}
+.lf-name small{color:#A9AED6; font-weight:500;}
+.lf-body{display:flex; gap:8px; align-items:stretch;}
+.lf-fig{position:relative; flex:1; display:flex; align-items:flex-end; justify-content:center; min-height:230px;}
+.lf-fig .lab-hero{width:auto; max-width:80%; max-height:220px; object-fit:contain;}
+.lf-en .lf-fig .lab-hero[data-face="l"], .lf-me .lf-fig .lab-hero[data-face="r"]{transform:scaleX(1);}
+.lf-me .lf-fig .lab-hero[data-face="l"]{transform:scaleX(-1);}
+.lf-en .lf-fig .lab-hero[data-face="r"]{transform:scaleX(-1);}
+.lf-pets{position:absolute; bottom:0; display:flex; gap:2px;}
+.lf-me .lf-pets{right:0;}
+.lf-en .lf-pets{left:0;}
+.lf-pet{display:inline-block;}
+.lf-pet .lab-pet{width:calc(58px * var(--ps, 1));}
+.lf-pet.jump{animation:petJump .8s ease;}
+@keyframes petJump{0%,100%{transform:translateY(0);} 40%{transform:translateY(-34px) scale(1.2); filter:drop-shadow(0 0 10px #FFF3A0);}}
+.lf.shake .lf-fig .lab-hero{animation:hitShake .5s; filter:drop-shadow(0 0 0 #f00);}
+@keyframes hitShake{0%,100%{transform:translateX(0);} 20%{transform:translateX(-8px); filter:brightness(1.6) sepia(1) hue-rotate(-40deg) saturate(4);} 40%{transform:translateX(7px);} 60%{transform:translateX(-5px);} 80%{transform:translateX(3px);}}
+.lf.shielded .lf-fig::before{content:""; position:absolute; inset:6% 12%; border-radius:50%; border:4px solid rgba(92,200,255,.8); box-shadow:0 0 22px rgba(92,200,255,.7), inset 0 0 22px rgba(92,200,255,.45); animation:shieldPop 1.2s forwards; pointer-events:none;}
+@keyframes shieldPop{0%{transform:scale(.6); opacity:0;} 25%{transform:scale(1.05); opacity:1;} 100%{transform:scale(1); opacity:0;}}
+.lf-fx{position:absolute; inset:0; pointer-events:none;}
+.lfx{position:absolute; left:50%; transform:translateX(-50%); font-weight:800; font-size:1.5rem; white-space:nowrap; text-shadow:0 3px 0 #0F1026, 0 0 10px rgba(0,0,0,.6); animation:fxFloat 1.8s both;}
+.lfx.hit{color:var(--red);}
+.lfx.hit.crit{font-size:2rem; color:#FF2E4E;}
+.lfx.blk{color:var(--blue); font-size:1.1rem;}
+.lfx.ddg{color:#E3E6FF; font-size:1.05rem;}
+@keyframes fxFloat{0%{opacity:0; transform:translate(-50%, 10px) scale(.6);} 15%{opacity:1; transform:translate(-50%, 0) scale(1.15);} 80%{opacity:1;} 100%{opacity:0; transform:translate(-50%, -34px) scale(1);}}
+.lfx-banner{position:absolute; left:50%; top:4%; transform:translateX(-50%); padding:6px 12px; border-radius:10px; background:linear-gradient(180deg, #FFF3BF, var(--gold)); color:#3A2A00; font-weight:800; white-space:nowrap;
+  box-shadow:0 0 0 3px #0F1026, 0 0 20px rgba(255,214,92,.8); animation:bannerIn 1.7s both; display:grid; text-align:center; z-index:4;}
+.lfx-banner small{font-size:.7rem; font-weight:600;}
+.lfx-banner.combo{background:linear-gradient(90deg, #FF8FAB, #FFD43B, #8CE99A, #74C0FC, #B197FC); font-size:1.2rem;}
+@keyframes bannerIn{0%{opacity:0; transform:translate(-50%, 14px) scale(.7);} 15%{opacity:1; transform:translate(-50%, 0) scale(1.08);} 85%{opacity:1;} 100%{opacity:0; transform:translate(-50%, -10px);}}
+/* Zonų stulpelis: kur pataikė (raudona), kur apginta (mėlyna), išsisuko */
+.lz{display:grid; gap:4px; align-content:center;}
+.lz-z{position:relative; width:46px; height:38px; display:flex; align-items:center; justify-content:center; border-radius:8px; background:#15173A; box-shadow:inset 0 0 0 2px #3A3F7A; font-size:16px;}
+.lz-z.blk{box-shadow:inset 0 0 0 3px var(--blue); background:rgba(92,200,255,.15);}
+.lz-z.hit{background:rgba(255,90,110,.45); box-shadow:inset 0 0 0 3px var(--red); animation:zoneHit .8s;}
+.lz-z.parried{background:rgba(92,200,255,.4); box-shadow:inset 0 0 0 3px var(--blue);}
+.lz-z.dodged{background:rgba(255,255,255,.18);}
+.lz-z em{position:absolute; right:-6px; top:-8px; font-style:normal; font-size:.72rem; font-weight:800; background:#0F1026; padding:1px 4px; border-radius:6px; color:#fff;}
+.lz-z.hit em{background:var(--red);}
+.lz-z.parried em{background:#1971C2;}
+@keyframes zoneHit{0%,100%{transform:scale(1);} 30%{transform:scale(1.2);}}
+.lf-cards{display:flex; gap:5px; flex-wrap:wrap; justify-content:center;}
+.lf-magic{display:flex; gap:6px; justify-content:center; font-size:20px;}
+/* Ėjimo pasirinkimas viduryje */
+.lk{display:grid; gap:8px; padding:12px; border-radius:14px; background:var(--panel); box-shadow:0 0 0 3px #0F1026, 0 0 0 6px #3A3F7A;}
+.lk-h{display:flex; align-items:center; gap:8px; justify-content:space-between; font-size:.8rem;}
+.lk-turn{color:var(--gold); font-weight:700;}
+.lk-bot{color:#A9AED6;}
+.lk-timer{--p:1; width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:1rem;
+  background:radial-gradient(closest-side, var(--panel) 72%, transparent 73%), conic-gradient(var(--gold) calc(var(--p) * 360deg), #3A3F7A 0);}
+.lk-timer.low{background:radial-gradient(closest-side, var(--panel) 72%, transparent 73%), conic-gradient(var(--red) calc(var(--p) * 360deg), #3A3F7A 0); animation:tick .5s infinite alternate;}
+@keyframes tick{to{transform:scale(1.1);}}
+.lk-peek{padding:6px 8px; border-radius:8px; background:rgba(92,200,255,.18); font-size:.85rem; text-align:center;}
+.lk-cols{display:grid; grid-template-columns:1fr 1fr; gap:8px;}
+.lk-cols > div{display:grid; gap:5px;}
+.lk-cols b{font-size:.8rem; text-align:center;}
+.lk-cols em{font-style:normal; color:var(--gold);}
+.lk-z{border:0; border-radius:8px; padding:8px 4px; background:#15173A; color:#fff; cursor:pointer; box-shadow:inset 0 0 0 2px #3A3F7A; font-size:.82rem; text-align:left;}
+.lk-z.a.on{background:rgba(255,90,110,.35); box-shadow:inset 0 0 0 3px var(--red);}
+.lk-z.b.on{background:rgba(92,200,255,.3); box-shadow:inset 0 0 0 3px var(--blue);}
+.lk-go{width:100%;}
+.lk-need{font-size:.7rem; color:#A9AED6; text-align:center;}
+.lk-end{justify-items:center; text-align:center;}
+.lk-win{font-size:1.6rem; color:var(--gold);}
+.lab-log{list-style:none; margin:12px 0 0; padding:10px 12px; border-radius:12px; background:rgba(15,16,38,.6); max-height:190px; overflow:auto; font-size:.8rem; display:grid; gap:3px;}
+.lab-log .hit{color:#FF8FA0; font-weight:700;}
+.lab-log .blk{color:var(--blue); font-weight:700;}
+.lab-log .ddg{color:#E3E6FF;}
+.lab-log li.fx{color:var(--gold);}
+.lab-log li.en{opacity:.85;}
+
+@media (max-width:860px){
+  .lab{padding:10px; border-radius:12px;}
+  .lab-prep{grid-template-columns:1fr 1fr;}
+  .lab-doll{grid-column:1 / -1; order:-1;}
+  .lab-stage{min-height:230px;}
+  .lab-stage .lab-hero{max-height:220px;}
+  .lab-fight{grid-template-columns:1fr 1fr;}
+  .lab-fight .lk{grid-column:1 / -1; order:3;}
+  .lf-fig{min-height:150px;}
+  .lf-fig .lab-hero{max-height:140px;}
+  .lz-z{width:34px; height:28px; font-size:13px;}
+  .lab-vd{font-size:.75rem;}
+  .lab-arr{flex-basis:42px;}
+}
+@media (max-width:520px){
+  .lab-prep{grid-template-columns:1fr;}
+  .lc{width:100px; height:150px;}
+  .lc-slot.empty{width:100px; height:150px;}
+  .lf-cards .lc.mini{width:48px; height:70px;}
+  .lf-body{gap:4px;}
+}

@@ -21,3 +21,7 @@ Sutarta atidėti (klausimai ir atsakymai 2026-10-27). Kai imsimės - išbraukti 
 - **Žaidimas: mainai** (daiktų ir gyvūnėlių keitimasis tarp vaikų, be pinigų) - tik klausimas, dar nenuspręsta, ar to reikia.
 - **Žaidimas: atskiri artefaktai** - dabar „artefaktai“ yra daiktai (ginklai, kimono ir kt.) su savybėmis; atskiros artefaktų rūšies nėra.
 - **Neaišku - paklausti Denio:** video su Esmilės trenerio kortele (be garso neaišku, ką rodo); atsiliepimas #30 „Kai b…“ nutrūko.
+- **Egzaminų mokėjimai internetu** - reikia pasirinkti sistemą (Paysera, Montonio, banko nuoroda) ir sutarties duomenų. Vietos paruoštos (Egzaminai → „💶 Kainos…“, vaiko egzamino puslapis).
+- **Egzamino sertifikatai** - reikia šablono (PDF / paveikslėlis), kas pasirašo, siųsti ar spausdinti. Mygtukas protokole paruoštas.
+- **Egzamino kaina** - ar priklauso tik nuo diržo, ar ir nuo klubo (savo / kiti klubai).
+- **Nauja kova (bandymai)** - išsirinkus variantą: perkelti į tikrą žaidimą (serveris, kovos su kitais vaikais), išversti EN/RU, kortos ir kiaušiniai - už taškus / dovanas.

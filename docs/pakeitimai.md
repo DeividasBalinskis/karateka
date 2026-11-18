@@ -4,6 +4,41 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.44 - 2026-11-18 (Atsiliepimai #86-#97, egzaminai be paskyros, nauja kova bandymams)
+**Reikia atnaujinti duomenų bazę: db/040** (Pradžia → „Atnaujinkite duomenų bazę“). Zip'o turinį išpakuokite **tiesiai į svetainės aplanką**.
+
+**📋 Egzaminai**
+- Registracija per nuorodą: tik vardas, pavardė, gimimo data ir kontaktinis telefonas (el. pašto nebereikia). Tas pats žmogus (vardas + gimimo data) - vienas įrašas.
+- Vaikai be paskyros: užsiregistravęs gauna **asmeninį egzamino puslapį** (nuoroda): diržas, programa, teorijos testas (rezultatas pats atsiranda protokole), kaina, rezultatas.
+  Pamiršus nuorodą - registracijos puslapyje „Jau užsiregistravai?“ (vardas pavardė + gimimo data). Treneris nuorodą nukopijuoja protokole (🔗 prie vardo).
+- Protokolas: pagrindinė - lentelė, telpa ekrane. Balai su − / + po 0,1 (ar rodyklės ↑ ↓), vidurkis skaičiuojamas iš karto, komentaras, „€ Sumokėjo“.
+  Antraštė, stulpeliai, registracijos nuoroda, siuntimas - „⚙ Daugiau“ apačioje. Telefone - kortelės.
+- Egzaminų sąrašas paprastesnis: data, pavadinimas, „📋 Protokolas“, „🔗 Nuoroda“; įvykę - suskleisti.
+- „💶 Kainos, mokėjimai, sertifikatai“: kaina kiekvienam diržui, mokėjimo rekvizitai. Mokėjimai internetu ir sertifikatai - paruoštos vietos, pažymėta **reikia info**.
+
+**🛠 Valdymas**
+- Meniu: Pradžia (buvo „Šiandien“), Treniruotė, Egzaminai, Pranešimai, Nustatymai. Nustatymuose - antra eilutė: Nariai, Aktyvumo taškai, Testai, Patvirtinimai, Atsiliepimai.
+- Paspaudus ▾ prie logotipo: Karateka, Budo, LTKF (Varžybų mygtuko nustatymuose nebereikia).
+- „XP“ → „Aktyvumo taškai“ (žaidime lieka XP).
+- Admin ženkliukas nebenuimamas: vietoj jo - „👤 Kaip narys“ ir aiškus „🛠 Grįžti į valdymą“.
+- Treniruotė: atsidaro visų grupių langas (nebe paskutinė grupė); grupių plytelės gražesnės, su blizgesiu.
+- **Nustatymai → Registracija**: jungikliai - renginių, egzaminų, naujų paskyrų ir Budo registracijos mygtukus galima išjungti.
+- Programėlės diegimas: Google Play Protect įspėjimo paaiškinimas.
+
+**💡 Atsiliepimai**
+- „Mano“ - tik tavo parašyti (ir bendroje paskyroje kitoje naršyklėje kito žmogaus nesimato), „Visi“ - tik skaityti. Kito žmogaus teksto taisyti nebegalima.
+
+**🥋 Budo**
+- Dalyvių skiltyje: „🧪 +100 testinių“ (išgalvoti dalyviai iš kitų klubų, sudedami į kategorijas) ir „Ištrinti testinius“.
+
+**🧪 Nauja kova (bandymai)** - Dojo → „Nauja kova“
+- Kaip combats.ru: viduryje personažas ir gyvūnėlis, aplink - ginklas, kairė ranka (skydas +1 gynyba arba antras ginklas +1 smūgis), šarvai, stebuklingi daiktai (akis, meškiukas, antytė…).
+- Pirmas gyvūnėlis - iš kiaušinio (atsitiktinis), mažylis, auga su lygiu (5, 10, 20).
+- Pikselinės kortos (kiekviena su savo piešiniu): į kovą pasiimi 3 ar 5, suveikia su tikimybe - sužiba ir parodo efektą; kombo, rinkiniai.
+- Rodyklėmis ◀ ▶ - 5 variantai: apranga + gyvūnėlis, 3 kortos + gyvūnėlis, 3 gyvūnėliai, 5 kortos, viskas kartu.
+- Kova ėjimais: 5 zonos, laikmatis 20 s arba kai abu pasirinko; aiškiai matyti: −žala (raudona), 🛡 APGINTA (mėlyna), 💨 išsisuko.
+- Kol kas bandymams (kolekcija - naršyklėje, tekstai lietuviškai). Išsirinkus variantą - perkelsime į tikrą žaidimą.
+
 ## v1.43 - 2026-11-18 (Atsiliepimai #78-#84: Dojo, LTKF redagavimas, meniu)
 Duomenų bazės atnaujinti nereikia (jei dar neįkelta v1.42 - reikia db/039). Zip'o turinį išpakuokite **tiesiai į svetainės aplanką**.
 

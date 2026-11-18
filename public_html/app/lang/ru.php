@@ -3134,4 +3134,7 @@ Nuo 2013 m. treniravosi Tradicinio karate-do klubo „Sanrei“ komandoje, o 201
     'Registracija į egzaminą per nuorodą (be paskyros).' => 'Регистрация на экзамен по ссылке (без аккаунта).',
     'Mygtukas „Sukurti paskyrą“ ir registracijos puslapis.' => 'Кнопка «Создать аккаунт» и страница регистрации.',
     'Registracija į varžybas: kitų klubų nuoroda ir narių registracija.' => 'Регистрация на соревнования: ссылка для других клубов и регистрация членов.',
+    'Nauja kova 🧪' => 'Новый бой 🧪',
+    'Bandymai: apranga, kortos, gyvūnėliai' => 'Пробы: снаряжение, карты, питомцы',
+    'Nauja kova (bandymai)' => 'Новый бой (пробы)',
 ];
