@@ -10,11 +10,11 @@ const member = ['paskyra.php', 'paskyra.php?m=2', 'paskyra.php?m=3', 'paskyra.ph
 const admin = ['admin/', 'admin/nustatymai.php', 'admin/vertimai.php', 'admin/vertimai.php?e=home', 'admin/vertimai.php?e=news&id=1', 'admin/vertimai.php?e=lesson&id=3', 'ltkf/', 'ltkf/klubai.php', 'ltkf/kalendorius.php', 'ltkf/rezultatai.php', 'admin/varzybos.php', 'admin/atsiliepimai.php', 'varzybu-rezultatai.php', 'admin/treniruote.php', 'admin/treniruote.php?g=12', 'admin/zinutes.php', 'admin/zinutes.php?m=2', 'admin/zinutes.php?m=4',
   'admin/nariai.php', 'admin/nariai.php?id=2', 'admin/nariai.php?id=4', 'admin/nariai.php?new=1', 'admin/grupes.php', 'admin/grupes.php?id=4',
   'admin/tvarkarastis.php', 'admin/taskai.php', 'admin/varzybos.php', 'admin/testai.php', 'admin/programa.php', 'admin/programa.php?dirzas=2',
-  'admin/pranesimai.php', 'admin/sms.php', 'admin/paskyros.php', 'admin/patvirtinimai.php', 'admin/renginiai.php?edit=new', 'admin/renginiai.php?edit=17',
+  'admin/pranesimai.php', 'admin/sms.php', 'admin/paskyros.php', 'admin/patvirtinimai.php', 'admin/egzaminai.php', 'admin/renginiai.php?edit=new', 'admin/renginiai.php?edit=17',
   'admin/renginio-dalyviai.php?id=17', 'admin/renginio-dalyviai.php?id=18', 'admin/renginio-rezultatai.php?id=6', 'admin/naujienos.php?edit=new',
   'admin/naujienos.php?edit=1', 'admin/testavimas.php', 'admin/pamokos.php', 'admin/kopijos.php', 'admin/atsaukimai.php', 'admin/atsaukimai.php?g=1&d=2030-01-07', 'pamokos.php?tvarkyti=1', 'pamokos.php?nauja=1',
   'pamokos.php?id=1&keisti=1', 'index.php?redaguoti=1', 'admin/puslapis.php', 'pokalbis.php?list=1', 'pokalbis.php?list=1&q=tom', 'pokalbis.php?m=4'];
-const coach = ['admin/', 'admin/nustatymai.php', 'admin/atsaukimai.php', 'admin/treniruote.php?g=12', 'admin/nariai.php', 'admin/nariai.php?id=2', 'admin/taskai.php', 'admin/programa.php', 'pokalbis.php?list=1'];
+const coach = ['admin/', 'admin/egzaminai.php', 'admin/nustatymai.php', 'admin/atsaukimai.php', 'admin/treniruote.php?g=12', 'admin/nariai.php', 'admin/nariai.php?id=2', 'admin/taskai.php', 'admin/programa.php', 'pokalbis.php?list=1'];
 
 const roles = [
   ['info@karateka.lt', 'admin', [...common, ...member, ...admin]],

@@ -265,6 +265,7 @@ function admin_nav_items(): array
         // Žinutės - tik pokalbio lange (mygtukas apačioje dešinėje); grupės, tvarkaraštis, taškai, paskyros - „Nustatymai“
     ];
     $items['varzybos'] = [t('Varžybos'), 'admin/varzybos.php'];   // ir kai sistema dar neprijungta - puslapis paaiškina
+    $items['egzaminai'] = [t('Egzaminai'), 'admin/egzaminai.php'];   // egzaminatoriui: visi egzaminai, protokolai, registracija
     // Renginiai, naujienos ir pamokos tvarkomi savo skiltyse (viršutinėje juostoje), čia nedubliuojama
     foreach (ADMIN_NAV_EXTRA as $key => $item) {
         if (empty($item[2]) || is_admin()) {
@@ -395,9 +396,6 @@ function site_header(bool $home = false, ?string $area = null, ?string $tab = nu
           <li><a class="nav-page<?= $cur('naujienos') ?>" href="<?= url('naujienos.php') ?>"><?= te('Naujienos') ?></a></li>
           <?php if ($a && can_see_lessons($a)): ?>
             <li><a class="nav-page<?= $cur('pamokos') ?>" href="<?= url('pamokos.php') ?>"><?= te('Pamokos') ?></a></li>
-          <?php endif; ?>
-          <?php if ($a && is_staff($a)): ?>
-            <li><a class="nav-page<?= $cur('egzaminai') ?>" href="<?= url('admin/egzaminai.php') ?>"><?= te('Egzaminavimas') ?></a></li>
           <?php endif; ?>
           <?php if ($a && is_active_account($a) && game_nav_ready()): ?>
             <li><a class="nav-page nav-game<?= $cur('zaidimas') ?>" href="<?= url('dojo.php') ?>"><?= te('🎮 Žaidimas') ?></a></li>

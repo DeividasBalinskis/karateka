@@ -171,7 +171,7 @@ $cols = exam_cols($p);
 $fedNo = fed_numbers_for_event($id);
 $passed = count(array_filter($rows, function ($r) { return $r['result'] === 'passed'; }));
 $failed = count(array_filter($rows, function ($r) { return $r['result'] === 'failed'; }));
-page_start(t('Egzamino protokolas') . ': ' . $event['title'], ['admin' => true, 'section' => 'egzaminai']);
+page_start(t('Egzamino protokolas') . ': ' . $event['title'], ['admin' => true]);
 ?>
 <div class="no-print">
   <a class="small" href="<?= url('admin/egzaminai.php') ?>"><?= te('← Egzaminavimas') ?></a> · <a class="small" href="<?= url('renginys.php?id=' . $id) ?>"><?= te('Renginys') ?></a> · <a class="small" href="<?= url('admin/renginio-rezultatai.php?id=' . $id) ?>"><?= te('Rezultatai ir XP') ?></a>

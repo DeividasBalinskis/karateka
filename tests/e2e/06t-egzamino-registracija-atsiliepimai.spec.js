@@ -10,9 +10,9 @@ test('exam signup link for people without an account, invitations, exam list for
   const eid = +sql("SELECT id FROM events WHERE title = 'E2E egzaminas'");
   const a = await login(browser, 'info@karateka.lt');
 
-  // „Egzaminavimas“ - viršutinėje juostoje, šalia „Pamokos“
+  // „Egzaminai“ - trenerio skirtukų juostoje (šalia „Varžybos“, „Testai“)
   await a.goto('admin/');
-  check('top menu has Egzaminavimas', await a.locator('.nav-pages a[href*="admin/egzaminai.php"]').count() === 1);
+  check('coach tabs have Egzaminai', await a.locator('.sub-nav a[href*="admin/egzaminai.php"]').count() === 1);
   await a.goto('admin/egzaminai.php');
   const item = a.locator('.exam-item', { hasText: 'E2E egzaminas' });
   check('exam listed', await item.count() === 1);

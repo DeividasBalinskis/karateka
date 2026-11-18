@@ -18,7 +18,7 @@ if ($ready && $exams) {
         }
     }
 }
-page_start(t('Egzaminavimas'), ['admin' => true, 'section' => 'egzaminai']);
+page_start(t('Egzaminavimas'), ['admin' => true]);
 ?>
 <div class="page-head">
   <h1 class="styled"><?= te('📋 Egzaminavimas') ?></h1>
