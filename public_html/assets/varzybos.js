@@ -111,6 +111,11 @@
         if (!x.d.ok) { dirty = true; setStatus('Neišsaugota: ' + (x.d.error || 'klaida'), 'err'); return; }
         version = x.d.version;
         setStatus('Išsaugota ✓', 'ok');
+        // Baigtos rungtys automatiškai pažymimos „apdovanojama“ (#122) - būsena atnaujinama iš karto
+        if (x.d.awards && !Array.isArray(x.d.awards) && JSON.stringify(x.d.awards) !== JSON.stringify(AW)) {
+          AW = x.d.awards;
+          if (!typingNow() && !dragId) render(); else awPending = true;
+        }
         if (stateCh) { try { stateCh.postMessage({ v: version, state: JSON.parse(body).state }); } catch (e) {} }
         if (dirty) flush();
       })
@@ -2730,7 +2735,46 @@
     return { all: rs, list: onlyDone ? rs.filter(function (r) { return r.finished; }) : rs };
   }
   var MEDAL = { 1: '<span class="medal g">1</span>', 2: '<span class="medal s">2</span>', 3: '<span class="medal b">3</span>' };
+  // #122 Apdovanojimai rezultatuose: viršuje - ką tik baigtos ir dar neapdovanotos rungtys (rezultatai suskaičiuoti patys),
+  // „✓ Apdovanota“ vienu paspaudimu nukelia žemyn; žemiau - kas jau apdovanota (klaidoms atsekti), „↺ Grąžinti“
+  var awDoneOpen = false;
+  function hhmm(ts) { var m = String(ts || '').match(/(\d{2}):(\d{2})/); return m ? m[1] + ':' + m[2] : ''; }
+  function renderAwardQueue() {
+    var box = document.getElementById('award-view'); if (!box) return;
+    var cats = S.categories.filter(function (c) { return c.competitors.length; });
+    var at = function (c, k) { return (AW[c.id] && AW[c.id][k]) || ''; };
+    var todo = cats.filter(function (c) { var st = catStatus(c); return st === 'sent' || st === 'fin'; })
+      .sort(function (a, b) { var x = at(a, 'sent') || '9', y = at(b, 'sent') || '9'; return x < y ? -1 : x > y ? 1 : 0; });
+    var done = cats.filter(function (c) { return catStatus(c) === 'awarded'; })
+      .sort(function (a, b) { var x = at(a, 'done'), y = at(b, 'done'); return x > y ? -1 : x < y ? 1 : 0; });
+    var card = function (c) {
+      var t = hhmm(at(c, 'sent'));
+      return '<div class="aw-card"><div class="aw-top"><span class="disc d-' + c.discipline + '"></span><b>' + esc(c.name) + '</b>' +
+        '<span class="muted small">' + esc((areaOf(c) || {}).name || '') + (t ? ' · baigta ' + t : '') + '</span>' +
+        '<button type="button" class="btn btn-xs" data-res-open="' + c.id + '" title="Atidaryti lentelę - patikrinti">Lentelė</button></div>' +
+        '<div class="aw-places">' + (placesShort(c) || '<span class="muted small">Prizininkų nėra</span>') + '</div>' +
+        '<button type="button" class="btn btn-primary aw-done-btn" data-award-done="' + c.id + '">✓ Apdovanota</button></div>';
+    };
+    var html = '<div class="aw-head"><h2>🏅 Apdovanoti dabar' + (todo.length ? ' <span class="aw-n">' + todo.length + '</span>' : '') + '</h2>' +
+      '<span class="muted small">Baigta rungtis atsiranda čia pati - rezultatai jau suskaičiuoti. Pirmiausia - anksčiausiai baigtos.</span></div>' +
+      (todo.length ? '<div class="aw-grid">' + todo.map(card).join('') + '</div>' : '<p class="muted aw-empty">Kol kas nėra ką apdovanoti - kai rungtis baigsis, ji čia atsiras pati.</p>');
+    if (done.length) {
+      html += '<details class="aw-donebox"' + (awDoneOpen ? ' open' : '') + '><summary>✓ Jau apdovanota (' + done.length + ') - patikrinti, ar viskas teisingai</summary><ul class="aw-donelist">' +
+        done.map(function (c) {
+          return '<li><span class="disc d-' + c.discipline + '"></span><b>' + esc(c.name) + '</b><span class="aw-dl-pl">' + placesShort(c) + '</span>' +
+            '<span class="muted small">' + hhmm(at(c, 'done')) + '</span><button type="button" class="btn btn-xs" data-award-back="' + c.id + '" title="Grąžinti į „Apdovanoti dabar“">↺ Grąžinti</button></li>';
+        }).join('') + '</ul></details>';
+    }
+    box.innerHTML = html;
+    var db = box.querySelector('.aw-donebox'); if (db) db.addEventListener('toggle', function () { awDoneOpen = db.open; });
+  }
+  if (document.getElementById('award-view')) document.getElementById('award-view').addEventListener('click', function (e) {
+    var d = e.target.closest('[data-award-done]'); if (d) { setAward([d.dataset.awardDone], 'done'); return; }
+    var bk = e.target.closest('[data-award-back]'); if (bk) { setAward([bk.dataset.awardBack], 'sent'); return; }
+    var o = e.target.closest('[data-res-open]'); if (o) openRun(o.dataset.resOpen);
+  });
   function renderResults() {
+    renderAwardQueue();
     var sr = shownResults(), rs = sr.list, table = medalTable(rs), sum = { g: 0, s: 0, b: 0, pts: 0 };
     document.getElementById('res-count').textContent = 'Baigta ' + sr.all.filter(function (r) { return r.finished; }).length + ' iš ' + sr.all.length + ' kategorijų';
     document.getElementById('medals-view').innerHTML = table.length ? '<table><thead><tr><th class="num">#</th><th>Klubas</th><th class="num">' + MEDAL[1] + '</th><th class="num">' + MEDAL[2] + '</th><th class="num">' + MEDAL[3] + '</th><th class="num">Taškai</th></tr></thead><tbody>' +

@@ -182,7 +182,8 @@ if (is_post()) {
         http_response_code(409);
         exit(json_encode(['ok' => false, 'error' => 'Kitas žmogus jau pakeitė varžybas.']));
     }
-    exit(json_encode(['ok' => true, 'version' => $v]));
+    tournament_awards_sync((int) $t['id'], (array) $in['results']);
+    exit(json_encode(['ok' => true, 'version' => $v, 'awards' => (object) tournament_awards((int) $t['id'])]));
 }
 
 $belts = [];
@@ -547,6 +548,7 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
       <button class="btn" id="res-csv" type="button">⬇ CSV (Excel)</button>
       <button class="btn btn-primary" id="res-print" type="button">🖨 Spausdinti</button>
     </div>
+    <div class="panel aw-panel" id="award-view"></div>
     <div class="res-layout">
       <div class="panel"><h2>Klubų medaliai</h2><div id="medals-view"></div></div>
       <div class="panel"><h2>Prizininkai pagal kategorijas</h2><div id="podium-view"></div></div>

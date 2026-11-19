@@ -1,7 +1,7 @@
 <?php
 // Apdovanojimų planšetė (prieiga tik su slapta nuoroda ?k=, admin → „📡 Transliacija ir registracija“ → „🏅 Apdovanojimų planšetė“).
-// Rodomos amžiaus grupės (tie patys gimimo metai - ir kata, ir kumite): pilka, kol kuri nors jos rungtis vyksta ar dar neišsiųsta,
-// žalia - kai visos išsiųstos apdovanojimams. Apdovanojus - „Užbaigti“: grupė sistemoje pažymima „Užbaigta ir apdovanota“.
+// #122: kiekviena baigta rungtis atsiranda viršuje pati (anksčiausiai baigtos pirmos) su prizininkais; „✓ Apdovanota“ - nukeliama žemyn
+// į „Jau apdovanota“ (klaidoms atsekti, „↺ Grąžinti“); sistemoje rungtis pažymima „Užbaigta ir apdovanota“.
 // Duomenys: varžybų santrauka (tournaments.results - prizininkai su pilnais vardais) ir būsenos (db/033 tournament_awards).
 require __DIR__ . '/app/bootstrap.php';
 
@@ -19,8 +19,14 @@ if (get('json') || is_post()) {
         $in = json_decode((string) file_get_contents('php://input'), true) ?: [];
         $st = ($in['status'] ?? '') === 'done' ? 'done' : 'sent';
         $have = tournament_awards((int) $t['id']);
+        $fin = [];   // baigtos rungtys (#122: jas galima apdovanoti ir be „Siųsti apdovanojimams“)
+        foreach ((array) (tournament_results($t)['categories'] ?? []) as $c) {
+            if (!empty($c['finished'])) {
+                $fin[(string) ($c['id'] ?? '')] = true;
+            }
+        }
         foreach (array_slice((array) ($in['cats'] ?? []), 0, 100) as $cid) {
-            if (isset($have[(string) $cid])) {
+            if (isset($have[(string) $cid]) || isset($fin[(string) $cid])) {
                 tournament_award_set((int) $t['id'], (string) $cid, $st);
             }
         }

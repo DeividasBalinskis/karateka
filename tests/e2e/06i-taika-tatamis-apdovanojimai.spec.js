@@ -1,6 +1,6 @@
 // v1.28: sekretoriatas dirba prie savo tatamio (rodomas tik jis, kitą galima pažiūrėti), apačioje - visos tatamio grupės,
-// baigus grupę - „Siųsti apdovanojimams“ ir „Sekanti grupė →“; apdovanojimų planšetėje amžiaus grupė žalia, kai visos jos rungtys
-// išsiųstos, „Užbaigti“ - „Užbaigta ir apdovanota“; katos balai: 75 → 7.5, katos sąrašas, finalas = pusfinalis + finalas;
+// baigus grupę - ji pati patenka į apdovanojimus (#122) ir „Sekanti grupė →“; rezultatuose ir apdovanojimų planšetėje baigta rungtis
+// viršuje, „✓ Apdovanota“ - nukeliama žemyn, sistemoje „Užbaigta ir apdovanota“; katos balai: 75 → 7.5, katos sąrašas, finalas = pusfinalis + finalas;
 // kumite laiko šablonai; kategorijų rikiavimas didėjančia / mažėjančia; ekranas telefone nešokinėja į viršų.
 const { test } = require('@playwright/test');
 const { sql, login, check, noJsErrors } = require('./helpers');
@@ -35,14 +35,12 @@ test('my tatami, next group, send to awards, awards tablet finishes the age grou
   check('all groups listed at the bottom', await a.locator('#run-list .rl-row').count() >= 3 && await a.locator('#run-list .rl-row.on').count() === 1);
   const first = (await a.textContent('#run-name')).trim();
 
-  // Sužaidžiame grupę → „Grupė baigta“, siųsti apdovanojimams, sekanti grupė
+  // Sužaidžiame grupę → „Grupė baigta“; #122: baigta rungtis į apdovanojimus patenka pati (nereikia „Siųsti apdovanojimams“)
+  const catId = await a.evaluate(() => document.querySelector('#draw-cat').value);
   await a.click('#draw-sim');
   await a.waitForSelector('#run-done:not([hidden])');
-  check('send to awards offered', await a.locator('#run-done [data-award-send]').count() === 1);
-  const catId = await a.locator('#run-done [data-award-send]').getAttribute('data-award-send');
-  await a.click('#run-done [data-award-send]');
-  await a.waitForTimeout(600);
-  check('sent stored', sql(`SELECT status FROM tournament_awards WHERE tournament_id = ${tid} AND cat_id = '${catId}'`) === 'sent');
+  await a.waitForTimeout(2500);
+  check('sent to awards automatically', sql(`SELECT status FROM tournament_awards WHERE tournament_id = ${tid} AND cat_id = '${catId}'`) === 'sent');
   check('status chip apdovanojama', /apdovanojama/.test(await a.textContent('#run-strip')));
   const nextBtn = a.locator('#run-done [data-run-go]');
   if (await nextBtn.count()) {
@@ -50,22 +48,23 @@ test('my tatami, next group, send to awards, awards tablet finishes the age grou
     check('next group opened', (await a.textContent('#run-name')).trim() !== first);
   }
 
-  // Apdovanojimų planšetė: visos amžiaus grupės rungtys išsiųstos → žalia → „Užbaigti“
+  // Rezultatuose: „🏅 Apdovanoti dabar“ - baigta rungtis su prizininkais
+  await a.click('#tab-rezultatai');
+  check('results: award queue lists the finished group', await a.locator(`#award-view [data-award-done="${catId}"]`).count() === 1);
+
+  // Apdovanojimų planšetė: baigta rungtis viršuje → „✓ Apdovanota“ → nukeliama į „Jau apdovanota“
   const token = sql(`SELECT awards_token FROM tournaments WHERE id = ${tid}`);
   const p = await browser.newPage({ viewport: { width: 900, height: 1100 } });
   const errs = []; p.on('pageerror', e => errs.push(e.message));
   await p.goto(`varzybos-apdovanojimai.php?k=${token}`);
   await p.waitForSelector('.apd-sum');
-  const data = await (await p.request.get(`varzybos-apdovanojimai.php?k=${token}&json=1`)).json();
-  const mine = data.cats.find(c => c.id === catId);
-  const group = data.cats.filter(c => c.group === mine.group).map(c => c.id);
-  if (group.length > 1) check('grey while the age group runs', await p.locator('.apd-g.wait').count() >= 1);
-  group.forEach(id => sql(`INSERT IGNORE INTO tournament_awards (tournament_id, cat_id, status, sent_at) VALUES (${tid}, '${id}', 'sent', NOW())`));
-  await p.waitForSelector('.apd-g.ready', { timeout: 8000 });
-  check('ready group shows podium', await p.locator('.apd-g.ready .apd-places li').count() >= 1);
-  await p.click('.apd-g.ready .apd-done');
+  const card = p.locator('.apd-c.ready', { has: p.locator(`[data-done="${catId}"]`) });
+  check('finished group ready with podium', await card.count() === 1 && await card.locator('.apd-places li').count() >= 1);
+  await p.click(`.apd-c.ready [data-done="${catId}"]`);
   await p.waitForSelector('.apd-donebox');
+  await p.waitForTimeout(800);
   check('awarded stored', sql(`SELECT status FROM tournament_awards WHERE tournament_id = ${tid} AND cat_id = '${catId}'`) === 'done');
+  check('moved down to awarded', await p.locator(`.apd-c.ready [data-done="${catId}"]`).count() === 0 && await p.locator(`.apd-donebox [data-undo="${catId}"]`).count() === 1);
   check('no tablet js errors', !errs.length, errs.join('; '));
 
   // Sekretoriatas mato „Užbaigta ir apdovanota“ (perkrovus ar po ≤10 s), žiūrovai - „apdovanota“

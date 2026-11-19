@@ -614,6 +614,27 @@ function tournament_awards(int $id): array
     return $out;
 }
 
+/**
+ * #122: baigta rungtis pati atsiranda apdovanojimuose („sent“, laikas - kada baigėsi), nebereikia spausti „Siųsti apdovanojimams“.
+ * Jei rungtis vėl nebaigta (atšauktas rezultatas) ir dar neapdovanota - iš apdovanojimų dingsta.
+ */
+function tournament_awards_sync(int $id, array $results): void
+{
+    $have = tournament_awards($id);
+    foreach ((array) ($results['categories'] ?? []) as $c) {
+        $cid = (string) ($c['id'] ?? '');
+        if ($cid === '' || empty($c['count'])) {
+            continue;
+        }
+        $st = $have[$cid]['st'] ?? '';
+        if (!empty($c['finished']) && $st === '') {
+            tournament_award_set($id, $cid, 'sent');
+        } elseif (empty($c['finished']) && $st === 'sent') {
+            tournament_award_set($id, $cid, '');
+        }
+    }
+}
+
 /** Būsena: 'sent' - išsiųsta apdovanojimams, 'done' - apdovanota, '' - atšaukta (vėl tik baigta) */
 function tournament_award_set(int $id, string $catId, string $status): bool
 {
