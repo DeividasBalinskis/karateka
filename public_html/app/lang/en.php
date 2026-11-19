@@ -3212,4 +3212,5 @@ From 2013 he trained with the team of the traditional karate-do club "Sanrei", a
     'Didelis meniu lapas' => 'Big menu sheet',
     '☰ atidaro visą ekraną su didelėmis plytelėmis: Kasdien, Klubas, Tvarkyti, Svetainė.' => '☰ opens a full screen with big tiles: Daily, Club, Manage, Website.',
     '☰ meniu viršuje ir valdymo eilutė po juo.' => '☰ menu at the top and the admin row below it.',
+    'Senasis' => 'Old one',
 ];

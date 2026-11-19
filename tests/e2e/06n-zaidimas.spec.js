@@ -33,9 +33,9 @@ test('my dojo: create the hero, test panel, gift box, equip, pet, collection', a
   await k.waitForSelector('.gm .ed-chars');
   check('first visit invites to create the hero', await k.locator('.gm h2', { hasText: 'Susikurk savo herojų' }).count() === 1);
   // Pikselinis personažas - lapė (kitsunė): renkamasi kailio ir liepsnų spalva
-  // 26 personažai (25 paveikslėliai + perdažoma lapė); lapei - kailio ir liepsnų spalva
-  check('character picker with the real characters', await k.locator('.ed-chars button').count() === 26 && await k.locator('.ed-chars img.px-char').count() === 25);
-  check('each character shows its own skill', await k.locator('.ed-chars .ed-sk').count() === 26);
+  // 23 personažai (22 paveikslėliai + perdažoma lapė; be pandos, baltojo tigro ir varno - v1.46); lapei - kailio ir liepsnų spalva
+  check('character picker with the real characters', await k.locator('.ed-chars button').count() === 23 && await k.locator('.ed-chars img.px-char').count() === 22);
+  check('each character shows its own skill', await k.locator('.ed-chars .ed-sk').count() === 23);
   await k.click('.ed-chars [data-sp=kitsune]');
   check('repaintable fox: fur and flame colours', await k.locator('.ed-sw [data-sw=flame]').count() >= 6);
   await k.click('.ed-sw [data-sw=fur][data-c="#F4F2EE"]');

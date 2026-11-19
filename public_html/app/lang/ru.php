@@ -3212,4 +3212,5 @@ Nuo 2013 m. treniravosi Tradicinio karate-do klubo „Sanrei“ komandoje, o 201
     'Didelis meniu lapas' => 'Большой лист меню',
     '☰ atidaro visą ekraną su didelėmis plytelėmis: Kasdien, Klubas, Tvarkyti, Svetainė.' => '☰ открывает весь экран с большими плитками: Ежедневно, Клуб, Управление, Сайт.',
     '☰ meniu viršuje ir valdymo eilutė po juo.' => 'Меню ☰ вверху и строка управления под ним.',
+    'Senasis' => 'Старый',
 ];

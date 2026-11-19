@@ -1,5 +1,5 @@
 // v1.46: „📋 Užduotys“ - užduotys ir pamokos lieka ir pažymėjus; Naujienos ir renginiai viename puslapyje (#118);
-// telefono meniu variantai; Dojo apačioje - reitingas ir draugų kvietimai (#115); arena be medienos (#116)
+// telefono meniu variantai (numatyta - apatinė juosta); Dojo apačioje - reitingas ir draugų kvietimai (#115); arena be medienos (#116)
 const { test } = require('@playwright/test');
 const { sql, day, login, nav, check, noJsErrors } = require('./helpers');
 
@@ -32,6 +32,7 @@ test('news and events on one page, one menu item', async ({ browser }) => {
   await v.goto('naujienos.php');
   check('one menu item', await v.locator('.nav-pages a', { hasText: 'Naujienos ir renginiai' }).count() === 1 && await v.locator('.nav-pages a[href$="renginiai.php"]').count() === 0);
   check('events on the right', await v.locator('.nr-events .nr-ev').count() >= 2);
+  await v.evaluate(() => Promise.all(document.getAnimations().map(x => x.finished)));   // kortelės „įplaukia“
   const geo = await v.evaluate(() => {
     const n = document.querySelector('.nr-news .news-card').getBoundingClientRect(), e = document.querySelectorAll('.nr-ev');
     return { newsLeft: n.left, evLeft: e[0].getBoundingClientRect().left, two: Math.round(e[1].getBoundingClientRect().bottom - e[0].getBoundingClientRect().top), news: Math.round(n.height), top: Math.round(n.top - e[0].getBoundingClientRect().top) };
@@ -46,8 +47,8 @@ test('news and events on one page, one menu item', async ({ browser }) => {
 test('phone menu variants for staff: one menu at a time', async ({ browser }) => {
   sql("DELETE FROM site_settings WHERE name = 'phone_menu'");
   const p = await login(browser, 'info@karateka.lt', 390, 844);
-  await p.goto('admin/treniruote.php?tmeniu=apacia');
-  check('bottom bar, no burger, no admin row', await p.locator('.m-tabbar').isVisible() && !(await p.locator('#burgerBtn').isVisible()) && !(await p.locator('.am-line').isVisible()));
+  await p.goto('admin/treniruote.php');
+  check('default: bottom bar, no burger, no admin row', await p.locator('.m-tabbar').isVisible() && !(await p.locator('#burgerBtn').isVisible()) && !(await p.locator('.am-line').isVisible()));
   await p.click('.m-more > summary');
   check('More: rest of admin and the website', await p.locator('.m-sheet a[href*="testai.php"]').isVisible() && await p.locator('.m-sheet a[href*="naujienos.php"]').isVisible());
   await p.goto('admin/treniruote.php?tmeniu=burger');
@@ -61,8 +62,9 @@ test('phone menu variants for staff: one menu at a time', async ({ browser }) =>
   check('sheet with tiles', await p.locator('.pm-admin .am-row').count() >= 8);
   // Visiems: nustatymuose
   await p.goto('admin/nustatymai.php?tmeniu=visiems');
-  await nav(p, () => p.locator('#tmeniu .mp-row', { hasText: 'Apatinė juosta' }).locator('button').click());
-  check('saved for everyone', sql("SELECT value FROM site_settings WHERE name = 'phone_menu'") === 'apacia');
+  check('bottom bar is the default for everyone', await p.locator('#tmeniu .mp-row', { hasText: 'Apatinė juosta' }).locator('.badge', { hasText: 'visiems' }).count() === 1);
+  await nav(p, () => p.locator('#tmeniu .mp-row', { hasText: 'Viskas viename' }).locator('button').click());
+  check('saved for everyone', sql("SELECT value FROM site_settings WHERE name = 'phone_menu'") === 'burger');
   sql("DELETE FROM site_settings WHERE name = 'phone_menu'");
   // Kompiuteryje - nieko iš telefono meniu
   const c = await login(browser, 'info@karateka.lt', 1366, 900);

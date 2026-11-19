@@ -11,8 +11,9 @@ Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar
 - Mano paskyra → „📋 Užduotys“: visos trenerio užduotys, atsiųstos pamokos ir pastabos lieka visada - ir netyčia paspaudus „Peržiūrėjau“ / „Atlikau“.
 - Filtrai: Neatliktos, Pamokos, Pastabos ir užduotys, Pranešimai (ir tie, kur paspausta „Supratau“). „Svarbu“ apačioje - nuoroda čia.
 
-**📱 Telefono meniu** - 5 variantai pasirinkti (Nustatymai → „Telefono meniu“; kol nepasirinkta - kaip buvo)
-- Viskas viename ☰ · Apatinė juosta (kaip programėlė) · Eilutė + 🌐 · Didelis meniu lapas.
+**📱 Telefono meniu - apatinė juosta (kaip programėlė)**
+- Treneriams telefone ir planšetėje: apačioje Pradžia, Treniruotė, Egzaminai, Nariai ir „⋯ Daugiau“ (kiti skyriai, svetainė, atsijungti). ☰ ir valdymo eilutės viršuje nebėra - vienas meniu.
+- Kiti variantai lieka Nustatymuose → „Telefono meniu“ (Senasis · Viskas viename ☰ · Eilutė + 🌐 · Didelis meniu lapas).
 
 **📰 Naujienos ir renginiai (#118)**
 - Viename puslapyje: kairėje naujienos, dešinėje artimiausi renginiai; du renginiai - vienos naujienos aukščio. Meniu - vienas punktas.

@@ -12,6 +12,9 @@ test('menu: side menu on computer, one row with More on phone, B or C for everyo
   check('no second row anywhere', await a.locator('.sub-nav-2').count() === 0);
   const p = await login(browser, 'info@karateka.lt', 390, 844);
   await p.goto('admin/taskai.php');
+  // Telefone numatyta apatinė juosta (v1.46); eilutė su „Daugiau“ - „Senasis“ telefono meniu
+  check('phone default: bottom bar, no row, no side menu', await p.locator('.m-tabbar').isVisible() && !(await p.locator('.am-line').isVisible()) && !(await p.locator('.adm-side').isVisible()));
+  await p.goto('admin/taskai.php?tmeniu=dabar');
   check('phone: one row, no side menu', await p.locator('.am-line').isVisible() && !(await p.locator('.adm-side').isVisible()));
   await p.click('.am-line .am-more > summary');
   check('phone: More list with rare sections, current shown', await p.locator('.am-more-panel a[href*="testai.php"]').isVisible() && await p.locator('.am-more > summary.active').count() === 1);
@@ -35,5 +38,6 @@ test('menu: side menu on computer, one row with More on phone, B or C for everyo
   check('view menu: one panel with the member button inside', await c.locator('.adm-li .vs-panel .vs-member-btn').count() === 1);
   sql("DELETE FROM site_settings WHERE name = 'menu_variant'");
   await p.goto('admin/?meniu=visiems');
+  await p.goto('admin/?tmeniu=visiems');
   noJsErrors(a, p, c);
 });

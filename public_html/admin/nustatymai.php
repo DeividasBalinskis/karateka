@@ -73,7 +73,7 @@ page_start(t('Nustatymai'), ['admin' => true]);
               <?php if ($mvAll !== $k): ?><form method="post"><?= csrf_field() ?><input type="hidden" name="action" value="menu_variant"><input type="hidden" name="v" value="<?= e($k) ?>"><button class="btn btn-sm" type="submit"><?= te('Visiems') ?></button></form><?php endif; ?></span></div>
         <?php endforeach; ?>
       </section>
-      <?php $pmAll = (string) site_setting('phone_menu', 'dabar'); $pmAll = isset(PHONE_MENU_VARIANTS[$pmAll]) ? $pmAll : 'dabar'; ?>
+      <?php $pmAll = (string) site_setting('phone_menu', 'apacia'); $pmAll = isset(PHONE_MENU_VARIANTS[$pmAll]) ? $pmAll : 'apacia'; ?>
       <section class="panel card settings-group menu-pick" id="tmeniu">
         <div class="kicker"><?= te('Telefono meniu') ?></div>
         <p class="small muted" style="margin:0 0 8px;"><?= te('Kaip meniu atrodo telefone ir planšetėje. „Peržiūrėti“ - tik jums, „Visiems“ - visiems treneriams.') ?></p>

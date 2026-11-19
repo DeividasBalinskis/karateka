@@ -265,11 +265,11 @@ const MENU_VARIANTS = [
     'sonas'   => ['Šoninis meniu', 'Valdyme - meniu kairėje su grupėmis: Kasdien, Klubas, Tvarkyti. Viršuje - tik svetainė.'],
 ];
 
-// Telefono meniu (treneriams): vienas aiškus būdas vietoj ☰ + valdymo eilutės kartu
+// Telefono meniu (treneriams): vienas aiškus būdas vietoj ☰ + valdymo eilutės kartu; numatytas - apatinė juosta (v1.46)
 const PHONE_MENU_VARIANTS = [
-    'dabar'  => ['Dabartinis', '☰ meniu viršuje ir valdymo eilutė po juo.'],
-    'burger' => ['Viskas viename ☰', 'Valdymo eilutės nėra - ☰ meniu viršuje: valdymas grupėmis ir svetainė.'],
     'apacia' => ['Apatinė juosta (kaip programėlė)', 'Apačioje: Pradžia, Treniruotė, Egzaminai, Nariai, ⋯ Daugiau. ☰ nebėra.'],
+    'dabar'  => ['Senasis', '☰ meniu viršuje ir valdymo eilutė po juo.'],
+    'burger' => ['Viskas viename ☰', 'Valdymo eilutės nėra - ☰ meniu viršuje: valdymas grupėmis ir svetainė.'],
     'eilute' => ['Eilutė + 🌐', 'Lieka valdymo eilutė, ☰ nebėra - svetainės skiltys po 🌐 viršuje.'],
     'lapas'  => ['Didelis meniu lapas', '☰ atidaro visą ekraną su didelėmis plytelėmis: Kasdien, Klubas, Tvarkyti, Svetainė.'],
 ];
@@ -279,8 +279,8 @@ function phone_menu_variant(): string
     static $v = null;
     if ($v === null) {
         $c = (string) ($_COOKIE['tmeniu'] ?? '');
-        $sv = (string) site_setting('phone_menu', 'dabar');
-        $v = isset(PHONE_MENU_VARIANTS[$c]) ? $c : (isset(PHONE_MENU_VARIANTS[$sv]) ? $sv : 'dabar');
+        $sv = (string) site_setting('phone_menu', 'apacia');
+        $v = isset(PHONE_MENU_VARIANTS[$c]) ? $c : (isset(PHONE_MENU_VARIANTS[$sv]) ? $sv : 'apacia');
     }
     return $v;
 }
