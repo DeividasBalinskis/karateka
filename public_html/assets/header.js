@@ -38,3 +38,14 @@
     };
   });
 })();
+// #111: „Apie klubą ‹“ - išsiskleidžia paspaudus (ar palaikius pelę), ne vos pravedus; paspaudus kitur - susiskleidžia
+(function () {
+  var g = document.querySelector('.site-header .nav-onpage.folded');
+  if (!g) return;
+  var main = g.querySelector('.fold-main > a');
+  if (main) main.addEventListener('click', function (e) {
+    var other = g.querySelector('li:not(.fold-main)'), shown = other && parseFloat(getComputedStyle(other).opacity) > 0.5;
+    if (window.innerWidth > 1100 && !g.classList.contains('open') && !shown) { e.preventDefault(); g.classList.add('open'); }
+  });
+  document.addEventListener('click', function (e) { if (!g.contains(e.target)) g.classList.remove('open'); });
+})();

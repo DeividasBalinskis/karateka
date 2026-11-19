@@ -128,7 +128,20 @@
     var foot = $('.dw-foot');
     if (foot) foot.innerHTML = '<div class="df-name"><b>' + esc(H.publicName || H.name) + '</b><small>' + esc(beltName(H.belt)) + '</small></div>' +
       '<span class="df-lv">⭐ ' + T('Lygis') + ' ' + H.level + '</span>' +
-      '<div class="xp-track df-xp"><i style="width:' + pct + '%"></i><span>' + x.into + ' / ' + per + ' XP</span></div>';
+      '<button type="button" class="xp-track df-xp" data-xp-more aria-expanded="false" title="' + esc(T('Už ką gauta ir kaip gauti daugiau')) + '"><i style="width:' + pct + '%"></i><span>' + x.into + ' / ' + per + ' XP</span></button>' +
+      (H.xpWays ? '<button type="button" class="df-more" data-xp-more>' + T('Už ką XP?') + ' ▾</button>' +
+        '<div class="df-log" hidden><div><h4>' + T('Už ką gauta') + '</h4>' + ((H.xpLog || []).length ? '<ul>' + H.xpLog.map(function (r) { return '<li><span>' + esc(r.n) + (r.e ? ' <small>' + esc(r.e) + '</small>' : '') + ' <small>' + esc(r.d) + '</small></span><b>+' + r.p + '</b></li>'; }).join('') + '</ul>' : '<p class="small muted">' + T('Dar nieko - XP ateina iš aktyvumo taškų klube.') + '</p>') + '</div>' +
+        '<div><h4>' + T('Kaip gauti daugiau') + '</h4><ul>' + H.xpWays.map(function (w) { return '<li><span>' + esc(w.n) + '</span><b>+' + w.p + '</b></li>'; }).join('') + '</ul></div></div>' : '');
+    if (foot && !foot.dataset.xpBound) {
+      foot.dataset.xpBound = '1';
+      foot.addEventListener('click', function (e) {
+        if (!e.target.closest('[data-xp-more]')) return;
+        var log = foot.querySelector('.df-log'); if (!log) return;
+        log.hidden = !log.hidden;
+        foot.querySelectorAll('[data-xp-more]').forEach(function (b) { b.setAttribute('aria-expanded', log.hidden ? 'false' : 'true'); });
+        var mb = foot.querySelector('.df-more'); if (mb) mb.textContent = T('Už ką XP?') + (log.hidden ? ' ▾' : ' ▴');
+      });
+    }
     html += '<div class="dw-bar">';
     if (!ro) {
       html += '<button type="button" class="dw-tool' + (boxes ? ' glow' : '') + '" data-act="boxes" title="' + esc(T('Dovanos')) + '">' + A.icon('dovana') + '<span>' + T('Dovanos') + '</span>' + (boxes ? '<em>' + boxes + '</em>' : '') + '</button>';

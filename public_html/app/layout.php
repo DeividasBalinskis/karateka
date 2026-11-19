@@ -8,6 +8,7 @@ function page_start(string $title, array $opt = []): void
     if ($admin && is_staff($a) && !admin_mode() && !headers_sent()) {
         admin_mode_set(true);   // atidarius valdymo puslapį - admin režimas įsijungia
     }
+    menu_variant_preview();
     $flashes = take_flashes();
     $css = url('assets/app.css') . '?v=' . @filemtime(PUBLIC_DIR . '/assets/app.css');
     ?>
@@ -44,7 +45,9 @@ function page_start(string $title, array $opt = []): void
     // Renginiai, Naujienos, Pamokos - viena vieta visiems (ir treneriui su redagavimo mygtukais), be trenerio skirtukų juostos
     $section = $opt['section'] ?? null;
     site_header(false, $admin && !$section ? 'admin' : (!empty($opt['account']) ? 'account' : null), $opt['account'] ?? null, $section); ?>
-<main class="page <?= !empty($opt['narrow']) ? 'narrow' : '' ?><?= !empty($opt['wide']) ? ' wide' : '' ?>">
+<main class="page <?= !empty($opt['narrow']) ? 'narrow' : '' ?><?= !empty($opt['wide']) ? ' wide' : '' ?><?= !empty($GLOBALS['adm_side']) ? ' has-side' : '' ?>">
+<?php if (!empty($GLOBALS['adm_side'])): ?><div class="adm-shell"><?= $GLOBALS['adm_side'] ?><div class="adm-main"><?php endif; ?>
+<?= $GLOBALS['adm_crumb'] ?? '' ?>
 <?php foreach ($flashes as $f): ?>
   <div class="flash flash-<?= e($f['type']) ?>"><?= e(t($f['message'])) ?></div>
 <?php endforeach; ?>
@@ -54,6 +57,7 @@ function page_start(string $title, array $opt = []): void
 function page_end(): void
 {
     ?>
+<?php if (!empty($GLOBALS['adm_side'])): ?></div></div><?php endif; ?>
 </main>
 <footer class="site-footer">
   <div class="footer-bottom">
@@ -309,6 +313,125 @@ function admin_settings_current(): string
     return $map[$file] ?? 'nustatymai';
 }
 
+// ---------- Valdymo meniu išdėstymas (#106): ne daugiau 2 lygių; variantą renkasi adminas (Nustatymai), peržiūrai - ?meniu=... ----------
+const MENU_VARIANTS = [
+    'dabar'   => ['Dabartinis', 'Valdymo eilutė + antra eilutė Nustatymuose (3 lygiai).'],
+    'eilute'  => ['Viena eilutė + „Daugiau“', 'Kasdieniai darbai vienoje eilutėje, reti - „⚙ Daugiau ▾“ sąraše.'],
+    'sonas'   => ['Šoninis meniu', 'Valdyme - meniu kairėje su grupėmis: Kasdien, Klubas, Tvarkyti. Viršuje - tik svetainė.'],
+    'didelis' => ['Valdymas ▾ - vienas didelis meniu', 'Jokių eilučių: paspaudus „Valdymas“ atsiveria visi skyriai su paaiškinimais.'],
+    'juosta'  => ['Viena juosta', 'Valdyme viršutinė juosta tampa valdymo meniu; svetainės skiltys - „Svetainė ▾“.'],
+];
+
+function menu_variant(): string
+{
+    static $v = null;
+    if ($v === null) {
+        $c = (string) ($_COOKIE['meniu'] ?? '');
+        $sv = (string) site_setting('menu_variant', 'dabar');
+        $v = isset(MENU_VARIANTS[$c]) ? $c : (isset(MENU_VARIANTS[$sv]) ? $sv : 'dabar');
+    }
+    return $v;
+}
+
+/** Peržiūra: ?meniu=X - tik šiai naršyklei (slapukas), ?meniu=visiems - grįžti prie pasirinkto visiems */
+function menu_variant_preview(): void
+{
+    $g = (string) ($_GET['meniu'] ?? '');
+    if ($g === '' || headers_sent() || !is_staff(current_account())) {
+        return;
+    }
+    if (isset(MENU_VARIANTS[$g])) {
+        setcookie('meniu', $g, ['expires' => time() + 30 * 86400, 'path' => '/', 'samesite' => 'Lax', 'secure' => !empty($_SERVER['HTTPS'])]);
+        $_COOKIE['meniu'] = $g;
+    } elseif ($g === 'visiems') {
+        setcookie('meniu', '', ['expires' => time() - 3600, 'path' => '/']);
+        unset($_COOKIE['meniu']);
+    }
+}
+
+/** Visi valdymo skyriai trimis grupėmis: [grupė => [pavadinimas, [raktas => [ikona, pavadinimas, kelias, skaičiukas, paaiškinimas]]]] */
+function admin_menu_groups(): array
+{
+    $day = [
+        'siandien'   => ['🏠', t('Pradžia'), 'admin/', 0, t('Darbai, pranešimai, šiandienos grupės')],
+        'treniruote' => ['🥋', t('Treniruotė'), 'admin/treniruote.php', 0, t('Lankomumas, pastabos, taškai')],
+        'egzaminai'  => ['📋', t('Egzaminai'), 'admin/egzaminai.php', 0, t('Protokolai, registracija, kainos')],
+    ];
+    if (is_admin()) {
+        $day['pranesimai'] = ['✉️', t('Pranešimai'), 'admin/pranesimai.php', 0, t('Laiškai ir SMS nariams')];
+    }
+    $club = [
+        'nariai'  => ['👥', t('Nariai'), 'admin/nariai.php', 0, t('Visi nariai, diržai, kontaktai')],
+        'xp'      => ['⭐', t('Aktyvumo taškai'), 'admin/taskai.php', 0, t('Taškai, lygiai, reitingas')],
+        'testai'  => ['❓', t('Testai'), 'admin/testai.php', 0, t('Teorijos testai egzaminams')],
+    ];
+    $more = ['patvirtinimai' => ['✅', t('Patvirtinimai'), 'admin/patvirtinimai.php', pending_approvals_count(), t('Nauji nariai ir „Moku“ punktai')]];
+    if (is_admin()) {
+        $more['atsiliepimai'] = ['💡', t('Atsiliepimai'), 'admin/atsiliepimai.php', feedback_new_count(), t('Pastabos apie svetainę')];
+    }
+    $more['nustatymai'] = ['⚙️', t('Nustatymai'), 'admin/nustatymai.php', 0, t('Grupės, tvarkaraštis, vertimai, paskyra')];
+    return ['kasdien' => [t('Kasdien'), $day], 'klubas' => [t('Klubas'), $club], 'tvarkyti' => [t('Tvarkyti'), $more]];
+}
+
+/** Kuris valdymo skyrius atidarytas (raktas iš admin_menu_groups) */
+function admin_menu_key(): string
+{
+    $file = basename($_SERVER['SCRIPT_NAME'] ?? '', '.php');
+    $map = ['index' => 'siandien', 'pirmas-adminas' => 'siandien', 'treniruote' => 'treniruote', 'egzaminai' => 'egzaminai', 'egzamino-protokolas' => 'egzaminai', 'federacija' => 'egzaminai',
+            'programa' => 'egzaminai', 'pranesimai' => 'pranesimai', 'sms' => 'pranesimai', 'nariai' => 'nariai', 'taskai' => 'xp', 'testai' => 'testai',
+            'patvirtinimai' => 'patvirtinimai', 'atsiliepimai' => 'atsiliepimai'];
+    if (isset($map[$file])) {
+        return $map[$file];
+    }
+    return in_array($file, ['nustatymai', 'grupes', 'tvarkarastis', 'paskyros', 'kopijos', 'atsaukimai', 'testavimas', 'vertimai'], true) ? 'nustatymai' : '';
+}
+
+/** Visi skyriai vienu sąrašu: [raktas => [ikona, pavadinimas, kelias, skaičiukas, paaiškinimas]] */
+function admin_menu_flat(): array
+{
+    $out = [];
+    foreach (admin_menu_groups() as [$g, $items]) {
+        $out += $items;
+    }
+    return $out;
+}
+
+function admin_menu_link(string $key, array $it, string $cur, string $cls = ''): string
+{
+    return '<a href="' . e(url($it[2])) . '" class="' . trim($cls . ($key === $cur ? ' active' : '')) . '"' . ($key === $cur ? ' aria-current="page"' : '') . '>'
+        . '<span class="am-ic" aria-hidden="true">' . $it[0] . '</span><span class="am-t">' . e($it[1]) . '</span>' . (!empty($it[3]) ? '<span class="count-badge">' . (int) $it[3] . '</span>' : '') . '</a>';
+}
+
+/** „⚙ Daugiau ▾“: reti skyriai sąraše (eilutės ir juostos variantams) */
+function admin_menu_more(array $keys, string $cur): string
+{
+    $all = admin_menu_flat();
+    $rest = array_diff_key($all, array_flip($keys));
+    $badge = array_sum(array_map(function ($i) { return (int) $i[3]; }, $rest));
+    $isCur = isset($rest[$cur]);
+    $html = '<details class="am-more"><summary class="' . ($isCur ? 'active' : '') . '">' . ($isCur ? '<span class="am-ic" aria-hidden="true">' . $rest[$cur][0] . '</span>' . e($rest[$cur][1]) : '⚙ ' . e(t('Daugiau')))
+        . ($badge ? ' <span class="count-badge">' . $badge . '</span>' : '') . '<svg width="12" height="12" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></summary><div class="am-more-panel">';
+    foreach ($rest as $k => $it) {
+        $html .= admin_menu_link($k, $it, $cur, 'am-row') ;
+    }
+    return $html . '</div></details>';
+}
+
+/** Didelis meniu (variantas „didelis“) ir šoninis meniu („sonas“): visos grupės su paaiškinimais */
+function admin_menu_groups_html(string $cur, bool $withDesc): string
+{
+    $html = '';
+    foreach (admin_menu_groups() as [$gname, $items]) {
+        $html .= '<div class="am-group"><div class="am-gh">' . e($gname) . '</div>';
+        foreach ($items as $k => $it) {
+            $html .= '<a href="' . e(url($it[2])) . '" class="am-row' . ($k === $cur ? ' active' : '') . '"' . ($k === $cur ? ' aria-current="page"' : '') . '><span class="am-ic" aria-hidden="true">' . $it[0] . '</span>'
+                . '<span class="am-t">' . e($it[1]) . ($withDesc ? '<small>' . e($it[4]) . '</small>' : '') . '</span>' . (!empty($it[3]) ? '<span class="count-badge">' . (int) $it[3] . '</span>' : '') . '</a>';
+        }
+        $html .= '</div>';
+    }
+    return $html;
+}
+
 /** Ar rodyti „🎮 Žaidimas“ viršutinėje juostoje (žaidimo lentelės jau sukurtos) */
 function game_nav_ready(): bool
 {
@@ -381,22 +504,47 @@ function site_header(bool $home = false, ?string $area = null, ?string $tab = nu
     $a = current_account();
     $h = $home ? '' : url('index.php');
     $subNav = '';
+    $mv = menu_variant();
+    $mk = admin_menu_key();
+    $juosta = false;
     if ($a && $area === 'admin' && is_staff($a)) {
-        $subNav = render_sub_nav(t('Treneriams'), admin_nav_items(), admin_nav_current());
-        if (admin_nav_current() === 'nustatymai') {
-            $subNav .= str_replace('class="sub-nav"', 'class="sub-nav sub-nav-2"', render_sub_nav(t('Nustatymai'), admin_settings_items(), admin_settings_current()));
+        if ($mv === 'eilute') {
+            // Viena eilutė: kasdieniai darbai + „⚙ Daugiau ▾“
+            $keys = ['siandien', 'treniruote', 'egzaminai', 'nariai', 'pranesimai'];
+            $flat = admin_menu_flat();
+            $subNav = '<div class="sub-nav am-line" role="navigation" aria-label="' . e(t('Valdymas')) . '"><div class="sub-inner">';
+            foreach ($keys as $k) {
+                if (isset($flat[$k])) {
+                    $subNav .= admin_menu_link($k, $flat[$k], $mk);
+                }
+            }
+            $subNav .= admin_menu_more($keys, $mk) . '</div></div>';
+        } elseif ($mv === 'sonas') {
+            $GLOBALS['adm_side'] = '<aside class="adm-side" aria-label="' . e(t('Valdymas')) . '"><a class="adm-side-h" href="' . e(url('admin/')) . '">🛠 ' . e(t('Valdymas')) . '</a>' . admin_menu_groups_html($mk, false) . '</aside>';
+        } elseif ($mv === 'didelis') {
+            $flat = admin_menu_flat();
+            if (isset($flat[$mk]) && $mk !== 'siandien') {
+                $GLOBALS['adm_crumb'] = '<nav class="am-crumb" aria-label="' . e(t('Kur esu')) . '"><a href="' . e(url('admin/')) . '">🛠 ' . e(t('Valdymas')) . '</a> <span aria-hidden="true">›</span> <b>' . $flat[$mk][0] . ' ' . e($flat[$mk][1]) . '</b></nav>';
+            }
+        } elseif ($mv === 'juosta') {
+            $juosta = true;
+        } else {
+            $subNav = render_sub_nav(t('Treneriams'), admin_nav_items(), admin_nav_current());
+            if (admin_nav_current() === 'nustatymai') {
+                $subNav .= str_replace('class="sub-nav"', 'class="sub-nav sub-nav-2"', render_sub_nav(t('Nustatymai'), admin_settings_items(), admin_settings_current()));
+            }
         }
     } elseif ($a && $area === 'account') {
         $subNav = render_sub_nav(t('Mano paskyra'), account_nav_items($a), (string) $tab);
     }
     ?>
 <div class="progress-wrap"><div class="progress-bar" id="progressBar"></div></div>
-<header class="site-header">
+<header class="site-header<?= $juosta ? ' hdr-juosta' : '' ?>">
   <nav>
     <a class="logo" href="<?= $home ? '#' : url('index.php') ?>"><img src="<?= url('img/logo.png') ?>" alt="<?= te('Karateka logotipas') ?>"><?php if (config('env') !== 'live'): ?><span class="ver-tag" title="<?= te('Svetainės versija (rodoma tik testuojant)') ?>">v<?= e(site_version()) ?><?= config('env') === 'local' ? (' ' . t('· local')) : '' ?></span><?php endif; ?></a>
     <?php if ($a && is_staff($a)): ?>
       <!-- Kitos sistemos: Budo varžybos ir LTKF - per logotipo meniu (#91/#92) -->
-      <details class="site-switch"><summary title="<?= te('Kitos sistemos: Budo varžybos, LTKF') ?>" aria-label="<?= te('Kitos sistemos') ?>">▾</summary>
+      <details class="site-switch"><summary title="<?= te('Kitos sistemos: Budo varžybos, LTKF') ?>" aria-label="<?= te('Kitos sistemos') ?>"><svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
         <div class="ss-panel">
           <a href="<?= url('index.php') ?>" class="ss-item is-cur"><img src="<?= url('img/logo.png') ?>" alt=""><span><b>Karateka</b><small><?= te('klubo svetainė') ?></small></span></a>
           <a href="<?= url('admin/varzybos.php') ?>" class="ss-item"><span class="ss-budo" aria-hidden="true">武</span><span><b>Budo</b><small><?= te('varžybų sistema') ?></small></span></a>
@@ -408,9 +556,19 @@ function site_header(bool $home = false, ?string $area = null, ?string $tab = nu
     <div class="nav-prefs"><?= render_lang_switch() ?><?php if ($a): ?><span class="theme-li"><?= theme_picker_html('me', current_theme()) ?></span><?php endif; ?></div>
     <ul class="nav-list" id="navList">
       <!-- Vienas meniu: kairėje - pagrindinio puslapio skiltys (blokai su meniu pavadinimu), po skirtuko - kiti puslapiai (su ›) -->
-      <li class="nav-main">
+      <li class="nav-main<?= $juosta ? ' am-juosta' : '' ?>">
         <?php $cta = null; $onpage = [];
         foreach (home_nav() as [$label, $anchor, $isCta]) { $isCta ? $cta = [$label, $anchor] : $onpage[] = [$label, $anchor]; } ?>
+        <?php if ($juosta): $jflat = admin_menu_flat(); $jkeys = ['siandien', 'treniruote', 'egzaminai', 'nariai', 'pranesimai']; ?>
+          <details class="am-site"><summary><?= te('🌐 Svetainė') ?><svg width="12" height="12" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
+            <div class="am-more-panel">
+              <?php foreach ($onpage as [$label, $anchor]): ?><a class="am-row" href="<?= $h . e($anchor) ?>"><?= e(t($label)) ?></a><?php endforeach; ?>
+              <a class="am-row" href="<?= url('renginiai.php') ?>"><?= te('Renginiai') ?></a><a class="am-row" href="<?= url('naujienos.php') ?>"><?= te('Naujienos') ?></a>
+              <?php if (can_see_lessons($a)): ?><a class="am-row" href="<?= url('pamokos.php') ?>"><?= te('Pamokos') ?></a><?php endif; ?>
+              <?php if (game_nav_ready()): ?><a class="am-row" href="<?= url('dojo.php') ?>"><?= te('🏯 Dojo') ?></a><?php endif; ?>
+            </div></details>
+          <div class="am-jlinks"><?php foreach ($jkeys as $k): if (isset($jflat[$k])): ?><?= admin_menu_link($k, $jflat[$k], $mk) ?><?php endif; endforeach; ?><?= admin_menu_more($jkeys, $mk) ?></div>
+        <?php else: ?>
         <?php if ($onpage): ?>
           <?php // Prisijungusiems pagrindinio puslapio skiltys suskleistos į vieną „Apie klubą ‹“ - užvedus pelę išsiskleidžia į kairę (#78)
             $fold = $a && count($onpage) > 1;
@@ -430,12 +588,16 @@ function site_header(bool $home = false, ?string $area = null, ?string $tab = nu
             <li><a class="nav-page nav-game<?= $cur('zaidimas') ?>" href="<?= url('dojo.php') ?>"><?= te('🏯 Dojo') ?></a></li>
           <?php endif; ?>
         </ul>
+        <?php endif; ?>
       </li>
       <!-- Dešinėje: paskyra (ar „Išbandyti“ ir „Prisijungti“) - prisijungus „Išbandyti“ dingsta, meniu nepasislenka -->
       <li class="nav-account">
         <ul>
           <?php if ($a && !is_staff($a) && ($vs = render_view_switch())): ?><li class="vs-li"><?= $vs ?></li><?php endif; ?>
-          <?php if ($a && is_staff($a) && admin_mode()): ?>
+          <?php if ($a && is_staff($a) && admin_mode() && $mv === 'didelis'): $sn = staff_attention_count((int) $a['id']); ?>
+            <li><details class="am-mega"><summary class="nav-login<?= $area === 'admin' ? ' is-current' : '' ?>"><?= te('Valdymas') ?><svg width="12" height="12" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg><?php if ($sn): ?><span class="count-badge nav-bubble"><?= $sn ?></span><?php endif; ?></summary>
+              <div class="am-mega-panel"><?= admin_menu_groups_html($mk, true) ?></div></details></li>
+          <?php elseif ($a && is_staff($a) && admin_mode()): ?>
             <li><a class="nav-login<?= $area === 'admin' ? ' is-current' : '' ?>" href="<?= url('admin/') ?>"><?= te('Valdymas') ?><?php if ($n = staff_attention_count((int) $a['id'])): ?><span class="count-badge nav-bubble" title="<?= te('Reikia padaryti: pranešimai, patvirtinimai ir kiti darbai') ?>"><?= $n ?></span><?php endif; ?></a></li>
           <?php elseif ($a): ?>
             <li><a class="nav-login<?= $area === 'account' ? ' is-current' : '' ?>" href="<?= url('paskyra.php' . (($am = account_attention_member((int) $a['id'])) ? '?m=' . $am : '')) ?>"><?= te('Mano paskyra') ?><?php if ($att = account_attention_count((int) $a['id'])): ?><span class="count-badge nav-bubble" title="<?= te('Nauji pranešimai, pastabos ar neatliktos užduotys') ?>"><?= $att ?></span><?php endif; ?></a></li>
@@ -482,7 +644,7 @@ function admin_mode_toggle(): string
     }
     $member = '<div class="vs-member">' . $form('0', 'vs-member-btn', '👤 ' . e(t('Kaip narys (be redagavimo)'))) . '<p class="vs-hint">' . e(t('Svetainė be trenerio mygtukų - kaip ją mato nariai. Grįžti - mygtuku „Grįžti į valdymą“.')) . '</p></div>';
     $vs = render_view_switch(true, $member);
-    return $vs !== '' ? $vs : '<details class="view-switch vs-compact"><summary aria-label="' . e(t('Žiūrėti kaip')) . '"><span aria-hidden="true">▾</span></summary><div class="vs-panel"><div class="vs-title">' . e(t('Žiūrėti kaip')) . '</div></div>' . $member . '</details>';
+    return $vs !== '' ? $vs : '<details class="view-switch vs-compact"><summary aria-label="' . e(t('Žiūrėti kaip')) . '"><span aria-hidden="true">▾</span></summary><div class="vs-panel">' . $member . '</div></details>';
 }
 
 /** Treneriui: kiek laukia - pranešimai ir „Reikia padaryti“ punktai (patvirtinimai, rezultatai, žinutės...) */

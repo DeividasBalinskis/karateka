@@ -297,4 +297,9 @@ return [
     'Gyvūnėlis liks namie',
     'Nauja kova 🧪',
     'Bandymai: apranga, kortos, gyvūnėliai',
+    'Už ką gauta ir kaip gauti daugiau',
+    'Už ką XP?',
+    'Už ką gauta',
+    'Dar nieko - XP ateina iš aktyvumo taškų klube.',
+    'Kaip gauti daugiau',
 ];

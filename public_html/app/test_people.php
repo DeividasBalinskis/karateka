@@ -257,7 +257,7 @@ function render_view_switch(bool $compact = false, string $extra = ''): string
     $back = e($_SERVER['REQUEST_URI'] ?? '');
     $html = '<details class="view-switch' . ($mode !== 'admin' ? ' is-test' : '') . ($compact ? ' vs-compact' : '') . '"><summary title="' . e(t('Peržiūrėti svetainę kaip tėvai ar vaikas (testinės paskyros)')) . '"' . ($compact ? ' aria-label="' . e(t('Žiūrėti kaip')) . '"' : '') . '>'
         . ($compact ? '<span aria-hidden="true">▾</span>' : '<span class="vs-eye" aria-hidden="true">👁</span> ' . e($labels[$mode]) . ($belt ? ' · ' . e(BELTS[(int) $belt][0]) : '')) . '</summary>'
-        . '<form method="post" action="' . e(url('perziura.php')) . '" class="vs-panel">' . csrf_field() . '<input type="hidden" name="back" value="' . $back . '">'
+        . '<div class="vs-panel"><form method="post" action="' . e(url('perziura.php')) . '" class="vs-form">' . csrf_field() . '<input type="hidden" name="back" value="' . $back . '">'
         . ($compact ? '<div class="vs-title">' . e(t('Žiūrėti kaip')) . '</div>' : '') . '<div class="vs-modes">';
     foreach ($labels as $k => $label) {
         $html .= '<button type="submit" name="mode" value="' . $k . '"' . ($k === $mode ? ' class="active" aria-pressed="true"' : '') . '>' . e($label) . '</button>';
@@ -267,5 +267,5 @@ function render_view_switch(bool $compact = false, string $extra = ''): string
         $html .= ('<label class="vs-belt">' . t('Test Junior diržas') . '<select name="belt" onchange="this.form.requestSubmit ? this.form.requestSubmit() : this.form.submit()">')
             . belt_options($belt !== null && $belt !== false ? (int) $belt : null, t('— be diržo —')) . '</select></label>';
     }
-    return $html . '</form>' . $extra . '</details>';
+    return $html . '</form>' . $extra . '</div></details>';
 }

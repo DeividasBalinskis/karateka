@@ -96,7 +96,7 @@ function render_lang_switch(?string $cur = null): string
     $cur = $cur ?? current_lang();
     $back = rawurlencode((string) ($_SERVER['REQUEST_URI'] ?? '/'));
     // Matoma tik pasirinkta kalba; paspaudus - kitos (išskleidžiama žemyn)
-    $html = '<details class="lang-dd"><summary class="lang-cur" title="' . e(t('Kalba')) . '" aria-label="' . e(t('Kalba')) . ': ' . e(LANGS[$cur] ?? $cur) . '">' . strtoupper($cur) . '<span class="lang-caret" aria-hidden="true">▾</span></summary>'
+    $html = '<details class="lang-dd"><summary class="lang-cur" title="' . e(t('Kalba')) . '" aria-label="' . e(t('Kalba')) . ': ' . e(LANGS[$cur] ?? $cur) . '">' . strtoupper($cur) . '</summary>'
         . '<nav class="lang-switch" aria-label="' . e(t('Kalba')) . '">';
     foreach (LANGS as $code => $name) {
         $html .= '<a href="' . e(url('kalba.php?l=' . $code . '&b=' . $back)) . '" lang="' . $code . '" hreflang="' . $code . '" title="' . e($name) . '"'

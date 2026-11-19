@@ -4,6 +4,22 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.45 - 2026-11-19 (Atsiliepimai #104-#112: paprastesnis meniu, Dojo be medienos)
+Duomenų bazės atnaujinti nereikia (jei dar neįkelta v1.44 - reikia db/040). Zip'o turinį išpakuokite **tiesiai į svetainės aplanką**.
+
+**🧭 Valdymo meniu (#106)** - 4 nauji variantai, visur ne daugiau 2 lygių; pasirinkti: Nustatymai → „Meniu išdėstymas“
+- „Peržiūrėti“ - pamatyti tik sau, „Visiems“ - įjungti visiems treneriams. Kol nepasirinkta - lieka dabartinis.
+- B: viena eilutė + „⚙ Daugiau ▾“; C: šoninis meniu (Kasdien, Klubas, Tvarkyti); D: „Valdymas ▾“ - vienas didelis meniu; E: viena juosta (svetainė - „🌐 Svetainė ▾“).
+- Nustatymų puslapyje nebėra dublikatų (#105): aktyvumo taškai, LTKF ir varžybų rezultatai - tik meniu.
+
+**Kita**
+- Rodyklė prie logotipo - didesnė ir aiški; prie „LT“ rodyklės nebėra (paspaudus atsiveria) (#104).
+- „Valdymas ▾“: vienas tvarkingas langas - „Žiūrėti kaip“ ir „👤 Kaip narys“ viduje (#107).
+- „Apie klubą ‹“ neišsiskleidžia vos pravedus pele - reikia paspausti arba palaikyti (#111).
+- Tamsiose temose meniu juosta permatoma - fonas (planeta, žvaigždės) matosi ir po ja, niekas nenusikerpa; nebėra šviesaus ruoželio viršuje (#112).
+- Dojo: be medienos ir rudos - šviesios lentelės su auksu, indigo rėmas (#108).
+- Dojo: paspaudus XP juostą ar „Už ką XP?“ - už ką gauta ir kaip gauti daugiau (#110).
+
 ## v1.44 - 2026-11-18 (Atsiliepimai #86-#103, egzaminai be paskyros, nauja kova bandymams)
 **Reikia atnaujinti duomenų bazę: db/040** (Pradžia → „Atnaujinkite duomenų bazę“). Zip'o turinį išpakuokite **tiesiai į svetainės aplanką**.
 

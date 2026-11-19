@@ -25,3 +25,5 @@ Sutarta atidėti (klausimai ir atsakymai 2026-10-27). Kai imsimės - išbraukti 
 - **Egzamino sertifikatai** - reikia šablono (PDF / paveikslėlis), kas pasirašo, siųsti ar spausdinti. Mygtukas protokole paruoštas.
 - **Egzamino kaina** - ar priklauso tik nuo diržo, ar ir nuo klubo (savo / kiti klubai).
 - **Nauja kova (bandymai)** - išsirinkus variantą: perkelti į tikrą žaidimą (serveris, kovos su kitais vaikais), išversti EN/RU, kortos ir kiaušiniai - už taškus / dovanas.
+- **Arena pagal naują kovą (#109)** - tikroje arenoje: personažas su daiktais aplink, ginklas / skydas / antras ginklas (1 ar 2 smūgiai / gynybos), gyvūnėliai ir kortos matomi kovoje su bonusais. Reikia naujo daikto lizdo (kairė ranka) ir serverio kovos pakeitimų.
+- **Naujos temos (#112)** - „rafinuotesnės“: ryškesni akcentai, medžiai, planeta, juodoji skylė; pirma - pavyzdžiai pasirinkti.

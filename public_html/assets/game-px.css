@@ -473,3 +473,41 @@
   .dw-tool em{top:-6px; right:-6px; min-width:16px; height:16px; font-size:.6rem;}
   .dw-setup{top:auto; bottom:44%; font-size:.9rem; padding:9px 14px;}
 }
+
+/* =====================================================================
+   v1.45 (#108): be medienos ir rudos - šviesios „stiklo“ lentelės su auksu ir indigo, tvarkingas rėmas; XP išskleidžiamas (#110)
+   ===================================================================== */
+.wood, .dw-tool, .dw-sign, .dw-board, .pq-body, .px-wood{background:linear-gradient(180deg, rgba(255,255,255,.96), rgba(241,239,252,.94)); background-image:linear-gradient(180deg, rgba(255,255,255,.96), rgba(241,239,252,.94)); image-rendering:auto;}
+.dw-tool, .dw-board{color:#1F1B3A; text-shadow:none; border-radius:12px; box-shadow:0 0 0 2px rgba(31,27,58,.85), inset 0 -3px 0 rgba(110,90,190,.18), 0 6px 14px rgba(10,8,30,.35);}
+.dw-tool:hover, .dw-board:hover{filter:none; box-shadow:0 0 0 2px #F2B705, inset 0 -3px 0 rgba(110,90,190,.18), 0 8px 18px rgba(10,8,30,.4);}
+.dw-tool em{border-radius:8px;}
+.bd-h{color:#5B3FA8; border-bottom:2px solid rgba(91,63,168,.18);}
+.bd-more{color:#5B3FA8;}
+.bd-leg{width:6px; background:rgba(31,27,58,.7); box-shadow:none; border-radius:3px;}
+/* Rodyklės į žaidimus - švarios kortelės su spalvota juostele kairėje (be medžio stulpo) */
+.dp-pole{display:none;}
+.dw-post{gap:8px;}
+.dw-sign, .dw-sign:nth-child(odd){clip-path:none; margin:0; padding:7px 12px 7px 10px; border-radius:12px; color:#1F1B3A !important; text-shadow:none;
+  box-shadow:0 0 0 2px rgba(31,27,58,.85), inset 5px 0 0 var(--sg, #6E5A9A), 0 6px 14px rgba(10,8,30,.35);}
+.dw-sign:hover{filter:none; transform:translateX(-3px); box-shadow:0 0 0 2px #F2B705, inset 5px 0 0 var(--sg, #6E5A9A), 0 8px 18px rgba(10,8,30,.4);}
+.dw-sign.kova{--sg:#E0465A; background-image:linear-gradient(180deg, rgba(255,255,255,.96), rgba(241,239,252,.94));}
+.dw-sign.greita{--sg:#F2B705;} .dw-sign.keturi{--sg:#3B82F6; background-image:linear-gradient(180deg, rgba(255,255,255,.96), rgba(241,239,252,.94));} .dw-sign.ritmas{--sg:#22A06B;} .dw-sign.lab{--sg:#8B5CF6;}
+/* Rėmas aplink buveinę - indigo su auksine linija, be medžio */
+.dw-frame{background:linear-gradient(160deg, #2B2660, #1B1A3E); border-radius:6px; box-shadow:0 0 0 2px #0F0E24, inset 0 0 0 2px rgba(242,183,5,.75), 0 14px 30px rgba(15,14,36,.28);}
+.dw-frame .dojo .dw, .dojo .dw-frame .dw{box-shadow:0 0 0 2px #0F0E24, 0 0 0 4px rgba(242,183,5,.55);}
+.dojo .dw{box-shadow:0 0 0 2px #0F0E24, 0 0 0 5px rgba(242,183,5,.5), 0 14px 30px rgba(15,14,36,.25);}
+/* Vardas, lygis, XP - šviesi juosta; paspaudus XP - už ką gauta ir kaip gauti daugiau */
+.dw-foot{background:linear-gradient(180deg, rgba(255,255,255,.97), rgba(241,239,252,.95)); color:#1F1B3A; border-radius:12px; box-shadow:0 0 0 2px rgba(31,27,58,.85), 0 6px 16px rgba(10,8,30,.18); flex-wrap:wrap;}
+.df-lv{background:#2B2660; color:#FFD65C; border-radius:8px; box-shadow:none;}
+.dw-foot .df-xp{background:#E4E0F5; box-shadow:inset 0 0 0 2px rgba(31,27,58,.6); border-radius:8px; cursor:pointer; border:0; padding:0; font:inherit;}
+.dw-foot .df-xp i{background:linear-gradient(90deg, #8B5CF6, #F2B705);}
+.dw-foot .df-xp span{color:#1F1B3A; text-shadow:0 1px 0 rgba(255,255,255,.8); font-weight:700;}
+.df-more{flex:none; border:0; background:#2B2660; color:#fff; border-radius:8px; padding:5px 10px; font:700 .8rem 'Pixelify Sans',sans-serif; cursor:pointer;}
+.df-log{flex-basis:100%; display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:4px; padding-top:10px; border-top:2px dashed rgba(91,63,168,.2); font-family:'Inter',sans-serif;}
+.df-log[hidden]{display:none;}
+.df-log h4{margin:0 0 6px; font:700 .78rem 'Inter',sans-serif; letter-spacing:.08em; text-transform:uppercase; color:#5B3FA8;}
+.df-log ul{list-style:none; margin:0; padding:0; display:grid; gap:4px; font-size:.85rem;}
+.df-log li{display:flex; justify-content:space-between; gap:10px; padding:4px 8px; border-radius:8px; background:rgba(110,90,190,.07);}
+.df-log li b{color:#22A06B; white-space:nowrap;}
+.df-log li small{color:#6B6588;}
+@media (max-width:700px){ .df-log{grid-template-columns:1fr;} }

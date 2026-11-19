@@ -1627,3 +1627,11 @@ input.tg:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
 .prot-subedit[hidden]{display:none;}
 .prot-table th.col-avg{font-size:.72rem;}
 .exam-prices form button{justify-self:start;}
+/* Nustatymai → Meniu išdėstymas (#106) */
+.menu-pick .mp-row{display:flex; gap:12px; align-items:center; justify-content:space-between; padding:9px 4px; border-top:1px solid rgba(23,20,15,.08);}
+.menu-pick .mp-row:first-of-type{border-top:0;}
+.menu-pick .mp-row.on{background:rgba(110,74,134,.06); border-radius:10px; padding:9px 8px;}
+.menu-pick .mp-row small{display:block; font-size:.8rem; color:var(--muted, #6B6458);}
+.menu-pick .mp-acts{display:flex; gap:6px; flex-shrink:0;}
+.menu-pick .mp-acts form{margin:0;}
+.menu-pick .badge.ok{background:#E3F4EA; color:#0B6B3A;}

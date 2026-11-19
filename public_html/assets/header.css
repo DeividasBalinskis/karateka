@@ -222,3 +222,84 @@ html{scrollbar-gutter:stable;}
 .ss-ltkf{color:#14213D;}
 .sub-nav-2{background:rgba(255,255,255,.55); border-top:0;}
 .sub-nav-2 a{font-size:13px; padding:7px 11px;}
+/* #107: „Žiūrėti kaip“ - vienas tvarkingas langas po rodykle */
+.vs-panel .vs-member{padding:10px 0 0; margin-top:10px; border-top:1px solid rgba(23,20,15,.1);}
+.vs-panel > .vs-member:first-child{padding-top:0; margin-top:0; border-top:0;}
+.vs-form{margin:0;}
+/* #104: logotipo meniu rodyklė - aiškiai matoma */
+.site-switch{margin-left:-6px;}
+.site-switch > summary{width:30px; height:30px; border-radius:50%; color:#17140F; background:#fff; border:1.5px solid rgba(23,20,15,.22); box-shadow:0 2px 6px rgba(23,20,15,.12); font-size:0;}
+.site-switch > summary:hover{background:#fff; border-color:var(--accent, #6E4A86); color:var(--accent, #6E4A86); transform:translateY(1px);}
+.site-switch[open] > summary svg{transform:rotate(180deg);}
+.site-switch > summary svg{transition:transform .2s ease;}
+.lang-dd > summary .lang-caret{display:none;}
+/* #111: „Apie klubą ‹“ - neišsiskleidžia vos pravedus pele: reikia palaikyti ~0,5 s arba paspausti */
+@media(min-width:1101px){
+  .site-header .nav-onpage.folded:hover li{transition-delay:.45s;}
+  .site-header .nav-onpage.folded.open li{max-width:220px; opacity:1; pointer-events:auto; transition-delay:0s;}
+}
+/* ---------- Valdymo meniu variantai (#106): ne daugiau 2 lygių ---------- */
+.am-ic{font-size:15px; line-height:1;}
+.count-badge + svg, .am-more > summary svg, .am-site > summary svg, .am-mega > summary svg{margin-left:4px; opacity:.7;}
+/* Iškrentantys sąrašai (Daugiau, Svetainė) */
+.am-more, .am-site, .am-mega{position:relative;}
+.am-more > summary, .am-site > summary{list-style:none; cursor:pointer; display:inline-flex; align-items:center; gap:6px; padding:9px 13px; border-radius:10px; font-size:14px; font-weight:600; line-height:1; color:inherit; white-space:nowrap;}
+.am-more > summary::-webkit-details-marker, .am-site > summary::-webkit-details-marker, .am-mega > summary::-webkit-details-marker{display:none;}
+.am-more > summary:hover, .am-site > summary:hover{background:rgba(255,255,255,.7);}
+.am-more > summary.active{background:#fff; color:#6E4A86; box-shadow:0 1px 4px rgba(80,50,100,.14);}
+.am-more[open] > summary svg, .am-site[open] > summary svg, .am-mega[open] > summary svg{transform:rotate(180deg);}
+.am-more-panel{position:absolute; top:calc(100% + 6px); right:0; z-index:140; min-width:240px; display:grid; gap:2px; padding:8px; border-radius:14px; background:#FBF9F4; border:1px solid rgba(23,20,15,.08); box-shadow:0 14px 36px rgba(23,20,15,.18);}
+.am-site .am-more-panel{left:0; right:auto;}
+.am-row{display:flex; align-items:center; gap:10px; padding:9px 10px; border-radius:10px; color:#17140F !important; text-decoration:none; font-weight:600; font-size:14px;}
+.am-row:hover{background:rgba(23,20,15,.06); text-decoration:none;}
+.am-row.active{background:rgba(110,74,134,.1); color:#6E4A86 !important;}
+.am-row .count-badge{margin-left:auto;}
+.am-row .am-t small{display:block; font-size:12px; font-weight:500; color:#6B6458; margin-top:2px;}
+.am-row .am-ic{width:22px; text-align:center; font-size:17px;}
+/* Variantas „Viena eilutė“: ta pati juosta, bet su ikonėlėmis ir „Daugiau ▾“ */
+.am-line .sub-inner{overflow:visible;}
+.am-line a{gap:7px !important;}
+/* Variantas „Šoninis meniu“ */
+.page.has-side{max-width:1360px;}
+.adm-shell{display:grid; grid-template-columns:220px minmax(0, 1fr); gap:28px; align-items:start;}
+.adm-side{position:sticky; top:96px; display:grid; gap:14px; padding:14px 10px; border-radius:18px; background:rgba(255,255,255,.72); border:1px solid rgba(23,20,15,.07); box-shadow:0 10px 30px rgba(23,20,15,.07);}
+.adm-side-h{font-weight:800; font-size:15px; padding:2px 10px; color:#17140F !important; text-decoration:none;}
+.am-group{display:grid; gap:2px;}
+.am-gh{font:700 11px/1 'Inter', sans-serif; letter-spacing:.12em; text-transform:uppercase; color:#8A8273; padding:8px 10px 4px;}
+.adm-main{min-width:0;}
+@media (max-width:900px){
+  .adm-shell{grid-template-columns:1fr; gap:14px;}
+  .adm-side{position:static; display:flex; gap:4px; overflow-x:auto; padding:6px; border-radius:14px; scrollbar-width:none;}
+  .adm-side .am-group{display:flex; gap:4px;}
+  .adm-side .am-gh, .adm-side-h{display:none;}
+  .adm-side .am-row{white-space:nowrap; padding:8px 10px;}
+}
+/* Variantas „Valdymas ▾ - didelis meniu“ */
+.am-mega > summary{list-style:none; cursor:pointer; display:inline-flex; align-items:center;}
+.am-mega-panel{position:absolute; right:0; top:calc(100% + 10px); z-index:150; width:min(760px, 94vw); display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:10px; padding:14px; border-radius:18px; background:#FBF9F4; border:1px solid rgba(23,20,15,.08); box-shadow:0 20px 50px rgba(23,20,15,.22);}
+.am-mega-panel .am-row{align-items:flex-start;}
+@media (max-width:1100px){ .am-mega-panel{position:static; width:auto; grid-template-columns:1fr; box-shadow:none; margin-top:8px;} }
+.am-crumb{display:flex; align-items:center; gap:8px; font-size:14px; margin:-12px 0 14px; color:#6B6458;}
+.am-crumb a{color:inherit; font-weight:600;}
+/* Variantas „Viena juosta“ */
+.nav-main.am-juosta{display:flex; align-items:center; gap:8px;}
+.am-jlinks{display:flex; align-items:center; gap:2px; padding:4px; border-radius:14px; background:rgba(23,20,15,.05);}
+.am-jlinks > a{display:inline-flex; align-items:center; gap:6px; padding:8px 11px; border-radius:10px; font-size:14px; font-weight:600; color:#2B2620; text-decoration:none; white-space:nowrap;}
+.am-jlinks > a:hover{background:rgba(255,255,255,.75); text-decoration:none;}
+.am-jlinks > a.active{background:#fff; color:#6E4A86; box-shadow:0 1px 4px rgba(80,50,100,.14);}
+.am-site > summary{background:rgba(23,20,15,.05);}
+@media (max-width:1100px){ .nav-main.am-juosta, .am-jlinks{flex-direction:column; align-items:stretch;} .am-more-panel{position:static; box-shadow:none;} }
+/* Tamsios temos */
+body.theme-dark .am-jlinks{background:rgba(255,255,255,.08);}
+body.theme-dark .am-jlinks > a, body.theme-dark .am-site > summary, body.theme-dark .am-more > summary{color:#ECE8F4;}
+body.theme-dark .am-jlinks > a.active, body.theme-dark .am-more > summary.active{background:#ECE8F4; color:#3E2C55;}
+body.theme-dark .adm-side{background:rgba(26,23,34,.82); border-color:rgba(255,255,255,.08);}
+body.theme-dark .adm-side .am-row, body.theme-dark .adm-side-h{color:#ECE8F4 !important;}
+body.theme-dark .adm-side .am-row.active{background:rgba(255,255,255,.12); color:#fff !important;}
+body.theme-dark .am-gh{color:#A9A2B8;}
+body.theme-dark .am-crumb{color:#C9C3D6;}
+/* „Dabartinis“: aktyvus „Nustatymai“ susilieja su antra eilute (#105) */
+.sub-nav:not(.sub-nav-2):has(+ .sub-nav-2) a.active{border-radius:10px 10px 0 0; box-shadow:none; background:rgba(255,255,255,.55); margin-bottom:-6px; padding-bottom:15px;}
+/* „Viena juosta“: valdyme „Valdymas“ mygtuko nebereikia (juosta jau valdymo) */
+.hdr-juosta .nav-account .nav-login.is-current{display:none;}
+@media (min-width:1101px) and (max-width:1500px){ .am-jlinks > a{padding:8px 8px;} .am-jlinks .am-ic{display:none;} }

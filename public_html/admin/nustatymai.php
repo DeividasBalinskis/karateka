@@ -7,6 +7,13 @@ $me = require_staff();
 $errors = [];
 if (is_post()) {
     csrf_check();
+    if (post('action') === 'menu_variant' && is_admin($me) && isset(MENU_VARIANTS[post('v')])) {
+        // Meniu išdėstymas visiems (#106); savo naršyklės peržiūra išvaloma
+        set_site_setting('menu_variant', post('v'));
+        setcookie('meniu', '', ['expires' => time() - 3600, 'path' => '/']);
+        flash('ok', t('Meniu išdėstymas pakeistas visiems.'));
+        redirect('admin/nustatymai.php#meniu');
+    }
     if (post('action') === 'reg_toggles' && is_admin($me)) {
         // Registracijos mygtukai: pažymėta = rodomas; nepažymėtos vietos išjungiamos
         $on = array_map('strval', (array) ($_POST['reg'] ?? []));
@@ -26,9 +33,6 @@ $settings = [
         [t('Tvarkaraštis ir kainos'), 'admin/tvarkarastis.php', t('Visų grupių laikai ir kainos - rodoma ir pagrindiniame puslapyje.'), true],
         [t('Atšauktos treniruotės ir atostogos'), 'admin/atsaukimai.php', t('Dienos be treniruočių, pranešimas nariams.'), true],
         [t('Vertimai (EN / RU)'), 'admin/vertimai.php', t('Jūsų tekstai anglų ir rusų kalbomis: naujienos, renginiai, pamokos, pagrindinis puslapis.'), true],
-        [t('Aktyvumo taškai ir lygiai'), 'admin/taskai.php', t('Už ką ir kiek taškų, kiek taškų vienam lygiui; skirti taškus keliems iš karto.'), true],
-    ],
-    'Egzaminai' => [
         [t('Egzaminų programa'), 'admin/programa.php', t('Ką reikia mokėti kiekvienam diržui ir kiek aktyvumo taškų už punktą.'), true],
     ],
     'Sistema' => [
@@ -36,11 +40,7 @@ $settings = [
         [t('Atsarginės kopijos ir sistema'), 'admin/kopijos.php', t('Duomenų bazės kopijos, versija, importuoti db failai.'), is_admin()],
         [t('Testavimas'), 'admin/testavimas.php', t('Testiniai nariai (tėvai, vaikas) ir ką jiems sukurti; peržiūra kaip tėvai ar vaikas.'), is_admin()],
     ],
-    // Juodraščiai - tik test svetainėje ir kompiuteryje; vėliau - atskiri subdomenai
-    'Projektai (juodraščiai)' => [
-        [t('LTKF svetainė'), 'ltkf/', t('Federacijos svetainės juodraštis: klubai, kalendorius, rezultatai, teisėjai, dokumentai.'), is_admin() && config('env') !== 'live'],
-        [t('Varžybų rezultatai (viešai)'), 'varzybu-rezultatai.php', t('Kaip varžybų rezultatus mato lankytojai ir LTKF. Varžybos tvarkomos skirtuke „Varžybos“.'), is_admin() && config('env') !== 'live'],
-    ],
+    // LTKF ir Budo - per logotipo meniu ▾; Aktyvumo taškai, Nariai, Testai ir kt. - meniu (#105: be dublikatų)
 ];
 
 page_start(t('Nustatymai'), ['admin' => true]);
@@ -57,7 +57,16 @@ page_start(t('Nustatymai'), ['admin' => true]);
         <?php endforeach; ?>
       </section>
     <?php endforeach; ?>
-    <?php if (is_admin($me)): ?>
+    <?php if (is_admin($me)): $mvAll = (string) site_setting('menu_variant', 'dabar'); ?>
+      <section class="panel card settings-group menu-pick" id="meniu">
+        <div class="kicker"><?= te('Meniu išdėstymas') ?></div>
+        <p class="small muted" style="margin:0 0 8px;"><?= te('„Peržiūrėti“ - tik jums (šioje naršyklėje), „Visiems“ - visiems treneriams.') ?></p>
+        <?php foreach (MENU_VARIANTS as $k => [$label, $desc]): $on = menu_variant() === $k; ?>
+          <div class="mp-row<?= $on ? ' on' : '' ?>"><span><b><?= e(t($label)) ?></b><?= $mvAll === $k ? ' <span class="badge ok">' . te('visiems') . '</span>' : '' ?><small><?= e(t($desc)) ?></small></span>
+            <span class="mp-acts"><a class="btn btn-ghost btn-sm" href="<?= url('admin/nustatymai.php?meniu=' . $k . '#meniu') ?>"><?= $on ? '✓ ' . te('Dabar matote') : te('Peržiūrėti') ?></a>
+              <?php if ($mvAll !== $k): ?><form method="post"><?= csrf_field() ?><input type="hidden" name="action" value="menu_variant"><input type="hidden" name="v" value="<?= e($k) ?>"><button class="btn btn-sm" type="submit"><?= te('Visiems') ?></button></form><?php endif; ?></span></div>
+        <?php endforeach; ?>
+      </section>
       <section class="panel card settings-group reg-toggles" id="registracija">
         <div class="kicker"><?= te('Registracija') ?></div>
         <p class="small muted" style="margin:0 0 8px;"><?= te('Išjungus - registracijos mygtukas dingsta, o puslapis sako, kad registracija išjungta.') ?></p>

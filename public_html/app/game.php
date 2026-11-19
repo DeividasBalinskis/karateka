@@ -658,6 +658,15 @@ function game_hero_view(array $hero, bool $own = true): array
             'stats' => $st, 'pet' => $active, 'pet2' => $active2, 'skill' => game_skill($hero), 'pets' => $pets, 'ratingPower' => (int) $hero['rating_power'], 'ratingFair' => (int) $hero['rating_fair'],
             'wins' => (int) $hero['wins'], 'losses' => (int) $hero['losses'], 'invites' => (bool) $hero['invites']];
     if ($own) {
+        // #110: XP = aktyvumo taškai - už ką gauta (paskutiniai) ir už ką galima gauti
+        if ($hero['member_id']) {
+            $out['xpLog'] = array_map(function ($r) {
+                return ['d' => fmt_date($r['awarded_on']), 'n' => t((string) $r['category_name']), 'p' => (int) $r['points'], 'e' => $r['event_title'] ? tr_text((string) $r['event_title']) : ''];
+            }, q_all('SELECT pa.awarded_on, pa.points, pc.name AS category_name, e.title AS event_title FROM point_awards pa JOIN point_categories pc ON pc.id = pa.category_id
+                      LEFT JOIN events e ON e.id = pa.event_id WHERE pa.member_id = ? ORDER BY pa.awarded_on DESC, pa.id DESC LIMIT 10', [(int) $hero['member_id']]));
+        }
+        $out['xpWays'] = array_map(function ($c) { return ['n' => t((string) $c['name']), 'p' => (int) $c['points']]; },
+            q_all('SELECT name, points FROM point_categories WHERE is_active = 1 AND points > 0 ORDER BY code = "attendance" DESC, points DESC, sort_order LIMIT 10'));
         $out['owned'] = game_owned($hid);
         $out['points'] = game_points($hero);
         $out['alloc'] = $hero['alloc'];
