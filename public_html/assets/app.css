@@ -1635,3 +1635,14 @@ input.tg:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
 .menu-pick .mp-acts{display:flex; gap:6px; flex-shrink:0;}
 .menu-pick .mp-acts form{margin:0;}
 .menu-pick .badge.ok{background:#E3F4EA; color:#0B6B3A;}
+/* Mano paskyra → Užduotys: visos užduotys, pamokos, pastabos ir pranešimai lieka */
+.task-tabs{display:flex; flex-wrap:wrap; gap:6px; margin:0 0 14px;}
+.task-list{display:grid; gap:10px;}
+.task-item{display:flex; gap:14px; align-items:flex-start;}
+.task-item.is-open{border-left:4px solid var(--accent, #6E4A86);}
+.task-ic{font-size:1.6rem; line-height:1;}
+.task-body{flex:1; min-width:0; display:grid; gap:6px;}
+.task-top{display:flex; flex-wrap:wrap; gap:6px 10px; align-items:center;}
+.task-lesson{font-weight:700;}
+.task-acts{margin:0;}
+.task-notifs{margin-top:16px;}

@@ -192,15 +192,20 @@ html{scrollbar-gutter:stable;}
 .site-header .lang-dd > nav.lang-switch{position:absolute; top:calc(100% + 6px); left:0; display:flex; flex-direction:column; gap:2px; padding:6px; min-width:150px; background:#fff; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,.14); z-index:60;}
 .site-header .nav-prefs .tp-panel{left:0; right:auto; transform:none;}
 @media (max-width:1400px){ .sub-nav a{padding:9px 10px;} }
-/* Prisijungus: Treniruotės, Apie klubą, Kontaktai - vienas „Apie klubą ‹“, užvedus pelę išsiskleidžia į kairę (#78) */
+/* Prisijungus: Treniruotės, Apie klubą, Kontaktai - vienas „Apie klubą ‹“ (#78); paspaudus išsiskleidžia į kairę, dar kartą - susiskleidžia (#117) */
+.site-header .fold-btn{border:0; background:none; cursor:pointer; font:inherit; display:inline-flex; align-items:center; gap:4px;}
+.site-header .fold-ic{opacity:.6; font-weight:700;}
 @media(min-width:1101px){
-  .site-header .nav-onpage.folded .fold-main{order:99;}
-  .site-header .nav-onpage.folded li:not(.fold-main){max-width:0; opacity:0; overflow:hidden; pointer-events:none; transition:max-width .28s ease, opacity .2s ease;}
-  .site-header .nav-onpage.folded:hover li, .site-header .nav-onpage.folded:focus-within li{max-width:220px; opacity:1; pointer-events:auto;}
-  .site-header .nav-onpage.folded .fold-ic{margin-left:4px; opacity:.55; transition:transform .2s ease;}
-  .site-header .nav-onpage.folded:hover .fold-ic, .site-header .nav-onpage.folded:focus-within .fold-ic{transform:translateX(-3px);}
+  .site-header .nav-onpage.folded li:not(.fold-main){display:none;}
+  .site-header .nav-onpage.folded.open li:not(.fold-main){display:block;}
+  .site-header .nav-onpage.folded.open .fold-t{display:none;}
+  .site-header .nav-onpage.folded.open .fold-ic{transform:rotate(180deg); display:inline-block;}
+  .site-header .nav-onpage.folded.anchored{position:absolute; z-index:5; border-radius:12px; transition:none;}
+  .site-header .nav-onpage.folded.anchored.open{background:var(--hdr-pill, #EFEBE3); box-shadow:0 8px 22px rgba(23,20,15,.16);}
+  body.theme-dark .site-header .nav-onpage.folded.anchored.open{background:#24212E;}
+  .site-header .fold-ph{display:block; flex:none;}
 }
-@media(max-width:1100px){ .site-header .nav-onpage .fold-ic{display:none;} }
+@media(max-width:1100px){ .site-header .nav-onpage .fold-main{display:none;} }
 /* #97: be Admin slankiklio - „Žiūrėti kaip“ meniu ir aiškus grįžimas */
 .adm-sw.adm-back{width:auto; padding:8px 14px; gap:6px; background:#17140F; color:#fff; border-radius:12px; font-weight:700;}
 .adm-sw.adm-back .adm-knob{display:none;}
@@ -233,11 +238,6 @@ html{scrollbar-gutter:stable;}
 .site-switch[open] > summary svg{transform:rotate(180deg);}
 .site-switch > summary svg{transition:transform .2s ease;}
 .lang-dd > summary .lang-caret{display:none;}
-/* #111: „Apie klubą ‹“ - neišsiskleidžia vos pravedus pele: reikia palaikyti ~0,5 s arba paspausti */
-@media(min-width:1101px){
-  .site-header .nav-onpage.folded:hover li{transition-delay:.45s;}
-  .site-header .nav-onpage.folded.open li{max-width:220px; opacity:1; pointer-events:auto; transition-delay:0s;}
-}
 /* ---------- Valdymo meniu variantai (#106): ne daugiau 2 lygių ---------- */
 .am-ic{font-size:15px; line-height:1;}
 .am-more > summary svg{margin-left:4px; opacity:.7;}
@@ -293,3 +293,52 @@ body.theme-dark .am-gh{color:#A9A2B8;}
   .am-line .sub-inner > :first-child, .am-line .sub-inner > :last-child{margin-left:0; margin-right:0;}
 }
 @media (max-width:520px){ .am-line a, .am-line .am-more > summary{padding:8px 9px; font-size:13px;} .am-line .am-ic{display:none;} }
+/* #113: be „›“ prie puslapių - rodyklės tik ten, kur kas nors išsiskleidžia */
+.site-header a.nav-page::after{content:none !important;}
+/* #114: „Valdymas“ - graži vientisa spalva visur (ir tamsiose temose); „▾“ šalia - tokia pati */
+.site-header .nav-login, body[data-theme] .site-header .nav-login{background:linear-gradient(135deg, #5B5FDA 0%, #8A4FC9 55%, #C2569A 100%); color:#fff !important; box-shadow:0 6px 18px rgba(98,74,200,.32), inset 0 1px 0 rgba(255,255,255,.25);}
+.site-header .nav-login:hover, body[data-theme] .site-header .nav-login:hover{background:linear-gradient(135deg, #6468E6 0%, #9558D4 55%, #CC5FA4 100%); filter:none;}
+.site-header .nav-login.is-current, body[data-theme]:not([data-theme="light"]) .site-header .nav-login.is-current{background:linear-gradient(135deg, #5B5FDA 0%, #8A4FC9 55%, #C2569A 100%); box-shadow:0 0 0 3px rgba(138,79,201,.25), 0 6px 18px rgba(98,74,200,.35), inset 0 1px 0 rgba(255,255,255,.25);}
+.site-header .adm-li .view-switch > summary, body.theme-dark .site-header .adm-li .view-switch > summary{background:linear-gradient(135deg, #5B5FDA 0%, #8A4FC9 100%); color:#fff; border-color:transparent; box-shadow:0 4px 12px rgba(98,74,200,.3);}
+.site-header .adm-li .view-switch > summary:hover{filter:brightness(1.08);}
+/* ---------- Telefono meniu variantai (treneriams) ---------- */
+.pm-admin, .m-tabbar, .pm-site{display:none;}
+.pm-h{font:700 11px/1 'Inter', sans-serif; letter-spacing:.12em; text-transform:uppercase; color:#8A8273; padding:12px 10px 6px;}
+.am-logout{width:100%; border:0; background:none; cursor:pointer; font:inherit; text-align:left;}
+@media (max-width:1100px){
+  /* 1) Viskas viename ☰: valdymo eilutės nėra, valdymas - ☰ viršuje */
+  .pm-burger + .sub-nav, .pm-burger .sub-nav{display:none !important;}
+  .pm-burger ~ main .am-line{display:none;}
+  .site-header.pm-burger .sub-nav.am-line, .site-header.pm-lapas .sub-nav.am-line, .site-header.pm-apacia .sub-nav.am-line{display:none;}
+  .site-header.pm-burger .pm-admin, .site-header.pm-lapas .pm-admin{display:block; order:-1; padding-bottom:6px; border-bottom:1px solid rgba(23,20,15,.12);}
+  .site-header.pm-burger .pm-admin .am-group{margin-bottom:4px;}
+  /* 2) Apatinė juosta */
+  .site-header.pm-apacia .burger{display:none !important;}
+  .m-tabbar{display:flex; position:fixed; left:0; right:0; bottom:0; z-index:300; justify-content:space-around; align-items:stretch; padding:6px 6px calc(6px + env(safe-area-inset-bottom)); background:rgba(251,249,244,.97); border-top:1px solid rgba(23,20,15,.1); box-shadow:0 -6px 20px rgba(23,20,15,.1); backdrop-filter:blur(10px);}
+  .m-tabbar > a, .m-more > summary{flex:1; display:flex; flex-direction:column; align-items:center; gap:2px; padding:6px 2px; border-radius:12px; font:600 11px/1.1 'Inter', sans-serif; color:#4A453A; text-decoration:none; list-style:none; cursor:pointer; position:relative;}
+  .m-more{flex:1; display:flex;}
+  .m-more > summary::-webkit-details-marker{display:none;}
+  .m-tabbar .mt-ic{font-size:20px; line-height:1;}
+  .m-tabbar > a.active, .m-more > summary.active{color:#6E4A86; background:rgba(110,74,134,.1);}
+  .m-more > summary .count-badge{position:absolute; top:2px; right:18%;}
+  .m-sheet{position:fixed; left:8px; right:8px; bottom:72px; max-height:70vh; overflow:auto; padding:8px; border-radius:18px; background:#FBF9F4; border:1px solid rgba(23,20,15,.08); box-shadow:0 -10px 40px rgba(23,20,15,.25);}
+  body:has(.m-tabbar) .fb, body:has(.m-tabbar) .chat-fab, body:has(.m-tabbar) #chatFab, body:has(.m-tabbar) .fb-fab{bottom:84px !important;}
+  body:has(.m-tabbar) .site-footer{padding-bottom:80px;}
+  /* 3) Eilutė + 🌐: ☰ nebėra, svetainė - 🌐 */
+  .site-header.pm-eilute .burger{display:none !important;}
+  .site-header.pm-eilute .pm-site{display:block; position:relative;}
+  .pm-site > summary{list-style:none; cursor:pointer; display:inline-flex; align-items:center; gap:4px; padding:8px 10px; border-radius:12px; background:rgba(23,20,15,.06); font-size:18px;}
+  .pm-site > summary::-webkit-details-marker{display:none;}
+  .pm-site .am-more-panel{right:0; left:auto; min-width:230px;}
+  /* 4) Didelis meniu lapas: ☰ - visas ekranas su plytelėmis */
+  .site-header.pm-lapas ul.nav-list.nav-open{position:fixed; inset:56px 0 0 0; margin:0; overflow:auto; padding:12px 14px 30px; z-index:400;}
+  .site-header.pm-lapas .pm-admin .am-group{display:grid; grid-template-columns:1fr 1fr; gap:8px;}
+  .site-header.pm-lapas .pm-admin .am-gh{grid-column:1 / -1;}
+  .site-header.pm-lapas .pm-admin .am-row{flex-direction:column; align-items:flex-start; gap:6px; padding:12px; border-radius:14px; background:#fff; box-shadow:0 2px 8px rgba(23,20,15,.08); min-height:70px;}
+  .site-header.pm-lapas .pm-admin .am-row .am-ic{font-size:22px; width:auto;}
+  .site-header.pm-lapas .pm-admin .am-row .count-badge{position:absolute; margin:0; right:10px; top:10px;}
+  .site-header.pm-lapas .pm-admin .am-row{position:relative;}
+}
+body.theme-dark .m-tabbar{background:rgba(20,18,28,.96); border-top-color:rgba(255,255,255,.08);}
+body.theme-dark .m-tabbar > a, body.theme-dark .m-more > summary{color:#D9D4E4;}
+body.theme-dark .pm-site > summary{background:rgba(255,255,255,.1);}

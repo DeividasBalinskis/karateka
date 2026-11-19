@@ -95,7 +95,7 @@ if (is_post()) {
                 q('UPDATE coach_notes SET read_at = NOW() WHERE id = ? AND member_id = ? AND read_at IS NULL', [(int) post('note_id'), $mid]);
             }
         }
-        redirect(preg_match('~^pamokos\.php\?id=\d+$~', post('back')) ? post('back') : 'paskyra.php?m=' . $mid . (post('back') === 'svarbu' ? '#svarbu' : '#pastabos'));
+        redirect(preg_match('~^(pamokos\.php\?id=\d+|uzduotys\.php\?m=\d+(&f=\w+)?)$~', post('back')) ? post('back') : 'paskyra.php?m=' . $mid . (post('back') === 'svarbu' ? '#svarbu' : '#pastabos'));
     }
 
     // Denio atsakymas perskaitytas („Svarbu“): visa tema - pastaba, pamoka, renginys, naujiena ar bendros žinutės
@@ -118,7 +118,7 @@ if (is_post()) {
             q('UPDATE coach_notes SET done_at = ' . ($action === 'task_done' ? 'NOW()' : 'NULL') . ', read_at = COALESCE(read_at, NOW()) WHERE id = ?', [$note['id']]);
             flash('ok', $action === 'task_done' ? t('Puiku! Užduotis pažymėta kaip atlikta.') : t('Užduotis grąžinta į neatliktas.'));
         }
-        redirect(preg_match('~^pamokos\.php\?id=\d+$~', post('back')) ? post('back') : 'paskyra.php?m=' . (int) ($note['member_id'] ?? 0) . (post('back') === 'svarbu' ? '#svarbu' : '#pastabos'));
+        redirect(preg_match('~^(pamokos\.php\?id=\d+|uzduotys\.php\?m=\d+(&f=\w+)?)$~', post('back')) ? post('back') : 'paskyra.php?m=' . (int) ($note['member_id'] ?? 0) . (post('back') === 'svarbu' ? '#svarbu' : '#pastabos'));
     }
 
     handle_account_settings($a, 'paskyra.php?skiltis=nustatymai', $errors);
@@ -321,6 +321,7 @@ page_start($tab === 'nustatymai' ? t('Nustatymai') : t('Mano paskyra'), ['noinde
       <?php endforeach; ?>
     </ul>
     <?= render_notifications($notifs, $back . '#svarbu') ?>
+    <p class="small" style="margin:10px 0 0;"><a href="<?= url('uzduotys.php?m=' . (int) $selected['id']) ?>"><?= te('📋 Visos užduotys, pamokos ir pranešimai - ir jau peržiūrėti →') ?></a></p>
   </section>
 <?php endif; ?>
 

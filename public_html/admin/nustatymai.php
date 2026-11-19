@@ -14,6 +14,12 @@ if (is_post()) {
         flash('ok', t('Meniu išdėstymas pakeistas visiems.'));
         redirect('admin/nustatymai.php#meniu');
     }
+    if (post('action') === 'phone_menu' && is_admin($me) && isset(PHONE_MENU_VARIANTS[post('v')])) {
+        set_site_setting('phone_menu', post('v'));
+        setcookie('tmeniu', '', ['expires' => time() - 3600, 'path' => '/']);
+        flash('ok', t('Telefono meniu pakeistas visiems.'));
+        redirect('admin/nustatymai.php#tmeniu');
+    }
     if (post('action') === 'reg_toggles' && is_admin($me)) {
         // Registracijos mygtukai: pažymėta = rodomas; nepažymėtos vietos išjungiamos
         $on = array_map('strval', (array) ($_POST['reg'] ?? []));
@@ -65,6 +71,16 @@ page_start(t('Nustatymai'), ['admin' => true]);
           <div class="mp-row<?= $on ? ' on' : '' ?>"><span><b><?= e(t($label)) ?></b><?= $mvAll === $k ? ' <span class="badge ok">' . te('visiems') . '</span>' : '' ?><small><?= e(t($desc)) ?></small></span>
             <span class="mp-acts"><a class="btn btn-ghost btn-sm" href="<?= url('admin/nustatymai.php?meniu=' . $k . '#meniu') ?>"><?= $on ? '✓ ' . te('Dabar matote') : te('Peržiūrėti') ?></a>
               <?php if ($mvAll !== $k): ?><form method="post"><?= csrf_field() ?><input type="hidden" name="action" value="menu_variant"><input type="hidden" name="v" value="<?= e($k) ?>"><button class="btn btn-sm" type="submit"><?= te('Visiems') ?></button></form><?php endif; ?></span></div>
+        <?php endforeach; ?>
+      </section>
+      <?php $pmAll = (string) site_setting('phone_menu', 'dabar'); $pmAll = isset(PHONE_MENU_VARIANTS[$pmAll]) ? $pmAll : 'dabar'; ?>
+      <section class="panel card settings-group menu-pick" id="tmeniu">
+        <div class="kicker"><?= te('Telefono meniu') ?></div>
+        <p class="small muted" style="margin:0 0 8px;"><?= te('Kaip meniu atrodo telefone ir planšetėje. „Peržiūrėti“ - tik jums, „Visiems“ - visiems treneriams.') ?></p>
+        <?php foreach (PHONE_MENU_VARIANTS as $k => [$label, $desc]): $on = phone_menu_variant() === $k; ?>
+          <div class="mp-row<?= $on ? ' on' : '' ?>"><span><b><?= e(t($label)) ?></b><?= $pmAll === $k ? ' <span class="badge ok">' . te('visiems') . '</span>' : '' ?><small><?= e(t($desc)) ?></small></span>
+            <span class="mp-acts"><a class="btn btn-ghost btn-sm" href="<?= url('admin/nustatymai.php?tmeniu=' . $k . '#tmeniu') ?>"><?= $on ? '✓ ' . te('Dabar matote') : te('Peržiūrėti') ?></a>
+              <?php if ($pmAll !== $k): ?><form method="post"><?= csrf_field() ?><input type="hidden" name="action" value="phone_menu"><input type="hidden" name="v" value="<?= e($k) ?>"><button class="btn btn-sm" type="submit"><?= te('Visiems') ?></button></form><?php endif; ?></span></div>
         <?php endforeach; ?>
       </section>
       <section class="panel card settings-group reg-toggles" id="registracija">

@@ -265,6 +265,26 @@ const MENU_VARIANTS = [
     'sonas'   => ['Šoninis meniu', 'Valdyme - meniu kairėje su grupėmis: Kasdien, Klubas, Tvarkyti. Viršuje - tik svetainė.'],
 ];
 
+// Telefono meniu (treneriams): vienas aiškus būdas vietoj ☰ + valdymo eilutės kartu
+const PHONE_MENU_VARIANTS = [
+    'dabar'  => ['Dabartinis', '☰ meniu viršuje ir valdymo eilutė po juo.'],
+    'burger' => ['Viskas viename ☰', 'Valdymo eilutės nėra - ☰ meniu viršuje: valdymas grupėmis ir svetainė.'],
+    'apacia' => ['Apatinė juosta (kaip programėlė)', 'Apačioje: Pradžia, Treniruotė, Egzaminai, Nariai, ⋯ Daugiau. ☰ nebėra.'],
+    'eilute' => ['Eilutė + 🌐', 'Lieka valdymo eilutė, ☰ nebėra - svetainės skiltys po 🌐 viršuje.'],
+    'lapas'  => ['Didelis meniu lapas', '☰ atidaro visą ekraną su didelėmis plytelėmis: Kasdien, Klubas, Tvarkyti, Svetainė.'],
+];
+
+function phone_menu_variant(): string
+{
+    static $v = null;
+    if ($v === null) {
+        $c = (string) ($_COOKIE['tmeniu'] ?? '');
+        $sv = (string) site_setting('phone_menu', 'dabar');
+        $v = isset(PHONE_MENU_VARIANTS[$c]) ? $c : (isset(PHONE_MENU_VARIANTS[$sv]) ? $sv : 'dabar');
+    }
+    return $v;
+}
+
 function menu_variant(): string
 {
     static $v = null;
@@ -280,6 +300,16 @@ function menu_variant(): string
 function menu_variant_preview(): void
 {
     $g = (string) ($_GET['meniu'] ?? '');
+    $tg = (string) ($_GET['tmeniu'] ?? '');
+    if ($tg !== '' && !headers_sent() && is_staff(current_account())) {
+        if (isset(PHONE_MENU_VARIANTS[$tg])) {
+            setcookie('tmeniu', $tg, ['expires' => time() + 30 * 86400, 'path' => '/', 'samesite' => 'Lax', 'secure' => !empty($_SERVER['HTTPS'])]);
+            $_COOKIE['tmeniu'] = $tg;
+        } elseif ($tg === 'visiems') {
+            setcookie('tmeniu', '', ['expires' => time() - 3600, 'path' => '/']);
+            unset($_COOKIE['tmeniu']);
+        }
+    }
     if ($g === '' || headers_sent() || !is_staff(current_account())) {
         return;
     }
@@ -360,6 +390,24 @@ function admin_menu_more(array $keys, string $cur): string
     return $html . '</div></details>';
 }
 
+/** Telefono meniu: svetainės skiltys (sąrašui ar plytelėms) */
+function phone_site_links(string $h, array $onpage, ?array $a): string
+{
+    $html = '';
+    foreach ($onpage as [$label, $anchor]) {
+        $html .= '<a class="am-row" href="' . $h . e($anchor) . '"><span class="am-ic" aria-hidden="true">🏠</span><span class="am-t">' . e(t($label)) . '</span></a>';
+    }
+    $html .= '<a class="am-row" href="' . e(url('renginiai.php')) . '"><span class="am-ic" aria-hidden="true">📅</span><span class="am-t">' . e(t('Renginiai')) . '</span></a>'
+        . '<a class="am-row" href="' . e(url('naujienos.php')) . '"><span class="am-ic" aria-hidden="true">📰</span><span class="am-t">' . e(t('Naujienos')) . '</span></a>';
+    if ($a && can_see_lessons($a)) {
+        $html .= '<a class="am-row" href="' . e(url('pamokos.php')) . '"><span class="am-ic" aria-hidden="true">📘</span><span class="am-t">' . e(t('Pamokos')) . '</span></a>';
+    }
+    if ($a && is_active_account($a) && game_nav_ready()) {
+        $html .= '<a class="am-row" href="' . e(url('dojo.php')) . '"><span class="am-ic" aria-hidden="true">🏯</span><span class="am-t">' . e(t('Dojo')) . '</span></a>';
+    }
+    return $html;
+}
+
 /** Šoninis meniu: visos grupės (su paaiškinimais - jei $withDesc) */
 function admin_menu_groups_html(string $cur, bool $withDesc): string
 {
@@ -407,6 +455,7 @@ function account_nav_items(array $a): array
 function account_nav_extra(array $a): array
 {
     return [
+        'uzduotys'  => [t('Užduotys'), 'uzduotys.php'],
         'egzaminas' => [t('Egzaminas'), 'egzaminas.php'],
     ];
 }
@@ -470,7 +519,8 @@ function site_header(bool $home = false, ?string $area = null, ?string $tab = nu
     }
     ?>
 <div class="progress-wrap"><div class="progress-bar" id="progressBar"></div></div>
-<header class="site-header">
+<?php $pm = $a && is_staff($a) && admin_mode() ? phone_menu_variant() : ''; ?>
+<header class="site-header<?= $pm ? ' pm-' . $pm : '' ?>">
   <nav>
     <a class="logo" href="<?= $home ? '#' : url('index.php') ?>"><img src="<?= url('img/logo.png') ?>" alt="<?= te('Karateka logotipas') ?>"><?php if (config('env') !== 'live'): ?><span class="ver-tag" title="<?= te('Svetainės versija (rodoma tik testuojant)') ?>">v<?= e(site_version()) ?><?= config('env') === 'local' ? (' ' . t('· local')) : '' ?></span><?php endif; ?></a>
     <?php if ($a && is_staff($a)): ?>
@@ -496,7 +546,10 @@ function site_header(bool $home = false, ?string $area = null, ?string $tab = nu
             $mainIdx = 0;
             foreach ($onpage as $i => [$label, $anchor]) { if ($anchor === '#apie') { $mainIdx = $i; } } ?>
           <ul class="nav-group nav-onpage<?= $fold ? ' folded' : '' ?>" aria-label="<?= te('Pagrindinis puslapis') ?>">
-            <?php foreach ($onpage as $i => [$label, $anchor]): ?><li<?= $fold && $i === $mainIdx ? ' class="fold-main"' : '' ?>><a class="nav-link" href="<?= $h . e($anchor) ?>"><?= e(t($label)) ?><?= $fold && $i === $mainIdx ? '<span class="fold-ic" aria-hidden="true">‹</span>' : '' ?></a></li><?php endforeach; ?>
+            <?php foreach ($onpage as $i => [$label, $anchor]): ?><li><a class="nav-link" href="<?= $h . e($anchor) ?>"><?= e(t($label)) ?></a></li><?php endforeach; ?>
+            <?php if ($fold): // #117: paspaudus išsiskleidžia į kairę, paspaudus dar kartą - susiskleidžia; dešinė pusė nejuda ?>
+              <li class="fold-main"><button type="button" class="nav-link fold-btn" aria-expanded="false"><span class="fold-t"><?= e(t($onpage[$mainIdx][0])) ?></span><span class="fold-ic" aria-hidden="true">‹</span></button></li>
+            <?php endif; ?>
           </ul>
         <?php endif; ?>
         <ul class="nav-group nav-pages" aria-label="<?= te('Puslapiai') ?>">
@@ -510,6 +563,9 @@ function site_header(bool $home = false, ?string $area = null, ?string $tab = nu
           <?php endif; ?>
         </ul>
       </li>
+      <?php if ($pm === 'burger' || $pm === 'lapas'): ?>
+        <li class="pm-admin"><div class="pm-h"><?= te('🛠 Valdymas') ?></div><?= admin_menu_groups_html($mk, false) ?></li>
+      <?php endif; ?>
       <!-- Dešinėje: paskyra (ar „Išbandyti“ ir „Prisijungti“) - prisijungus „Išbandyti“ dingsta, meniu nepasislenka -->
       <li class="nav-account">
         <ul>
@@ -536,10 +592,30 @@ function site_header(bool $home = false, ?string $area = null, ?string $tab = nu
       </li>
     </ul>
     <?php if ($cta): ?><a class="nav-cta mobile-only" href="<?= $h . e($cta[1]) ?>"><?= e(t($cta[0])) ?></a><?php endif; ?>
+    <?php if ($pm === 'eilute'): ?>
+      <details class="pm-site"><summary aria-label="<?= te('Svetainė') ?>">🌐<svg width="12" height="12" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
+        <div class="am-more-panel"><?= phone_site_links($h, $onpage, $a) ?><?= $area !== 'admin' ? '<a class="am-row" href="' . e(url('admin/')) . '"><span class="am-ic">🛠</span><span class="am-t">' . te('Valdymas') . '</span></a>' : '' ?>
+          <form method="post" action="<?= url('atsijungti.php') ?>" class="inline-form"><?= csrf_field() ?><button type="submit" class="am-row am-logout"><span class="am-ic">🚪</span><span class="am-t"><?= te('Atsijungti') ?></span></button></form></div></details>
+    <?php endif; ?>
     <button class="burger" id="burgerBtn" type="button" aria-label="<?= te('Meniu') ?>"><span></span><span></span><span></span><?php if ($a && (is_staff($a) ? staff_attention_count((int) $a['id']) : account_attention_count((int) $a['id']))): ?><i class="burger-dot"></i><?php endif; ?></button>
   </nav>
   <?= $subNav ?>
 </header>
+<?php if ($pm === 'apacia'): $tflat = admin_menu_flat(); $tkeys = ['siandien', 'treniruote', 'egzaminai', 'nariai']; ?>
+  <!-- Telefone: apatinė juosta kaip programėlėje; ⋯ Daugiau - visa kita (valdymas ir svetainė) -->
+  <nav class="m-tabbar" aria-label="<?= te('Valdymas') ?>">
+    <?php foreach ($tkeys as $k): if (isset($tflat[$k])): $it = $tflat[$k]; ?>
+      <a href="<?= url($it[2]) ?>" class="<?= $k === $mk ? 'active' : '' ?>"><span class="mt-ic" aria-hidden="true"><?= $it[0] ?></span><span><?= e($it[1]) ?></span></a>
+    <?php endif; endforeach; ?>
+    <?php $rest = array_diff_key($tflat, array_flip($tkeys)); $rb = array_sum(array_map(function ($i) { return (int) $i[3]; }, $rest)); ?>
+    <details class="m-more"><summary class="<?= isset($rest[$mk]) ? 'active' : '' ?>"><span class="mt-ic" aria-hidden="true">⋯</span><span><?= te('Daugiau') ?></span><?= $rb ? '<em class="count-badge">' . $rb . '</em>' : '' ?></summary>
+      <div class="m-sheet"><div class="pm-h"><?= te('🛠 Valdymas') ?></div>
+        <?php foreach ($rest as $k => $it) { echo admin_menu_link($k, $it, $mk, 'am-row'); } ?>
+        <div class="pm-h"><?= te('🌐 Svetainė') ?></div><?= phone_site_links($h, $onpage, $a) ?>
+        <form method="post" action="<?= url('atsijungti.php') ?>" class="inline-form"><?= csrf_field() ?><button type="submit" class="am-row am-logout"><span class="am-ic">🚪</span><span class="am-t"><?= te('Atsijungti') ?></span></button></form>
+      </div></details>
+  </nav>
+<?php endif; ?>
 <?php
     // Pranešimai ir darbai - tik raudonas skaičiukas ant „Valdymas“ (be juostos per ekraną)
 }
