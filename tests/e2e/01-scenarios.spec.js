@@ -336,7 +336,13 @@ test('guest: event page, menu, contacts, instructors', async ({ browser }) => {
   // kartais nepradedamas - tada paslenkama tiesiogiai; tikrinama, kad skilties viršus (scroll-margin) lieka matomas po meniu.
   await g.waitForLoadState('load');
   await g.click('.site-header a[href$="#kontaktai"]');
-  await g.waitForFunction(() => new Promise(r => { const y = window.scrollY; setTimeout(() => r(y > 0 && window.scrollY === y), 300); }), null, { timeout: 6000, polling: 100 }).catch(() => {});
+  // Laukiama, kol slinkimas sustos (du vienodi matavimai iš eilės; ne waitForFunction su pažadu - jis grįžta iškart)
+  for (let i = 0, prev = -1; i < 40; i++) {
+    await g.waitForTimeout(150);
+    const y = await g.evaluate(() => window.scrollY);
+    if (y > 0 && y === prev) break;
+    prev = y;
+  }
   if (await g.evaluate(() => window.scrollY === 0)) await g.evaluate(() => document.getElementById('kontaktai').scrollIntoView({ behavior: 'instant', block: 'start' }));
   const top = await g.evaluate(() => document.getElementById('kontaktai').getBoundingClientRect().top);
   const hdrH = await g.evaluate(() => document.querySelector('.site-header').getBoundingClientRect().bottom);
