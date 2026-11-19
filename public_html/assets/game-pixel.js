@@ -70,8 +70,8 @@
     return b ? b[2] : null;
   }
   // Seni (apvalūs) personažai → artimiausias naujas pikselinis
-  var OLD = { tiger: 'wtiger', lion: 'wtiger', fox: 'kitsune', wolf: 'swolf', cat: 'scat', rabbit: 'weasel', monkey: 'frog', eagle: 'raven', dragon: 'gdragon',
-    human: 'ghost', redpanda: 'kitsune', yeti: 'ram', tengu: 'raven', unicorn: 'deer', phoenixbird: 'phoenix' };
+  var OLD = { tiger: 'scat', wtiger: 'scat', lion: 'scat', panda: 'turtle', raven: 'crane', fox: 'kitsune', wolf: 'swolf', cat: 'scat', rabbit: 'weasel', monkey: 'frog', eagle: 'crane', dragon: 'gdragon',
+    human: 'ghost', redpanda: 'kitsune', yeti: 'ram', tengu: 'crane', unicorn: 'deer', phoenixbird: 'phoenix' };   // #115: be pandos, baltojo tigro ir varno
   function chars() { return (window.GAME && GAME.catalog && GAME.catalog.chars) || {}; }
   function charKey(sp) { var C2 = chars(); if (C2[sp]) return sp; sp = OLD[sp] || sp; return C2[sp] ? sp : 'kitsune'; }
   /** Į kurią pusę žiūri personažas: 'r', 'l' arba 'c' */

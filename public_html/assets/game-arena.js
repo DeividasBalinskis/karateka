@@ -40,7 +40,7 @@
       '<div class="ar-modes-grid">' +
       modeCard('power', '🏆', T('Jėgos kova'), T('Svarbūs lygis, savybės, daiktai ir gyvūnėlis. Stipresnis dažniau laimi, bet gudrumas irgi padeda.')) +
       modeCard('fair', '🎯', T('Gudrumo kova'), T('Visi lygūs: tos pačios gyvybės ir smūgiai, 3 kortos. Laimi tas, kuris geriau perpranta priešininką.')) +
-      '</div><div class="ar-bots">' + ['easy', 'normal', 'hard'].map(function (l) { return '<div class="ar-bot"><b>' + { easy: '🐼 ' + T('Lengvas'), normal: '🐸 ' + T('Vidutinis'), hard: '🐲 ' + T('Sunkus') }[l] + '</b>' +
+      '</div><div class="ar-bots">' + ['easy', 'normal', 'hard'].map(function (l) { return '<div class="ar-bot"><b>' + { easy: '🐢 ' + T('Lengvas'), normal: '🐸 ' + T('Vidutinis'), hard: '🐲 ' + T('Sunkus') }[l] + '</b>' +
         '<button type="button" class="g-btn sm" data-bot="' + l + '" data-mode="power">🏆 ' + T('Jėgos') + '</button><button type="button" class="g-btn sm" data-bot="' + l + '" data-mode="fair">🎯 ' + T('Gudrumo') + '</button>' +
         '<button type="button" class="g-btn sm" data-bot="' + l + '" data-game="keturi">🔴 ' + T('Keturi') + '</button></div>'; }).join('') + '</div>' +
       '<a class="g-game greita" style="margin-top:14px" href="' + R.urls.greita + '"><span class="gi">' + A.icon('greita') + '</span><span>' + T('Greita kova') + '<small>' + T('Realiu laiku: matai, kur smūgiuos - blokuok laiku. Tobulas blokas = kontrataka!') + '</small></span></a>' +
@@ -308,7 +308,7 @@
 
   // =================== Greita kova (realiu laiku) ===================
   var LV = {
-    easy: { n: '🐼 ' + T('Lengvas'), wind: 1050, gap: [1500, 2600], block: 0.18, k: 0.75, sp: 'panda', name: T('Senpai Bambukas'), belt: 3, kim: 'k_white' },
+    easy: { n: '🐢 ' + T('Lengvas'), wind: 1050, gap: [1500, 2600], block: 0.18, k: 0.75, sp: 'turtle', name: T('Senpai Bambukas'), belt: 3, kim: 'k_white' },
     normal: { n: '🐸 ' + T('Vidutinis'), wind: 780, gap: [1050, 2000], block: 0.38, k: 0.95, sp: 'frog', name: T('Sensei Makivara'), belt: 7, kim: 'k_white' },
     hard: { n: '🐲 ' + T('Sunkus'), wind: 560, gap: [750, 1500], block: 0.55, k: 1.15, sp: 'gdragon', name: T('Meistras Drakonas'), belt: 12, kim: 'k_black_red' }
   };

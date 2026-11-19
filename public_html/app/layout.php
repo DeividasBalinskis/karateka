@@ -397,8 +397,7 @@ function phone_site_links(string $h, array $onpage, ?array $a): string
     foreach ($onpage as [$label, $anchor]) {
         $html .= '<a class="am-row" href="' . $h . e($anchor) . '"><span class="am-ic" aria-hidden="true">🏠</span><span class="am-t">' . e(t($label)) . '</span></a>';
     }
-    $html .= '<a class="am-row" href="' . e(url('renginiai.php')) . '"><span class="am-ic" aria-hidden="true">📅</span><span class="am-t">' . e(t('Renginiai')) . '</span></a>'
-        . '<a class="am-row" href="' . e(url('naujienos.php')) . '"><span class="am-ic" aria-hidden="true">📰</span><span class="am-t">' . e(t('Naujienos')) . '</span></a>';
+    $html .= '<a class="am-row" href="' . e(url('naujienos.php')) . '"><span class="am-ic" aria-hidden="true">📰</span><span class="am-t">' . e(t('Naujienos ir renginiai')) . '</span></a>';
     if ($a && can_see_lessons($a)) {
         $html .= '<a class="am-row" href="' . e(url('pamokos.php')) . '"><span class="am-ic" aria-hidden="true">📘</span><span class="am-t">' . e(t('Pamokos')) . '</span></a>';
     }
@@ -546,15 +545,15 @@ function site_header(bool $home = false, ?string $area = null, ?string $tab = nu
             $mainIdx = 0;
             foreach ($onpage as $i => [$label, $anchor]) { if ($anchor === '#apie') { $mainIdx = $i; } } ?>
           <ul class="nav-group nav-onpage<?= $fold ? ' folded' : '' ?>" aria-label="<?= te('Pagrindinis puslapis') ?>">
+            <?php if ($fold): ?><li class="fold-items"><ul class="fold-list"><?php endif; ?>
             <?php foreach ($onpage as $i => [$label, $anchor]): ?><li><a class="nav-link" href="<?= $h . e($anchor) ?>"><?= e(t($label)) ?></a></li><?php endforeach; ?>
-            <?php if ($fold): // #117: paspaudus išsiskleidžia į kairę, paspaudus dar kartą - susiskleidžia; dešinė pusė nejuda ?>
+            <?php if ($fold): // #117: paspaudus išsiskleidžia į kairę (virš kitų, niekas nepasislenka), paspaudus dar kartą - susiskleidžia ?></ul></li>
               <li class="fold-main"><button type="button" class="nav-link fold-btn" aria-expanded="false"><span class="fold-t"><?= e(t($onpage[$mainIdx][0])) ?></span><span class="fold-ic" aria-hidden="true">‹</span></button></li>
             <?php endif; ?>
           </ul>
         <?php endif; ?>
         <ul class="nav-group nav-pages" aria-label="<?= te('Puslapiai') ?>">
-          <li><a class="nav-page<?= $cur('renginiai') ?>" href="<?= url('renginiai.php') ?>"><?= te('Renginiai') ?><?php if ($a && !is_staff($a) && ($inv = account_pending_invites((int) $a['id']))): ?> <span class="count-badge" title="<?= te('Treneris kviečia - atsakykite') ?>"><?= $inv ?></span><?php endif; ?></a></li>
-          <li><a class="nav-page<?= $cur('naujienos') ?>" href="<?= url('naujienos.php') ?>"><?= te('Naujienos') ?></a></li>
+          <li><a class="nav-page<?= $cur('naujienos') . $cur('renginiai') ?>" href="<?= url('naujienos.php') ?>"><?= te('Naujienos ir renginiai') ?><?php if ($a && !is_staff($a) && ($inv = account_pending_invites((int) $a['id']))): ?> <span class="count-badge" title="<?= te('Treneris kviečia - atsakykite') ?>"><?= $inv ?></span><?php endif; ?></a></li>
           <?php if ($a && can_see_lessons($a)): ?>
             <li><a class="nav-page<?= $cur('pamokos') ?>" href="<?= url('pamokos.php') ?>"><?= te('Pamokos') ?></a></li>
           <?php endif; ?>

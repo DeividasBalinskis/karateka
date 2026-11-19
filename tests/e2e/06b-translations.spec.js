@@ -25,7 +25,7 @@ test('language switch, manual content translations, Denis bio', async ({ browser
   const en = await login(browser, null, 1280, 900, undefined, 'en');
   await en.goto(`naujienos.php?id=${newsId}`);
   check('news title in English', (await en.locator('h1').first().textContent()).trim() === 'Translated news title');
-  check('interface in English', /Events/.test(await en.locator('.nav-pages').textContent()));
+  check('interface in English', /events/i.test(await en.locator('.nav-pages').textContent()));
   await en.goto('index.php');
   check('html lang en', await en.getAttribute('html', 'lang') === 'en');
   await en.locator('.instructor-card[data-instructor]', { hasText: 'Denis' }).first().click();

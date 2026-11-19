@@ -193,19 +193,17 @@ html{scrollbar-gutter:stable;}
 .site-header .nav-prefs .tp-panel{left:0; right:auto; transform:none;}
 @media (max-width:1400px){ .sub-nav a{padding:9px 10px;} }
 /* Prisijungus: Treniruotės, Apie klubą, Kontaktai - vienas „Apie klubą ‹“ (#78); paspaudus išsiskleidžia į kairę, dar kartą - susiskleidžia (#117) */
-.site-header .fold-btn{border:0; background:none; cursor:pointer; font:inherit; display:inline-flex; align-items:center; gap:4px;}
+.site-header .fold-btn{border:0; background:none; cursor:pointer; font:inherit; display:inline-flex; align-items:center; gap:4px; white-space:nowrap;}
 .site-header .fold-ic{opacity:.6; font-weight:700;}
 @media(min-width:1101px){
-  .site-header .nav-onpage.folded li:not(.fold-main){display:none;}
-  .site-header .nav-onpage.folded.open li:not(.fold-main){display:block;}
-  .site-header .nav-onpage.folded.open .fold-t{display:none;}
+  .site-header .nav-onpage.folded .fold-items{position:relative; width:0; padding:0; margin:0;}
+  .site-header .nav-onpage.folded .fold-list{display:none; position:absolute; right:4px; top:50%; transform:translateY(-50%); z-index:20; gap:2px; padding:4px; border-radius:12px; white-space:nowrap;
+    background:#EFEBE3; box-shadow:0 8px 22px rgba(23,20,15,.16);}
+  .site-header .nav-onpage.folded.open .fold-list{display:flex;}
   .site-header .nav-onpage.folded.open .fold-ic{transform:rotate(180deg); display:inline-block;}
-  .site-header .nav-onpage.folded.anchored{position:absolute; z-index:5; border-radius:12px; transition:none;}
-  .site-header .nav-onpage.folded.anchored.open{background:var(--hdr-pill, #EFEBE3); box-shadow:0 8px 22px rgba(23,20,15,.16);}
-  body.theme-dark .site-header .nav-onpage.folded.anchored.open{background:#24212E;}
-  .site-header .fold-ph{display:block; flex:none;}
+  body.theme-dark .site-header .nav-onpage.folded .fold-list{background:#24212E;}
 }
-@media(max-width:1100px){ .site-header .nav-onpage .fold-main{display:none;} }
+@media(max-width:1100px){ .site-header .nav-onpage .fold-main{display:none;} .site-header .fold-items, .site-header .fold-list{display:contents;} }
 /* #97: be Admin slankiklio - „Žiūrėti kaip“ meniu ir aiškus grįžimas */
 .adm-sw.adm-back{width:auto; padding:8px 14px; gap:6px; background:#17140F; color:#fff; border-radius:12px; font-weight:700;}
 .adm-sw.adm-back .adm-knob{display:none;}
@@ -342,3 +340,6 @@ body.theme-dark .am-gh{color:#A9A2B8;}
 body.theme-dark .m-tabbar{background:rgba(20,18,28,.96); border-top-color:rgba(255,255,255,.08);}
 body.theme-dark .m-tabbar > a, body.theme-dark .m-more > summary{color:#D9D4E4;}
 body.theme-dark .pm-site > summary{background:rgba(255,255,255,.1);}
+.site-header .fold-btn{padding:10px 12px; font-size:14px; font-weight:600; line-height:1; color:#2B2620; border-radius:10px;}
+.site-header .fold-btn:hover{background:rgba(255,255,255,.7);}
+body.theme-dark .site-header .fold-btn{color:#ECE8F4;}

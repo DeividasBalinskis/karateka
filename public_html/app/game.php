@@ -29,8 +29,6 @@ const GAME_SPECIES = [
 // 'kitsune' - perdažoma pikselinė lapė (kailis, liepsnos, kimono, diržas); kiti - paveikslėliai img/zaidimas/herojai/<raktas>.webp
 const GAME_PX_CHARS = [
     'kitsune' => ['Kitsunė (perdažoma)', 'l'],
-    'wtiger' => ['Baltasis tigras', 'r'],
-    'raven' => ['Varnas tengu', 'r'],
     'crane' => ['Šventoji gervė', 'r'],
     'swolf' => ['Dvasių vilkas', 'r'],
     'gdragon' => ['Auksinis drakonas', 'r'],
@@ -42,7 +40,6 @@ const GAME_PX_CHARS = [
     'scat' => ['Šešėlių katė', 'r'],
     'turtle' => ['Vėžlys meistras', 'r'],
     'phoenix' => ['Feniksas', 'r'],
-    'panda' => ['Panda', 'c'],
     'shark' => ['Ryklys', 'r'],
     'ghost' => ['Dvasia', 'c'],
     'lava' => ['Lavos golemas', 'c'],

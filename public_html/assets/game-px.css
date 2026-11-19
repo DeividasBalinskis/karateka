@@ -511,3 +511,62 @@
 .df-log li b{color:#22A06B; white-space:nowrap;}
 .df-log li small{color:#6B6588;}
 @media (max-width:700px){ .df-log{grid-template-columns:1fr;} }
+/* Dojo apačioje (#115): reitingas ir draugų kvietimai - tas pats šviesus stilius kaip lentelės */
+.dojo-social{display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:16px 0 0; font-family:'Inter',sans-serif;}
+.ds-col{padding:16px 18px; border-radius:14px; background:linear-gradient(180deg, rgba(255,255,255,.97), rgba(241,239,252,.95)); color:#1F1B3A; box-shadow:0 0 0 2px rgba(31,27,58,.85), 0 8px 20px rgba(10,8,30,.15);}
+.ds-col h2{margin:0 0 10px; font:700 1.1rem 'Pixelify Sans','Space Grotesk',sans-serif; color:#2B2660;}
+.ds-rank, .ds-players{list-style:none; margin:0; padding:0; display:grid; gap:4px;}
+.ds-rank li, .ds-players li{display:flex; align-items:center; gap:10px; padding:6px 8px; border-radius:10px; background:rgba(110,90,190,.06);}
+.ds-rank li.me{background:rgba(242,183,5,.2); box-shadow:inset 0 0 0 2px rgba(242,183,5,.6);}
+.ds-pos{width:26px; height:26px; flex:none; border-radius:50%; display:grid; place-items:center; font-weight:800; font-size:.8rem; background:#E4E0F5;}
+.ds-pos.p1{background:#F2B705;} .ds-pos.p2{background:#C9CED6;} .ds-pos.p3{background:#D69A5B;}
+.ds-n{flex:1; min-width:0; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.ds-n small, .ds-rank b small{color:#6B6588; font-weight:500;}
+.ds-me{margin:8px 0 0; font-size:.9rem;}
+.ds-link{display:inline-block; margin-top:10px; font-weight:600;}
+.ds-q{width:100%; margin-bottom:8px; padding:8px 10px; border-radius:10px; border:1px solid rgba(31,27,58,.2);}
+.ds-players{max-height:340px; overflow:auto;}
+.ds-acts{display:flex; gap:6px; flex:none;}
+.ds-btn{border:0; border-radius:8px; padding:6px 10px; font:700 .8rem 'Inter',sans-serif; background:linear-gradient(135deg, #5B5FDA, #8A4FC9); color:#fff !important; cursor:pointer; text-decoration:none !important;}
+.ds-btn.ghost{background:#fff; color:#2B2660 !important; box-shadow:inset 0 0 0 1.5px rgba(43,38,96,.3);}
+.ds-off{color:#6B6588;}
+.ds-toast{margin:10px 0 0; padding:8px 10px; border-radius:10px; background:#E3F4EA; color:#0B6B3A; font-weight:600;}
+.ds-empty{color:#6B6588;}
+@media (max-width:760px){ .dojo-social{grid-template-columns:1fr;} }
+
+/* =====================================================================
+   v1.46 (#116): vientisas žaidimo dizainas visur - be medienos, pergamento ir rudai geltonų spalvų.
+   Skydeliai - šviesus „stiklas“ su indigo kontūru, antraštės - naktinis indigo, mygtukai - violetinis gradientas.
+   ===================================================================== */
+:root{--g-ink:#1F1B3A; --g-line:rgba(31,27,58,.85); --g-glass:linear-gradient(180deg, rgba(255,255,255,.97), rgba(241,239,252,.95)); --g-night:linear-gradient(160deg, #2B2660, #1B1A3E); --g-btn:linear-gradient(135deg, #5B5FDA 0%, #8A4FC9 60%, #C2569A 100%);}
+/* Arenos laukiamasis */
+.arena[data-view="lobby"]{background:var(--g-night); border-radius:10px; box-shadow:0 0 0 2px #0F0E24, inset 0 0 0 2px rgba(139,92,246,.45), 0 14px 30px rgba(15,14,36,.28); padding:16px;}
+.arena[data-view="lobby"] .ar-head{background:linear-gradient(135deg, rgba(91,95,218,.35), rgba(194,86,154,.25)); border-radius:12px; box-shadow:0 0 0 2px rgba(255,255,255,.15); text-shadow:none;}
+.arena[data-view="lobby"] .ar-title{color:#fff;} .arena[data-view="lobby"] .ar-sub{color:#D8D4F5;}
+.arena[data-view="lobby"] .g-btn, .arena[data-view="lobby"] .ar-head .g-btn, .arena[data-view="lobby"] .ar-bot .g-btn, .arena[data-view="lobby"] .g-hcard .g-btn, .arena[data-view="lobby"] .ar-inv .g-btn{
+  background:var(--g-btn); color:#fff; border:0; border-radius:10px; text-shadow:none; box-shadow:0 4px 10px rgba(91,95,218,.3), inset 0 1px 0 rgba(255,255,255,.25); font-family:'Inter',sans-serif; font-weight:700;}
+.arena[data-view="lobby"] .g-btn:hover{filter:brightness(1.08);}
+.arena[data-view="lobby"] .g-card, .arena[data-view="lobby"] .ar-invites{background:var(--g-glass); border-radius:14px; color:var(--g-ink); box-shadow:0 0 0 2px var(--g-line), 0 8px 20px rgba(10,8,30,.25);}
+.arena[data-view="lobby"] .g-card h3{color:#2B2660;}
+.arena[data-view="lobby"] .ar-mode{border-radius:12px; background:#fff; box-shadow:0 0 0 1.5px rgba(43,38,96,.2);}
+.arena[data-view="lobby"] .g-hcard{background:#fff; border-radius:14px; box-shadow:0 0 0 1.5px rgba(43,38,96,.18), 0 4px 10px rgba(10,8,30,.08);}
+.arena[data-view="lobby"] .g-empty{color:#5E5A80;}
+.arena[data-view="lobby"] input[type=search]{border-radius:10px !important; border:1.5px solid rgba(43,38,96,.3) !important; background:#fff;}
+/* Žaidimų kortelės (Greita kova, Kata ritmas ir kt.) */
+.g-game, .g-game.kova, .g-game.keturi, .g-game.ritmas{background:var(--g-glass) !important; color:var(--g-ink); text-shadow:none; border-radius:14px; box-shadow:0 0 0 2px var(--g-line), inset 5px 0 0 #8B5CF6, 0 6px 14px rgba(10,8,30,.2) !important;}
+.g-game.kova{box-shadow:0 0 0 2px var(--g-line), inset 5px 0 0 #E0465A, 0 6px 14px rgba(10,8,30,.2) !important;}
+.g-game .gi{background:#EEEBFB; border-radius:10px; box-shadow:0 0 0 2px rgba(43,38,96,.25);}
+/* Kovos ekranas: pasirinkimų lenta, kortos, mygtukas */
+.fa-board, .fa-arena .fa-cards{background:var(--g-night) !important; border-radius:12px; box-shadow:0 0 0 2px #0F0E24 !important;}
+.fa-board .fa-chk{background:var(--g-glass); border-radius:10px; color:var(--g-ink);}
+.fa-board .fa-chk b{color:var(--g-ink);}
+.fa-board .fa-chk.sel{background:#fff; box-shadow:0 0 0 2px #0F0E24, 0 0 0 5px #8B5CF6 !important;}
+.fa-arena .fa-card{background:var(--g-glass); color:var(--g-ink); text-shadow:none; border-radius:10px; box-shadow:0 0 0 2px var(--g-line) !important;}
+.fa-arena .fa-go .px-btn.go{background:var(--g-btn); border-radius:12px; color:#fff;}
+/* Keturi iš eilės, greita kova, ritiniai (Kuprinė, Gyvūnėliai...) */
+.k4-bot{background:var(--g-glass) !important; border-radius:14px !important; box-shadow:0 0 0 2px var(--g-line), 0 6px 14px rgba(10,8,30,.2) !important;}
+.gr-b, .gr-b.blk, .gr-b.atk{background:var(--g-glass); border-radius:12px;}
+.sc-rod{background:var(--g-night); border-radius:6px;}
+.sc-paper{background:var(--g-glass); color:var(--g-ink); scrollbar-color:#8B5CF6 #EEEBFB; box-shadow:none;}
+.g-scenes button{background:#2B2660; border-radius:10px;}
+.pq-body{border-radius:12px;}

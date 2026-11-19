@@ -107,9 +107,14 @@ test('exam signup link for people without an account, invitations, exam list for
   // Prisijungus: pagrindinio puslapio skiltys - vienas „Apie klubą ‹“, užvedus išsiskleidžia (#78)
   await a.goto('index.php');
   check('logged-in menu folded into one item', await a.locator('.nav-onpage.folded .fold-main').count() === 1);
-  await a.hover('.nav-onpage.folded');
-  await a.waitForTimeout(400);
-  check('hover unfolds the other sections', await a.locator('.nav-onpage.folded li:not(.fold-main) a').first().isVisible());
+  // #117: paspaudus išsiskleidžia (dešinė pusė nejuda), paspaudus dar kartą - susiskleidžia
+  const accLeft = () => a.evaluate(() => Math.round(document.querySelector('.nav-account').getBoundingClientRect().left));
+  const before = await accLeft();
+  await a.click('.fold-btn');
+  check('click unfolds the other sections', await a.locator('.nav-onpage .fold-list a').first().isVisible());
+  check('right side does not move', await accLeft() === before);
+  await a.click('.fold-btn');
+  check('second click folds again', !(await a.locator('.nav-onpage .fold-list a').first().isVisible()));
   // Prisijungimo puslapyje - ką rasite prisijungę
   await v.goto('prisijungti.php');
   check('login page explains what is inside', /renginius, registracijas, sąskaitas, dokumentus/.test(await v.textContent('.login-intro')));

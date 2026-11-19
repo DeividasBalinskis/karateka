@@ -60,7 +60,7 @@ function fight_bot_side(array $me, string $mode, string $lvl): array
     $s['hp'] = (int) round($s['hp'] * $k);
     $s['dmg'] = [max(1, (int) round($s['dmg'][0] * $k)), max(2, (int) round($s['dmg'][1] * $k))];
     $names = ['easy' => t('Senpai Bambukas'), 'normal' => t('Sensei Makivara'), 'hard' => t('Meistras Drakonas')];
-    $species = ['easy' => 'panda', 'normal' => 'frog', 'hard' => 'gdragon'][$lvl] ?? 'frog';
+    $species = ['easy' => 'turtle', 'normal' => 'frog', 'hard' => 'gdragon'][$lvl] ?? 'frog';   // #115: be pandos
     return ['hero' => 0, 'bot' => $lvl, 'name' => $names[$lvl] ?? $names['normal'], 'level' => $me['level'], 's' => $s, 'pet' => null,
             // Pikselinės lapės: lengvas - smėlinė su žaliomis liepsnomis, vidutinis - ruda su oranžinėmis, sunkus - šešėlių lapė su violetinėmis
             'art' => ['species' => $species, 'gender' => 'm', 'look' => ['fur' => ['easy' => '#E9D2A8', 'normal' => '#C8703A', 'hard' => '#3B3A4A'][$lvl] ?? '#C8703A',

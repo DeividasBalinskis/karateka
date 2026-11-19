@@ -58,13 +58,15 @@ $items = q_all('SELECT * FROM news WHERE is_published = 1 AND published_at <= NO
 // Treneriui - ir juodraščiai bei suplanuotos (nariai jų nemato)
 $drafts = is_staff() ? q_all('SELECT * FROM news WHERE is_published = 0 OR published_at > NOW() ORDER BY published_at DESC') : [];
 
-page_start(t('Naujienos'), ['description' => t('VšĮ Karate Ateitis klubo naujienos: varžybos, egzaminai, renginiai.'), 'section' => 'naujienos']);
+// #118: vienas puslapis - kairėje naujienos, dešinėje artimiausi renginiai (2 renginiai = vienos naujienos aukštis)
+$events = public_upcoming_events(8);
+page_start(t('Naujienos ir renginiai'), ['description' => t('VšĮ Karate Ateitis klubo naujienos: varžybos, egzaminai, renginiai.'), 'section' => 'naujienos']);
 ?>
 <div class="page-head">
   <div class="eyebrow"><?= te('Klubo gyvenimas') ?></div>
-  <h1 class="styled"><?= te('Naujienos') ?></h1>
+  <h1 class="styled"><?= te('Naujienos ir renginiai') ?></h1>
 </div>
-<?= staff_bar([[t('+ Nauja naujiena'), 'admin/naujienos.php?edit=new', true]]) ?>
+<?= staff_bar([[t('+ Nauja naujiena'), 'admin/naujienos.php?edit=new', true], [t('+ Naujas renginys'), 'admin/renginiai.php?edit=new&back=renginiai']]) ?>
 <?php if ($drafts): ?>
   <div class="panel card drafts-box">
     <div class="kicker"><?= te('Juodraščiai ir suplanuotos - mato tik treneriai') ?></div>
@@ -78,6 +80,20 @@ page_start(t('Naujienos'), ['description' => t('VšĮ Karate Ateitis klubo nauji
   </div>
 <?php endif; ?>
 
+<div class="nr-wrap">
+<aside class="nr-events" aria-label="<?= te('Artimiausi renginiai') ?>">
+  <div class="nr-h"><b><?= te('📅 Renginiai') ?></b><a href="<?= url('renginiai.php') ?>"><?= te('Visi ir kalendorius →') ?></a></div>
+  <?php if (!$events): ?><p class="panel card muted small"><?= te('Artimiausių renginių nėra.') ?></p><?php endif; ?>
+  <?php foreach ($events as $ev): $ts = strtotime($ev['starts_on']); ?>
+    <a class="panel nr-ev t-<?= e($ev['type']) ?>" href="<?= url('renginys.php?id=' . (int) $ev['id']) ?>">
+      <span class="nr-date"><b><?= date('j', $ts) ?></b><small><?= e(mb_substr(month_names_gen()[(int) date('n', $ts)], 0, 3)) ?></small></span>
+      <span class="nr-info"><span class="badge type-badge t-<?= e($ev['type']) ?>"><?= e(t(EVENT_TYPES[$ev['type']] ?? '')) ?></span>
+        <b class="nr-title"><?= e(tr_text($ev['title'])) ?></b>
+        <small class="muted"><?= $ev['start_time'] ? e(fmt_time($ev['start_time'])) . ' · ' : '' ?><?= e(tr_text((string) $ev['location'])) ?></small></span>
+    </a>
+  <?php endforeach; ?>
+</aside>
+<div class="nr-news">
 <?php if (!$items): ?>
   <div class="panel card"><p class="muted"><?= te('Naujienų dar nėra.') ?></p></div>
 <?php endif; ?>
@@ -108,6 +124,8 @@ page_start(t('Naujienos'), ['description' => t('VšĮ Karate Ateitis klubo nauji
     <?php if ($page * PER_PAGE < $total): ?><a class="btn btn-ghost" href="?p=<?= $page + 1 ?>"><?= te('Senesnės →') ?></a><?php endif; ?>
   </div>
 <?php endif; ?>
+</div>
+</div>
 <?php
 news_script();
 page_end();
