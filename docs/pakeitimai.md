@@ -4,6 +4,32 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.47 - 2026-11-19 (Budo telefone ir centre, apdovanojimai, renginiai su nuotraukomis, atsiliepimai #119-#125)
+**Reikia atnaujinti duomenų bazę: db/042** (Pradžia → „Atnaujinkite duomenų bazę“). Zip'o turinį išpakuokite **tiesiai į svetainės aplanką**.
+
+**🥋 Budo varžybos**
+- Plačiame ir ultra plačiame ekrane - viskas centre (iki 1680 px), nebeištempta iki kraštų.
+- Telefone balų lentelė - kortelės: vardas, balas ir vieta viršuje, kata, po ja teisėjų langeliai T1…T5. Nebereikia slinkti į šoną.
+- Įrašius balą ar paspaudus „Laimėjo AKA / SHIRO“ (ir tinkle) vaizdas nebeperšoka į kairę / į pradžią / į viršų - lieka ten, kur buvai.
+- Telefone viršutinė juosta nebeprilimpa - neuždengia ketvirčio ekrano.
+- **Apdovanojimai (#122):** baigta rungtis pati atsiranda „🏅 Apdovanoti dabar“ (Rezultatai) ir apdovanojimų planšetėje - su suskaičiuotais prizininkais,
+  pirmiausia anksčiausiai baigtos. „✓ Apdovanota“ vienu paspaudimu nukelia žemyn į „Jau apdovanota“ (matosi, kad būtų galima atsekti klaidas, „↺ Grąžinti“).
+  „Siųsti apdovanojimams“ spausti nebereikia.
+
+**📰 Naujienos ir renginiai (#119)**
+- Renginiai didesni, su nuotrauka (renginio redagavime - „Nuotrauka“; be jos - spalvotas fonas su ženklu). Du renginiai - vienos naujienos aukščio.
+- Renginių stulpelis tęsiasi iki apačios kaip naujienos: artimiausi, o žemiau - „Neseniai vyko“.
+- Renginių puslapyje - „← Naujienos ir renginiai“. Telefone renginiai - slenkama juostelė viršuje.
+
+**🛠 Valdymas**
+- Pranešimai - apačioje, „Tvarkyti“ grupėje (#121). Nustatymuose nebėra „Egzaminų programa“ - ji Egzaminuose (#120).
+- Egzamino protokolas: be vidurkio stulpelio (#124); planšetėje lentelė telpa į ekraną (Nr. - po vardu), puslapis nebeplatėja.
+- Telefone „⋯ Daugiau“ ir kiti išskleidžiami langai užsidaro paspaudus šalia - fone (#125).
+- Redaguojant pagrindinį puslapį „Išsaugoti / Baigti / Vertimai“ juosta nebelenda po antrašte (#123).
+
+**📱 Telefonas**
+- Patikrinti visi Karateka, Budo ir LTKF puslapiai telefono pločiu - niekas nebeišlenda į šoną.
+
 ## v1.46 - 2026-11-19 (Užduotys vaikams, telefono meniu, naujienos ir renginiai kartu, atsiliepimai #113-#118)
 **Reikia atnaujinti duomenų bazę: db/041** (Pradžia → „Atnaujinkite duomenų bazę“). Zip'o turinį išpakuokite **tiesiai į svetainės aplanką**.
 
