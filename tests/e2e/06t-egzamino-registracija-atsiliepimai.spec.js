@@ -12,7 +12,7 @@ test('exam signup link for people without an account, invitations, exam list for
 
   // „Egzaminai“ - trenerio skirtukų juostoje (šalia „Varžybos“, „Testai“)
   await a.goto('admin/');
-  check('coach tabs have Egzaminai', await a.locator('.sub-nav a[href*="admin/egzaminai.php"]').count() === 1);
+  check('admin menu has Egzaminai', await a.locator('.adm-side a[href*="admin/egzaminai.php"]').count() === 1);
   await a.goto('admin/egzaminai.php');
   const item = a.locator('.exam-row', { hasText: 'E2E egzaminas' });
   check('exam listed', await item.count() === 1);

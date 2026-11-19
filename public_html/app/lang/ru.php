@@ -3169,4 +3169,6 @@ Nuo 2013 m. treniravosi Tradicinio karate-do klubo „Sanrei“ komandoje, o 201
     'Už ką gauta' => 'За что получено',
     'Dar nieko - XP ateina iš aktyvumo taškų klube.' => 'Пока ничего - XP приходит из баллов активности в клубе.',
     'Kaip gauti daugiau' => 'Как получить больше',
+    'Šoninis + eilutė telefone' => 'Боковое меню + строка на телефоне',
+    'Kompiuteryje - meniu kairėje (Kasdien, Klubas, Tvarkyti), telefone ir planšetėje - viena eilutė su „Daugiau ▾“.' => 'На компьютере - меню слева (Ежедневно, Клуб, Управление), на телефоне и планшете - одна строка с «Ещё ▾».',
 ];

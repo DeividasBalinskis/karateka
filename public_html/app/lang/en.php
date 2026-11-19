@@ -3169,4 +3169,6 @@ From 2013 he trained with the team of the traditional karate-do club "Sanrei", a
     'Už ką gauta' => 'Earned for',
     'Dar nieko - XP ateina iš aktyvumo taškų klube.' => 'Nothing yet - XP comes from activity points in the club.',
     'Kaip gauti daugiau' => 'How to earn more',
+    'Šoninis + eilutė telefone' => 'Side menu + a row on phones',
+    'Kompiuteryje - meniu kairėje (Kasdien, Klubas, Tvarkyti), telefone ir planšetėje - viena eilutė su „Daugiau ▾“.' => 'On a computer - a menu on the left (Daily, Club, Manage); on phones and tablets - one row with "More ▾".',
 ];

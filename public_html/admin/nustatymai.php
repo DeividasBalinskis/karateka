@@ -57,7 +57,7 @@ page_start(t('Nustatymai'), ['admin' => true]);
         <?php endforeach; ?>
       </section>
     <?php endforeach; ?>
-    <?php if (is_admin($me)): $mvAll = (string) site_setting('menu_variant', 'dabar'); ?>
+    <?php if (is_admin($me)): $mvAll = (string) site_setting('menu_variant', 'abu'); $mvAll = isset(MENU_VARIANTS[$mvAll]) ? $mvAll : 'abu'; ?>
       <section class="panel card settings-group menu-pick" id="meniu">
         <div class="kicker"><?= te('Meniu išdėstymas') ?></div>
         <p class="small muted" style="margin:0 0 8px;"><?= te('„Peržiūrėti“ - tik jums (šioje naršyklėje), „Visiems“ - visiems treneriams.') ?></p>

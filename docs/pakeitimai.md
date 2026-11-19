@@ -7,9 +7,10 @@ Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar
 ## v1.45 - 2026-11-19 (Atsiliepimai #104-#112: paprastesnis meniu, Dojo be medienos)
 Duomenų bazės atnaujinti nereikia (jei dar neįkelta v1.44 - reikia db/040). Zip'o turinį išpakuokite **tiesiai į svetainės aplanką**.
 
-**🧭 Valdymo meniu (#106)** - 4 nauji variantai, visur ne daugiau 2 lygių; pasirinkti: Nustatymai → „Meniu išdėstymas“
-- „Peržiūrėti“ - pamatyti tik sau, „Visiems“ - įjungti visiems treneriams. Kol nepasirinkta - lieka dabartinis.
-- B: viena eilutė + „⚙ Daugiau ▾“; C: šoninis meniu (Kasdien, Klubas, Tvarkyti); D: „Valdymas ▾“ - vienas didelis meniu; E: viena juosta (svetainė - „🌐 Svetainė ▾“).
+**🧭 Valdymo meniu (#106)** - be trečio lygio; pasirinkti B + C (Denio sprendimas)
+- Kompiuteryje - meniu kairėje, sugrupuotas: Kasdien (Pradžia, Treniruotė, Egzaminai, Pranešimai), Klubas (Nariai, Aktyvumo taškai, Testai), Tvarkyti (Patvirtinimai, Atsiliepimai, Nustatymai).
+- Telefone ir planšetėje - viena eilutė: Pradžia, Treniruotė, Egzaminai, Nariai, Pranešimai ir „⚙ Daugiau ▾“ su retais skyriais.
+- Nustatymai → „Meniu išdėstymas“: galima palikti tik šoninį (C) ar tik eilutę (B); „Peržiūrėti“ - tik sau, „Visiems“ - visiems.
 - Nustatymų puslapyje nebėra dublikatų (#105): aktyvumo taškai, LTKF ir varžybų rezultatai - tik meniu.
 
 **Kita**

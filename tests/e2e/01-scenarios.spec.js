@@ -252,19 +252,16 @@ test('admin: notifications, chat, comments at the post, broadcast, events, atten
   check('dash two columns', await a.locator('.dash .dash-main #svarbu').count() === 1 && await a.locator('.dash .dash-side').count() === 1);
   check('dash quick actions', (await a.locator('.dash-actions a').allTextContents()).join(',') === '+ Naujiena,+ Renginys,+ Narys');
   check('no settings on dashboard', await a.locator('#paskyra, #tfa, #nustatymai').count() === 0);
-  const tabs = await a.locator('.sub-nav a').allTextContents();
-  check('admin tabs merged', tabs.some(t => /Nustatymai/.test(t)) && !tabs.some(t => /^\s*Grupės\s*$/.test(t)), tabs.join(','));
-  const centre = await a.evaluate(() => {
-    const t = document.querySelectorAll('.sub-nav a');
-    return Math.round((t[0].getBoundingClientRect().left + t[t.length - 1].getBoundingClientRect().right) / 2 - document.documentElement.clientWidth / 2);
-  });
-  check('sub-nav centered', Math.abs(centre) <= 8, centre);
-  await nav(a, () => a.click('.sub-nav a:has-text("Nustatymai")'));
-  check('settings page', a.url().includes('admin/nustatymai.php') && await a.locator('.sub-nav a.active', { hasText: 'Nustatymai' }).count() === 1);
+  // Valdymo meniu (#106): kompiuteryje - kairėje, grupėmis; visi skyriai vienoje vietoje, be trečio lygio
+  const tabs = await a.locator('.adm-side a').allTextContents();
+  check('admin side menu has all sections', tabs.some(t => /Nustatymai/.test(t)) && tabs.some(t => /Nariai/.test(t)) && !tabs.some(t => /^\s*Grupės\s*$/.test(t)), tabs.join(','));
+  check('side menu groups', await a.locator('.adm-side .am-group').count() === 3 && await a.locator('.adm-side a.active', { hasText: 'Pradžia' }).count() === 1);
+  await nav(a, () => a.click('.adm-side a:has-text("Nustatymai")'));
+  check('settings page', a.url().includes('admin/nustatymai.php') && await a.locator('.adm-side a.active', { hasText: 'Nustatymai' }).count() === 1);
   check('settings links and account', await a.locator('.settings-link[href*="grupes.php"]').count() === 1 && await a.locator('.settings-link[href*="kopijos.php"]').count() === 1
     && await a.locator('#paskyra').count() === 1);
   await a.goto('admin/programa.php');
-  check('program page under settings tab', await a.locator('.sub-nav a.active', { hasText: 'Nustatymai' }).count() === 1);
+  check('program page under Egzaminai', await a.locator('.adm-side a.active', { hasText: 'Egzaminai' }).count() === 1);
   check('no messages tab (chat window instead)', !tabs.some(t => /Žinutės/.test(t)), tabs.join(','));
   // Pokalbis: „Visi nariai“ pagal grupes, profilis paspaudus vardą
   await a.click('#chatFab'); await a.waitForTimeout(1000);

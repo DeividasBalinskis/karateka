@@ -240,16 +240,15 @@ html{scrollbar-gutter:stable;}
 }
 /* ---------- Valdymo meniu variantai (#106): ne daugiau 2 lygių ---------- */
 .am-ic{font-size:15px; line-height:1;}
-.count-badge + svg, .am-more > summary svg, .am-site > summary svg, .am-mega > summary svg{margin-left:4px; opacity:.7;}
+.am-more > summary svg{margin-left:4px; opacity:.7;}
 /* Iškrentantys sąrašai (Daugiau, Svetainė) */
-.am-more, .am-site, .am-mega{position:relative;}
-.am-more > summary, .am-site > summary{list-style:none; cursor:pointer; display:inline-flex; align-items:center; gap:6px; padding:9px 13px; border-radius:10px; font-size:14px; font-weight:600; line-height:1; color:inherit; white-space:nowrap;}
-.am-more > summary::-webkit-details-marker, .am-site > summary::-webkit-details-marker, .am-mega > summary::-webkit-details-marker{display:none;}
-.am-more > summary:hover, .am-site > summary:hover{background:rgba(255,255,255,.7);}
+.am-more{position:relative;}
+.am-more > summary{list-style:none; cursor:pointer; display:inline-flex; align-items:center; gap:6px; padding:9px 13px; border-radius:10px; font-size:14px; font-weight:600; line-height:1; color:inherit; white-space:nowrap;}
+.am-more > summary::-webkit-details-marker{display:none;}
+.am-more > summary:hover{background:rgba(255,255,255,.7);}
 .am-more > summary.active{background:#fff; color:#6E4A86; box-shadow:0 1px 4px rgba(80,50,100,.14);}
-.am-more[open] > summary svg, .am-site[open] > summary svg, .am-mega[open] > summary svg{transform:rotate(180deg);}
+.am-more[open] > summary svg{transform:rotate(180deg);}
 .am-more-panel{position:absolute; top:calc(100% + 6px); right:0; z-index:140; min-width:240px; display:grid; gap:2px; padding:8px; border-radius:14px; background:#FBF9F4; border:1px solid rgba(23,20,15,.08); box-shadow:0 14px 36px rgba(23,20,15,.18);}
-.am-site .am-more-panel{left:0; right:auto;}
 .am-row{display:flex; align-items:center; gap:10px; padding:9px 10px; border-radius:10px; color:#17140F !important; text-decoration:none; font-weight:600; font-size:14px;}
 .am-row:hover{background:rgba(23,20,15,.06); text-decoration:none;}
 .am-row.active{background:rgba(110,74,134,.1); color:#6E4A86 !important;}
@@ -274,32 +273,23 @@ html{scrollbar-gutter:stable;}
   .adm-side .am-gh, .adm-side-h{display:none;}
   .adm-side .am-row{white-space:nowrap; padding:8px 10px;}
 }
-/* Variantas „Valdymas ▾ - didelis meniu“ */
-.am-mega > summary{list-style:none; cursor:pointer; display:inline-flex; align-items:center;}
-.am-mega-panel{position:absolute; right:0; top:calc(100% + 10px); z-index:150; width:min(760px, 94vw); display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:10px; padding:14px; border-radius:18px; background:#FBF9F4; border:1px solid rgba(23,20,15,.08); box-shadow:0 20px 50px rgba(23,20,15,.22);}
-.am-mega-panel .am-row{align-items:flex-start;}
-@media (max-width:1100px){ .am-mega-panel{position:static; width:auto; grid-template-columns:1fr; box-shadow:none; margin-top:8px;} }
-.am-crumb{display:flex; align-items:center; gap:8px; font-size:14px; margin:-12px 0 14px; color:#6B6458;}
-.am-crumb a{color:inherit; font-weight:600;}
-/* Variantas „Viena juosta“ */
-.nav-main.am-juosta{display:flex; align-items:center; gap:8px;}
-.am-jlinks{display:flex; align-items:center; gap:2px; padding:4px; border-radius:14px; background:rgba(23,20,15,.05);}
-.am-jlinks > a{display:inline-flex; align-items:center; gap:6px; padding:8px 11px; border-radius:10px; font-size:14px; font-weight:600; color:#2B2620; text-decoration:none; white-space:nowrap;}
-.am-jlinks > a:hover{background:rgba(255,255,255,.75); text-decoration:none;}
-.am-jlinks > a.active{background:#fff; color:#6E4A86; box-shadow:0 1px 4px rgba(80,50,100,.14);}
-.am-site > summary{background:rgba(23,20,15,.05);}
-@media (max-width:1100px){ .nav-main.am-juosta, .am-jlinks{flex-direction:column; align-items:stretch;} .am-more-panel{position:static; box-shadow:none;} }
 /* Tamsios temos */
-body.theme-dark .am-jlinks{background:rgba(255,255,255,.08);}
-body.theme-dark .am-jlinks > a, body.theme-dark .am-site > summary, body.theme-dark .am-more > summary{color:#ECE8F4;}
-body.theme-dark .am-jlinks > a.active, body.theme-dark .am-more > summary.active{background:#ECE8F4; color:#3E2C55;}
+body.theme-dark .am-more > summary{color:#ECE8F4;}
+body.theme-dark .am-more > summary.active{background:#ECE8F4; color:#3E2C55;}
 body.theme-dark .adm-side{background:rgba(26,23,34,.82); border-color:rgba(255,255,255,.08);}
 body.theme-dark .adm-side .am-row, body.theme-dark .adm-side-h{color:#ECE8F4 !important;}
 body.theme-dark .adm-side .am-row.active{background:rgba(255,255,255,.12); color:#fff !important;}
 body.theme-dark .am-gh{color:#A9A2B8;}
-body.theme-dark .am-crumb{color:#C9C3D6;}
-/* „Dabartinis“: aktyvus „Nustatymai“ susilieja su antra eilute (#105) */
-.sub-nav:not(.sub-nav-2):has(+ .sub-nav-2) a.active{border-radius:10px 10px 0 0; box-shadow:none; background:rgba(255,255,255,.55); margin-bottom:-6px; padding-bottom:15px;}
-/* „Viena juosta“: valdyme „Valdymas“ mygtuko nebereikia (juosta jau valdymo) */
-.hdr-juosta .nav-account .nav-login.is-current{display:none;}
-@media (min-width:1101px) and (max-width:1500px){ .am-jlinks > a{padding:8px 8px;} .am-jlinks .am-ic{display:none;} }
+/* B+C (#106): kompiuteryje - šoninis meniu, telefone ir planšetėje - viena eilutė su „Daugiau ▾“ */
+@media (min-width:1101px){ .sub-nav.am-narrow{display:none;} }
+@media (max-width:1100px){
+  .adm-side.am-wide{display:none;}
+  .adm-shell:has(.am-wide){display:block;}
+  .page.has-side:has(.am-wide){max-width:1120px;}
+  .am-line .am-more-panel{position:absolute; right:0; left:auto;}
+}
+@media (max-width:1100px){
+  .am-line .sub-inner{flex-wrap:wrap; justify-content:center; gap:4px; overflow:visible;}
+  .am-line .sub-inner > :first-child, .am-line .sub-inner > :last-child{margin-left:0; margin-right:0;}
+}
+@media (max-width:520px){ .am-line a, .am-line .am-more > summary{padding:8px 9px; font-size:13px;} .am-line .am-ic{display:none;} }
