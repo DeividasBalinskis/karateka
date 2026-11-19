@@ -4,6 +4,30 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.46 - 2026-11-19 (Užduotys vaikams, telefono meniu, naujienos ir renginiai kartu, atsiliepimai #113-#118)
+**Reikia atnaujinti duomenų bazę: db/041** (Pradžia → „Atnaujinkite duomenų bazę“). Zip'o turinį išpakuokite **tiesiai į svetainės aplanką**.
+
+**📋 Užduotys vaikams**
+- Mano paskyra → „📋 Užduotys“: visos trenerio užduotys, atsiųstos pamokos ir pastabos lieka visada - ir netyčia paspaudus „Peržiūrėjau“ / „Atlikau“.
+- Filtrai: Neatliktos, Pamokos, Pastabos ir užduotys, Pranešimai (ir tie, kur paspausta „Supratau“). „Svarbu“ apačioje - nuoroda čia.
+
+**📱 Telefono meniu** - 5 variantai pasirinkti (Nustatymai → „Telefono meniu“; kol nepasirinkta - kaip buvo)
+- Viskas viename ☰ · Apatinė juosta (kaip programėlė) · Eilutė + 🌐 · Didelis meniu lapas.
+
+**📰 Naujienos ir renginiai (#118)**
+- Viename puslapyje: kairėje naujienos, dešinėje artimiausi renginiai; du renginiai - vienos naujienos aukščio. Meniu - vienas punktas.
+- Visas renginių sąrašas ir kalendorius - „Visi ir kalendorius →“.
+
+**🧭 Antraštė**
+- Prie puslapių nebėra „›“ - rodyklės tik ten, kur kas nors išsiskleidžia (#113).
+- „Valdymas“ - nauja violetinė spalva visose temose; „▾“ šalia - tokia pati (#114).
+- „Apie klubą ‹“: paspaudus išsiskleidžia (virš kairės pusės - dešinė nejuda), paspaudus dar kartą - susiskleidžia (#117).
+
+**🏯 Žaidimas**
+- Dojo apačioje: 🏆 reitingas su kitais ir 👥 „Kviesk draugą į kovą“ su paieška (#115).
+- Panda, baltasis tigras ir varnas (prastai iškirptas) išimti - jų turėję gavo panašų personažą; varlė ir medūza - išvalyti likę taškeliai (#115).
+- Arena ir visi žaidimo langai - vientiso dizaino: be medienos, pergamento ir rudai geltonų spalvų (#116).
+
 ## v1.45 - 2026-11-19 (Atsiliepimai #104-#112: paprastesnis meniu, Dojo be medienos)
 Duomenų bazės atnaujinti nereikia (jei dar neįkelta v1.44 - reikia db/040). Zip'o turinį išpakuokite **tiesiai į svetainės aplanką**.
 
