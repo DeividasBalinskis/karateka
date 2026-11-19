@@ -2,7 +2,7 @@
 // Duomenų bazė (PDO, tik paruošti užklausos sakiniai)
 
 // Naujausias db/ failas, kurio reikia šiai svetainės versijai (pridėjus naują - pakeisti; tai tikrina ir testai)
-const DB_REQUIRED = '042_renginiu_nuotraukos.sql';
+const DB_REQUIRED = '043_zaidimas_tik_deniui.sql';
 
 function db(): PDO
 {
