@@ -141,6 +141,9 @@ legend{font-family:'Space Grotesk',sans-serif; font-weight:700; padding:0 6px;}
 .schedule-line:last-child{border-bottom:none;}
 .schedule-time{font-family:'JetBrains Mono',monospace; font-weight:600; white-space:nowrap;}
 .event{display:flex; gap:16px; align-items:flex-start;}
+.event.has-ph{flex-wrap:wrap;}
+.event-ph{flex:0 0 100%; height:160px; border-radius:12px; overflow:hidden; display:block; background:#E9E3F2;}
+.event-ph img{width:100%; height:100%; object-fit:cover; display:block;}
 .event-date{flex-shrink:0; width:58px; text-align:center; border-radius:10px; background:var(--ink); color:var(--cream); padding:8px 4px; line-height:1.1;}
 .event-date .d{font-family:'Space Grotesk',sans-serif; font-size:1.4rem; font-weight:700; display:block;}
 .event-date .m{font-family:'JetBrains Mono',monospace; font-size:0.62rem; text-transform:uppercase; letter-spacing:0.08em;}
@@ -1568,8 +1571,6 @@ input.tg:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
 @keyframes scBump{0%{background:#FFE9A8;} 100%{background:transparent;}}
 .prot-table .pi-kyu{min-width:58px;}
 .prot-table .sc-test .pi{min-width:64px;}
-.prot-table .col-avg{text-align:center; font-size:1.05rem; min-width:58px; background:rgba(110,74,134,0.06);}
-.prot-table th.col-avg{background:rgba(110,74,134,0.12);}
 .prot-note{min-width:150px;}
 .prot-note textarea.pi{min-height:30px; overflow:hidden; resize:none; border-color:rgba(23,20,15,0.1);}
 .pay-btn{border:1px dashed rgba(23,20,15,0.3); background:#fff; border-radius:8px; padding:5px 7px; font-size:.76rem; font-weight:700; cursor:pointer; white-space:nowrap; color:var(--muted, #6B6458);}
@@ -1625,7 +1626,6 @@ input.tg:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
 .belt-dot{width:12px; height:12px; border-radius:50%; border:1px solid rgba(0,0,0,.25); display:inline-block;}
 .need-list{list-style:none; padding:0; margin:12px 0 0; display:grid; gap:8px;}
 .prot-subedit[hidden]{display:none;}
-.prot-table th.col-avg{font-size:.72rem;}
 .exam-prices form button{justify-self:start;}
 /* Nustatymai → Meniu išdėstymas (#106) */
 .menu-pick .mp-row{display:flex; gap:12px; align-items:center; justify-content:space-between; padding:9px 4px; border-top:1px solid rgba(23,20,15,.08);}
@@ -1647,35 +1647,76 @@ input.tg:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
 .task-acts{margin:0;}
 .task-notifs{margin-top:16px;}
 /* #118: Naujienos ir renginiai viename puslapyje - kairėje naujienos, dešinėje renginiai; 2 renginiai = vienos naujienos aukštis */
-.nr-wrap{display:grid; grid-template-columns:minmax(0, 1fr) 320px; gap:22px; align-items:start;}
+.nr-wrap{display:grid; grid-template-columns:minmax(0, 1fr) minmax(340px, 430px); gap:24px; align-items:start;}
 .nr-news{grid-column:1; grid-row:1; min-width:0;}
-.nr-events{grid-column:2; grid-row:1; display:grid; gap:10px; position:sticky; top:96px;}
+.nr-events{grid-column:2; grid-row:1; display:grid; gap:10px;}
 .nr-h{display:flex; justify-content:space-between; align-items:baseline; gap:8px; height:26px; margin:0 2px;}
 .nr-h b{font-size:1.05rem;}
 .nr-h a{font-size:.85rem; font-weight:600;}
-.nr-ev{display:flex; gap:12px; align-items:center; height:119px; padding:12px 14px; border-radius:18px; text-decoration:none !important; color:var(--ink) !important; overflow:hidden; transition:transform .15s;}
+.nr-past-h{margin-top:14px;}
+/* Renginys (#119): nuotrauka kairėje, data ir informacija dešinėje; du renginiai - vienos naujienos aukščio */
+.nr-ev{display:grid; grid-template-columns:42% 1fr; height:145px; padding:0; border-radius:18px; text-decoration:none !important; color:var(--ink) !important; overflow:hidden; transition:transform .15s;}
 .nr-ev:hover{transform:translateY(-2px);}
-.nr-date{flex:none; width:54px; height:62px; border-radius:14px; display:grid; place-content:center; text-align:center; background:linear-gradient(160deg, var(--accent, #6E4A86), var(--accent-dark, #4E3266)); color:#fff;}
-.nr-date b{font-size:1.4rem; line-height:1;} .nr-date small{font-size:.72rem; text-transform:uppercase; letter-spacing:.06em; opacity:.9;}
-.nr-info{display:grid; gap:3px; min-width:0;}
-.nr-title{font-size:.98rem; line-height:1.2; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;}
+.nr-ev.is-past{opacity:.78;}
+.nr-ph{display:block; height:100%; overflow:hidden; background:#E9E3F2;}
+.nr-ph img{width:100%; height:100%; object-fit:cover; display:block;}
+.nr-ph.no-ph, .ev-ph.no-ph{display:grid; place-items:center; background:linear-gradient(150deg, #8E6BB8, #4E3266);}
+.nr-ph.no-ph.t-exam{background:linear-gradient(150deg, #4FA383, #1F5C47);}
+.nr-ph.no-ph.t-competition{background:linear-gradient(150deg, #D06A8E, #7A2E52);}
+.nr-ph.no-ph.t-seminar{background:linear-gradient(150deg, #5C8FD6, #27497F);}
+.nr-ph.no-ph.t-camp{background:linear-gradient(150deg, #E0A04C, #8A5418);}
+.nr-ph.no-ph i{font-style:normal; font-size:44px; filter:drop-shadow(0 4px 10px rgba(0,0,0,.25));}
+.nr-info{display:flex; flex-direction:column; gap:5px; min-width:0; padding:12px 14px;}
+.nr-top{display:flex; align-items:center; gap:8px;}
+.nr-date{flex:none; width:44px; height:46px; border-radius:12px; display:grid; place-content:center; text-align:center; background:linear-gradient(160deg, var(--accent, #6E4A86), var(--accent-dark, #4E3266)); color:#fff;}
+.nr-date b{font-size:1.15rem; line-height:1;} .nr-date small{font-size:.64rem; text-transform:uppercase; letter-spacing:.06em; opacity:.9;}
+.nr-title{font-size:1rem; line-height:1.22; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;}
 .nr-info small{white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
-.nr-info .badge{justify-self:start;}
-/* Naujiena - lygiai dviejų renginių aukščio (2 × 119 + tarpas); tekstas nukerpamas, visas - „Skaityti daugiau“ */
+/* Naujiena - lygiai dviejų renginių aukščio (2 × 145 + tarpas); tekstas nukerpamas, visas - „Skaityti daugiau“ */
 .nr-news .news-list{gap:10px; margin-top:36px;}
-.nr-news .news-card{height:248px; grid-template-columns:42% 1fr;}
+.nr-news .news-card{height:300px; grid-template-columns:44% 1fr;}
 .nr-news .news-card.no-cover{grid-template-columns:1fr;}
 .nr-news .news-card .cover{min-height:0;}
-.nr-news .news-card .body{padding:16px 20px; display:flex; flex-direction:column; gap:4px; overflow:hidden;}
-.nr-news .news-card h2{font-size:1.2rem; margin:2px 0;}
-.nr-news .news-card .news-body{flex:1; overflow:hidden; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical;}
+.nr-news .news-card .body{padding:18px 22px; display:flex; flex-direction:column; gap:4px; overflow:hidden;}
+.nr-news .news-card h2{font-size:1.25rem; margin:2px 0;}
+.nr-news .news-card .news-body{flex:1; overflow:hidden; display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical;}
 .nr-news .news-card .news-actions{margin-top:auto;}
+.nr-news .news-card .news-body{flex:none; max-height:4.6em; overflow:hidden;}
+.nr-news .news-card .news-body p{margin:0;}
+/* Reakcijos ir „Dalintis“ - vienoje eilutėje, kad tekstas nenukirstų per pusę eilutės */
+.nr-news .news-card .news-actions{display:flex; align-items:center; gap:8px; min-width:0;}
+.nr-news .news-card .news-actions .reactions{flex:1; min-width:0; flex-wrap:nowrap; overflow:hidden; margin-top:0;}
+@media (max-width:1100px){
+  .nr-wrap{grid-template-columns:minmax(0, 1fr) 320px; gap:18px;}
+  .nr-ev{grid-template-columns:1fr; height:145px;}
+  .nr-ev .nr-ph{display:none;}
+}
+/* Telefone: renginiai viršuje - slenkama juostelė (tik artimiausi), naujienos po jais */
 @media (max-width:980px){
   .nr-wrap{grid-template-columns:1fr;}
-  .nr-events{grid-column:1; grid-row:1; position:static; grid-template-columns:repeat(auto-fill, minmax(240px, 1fr));}
-  .nr-h{grid-column:1 / -1;}
+  .nr-events{grid-column:1; grid-row:1; grid-auto-flow:column; grid-auto-columns:minmax(250px, 78%); overflow-x:auto; scroll-snap-type:x mandatory; padding-bottom:6px;}
+  .nr-events .nr-h{display:none;}
+  .nr-events .nr-ev.is-past{display:none;}
+  .nr-ev{scroll-snap-align:start; grid-template-columns:38% 1fr; height:130px;}
+  .nr-ev .nr-ph{display:block;}
   .nr-news{grid-row:2;}
   .nr-news .news-list{margin-top:0;}
   .nr-news .news-card{height:auto;}
-  .nr-ev{height:auto; min-height:90px;}
+}
+
+/* #124 Egzamino protokolas: lentelė slenka savo rėmelyje, puslapis neplatėja (planšetėje nebe „atitolinta“) */
+.prot-wrap{overflow-x:auto; max-width:100%;}
+.nr-in{display:none;}
+@media screen and (min-width:761px) and (max-width:1400px){
+  .prot-table th, .prot-table td{padding-left:5px; padding-right:5px;}
+  /* Nr. - mažai po vardu, kad tilptų „Išlaikė / Neišlaikė“ */
+  .prot-table .th-nr, .prot-table td.prot-nr{display:none;}
+  .prot-table .prot-sub{flex-wrap:wrap;}
+  .prot-table .nr-in{display:block; flex:0 0 100%; white-space:nowrap; font:600 .68rem/1.3 ui-monospace, monospace; color:var(--muted, #6B6458);}
+  .prot-table .prot-name{min-width:150px;}
+  .prot-table .pi-kyu{min-width:44px;}
+  .prot-table .prot-note{min-width:100px;}
+  .prot-table .pi-score{width:40px; min-width:40px;}
+  .prot-table .sc-test .pi{min-width:48px;}
+  .prot-table .res-btn{padding:4px 4px; font-size:.7rem;}
 }

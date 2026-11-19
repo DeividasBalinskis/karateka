@@ -1276,10 +1276,11 @@
       ids.map(function (id, i) {
         var p = person(c, id), arr = src[id] || [], t = scoreTotal(c, arr), drop = droppedIdx(c, arr), x = sumOf[id] || {};
         var canOrd = which === 'scores' && (swapMode || !scoreDone(c));
-        var row = '<tr' + (t !== null ? ' class="scored"' : '') + (canOrd ? ' data-drop-ord="' + id + '"' : '') + '><td class="num">' + (canOrd ? '<span class="ord-grip" data-drag-ord="' + id + '" title="Tempkite - keisti eilę">⠿</span>' : '') + (i + 1) + '</td><td><b>' + esc(p.name) + '</b> <span class="muted small">' + esc(p.club) + '</span></td>' + (kata ? '<td>' + kataInput(c, which, id) + '</td>' : '');
-        for (var j = 0; j < f.judges; j++) row += '<td class="num"><input class="j-in' + (drop.indexOf(j) >= 0 ? ' dropped' : '') + '" type="number" step="0.1" min="0" max="10" inputmode="decimal" data-j="' + j + '" data-sp="' + id + '" data-which="' + which + '" value="' + (arr[j] !== undefined && arr[j] !== null ? esc(arr[j]) : '') + '" aria-label="Teisėjas ' + (j + 1) + '"></td>';
-        row += fin ? '<td class="num">' + fmtScore(c, t) + '</td><td class="num">' + fmtScore(c, x.r1) + '</td><td class="num"><b>' + fmtScore(c, x.sum) + '</b></td>' : '<td class="num"><b>' + fmtScore(c, t) + '</b></td>';
-        return row + '<td class="num">' + (placeOf[id] ? '<span class="rank r' + Math.min(placeOf[id], 4) + '">' + placeOf[id] + '</span>' : '') + '</td></tr>';
+        // Klasės sc-*: telefone eilutė tampa kortele (vardas, balas ir vieta viršuje, kata, teisėjų langeliai eilute)
+        var row = '<tr' + (t !== null ? ' class="scored"' : '') + (canOrd ? ' data-drop-ord="' + id + '"' : '') + '><td class="num sc-eil">' + (canOrd ? '<span class="ord-grip" data-drag-ord="' + id + '" title="Tempkite - keisti eilę">⠿</span>' : '') + (i + 1) + '</td><td class="sc-name"><b>' + esc(p.name) + '</b> <span class="muted small">' + esc(p.club) + '</span></td>' + (kata ? '<td class="sc-kata">' + kataInput(c, which, id) + '</td>' : '');
+        for (var j = 0; j < f.judges; j++) row += '<td class="num sc-j"><input class="j-in' + (drop.indexOf(j) >= 0 ? ' dropped' : '') + '" type="number" step="0.1" min="0" max="10" inputmode="decimal" placeholder="T' + (j + 1) + '" data-j="' + j + '" data-sp="' + id + '" data-which="' + which + '" value="' + (arr[j] !== undefined && arr[j] !== null ? esc(arr[j]) : '') + '" aria-label="Teisėjas ' + (j + 1) + '"></td>';
+        row += fin ? '<td class="num sc-sub" data-l="Finalas">' + fmtScore(c, t) + '</td><td class="num sc-sub" data-l="Pusfinalis">' + fmtScore(c, x.r1) + '</td><td class="num sc-sum" data-l="Iš viso"><b>' + fmtScore(c, x.sum) + '</b></td>' : '<td class="num sc-sum" data-l="' + lbl + '"><b>' + fmtScore(c, t) + '</b></td>';
+        return row + '<td class="num sc-place">' + (placeOf[id] ? '<span class="rank r' + Math.min(placeOf[id], 4) + '">' + placeOf[id] + '</span>' : '') + '</td></tr>';
       }).join('') + '</tbody></table></div></div>';
   }
   function renderScore(c, view) {
@@ -1303,7 +1304,7 @@
       (f.rounds === 2 ? ' <b>Finale pasirodo nuo žemiausio pusfinalio balo iki aukščiausio.</b>' : '') + '</p></div>';
     var y = window.scrollY; view.style.minHeight = view.offsetHeight + 'px';
     view.innerHTML = html;
-    view.style.minHeight = ''; if (window.scrollY !== y) window.scrollTo(0, y);
+    view.style.minHeight = ''; if (window.scrollY !== y) window.scrollTo(window.scrollX, y);
   }
   function renderDraw() {
     var sel = document.getElementById('draw-cat');
@@ -1468,7 +1469,7 @@
         render();
         var el = key && document.querySelector(key);
         if (el) { focusNoScroll(el); }
-        window.scrollTo(0, y);
+        window.scrollTo(window.scrollX, y);
       }, 0);
       return;
     }
@@ -1502,7 +1503,7 @@
     setTimeout(function () {
       var el = key && scope.querySelector(key);
       if (el) focusNoScroll(el);
-      if (Math.abs(window.scrollY - y) > 40) window.scrollTo(0, y);
+      if (Math.abs(window.scrollY - y) > 40) window.scrollTo(window.scrollX, y);
     }, 40);
   }
   // Fokusas be peršokimo: jei langelis matomas - vaizdas nejuda; jei ne - tik tiek, kad jis matytųsi
@@ -1511,6 +1512,13 @@
     try { el.select(); } catch (ex) {}
     var r = el.getBoundingClientRect(), vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
     if (r.top < 80 || r.bottom > vh - 20) window.scrollBy(0, r.top - Math.max(100, vh / 3));
+    // Į šoną - tik tiek, kad langelis matytųsi savo slenkamame rėmelyje (ne į pradžią)
+    var sc = el.closest('.table-scroll, .bracket-wrap');
+    if (sc && sc.scrollWidth > sc.clientWidth) {
+      var er = el.getBoundingClientRect(), cr = sc.getBoundingClientRect();
+      if (er.left < cr.left + 4) sc.scrollLeft -= cr.left - er.left + 30;
+      else if (er.right > cr.right - 4) sc.scrollLeft += er.right - cr.right + 30;
+    }
   }
   function focusKey(el) {
     if (!el || !el.dataset) return null;
@@ -1771,11 +1779,15 @@
       (lastTeamBout ? '<button type="button" class="btn btn-primary" id="bt-finish">✓ Baigti kovą</button>' : '') +
       '<span class="spacer"></span><span class="muted small">' + (tie ? 'Lygiosios - nugalėtoją pasirinkite:' : 'Arba sprendimu (hantei):') + '</span><button type="button" class="btn" data-win="a">Laimėjo AKA</button><button type="button" class="btn" data-win="b">Laimėjo SHIRO</button></div>';
     // Telefone: perpiešus (pvz. +1 taškas) lieka toje pačioje slinkimo vietoje
-    var oldCard = boutEl.querySelector('.bout-card'), keepY = oldCard ? oldCard.scrollTop : 0, keepWin = window.scrollY;
+    var oldCard = boutEl.querySelector('.bout-card'), keepY = oldCard ? oldCard.scrollTop : 0, keepX = oldCard ? oldCard.scrollLeft : 0, keepWin = window.scrollY;
+    var oldTs = oldCard && oldCard.querySelector('.table-scroll'), keepTs = oldTs ? oldTs.scrollLeft : 0;
     boutEl.innerHTML = '<div class="bout-card">' + head + '<div class="bout-body">' + body + '</div>' + foot + '</div>';
     renderTimer();
-    if (keepY) boutEl.querySelector('.bout-card').scrollTop = keepY;
-    if (window.scrollY !== keepWin) window.scrollTo(0, keepWin);
+    var nc = boutEl.querySelector('.bout-card');
+    if (keepY) nc.scrollTop = keepY;
+    if (keepX) nc.scrollLeft = keepX;
+    if (keepTs && nc.querySelector('.table-scroll')) nc.querySelector('.table-scroll').scrollLeft = keepTs;
+    if (window.scrollY !== keepWin) window.scrollTo(window.scrollX, keepWin);
   }
   function finishBout(forced) {
     var c = cat(B.cat), winner, txt, mode = B.mode;
@@ -3109,7 +3121,24 @@
     else if (t.dataset.enRej) { markEntries([+t.dataset.enRej], 'rejected'); renderEntries(); }
   });
 
-  function render() {
+  // Perpiešus vaizdas nebeperšoka į kairę / į pradžią / į viršų (telefone - balų lentelė, tinklas, AKA / SHIRO): išsaugoma ir grąžinama
+  // kiekvieno slenkamo rėmelio ir lango padėtis
+  var HSCROLL = '.table-scroll, .bracket-wrap, .tk-tree, .ov-cols, .sched, .rs-list, .rs-area, .cat-scroll, .cat-list, .pool-list, .mp-list';
+  function scrollKey(el) { var host = el.parentElement && el.parentElement.closest('[id]'); return [host ? host.id : '', Array.prototype.indexOf.call((host || document).querySelectorAll(HSCROLL), el), el.className]; }
+  function scrollSnap() {
+    var o = { x: window.scrollX, y: window.scrollY, els: [] };
+    document.querySelectorAll(HSCROLL).forEach(function (el) { if (el.scrollLeft || el.scrollTop) o.els.push({ k: scrollKey(el), l: el.scrollLeft, t: el.scrollTop }); });
+    return o;
+  }
+  function scrollRestore(o) {
+    o.els.forEach(function (s) {
+      var host = s.k[0] ? document.getElementById(s.k[0]) : document, el = host && host.querySelectorAll(HSCROLL)[s.k[1]];
+      if (el && el.className === s.k[2]) { el.scrollLeft = s.l; el.scrollTop = s.t; }
+    });
+    if (window.scrollX !== o.x || Math.abs(window.scrollY - o.y) > 1) window.scrollTo(o.x, o.y);
+  }
+  function render() { var sn = scrollSnap(); renderAll(); scrollRestore(sn); }
+  function renderAll() {
     document.getElementById('t-name').textContent = S.tournament;
     var tab = curTab();
     if (tab === 'klubai') renderClubs(); else if (tab === 'dalyviai') { renderEntries(); renderPeople(); } else if (tab === 'komandos') renderTeams(); else if (tab === 'kategorijos') renderCats(); else if (tab === 'rezultatai') renderResults(); else if (tab === 'tinklai') renderDraws(); else renderLive();

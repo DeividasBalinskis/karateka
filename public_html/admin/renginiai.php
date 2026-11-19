@@ -25,7 +25,8 @@ if (is_post()) {
     $id = (int) post('id');
 
     if (post('action') === 'delete' && $id) {
-        event_file_save($id, null, true);   // priedas ištrinamas kartu
+        event_file_save($id, null, true);   // priedas ir nuotrauka ištrinami kartu
+        event_cover_save($id, null, true);
         q('DELETE FROM events WHERE id = ?', [$id]);
         flash('ok', t('Renginys ištrintas.'));
         back_after_save($back, $backPages);
@@ -98,6 +99,7 @@ if (is_post()) {
         }
         try {
             event_file_save($id, $_FILES['file'] ?? null, !empty($_POST['file_remove']));
+            event_cover_save($id, $_FILES['cover'] ?? null, !empty($_POST['cover_remove']));
         } catch (RuntimeException $ex) {
             flash('err', $ex->getMessage());
         }
@@ -168,6 +170,14 @@ if ($edit !== '') {
             <?php if (!empty($ev['file_path'])): ?>
               <div class="row" style="gap:12px; align-items:center;"><?= event_file_link($ev) ?>
                 <label class="check"><input type="checkbox" name="file_remove" value="1"><span><?= te('Pašalinti priedą') ?></span></label></div>
+            <?php endif; ?>
+            <?php if (event_cover_ready()): $cov = !empty($ev['cover']) ? event_cover($ev) : null; ?>
+              <label><?= te('Nuotrauka') ?> <span class="hint"><?= te('nebūtina; rodoma renginių sąraše ir „Naujienos ir renginiai“') ?></span>
+                <input type="file" name="cover" accept="image/jpeg,image/png,image/webp"></label>
+              <?php if ($cov): ?>
+                <div class="row" style="gap:12px; align-items:center;"><img src="<?= e($cov) ?>" alt="" style="width:120px; height:72px; object-fit:cover; border-radius:10px;">
+                  <label class="check"><input type="checkbox" name="cover_remove" value="1"><span><?= te('Pašalinti nuotrauką') ?></span></label></div>
+              <?php endif; ?>
             <?php endif; ?>
             <label class="check"><input type="checkbox" name="members_only" value="1" <?= !empty($ev['members_only']) ? 'checked' : '' ?>><span><?= te('Tik nariams (neprisijungusiems nerodomas)') ?></span></label>
           </div>

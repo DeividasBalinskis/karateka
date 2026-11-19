@@ -330,9 +330,6 @@ function admin_menu_groups(): array
         'treniruote' => ['🥋', t('Treniruotė'), 'admin/treniruote.php', 0, t('Lankomumas, pastabos, taškai')],
         'egzaminai'  => ['📋', t('Egzaminai'), 'admin/egzaminai.php', 0, t('Protokolai, registracija, kainos')],
     ];
-    if (is_admin()) {
-        $day['pranesimai'] = ['✉️', t('Pranešimai'), 'admin/pranesimai.php', 0, t('Laiškai ir SMS nariams')];
-    }
     $club = [
         'nariai'  => ['👥', t('Nariai'), 'admin/nariai.php', 0, t('Visi nariai, diržai, kontaktai')],
         'xp'      => ['⭐', t('Aktyvumo taškai'), 'admin/taskai.php', 0, t('Taškai, lygiai, reitingas')],
@@ -341,6 +338,9 @@ function admin_menu_groups(): array
     $more = ['patvirtinimai' => ['✅', t('Patvirtinimai'), 'admin/patvirtinimai.php', pending_approvals_count(), t('Nauji nariai ir „Moku“ punktai')]];
     if (is_admin()) {
         $more['atsiliepimai'] = ['💡', t('Atsiliepimai'), 'admin/atsiliepimai.php', feedback_new_count(), t('Pastabos apie svetainę')];
+    }
+    if (is_admin()) {   // #121: Pranešimai - apačioje, „Tvarkyti“
+        $more['pranesimai'] = ['✉️', t('Pranešimai'), 'admin/pranesimai.php', 0, t('Laiškai ir SMS nariams')];
     }
     $more['nustatymai'] = ['⚙️', t('Nustatymai'), 'admin/nustatymai.php', 0, t('Grupės, tvarkaraštis, vertimai, paskyra')];
     return ['kasdien' => [t('Kasdien'), $day], 'klubas' => [t('Klubas'), $club], 'tvarkyti' => [t('Tvarkyti'), $more]];
@@ -500,7 +500,7 @@ function site_header(bool $home = false, ?string $area = null, ?string $tab = nu
     if ($a && $area === 'admin' && is_staff($a)) {
         // B+C (#106): kompiuteryje - šoninis meniu, telefone ir planšetėje - viena eilutė su „⚙ Daugiau ▾“
         if ($mv === 'eilute' || $mv === 'abu') {
-            $keys = ['siandien', 'treniruote', 'egzaminai', 'nariai', 'pranesimai'];
+            $keys = ['siandien', 'treniruote', 'egzaminai', 'nariai'];
             $flat = admin_menu_flat();
             $subNav = '<div class="sub-nav am-line' . ($mv === 'abu' ? ' am-narrow' : '') . '" role="navigation" aria-label="' . e(t('Valdymas')) . '"><div class="sub-inner">';
             foreach ($keys as $k) {

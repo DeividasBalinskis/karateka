@@ -1303,3 +1303,37 @@ button.pin-p:hover { background: var(--surface-2); }
 .scr-pl.p1 { background: #F2B705; } .scr-pl.p2 { background: #C9CED6; } .scr-pl.p3 { background: #D69A5B; }
 .scr-board p { color: #6B7280; font-size: clamp(14px, 1.6vw, 24px); }
 @media (max-width: 760px) { .scr-main.scr-scoreview { grid-template-columns: 1fr; } }
+
+/* ---------- v1.47: telefone balų lentelė - kortelės (be slinkimo į šoną) ---------- */
+@media (max-width: 640px) {
+  .score-panel .table-scroll { overflow: visible; }
+  .score-table, .score-table tbody { display: block; width: 100%; }
+  .score-table thead { display: none; }
+  .score-table tr { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 10px 8px; border-bottom: 1px solid var(--line); }
+  .score-table tr.scored { background: #FAFDFB; }
+  .score-table tr.scored td { background: transparent; }
+  .score-table td { border: 0; padding: 0; }
+  .score-table td.sc-eil { order: 0; min-width: 22px; color: var(--muted); font-size: .8rem; }
+  .score-table td.sc-name { order: 1; flex: 1 1 0; min-width: 0; line-height: 1.25; }
+  .score-table td.sc-name .small { display: block; }
+  .score-table td.sc-sub { order: 2; font-size: .78rem; color: var(--muted); }
+  .score-table td.sc-sub::before, .score-table td.sc-sum::before { content: attr(data-l); display: block; font-size: .62rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+  .score-table td.sc-sum { order: 3; min-width: 54px; text-align: center; font-size: 1.15rem; }
+  .score-table td.sc-place { order: 4; min-width: 30px; text-align: center; }
+  .score-table td.sc-kata { order: 5; flex: 0 0 100%; }
+  .score-table td.sc-kata .kata-in { width: 100%; }
+  .score-table td.sc-j { order: 6; flex: 1 1 0; min-width: 0; }
+  .score-table td.sc-j .j-in { width: 100%; min-width: 0; padding: 9px 2px; font-size: 1.05rem; }
+  .score-cfg { flex-wrap: wrap; }
+}
+
+/* ---------- v1.47: plačiame (ir ultra plačiame) ekrane - centre kaip Karateka, ne iki pat kraštų ---------- */
+body.vz:not(.scr):not(.vz-popup):not(.vz-public) main,
+body.vz:not(.scr):not(.vz-popup):not(.vz-public) .vz-top-row,
+body.vz:not(.scr):not(.vz-popup):not(.vz-public) .tabs,
+body.vz:not(.scr):not(.vz-popup):not(.vz-public) .notice { max-width: 1680px; margin-left: auto; margin-right: auto; }
+body.vz.vz-public:not(.scr) .vz-top-row, body.vz.vz-public:not(.scr) .tabs { max-width: 1440px; margin-left: auto; margin-right: auto; }
+/* Telefone viršus nebeprilimpa - neuždengia ketvirčio ekrano ir įrašomų langelių */
+@media (max-width: 700px) {
+  .vz-top { position: relative; }
+}

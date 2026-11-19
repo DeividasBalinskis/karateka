@@ -46,6 +46,7 @@ foreach ($upcoming as $ev) {
 page_start(t('Renginiai'), ['description' => t('VšĮ Karate Ateitis renginiai: egzaminai, varžybos, seminarai ir stovyklos.'), 'section' => 'renginiai']);
 $n = 0;   // eilės nr. animacijai (laipteliai)
 ?>
+<nav class="crumbs"><a href="<?= url('naujienos.php') ?>"><?= te('← Naujienos ir renginiai') ?></a></nav>
 <div class="page-head">
   <div class="eyebrow"><?= te('Kalendorius') ?></div>
   <h1 class="styled"><?= te('Renginiai') ?></h1>

@@ -128,7 +128,9 @@ function render_event(array $ev): string
         $short = mb_strlen($plain) > 220 ? mb_substr($plain, 0, 220) . '…' : $plain;
     }
     $link = url('renginys.php?id=' . (int) $ev['id']);
-    return '<div class="event">'
+    $ph = event_cover($ev);
+    return '<div class="event' . ($ph ? ' has-ph' : '') . '">'
+        . ($ph ? '<a class="event-ph" href="' . e($link) . '" tabindex="-1" aria-hidden="true"><img src="' . e($ph) . '" alt="" loading="lazy"></a>' : '')
         . '<div class="event-date"><span class="d">' . date('j', $ts) . '</span><span class="m">' . e(mb_substr(month_names_gen()[(int) date('n', $ts)], 0, 3)) . '</span></div>'
         . '<div><span class="badge type-badge t-' . e($ev['type']) . '">' . e(t(EVENT_TYPES[$ev['type']])) . '</span>'
         . '<h3 style="margin-top:6px;"><a class="event-title" href="' . e($link) . '">' . e(tr_text($ev['title'])) . '</a></h3>'
@@ -185,6 +187,68 @@ function event_file_save(int $eventId, ?array $f, bool $remove = false): void
     // Pradinis pavadinimas atsisiuntimui (be kelio ir keistų simbolių)
     $name = trim(preg_replace('~[\\\\/:*?"<>|\x00-\x1F]+~u', ' ', basename((string) $f['name'])));
     q('UPDATE events SET file_path = ?, file_name = ? WHERE id = ?', [$file, mb_substr($name ?: ('priedas.' . $ext), 0, 190), $eventId]);
+}
+
+// ---------- Renginio nuotrauka (db/042, #119): rodoma „Naujienos ir renginiai“ ir renginių sąraše ----------
+const EVENT_COVER_DIR = PUBLIC_DIR . '/uploads/events/covers';
+const EVENT_ICONS = ['exam' => '📋', 'competition' => '🏆', 'seminar' => '🎓', 'camp' => '⛺', 'other' => '🥋'];
+
+function event_cover_ready(): bool
+{
+    static $ok = null;
+    if ($ok === null) {
+        try {
+            q_value('SELECT cover FROM events LIMIT 1');
+            $ok = true;
+        } catch (PDOException $ex) {
+            $ok = false;
+        }
+    }
+    return $ok;
+}
+
+/** Renginio nuotrauka: įkelta nuotrauka, o jei jos nėra - priedas-paveikslėlis (JPG, PNG); null - nuotraukos nėra */
+function event_cover(array $ev, bool $thumb = true): ?string
+{
+    if (!empty($ev['cover'])) {
+        return url('uploads/events/covers/' . ($thumb ? 'thumb_' : '') . basename($ev['cover']));
+    }
+    if (!empty($ev['file_path']) && preg_match('~\.(jpe?g|png|webp)$~i', (string) $ev['file_path'])) {
+        return url('uploads/events/' . basename($ev['file_path']));
+    }
+    return null;
+}
+
+/** Nuotraukos vieta kortelėje: nuotrauka arba spalvotas fonas su renginio tipo ženklu */
+function event_cover_html(array $ev, string $class = 'ev-ph'): string
+{
+    $src = event_cover($ev);
+    return $src
+        ? '<span class="' . e($class) . '"><img src="' . e($src) . '" alt="" loading="lazy"></span>'
+        : '<span class="' . e($class) . ' no-ph t-' . e($ev['type']) . '" aria-hidden="true"><i>' . (EVENT_ICONS[$ev['type']] ?? '🥋') . '</i></span>';
+}
+
+/** Išsaugo renginio nuotrauką (sena ištrinama); $remove - tik pašalinti */
+function event_cover_save(int $eventId, ?array $f, bool $remove = false): void
+{
+    if (!event_cover_ready()) {
+        return;
+    }
+    $has = $f && ($f['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_OK && is_uploaded_file($f['tmp_name']);
+    if (!$has && !$remove) {
+        return;
+    }
+    $old = q_value('SELECT cover FROM events WHERE id = ?', [$eventId]);
+    if ($old) {
+        @unlink(EVENT_COVER_DIR . '/' . basename($old));
+        @unlink(EVENT_COVER_DIR . '/thumb_' . basename($old));
+    }
+    $name = null;
+    if ($has) {
+        require_once __DIR__ . '/images.php';
+        $name = save_uploaded_image($f, EVENT_COVER_DIR);
+    }
+    q('UPDATE events SET cover = ? WHERE id = ?', [$name, $eventId]);
 }
 
 /** Priedo nuoroda (atsisiųsti) arba '' */

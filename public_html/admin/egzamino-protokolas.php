@@ -1,5 +1,5 @@
 <?php
-// Egzamino protokolas (Egzaminai → „📋 Protokolas“): pagrindinė - lentelė. Balai su − / + po 0,1 (ar įrašius), vidurkis skaičiuojamas iš karto,
+// Egzamino protokolas (Egzaminai → „📋 Protokolas“): pagrindinė - lentelė. Balai su − / + po 0,1 (ar įrašius; vidurkio stulpelio nebėra - #124),
 // komentaras, „Sumokėjo“, „Išlaikė / Neišlaikė“; keičiama išsaugoma iš karto. Visa kita (antraštė, stulpeliai, registracijos nuoroda,
 // siuntimas) - „⚙ Daugiau“ apačioje. Spausdinimas (kaip popierinis LTKA protokolas), Excel ir siuntimas el. paštu.
 // Kiekvienas dalyvis - unikalus numeris MM-mm-dd-eilė; neatvykusį ištrynus, jo numeris daugiau niekam nepriskiriamas.
@@ -235,21 +235,22 @@ page_start(t('Egzamino protokolas') . ': ' . $event['title'], ['admin' => true, 
   <div class="table-scroll prot-wrap">
   <table class="prot-table" id="protTable" data-base="<?= e((string) $base) ?>">
     <thead>
-      <tr><th rowspan="2">Nr.</th><th rowspan="2"><?= te('Vardas Pavardė') ?></th><th rowspan="2" class="col-p"><?= te('Gimimo data') ?></th><th rowspan="2" class="col-p"><?= te('Klubas') ?></th><th rowspan="2">Kyu</th>
-        <th colspan="<?= count($cols) ?>"><?= te('Įvertinimas') ?></th><th rowspan="2" class="no-print col-avg"><?= te('Vidurkis') ?></th>
+      <tr><th rowspan="2" class="th-nr">Nr.</th><th rowspan="2"><?= te('Vardas Pavardė') ?></th><th rowspan="2" class="col-p"><?= te('Gimimo data') ?></th><th rowspan="2" class="col-p"><?= te('Klubas') ?></th><th rowspan="2">Kyu</th>
+        <th colspan="<?= count($cols) ?>"><?= te('Įvertinimas') ?></th>
         <th rowspan="2" class="col-p"><?= te('Dalyvavimas seminaruose, stovyklose') ?></th><th rowspan="2"><?= te('Komentaras') ?></th>
         <?php if ($v40): ?><th rowspan="2" class="no-print" title="<?= te('Sumokėjo už egzaminą') ?>">€</th><?php endif; ?>
         <th rowspan="2"><?= te('Išlaikė / Neišlaikė') ?></th><th rowspan="2" class="no-print"></th></tr>
       <tr><?php foreach ($cols as [$k, $label]): ?><th><?= e($label) ?></th><?php endforeach; ?></tr>
     </thead>
     <tbody>
-    <?php foreach ($rows as $r): $avg = exam_row_avg($r, $cols); $pu = $v40 ? exam_row_url($r) : null;
+    <?php foreach ($rows as $r): $pu = $v40 ? exam_row_url($r) : null;
       $sub = array_filter([$r['birth_date'] ? fmt_date($r['birth_date']) : '', (string) ($r['phone'] ?? ''), (string) ($r['club'] ?? '')]); ?>
       <tr data-row="<?= (int) $r['id'] ?>" class="res-<?= e((string) $r['result']) ?>">
         <td class="prot-nr" data-l="Nr."><?= isset($fedNo[(int) $r['id']]) ? '<b title="' . te('Federacijos numeris') . '">' . e($fedNo[(int) $r['id']]) . '</b>' : '<span class="muted" title="' . te('Laikinas - Federacijos numeris bus suteiktas išsiuntus protokolą Federacijai') . '">' . e($r['number']) . '</span>' ?></td>
         <td class="prot-name">
           <input class="pi pi-name" data-f="name" value="<?= e($r['name']) ?>" aria-label="<?= te('Vardas Pavardė') ?>">
           <div class="prot-sub no-print">
+            <span class="nr-in" title="Nr."><?= e($fedNo[(int) $r['id']] ?? $r['number']) ?></span>
             <button type="button" class="linklike pr-sub-t" data-subedit title="<?= te('Gimimo data, telefonas, klubas, seminarai') ?>"><span class="pr-sub-txt"><?= $sub ? e(implode(' · ', $sub)) : te('+ gimimo data, telefonas') ?></span> ✎</button>
             <?php if ($pu): ?><button type="button" class="linklike pr-link" data-copy="<?= e($pu) ?>" title="<?= te('Kopijuoti asmeninę nuorodą (mano egzaminas be paskyros) - nusiųsti SMS ar Messenger') ?>">🔗</button><?php endif; ?>
           </div>
@@ -268,7 +269,6 @@ page_start(t('Egzamino protokolas') . ': ' . $event['title'], ['admin' => true, 
             <input class="pi pi-s" data-f="test" value="<?= e(exam_cell($r, $f)) ?>" aria-label="<?= e($l) ?>">
           <?php else: ?><div class="sc-box"><button type="button" class="sc-b no-print" data-d="-1" tabindex="-1" aria-label="<?= e($l) ?> −0,1">−</button><input class="pi pi-score" data-f="<?= e($f) ?>" value="<?= e(exam_cell($r, $f)) ?>" inputmode="decimal" aria-label="<?= e($l) ?>"><button type="button" class="sc-b no-print" data-d="1" tabindex="-1" aria-label="<?= e($l) ?> +0,1">+</button></div><?php endif; ?></td>
         <?php endforeach; ?>
-        <td class="no-print col-avg" data-l="<?= te('Vidurkis') ?>"><b class="avg"><?= $avg !== null ? e((string) $avg) : '–' ?></b></td>
         <td class="col-p" data-p="seminars"><?= e((string) $r['seminars']) ?></td>
         <td class="prot-note" data-l="<?= te('Komentaras') ?>"><textarea class="pi" data-f="notes" rows="1" placeholder="<?= te('komentaras…') ?>" aria-label="<?= te('Komentaras') ?>"><?= e((string) $r['notes']) ?></textarea></td>
         <?php if ($v40): $pr = $priceByKyu[mb_strtolower(trim((string) $r['kyu']))] ?? ''; ?>
@@ -431,12 +431,6 @@ page_start(t('Egzamino protokolas') . ': ' . $event['title'], ['admin' => true, 
   var t = document.getElementById('protTable'), base = parseFloat(t.dataset.base) || 5;
   function num(v) { v = String(v).replace(',', '.').trim(); return v !== '' && !isNaN(v) ? parseFloat(v) : null; }
   function fmt(n) { return (Math.round(n * 100) / 100).toString(); }
-  // Vidurkis - iš visų balų 0-10 eilutėje (be „Testas“)
-  function avg(tr) {
-    var s = 0, n = 0;
-    tr.querySelectorAll('.pi-score').forEach(function (i) { var v = num(i.value); if (v !== null && v >= 0 && v <= 10) { s += v; n++; } });
-    var b = tr.querySelector('.avg'); if (b) b.textContent = n ? fmt(s / n) : '–';
-  }
   // Pavardės eilutė apačioje: gimimo data · telefonas · klubas (+ spausdinimui - atskiri stulpeliai)
   function sub(tr) {
     var parts = [];
@@ -446,7 +440,7 @@ page_start(t('Egzamino protokolas') . ': ' . $event['title'], ['admin' => true, 
   }
   t.addEventListener('change', function (e) {
     var f = e.target.dataset.f, tr = e.target.closest('tr[data-row]'); if (!f || !tr) return;
-    if (e.target.classList.contains('pi-score')) { var v = num(e.target.value); if (v !== null) e.target.value = fmt(v); avg(tr); }
+    if (e.target.classList.contains('pi-score')) { var v = num(e.target.value); if (v !== null) e.target.value = fmt(v); }
     if (e.target.closest('.prot-subedit')) sub(tr);
     if (f === 'kyu') { var ps = tr.querySelector('.pay-sum'); if (ps) ps.textContent = prices[e.target.value.trim().toLowerCase()] || '€'; }
     send(tr.dataset.row, f, e.target.value.replace(',', '.'));
@@ -456,7 +450,7 @@ page_start(t('Egzamino protokolas') . ': ' . $event['title'], ['admin' => true, 
   function bump(inp, d) {
     var v = num(inp.value), tr = inp.closest('tr[data-row]');
     v = v === null ? base : Math.min(10, Math.max(0, Math.round((v + d * 0.1) * 10) / 10));
-    inp.value = fmt(v); avg(tr);
+    inp.value = fmt(v);
     inp.classList.remove('bump'); void inp.offsetWidth; inp.classList.add('bump');
     var key = tr.dataset.row + inp.dataset.f;
     clearTimeout(timers[key]);
@@ -488,7 +482,7 @@ page_start(t('Egzamino protokolas') . ': ' . $event['title'], ['admin' => true, 
   });
   // Balai be kablelio: įvedus du skaitmenis - taškas pats (71 → 7.1); 10 lieka 10
   t.addEventListener('input', function (e) {
-    if (e.target.classList.contains('pi-score')) { var m = String(e.target.value).match(/^(\d)(\d)$/); if (m && e.target.value !== '10') e.target.value = m[1] + '.' + m[2]; avg(e.target.closest('tr')); }
+    if (e.target.classList.contains('pi-score')) { var m = String(e.target.value).match(/^(\d)(\d)$/); if (m && e.target.value !== '10') e.target.value = m[1] + '.' + m[2]; }
     if (e.target.tagName === 'TEXTAREA') { e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px'; }
   });
   t.querySelectorAll('textarea.pi').forEach(function (x) { if (x.value) { x.style.height = x.scrollHeight + 'px'; } });

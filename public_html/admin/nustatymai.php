@@ -39,14 +39,13 @@ $settings = [
         [t('Tvarkaraštis ir kainos'), 'admin/tvarkarastis.php', t('Visų grupių laikai ir kainos - rodoma ir pagrindiniame puslapyje.'), true],
         [t('Atšauktos treniruotės ir atostogos'), 'admin/atsaukimai.php', t('Dienos be treniruočių, pranešimas nariams.'), true],
         [t('Vertimai (EN / RU)'), 'admin/vertimai.php', t('Jūsų tekstai anglų ir rusų kalbomis: naujienos, renginiai, pamokos, pagrindinis puslapis.'), true],
-        [t('Egzaminų programa'), 'admin/programa.php', t('Ką reikia mokėti kiekvienam diržui ir kiek aktyvumo taškų už punktą.'), true],
     ],
     'Sistema' => [
         [t('Paskyros ir rolės'), 'admin/paskyros.php', t('Kas yra treneris, kas administratorius.'), is_admin()],
         [t('Atsarginės kopijos ir sistema'), 'admin/kopijos.php', t('Duomenų bazės kopijos, versija, importuoti db failai.'), is_admin()],
         [t('Testavimas'), 'admin/testavimas.php', t('Testiniai nariai (tėvai, vaikas) ir ką jiems sukurti; peržiūra kaip tėvai ar vaikas.'), is_admin()],
     ],
-    // LTKF ir Budo - per logotipo meniu ▾; Aktyvumo taškai, Nariai, Testai ir kt. - meniu (#105: be dublikatų)
+    // LTKF ir Budo - per logotipo meniu ▾; Aktyvumo taškai, Nariai, Testai, Egzaminų programa (Egzaminai) ir kt. - meniu (#105, #120: be dublikatų)
 ];
 
 page_start(t('Nustatymai'), ['admin' => true]);

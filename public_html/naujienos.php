@@ -59,7 +59,11 @@ $items = q_all('SELECT * FROM news WHERE is_published = 1 AND published_at <= NO
 $drafts = is_staff() ? q_all('SELECT * FROM news WHERE is_published = 0 OR published_at > NOW() ORDER BY published_at DESC') : [];
 
 // #118: vienas puslapis - kairėje naujienos, dešinėje artimiausi renginiai (2 renginiai = vienos naujienos aukštis)
-$events = public_upcoming_events(8);
+// Renginiai dešinėje - iki pat apačios kaip naujienos (#119): artimiausi, o jei jų mažiau - neseniai vykę
+$evN = max(6, 2 * count($items));
+$events = public_upcoming_events($evN);
+$pastEvents = count($events) < $evN ? q_all('SELECT e.* FROM events e WHERE COALESCE(e.ends_on, e.starts_on) < CURDATE() AND ' . visibility_sql('e')
+    . ' ORDER BY e.starts_on DESC LIMIT ' . ($evN - count($events))) : [];
 page_start(t('Naujienos ir renginiai'), ['description' => t('VšĮ Karate Ateitis klubo naujienos: varžybos, egzaminai, renginiai.'), 'section' => 'naujienos']);
 ?>
 <div class="page-head">
@@ -83,14 +87,19 @@ page_start(t('Naujienos ir renginiai'), ['description' => t('VšĮ Karate Ateiti
 <div class="nr-wrap">
 <aside class="nr-events" aria-label="<?= te('Artimiausi renginiai') ?>">
   <div class="nr-h"><b><?= te('📅 Renginiai') ?></b><a href="<?= url('renginiai.php') ?>"><?= te('Visi ir kalendorius →') ?></a></div>
-  <?php if (!$events): ?><p class="panel card muted small"><?= te('Artimiausių renginių nėra.') ?></p><?php endif; ?>
-  <?php foreach ($events as $ev): $ts = strtotime($ev['starts_on']); ?>
-    <a class="panel nr-ev t-<?= e($ev['type']) ?>" href="<?= url('renginys.php?id=' . (int) $ev['id']) ?>">
-      <span class="nr-date"><b><?= date('j', $ts) ?></b><small><?= e(mb_substr(month_names_gen()[(int) date('n', $ts)], 0, 3)) ?></small></span>
-      <span class="nr-info"><span class="badge type-badge t-<?= e($ev['type']) ?>"><?= e(t(EVENT_TYPES[$ev['type']] ?? '')) ?></span>
-        <b class="nr-title"><?= e(tr_text($ev['title'])) ?></b>
-        <small class="muted"><?= $ev['start_time'] ? e(fmt_time($ev['start_time'])) . ' · ' : '' ?><?= e(tr_text((string) $ev['location'])) ?></small></span>
-    </a>
+  <?php if (!$events): ?><p class="panel card muted small nr-none"><?= te('Artimiausių renginių nėra.') ?></p><?php endif; ?>
+  <?php foreach (['up' => $events, 'past' => $pastEvents] as $kind => $list): ?>
+    <?php if ($kind === 'past' && $list): ?><div class="nr-h nr-past-h"><b><?= te('Neseniai vyko') ?></b></div><?php endif; ?>
+    <?php foreach ($list as $ev): $ts = strtotime($ev['starts_on']); ?>
+      <a class="panel nr-ev t-<?= e($ev['type']) ?><?= $kind === 'past' ? ' is-past' : '' ?>" href="<?= url('renginys.php?id=' . (int) $ev['id']) ?>">
+        <?= event_cover_html($ev, 'nr-ph') ?>
+        <span class="nr-info">
+          <span class="nr-top"><span class="nr-date"><b><?= date('j', $ts) ?></b><small><?= e(mb_substr(month_names_gen()[(int) date('n', $ts)], 0, 3)) ?></small></span>
+            <span class="badge type-badge t-<?= e($ev['type']) ?>"><?= e(t(EVENT_TYPES[$ev['type']] ?? '')) ?></span></span>
+          <b class="nr-title"><?= e(tr_text($ev['title'])) ?></b>
+          <small class="muted"><?= $ev['start_time'] ? e(fmt_time($ev['start_time'])) . ' · ' : '' ?><?= e(tr_text((string) $ev['location'])) ?></small></span>
+      </a>
+    <?php endforeach; ?>
   <?php endforeach; ?>
 </aside>
 <div class="nr-news">

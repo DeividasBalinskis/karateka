@@ -1,6 +1,6 @@
 /* Pagrindinio puslapio redagavimas (tik adminui, index.php?redaguoti=1) */
 .home-edit .reveal{opacity:1 !important; transform:none !important;}
-.hb-toolbar{position:sticky; top:74px; z-index:95; display:flex; flex-wrap:wrap; align-items:center; gap:10px 14px; margin:8px auto 14px; max-width:1200px; padding:10px 16px;
+.hb-toolbar{position:sticky; top:calc(var(--hdr-b, 84px) + 6px); z-index:95; display:flex; flex-wrap:wrap; align-items:center; gap:10px 14px; margin:8px auto 14px; max-width:1200px; padding:10px 16px;
   border-radius:14px; background:#1F3B33; color:#F7F4EC; box-shadow:0 12px 30px rgba(23,20,15,0.25); font-size:0.9rem;}
 .hb-toolbar .small{opacity:0.75;}
 .hb-toolbar-btns{display:flex; gap:8px; margin-left:auto; flex-wrap:wrap;}
@@ -100,7 +100,7 @@
 
 /* Telefone: juostos kompaktiškos, bloko įrankiai - virš bloko */
 @media(max-width:860px){
-  .hb-toolbar{top:60px; margin:8px 12px 12px; padding:8px 10px;}
+  .hb-toolbar{margin:8px 12px 12px; padding:8px 10px;}
   .hb-toolbar > strong, .hb-toolbar > .small{display:none;}
   .hb-toolbar-btns{margin-left:0;}
   .hb{padding-top:0; margin:6px 4px;}

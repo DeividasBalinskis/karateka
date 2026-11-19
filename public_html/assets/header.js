@@ -9,6 +9,13 @@
     });
   }
 
+  // Antraštės apačia (--hdr-b): prilipusios juostos (pvz. redagavimo „Išsaugoti“) - po antrašte, ne už jos (#123)
+  var hdr = document.querySelector('.site-header');
+  function hdrBottom() { if (hdr) document.documentElement.style.setProperty('--hdr-b', Math.round(hdr.offsetHeight + (parseFloat(getComputedStyle(hdr).top) || 0)) + 'px'); }
+  hdrBottom();
+  window.addEventListener('resize', hdrBottom);
+  window.addEventListener('load', hdrBottom);
+
   var bar = document.getElementById('progressBar');
   if (bar) {
     var update = function () {
@@ -47,4 +54,21 @@
   function set(open) { g.classList.toggle('open', open); if (btn) btn.setAttribute('aria-expanded', open ? 'true' : 'false'); }
   if (btn) btn.addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); set(!g.classList.contains('open')); });
   document.addEventListener('click', function (e) { if (!g.contains(e.target)) set(false); });
+})();
+// Antraštės ir apatinės juostos išskleidžiami langai (⋯ Daugiau, ▾ sistemos, 🌐, ⚙ Daugiau, Žiūrėti kaip):
+// paspaudus šalia (fone) - užsidaro (#125); atidarius vieną - kiti užsidaro; ⋯ Daugiau telefone - su pritemdytu fonu
+(function () {
+  var sel = '.m-more, .site-switch, .pm-site, .am-more, .view-switch';
+  var all = function () { return Array.prototype.slice.call(document.querySelectorAll(sel)); };
+  function sync() { document.body.classList.toggle('m-more-open', !!document.querySelector('.m-more[open]')); }
+  all().forEach(function (d) {
+    d.addEventListener('toggle', function () {
+      if (d.open) all().forEach(function (o) { if (o !== d && o.open && !o.contains(d)) o.open = false; });
+      sync();
+    });
+  });
+  document.addEventListener('click', function (e) {
+    all().forEach(function (d) { if (d.open && !d.contains(e.target)) d.open = false; });
+  });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') all().forEach(function (d) { d.open = false; }); });
 })();

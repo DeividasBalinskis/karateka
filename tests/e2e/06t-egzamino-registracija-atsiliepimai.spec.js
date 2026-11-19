@@ -78,7 +78,7 @@ test('exam signup link for people without an account, invitations, exam list for
   await nav(v, () => v.click('#rasti button[type=submit]'));
   check('found my exam', v.url().split('#')[0] === myUrl.split('#')[0], v.url());
 
-  // Protokole - kas užsiregistravo; − / + po 0,1 ir vidurkis; uždarius - „Registracija uždaryta“
+  // Protokole - kas užsiregistravo; − / + po 0,1 (vidurkio nebėra); uždarius - „Registracija uždaryta“
   await a.goto(`admin/egzamino-protokolas.php?id=${eid}`);
   const pr = a.locator('#protTable tr[data-row]').first();
   await pr.locator('td.sc').first().locator('.sc-b[data-d="1"]').click();
@@ -86,7 +86,7 @@ test('exam signup link for people without an account, invitations, exam list for
   await pr.locator('td.sc').nth(1).locator('.sc-b[data-d="-1"]').click();
   await a.waitForTimeout(900);
   check('plus/minus by 0.1', sql(`SELECT CONCAT(kihon, '|', kata) FROM exam_protocol_rows WHERE event_id = ${eid}`) === '5.1|5', sql(`SELECT CONCAT(kihon, '|', kata) FROM exam_protocol_rows WHERE event_id = ${eid}`));
-  check('average counted', (await pr.locator('.avg').textContent()).trim() === '5.05');
+  check('no average column (#124)', await a.locator('#protTable .col-avg, #protTable .avg').count() === 0);
   await pr.locator('[data-pay]').click(); await a.waitForTimeout(500);
   check('paid marked', sql(`SELECT paid_at IS NOT NULL FROM exam_protocol_rows WHERE event_id = ${eid}`) === '1');
   check('personal link in the protocol', (await pr.locator('.pr-link').getAttribute('data-copy')).includes('mano-egzaminas.php?t='));
