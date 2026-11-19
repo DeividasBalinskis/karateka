@@ -2738,7 +2738,7 @@
   // #122 Apdovanojimai rezultatuose: viršuje - ką tik baigtos ir dar neapdovanotos rungtys (rezultatai suskaičiuoti patys),
   // „✓ Apdovanota“ vienu paspaudimu nukelia žemyn; žemiau - kas jau apdovanota (klaidoms atsekti), „↺ Grąžinti“
   var awDoneOpen = false;
-  function hhmm(ts) { var m = String(ts || '').match(/(\d{2}):(\d{2})/); return m ? m[1] + ':' + m[2] : ''; }
+  function awTime(ts) { var m = String(ts || '').match(/(\d{2}):(\d{2})/); return m ? m[1] + ':' + m[2] : ''; }
   function renderAwardQueue() {
     var box = document.getElementById('award-view'); if (!box) return;
     var cats = S.categories.filter(function (c) { return c.competitors.length; });
@@ -2748,7 +2748,7 @@
     var done = cats.filter(function (c) { return catStatus(c) === 'awarded'; })
       .sort(function (a, b) { var x = at(a, 'done'), y = at(b, 'done'); return x > y ? -1 : x < y ? 1 : 0; });
     var card = function (c) {
-      var t = hhmm(at(c, 'sent'));
+      var t = awTime(at(c, 'sent'));
       return '<div class="aw-card"><div class="aw-top"><span class="disc d-' + c.discipline + '"></span><b>' + esc(c.name) + '</b>' +
         '<span class="muted small">' + esc((areaOf(c) || {}).name || '') + (t ? ' · baigta ' + t : '') + '</span>' +
         '<button type="button" class="btn btn-xs" data-res-open="' + c.id + '" title="Atidaryti lentelę - patikrinti">Lentelė</button></div>' +
@@ -2762,7 +2762,7 @@
       html += '<details class="aw-donebox"' + (awDoneOpen ? ' open' : '') + '><summary>✓ Jau apdovanota (' + done.length + ') - patikrinti, ar viskas teisingai</summary><ul class="aw-donelist">' +
         done.map(function (c) {
           return '<li><span class="disc d-' + c.discipline + '"></span><b>' + esc(c.name) + '</b><span class="aw-dl-pl">' + placesShort(c) + '</span>' +
-            '<span class="muted small">' + hhmm(at(c, 'done')) + '</span><button type="button" class="btn btn-xs" data-award-back="' + c.id + '" title="Grąžinti į „Apdovanoti dabar“">↺ Grąžinti</button></li>';
+            '<span class="muted small">' + awTime(at(c, 'done')) + '</span><button type="button" class="btn btn-xs" data-award-back="' + c.id + '" title="Grąžinti į „Apdovanoti dabar“">↺ Grąžinti</button></li>';
         }).join('') + '</ul></details>';
     }
     box.innerHTML = html;

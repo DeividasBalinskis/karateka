@@ -1674,7 +1674,7 @@ input.tg:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
 .nr-info small{white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
 /* Naujiena - lygiai dviejų renginių aukščio (2 × 145 + tarpas); tekstas nukerpamas, visas - „Skaityti daugiau“ */
 .nr-news .news-list{gap:10px; margin-top:36px;}
-.nr-news .news-card{height:300px; grid-template-columns:44% 1fr;}
+.nr-news .news-card{min-height:300px; grid-template-columns:44% 1fr;}
 .nr-news .news-card.no-cover{grid-template-columns:1fr;}
 .nr-news .news-card .cover{min-height:0;}
 .nr-news .news-card .body{padding:18px 22px; display:flex; flex-direction:column; gap:4px; overflow:hidden;}
@@ -1685,7 +1685,7 @@ input.tg:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
 .nr-news .news-card .news-body p{margin:0;}
 /* Reakcijos ir „Dalintis“ - vienoje eilutėje, kad tekstas nenukirstų per pusę eilutės */
 .nr-news .news-card .news-actions{display:flex; align-items:center; gap:8px; min-width:0;}
-.nr-news .news-card .news-actions .reactions{flex:1; min-width:0; flex-wrap:nowrap; margin-top:0;}
+.nr-news .news-card .news-actions .reactions{flex:1; min-width:0; flex-wrap:wrap; margin-top:0;}
 @media (max-width:1100px){
   .nr-wrap{grid-template-columns:minmax(0, 1fr) 320px; gap:18px;}
   .nr-ev{grid-template-columns:1fr; height:145px;}

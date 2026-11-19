@@ -25,7 +25,8 @@ test('event photo, events column to the bottom, back link', async ({ browser }) 
     return { two: Math.round(e[1].getBoundingClientRect().bottom - e[0].getBoundingClientRect().top), news: Math.round(n[0].getBoundingClientRect().height),
       evBottom: Math.round(last.bottom + scrollY), newsBottom: Math.round(lastNews.bottom + scrollY), evW: Math.round(e[0].getBoundingClientRect().width) };
   });
-  check('two events = one news', Math.abs(geo.two - geo.news) <= 2, JSON.stringify(geo));
+  const minNews = await v.evaluate(() => parseFloat(getComputedStyle(document.querySelector('.nr-news .news-card')).minHeight));
+  check('two events = one news', Math.abs(geo.two - minNews) <= 2 && geo.news >= minNews - 1, JSON.stringify(geo) + ' min ' + minNews);
   check('events column bigger', geo.evW >= 340, JSON.stringify(geo));
   check('events go down like the news', geo.evBottom > geo.newsBottom - 700, JSON.stringify(geo));
   await nav(v, () => v.click('.nr-h a'));

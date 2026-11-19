@@ -38,7 +38,9 @@ test('news and events on one page, one menu item', async ({ browser }) => {
     return { newsLeft: n.left, evLeft: e[0].getBoundingClientRect().left, two: Math.round(e[1].getBoundingClientRect().bottom - e[0].getBoundingClientRect().top), news: Math.round(n.height), top: Math.round(n.top - e[0].getBoundingClientRect().top) };
   });
   check('events right of news', geo.evLeft > geo.newsLeft, JSON.stringify(geo));
-  check('two events = one news height, aligned', Math.abs(geo.two - geo.news) <= 2 && Math.abs(geo.top) <= 2, JSON.stringify(geo));
+  // Naujiena su daug reakcijų gali paaugti (#119: pridėta reakcija turi matytis) - lyginama su įprastu (mažiausiu) aukščiu
+  const minNews = await v.evaluate(() => parseFloat(getComputedStyle(document.querySelector('.nr-news .news-card')).minHeight));
+  check('two events = one news height, aligned', Math.abs(geo.two - minNews) <= 2 && geo.news >= minNews - 1 && Math.abs(geo.top) <= 2, JSON.stringify(geo) + ' min ' + minNews);
   await nav(v, () => v.click('.nr-h a'));
   check('full events page still there', v.url().includes('renginiai.php') && await v.locator('.nav-pages a.is-current', { hasText: 'Naujienos ir renginiai' }).count() === 1);
   noJsErrors(v);
