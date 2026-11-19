@@ -274,6 +274,38 @@ const GAME_UNLOCK_ALL = true;
 
 // ---------- Personažas: kam priklauso, kas valdo ----------
 
+/**
+ * Kas mato žaidimą (Dojo, arena, žaidimai): site_setting game_access - „all“ (visi) arba JSON paskyrų id sąrašas.
+ * Nenustatyta - visi; db/043 nustato - tik Denio paskyra. Keičiama: Nustatymai → „🏯 Žaidimas“.
+ */
+function game_access_ids(): ?array
+{
+    $v = trim((string) site_setting('game_access', 'all'));
+    if ($v === '' || $v === 'all') {
+        return null;
+    }
+    $ids = json_decode($v, true);
+    return is_array($ids) ? array_values(array_unique(array_map('intval', $ids))) : [];
+}
+
+/** Ar ši paskyra mato žaidimą (žiūrint „kaip vaikas“ - pagal tikrąją, administratoriaus, paskyrą) */
+function game_allowed(?array $a = null): bool
+{
+    if (!game_ready()) {
+        return false;
+    }
+    $a = $a ?? current_account();
+    if (!$a) {
+        return false;
+    }
+    $ids = game_access_ids();
+    if ($ids === null) {
+        return true;
+    }
+    $real = !empty($_SESSION['view_admin']) ? (int) $_SESSION['view_admin'] : (int) $a['id'];
+    return in_array((int) $a['id'], $ids, true) || in_array($real, $ids, true);
+}
+
 function game_ready(): bool
 {
     static $ok = null;

@@ -32,7 +32,7 @@ test('news and events on one page, one menu item', async ({ browser }) => {
   await v.goto('naujienos.php');
   check('one menu item', await v.locator('.nav-pages a', { hasText: 'Naujienos ir renginiai' }).count() === 1 && await v.locator('.nav-pages a[href$="renginiai.php"]').count() === 0);
   check('events on the right', await v.locator('.nr-events .nr-ev').count() >= 2);
-  await v.evaluate(() => Promise.all(document.getAnimations().map(x => x.finished)));   // kortelės „įplaukia“
+  await v.evaluate(() => Promise.all(document.getAnimations().filter(x => x.effect && x.effect.getTiming().iterations !== Infinity).map(x => x.finished)));   // kortelės „įplaukia“
   const geo = await v.evaluate(() => {
     const n = document.querySelector('.nr-news .news-card').getBoundingClientRect(), e = document.querySelectorAll('.nr-ev');
     return { newsLeft: n.left, evLeft: e[0].getBoundingClientRect().left, two: Math.round(e[1].getBoundingClientRect().bottom - e[0].getBoundingClientRect().top), news: Math.round(n.height), top: Math.round(n.top - e[0].getBoundingClientRect().top) };

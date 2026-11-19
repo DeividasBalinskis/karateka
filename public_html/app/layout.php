@@ -66,7 +66,7 @@ function page_end(): void
 </footer>
 <?= page_widgets() ?>
 <script src="<?= e(asset_url('assets/header.js')) ?>"></script>
-<?php if (($acc = current_account()) && is_active_account($acc)): /* kvietimai žaisti - mažas langelis bet kuriame puslapyje */ ?>
+<?php if (($acc = current_account()) && is_active_account($acc) && game_nav_ready()): /* kvietimai žaisti - mažas langelis bet kuriame puslapyje (tik kas mato žaidimą) */ ?>
 <script src="<?= e(asset_url('assets/game-invites.js')) ?>" data-api="<?= e(url('zaidimas.php')) ?>" data-csrf="<?= e(csrf_token()) ?>" data-arena="<?= e(url('arena.php')) ?>" data-keturi="<?= e(url('keturi.php')) ?>" defer></script>
 <?php endif; ?>
 </body>
@@ -422,11 +422,11 @@ function admin_menu_groups_html(string $cur, bool $withDesc): string
     return $html;
 }
 
-/** Ar rodyti „🎮 Žaidimas“ viršutinėje juostoje (žaidimo lentelės jau sukurtos) */
+/** Ar rodyti „🏯 Dojo“ meniu: žaidimo lentelės sukurtos ir ši paskyra mato žaidimą (Nustatymai → „🏯 Žaidimas“) */
 function game_nav_ready(): bool
 {
     require_once APP_DIR . '/game.php';
-    return game_ready();
+    return game_allowed();
 }
 
 /** Nario paskyros skirtukai */

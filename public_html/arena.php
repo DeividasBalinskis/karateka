@@ -6,7 +6,7 @@ require_once APP_DIR . '/game_ui.php';
 require_once APP_DIR . '/game_fight.php';
 
 $a = require_login();
-if (!is_active_account($a) || !game_ready()) {
+if (!is_active_account($a) || !game_allowed($a)) {
     redirect('paskyra.php');
 }
 $mine = game_my_heroes($a);

@@ -27,6 +27,29 @@ if (is_post()) {
         flash('ok', t('Registracijos nustatymai išsaugoti.'));
         redirect('admin/nustatymai.php#registracija');
     }
+    if (post('action') === 'game_access' && is_admin($me)) {
+        // Kas mato žaidimą: visi arba tik pasirinktos paskyros (pagal nutylėjimą - Denio, db/043)
+        require_once APP_DIR . '/game.php';
+        $ids = game_access_ids() ?? [];
+        $do = post('do');
+        if ($do === 'all') {
+            set_site_setting('game_access', 'all');
+        } elseif ($do === 'me') {
+            set_site_setting('game_access', json_encode([(int) $me['id']]));
+        } elseif ($do === 'remove') {
+            set_site_setting('game_access', json_encode(array_values(array_diff($ids, [(int) post('id')]))));
+        } elseif ($do === 'add') {
+            $acc = q_one('SELECT id FROM accounts WHERE email = ?', [mb_strtolower(trim((string) post('email')))]);
+            if ($acc) {
+                set_site_setting('game_access', json_encode(array_values(array_unique(array_merge($ids, [(int) $acc['id']])))));
+            } else {
+                flash('err', t('Tokios paskyros nėra - patikrinkite el. paštą.'));
+                redirect('admin/nustatymai.php#zaidimas');
+            }
+        }
+        flash('ok', t('Išsaugota: kas mato žaidimą.'));
+        redirect('admin/nustatymai.php#zaidimas');
+    }
     handle_account_settings($me, 'admin/nustatymai.php', $errors);
 }
 $ownMembers = (int) q_value('SELECT COUNT(*) FROM account_members am JOIN members m ON m.id = am.member_id WHERE am.account_id = ? AND m.status = "active"', [(int) $me['id']]);
@@ -82,6 +105,31 @@ page_start(t('Nustatymai'), ['admin' => true]);
               <?php if ($pmAll !== $k): ?><form method="post"><?= csrf_field() ?><input type="hidden" name="action" value="phone_menu"><input type="hidden" name="v" value="<?= e($k) ?>"><button class="btn btn-sm" type="submit"><?= te('Visiems') ?></button></form><?php endif; ?></span></div>
         <?php endforeach; ?>
       </section>
+      <?php if (is_admin($me)): require_once APP_DIR . '/game.php'; $gIds = game_access_ids();
+        $gAcc = $gIds ? q_all('SELECT id, first_name, last_name, email FROM accounts WHERE id IN (' . implode(',', array_map('intval', $gIds)) . ') ORDER BY first_name') : []; ?>
+      <section class="panel card settings-group game-access" id="zaidimas">
+        <div class="kicker"><?= te('🏯 Žaidimas') ?></div>
+        <p class="small muted" style="margin:0 0 8px;"><?= te('Kas mato Dojo, areną ir žaidimus. Kiti meniu žaidimo nemato ir į jį nepatenka.') ?></p>
+        <p style="margin:0 0 8px;"><b><?= $gIds === null ? te('Mato visi nariai') : ($gAcc ? te('Mato tik:') : te('Niekas nemato')) ?></b></p>
+        <?php if ($gAcc): ?>
+          <ul class="ga-list">
+            <?php foreach ($gAcc as $g): ?>
+              <li><span><?= e(trim($g['first_name'] . ' ' . $g['last_name'])) ?> <small class="muted"><?= e($g['email']) ?></small></span>
+                <form method="post" class="inline-form"><?= csrf_field() ?><input type="hidden" name="action" value="game_access"><input type="hidden" name="do" value="remove"><input type="hidden" name="id" value="<?= (int) $g['id'] ?>"><button class="btn btn-ghost btn-sm" type="submit" title="<?= te('Nebematys') ?>">✕</button></form></li>
+            <?php endforeach; ?>
+          </ul>
+        <?php endif; ?>
+        <div class="ga-acts">
+          <?php if ($gIds !== null): ?>
+            <form method="post" class="inline-form ga-add"><?= csrf_field() ?><input type="hidden" name="action" value="game_access"><input type="hidden" name="do" value="add">
+              <input type="email" name="email" required placeholder="<?= te('el. paštas') ?>" aria-label="<?= te('Pridėti paskyrą (el. paštas)') ?>"><button class="btn btn-sm" type="submit"><?= te('+ Pridėti') ?></button></form>
+            <form method="post" class="inline-form"><?= csrf_field() ?><input type="hidden" name="action" value="game_access"><input type="hidden" name="do" value="all"><button class="btn btn-sm" type="submit"><?= te('Rodyti visiems') ?></button></form>
+          <?php else: ?>
+            <form method="post" class="inline-form"><?= csrf_field() ?><input type="hidden" name="action" value="game_access"><input type="hidden" name="do" value="me"><button class="btn btn-sm" type="submit"><?= te('Paslėpti - matysiu tik aš') ?></button></form>
+          <?php endif; ?>
+        </div>
+      </section>
+      <?php endif; ?>
       <section class="panel card settings-group reg-toggles" id="registracija">
         <div class="kicker"><?= te('Registracija') ?></div>
         <p class="small muted" style="margin:0 0 8px;"><?= te('Išjungus - registracijos mygtukas dingsta, o puslapis sako, kad registracija išjungta.') ?></p>

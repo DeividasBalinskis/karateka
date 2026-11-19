@@ -146,7 +146,7 @@ $selected = $selected ?? ($members[0] ?? null);
 // Žaidimo kortelė: herojus - pasirinkto nario (vaiko), arba savas (treneriui, be narių). Pats žaidimas - dojo.php.
 require_once APP_DIR . '/game_ui.php';
 $dojoHero = null;
-if ($tab === 'apzvalga' && $a['status'] === 'active' && game_ready()) {
+if ($tab === 'apzvalga' && $a['status'] === 'active' && game_allowed($a)) {
     $mineHeroes = game_my_heroes($a);
     foreach ($mineHeroes as $h) {
         if ((int) $h['id'] === (int) get('h')) {

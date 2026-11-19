@@ -18,4 +18,6 @@ php tools/demo-duomenys.php | "${MYSQL[@]}" "$DB_NAME"
 (cd public_html && php app/cli/dev_pavyzdziai.php > /dev/null)
 # Testams reikia pavyzdžių - automatinis senų pavyzdžių išvalymas (app/test_data.php) išjungiamas; 08-test-data jį išbando atskirai
 "${MYSQL[@]}" "$DB_NAME" -e "INSERT INTO site_settings (name, value) VALUES ('demo_isvalyta', 'testai') ON DUPLICATE KEY UPDATE value = 'testai';"
+# Žaidimas testuose - matomas visiems (db/043 jį paslepia, mato tik Denis; tai tikrina 06y)
+"${MYSQL[@]}" "$DB_NAME" -e "DELETE FROM site_settings WHERE name = 'game_access';"
 echo "Testų duomenų bazė paruošta: $DB_NAME"

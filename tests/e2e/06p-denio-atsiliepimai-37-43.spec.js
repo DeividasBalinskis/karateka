@@ -45,8 +45,10 @@ test('Taika: systems named by event, medals separate, team kata final stays with
   const fin = a.locator('#draw-view .match', { has: a.locator('.match-label', { hasText: /Finalas/ }) }).first();
   check('final keeps flags, no score input', await fin.locator('.m-flags-score').count() === 1 && await fin.locator('.m-score').count() === 0);
 
-  // #41 Baigta → išsiųsta apdovanojimams → perburta: „apdovanojama“ nebelieka
-  await a.locator('#run-done [data-award-send]').first().click();
+  // #41 Baigta → išsiųsta apdovanojimams (v1.47 - pati, #122) → perburta: „apdovanojama“ nebelieka
+  const send = a.locator('#run-done [data-award-send]');
+  if (await send.count()) await send.first().click().catch(() => {});
+  await a.waitForTimeout(1500);
   await a.waitForSelector('#run-done:not([hidden])');
   check('sent to awards', /apdovanojimams|apdovanojama/i.test(await a.textContent('#run-done')));
   await a.click('#draw-new');

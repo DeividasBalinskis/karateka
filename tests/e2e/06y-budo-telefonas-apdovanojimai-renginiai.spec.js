@@ -16,7 +16,7 @@ test('event photo, events column to the bottom, back link', async ({ browser }) 
 
   const v = await login(browser, null, 1440, 900);
   await v.goto('naujienos.php');
-  await v.evaluate(() => Promise.all(document.getAnimations().map(x => x.finished)));
+  await v.evaluate(() => Promise.all(document.getAnimations().filter(x => x.effect && x.effect.getTiming().iterations !== Infinity).map(x => x.finished)));
   check('event with photo', await v.locator(`.nr-ev[href$="id=${ev}"] .nr-ph img`).count() === 1);
   check('events without photo get a coloured sign', await v.locator('.nr-ev .nr-ph.no-ph').count() >= 1);
   const geo = await v.evaluate(() => {
@@ -126,4 +126,27 @@ test('Budo: centred on a wide screen; phone score cards keep the view in place',
   check('AKA won: bracket does not jump to the start', after[0] === before[0] && Math.abs(after[1] - before[1]) < 120, `${before} -> ${after}`);
   sql(`DELETE FROM tournaments WHERE id = ${tid}`);
   noJsErrors(a, p);
+});
+
+test('game hidden: only chosen accounts (Denis) see Dojo; settings switch', async ({ browser }) => {
+  const adminId = +sql("SELECT id FROM accounts WHERE email = 'info@karateka.lt'");
+  sql(`INSERT INTO site_settings (name, value) VALUES ('game_access', '[${adminId}]') ON DUPLICATE KEY UPDATE value = '[${adminId}]'`);
+  const k = await login(browser, 'jaunuolis@karateka.test', 1280, 900);
+  await k.goto('paskyra.php');
+  check('kid: no Dojo in the menu', await k.locator('.nav-game').count() === 0 && await k.locator('.game-teaser').count() === 0);
+  await k.goto('dojo.php');
+  check('kid: Dojo page closed', !k.url().includes('dojo.php'));
+  const r = await k.request.get('zaidimas.php?list=1');
+  check('kid: game API closed', r.status() >= 400 || !(await r.text()).includes('"ok":true'));
+  const a = await login(browser, 'info@karateka.lt', 1280, 900);
+  await a.goto('dojo.php');
+  check('Denis sees the game', a.url().includes('dojo.php') && await a.locator('.nav-game').count() === 1);
+  await a.goto('admin/nustatymai.php');
+  check('settings: who sees it', /Mato tik/.test(await a.textContent('#zaidimas')));
+  await nav(a, () => a.click('#zaidimas button:has-text("Rodyti visiems")'));
+  check('switched to everyone', sql("SELECT value FROM site_settings WHERE name = 'game_access'") === 'all');
+  await k.goto('paskyra.php');
+  check('kid sees Dojo again', await k.locator('.nav-game').count() === 1);
+  sql("DELETE FROM site_settings WHERE name = 'game_access'");
+  noJsErrors(a, k);
 });

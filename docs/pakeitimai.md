@@ -5,7 +5,11 @@ Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test 
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
 ## v1.47 - 2026-11-19 (Budo telefone ir centre, apdovanojimai, renginiai su nuotraukomis, atsiliepimai #119-#125)
-**Reikia atnaujinti duomenų bazę: db/042** (Pradžia → „Atnaujinkite duomenų bazę“). Zip'o turinį išpakuokite **tiesiai į svetainės aplanką**.
+**Reikia atnaujinti duomenų bazę: db/042 ir db/043** (Pradžia → „Atnaujinkite duomenų bazę“). Zip'o turinį išpakuokite **tiesiai į svetainės aplanką**.
+
+**🏯 Žaidimas paslėptas**
+- Kol kas Dojo, areną ir žaidimus mato tik Denio paskyra - kitiems meniu jų nėra ir patekti negalima.
+- Nustatymai → „🏯 Žaidimas“: „Rodyti visiems“, pridėti paskyrą (el. paštu) arba ✕ išimti.
 
 **🥋 Budo varžybos**
 - Plačiame ir ultra plačiame ekrane - viskas centre (iki 1680 px), nebeištempta iki kraštų.
