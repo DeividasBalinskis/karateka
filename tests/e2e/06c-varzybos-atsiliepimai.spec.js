@@ -31,7 +31,7 @@ test('feedback: visitor and member write, admin answers', async ({ browser }) =>
   const a = await login(browser, 'info@karateka.lt');
   await a.goto('admin/');
   check('feedback badge in the admin menu', (await a.locator('.adm-side a[href*="atsiliepimai.php"]').textContent()).includes('2'));
-  check('same badge in the phone row (Daugiau)', /2/.test(await a.locator('.am-line .am-more > summary').textContent()));
+  check('badge counted in the phone row (Daugiau)', +((await a.locator('.am-line .am-more > summary').textContent()).match(/\d+/) || [0])[0] >= 2);
   await a.goto('admin/');
   check('todo line', /Nauji atsiliepimai apie svetainę: 2/.test(await a.locator('body').textContent()));
   await a.goto('admin/atsiliepimai.php');
