@@ -28,14 +28,14 @@ if (is_post()) {
 
     $result = attempt_login($email, (string) ($_POST['password'] ?? ''));
     if ($result['ok']) {
-        $me = current_account();
+        $me = q_one('SELECT * FROM accounts WHERE id = ?', [(int) ($_SESSION['account_id'] ?? 0)]);   // current_account() šioje užklausoje jau atsimena „neprisijungęs“
         redirect(!$askedFor && $me && is_staff($me) ? url('admin/') : $return);
     }
     if ($result['error'] === 'code') {
         if ($result['mail_error']) {
             flash('err', $result['mail_error']);
         }
-        redirect('kodas.php?r=' . rawurlencode($return));
+        redirect('kodas.php' . ($askedFor ? '?r=' . rawurlencode($return) : ''));
     }
     $messages = [
         'throttled'      => t('Per daug nesėkmingų bandymų. Pabandykite po 15 minučių arba atkurkite slaptažodį.'),
@@ -66,7 +66,7 @@ page_start(t('Prisijungti'), ['narrow' => true, 'noindex' => true]);
   <?php endif; ?>
   <form method="post" class="form">
     <?= csrf_field() ?>
-    <input type="hidden" name="r" value="<?= e($return) ?>">
+    <?php if ($askedFor): ?><input type="hidden" name="r" value="<?= e($return) ?>"><?php endif; ?>
     <label><?= te('El. paštas') ?>
       <input type="email" name="email" value="<?= e($email) ?>" autocomplete="email" required autofocus>
     </label>

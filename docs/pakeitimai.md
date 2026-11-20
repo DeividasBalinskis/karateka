@@ -35,6 +35,10 @@ Visi sprendimai surašyti `docs/decisions.md`.
 - Vaikui iki 10 m. savo paskyroje: „Mano diena“, „XP“, „Geriausi“ vietoj „Apžvalga“, „aktyvumo taškai“, „Top 5“.
 - Vaikas savo paskyroje nemato mokesčių - tik tėvai.
 
+**📱 Telefone ir planšetėje (B4 baigtas)**
+- 💡 atsiliepimas ir 💬 žinutės - **vienas plaukiojantis mygtukas** su mažu meniu (kompiuteryje - du, kaip anksčiau).
+- Prisijungus be nurodyto puslapio treneris ir administratorius patenka į „Šiandien“ (ir per 2 žingsnių prisijungimą su kodu).
+
 **📄 Projekto atmintis (C9)**: `CLAUDE.md`, `docs/handoff.md`, `docs/decisions.md`.
 
 ## v1.51 - 2026-11-20 (testų redaktorius pagal standartus, klausimų failas kuriant testą, bendri mygtukai ir failo laukai)

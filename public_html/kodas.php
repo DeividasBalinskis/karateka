@@ -3,6 +3,7 @@
 require __DIR__ . '/app/bootstrap.php';
 
 $return = safe_return(get('r') ?: post('r'));
+$askedFor = (string) (get('r') ?: post('r')) !== '';   // be nurodyto puslapio treneris ar adminas - į Valdymas → Šiandien
 if (current_account()) {
     redirect($return);
 }
@@ -36,7 +37,8 @@ if (is_post()) {
             trust_device($aid);
         }
         login_account($aid);
-        redirect($return);
+        $me = q_one('SELECT * FROM accounts WHERE id = ?', [$aid]);
+        redirect(!$askedFor && $me && is_staff($me) ? url('admin/') : $return);
     }
     $error = $res === 'invalid'
         ? (t('Neteisingas kodas. Liko bandymų:') . ' ') . login_code_attempts_left($aid, 'login') . '.'
@@ -54,7 +56,7 @@ page_start(t('Prisijungimo kodas'), ['narrow' => true, 'noindex' => true]);
   <?php if ($error): ?><div class="flash flash-err"><?= e($error) ?></div><?php endif; ?>
   <form method="post" class="form">
     <?= csrf_field() ?>
-    <input type="hidden" name="r" value="<?= e($return) ?>">
+    <?php if ($askedFor): ?><input type="hidden" name="r" value="<?= e($return) ?>"><?php endif; ?>
     <label><?= te('Kodas') ?>
       <input class="code-input" type="text" name="code" inputmode="numeric" autocomplete="one-time-code" pattern="\s*\d{3}\s?\d{3}\s*" maxlength="7" required autofocus>
     </label>
@@ -62,7 +64,7 @@ page_start(t('Prisijungimo kodas'), ['narrow' => true, 'noindex' => true]);
     <button class="btn btn-primary btn-block" type="submit"><?= te('Prisijungti') ?></button>
   </form>
   <div class="row between auth-links" style="margin-top:14px; gap:10px; flex-wrap:wrap;">
-    <form method="post" class="inline-form"><?= csrf_field() ?><input type="hidden" name="r" value="<?= e($return) ?>">
+    <form method="post" class="inline-form"><?= csrf_field() ?><?php if ($askedFor): ?><input type="hidden" name="r" value="<?= e($return) ?>"><?php endif; ?>
       <button class="linklike small" name="action" value="resend"><?= te('Siųsti naują kodą') ?></button></form>
     <form method="post" class="inline-form"><?= csrf_field() ?>
       <button class="linklike small" name="action" value="cancel"><?= te('Atšaukti') ?></button></form>

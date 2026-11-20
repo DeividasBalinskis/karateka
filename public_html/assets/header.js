@@ -135,3 +135,35 @@
     setTimeout(function () { lbl.textContent = b.dataset.label; }, 2000);
   });
 })();
+
+// B4: telefone ir planšetėje (iki 1099 px) 💡 atsiliepimas ir 💬 žinutės - vienas plaukiojantis mygtukas su mažu meniu (neuždengia turinio)
+(function () { function init() {
+  var fb = document.querySelector('.fb-fab'), chat = document.querySelector('.chat-fab');
+  if (!fb || !chat || document.querySelector('.fab-hub')) return;
+  var lang = document.documentElement.lang, L = lang === 'en' ? ['Feedback', 'Messages', 'Help and messages'] : lang === 'ru' ? ['Отзыв', 'Сообщения', 'Помощь и сообщения'] : ['Atsiliepimas', 'Žinutės', 'Pagalba ir žinutės'];
+  var hub = document.createElement('div');
+  hub.className = 'fab-hub';
+  hub.innerHTML = '<div class="fh-menu" hidden><button type="button" class="fh-item" data-fh="fb">💡 ' + L[0] + '</button>' +
+    '<button type="button" class="fh-item" data-fh="chat">💬 ' + L[1] + ' <em class="count-badge fh-n" hidden></em></button></div>' +
+    '<button type="button" class="fh-btn" aria-expanded="false" aria-label="' + L[2] + '"><span aria-hidden="true">💬</span><em class="count-badge fh-n" hidden></em></button>';
+  document.body.appendChild(hub);
+  document.body.classList.add('has-fab-hub');
+  var btn = hub.querySelector('.fh-btn'), menu = hub.querySelector('.fh-menu');
+  function close() { menu.hidden = true; btn.setAttribute('aria-expanded', 'false'); }
+  btn.addEventListener('click', function () { menu.hidden = !menu.hidden; btn.setAttribute('aria-expanded', menu.hidden ? 'false' : 'true'); });
+  hub.addEventListener('click', function (e) {
+    var it = e.target.closest('[data-fh]'); if (!it) return;
+    close();
+    (it.dataset.fh === 'fb' ? fb : chat).click();
+  });
+  document.addEventListener('click', function (e) { if (!hub.contains(e.target)) close(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
+  // Neperskaitytų žinučių skaičius - ir ant bendro mygtuko
+  var src = chat.querySelector('.count-badge');
+  function sync() {
+    var n = src && !src.hidden ? (src.textContent || '').trim() : '';
+    hub.querySelectorAll('.fh-n').forEach(function (b) { b.textContent = n; b.hidden = !n || n === '0'; });
+  }
+  if (src) new MutationObserver(sync).observe(src, { childList: true, characterData: true, subtree: true, attributes: true });
+  sync();
+} if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init(); })();
