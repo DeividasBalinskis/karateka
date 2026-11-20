@@ -60,17 +60,20 @@ test('exam signup link for people without an account, invitations, exam list for
   check('belt saved to protocol', sql(`SELECT kyu FROM exam_protocol_rows WHERE event_id = ${eid}`) === '8 kyu');
   const myUrl = v.url();
 
-  // Tas pats vardas ir gimimo data dar kartą - atnaujina, ne dubliuoja
+  // A3: tas pats vardas ir gimimo data dar kartą - „jau užregistruotas“, be dublikato, telefonas neperrašomas, nuoroda nerodoma
   await v.goto(`egzamino-registracija.php?k=${token}`);
   await v.fill('input[name=first_name]', 'Ona');
   await v.fill('input[name=last_name]', 'Svečiūtė');
   await v.fill('input[name=birth_date]', '2015-04-03');
   await v.fill('input[name=phone]', '+370 600 00003');
   await nav(v, () => v.click('button:has-text("Registruotis į egzaminą")'));
-  check('same person updates, no duplicate', +sql(`SELECT COUNT(*) FROM exam_protocol_rows WHERE event_id = ${eid} AND deleted_at IS NULL`) === 1
-    && sql(`SELECT phone FROM exam_protocol_rows WHERE event_id = ${eid}`) === '+370 600 00003');
+  check('same person: no duplicate, phone not overwritten', +sql(`SELECT COUNT(*) FROM exam_protocol_rows WHERE event_id = ${eid} AND deleted_at IS NULL`) === 1
+    && sql(`SELECT phone FROM exam_protocol_rows WHERE event_id = ${eid}`) === '+370 600 00002');
+  check('„Jūs jau užregistruotas“, no link shown', /jau užregistruotas/.test(await v.textContent('.exam-su-ok')) && await v.locator('.exam-su-ok .su-url, .exam-su-ok a[href*="mano-egzaminas"]').count() === 0);
+  check('coach told about the second try', +sql("SELECT COUNT(*) FROM notifications WHERE type = 'exam_registration' AND title LIKE '%dar kartą%Ona Svečiūtė%'") >= 1);
 
-  // Pamiršo nuorodą: vardas pavardė + gimimo data → savo puslapis
+  // Pamiršo nuorodą: vardas pavardė + gimimo data → savo puslapis (A3: bandymai ribojami pagal IP - pradedame švariai)
+  sql("DELETE FROM login_attempts WHERE email = '#exam-find'");
   await v.goto(`egzamino-registracija.php?k=${token}`);
   await v.locator('#rasti > summary').click();
   await v.fill('#rasti input[name=name]', 'ona svečiūtė');

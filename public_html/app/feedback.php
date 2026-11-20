@@ -51,8 +51,15 @@ const FEEDBACK_IMG_DIR = PUBLIC_DIR . '/uploads/feedback';
 const FEEDBACK_MAX_IMAGES = 40;
 
 /** Įrašo atsiliepimą. Grąžina id arba klaidos tekstą (string). $allowEmpty - kai pirmiausia įklijuojama nuotrauka. */
+/** A3: slapti adreso parametrai (k, t, e, key) atsiliepimuose nesaugomi - pakeičiami „…“ */
+function feedback_safe_page(string $page): string
+{
+    return (string) preg_replace('/([?&](?:k|t|e|key|token)=)[^&#]*/i', '$1…', $page);
+}
+
 function feedback_add(?array $a, string $body, string $page, string $name = '', string $site = 'karateka', ?string $context = null, bool $allowEmpty = false)
 {
+    $page = feedback_safe_page($page);
     $body = trim(str_replace("\r\n", "\n", $body));
     if (!$allowEmpty && mb_strlen($body) < 3) {
         return t('Parašykite bent kelis žodžius.');

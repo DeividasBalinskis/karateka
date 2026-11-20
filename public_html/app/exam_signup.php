@@ -77,13 +77,20 @@ function exam_signup_save(array $event, array $d): array
     $birth = preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) ($d['birth_date'] ?? '')) ? $d['birth_date'] : null;
     $phone = mb_substr(trim((string) ($d['phone'] ?? '')), 0, 40) ?: null;
     $email = mb_strtolower(trim((string) ($d['email'] ?? ''))) ?: null;
-    $old = q_one('SELECT * FROM exam_signups WHERE event_id = ? AND LOWER(TRIM(CONCAT(first_name, " ", last_name))) = LOWER(?) AND (birth_date <=> ? OR birth_date IS NULL) ORDER BY signed_at IS NULL, id LIMIT 1',
-        [$eid, $name, $birth]);
+    // A3: tas pats žmogus - tik vardas + TA PATI gimimo data (vien vardo neužtenka); kviestas laišku - pagal el. paštą
+    $old = $birth ? q_one('SELECT * FROM exam_signups WHERE event_id = ? AND LOWER(TRIM(CONCAT(first_name, " ", last_name))) = LOWER(?) AND birth_date = ? ORDER BY signed_at IS NULL, id LIMIT 1',
+        [$eid, $name, $birth]) : null;
     if (!$old && $email) {
         $old = q_one('SELECT * FROM exam_signups WHERE event_id = ? AND email = ?', [$eid, $email]);
     }
+    // A3: jau užsiregistravęs - nieko nekeičiame (nei telefono, nei vardo), nuorodos nerodome, treneriui pranešame
+    if ($old && $old['signed_at']) {
+        notify_staff('exam_registration', t('Bandė užsiregistruoti dar kartą') . ': ' . $name,
+            $event['title'] . ' · ' . fmt_date($event['starts_on'], true) . ' · ' . t('jau buvo užregistruotas (-a); nuoroda neparodyta'), 'admin/egzamino-protokolas.php?id=' . $eid);
+        return ['new' => false, 'already' => true, 'row_id' => (int) $old['row_id']];
+    }
     if ($old) {
-        q('UPDATE exam_signups SET first_name = ?, last_name = ?, birth_date = ?, phone = COALESCE(?, phone), signed_at = NOW() WHERE id = ?', [$first, $last, $birth, $phone, (int) $old['id']]);
+        q('UPDATE exam_signups SET first_name = ?, last_name = ?, birth_date = ?, phone = COALESCE(phone, ?), signed_at = NOW() WHERE id = ?', [$first, $last, $birth, $phone, (int) $old['id']]);
         $sid = (int) $old['id'];
     } else {
         q('INSERT INTO exam_signups (event_id, email, first_name, last_name, birth_date, phone, signed_at) VALUES (?, ?, ?, ?, ?, ?, NOW())',
@@ -91,21 +98,21 @@ function exam_signup_save(array $event, array $d): array
         $sid = (int) db()->lastInsertId();
     }
     // Protokolo eilutė: susieta anksčiau, arba tas pats žmogus jau įrašytas trenerio (vardas + gimimo data), arba nauja
+    // A3: ištrinta eilutė neatgaivinama; trenerio įrašytas žmogus atpažįstamas tik pagal vardą + tą pačią gimimo datą
     $rid = $old && $old['row_id'] ? (int) $old['row_id'] : 0;
-    $exists = $rid ? q_one('SELECT id FROM exam_protocol_rows WHERE id = ? AND event_id = ?', [$rid, $eid]) : null;
-    if (!$exists) {
-        $exists = q_one('SELECT id FROM exam_protocol_rows WHERE event_id = ? AND deleted_at IS NULL AND LOWER(TRIM(name)) = LOWER(?) AND (birth_date <=> ? OR birth_date IS NULL) ORDER BY id LIMIT 1',
+    $exists = $rid ? q_one('SELECT id FROM exam_protocol_rows WHERE id = ? AND event_id = ? AND deleted_at IS NULL', [$rid, $eid]) : null;
+    if (!$exists && $birth) {
+        $exists = q_one('SELECT id FROM exam_protocol_rows WHERE event_id = ? AND deleted_at IS NULL AND LOWER(TRIM(name)) = LOWER(?) AND birth_date = ? ORDER BY id LIMIT 1',
             [$eid, $name, $birth]);
-        $rid = $exists ? (int) $exists['id'] : 0;
     }
-    if ($exists) {
-        q('UPDATE exam_protocol_rows SET name = ?, birth_date = COALESCE(?, birth_date), deleted_at = NULL WHERE id = ?', [mb_substr($name, 0, 160), $birth, $rid]);
-    } else {
+    $rid = $exists ? (int) $exists['id'] : 0;
+    $inProtocol = (bool) $exists;   // žmogų jau buvo įrašęs treneris - nuorodos per registraciją nerodome (A3)
+    if (!$exists) {
         exam_protocol($event);   // antraštė (jei protokolo dar nebuvo)
         $rid = exam_protocol_add($event, ['name' => $name, 'birth_date' => $birth]);
     }
     if ($phone && exam_v40_ready()) {
-        q('UPDATE exam_protocol_rows SET phone = ? WHERE id = ?', [$phone, $rid]);
+        q('UPDATE exam_protocol_rows SET phone = ? WHERE id = ? AND (phone IS NULL OR phone = "")', [$phone, $rid]);   // esamo telefono neperrašome
     }
     q('UPDATE exam_signups SET row_id = ? WHERE id = ?', [$rid, $sid]);
     $new = !$old || !$old['signed_at'];
@@ -113,7 +120,7 @@ function exam_signup_save(array $event, array $d): array
         notify_staff('exam_registration', t('Užsiregistravo į egzaminą (per nuorodą)') . ': ' . $name,
             $event['title'] . ' · ' . fmt_date($event['starts_on'], true) . ($phone ? ' · ' . $phone : ''), url('admin/egzamino-protokolas.php?id=' . $eid));
     }
-    return ['new' => $new, 'row_id' => $rid];
+    return ['new' => $new, 'row_id' => $rid, 'already' => $inProtocol];
 }
 
 // ---------- Asmeninis egzamino puslapis be paskyros (mano-egzaminas.php?t=) ----------
@@ -135,6 +142,31 @@ function exam_row_url(array $row): ?string
 {
     $t = exam_row_token($row);
     return $t ? abs_url('mano-egzaminas.php?t=' . $t) : null;
+}
+
+/** ↻ Nauja nuoroda: senoji asmeninė nuoroda nebeveiks (A3) */
+function exam_row_new_token(int $rowId): void
+{
+    if (exam_v40_ready()) {
+        q('UPDATE exam_protocol_rows SET token = ? WHERE id = ?', [bin2hex(random_bytes(10)), $rowId]);
+    }
+}
+
+/** „Jau užsiregistravai?“ - ne daugiau 10 nesėkmių per valandą iš vieno IP (duomenų bazėje, ne tik sesijoje) */
+function exam_find_throttled(): bool
+{
+    return (int) q_value("SELECT COUNT(*) FROM login_attempts WHERE email = '#exam-find' AND ip = ? AND success = 0 AND attempted_at > NOW() - INTERVAL 1 HOUR", [client_ip()]) >= 10;
+}
+
+function exam_find_log(bool $ok): void
+{
+    q('INSERT INTO login_attempts (email, ip, success) VALUES (?, ?, ?)', ['#exam-find', client_ip(), $ok ? 1 : 0]);
+}
+
+/** Paieška „Jau užsiregistravai?“ veikia iki egzamino dienos pabaigos */
+function exam_find_open(array $event): bool
+{
+    return (string) ($event['ends_on'] ?: $event['starts_on']) >= date('Y-m-d');
 }
 
 function exam_row_by_token(string $token): ?array

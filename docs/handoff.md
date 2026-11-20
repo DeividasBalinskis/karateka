@@ -1,5 +1,5 @@
 # Handoff
-Updated: 2026-11-20 · version v1.55 · branch claude/festive-curie-01jgx2
+Updated: 2026-11-20 · version v1.56 · branch claude/festive-curie-01jgx2
 
 ## Pending asks (answer these first)
 | Asked | By | What | Status |
@@ -16,6 +16,7 @@ Updated: 2026-11-20 · version v1.55 · branch claude/festive-curie-01jgx2
 - v1.54: B3 Budo on a phone (bout fits one screen, „⏱ laikas ir gongas“ folds, floats hidden in a bout, lower header,
   tablet overflow fixed, confirmations shown, TV tatami picker, names without birth year shortened in public).
 - v1.55: B5 notifications - one type list (action / notice / celebration), staff red number = to-dos until done, notices fold.
+- v1.56: A3 exam links safe (already-registered message without link, no name-only match, find limited per IP, ↻ new link).
 - Committed and pushed to the claude branch after each stage; `main` untouched.
 
 ## Open

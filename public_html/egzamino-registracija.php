@@ -20,14 +20,20 @@ if (is_post()) {
     csrf_check();
     $tooMany = post('website') !== '' || count($_SESSION['exam_su_posts']) >= 15;
     if (post('action') === 'find') {
-        // Jau užsiregistravęs: vardas pavardė + gimimo data → asmeninis puslapis
+        // Jau užsiregistravęs: vardas pavardė + gimimo data → asmeninis puslapis.
+        // A3: ne daugiau 10 nesėkmių per valandą iš vieno IP (duomenų bazėje); po egzamino paieška išjungiama
         $_SESSION['exam_su_posts'][] = time();
-        $row = $tooMany ? null : exam_row_find((int) $event['id'], (string) post('name'), (string) post('birth_date'));
+        $tooMany = $tooMany || exam_find_throttled();
+        $row = $tooMany || !exam_find_open($event) ? null : exam_row_find((int) $event['id'], (string) post('name'), (string) post('birth_date'));
         $tok = $row ? exam_row_token($row) : null;
+        if (!$tooMany && exam_find_open($event)) {
+            exam_find_log((bool) $tok);
+        }
         if ($tok) {
             redirect('mano-egzaminas.php?t=' . $tok);
         }
-        $findErr = $tooMany ? t('Per daug bandymų. Pabandykite vėliau.') : t('Neradome. Patikrinkite vardą, pavardę ir gimimo datą arba užsiregistruokite.');
+        $findErr = $tooMany ? t('Per daug bandymų. Pabandykite vėliau.') : (!exam_find_open($event) ? t('Egzaminas jau įvyko - savo rezultatą sužinokite iš trenerio.')
+            : t('Neradome. Patikrinkite vardą, pavardę ir gimimo datą arba užsiregistruokite.'));
     } elseif ($open) {
         foreach ($v as $k => $_) {
             $v[$k] = trim((string) post($k));
@@ -47,8 +53,12 @@ if (is_post()) {
         if (!$errors) {
             $_SESSION['exam_su_posts'][] = time();
             $res = exam_signup_save($event, $v);
-            $row = q_one('SELECT * FROM exam_protocol_rows WHERE id = ?', [$res['row_id']]);
-            $done = $v + ['url' => $row ? exam_row_url($row) : null];
+            if (!empty($res['already'])) {
+                $done = $v + ['url' => null, 'already' => true];   // A3: kito žmogaus nuorodos nerodome
+            } else {
+                $row = q_one('SELECT * FROM exam_protocol_rows WHERE id = ?', [$res['row_id']]);
+                $done = $v + ['url' => $row ? exam_row_url($row) : null];
+            }
         }
     }
 }
@@ -66,7 +76,14 @@ page_start(t('Registracija į egzaminą') . ': ' . tr_text($event['title']), ['n
     <?php if ($event['description']): ?><details><summary><?= te('Plačiau') ?></summary><div class="news-body"><?= text_to_html(tr_text($event['description'])) ?></div></details><?php endif; ?>
   </header>
 
-  <?php if ($done): ?>
+  <?php if ($done && !empty($done['already'])): ?>
+    <div class="panel card exam-su-ok" role="status">
+      <h2>✓ <?= te('Jūs jau užregistruotas (-a)') ?></h2>
+      <p><?= te('{n} jau yra šio egzamino sąraše - dar kartą registruotis nereikia. Treneriui pranešėme.', ['n' => $done['first_name']]) ?></p>
+      <p class="small muted"><?= te('Savo egzamino puslapio nuorodą rasite registracijos metu gautoje žinutėje arba „Jau užsiregistravai?“ žemiau. Jei nepavyksta - parašykite treneriui.') ?></p>
+      <p><a class="btn btn-ghost btn-sm" href="<?= e(url('egzamino-registracija.php?k=' . $link['token'])) ?>"><?= te('Registruoti kitą žmogų') ?></a></p>
+    </div>
+  <?php elseif ($done): ?>
     <div class="panel card exam-su-ok" role="status">
       <h2>✓ <?= te('Užregistruota!') ?></h2>
       <p><?= te('{n}, tu užregistruotas (-a) į egzaminą.', ['n' => $done['first_name']]) ?></p>
@@ -105,7 +122,7 @@ page_start(t('Registracija į egzaminą') . ': ' . tr_text($event['title']), ['n
     </form>
   <?php endif; ?>
 
-  <?php if (!$done): ?>
+  <?php if ((!$done || !empty($done['already'])) && exam_find_open($event)): ?>
     <details class="panel card exam-su-find" id="rasti"<?= $findErr !== '' || !$open ? ' open' : '' ?>>
       <summary><b><?= te('Jau užsiregistravai? Rask savo egzaminą') ?></b></summary>
       <form method="post" class="form" style="margin-top:10px;">
