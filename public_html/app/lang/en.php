@@ -3527,4 +3527,7 @@ From 2013 he trained with the team of the traditional karate-do club "Sanrei", a
     'Sukurti naują asmeninę nuorodą? Senoji nebeveiks.' => 'Create a new personal link? The old one will stop working.',
     'jau buvo užregistruotas (-a); nuoroda neparodyta' => 'was already registered; the link was not shown',
     '{n} jau yra šio egzamino sąraše - dar kartą registruotis nereikia. Treneriui pranešėme.' => '{n} is already on this exam\'s list - no need to register again. We have told the coach.',
+    'užsiregistravo {a} · protokole {b}' => 'registered {a} · in the protocol {b}',
+    'Užsiregistravusius per svetainę įrašyti į protokolą' => 'Add people who registered on the site to the protocol',
+    '↓ Į protokolą ({n})' => '↓ To the protocol ({n})',
 ];

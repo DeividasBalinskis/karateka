@@ -1,5 +1,5 @@
 # Handoff
-Updated: 2026-11-20 · version v1.58 · branch claude/festive-curie-01jgx2
+Updated: 2026-11-20 · version v1.59 · branch claude/festive-curie-01jgx2
 
 ## Pending asks (answer these first)
 | Asked | By | What | Status |
@@ -19,6 +19,7 @@ Updated: 2026-11-20 · version v1.58 · branch claude/festive-curie-01jgx2
 - v1.56: A3 exam links safe (already-registered message without link, no name-only match, find limited per IP, ↻ new link).
 - v1.57: C7 one polling request (pulsas.php + assets/pulse.js; chat.js, notify-popup.js, game-invites.js listen to „karateka:pulse“).
 - v1.58: B1 done (LTKF EN/RU keys fixed, „karatė“ rule in checks.sh).
+- v1.59: B6 part (exam list counts + import, protocol on a tablet). B6 left: new event defaults („Kita“, „Bus pakviesta: N“).
 - Committed and pushed to the claude branch after each stage; `main` untouched.
 
 ## Open

@@ -4,6 +4,14 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.59 - 2026-11-20 (egzaminai: skaičiai sąraše, protokolas planšetėje - B6)
+Duomenų bazės atnaujinti nereikia.
+
+- Valdymas → Egzaminai: prie kiekvieno egzamino - **„užsiregistravo N · protokole M“**; jei dalis užsiregistravusių dar ne protokole -
+  mygtukas **„↓ Į protokolą (N)“** čia pat.
+- Protokolas planšetėje (iki 1366 px ar jutikliniame ekrane): „Išlaikė / Neišlaikė“, „€“, „✕“ - bent 40 px, „− / +“ - 40 px aukščio;
+  vardai ir kyu nebenukerpami.
+
 ## v1.58 - 2026-11-20 (smulkūs pataisymai - B1 pabaiga)
 Duomenų bazės atnaujinti nereikia.
 
