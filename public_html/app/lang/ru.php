@@ -3430,4 +3430,8 @@ Nuo 2013 m. treniravosi Tradicinio karate-do klubo „Sanrei“ komandoje, o 201
     'Mano diena' => 'Мой день',
     'Geriausi ·' => 'Лучшие ·',
     'Tema šiame įrenginyje' => 'Тема на этом устройстве',
+    'Kas naujo' => 'Что нового',
+    'Trys naujausios versijos. Dabartinė:' => 'Три последние версии. Текущая:',
+    'Pakeitimų sąrašas nerastas.' => 'Список изменений не найден.',
+    'Kas naujo šioje versijoje' => 'Что нового в этой версии',
 ];

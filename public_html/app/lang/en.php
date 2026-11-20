@@ -3430,4 +3430,8 @@ From 2013 he trained with the team of the traditional karate-do club "Sanrei", a
     'Mano diena' => 'My day',
     'Geriausi ·' => 'Best ·',
     'Tema šiame įrenginyje' => 'Theme on this device',
+    'Kas naujo' => 'What\'s new',
+    'Trys naujausios versijos. Dabartinė:' => 'The three newest versions. Current:',
+    'Pakeitimų sąrašas nerastas.' => 'The change list was not found.',
+    'Kas naujo šioje versijoje' => 'What\'s new in this version',
 ];
