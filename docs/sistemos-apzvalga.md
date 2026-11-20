@@ -3,7 +3,7 @@
 ## Deniui — 10 eilučių
 
 1. Peržiūrėjau visą projektą: klubo svetainę, Budo, LTKF ir Dojo žaidimą. Nieko nekeičiau, tik surašiau planą.
-2. **Svarbiausia:** Budo kartais „pameta“ įvestą rezultatą po puslapio perkrovimo, nors rodo „Išsaugota“. Tai taisoma pirmiausia.
+2. **Svarbiausia:** Budo kartais „pamesdavo“ įvestą rezultatą po puslapio perkrovimo, nors rodė „Išsaugota“. **Pataisyta v1.48.** Senų varžybų dingę rezultatai patys neatsiras — svarbias peržiūrėk.
 3. Greitos varžybos 4 sportininkams dabar užima apie 30 paspaudimų telefone. Planas — viena kortelė „⚡ Greitos varžybos“: vardai → rungtys → pradėti.
 4. Telefone Budo kovos langas per žemai, nesimato „kas ruošiasi“, o „+ Tatamis“ atsidaro už ekrano krašto. Tai sutvarkoma kartu.
 5. Tavo naujausi atsiliepimai #126–#137 visi įtraukti į planą. #30 ir #132 atėjo tušti — parašyk juos dar kartą.
@@ -22,6 +22,8 @@
 3. Every back system (permissions, settings, secret links, notifications, e-mail, CSS, tests) exists, but each grew its own way. `docs/standartai.md` gives each one a single rule set.
 4. The way of working needs three fixes: `main` is 92 commits behind, there is no `CLAUDE.md` in the repo, and asks get lost between sessions.
 5. Every finding below points to a step in `docs/darbo-planas.md`.
+
+**Already fixed in v1.48 (right after this review):** B-1, B-2, B-9, R-2, R-3, R-4, R-5, F-1, F-10, N-10, M-8 (wording), S-7, D-7 and the footer spelling. The rows stay in the tables below as a record; `docs/darbo-planas.md` shows what is still open.
 
 **How this was done.** Eleven areas were read by separate readers, each claim with `file:line` and a quoted line that a script then checked against the code: 1,538 references, none wrong. Two areas (Budo, Valdymas) were also walked in a browser at 375, 768, 1280/1440, 1920 and 2560 px, with about 200 screenshots. I re-checked the most serious claims myself in the code.
 

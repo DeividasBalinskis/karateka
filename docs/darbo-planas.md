@@ -45,13 +45,13 @@ Status: ☐ not started · ◐ partly done · ☑ done
 
 | Step | What | Who it helps | Size | Flags | Status |
 |---|---|---|---|---|---|
-| **A1** | Budo: results must never disappear | Denis, secretariat, everyone at a competition | S | — | ☐ |
-| **A2** | Lock the doors (5 quick security fixes) | Denis, parents | S | — | ☐ |
+| **A1** | Budo: results must never disappear | Denis, secretariat, everyone at a competition | S | — | ◐ v1.48 |
+| **A2** | Lock the doors (5 quick security fixes) | Denis, parents | S | — | ☑ v1.48 |
 | **A3** | Exam links: no stranger gets a child's page | kids, parents, examiners | M | plan first | ☐ |
 | **A4** | Real admins vs testers; your login | Deividas, Denis, testers | M | reikia leidimo | ☐ |
 | **A5** | Secure the trial form (old step 1) | guests, Denis | S | — | ☐ |
 | **A6** | One source of truth: main branch, deploy guide, zip script | Deividas | S | reikia leidimo | ☐ |
-| **B1** | Small feedback batch + text fixes (old step 2) | Denis | S | — | ☐ |
+| **B1** | Small feedback batch + text fixes (old step 2) | Denis | S | — | ◐ v1.48 |
 | **B2** | "Greitos varžybos": 4 athletes in under a minute | Denis, coaches | M | plan first | ☐ |
 | **B3** | Budo on a phone on competition day | Denis, secretariat, judges | M | — | ☐ |
 | **B4** | Phone admin: view-as, one floating button (old step 6) | Denis, coaches, members | M | — | ☐ |
@@ -92,19 +92,21 @@ Status: ☐ not started · ◐ partly done · ☑ done
 - **What is wrong:** PHP turns an empty `{}` into `[]` when it saves the state. After a reload the browser writes results into that array, and they are dropped on the next save. Also: a draw shown on screen is not saved until something else is saved, so a reload or a second tablet shows different pairs.
 - **Who it helps:** Denis, secretariat, judges, awards person, spectators.
 - **Likely files:** `assets/varzybos.js` (load, renderDraw, flush), `app/tournaments.php` (save), `admin/varzybu-sistema.php`, new test in `tests/e2e/`.
-- **Done when:**
-  - [ ] Create draw → reload → enter result → reload: the result is still there (kata flags, kumite panel, score table).
-  - [ ] A draw is saved the moment it is created. Reload and a second browser show the same pairs.
-  - [ ] Closing the tab while a save is running does not lose the last change.
-  - [ ] A short report lists real competitions on test where results may already be missing (read-only check).
-- **Tests:** new spec "reload between every first action"; all `06*` Budo specs pass.
+- **Done in v1.48:**
+  - [x] Create draw → reload → enter result → reload: the result is still there (kata flags and the kumite panel are tested; the fix covers every result map).
+  - [x] Reload and a second browser show the same pairs for a draw nobody has saved yet. (Done by making that first draw repeatable instead of saving on view: saving on view would make other tablets lose their next action until step D4.)
+  - [x] The server stores empty maps correctly, so old and new competitions both work.
+- **Still open:**
+  - [ ] Closing the tab while a save is running can still lose the last change. This needs the new save model, so it moved to step D4.
+  - [ ] Results that were lost before v1.48 do not come back by themselves. Ask Denis which past competitions matter and re-check them by hand. A lost kumite bout can sometimes be seen as "points entered, no winner".
+- **Tests:** `tests/e2e/06z-budo-rezultatai-islieka.spec.js` (fails on 7 checks without the fix).
 - **Screenshots:** run view before and after reload, 375 and 1440.
 - **Depends on:** nothing. **Model:** Opus 5.5, high.
 
 ```
-Do step A1 from docs/darbo-planas.md. Do only that step.
+Finish step A1 from docs/darbo-planas.md: only the part "Still open".
 Competitions I care most about (to check for lost results): ____ (or "all on test")
-Do not commit. Finish with the checklist and screenshots.
+Do not commit. Finish with the checklist.
 ```
 
 ## A2 — Lock the doors (5 quick security fixes)
@@ -118,20 +120,18 @@ Do not commit. Finish with the checklist and screenshots.
   5. LTKF editors (people with a link, no account) can upload `.svg` files to the karateka.lt address; `ltkf/kalba.php` can redirect to another site.
 - **Who it helps:** Denis, parents, the federation.
 - **Likely files:** `admin/varzybos.php`, `app/sms.php`, `admin/renginio-dalyviai.php`, `app/game.php`, `tests/setup/reset-db.sh`, `admin/paskyros.php`, `ltkf/redaguoti.php`, `ltkf/kalba.php`, `uploads/ltkf/deze/.htaccess`.
-- **Done when:**
-  - [ ] Secretariat session on `admin/varzybos.php` (with or without `?id=`) is sent back to its own competition.
-  - [ ] A coach cannot send SMS from any page; the check lives inside `sms_send_message()`.
-  - [ ] No `game_access` row → nobody sees Dojo. Tests set the access on purpose.
-  - [ ] Role change needs a button and a confirm that names the person. New account default role is "Narys / tėvai".
-  - [ ] `.svg` is refused; the file box folder is closed to the web; the redirect accepts only local paths.
+- **Done in v1.48:**
+  - [x] Secretariat session on `admin/varzybos.php` (with or without `?id=`) is sent back to its own competition.
+  - [x] A coach cannot send SMS from any page; the check lives inside `sms_send_message()`; the checkbox is hidden for coaches.
+  - [x] No `game_access` row → nobody sees Dojo. Tests set the access on purpose.
+  - [x] Role change asks "Pakeisti rolę: Vardas → …?" first. New account default role is "Narys / tėvai".
+  - [x] `.svg` is refused; the file box folder is closed to the web; the redirect accepts only local paths.
+- **Left for later steps:** what else the secretariat may see (history restore, tatami settings) waits for Denis's answer 4 and is part of C3.
 - **Tests:** extend `06q` (secretariat), add coach-SMS, game-default, role-confirm and upload-type checks.
 - **Screenshots:** role change confirm, 375 and 1440.
 - **Depends on:** nothing. **Model:** Opus 5.5, medium.
 
-```
-Do step A2 from docs/darbo-planas.md. Do only that step.
-Do not commit. Finish with the checklist and screenshots.
-```
+*(No prompt needed: done.)*
 
 ## A3 — Exam links: no stranger gets a child's page (plan first)
 
@@ -231,11 +231,13 @@ Do step A6 from docs/darbo-planas.md. Do only that step.
   - Old step 2 as written: "karate" never "karatė" (footer in `app/tournaments.php` and its EN/RU keys; LTKF translation keys that broke EN/RU); "karate-do"; a proper no-access message in `zaidimas.php`; "Taika" leftovers → "Budo"; a `tests/checks.sh` rule that fails on "karatė".
 - **Who it helps:** Denis, coaches, examiners.
 - **Likely files:** `assets/theme-pick.js`, `assets/header.css`, `admin/index.php`, `assets/varzybos.js`, `assets/varzybos-gyvai.js`, `assets/varzybos.css`, `admin/egzamino-protokolas.php`, `assets/app.css`, `admin/pranesimai.php`, `admin/taskai.php`, `app/xp.php`, `app/points.php`, `app/tournaments.php`, `tools/vertimai/ltkf.tsv`, `tests/checks.sh`.
-- **Done when:** each line above has a test or a screenshot; feedback items get the reply "Padaryta (vX.YY)" with the click path.
+- **Done in v1.48:** #127 (picker closes; the "for all" tick works after choosing), #134 (stopwatch from 0:00, also on TV), the stray points form, the black-circle hint, "taškai" instead of "XP" in the training line and the "Moku" notice, the footer "karate", the no-access message of the game API.
+- **Still open:** #129, #130, #131, #133, #135 (needs answer 10), the sideways scroll on Aktyvumo taškai, "karate-do" and "Taika" leftovers in code, the LTKF EN/RU translation keys, the `checks.sh` rule for "karatė".
+- **Done when:** each open line has a test or a screenshot; feedback items get the reply "Padaryta (vX.YY)" with the click path.
 - **Depends on:** answer 10 for #135 (the rest does not wait). **Model:** Opus 5.5, medium.
 
 ```
-Do step B1 from docs/darbo-planas.md. Do only that step.
+Finish step B1 from docs/darbo-planas.md: only the part "Still open".
 #135 signs: youngest box shows ____ , oldest box shows ____ (Denis's answer; if blank, skip #135)
 #129: I prefer ____ (a: heading across the full width / b: menu starts level with the first card / show both)
 Do not commit. Finish with the checklist and screenshots.
