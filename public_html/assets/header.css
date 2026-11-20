@@ -362,3 +362,14 @@ body.theme-dark .site-header .fold-btn{color:#ECE8F4;}
 .m-vs .view-switch > summary{display:none;}
 .m-vs .vs-panel{position:static; display:block; width:auto; margin:0 0 6px; box-shadow:none; border:1px solid rgba(23,20,15,.08); transform:none;}
 .m-vs .vs-title, .m-vs .vs-account form{display:none;}   /* pavadinimas jau virš; „Atsijungti“ - lapo apačioje */
+/* D5: telefone antraštės mygtukai bent 40-44 px (☰, „2 treniruotės nemokamai“, kalba) */
+@media(max-width:1099px){
+  .site-header .burger{min-width:44px; min-height:44px; justify-content:center; align-items:center;}
+  .site-header .nav-cta, .site-header .nav-cta.mobile-only{min-height:40px; display:inline-flex; align-items:center; justify-content:center; padding-top:0; padding-bottom:0; line-height:1.15;}
+  .site-header .lang-dd > summary{min-width:40px; min-height:40px; display:inline-flex; align-items:center; justify-content:center;}
+  .lang-dd .lang-opt, .lang-dd a{min-height:40px; display:flex; align-items:center;}
+}
+@media(max-width:400px){
+  .site-header nav{gap:6px;}
+  .site-header .nav-cta{padding:0 10px;}
+}
