@@ -1960,3 +1960,6 @@ h1 .badge-tester{font:600 .8rem/1.6 'Inter', sans-serif; letter-spacing:0; paddi
   .prot-table .pay-btn{min-width:34px;}
   .prot-table .prot-del button{min-width:34px;}
 }
+/* D5 (prisijungti): 👁 ir nuorodos po forma - patogūs pirštui */
+.pw-wrap .pw-eye{min-width:44px; min-height:44px;}
+.login-more a{display:inline-flex; align-items:center; min-height:40px;}
