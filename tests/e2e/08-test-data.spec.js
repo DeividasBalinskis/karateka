@@ -18,8 +18,8 @@ test('legacy demo purge keeps real people; test people, view switch, delete', as
 
   // Vieną kartą, atidarius „Šiandien“: kopija, tada išvalymas
   sql("DELETE FROM site_settings WHERE name = 'demo_isvalyta'");
-  const a = await login(browser, 'info@karateka.lt');
-  await a.goto('admin/');
+  const a = await login(browser, 'info@karateka.lt');   // adminas po prisijungimo jau „Šiandien“ (admin/) - išvalymas įvyksta čia
+  if (!new URL(a.url()).pathname.endsWith('/admin/')) await a.goto('admin/');
   check('purge flash', /Išvalyti seni pavyzdiniai duomenys/.test(await flashes(a)), await flashes(a));
   const summary = JSON.parse(sql("SELECT value FROM site_settings WHERE name = 'demo_isvalyta'"));
   check('backup made first', /^karateka-/.test(summary.backup || ''), JSON.stringify(summary).slice(0, 200));
