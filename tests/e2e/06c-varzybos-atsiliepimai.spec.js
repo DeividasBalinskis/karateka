@@ -138,8 +138,12 @@ test('competitions: test tournament, editor saves, public results, LTKF, points'
   check('ltkf results from system', /Iš varžybų sistemos/.test(await v.locator('.results-head').textContent()));
   await v.goto('ltkf/');
   check('ltkf latest results', await v.locator('.latest-podium li').count() >= 3);
+  // LTKF kalendoriuje - tik federacijos patvirtintos (sprendimas 2026-11-20, db/046)
   await v.goto('ltkf/kalendorius.php');
-  check('ltkf calendar has tournament', /Test varžybos/.test(await v.locator('body').textContent()));
+  check('ltkf calendar: not approved - not shown', !/Test varžybos/.test(await v.locator('body').textContent()));
+  sql("UPDATE tournaments SET ltkf_approved = 1 WHERE title LIKE 'Test varžybos%'");
+  await v.goto('ltkf/kalendorius.php');
+  check('ltkf calendar has tournament once approved', /Test varžybos/.test(await v.locator('body').textContent()));
   await v.goto('ltkf/klubai.php');
   check('karateka club live data', /gyvai iš karateka.lt/.test(await v.locator('.club-list').textContent()));
   await v.goto('index.php');
