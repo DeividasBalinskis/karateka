@@ -119,7 +119,8 @@ if (is_post()) {
 }
 
 if ($edit !== '') {
-    $ev = $edit === 'new' ? ['id' => 0, 'type' => 'exam', 'title' => '', 'starts_on' => '', 'ends_on' => '', 'start_time' => '', 'location' => '', 'is_abroad' => 0, 'description' => '', 'summary' => '', 'members_only' => 0, 'registration' => 1, 'registration_until' => '']
+    // B6: naujas renginys - „Kita“ (ne „Egzaminas“)
+    $ev = $edit === 'new' ? ['id' => 0, 'type' => 'other', 'title' => '', 'starts_on' => '', 'ends_on' => '', 'start_time' => '', 'location' => '', 'is_abroad' => 0, 'description' => '', 'summary' => '', 'members_only' => 0, 'registration' => 1, 'registration_until' => '']
         : q_one('SELECT * FROM events WHERE id = ?', [(int) $edit]);
     if (!$ev) {
         not_found();
@@ -194,7 +195,7 @@ if ($edit !== '') {
         </div>
         <div class="stack">
           <div class="panel card form">
-            <h2 class="ef-step"><span>3</span> <?= te('Kas kviečiami') ?></h2>
+            <h2 class="ef-step"><span>3</span> <?= te('Kas kviečiami') ?> <span class="badge ev-will" id="evWill" aria-live="polite"></span></h2>
             <?= member_tree_field(array_map('intval', (array) $selectedGroups), $selectedMembers, [
                 'locked' => $participantIds, 'locked_title' => t('jau sąraše'),
                 'hint' => t('Pažymėti gaus kvietimą ir atsakys „Dalyvausiu“ arba „Negalėsiu“. Išskleiskite grupę ▸, kad pakviestumėte tik kelis vaikus. Nieko nepažymėjus - atviras renginys: kvietimų nėra, prisijungti gali visi.')]) ?>
@@ -224,6 +225,25 @@ if ($edit !== '') {
           var d = new Date(start.value + 'T12:00:00'); d.setDate(d.getDate() - 1);
           until.value = d.toISOString().slice(0, 10);
         });
+      })();
+      // B6: „Bus pakviesta: N“ - prieš išsaugant matosi, kiek žmonių gaus kvietimą (pažymėtos grupės + pavieniai vaikai, be jau esančių sąraše)
+      (function () {
+        var out = document.getElementById('evWill'), form = out && out.closest('form');
+        if (!form) return;
+        var L = document.documentElement.lang === 'en' ? ['Will be invited:', 'Open event - no invitations'] : document.documentElement.lang === 'ru' ? ['Будет приглашено:', 'Открытое мероприятие - без приглашений'] : ['Bus pakviesta:', 'Atviras renginys - kvietimų nebus'];
+        function count() {
+          var ids = {};
+          form.querySelectorAll('input[data-mt="group"]:checked').forEach(function (g) {
+            var box = g.closest('.mt-group');
+            if (box) box.querySelectorAll('input[data-mt="member"]:not(:disabled)').forEach(function (m) { ids[m.value] = 1; });
+          });
+          form.querySelectorAll('input[data-mt="member"]:checked:not(:disabled)').forEach(function (m) { ids[m.value] = 1; });
+          var n = Object.keys(ids).length;
+          out.textContent = n ? L[0] + ' ' + n : L[1];
+          out.classList.toggle('ok', n > 0);
+        }
+        form.addEventListener('change', function (e) { if (e.target.dataset && e.target.dataset.mt) setTimeout(count, 0); });
+        count();
       })();
       </script>
       <div class="row" style="margin-top:20px;">
