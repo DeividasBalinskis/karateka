@@ -85,6 +85,15 @@
 
   // ---------- Tatamio ekranas (televizorius) ----------
   function renderScreen() {
+    // B3: ekrano adresas be tatamio numerio - dideli tatamių mygtukai (paspaudus - to tatamio ekranas)
+    var areasAll = (data && data.areas) || [];
+    if (!CFG.area && areasAll.length > 1) {
+      var pickHtml = '<div class="scr-pickt"><div class="scr-title">' + esc(CFG.title) + '</div><p>Kurio tatamio ekranas?</p><div class="scr-pickt-list">' +
+        areasAll.map(function (x) { var u = new URL(location.href); u.searchParams.set('tatami', x.id); return '<a class="scr-pickt-btn" href="' + esc(u.toString()) + '">' + esc(x.name) + '</a>'; }).join('') + '</div></div>';
+      if (pickHtml !== lastHtml) { lastHtml = pickHtml; root.innerHTML = pickHtml; }
+      return;
+    }
+    if (!CFG.area && areasAll.length === 1) CFG.area = +areasAll[0].id;
     var a = area(CFG.area), pick = liveFor(CFG.area), name = a ? a.name : (pick ? pick.d.areaName : 'TATAMIS'), stage;
     var next = upNext(a).slice(pick ? 0 : 1, (pick ? 0 : 1) + 3), prep = next[0] || null;
     // Kas ruošiasi (kita pora): AKA langelyje - kitas AKA, SHIRO langelyje - kitas SHIRO

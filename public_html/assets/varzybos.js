@@ -1787,6 +1787,7 @@
 
   var boutEl = document.createElement('div');
   boutEl.className = 'bout'; boutEl.id = 'bout'; boutEl.hidden = true;
+  boutEl.addEventListener('toggle', function (e) { if (e.target.classList && e.target.classList.contains('bt-more')) boutMore = e.target.open; }, true);
   boutEl.setAttribute('role', 'dialog'); boutEl.setAttribute('aria-modal', 'true'); boutEl.setAttribute('aria-label', 'Kova');
   document.body.appendChild(boutEl);
 
@@ -1933,6 +1934,9 @@
   var TIME_PRESETS = [['Jiyu ippon', 10], ['Ko-Go', 10], ['Jiyu / Pratęsimas', 90], ['Enbu', 0, 1]];
   function timePresets() { return TIME_PRESETS; }
   var TOUCH = window.matchMedia && matchMedia('(pointer: coarse)').matches;
+  // B3: „⏱ laikas ir gongas“ - kompiuteryje atidaryta, telefone suskleista; atsimenama, kol kova atidaryta (perpiešiant)
+  var boutMore = null;
+  function boutMoreOpen() { return boutMore !== null ? boutMore : window.innerWidth > 600; }
   // #126: kovos skydelyje matosi, kas ruošiasi (kita pora šioje grupėje arba kita grupė)
   function boutNextHtml(c) {
     var nx = upcoming(c).filter(function (x) { return x.id !== B.mid; })[0];
@@ -1945,20 +1949,22 @@
     if (!B) return;
     var c = cat(B.cat), area = areaOf(c), body, mode = B.mode, f = cfg(c);
     var head = '<div class="bout-top"><div class="bout-info"><span class="disc d-' + c.discipline + '"></span><b>' + esc(c.name) + '</b><span>' + (B.no ? B.no + ' · ' : '') + esc(B.title) + '</span><span class="pill sys">' + MODE_NAME[mode] + '</span><span class="pill">' + esc(area.name) + '</span></div>' +
-      '<span class="spacer"></span>' + (CFG.screenUrl ? '<button type="button" class="btn" id="bt-screen" title="Atidaryti ekrano langą šiam tatamiui (antram monitoriui ar televizoriui)">📺 Ekranas</button>' : '') +
-      '<button type="button" class="btn" id="bt-close">✕ Uždaryti</button></div>';
+      '<span class="spacer"></span>' + (CFG.screenUrl ? '<button type="button" class="btn" id="bt-screen" title="Atidaryti ekrano langą šiam tatamiui (antram monitoriui ar televizoriui)" aria-label="Ekranas">📺<span class="bt-lbl"> Ekranas</span></button>' : '') +
+      '<button type="button" class="btn" id="bt-close" aria-label="Uždaryti">✕<span class="bt-lbl"> Uždaryti</span></button></div>';
     if (mode === 'score2') {
       body = partsTable();
     } else {
       var mid = '<div class="bt-mid">' + (mode === 'team' ? '<div class="bt-round">Kova ' + (B.i + 1) + ' / ' + Math.max(B.ma.length, B.mb.length, 1) + '</div>' : '') +
-        '<button type="button" class="bt-timer" id="bt-timer" title="Paspauskite ir įrašykite laiką (pvz. 1:30)"></button><div class="bt-tbtns"><button type="button" class="btn btn-primary" id="bt-start"></button><button type="button" class="btn" id="bt-reset" title="Iš naujo">↺ ' + fmtTime(B.timer.total) + '</button>' +
-        '<button type="button" class="btn" data-dt="-10000">−10 s</button><button type="button" class="btn" data-dt="10000">+10 s</button></div>' +
+        '<button type="button" class="bt-timer" id="bt-timer" title="Paspauskite ir įrašykite laiką (pvz. 1:30)"></button><div class="bt-tbtns"><button type="button" class="btn btn-primary" id="bt-start"></button><button type="button" class="btn" id="bt-reset" title="Iš naujo">↺ ' + fmtTime(B.timer.total) + '</button></div>' +
+        // B3: ±10 s, laiko šablonai ir gongas - viename skyriuje; telefone suskleistas (pora ir balai lieka ekrane)
+        '<details class="bt-more"' + (boutMoreOpen() ? ' open' : '') + '><summary>⏱ ' + (B.timer.preset ? esc(B.timer.preset) + ' · ' : '') + 'laikas ir gongas</summary>' +
+        '<div class="bt-tbtns"><button type="button" class="btn" data-dt="-10000">−10 s</button><button type="button" class="btn" data-dt="10000">+10 s</button></div>' +
         (mode === 'kumite' || mode === 'team' ? '<div class="bt-presets" role="group" aria-label="Laiko šablonai">' + timePresets().map(function (x) {
           var on = B.timer.preset === x[0];
           return '<button type="button" class="btn btn-sm' + (on ? ' on' : '') + '" data-preset="' + x[1] + '" data-preset-name="' + esc(x[0]) + '"' + (x[2] ? ' data-up="1" title="Paprastas laikmatis nuo 0"' : '') + '>' + esc(x[0]) + ' <b>' + fmtTime(x[1] * 1000) + (x[2] ? ' ↑' : '') + '</b></button>';
         }).join('') + '</div>' : '') +
         '<label class="bt-gong small">🔔 <select id="bt-gong" aria-label="Gongo garsas">' + Object.keys(GONGS).map(function (k) { return '<option value="' + k + '"' + (k === gongKind() ? ' selected' : '') + '>' + GONGS[k] + '</option>'; }).join('') + '</select>' +
-        (isJiyu() ? ' <span class="muted">likus 30 s - 1 gongas, pabaigoje - 2</span>' : '') + '</label>' +
+        (isJiyu() ? ' <span class="muted">likus 30 s - 1 gongas, pabaigoje - 2</span>' : '') + '</label></details>' +
         (mode === 'team' && B.log.length ? '<ol class="bt-log">' + B.log.map(function (l, j) { return '<li>' + (j + 1) + ' kova: ' + esc(l.an) + ' <b>' + l.a + ':' + l.b + '</b> ' + esc(l.bn) + '</li>'; }).join('') + '</ol>' : '') +
         (TOUCH ? '' : '<p class="muted small">Tarpas - laikrodis</p>') + '</div>';
       body = '<div class="bt-sides">' + sideHtml('a') + mid + sideHtml('b') + '</div>';
@@ -2727,7 +2733,8 @@
     return ids.map(function (x) { return S.people[x] && S.people[x].member; }).filter(Boolean);
   }
   // Vaikai ir jaunimas (iki 18 m.) - viešai rodomas vardas ir pavardės raidė
-  function isMinor(id) { var p = S.people[id]; return !S.teams[id] && !!(p && p.birth && YEAR - p.birth < 18); }
+  // Viešai trumpinama („Jonas P.“) iki 18 m. ir tada, kai gimimo metai nežinomi (įrašyta ranka) - saugiau (B3)
+  function isMinor(id) { var p = S.people[id]; return !S.teams[id] && !!(p && (!p.birth || YEAR - p.birth < 18)); }
   function resultsPayload() {
     var rs = results();
     return {

@@ -383,6 +383,10 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
 <div class="notice" id="conflict" hidden><p>Kitas žmogus ką tik pakeitė šias varžybas. Kad neperrašytumėte jo pakeitimų, <a href="">perkraukite puslapį</a>.</p></div>
 
 <main>
+<?php // B3: patvirtinimai („Varžybos sukurtos“, „Nuoroda sukurta“) - rodomi ir čia (anksčiau dingdavo)
+foreach (take_flashes() as $f): ?>
+  <div class="vz-flash vz-flash-<?= e($f['type']) ?>" role="status"><span><?= e(t($f['message'])) ?></span><button type="button" class="vz-flash-x" aria-label="Uždaryti" onclick="this.parentNode.remove()">✕</button></div>
+<?php endforeach; ?>
   <!-- DALYVIAI -->
   <section id="v-dalyviai" role="tabpanel" aria-labelledby="tab-dalyviai" hidden>
     <div class="toolbar">
