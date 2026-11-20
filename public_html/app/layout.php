@@ -50,7 +50,21 @@ function page_start(string $title, array $opt = []): void
 <?php foreach ($flashes as $f): ?>
   <div class="flash flash-<?= e($f['type']) ?>"><?= e(t($f['message'])) ?></div>
 <?php endforeach; ?>
+<?= device_code_bar() ?>
 <?php
+}
+
+/** Juosta įrenginiui, prisijungusiam su administratoriaus kodu: kieno teisėmis, iki kada, „Atsijungti“ */
+function device_code_bar(): string
+{
+    $dc = device_code_current();
+    if (!$dc) {
+        return '';
+    }
+    $a = current_account();
+    return '<div class="dc-bar" role="status"><span>🔑 ' . e(t('Šis įrenginys prisijungęs su kodu')) . ' · ' . e($a['first_name']) . ' · ' . e(t('iki')) . ' '
+        . e(date('m-d H:i', strtotime((string) $dc['session_until']))) . '</span><form method="post" action="' . url('atsijungti.php') . '">' . csrf_field()
+        . '<button type="submit" class="btn btn-ghost btn-sm">' . e(t('Atsijungti')) . '</button></form></div>';
 }
 
 function page_end(): void

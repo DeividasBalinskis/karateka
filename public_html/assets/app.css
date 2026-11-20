@@ -1897,3 +1897,28 @@ h1 .badge-tester{font:600 .8rem/1.6 'Inter', sans-serif; letter-spacing:0; paddi
 .kn-ver h3{margin:16px 0 6px; font-size:1rem;}
 .kn-ver ul{margin:0 0 6px; padding-left:20px; display:grid; gap:4px;}
 .ver-tag[role="link"]{cursor:pointer;}
+/* Kodas kitam įrenginiui (admin/kitas-irenginys.php, irenginys.php) */
+.dc-lead{max-width:70ch;}
+.dc-code{font:700 clamp(2rem, 9vw, 3.2rem)/1.1 'JetBrains Mono', ui-monospace, monospace; letter-spacing:0.08em; margin:8px 0 12px; user-select:all;}
+.dc-new{border:2px solid var(--accent, #2F6B5A);}
+.dc-acts{display:flex; gap:8px; flex-wrap:wrap;}
+.dc-form{display:grid; gap:14px; max-width:520px;}
+.dc-hours{border:0; padding:0; margin:0; display:flex; gap:8px; flex-wrap:wrap;}
+.dc-hours legend{font-weight:600; margin-bottom:6px; padding:0;}
+.dc-hours .chip-radio{display:inline-flex; position:relative; margin:0;}
+.dc-hours .chip-radio input{position:absolute; opacity:0; inset:0; margin:0; cursor:pointer;}
+.dc-hours .chip-radio span{display:inline-flex; align-items:center; min-height:44px; padding:0 16px; border-radius:22px; border:1px solid var(--line, rgba(23,20,15,0.15)); background:var(--card, #fff); font-weight:600;}
+.dc-hours .chip-radio input:checked + span{background:var(--accent, #2F6B5A); color:#fff; border-color:transparent;}
+.dc-hours .chip-radio input:focus-visible + span{outline:2px solid var(--accent, #2F6B5A); outline-offset:2px;}
+.dc-log{display:grid; gap:2px;}
+.dc-row{display:flex; align-items:center; gap:10px; flex-wrap:wrap; padding:10px 0; border-top:1px solid var(--line, rgba(23,20,15,0.08));}
+.dc-row:first-child{border-top:0;}
+.dc-main{flex:1 1 240px; display:grid; gap:2px; min-width:0;}
+.dc-row .badge.ok{background:rgba(47,107,90,0.14); color:var(--accent-dark);}
+.dc-row .badge.warn{background:rgba(230,132,43,0.16); color:#8A4A0E;}
+.dc-warn{color:#8A4A0E;}
+.dc-input{font:600 1.4rem 'JetBrains Mono', ui-monospace, monospace; letter-spacing:0.1em; text-transform:uppercase; text-align:center;}
+.dc-bar{display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; padding:8px 14px; margin:0 0 14px; border-radius:12px;
+  background:rgba(230,132,43,0.14); color:#6B3A0B; font-weight:600; font-size:0.9rem;}
+.dc-bar form{margin:0;}
+.login-more{margin-top:12px; display:flex; justify-content:center; gap:8px 18px; flex-wrap:wrap; text-align:center;}

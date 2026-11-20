@@ -269,7 +269,9 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
       <?= render_lang_switch(tl_lang()) ?>
       <span class="save-state ok" id="save-state" role="status">Išsaugota ✓</span>
       <?= theme_picker_html($asSekr ? 'device' : 'taika', varz_ui()['theme'], 'vz-link') ?>
-      <?php if ($sekr): ?><span class="vz-link vz-sekr-who" title="Prisijungta per sekretoriato nuorodą">🧑‍💼 <?= e($me['first_name']) ?></span><?php endif; ?>
+      <?php if ($sekr): ?><span class="vz-link vz-sekr-who" title="Prisijungta per sekretoriato nuorodą">🧑‍💼 <?= e($me['first_name']) ?></span>
+        <a class="vz-link" href="<?= url('irenginys.php?r=' . rawurlencode($_SERVER['REQUEST_URI'] ?? '')) ?>" title="Administratoriaus kodas: šiame įrenginyje įjungti visą valdymą">🔑<span class="hide-sm"> Admin kodas</span></a><?php endif; ?>
+      <?php if (!$sekr && ($dc = device_code_current())): ?><span class="vz-link" title="Šis įrenginys prisijungęs su administratoriaus kodu (Nustatymai → Kodas kitam įrenginiui)">🔑<span class="hide-sm"> iki <?= e(date('H:i', strtotime((string) $dc['session_until']))) ?></span></span><?php endif; ?>
       <?php if (!$asSekr && !$demo): ?><button type="button" class="vz-link" id="sekr-toggle" aria-expanded="false" title="Nuoroda sekretoriatui be paskyros">🧑‍💼<span class="hide-sm"> Sekretoriatas</span></button><?php endif; ?>
       <button type="button" class="vz-link" id="hist-toggle" aria-expanded="false" title="Atkurti, kaip buvo anksčiau">⟲<span class="hide-sm"> Istorija</span></button>
       <?php if ($shareUrl): ?><button type="button" class="vz-link" id="share-toggle" aria-expanded="false" title="Transliacija, ekranai, apdovanojimai, registracija">📡<span class="hide-sm"> Transliacija ir registracija</span></button><?php endif; ?>

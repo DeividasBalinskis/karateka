@@ -75,7 +75,8 @@ page_start(t('Prisijungti'), ['narrow' => true, 'noindex' => true]);
     </label>
     <button class="btn btn-primary btn-block" type="submit"><?= te('Prisijungti') ?></button>
   </form>
-  <p class="small" style="margin-top:12px; text-align:center;"><a href="<?= url('slaptazodis.php') ?>"><?= te('Pamiršote slaptažodį?') ?></a></p>
+  <p class="small login-more"><a href="<?= url('slaptazodis.php') ?>"><?= te('Pamiršote slaptažodį?') ?></a>
+    <a href="<?= url('irenginys.php' . ($askedFor ? '?r=' . rawurlencode($return) : '')) ?>"><?= te('Turiu kodą iš administratoriaus') ?></a></p>
   <?php if (reg_on('join')): ?>
   <hr class="divider">
   <p class="muted small" style="text-align:center; margin-bottom:10px;"><?= te('Neturite paskyros?') ?></p>

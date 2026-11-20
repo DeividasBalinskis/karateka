@@ -66,6 +66,7 @@ $settings = [
     'Sistema' => [
         [t('Paskyros ir rolės'), 'admin/paskyros.php', t('Kas yra treneris, kas administratorius.'), is_admin()],
         [t('Atsarginės kopijos ir sistema'), 'admin/kopijos.php', t('Duomenų bazės kopijos, versija, importuoti db failai.'), is_admin()],
+        [t('Kodas kitam įrenginiui'), 'admin/kitas-irenginys.php', t('Vienkartinis kodas planšetei ar kitam telefonui: dirbti jūsų teisėmis be slaptažodžio. Atjungti, žurnalas.'), is_admin()],
         [t('Testavimas'), 'admin/testavimas.php', t('Testiniai nariai (tėvai, vaikas) ir ką jiems sukurti; peržiūra kaip tėvai ar vaikas.'), is_admin()],
     ],
     // LTKF ir Budo - per logotipo meniu ▾; Aktyvumo taškai, Nariai, Testai, Egzaminų programa (Egzaminai) ir kt. - meniu (#105, #120: be dublikatų)

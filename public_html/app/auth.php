@@ -10,9 +10,11 @@ function current_account(): ?array
         $loaded = true;
         if (!empty($_SESSION['account_id'])) {
             $account = q_one('SELECT * FROM accounts WHERE id = ?', [$_SESSION['account_id']]);
-            if (!$account || !in_array($account['status'], ['active', 'pending_approval'], true)) {
+            if (!$account || !in_array($account['status'], ['active', 'pending_approval'], true)
+                || (!empty($_SESSION['device_code']) && !device_code_session_ok((int) $_SESSION['device_code'], (int) $account['id']))) {
+                // Prisijungimas su kodu kitam įrenginiui atjungtas arba baigėsi (app/device_codes.php)
                 $account = null;
-                unset($_SESSION['account_id']);
+                unset($_SESSION['account_id'], $_SESSION['device_code']);
             }
         }
     }
@@ -196,7 +198,7 @@ function login_account(int $accountId): void
 {
     session_regenerate_id(true);
     $_SESSION['account_id'] = $accountId;
-    unset($_SESSION['csrf'], $_SESSION['tfa'], $_SESSION['dev_login_code']);
+    unset($_SESSION['csrf'], $_SESSION['tfa'], $_SESSION['dev_login_code'], $_SESSION['device_code']);
     q('UPDATE accounts SET last_login_at = NOW() WHERE id = ?', [$accountId]);
 }
 

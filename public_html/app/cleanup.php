@@ -53,6 +53,9 @@ function run_cleanup(): void
     } catch (PDOException $ex) {
         error_log('cleanup: ' . $ex->getMessage());
     }
+    if (device_codes_ready()) {
+        q('DELETE FROM device_codes WHERE created_at < NOW() - INTERVAL 1 YEAR');   // kodų kitam įrenginiui žurnalas
+    }
 }
 
 function maybe_run_cleanup(): void
