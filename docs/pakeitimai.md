@@ -4,6 +4,19 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.55 - 2026-11-20 (pranešimai: raudonas skaičius - tik darbai, B5)
+Duomenų bazės atnaujinti nereikia. Zip'o turinį išpakuokite **tiesiai į svetainės aplanką**.
+
+**🔔 Valdymas → Šiandien**
+- Raudonas skaičius prie „Valdymas“ = tiek, kiek punktų „Reikia padaryti“ sąraše (skaičius rodomas ir prie antraštės).
+- Darbas (patvirtinti „Moku“, pavėlavusieji, atšauktas sutikimas) skaičiuojamas, **kol atliktas** -
+  „Supratau“ iššokusiame langelyje jo nebepaslepia.
+- **Naujienos** (registracijos į egzaminą, į varžybas, komentarai) - atskirai: 2 naujausios, kitos po „Rodyti ankstesnius (N)“, mygtukas „Supratau visus“.
+- Daug atsakymų į atsiliepimus nebeišstumia tikro prašymo iš sąrašo (kraunama atskirai).
+
+**👪 Mano paskyra → Svarbu**
+- Pranešimai: 2 naujausi, kiti po „Rodyti ankstesnius (N)“, „Supratau visus“.
+
 ## v1.54 - 2026-11-20 (Budo telefone varžybų dieną - B3)
 Duomenų bazės atnaujinti nereikia (jei v1.53 jau įkeltas su db/047). Zip'o turinį išpakuokite **tiesiai į svetainės aplanką**.
 

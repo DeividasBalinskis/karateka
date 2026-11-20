@@ -399,7 +399,15 @@ page_start($tab === 'nustatymai' ? t('Nustatymai') : t('Mano paskyra'), ['noinde
         </li>
       <?php endforeach; ?>
     </ul>
-    <?= render_notifications($notifs, $back . '#svarbu') ?>
+    <?php // B5: naujienos - 2 naujausios, kitos suskleistos, „Supratau visus“ ?>
+    <?= render_notifications(array_slice($notifs, 0, 2), $back . '#svarbu') ?>
+    <?php if (count($notifs) > 2): ?>
+      <details class="fb-more"><summary class="small"><?= te('Rodyti ankstesnius') ?> (<?= count($notifs) - 2 ?>)</summary><?= render_notifications(array_slice($notifs, 2), $back . '#svarbu') ?></details>
+    <?php endif; ?>
+    <?php if (count($notifs) > 1): ?>
+      <form method="post" action="<?= url('pranesimas.php') ?>" class="inline-form notif-all"><?= csrf_field() ?><input type="hidden" name="action" value="done_notices"><input type="hidden" name="back" value="<?= e($back . '#svarbu') ?>">
+        <button class="btn btn-ghost btn-sm" type="submit"><?= te('Supratau visus') ?></button></form>
+    <?php endif; ?>
     <p class="small" style="margin:10px 0 0;"><a href="<?= url('uzduotys.php?m=' . (int) $selected['id']) ?>"><?= te('📋 Visos užduotys, pamokos ir pranešimai - ir jau peržiūrėti →') ?></a></p>
   </section>
 <?php endif; ?>

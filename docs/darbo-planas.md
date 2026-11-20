@@ -55,7 +55,7 @@ Status: ☐ not started · ◐ partly done · ☑ done
 | **B2** | "Greitos varžybos": 4 athletes in under a minute | Denis, coaches | M | plan first | ◐ v1.49 (participants + one group per discipline) |
 | **B3** | Budo on a phone on competition day | Denis, secretariat, judges | M | — | ☑ v1.54 (bout fits 375×812, time section folds, floats hidden, header 224→146 px, tablet overflow, confirmations, TV tatami picker, no-birth-year names shortened) |
 | **B4** | Phone admin: view-as, one floating button (old step 6) | Denis, coaches, members | M | — | ☑ v1.51–v1.52 (view-as in ⋯ Daugiau, one floating button, floats hide over sheet and while typing, 🎨 for all) |
-| **B5** | Notifications: the red number means "to do" | Denis, coaches, parents | M | plan first | ☐ |
+| **B5** | Notifications: the red number means "to do" | Denis, coaches, parents | M | plan first | ◐ v1.55 (type registry action/notice/celebration, staff badge = listed to-dos until done, notices fold + „Supratau visus“, separate loading, check in checks.sh; member badge still counts unread notices - ask) |
 | **B6** | Exams: counts, tablet, 10 kyu, test bank export/import | Denis, examiners | M | — | ◐ v1.49 (10 kyu, #133, #137), v1.50 (question review with ✕, comments, pictures, ChatGPT notes), v1.51 (editor redesign, file with a new quiz) |
 | **B7** | Family accounts: parent trains too, child login in one button | parents, kids | M | plan first | ☑ v1.53 (child login: username + PIN by parents, from 7, no coach approval; parent trains too; adult member adds a child; parent switches child chat) |
 | **B8** | Kid and member home; Dojo in the corner; Paskyra page | kids, members | M | plan first | ☐ |

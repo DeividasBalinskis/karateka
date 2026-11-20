@@ -105,7 +105,7 @@ page_start(t('Užduotys'), ['noindex' => true, 'account' => 'uzduotys']);
     <div class="kicker"><?= te('Pranešimai') ?><?= $filter === 'visos' ? ' · ' . te('naujausi') : '' ?></div>
     <ul class="notif-list">
       <?php foreach ($notifs as $n): ?>
-        <li class="notif<?= !$n['read_at'] && !$n['done_at'] && $n['important'] ? ' is-new' : '' ?> t-<?= e($n['type']) ?>"><span class="notif-icon" aria-hidden="true"><?= NOTIFY_ICONS[$n['type']] ?? '🔔' ?></span>
+        <li class="notif<?= !$n['read_at'] && !$n['done_at'] && $n['important'] ? ' is-new' : '' ?> t-<?= e($n['type']) ?>"><span class="notif-icon" aria-hidden="true"><?= notify_icon((string) $n['type']) ?></span>
           <div class="notif-body"><div class="notif-title"><?= $n['link'] ? '<a href="' . e(url($n['link'])) . '">' . e($n['title']) . '</a>' : e($n['title']) ?></div>
             <?= $n['body'] ? '<div class="notif-text">' . nl2br(e($n['body'])) . '</div>' : '' ?>
             <div class="notif-meta"><?= e(notification_when($n['created_at'])) ?><?= $n['done_at'] ? ' · ' . te('✓ pažymėta „Supratau“') : '' ?></div></div></li>
