@@ -14,8 +14,11 @@ $out = function (array $d, int $code = 200) {
     exit(json_encode($d, JSON_UNESCAPED_UNICODE));
 };
 $a = current_account();
-if (!$a || !is_active_account($a) || !game_allowed($a)) {
+if (!$a || !is_active_account($a)) {
     $out(['ok' => false, 'error' => t('Prisijunkite.')], 403);
+}
+if (!game_allowed($a)) {
+    $out(['ok' => false, 'error' => t('Žaidimas dar neprieinamas.')], 403);
 }
 $in = is_post() ? (json_decode((string) file_get_contents('php://input'), true) ?: $_POST) : $_GET;
 if (is_post()) {

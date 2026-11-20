@@ -4,6 +4,10 @@
 // Pačių varžybų valdymas (klubai, komandos, dalyviai, kategorijos, live tvarkaraštis, rezultatai) - admin/varzybu-sistema.php.
 require dirname(__DIR__) . '/app/bootstrap.php';
 $me = varz_require_access();
+// Sekretoriato nuoroda duoda tik vienas varžybas: šis puslapis (visų varžybų sąrašas ir trenerio veiksmai) jai neskirtas
+if (!empty($me['sekr'])) {
+    redirect('admin/varzybu-sistema.php?id=' . (int) $me['sekr']);
+}
 $demo = varz_is_demo($me);   // bandymo nuoroda: tik bandymo varžybos, be tikrų narių
 $ready = tournaments_ready();
 

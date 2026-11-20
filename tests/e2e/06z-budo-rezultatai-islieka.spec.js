@@ -97,3 +97,57 @@ test('Budo: a draw nobody saved yet is the same after a reload and on a second d
   check('redraw is random', seen.size >= 2, String(seen.size));
   noJsErrors(a, b);
 });
+
+// Planas A2 ir B1: greitos pataisos
+test('quick fixes: stopwatch starts at 0:00, theme picker closes, coach has no SMS box, game closed by default, role change asks', async ({ browser }) => {
+  const { a, tid, st } = await testTournament(browser);
+  // #134: laikmatis nuo 0 (Enbu) pradeda nuo 0:00, ne nuo 0:01
+  const kum = st.categories.find(c => c.discipline === 'kumite' && !c.team && c.competitors.length >= 4 && c.draw && c.draw.slots);
+  await openCat(a, tid, kum.id);
+  await a.locator('#draw-view .bout-open').first().click();
+  await a.click('.bt-presets [data-up]');
+  await a.click('#bt-start');
+  await a.waitForTimeout(450);
+  check('stopwatch shows 0:00 right after start', (await a.textContent('#bt-timer')).trim() === '0:00', await a.textContent('#bt-timer'));
+  await a.waitForTimeout(1100);
+  check('stopwatch counts up', /^0:0[1-3]$/.test((await a.textContent('#bt-timer')).trim()), await a.textContent('#bt-timer'));
+  await a.click('#bt-start');
+
+  // #127: pasirinkus temą langelis užsidaro
+  await a.goto('admin/varzybos.php');
+  await a.click('.theme-pick .tp-btn');
+  const cur = await a.getAttribute('.theme-pick .tp-sw.on', 'data-theme-id');
+  await a.locator('.theme-pick .tp-sw:not(.on)').first().click();
+  check('theme panel closes after a choice', await a.locator('.theme-pick .tp-panel').isHidden() && await a.getAttribute('.theme-pick .tp-btn', 'aria-expanded') === 'false');
+  await a.click('.theme-pick .tp-btn');
+  await a.click(`.theme-pick .tp-sw[data-theme-id="${cur}"]`);
+
+  // Treniruotė: taškų langelis nematomas, kol nepaspausta „+ Taškai“; eilutėje - ne „XP“
+  await a.goto('admin/treniruote.php');
+  if (await a.locator('#xpQuick').count()) check('quick points form hidden on load', await a.locator('#xpQuick').isHidden());
+  await a.goto('admin/');
+  check('footer says karate', /tradicinio karate federacija/.test(await a.textContent('body')) && !/karatė federacija/.test(await a.textContent('body')));
+
+  // Rolės: keičiant klausiama; nauja paskyra pagal nutylėjimą - narys
+  await a.goto('admin/paskyros.php');
+  check('role select asks first', await a.locator('select[name=role][data-ask][data-cur]').count() >= 1);
+  if (await a.locator('details summary', { hasText: 'Nauja paskyra' }).count()) await a.locator('details summary', { hasText: 'Nauja paskyra' }).click();
+  check('new account defaults to member', await a.evaluate(() => { const s = document.querySelector('form select[name=role]:not([data-ask])'); return s ? s.value : ''; }) === 'member');
+
+  // SMS: treneris varnelės nemato, adminas mato
+  const ev = +sql('SELECT id FROM events WHERE starts_on >= CURDATE() ORDER BY starts_on LIMIT 1');
+  await a.goto(`admin/renginio-dalyviai.php?id=${ev}`);
+  const adminSms = await a.locator('input[name=send_sms]').count();
+  const c = await login(browser, 'treneris@karateka.test', 1280, 900);
+  await c.goto(`admin/renginio-dalyviai.php?id=${ev}`);
+  check('coach has no SMS checkbox, admin has', await c.locator('input[name=send_sms]').count() === 0 && adminSms === 1, String(adminSms));
+
+  // Žaidimas: be nustatymo jo nemato niekas (anksčiau - visi)
+  sql("DELETE FROM site_settings WHERE name = 'game_access'");
+  await c.goto('dojo.php');
+  check('no setting → game closed', !c.url().includes('dojo.php') && await c.locator('.nav-game').count() === 0, c.url());
+  sql("INSERT INTO site_settings (name, value) VALUES ('game_access', 'all') ON DUPLICATE KEY UPDATE value = 'all'");
+  await c.goto('dojo.php');
+  check('explicit all → game open', c.url().includes('dojo.php'));
+  noJsErrors(a, c);
+});

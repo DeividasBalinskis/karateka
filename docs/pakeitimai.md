@@ -4,6 +4,35 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.48 - 2026-11-20 (Budo rezultatai nebedingsta; saugumo pataisos; laikmatis nuo 0; smulkmenos)
+**Duomenų bazės atnaujinti nereikia.** Zip'o turinį išpakuokite **tiesiai į svetainės aplanką**.
+
+**🥋 Budo varžybos - svarbiausia**
+- **Rezultatai nebedingsta po puslapio perkrovimo.** Anksčiau, jei grupės burtai jau buvo išsaugoti ir puslapis perkrautas,
+  įvestas rezultatas (vėliavėlės, kovos skydelis) rodė „Išsaugota ✓“, bet perkrovus dingdavo. Pataisyta ir naršyklėje, ir serveryje.
+  ⚠️ Senose varžybose taip dingę rezultatai patys neatsiras - jei kurios nors varžybos svarbios, peržiūrėkite jas.
+- Burtai, kurių dar niekas neišsaugojo, dabar vienodi visur: perkrovus puslapį ar kitoje planšetėje poros tos pačios.
+  „Burti iš naujo“ - kaip ir buvo, tikrai atsitiktinai.
+- **Laikmatis nuo 0 (Enbu ↑)** pradeda nuo 0:00, o ne iškart šoka į 0:01 - ir TV ekrane (#134).
+- 🎨 fono pasirinkimas užsidaro pats pasirinkus temą (#127). „Ir numatytoji visiems“ veikia ir pažymėjus jau po pasirinkimo.
+
+**🔒 Saugumas**
+- Sekretoriato nuoroda nebepatenka į varžybų sąrašo puslapį (anksčiau per `?id=` buvo pasiekiami trenerio veiksmai visoms varžyboms).
+- SMS siunčia tik administratorius: treneris „Ir SMS tėvams“ varnelės nebemato, ir pati siuntimo funkcija trenerio nepraleidžia.
+- Žaidimas: jei nustatymas ištrintas ar jo nėra - žaidimo nemato **niekas** (anksčiau - visi). Atidaroma Nustatymai → „🏯 Žaidimas“.
+- Paskyros ir rolės: keičiant rolę dabar klausiama „Pakeisti rolę: Vardas → …?“. Nauja paskyra pagal nutylėjimą - „Narys / tėvai“ (buvo „Administratorius“).
+- LTKF redaktoriai nebegali įkelti `.svg` failų; failų dėžės aplankas uždarytas tiesioginiam atidarymui; kalbos keitimas nebenukreipia į kitą svetainę.
+
+**✨ Smulkmenos**
+- Treniruotė: apačioje nebesimato „pamesta“ taškų skyrimo forma; eilutėje „✨ +5 tšk.“ vietoj „+5 XP“.
+- Pranešimas „Moku“ patvirtintas: „+N taškai“ vietoj „+N XP“ (XP lieka tik žaidime).
+- Pranešimai nariams: 3 žingsnio antraštėje „galima kelis“ nebe juodame apskritime.
+- Apačioje visur „Lietuvos tradicinio karate federacija“ (buvo „karatė“).
+
+**📄 Dokumentai (Deividui)**
+- `docs/sistemos-apzvalga.md` - visos sistemos apžvalga; `docs/darbo-planas.md` - naujas darbo planas su paruoštais tekstais kiekvienam žingsniui;
+  `docs/standartai.md` - taisyklės visoms sistemoms; `docs/CLAUDE-pasiulymas.md` - siūlomas `CLAUDE.md`.
+
 ## v1.47 - 2026-11-19 (Budo telefone ir centre, apdovanojimai, renginiai su nuotraukomis, atsiliepimai #119-#125)
 **Reikia atnaujinti duomenų bazę: db/042 ir db/043** (Pradžia → „Atnaujinkite duomenų bazę“). Zip'o turinį išpakuokite **tiesiai į svetainės aplanką**.
 

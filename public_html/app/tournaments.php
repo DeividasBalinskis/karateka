@@ -563,7 +563,7 @@ function footer_links_html(): string
 {
     $links = [];
     if ($u = ltkf_url()) {
-        $links[] = '<a href="' . e($u) . '">' . te('Lietuvos tradicinio karatė federacija (LTKF)') . '</a>';
+        $links[] = '<a href="' . e($u) . '">' . te('Lietuvos tradicinio karate federacija (LTKF)') . '</a>';
     }
     if (tournaments_ready() && array_filter(tournaments_list(), 'tournament_is_visible')) {
         $links[] = '<a href="' . e(url('varzybu-rezultatai.php')) . '">' . te('Varžybų rezultatai') . '</a>';

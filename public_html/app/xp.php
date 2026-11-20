@@ -93,7 +93,7 @@ function approve_skill(int $memberId, int $reqId, int $by): bool
     }
     notifications_done('skill_request', $reqId, $memberId);
     $m = q_one('SELECT first_name FROM members WHERE id = ?', [$memberId]);
-    notify_member($memberId, 'skill_approved', '+' . (int) $req['xp'] . ' XP: ' . $req['title'], 'Treneris patvirtino - ' . ($m['first_name'] ?? '') . ' tai moka.',
+    notify_member($memberId, 'skill_approved', '+' . (int) $req['xp'] . ' ' . t('taškai') . ': ' . $req['title'], 'Treneris patvirtino - ' . ($m['first_name'] ?? '') . ' tai moka.',
         'egzaminas.php?m=' . $memberId . '&dirzas=' . (int) $req['belt_level'] . '#r' . $reqId, $reqId, false);
     return true;
 }

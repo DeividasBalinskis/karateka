@@ -139,6 +139,10 @@ function sms_send_one(string $phone, string $text): array
 /** Išsiunčia žinutę visiems gavėjams ir įrašo į istoriją. Grąžina sms_messages.id */
 function sms_send_message(string $text, array $recipients, string $label, int $byAccountId): int
 {
+    // SMS siunčia tik administratorius (kainuoja pinigus) - tikrinama čia, kad galiotų visiems puslapiams
+    if (q_value("SELECT role FROM accounts WHERE id = ? AND status = 'active'", [$byAccountId]) !== 'admin') {
+        return 0;
+    }
     $parts = sms_parts($text);
     q('INSERT INTO sms_messages (body, parts, provider, label, sent_by) VALUES (?, ?, ?, ?, ?)',
         [$text, $parts, sms_live() ? 'twilio' : 'log', mb_substr($label, 0, 190), $byAccountId]);

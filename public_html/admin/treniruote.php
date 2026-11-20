@@ -396,7 +396,7 @@ $evTile = function (array $ev, bool $showDate) use ($event, $evColors): string {
           </div>
           <?php if ($visitPrice): ?><div class="fee-line" data-fee="<?= (int) $m['id'] ?>">💶 <?= e(group_fee_text($group, $monthFees[(int) $m['id']] ?? null, substr($date, 0, 7))) ?></div><?php endif; ?>
           <?php foreach ($todayXp[$m['id']] ?? [] as $x): ?>
-            <div class="note-existing xp-line">✨ +<?= (int) $x['points'] ?> XP · <?= e($x['category_name']) ?><?= $x['note'] ? ' · ' . e(mb_strimwidth($x['note'], 0, 80, '…')) : '' ?></div>
+            <div class="note-existing xp-line">✨ +<?= (int) $x['points'] ?> <?= te('tšk.') ?> · <?= e($x['category_name']) ?><?= $x['note'] ? ' · ' . e(mb_strimwidth($x['note'], 0, 80, '…')) : '' ?></div>
           <?php endforeach; ?>
           <?php foreach ($todayNotes[$m['id']] ?? [] as $n): ?>
             <div class="note-existing">

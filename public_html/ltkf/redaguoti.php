@@ -6,7 +6,7 @@ require_once APP_DIR . '/images.php';
 require_once __DIR__ . '/inc/bendri.php';
 
 const LTKF_UP = PUBLIC_DIR . '/uploads/ltkf';
-const LTKF_FILE_EXT = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'odt', 'ods', 'odp', 'rtf', 'txt', 'csv', 'zip', 'rar', '7z', 'jpg', 'jpeg', 'png', 'webp', 'gif', 'heic', 'mp4', 'mov', 'mp3', 'svg'];
+const LTKF_FILE_EXT = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'odt', 'ods', 'odp', 'rtf', 'txt', 'csv', 'zip', 'rar', '7z', 'jpg', 'jpeg', 'png', 'webp', 'gif', 'heic', 'mp4', 'mov', 'mp3'];
 const LTKF_FILE_MAX = 60 * 1024 * 1024;
 
 /** Kas redaguoja: vardas arba null */
@@ -263,6 +263,10 @@ switch ($action) {
         if ($files && is_array($files['name'])) {
             if (!is_dir(LTKF_UP . '/deze')) {
                 mkdir(LTKF_UP . '/deze', 0755, true);
+            }
+            // Failų dėžė iš interneto tiesiogiai neprieinama - atsisiunčiama tik per redaguoti.php?get=
+            if (!is_file(LTKF_UP . '/deze/.htaccess')) {
+                @file_put_contents(LTKF_UP . '/deze/.htaccess', "Require all denied\n");
             }
             foreach ($files['name'] as $i => $orig) {
                 if (($files['error'][$i] ?? 1) !== UPLOAD_ERR_OK) {

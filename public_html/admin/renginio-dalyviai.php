@@ -39,7 +39,7 @@ if (is_post()) {
             }
             flash('ok', $n ? "Pridėta dalyvaujančių: $n" : t('Visi pažymėti jau dalyvauja.'));
         } else {
-            $n = invite_members($event, $ids, (int) $me['id'], !empty($_POST['send_email']), !empty($_POST['send_sms']));
+            $n = invite_members($event, $ids, (int) $me['id'], !empty($_POST['send_email']), is_admin() && !empty($_POST['send_sms']));
             flash('ok', $n ? "Pakviesta: $n" . (!empty($_POST['send_email']) ? (' ' . t('(išsiųsti laiškai)')) : '') : t('Visi pažymėti jau yra sąraše.'));
         }
     } elseif ($mid && in_array($action, ['going', 'declined', 'invited'], true)) {
@@ -139,7 +139,7 @@ page_start((t('Dalyviai:') . ' ') . $event['title'], ['admin' => true, 'section'
   </div>
   <div class="seg-choice" style="margin-top:12px;">
     <label class="check"><input type="checkbox" name="send_email" value="1"><span><?= te('Ir el. paštu') ?></span></label>
-    <label class="check"><input type="checkbox" name="send_sms" value="1"><span><?= te('Ir SMS tėvams') ?><?= sms_live() ? '' : (' <span class="hint">' . t('(bandomasis režimas)') . '</span>') ?></span></label>
+    <?php if (is_admin()): ?><label class="check"><input type="checkbox" name="send_sms" value="1"><span><?= te('Ir SMS tėvams') ?><?= sms_live() ? '' : (' <span class="hint">' . t('(bandomasis režimas)') . '</span>') ?></span></label><?php endif; ?>
     <label class="check"><input type="checkbox" name="as_going" value="1"><span><?= te('Ne kviesti, o iškart pažymėti „Dalyvaus“') ?></span></label>
   </div>
   <div><button class="btn btn-primary" type="submit"><?= te('Pakviesti') ?></button></div>

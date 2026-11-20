@@ -1708,7 +1708,8 @@
   }
   // Enbu (t.up): laikas skaičiuojamas nuo 0 į priekį; „remaining“ tada - jau praėjęs laikas
   function timeLeft() { var t = B.timer; if (t.up) return Math.min(30 * 60000, t.running ? t.remaining + (Date.now() - t.at) : t.remaining); return Math.max(0, t.running ? t.remaining - (Date.now() - t.at) : t.remaining); }
-  function fmtTime(ms) { var s = Math.ceil(ms / 1000), m = Math.floor(s / 60); s = s % 60; return m + ':' + (s < 10 ? '0' : '') + s; }
+  // Atgalinis laikas apvalinamas į viršų (0:01 rodoma iki pat galo), laikmatis nuo 0 (Enbu) - į apačią, kad prasidėtų nuo 0:00 (#134)
+  function fmtTime(ms, up) { var s = up ? Math.floor(ms / 1000) : Math.ceil(ms / 1000), m = Math.floor(s / 60); s = s % 60; return m + ':' + (s < 10 ? '0' : '') + s; }
   var tickTimer = null, beeped = false;
   function toggleTimer() {
     var t = B.timer;
@@ -1753,7 +1754,7 @@
   function renderTimer() {
     var el = document.getElementById('bt-timer'); if (!el || !B || el.tagName === 'INPUT') return;
     var left = timeLeft();
-    el.textContent = fmtTime(left);
+    el.textContent = fmtTime(left, B.timer.up);
     el.className = 'bt-timer' + (B.timer.up ? ' up' : left <= 0 ? ' over' : left <= 15000 ? ' last' : '') + (B.timer.running ? ' running' : '');
     var tb = document.getElementById('bt-start'); if (tb) tb.textContent = B.timer.running ? '⏸ Sustabdyti' : '▶ Pradėti';
   }
@@ -1882,7 +1883,7 @@
   function editTimer() {
     if (B.timer.running) toggleTimer();
     var el = document.getElementById('bt-timer'), inp = document.createElement('input'), done = false;
-    inp.className = 'bt-timer bt-timer-in'; inp.value = fmtTime(timeLeft()); inp.setAttribute('aria-label', 'Laikas (min:sek)');
+    inp.className = 'bt-timer bt-timer-in'; inp.value = fmtTime(timeLeft(), B.timer.up); inp.setAttribute('aria-label', 'Laikas (min:sek)');
     el.replaceWith(inp); inp.focus(); inp.select();
     var commit = function (save) {
       if (done) return; done = true;

@@ -276,13 +276,16 @@ const GAME_UNLOCK_ALL = true;
 
 /**
  * Kas mato žaidimą (Dojo, arena, žaidimai): site_setting game_access - „all“ (visi) arba JSON paskyrų id sąrašas.
- * Nenustatyta - visi; db/043 nustato - tik Denio paskyra. Keičiama: Nustatymai → „🏯 Žaidimas“.
+ * Nenustatyta - niekas; db/043 nustato - tik Denio paskyra. Keičiama: Nustatymai → „🏯 Žaidimas“.
  */
 function game_access_ids(): ?array
 {
-    $v = trim((string) site_setting('game_access', 'all'));
-    if ($v === '' || $v === 'all') {
+    $v = trim((string) site_setting('game_access', ''));
+    if ($v === 'all') {
         return null;
+    }
+    if ($v === '') {
+        return [];   // nenustatyta - nemato niekas (saugiau nei „visi“); atidaroma Nustatymuose
     }
     $ids = json_decode($v, true);
     return is_array($ids) ? array_values(array_unique(array_map('intval', $ids))) : [];

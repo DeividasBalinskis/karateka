@@ -1073,7 +1073,7 @@ span.req-check:hover{transform:none;}
 
 /* ===== Renginio forma (žingsniai) ===== */
 .ef-step{display:flex; align-items:center; gap:10px; font-size:1.1rem;}
-.ef-step span{display:inline-flex; align-items:center; justify-content:center; width:28px; height:28px; border-radius:50%; background:var(--ink); color:var(--cream); font-size:0.85rem; flex-shrink:0;}
+.ef-step > span:first-child{display:inline-flex; align-items:center; justify-content:center; width:28px; height:28px; border-radius:50%; background:var(--ink); color:var(--cream); font-size:0.85rem; flex-shrink:0;}
 
 /* ===== Nesutinkantys dėl nuotraukų (prie įkėlimo, tik adminui) ===== */
 .consent-list{margin:-4px 0 4px; padding:10px 14px; border-radius:12px; background:rgba(230,132,43,0.1); border:1px solid rgba(230,132,43,0.35); font-size:0.88rem;}
@@ -1342,6 +1342,7 @@ span.req-check:hover{transform:none;}
 @media (min-width:1000px){ .note-row .xp-btn{min-height:40px; padding:6px 10px;} }
 .xp-quick{display:grid; grid-template-columns:minmax(0, 1.4fr) 90px minmax(0, 2fr); gap:8px 12px; align-items:end; margin:8px 0 4px; padding:12px 14px;
   border-radius:12px; background:#FFF9E8; border:1px solid #F0DCA0;}
+.xp-quick[hidden]{display:none;}
 .xp-quick label{display:flex; flex-direction:column; gap:4px; font-size:0.8rem; font-weight:600;}
 .xp-quick .row{grid-column:1 / -1; gap:10px; align-items:center;}
 @media (max-width:700px){ .xp-quick{grid-template-columns:1fr 90px;} .xp-quick .xp-note{grid-column:1 / -1;} }

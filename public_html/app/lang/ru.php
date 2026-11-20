@@ -2406,7 +2406,7 @@ Nuo 2013 m. treniravosi Tradicinio karate-do klubo „Sanrei“ komandoje, o 201
     'Puslapis:' => 'Страница:',
     'Jūsų atsiliepimai' => 'Ваши отзывы',
     'Visi atsiliepimai →' => 'Все отзывы →',
-    'Lietuvos tradicinio karatė federacija (LTKF)' => 'Литовская федерация традиционного каратэ (LTKF)',
+    'Lietuvos tradicinio karate federacija (LTKF)' => 'Литовская федерация традиционного каратэ (LTKF)',
     'Varžybų rezultatai' => 'Результаты соревнований',
     'Nauji atsiliepimai apie svetainę:' => 'Новые отзывы о сайте:',
     'Karateka ir LTKF varžybos' => 'Соревнования Karateka и LTKF',
@@ -3228,4 +3228,7 @@ Nuo 2013 m. treniravosi Tradicinio karate-do klubo „Sanrei“ komandoje, o 201
     'Pridėti paskyrą (el. paštas)' => 'Добавить учётную запись (эл. почта)',
     'Rodyti visiems' => 'Показать всем',
     'Paslėpti - matysiu tik aš' => 'Скрыть - буду видеть только я',
+    'galima kelis' => 'можно несколько',
+    'Žaidimas dar neprieinamas.' => 'Игра пока недоступна.',
+    'Pakeisti rolę: {name} → ' => 'Изменить роль: {name} → ',
 ];

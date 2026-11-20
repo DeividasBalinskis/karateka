@@ -6,7 +6,7 @@
   var data = null, offset = 0, local = {}, failed = 0, lastHtml = '';
   var MODE = { kumite: 'Kumite', team: 'Komandinis kumite', sumo: 'Sumo', flags: 'Vėliavėlės', score2: 'Kata + Pritaikymas' };
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
-  function fmt(ms) { var s = Math.ceil(Math.max(0, ms) / 1000), m = Math.floor(s / 60); s %= 60; return m + ':' + (s < 10 ? '0' : '') + s; }
+  function fmt(ms, up) { var s = Math.max(0, ms) / 1000; s = up ? Math.floor(s) : Math.ceil(s); var m = Math.floor(s / 60); s %= 60; return m + ':' + (s < 10 ? '0' : '') + s; }
 
   try {
     var bc = new BroadcastChannel('taika-' + CFG.id);
@@ -101,7 +101,7 @@
       };
       stage = '<div class="scr-top"><span class="scr-area">' + esc(name) + '</span><span class="live-dot"></span><span><span class="disc d-' + esc(d.disc) + '"></span>' + esc(d.cat) + '</span><span>' + esc(d.round) + '</span>' +
         (d.bout ? '<span class="scr-pill">Kova ' + esc(d.bout) + '</span>' : '') + (d.to ? '<span class="scr-pill">iki ' + d.to + '</span>' : '') + '</div>' +
-        '<div class="scr-main">' + side('a') + (left !== null && d.mode !== 'score2' ? '<div class="scr-timer' + (d.timer && d.timer.up ? '' : left <= 0 ? ' over' : left <= 15000 ? ' last' : '') + '" id="scr-timer">' + fmt(left) + '</div>' : '') + side('b') + '</div>';
+        '<div class="scr-main">' + side('a') + (left !== null && d.mode !== 'score2' ? '<div class="scr-timer' + (d.timer && d.timer.up ? '' : left <= 0 ? ' over' : left <= 15000 ? ' last' : '') + '" id="scr-timer">' + fmt(left, d.timer && d.timer.up) + '</div>' : '') + side('b') + '</div>';
     } else {
       var m = nowPair(a);
       stage = m ? '<div class="scr-top"><span class="scr-area">' + esc(name) + '</span><span class="live-dot"></span><span><span class="disc d-' + esc(m.disc) + '"></span>' + esc(m.cat) + '</span><span>' + (m.no ? m.no + ' · ' : '') + esc(m.title) + '</span></div>' +
@@ -129,7 +129,7 @@
           ((d.board || []).length ? '<ol class="gv-score">' + d.board.slice(0, 3).map(function (r) { return '<li><span>' + r.pl + '. ' + esc(r.n) + ' <span class="muted">' + esc(r.c) + '</span></span><b>' + esc(r.s) + '</b></li>'; }).join('') + '</ol>' : '') + '</div>';
         else now = '<div class="gv-now"><div class="gv-now-top"><span class="live-dot"></span> Dabar · ' + esc(d.cat) + ' · ' + esc(d.round) + (d.bout ? ' · kova ' + esc(d.bout) : '') + '</div>' +
           '<div class="gv-board"><span class="gv-n aka-t">' + esc(d.aka.name) + '</span><b class="gv-s">' + (d.mode === 'score2' ? (d.parts.a.tk != null && d.parts.a.tp != null ? (d.parts.a.tk + d.parts.a.tp).toFixed(1) : '–') : d.sa) + '</b>' +
-          (left !== null && d.mode !== 'score2' ? '<span class="gv-t" data-timer="' + a.id + '">' + fmt(left) + '</span>' : '<span class="gv-t">:</span>') +
+          (left !== null && d.mode !== 'score2' ? '<span class="gv-t" data-timer="' + a.id + '">' + fmt(left, d.timer && d.timer.up) + '</span>' : '<span class="gv-t">:</span>') +
           '<b class="gv-s">' + (d.mode === 'score2' ? (d.parts.b.tk != null && d.parts.b.tp != null ? (d.parts.b.tk + d.parts.b.tp).toFixed(1) : '–') : d.sb) + '</b><span class="gv-n">' + esc(d.shiro.name) + '</span></div>' +
           (d.winner ? '<div class="gv-win">Laimėjo ' + esc(d.winner === 'a' ? d.aka.name : d.shiro.name) + '</div>' : '') + '</div>';
       } else {
@@ -253,8 +253,8 @@
   function render() { if (!data && !Object.keys(local).length) return; if (CFG.screen) renderScreen(); else renderViewer(); }
   // Laikrodis tiksi tarp atnaujinimų
   setInterval(function () {
-    if (CFG.screen) { var el = document.getElementById('scr-timer'), p = liveFor(CFG.area); if (el && p) { var l = timeLeft(p); el.textContent = fmt(l); el.className = 'scr-timer' + (p.d.timer && p.d.timer.up ? '' : l <= 0 ? ' over' : l <= 15000 ? ' last' : ''); } return; }
-    root.querySelectorAll('[data-timer]').forEach(function (el) { var p = liveFor(el.dataset.timer); if (p) el.textContent = fmt(timeLeft(p)); });
+    if (CFG.screen) { var el = document.getElementById('scr-timer'), p = liveFor(CFG.area); if (el && p) { var l = timeLeft(p); el.textContent = fmt(l, p.d.timer && p.d.timer.up); el.className = 'scr-timer' + (p.d.timer && p.d.timer.up ? '' : l <= 0 ? ' over' : l <= 15000 ? ' last' : ''); } return; }
+    root.querySelectorAll('[data-timer]').forEach(function (el) { var p = liveFor(el.dataset.timer); if (p) el.textContent = fmt(timeLeft(p), p.d.timer && p.d.timer.up); });
   }, 250);
   function poll() {
     var sent = Date.now();

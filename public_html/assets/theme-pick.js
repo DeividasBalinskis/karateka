@@ -17,9 +17,19 @@
     var all = box.querySelector('.tp-all-chk');
     var f = new FormData(); f.append('_csrf', box.dataset.csrf); f.append('scope', box.dataset.scope); f.append('theme', id); if (all && all.checked) f.append('all', '1');
     fetch(box.dataset.api, { method: 'POST', body: f, credentials: 'same-origin', headers: { 'X-CSRF-Token': box.dataset.csrf } }).catch(function () {});
+    // Pasirinkus temą langelis užsidaro pats (#127)
+    panel.hidden = true; box.querySelector('.tp-btn').setAttribute('aria-expanded', 'false');
+  });
+  // „Ir numatytoji visiems“ pažymėjus jau PO pasirinkimo - dabartinė tema iš karto tampa numatytąja (anksčiau reikėjo spausti temą dar kartą)
+  document.addEventListener('change', function (e) {
+    var chk = e.target.closest && e.target.closest('.tp-all-chk'), box = chk && chk.closest('.theme-pick');
+    if (!chk || !chk.checked || !box) return;
+    var on = box.querySelector('.tp-sw.on'); if (!on) return;
+    var f = new FormData(); f.append('_csrf', box.dataset.csrf); f.append('scope', box.dataset.scope); f.append('theme', on.dataset.themeId); f.append('all', '1');
+    fetch(box.dataset.api, { method: 'POST', body: f, credentials: 'same-origin', headers: { 'X-CSRF-Token': box.dataset.csrf } }).catch(function () {});
   });
   document.addEventListener('keydown', function (e) {
     if (e.key !== 'Escape') return;
-    document.querySelectorAll('.theme-pick .tp-panel:not([hidden])').forEach(function (p) { p.hidden = true; });
+    document.querySelectorAll('.theme-pick .tp-panel:not([hidden])').forEach(function (p) { p.hidden = true; p.parentNode.querySelector('.tp-btn').setAttribute('aria-expanded', 'false'); });
   });
 })();

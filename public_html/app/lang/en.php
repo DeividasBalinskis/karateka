@@ -2406,7 +2406,7 @@ From 2013 he trained with the team of the traditional karate-do club "Sanrei", a
     'Puslapis:' => 'Page:',
     'Jūsų atsiliepimai' => 'Your feedback',
     'Visi atsiliepimai →' => 'All feedback →',
-    'Lietuvos tradicinio karatė federacija (LTKF)' => 'Lithuanian Traditional Karate Federation (LTKF)',
+    'Lietuvos tradicinio karate federacija (LTKF)' => 'Lithuanian Traditional Karate Federation (LTKF)',
     'Varžybų rezultatai' => 'Competition results',
     'Nauji atsiliepimai apie svetainę:' => 'New website feedback:',
     'Karateka ir LTKF varžybos' => 'Karateka and LTKF competitions',
@@ -3228,4 +3228,7 @@ From 2013 he trained with the team of the traditional karate-do club "Sanrei", a
     'Pridėti paskyrą (el. paštas)' => 'Add an account (email)',
     'Rodyti visiems' => 'Show to everyone',
     'Paslėpti - matysiu tik aš' => 'Hide - only I will see it',
+    'galima kelis' => 'several allowed',
+    'Žaidimas dar neprieinamas.' => 'The game is not available yet.',
+    'Pakeisti rolę: {name} → ' => 'Change role: {name} → ',
 ];

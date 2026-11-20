@@ -50,6 +50,8 @@ test('secretariat link: name only, only this competition, no member data; admin 
   // Kitur nepatenka
   await g.goto('admin/varzybos.php');
   check('competition list → back to own competition', new RegExp(`varzybu-sistema\\.php\\?id=${tid}`).test(g.url()), g.url());
+  await g.goto(`admin/varzybos.php?id=${tid}`);   // planas A2: su ?id= anksčiau atsidarydavo trenerio veiksmai visoms varžyboms
+  check('competition data page → back to own competition', new RegExp(`varzybu-sistema\\.php\\?id=${tid}`).test(g.url()), g.url());
   await g.goto('admin/nariai.php');
   check('no access to members', !/admin\/nariai\.php/.test(g.url()), g.url());
 

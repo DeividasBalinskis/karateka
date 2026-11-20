@@ -137,8 +137,8 @@ test('game hidden: only chosen accounts (Denis) see Dojo; settings switch', asyn
   check('kid: no Dojo in the menu', await k.locator('.nav-game').count() === 0 && await k.locator('.game-teaser').count() === 0);
   await k.goto('dojo.php');
   check('kid: Dojo page closed', !k.url().includes('dojo.php'));
-  const r = await k.request.get('zaidimas.php?list=1');
-  check('kid: game API closed', r.status() >= 400 || !(await r.text()).includes('"ok":true'));
+  const r = await k.request.get('zaidimas.php?invites=1');
+  check('kid: game API closed', r.status() === 403 && /neprieinamas/.test(await r.text()), r.status() + ' ' + (await r.text()).slice(0, 80));
   const a = await login(browser, 'info@karateka.lt', 1280, 900);
   await a.goto('dojo.php');
   check('Denis sees the game', a.url().includes('dojo.php') && await a.locator('.nav-game').count() === 1);

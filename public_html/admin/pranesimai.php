@@ -94,7 +94,7 @@ page_start(t('Pranešimas nariams'), ['admin' => true]);
     </div>
   </div>
   <div class="panel card form" style="margin-top:20px;">
-    <h2 class="ef-step"><span>3</span> <?= te('Kur siųsti') ?> <span class="hint" style="font-family:Inter,sans-serif;">galima kelis</span></h2>
+    <h2 class="ef-step"><span>3</span> <?= te('Kur siųsti') ?> <span class="hint" style="font-family:Inter,sans-serif;"><?= te('galima kelis') ?></span></h2>
     <?php foreach (BROADCAST_CHANNELS as $k => $label): ?>
       <label class="check"><input type="checkbox" name="channels[]" value="<?= $k ?>" <?= in_array($k, $chosen, true) ? 'checked' : '' ?>>
         <span><?= e($label) ?><?= $k === 'site' ? (' <span class="hint">' . t('- rodoma „Svarbu“, kol paspaus „Supratau“') . '</span>') : ($k === 'sms' ? (' <span class="hint">' . t('- tėvams (ar pačiam nariui) su telefono numeriu; be lietuviškų raidžių')) . (sms_live() ? '' : t(', bandomasis režimas - nesiunčiama')) . '</span>' : '') ?></span></label>

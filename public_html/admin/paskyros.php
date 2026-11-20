@@ -83,7 +83,7 @@ page_start(t('Paskyros'), ['admin' => true]);
     <label><?= te('Vardas') ?> <input name="first_name" required maxlength="80"></label>
     <label><?= te('Pavardė') ?> <input name="last_name" maxlength="80"></label>
     <label><?= te('Slaptažodis') ?> <input type="text" name="password" required minlength="6" autocomplete="new-password"></label>
-    <label><?= te('Rolė') ?> <select name="role"><?php foreach ($roleLabel as $k => $label): ?><option value="<?= $k ?>"<?= $k === 'admin' ? ' selected' : '' ?>><?= $label ?></option><?php endforeach; ?></select></label>
+    <label><?= te('Rolė') ?> <select name="role"><?php foreach ($roleLabel as $k => $label): ?><option value="<?= $k ?>"<?= $k === 'member' ? ' selected' : '' ?>><?= $label ?></option><?php endforeach; ?></select></label>
     <label class="check"><input type="checkbox" name="chat_off" value="1"><span><?= te('Be pokalbių lango') ?></span></label>
     <button class="btn btn-primary" type="submit"><?= te('Sukurti') ?></button>
   </form>
@@ -110,7 +110,7 @@ page_start(t('Paskyros'), ['admin' => true]);
             <?php else: ?>
               <form method="post" class="inline-form form">
                 <?= csrf_field() ?><input type="hidden" name="id" value="<?= (int) $r['id'] ?>"><input type="hidden" name="action" value="role">
-                <select name="role" onchange="this.form.submit()" style="padding:8px 36px 8px 10px; font-size:14px;">
+                <select name="role" data-cur="<?= e($r['role']) ?>" data-ask="<?= e(t('Pakeisti rolę: {name} → ', ['name' => trim($r['first_name'] . ' ' . $r['last_name']) ?: $r['email']])) ?>" onchange="if (confirm(this.dataset.ask + this.options[this.selectedIndex].text + '?')) this.form.submit(); else this.value = this.dataset.cur;" style="padding:8px 36px 8px 10px; font-size:14px;">
                   <?php foreach ($roleLabel as $k => $label): ?><option value="<?= $k ?>" <?= $r['role'] === $k ? 'selected' : '' ?>><?= $label ?></option><?php endforeach; ?>
                 </select>
               </form>
