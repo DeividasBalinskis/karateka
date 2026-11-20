@@ -1,5 +1,5 @@
 # Handoff
-Updated: 2026-11-20 · version v1.62 · branch claude/festive-curie-01jgx2
+Updated: 2026-11-20 · version v1.63 · branch claude/festive-curie-01jgx2
 
 ## Pending asks (answer these first)
 | Asked | By | What | Status |

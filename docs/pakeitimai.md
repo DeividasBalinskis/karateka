@@ -4,6 +4,9 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.63 - 2026-11-20 (prisijungimas telefone - D5)
+- Prisijungti: 👁 (parodyti slaptažodį) - 44 px, „Pamiršote slaptažodį?“ ir „Turiu kodą iš administratoriaus“ - 40 px aukščio.
+
 ## v1.62 - 2026-11-20 (renginių puslapiai telefone; protokolas telpa planšetėje)
 Duomenų bazės atnaujinti nereikia.
 
