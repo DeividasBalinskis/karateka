@@ -4,6 +4,12 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.60 - 2026-11-20 (naujas renginys: „Kita“ ir „Bus pakviesta: N“ - B6 pabaiga)
+Duomenų bazės atnaujinti nereikia.
+
+- Valdymas → Renginiai → „+ Renginys“: tipas pagal nutylėjimą - **„Kita“** (anksčiau „Egzaminas“).
+- Prie „Kas kviečiami“ - **„Bus pakviesta: N“**: skaičius keičiasi žymint grupes ar vaikus; nieko nepažymėjus - „Atviras renginys - kvietimų nebus“.
+
 ## v1.59 - 2026-11-20 (egzaminai: skaičiai sąraše, protokolas planšetėje - B6)
 Duomenų bazės atnaujinti nereikia.
 

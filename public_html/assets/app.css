@@ -1942,3 +1942,7 @@ h1 .badge-tester{font:600 .8rem/1.6 'Inter', sans-serif; letter-spacing:0; paddi
   .prot-table .res-btn{padding:0 6px;}
   .prot-table .pr-link, .prot-table .pr-newlink{min-width:36px; min-height:36px;}
 }
+/* B6: „Bus pakviesta: N“ prie „Kas kviečiami“ - telpa ir rusiškai telefone */
+.ev-will{white-space:normal; display:inline-block; vertical-align:middle; margin-left:6px; font-family:Inter, system-ui, sans-serif;}
+.ev-will:empty{display:none;}
+.ev-will.ok{background:rgba(47,107,90,0.14); color:var(--accent-dark, #1F4E40);}
