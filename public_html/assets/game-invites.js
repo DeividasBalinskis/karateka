@@ -4,13 +4,12 @@
   if (!api || /\/(arena|keturi|ritmas)\.php/.test(location.pathname)) return;
   var T = window.tr || function (x) { return x; }, shown = {}, stop = false;
   function esc(x) { return String(x).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
-  function poll() {
-    if (stop || document.hidden) return setTimeout(poll, 15000);
-    fetch(api + '?invites=1', { credentials: 'same-origin' }).then(function (r) { if (r.status === 403) { stop = true; return null; } return r.json(); }).then(function (d) {
-      if (!d || !d.ok) return;
-      d.items.filter(function (i) { return i.incoming && !shown[i.id]; }).slice(0, 1).forEach(show);
-    }).catch(function () {}).then(function () { if (!stop) setTimeout(poll, 15000); });
-  }
+  // C7: kvietimai - iš bendro pulso (pulsas.php kas 30 s), ne atskira užklausa kas 15 s
+  document.addEventListener('karateka:pulse', function (e) {
+    var d = e.detail;
+    if (stop || !d.inv) return;
+    d.inv.filter(function (i) { return i.incoming && !shown[i.id]; }).slice(0, 1).forEach(show);
+  });
   function show(i) {
     shown[i.id] = 1;
     var g = i.game === 'keturi' ? '🔴 ' + T('Keturi iš eilės') : (i.mode === 'fair' ? '🎯 ' + T('Gudrumo kova') : '🏆 ' + T('Jėgos kova'));
@@ -25,5 +24,4 @@
         .then(function (r) { return r.json(); }).then(function (d) { if (d.ok && b.dataset.a === 'accept') location.href = (i.game === 'keturi' ? keturi : arena) + '?m=' + d.id; });
     };
   }
-  setTimeout(poll, 3000);
 })();

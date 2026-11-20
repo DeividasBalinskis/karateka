@@ -1,5 +1,5 @@
 # Handoff
-Updated: 2026-11-20 · version v1.56 · branch claude/festive-curie-01jgx2
+Updated: 2026-11-20 · version v1.57 · branch claude/festive-curie-01jgx2
 
 ## Pending asks (answer these first)
 | Asked | By | What | Status |
@@ -17,10 +17,11 @@ Updated: 2026-11-20 · version v1.56 · branch claude/festive-curie-01jgx2
   tablet overflow fixed, confirmations shown, TV tatami picker, names without birth year shortened in public).
 - v1.55: B5 notifications - one type list (action / notice / celebration), staff red number = to-dos until done, notices fold.
 - v1.56: A3 exam links safe (already-registered message without link, no name-only match, find limited per IP, ↻ new link).
+- v1.57: C7 one polling request (pulsas.php + assets/pulse.js; chat.js, notify-popup.js, game-invites.js listen to „karateka:pulse“).
 - Committed and pushed to the claude branch after each stage; `main` untouched.
 
 ## Open
-- B5 rest (member badge - waits for the answer above); B8 kid home (variants first); C4-C7; D5 page polish; D7 shield / second weapon in the arena.
+- B5 rest (member badge - waits for the answer above); B8 kid home (variants first); C4-C6; D5 page polish; D7 shield / second weapon in the arena.
 - Budo registration by club leaders (add own kids, choose events); parent payments need a payment provider (later).
 
 ## Next

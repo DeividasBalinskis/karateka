@@ -113,16 +113,14 @@
     fab.setAttribute('aria-expanded', 'false');
     root.classList.remove('open');
     clearInterval(timer);
-    timer = setInterval(checkBadge, SLOW);
+    timer = null;
+    if (window.karatekaPulse) window.karatekaPulse();   // C7: skaičiukas - iš bendro pulso
   }
-  function checkBadge() {
-    if (document.hidden) return;
-    get({ badge: 1 }).then(function (d) { if (d.ok) setBadge(d.unread); }).catch(function () {});
-  }
+  // C7: kol langelis uždarytas, skaičiukas atnaujinamas iš bendro pulso (pulsas.php kas 30 s), ne atskira užklausa
+  document.addEventListener('karateka:pulse', function (e) { if (!isOpen() && typeof e.detail.chat === 'number') setBadge(e.detail.chat); });
   fab.addEventListener('click', function () { isOpen() ? close() : open(); });
   panel.querySelectorAll('.chat-close').forEach(function (b) { b.addEventListener('click', close); });
   document.addEventListener('keydown', function (ev) { if (ev.key === 'Escape' && isOpen() && !profileOpen()) close(); });
-  timer = setInterval(checkBadge, SLOW);
 
   // „Atsakyti“, „Žinutės“ ir pan. nuorodos puslapyje atidaro pokalbį (data-member - su kuriuo nariu)
   document.addEventListener('click', function (ev) {

@@ -4,6 +4,15 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.57 - 2026-11-20 (viena bendra užklausa vietoj kelių - C7)
+Duomenų bazės atnaujinti nereikia. Zip'o turinį išpakuokite **tiesiai į svetainės aplanką**.
+
+**⚡ Greičiau ir mažiau apkrovos**
+- Prisijungusiam vietoj 3 atskirų užklausų (💬 skaičius kas 20 s, pranešimai kas 60 s, kvietimai žaisti kas 15 s) - **viena** `pulsas.php` kas 30 s.
+  Jei niekas nepasikeitė - serveris atsako trumpai „nepasikeitė“ (ETag / 304).
+- Paslėptame skirtuke netikrinama; grįžus į skirtuką - patikrinama iš karto.
+- Varžybų žiūrovų puslapis ir TV ekranas paslėptame skirtuke irgi netikrina (grįžus - iš karto); atidarytas pokalbis lieka greitas.
+
 ## v1.56 - 2026-11-20 (egzamino nuorodos saugios - A3)
 Duomenų bazės atnaujinti nereikia. Zip'o turinį išpakuokite **tiesiai į svetainės aplanką**.
 
