@@ -51,7 +51,7 @@ Status: ☐ not started · ◐ partly done · ☑ done
 | **A4** | Real admins vs testers; your login | Deividas, Denis, testers | M | reikia leidimo | ☑ v1.49 (your login: still to create) |
 | **A5** | Secure the trial form (old step 1) | guests, Denis | S | — | ☑ v1.50 |
 | **A6** | One source of truth: main branch, deploy guide, zip script | Deividas | S | reikia leidimo | ☐ |
-| **B1** | Small feedback batch + text fixes (old step 2) | Denis | S | — | ◐ v1.48, v1.49, v1.50 (#138-#151) |
+| **B1** | Small feedback batch + text fixes (old step 2) | Denis | S | — | ☑ v1.48–v1.58 (#138-#151; LTKF EN/RU keys, „karatė“ check, no sideways scroll at 375) |
 | **B2** | "Greitos varžybos": 4 athletes in under a minute | Denis, coaches | M | plan first | ◐ v1.49 (participants + one group per discipline) |
 | **B3** | Budo on a phone on competition day | Denis, secretariat, judges | M | — | ☑ v1.54 (bout fits 375×812, time section folds, floats hidden, header 224→146 px, tablet overflow, confirmations, TV tatami picker, no-birth-year names shortened) |
 | **B4** | Phone admin: view-as, one floating button (old step 6) | Denis, coaches, members | M | — | ☑ v1.51–v1.52 (view-as in ⋯ Daugiau, one floating button, floats hide over sheet and while typing, 🎨 for all) |

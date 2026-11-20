@@ -4,6 +4,13 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.58 - 2026-11-20 (smulkūs pataisymai - B1 pabaiga)
+Duomenų bazės atnaujinti nereikia.
+
+- LTKF puslapiai anglų ir rusų kalbomis vėl išversti ten, kur tekstas buvo pakeistas į „karate“ (pagrindinis, „Apie“, „Klubai“, apačia).
+- Patikrose (`tests/checks.sh`) - taisyklė: ekrane rašoma „karate“, ne „karatė“.
+- Aktyvumo taškai ir kiti Valdymo puslapiai telefone (375 px) nebeslenka į šoną (patikrinta 11 puslapių).
+
 ## v1.57 - 2026-11-20 (viena bendra užklausa vietoj kelių - C7)
 Duomenų bazės atnaujinti nereikia. Zip'o turinį išpakuokite **tiesiai į svetainės aplanką**.
 

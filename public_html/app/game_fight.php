@@ -1,5 +1,5 @@
 <?php
-// Karatė kova (kaip combats.ru, tik karatė): abu žaidėjai tuo pačiu metu pasirenka techniką (kur smūgiuoja) ir gynybą (kurį lygį blokuoja).
+// Karate kova (kaip combats.ru, tik karate): abu žaidėjai tuo pačiu metu pasirenka techniką (kur smūgiuoja) ir gynybą (kurį lygį blokuoja).
 // Lygiai: jodan (galva), chudan (kūnas), gedan (kojos). Teisingai užblokavus - kontrataka. Tai sabaki - išsisukimas nuo bet kurio smūgio (su tikimybe).
 // Režimai: „power“ (jėgos) - savybės, daiktai ir gyvūnėlis svarbūs, stipresnis dažniau laimi; „fair“ (draugiška) - visi lygūs, 3 kortos
 // (Kiai, Zanshin, Kime), laimi tas, kuris geriau perpranta priešininką. Botas - treniruočių partneris (be reitingo).
@@ -119,7 +119,7 @@ function fight_auto_pick(array $st, string $side, bool $smart): array
     return $pick;
 }
 
-/** Ėjimo rezultatas: abu smūgiai, kontratakos, gyvūnėliai. Rašomas žurnalas su karatė terminais. */
+/** Ėjimo rezultatas: abu smūgiai, kontratakos, gyvūnėliai. Rašomas žurnalas su karate terminais. */
 function fight_resolve(array $st): array
 {
     $sides = ['a', 'b'];

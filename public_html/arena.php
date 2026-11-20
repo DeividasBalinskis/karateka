@@ -1,5 +1,5 @@
 <?php
-// Žaidimų arena: karatė kova (ėjimais, kaip combats), „Greita kova“ (realiu laiku), kvietimai klubo žaidėjams, treniruotė su botu, reitingai.
+// Žaidimų arena: karate kova (ėjimais, kaip combats), „Greita kova“ (realiu laiku), kvietimai klubo žaidėjams, treniruotė su botu, reitingai.
 // ?m=ID - vykstanti kova, ?greita=1 - greita kova su botu, ?h=ID - kuriuo herojumi žaidžiama (savo ar vaiko).
 require __DIR__ . '/app/bootstrap.php';
 require_once APP_DIR . '/game_ui.php';

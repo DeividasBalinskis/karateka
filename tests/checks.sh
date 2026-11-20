@@ -28,6 +28,10 @@ done
 # config.php su slaptažodžiais niekada nekeliamas
 if git ls-files --error-unmatch public_html/config.php >/dev/null 2>&1; then err "public_html/config.php įkeltas į git"; fi
 
+# „karate“, ne „karatė“ (CLAUDE.md 6): ekrano tekstuose ir vertimų raktuose (komentarai ir taisyklės aprašas - išimtis)
+bad=$(grep -rn "karatė" public_html tools/vertimai --include=*.php --include=*.js --include=*.tsv | grep -v "/lang/tl/\|ltkf/inc/lang/" | grep -vE "^[^:]+:[0-9]+:\s*(//|\*|#)" | grep -v "ne „karatė“" || true)
+[ -n "$bad" ] && err "rašykite „karate“, ne „karatė“: $(echo "$bad" | head -3 | cut -c1-120)"
+
 # Pranešimų tipai (B5): kiekvienas naudojamas tipas turi būti NOTIFY_TYPES sąraše (app/notifications.php)
 known=$(grep -oP "^\s+'\K[a-z_]+(?=' +=> \[)" public_html/app/notifications.php | sort -u)
 used=$( (grep -rhoP "notify_(admins|staff)\(\s*'\K[a-z_]+" public_html --include=*.php; grep -rhoP "notify_(account|member)\([^,()]+(\([^()]*\))?[^,()]*,\s*'\K[a-z_]+" public_html --include=*.php) | sort -u)

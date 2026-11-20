@@ -1,6 +1,6 @@
 <?php
 // „🎮 Žaidimas“ - pagrindinis vaikų puslapis (viršutinėje juostoje, šalia „Pamokos“): langas, kuriame gyvena personažas su gyvūnėliais,
-// namu ir gamta (viską galima keisti), ir dideli mygtukai į žaidimus: karatė kova, greita kova, „Keturi iš eilės“, kata ritmas.
+// namu ir gamta (viską galima keisti), ir dideli mygtukai į žaidimus: karate kova, greita kova, „Keturi iš eilės“, kata ritmas.
 // ?h=ID - kurio herojaus pasaulis (tėvams - vaikų, treneriui - savo ir vaikų).
 require __DIR__ . '/app/bootstrap.php';
 require_once APP_DIR . '/game_ui.php';
