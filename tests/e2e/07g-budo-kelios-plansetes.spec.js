@@ -27,7 +27,9 @@ test('Budo: two tablets enter results at the same time - both kept, no reload as
   await a.waitForTimeout(1200);
   const st = stateOf(tid);
   // Grupės be rezultatų - pirmas paspaudimas tikrai prideda naują rezultatą
-  const katas = st.categories.filter(c => c.discipline === 'kata' && !c.team && c.competitors.length >= 4 && c.draw && c.draw.slots && nRes(st, c.id) === 0);
+  // Test varžybos sudaromos atsitiktinai: jei grupių su 4+ dalyviais be rezultatų per mažai - tinka ir 3 dalyvių
+  const free = min => st.categories.filter(c => c.discipline === 'kata' && !c.team && c.competitors.length >= min && c.draw && c.draw.slots && nRes(st, c.id) === 0);
+  const katas = free(4).length >= 2 ? free(4) : free(3);
   check('two kata groups', katas.length >= 2);
   const [k1, k2] = katas;
   const before = [nRes(st, k1.id), nRes(st, k2.id)];

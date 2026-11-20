@@ -1,5 +1,5 @@
 # Handoff
-Updated: 2026-11-20 · version v1.53 · branch claude/festive-curie-01jgx2
+Updated: 2026-11-20 · version v1.54 · branch claude/festive-curie-01jgx2
 
 ## Pending asks (answer these first)
 | Asked | By | What | Status |
@@ -12,11 +12,13 @@ Updated: 2026-11-20 · version v1.53 · branch claude/festive-curie-01jgx2
   multi-tablet merge D4, Rask save by surname, device theme, LTKF approval, Dojo ranking rules, kid words).
 - v1.53: „Kas naujo“ (click the version number), code for another device (one-time, 10 min, revocable, logged; db/047),
   B7 done: child login with username + PIN by parents, parent trains too, adult member adds a child, child chat switch; „Mano diena“ tab for 7-10.
+- v1.54: B3 Budo on a phone (bout fits one screen, „⏱ laikas ir gongas“ folds, floats hidden in a bout, lower header,
+  tablet overflow fixed, confirmations shown, TV tatami picker, names without birth year shortened in public).
 - Committed and pushed to the claude branch after each stage; `main` untouched.
 
 ## Open
-- B3 Budo on a phone; B5 notifications; B8 kid home; C4-C7; D5 page polish; D7 shield / second weapon in the arena.
+- B5 notifications; B8 kid home (variants first); C4-C7; D5 page polish; D7 shield / second weapon in the arena.
 - Budo registration by club leaders (add own kids, choose events); parent payments need a payment provider (later).
 
 ## Next
-- B3 (Budo on a phone on competition day), then B5 notifications.
+- B5 notifications („plan first“ - do and show), then B8 kid home variants.
