@@ -433,6 +433,37 @@ function varz_club_members(): array
     }, $rows);
 }
 
+/**
+ * Dalyviai iš formos: pažymėti klubo nariai ir nauji žmonės (po vieną eilutėje). Grąžina [id => dalyvis] varžybų būsenai.
+ */
+function varz_people_from_form(array $memberIds, string $names, string $club): array
+{
+    $out = [];
+    if ($memberIds) {
+        foreach (varz_club_members() as $m) {
+            if (in_array($m['id'], $memberIds, true)) {
+                $p = varz_person_from_member($m);
+                $out[$p['id']] = $p;
+            }
+        }
+    }
+    $club = mb_substr(trim($club), 0, 80) ?: VARZ_HOME_CLUB;
+    $seen = array_map(function ($p) { return mb_strtolower($p['name']); }, $out);
+    foreach (preg_split('/\R/u', $names) ?: [] as $line) {
+        $n = mb_substr(trim(preg_replace('/\s+/u', ' ', $line)), 0, 80);
+        if ($n === '' || in_array(mb_strtolower($n), $seen, true)) {
+            continue;
+        }
+        $id = 'c' . base_convert((string) (int) (microtime(true) * 1000), 10, 36) . bin2hex(random_bytes(2));
+        $out[$id] = ['id' => $id, 'name' => $n, 'club' => $club, 'birth' => null, 'gender' => null, 'belt' => null, 'member' => null];
+        $seen[] = mb_strtolower($n);
+        if (count($out) >= 300) {
+            break;
+        }
+    }
+    return $out;
+}
+
 /** Karateka narys kaip varžybų dalyvis (id „m“ + nario id - tas pats narys nepridedamas du kartus) */
 function varz_person_from_member(array $m): array
 {

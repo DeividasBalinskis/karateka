@@ -238,3 +238,23 @@ function price_editor(string $category): string
         . '<label>Kita kaina <input type="text" class="pr-alt" value="' . e((string) $p['price_alt']) . '" placeholder="' . e(t('90€/mėn be sutarties')) . '" maxlength="120"></label>'
         . '<span class="sl-state" aria-live="polite"></span></div>' . schedule_editor_script();
 }
+
+// ---------- „2 treniruotės nemokamai“ forma (uzklausa.php, plano žingsnis A5) ----------
+
+/** Paslėpti formos laukai: CSRF, „spąstai“ robotams (turi likti tuščias) ir pasirašytas atvėrimo laikas */
+function trial_form_guard(): string
+{
+    $t = (string) time();
+    return csrf_field()
+        . '<input type="hidden" name="ft" value="' . e($t . '.' . substr(hash_hmac('sha256', $t, csrf_token()), 0, 16)) . '">'
+        . '<div class="hp-field" aria-hidden="true"><label>Svetainė <input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>';
+}
+
+/** Kada forma atverta (iš trial_form_guard()), arba null, jei laukas suklastotas */
+function trial_form_started(string $v): ?int
+{
+    if (!preg_match('/^(\d{9,11})\.([a-f0-9]{16})$/', $v, $m)) {
+        return null;
+    }
+    return hash_equals(substr(hash_hmac('sha256', $m[1], csrf_token()), 0, 16), $m[2]) ? (int) $m[1] : null;
+}

@@ -35,13 +35,38 @@ if (is_post() && $ready) {
                 redirect('admin/varzybos.php#nauja');
             }
             $end = preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) post('ends_on')) && post('ends_on') > $start ? post('ends_on') : null;
-            $newId = tournament_create($title, $start, $end, trim((string) post('location')) ?: null, false, (int) $me['id'], null, $demo);
+            // Dalyviai iškart kuriant: pažymėti klubo nariai ir nauji žmonės (po vieną eilutėje); nebūtina
+            $state = tournament_default_state();
+            $people = varz_people_from_form($demo ? [] : array_map('intval', (array) ($_POST['members'] ?? [])), (string) post('names'), trim((string) post('names_club')));
+            if ($people) {
+                $state['people'] = $people;
+                if (!in_array(VARZ_HOME_CLUB, (array) $state['clubs'], true)) {
+                    array_unshift($state['clubs'], VARZ_HOME_CLUB);
+                }
+                foreach ($people as $pp) {
+                    if (!in_array($pp['club'], (array) $state['clubs'], true)) {
+                        $state['clubs'][] = $pp['club'];
+                    }
+                }
+                // Po vieną grupę kiekvienai pažymėtai rungčiai su visais dalyviais (sudaro naršyklė atidarius, kaip test varžyboms)
+                $quick = array_values(array_intersect((array) ($_POST['quick'] ?? []), ['kata', 'kumite']));
+                if ($quick) {
+                    $state['quickCats'] = $quick;
+                    $state['areas'] = [['id' => 1, 'name' => '1 TATAMIS', 'start' => date('H:i')]];   // mažoms varžyboms - vienas tatamis
+                }
+            }
+            $newId = tournament_create($title, $start, $end, trim((string) post('location')) ?: null, false, (int) $me['id'], $state, $demo);
             if (post('event') === '1' && !$demo) {
                 q('INSERT INTO events (type, title, starts_on, ends_on, location, description) VALUES ("competition", ?, ?, ?, ?, ?)',
                     [mb_substr($title, 0, 190), $start, $end, trim((string) post('location')) ?: null, t('Lentelės ir rezultatai - varžybų sistemoje.')]);
                 q('UPDATE tournaments SET event_id = ? WHERE id = ?', [(int) db()->lastInsertId(), $newId]);
             }
-            flash('ok', t('Varžybos sukurtos. Pradėkite nuo dalyvių: „+ Karateka nariai“ arba pridėkite kitų klubų dalyvius.'));
+            if (!empty($state['quickCats'])) {
+                flash('ok', t('Varžybos sukurtos: {n} dalyv., grupės sudarytos. Galite pradėti.', ['n' => count($people)]));
+                redirect('admin/varzybu-sistema.php?id=' . $newId . '#live');
+            }
+            flash('ok', $people ? t('Varžybos sukurtos: {n} dalyv. Toliau - kategorijos.', ['n' => count($people)])
+                : t('Varžybos sukurtos. Pradėkite nuo dalyvių: „+ Karateka nariai“ arba pridėkite kitų klubų dalyvius.'));
             redirect('admin/varzybu-sistema.php?id=' . $newId . '#dalyviai');
         case 'test':
             $newId = tournament_generate_test((int) $me['id'], $demo);
@@ -190,12 +215,37 @@ varz_html_head(t('Varžybos'), 'vz-home');
       <?= csrf_field() ?><input type="hidden" name="action" value="create">
       <label><?= te('Pavadinimas') ?> <input class="sel" type="text" name="title" maxlength="190" required placeholder="<?= e(t('pvz. Karateka taurė 2027')) ?>"></label>
       <div class="varz-2">
-        <label><?= te('Data') ?> <input class="sel" type="date" name="starts_on" required></label>
+        <label><?= te('Data') ?> <input class="sel" type="date" name="starts_on" required value="<?= e(date('Y-m-d')) ?>"></label>
         <label><?= te('Iki') ?> <span class="muted small"><?= te('nebūtina') ?></span><input class="sel" type="date" name="ends_on"></label>
       </div>
       <label><?= te('Vieta') ?> <input class="sel" type="text" name="location" maxlength="190" placeholder="<?= e(t('pvz. Vilnius, Sporto centras Viršuliškės')) ?>"></label>
+      <fieldset class="vn-people">
+        <legend><?= te('Dalyviai') ?> <span class="muted small"><?= te('nebūtina - galima pridėti ir vėliau') ?></span></legend>
+        <?php $clubMembers = $demo ? [] : varz_club_members(); if ($clubMembers): $mGroups = array_values(array_unique(array_filter(array_column($clubMembers, 'group')))); ?>
+          <div class="vn-pick">
+            <input type="search" class="sel vn-search" placeholder="<?= te('Ieškoti nario…') ?>" aria-label="<?= te('Ieškoti nario') ?>">
+            <div class="vn-groups chips-row"><?php foreach ($mGroups as $g): ?><button type="button" class="fchip" data-vn-group="<?= e($g) ?>"><?= e($g) ?></button><?php endforeach; ?></div>
+            <div class="vn-list">
+              <?php foreach ($clubMembers as $m): ?>
+                <label class="vn-item" data-g="<?= e($m['group']) ?>"><input type="checkbox" name="members[]" value="<?= (int) $m['id'] ?>">
+                  <span><?= e($m['name']) ?></span><small><?= $m['birth'] ? (int) $m['birth'] : '' ?><?= $m['group'] !== '' ? ' · ' . e($m['group']) : '' ?></small></label>
+              <?php endforeach; ?>
+            </div>
+            <p class="small muted vn-count" aria-live="polite"><?= te('Pažymėta:') ?> <b>0</b></p>
+          </div>
+        <?php endif; ?>
+        <label><?= te('Nauji žmonės') ?> <span class="muted small"><?= te('po vieną eilutėje: Vardas Pavardė') ?></span>
+          <textarea class="sel" name="names" rows="3" placeholder="<?= e(t("Jonas Jonaitis\nOna Onaitė")) ?>"></textarea></label>
+        <label class="vn-club"><?= te('Naujų žmonių klubas') ?> <input class="sel" type="text" name="names_club" maxlength="80" value="<?= e(VARZ_HOME_CLUB) ?>"></label>
+        <div class="vn-quick">
+          <span class="small"><b><?= te('Iškart sudaryti po vieną grupę visiems:') ?></b></span>
+          <label class="small"><input type="checkbox" name="quick[]" value="kata"> Kata</label>
+          <label class="small"><input type="checkbox" name="quick[]" value="kumite"> Kumite</label>
+          <span class="small muted"><?= te('mažoms varžyboms (pvz. per treniruotę) - grupę vėliau galima keisti') ?></span>
+        </div>
+      </fieldset>
       <?php if (!$demo): ?><label class="small"><input type="checkbox" name="event" value="1" checked> <?= te('Rodyti nariams Renginiuose (sukurti renginį)') ?></label><?php endif; ?>
-      <button class="btn btn-primary" type="submit"><?= te('Sukurti ir pridėti dalyvius →') ?></button>
+      <button class="btn btn-primary" type="submit"><?= te('Sukurti varžybas →') ?></button>
     </form>
   </details>
   <?php endif; ?>
@@ -243,6 +293,25 @@ varz_html_head(t('Varžybos'), 'vz-home');
     </details>
   <?php endif; ?>
 </main>
+<script>
+// Naujos varžybos: narių paieška, visa grupė vienu paspaudimu, pažymėtų skaičius
+(function () {
+  var box = document.querySelector('.vn-pick'); if (!box) return;
+  var items = [].slice.call(box.querySelectorAll('.vn-item')), cnt = box.querySelector('.vn-count b');
+  function count() { cnt.textContent = items.filter(function (i) { return i.querySelector('input').checked; }).length; }
+  box.querySelector('.vn-search').addEventListener('input', function () {
+    var q = this.value.trim().toLowerCase();
+    items.forEach(function (i) { i.hidden = q && i.textContent.toLowerCase().indexOf(q) === -1; });
+  });
+  box.addEventListener('change', count);
+  box.addEventListener('click', function (e) {
+    var g = e.target.closest('[data-vn-group]'); if (!g) return;
+    var mine = items.filter(function (i) { return i.dataset.g === g.dataset.vnGroup; }), on = !mine.every(function (i) { return i.querySelector('input').checked; });
+    mine.forEach(function (i) { i.querySelector('input').checked = on; });
+    g.setAttribute('aria-pressed', on ? 'true' : 'false'); count();
+  });
+})();
+</script>
 <?= varz_partners_html() ?>
 <?= feedback_widget_html() ?><script src="<?= e(asset_url('assets/site.js')) ?>" defer></script>
 </body>

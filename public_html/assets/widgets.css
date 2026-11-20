@@ -316,3 +316,13 @@ span.chat-ctx{text-decoration:none;}
 .fb-ro-body{margin-top:6px; padding-top:6px; border-top:1px dashed var(--f-line); white-space:normal; line-height:1.45;}
 .fb-ro-imgs{display:flex; flex-wrap:wrap; gap:6px; margin-top:6px;}
 .fb-ro-imgs img{width:64px; height:64px; object-fit:cover; border-radius:8px; border:1px solid var(--f-line);}
+
+/* B4: plaukiojantys mygtukai neuždengia turinio telefone ir planšetėje
+   - kai atidarytas „⋯ Daugiau“ - jų nėra;
+   - kai rašoma į laukelį (atsidaro klaviatūra) - paslepiami (atidarytas atsiliepimas ar pokalbis lieka);
+   - 🔔 pranešimai - virš pokalbio mygtuko, ne ant jo. */
+body.m-more-open .fb, body.m-more-open .chat-fab, body.m-more-open .ntf-pop{display:none;}
+@media (max-width:1099px){
+  body:has(:is(input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=range]), textarea, select):focus) :is(.fb:not(.open), .chat:not(.open) .chat-fab, .ntf-pop){display:none;}
+  body:has(.m-tabbar) .ntf-pop{bottom:150px;}
+}

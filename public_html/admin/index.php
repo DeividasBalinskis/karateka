@@ -19,7 +19,14 @@ function trainings_on(int $weekday, string $date): array
                      FROM schedule s JOIN training_groups g ON g.id = s.group_id
                     WHERE g.is_active = 1 AND s.weekday = ?
                     ORDER BY s.start_time, g.sort_order', [$date, $weekday]);
-    return $rows;
+    // #87: skaičiuojamos grupės (kaip „Treniruotė“ puslapyje), ne tvarkaraščio eilutės; eilutės be laiko nesiskaičiuoja
+    $out = [];
+    foreach ($rows as $r) {
+        if ($r['start_time'] !== null && !isset($out[(int) $r['group_id']])) {
+            $out[(int) $r['group_id']] = $r;
+        }
+    }
+    return array_values($out);
 }
 
 $trainings = trainings_on($weekday, $today);
@@ -52,7 +59,7 @@ $todoCount = count($notifs) + count($todo);
 <div class="page-head row between" style="align-items:flex-end; flex-wrap:wrap; gap:12px;">
   <div>
     <div class="eyebrow"><?= e(weekday_names()[$weekday]) ?>, <?= e(fmt_date($today)) ?></div>
-    <h1 class="styled"><?= te('Labas,') ?> <?= e($me['first_name']) ?></h1>
+    <h1 class="styled"><?= te('Labas,') ?> <?= e($me['first_name']) ?><?= tester_badge($me) ?></h1>
   </div>
   <!-- Greiti veiksmai - vienintelė vieta, kur kartojasi kitų skilčių mygtukai (patogumui) -->
   <div class="dash-actions">

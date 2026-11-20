@@ -190,7 +190,7 @@ $base = $v40 && $p['score_base'] !== null ? (float) $p['score_base'] : 5.0;
 $prices = exam_prices();
 $priceByKyu = [];
 foreach ($prices as $lvl => $pr) {
-    $priceByKyu[mb_strtolower(BELTS[$lvl][0])] = money_fmt($pr);
+    $priceByKyu[mb_strtolower(exam_grades()[$lvl][0])] = money_fmt($pr);
 }
 $passed = count(array_filter($rows, function ($r) { return $r['result'] === 'passed'; }));
 $failed = count(array_filter($rows, function ($r) { return $r['result'] === 'failed'; }));
@@ -227,7 +227,7 @@ page_start(t('Egzamino protokolas') . ': ' . $event['title'], ['admin' => true, 
     <span class="spacer"></span>
     <span class="small muted" id="protSaved" aria-live="polite"></span>
     <button class="btn btn-ghost btn-sm" type="button" onclick="window.print()"><?= te('🖨 Spausdinti') ?></button>
-    <a class="btn btn-ghost btn-sm" href="?id=<?= $id ?>&amp;xlsx=1"><?= te('⬇ Excel') ?></a>
+    <a class="btn btn-ghost btn-sm" href="?id=<?= $id ?>&amp;xlsx=1"><?= icon('download') ?> <span>Excel</span></a>
     <a class="btn btn-ghost btn-sm" href="#daugiau" data-open-more><?= te('⚙ Daugiau') ?></a>
   </div>
   <p class="no-print small muted prot-hint"><?= te('Balai: − / + keičia po 0,1 (ar rodyklės ↑ ↓), galima ir įrašyti. Tuščias langelis prasideda nuo {b}. Viskas išsaugoma iš karto.', ['b' => $fmtBase]) ?></p>
@@ -265,7 +265,8 @@ page_start(t('Egzamino protokolas') . ': ' . $event['title'], ['admin' => true, 
         <td class="col-p" data-p="club"><?= e((string) ($r['club'] ?? '')) ?></td>
         <td data-l="Kyu"><input class="pi pi-s pi-kyu" data-f="kyu" value="<?= e((string) $r['kyu']) ?>" list="kyuList" aria-label="Kyu"></td>
         <?php foreach ($cols as [$f, $l]): ?>
-          <td data-l="<?= e($l) ?>" class="<?= $f === 'test' ? 'sc-test' : 'sc' ?>"><?php if ($f === 'test'): ?>
+          <?php $cv = str_replace(',', '.', exam_cell($r, $f)); $low = $f !== 'test' && is_numeric($cv) && (float) $cv <= EXAM_LOW_SCORE; ?>
+          <td data-l="<?= e($l) ?>" class="<?= $f === 'test' ? 'sc-test' : 'sc' . ($low ? ' low' : '') ?>"><?php if ($f === 'test'): ?>
             <input class="pi pi-s" data-f="test" value="<?= e(exam_cell($r, $f)) ?>" aria-label="<?= e($l) ?>">
           <?php else: ?><div class="sc-box"><button type="button" class="sc-b no-print" data-d="-1" tabindex="-1" aria-label="<?= e($l) ?> −0,1">−</button><input class="pi pi-score" data-f="<?= e($f) ?>" value="<?= e(exam_cell($r, $f)) ?>" inputmode="decimal" aria-label="<?= e($l) ?>"><button type="button" class="sc-b no-print" data-d="1" tabindex="-1" aria-label="<?= e($l) ?> +0,1">+</button></div><?php endif; ?></td>
         <?php endforeach; ?>
@@ -290,7 +291,7 @@ page_start(t('Egzamino protokolas') . ': ' . $event['title'], ['admin' => true, 
     </tbody>
   </table>
   </div>
-  <datalist id="kyuList"><?php foreach (BELTS as $l => $b): if ($l < 2 || $l > 10) { continue; } ?><option value="<?= e($b[0]) ?>"><?php endforeach; ?></datalist>
+  <datalist id="kyuList"><?php foreach (exam_grades() as $l => $b): ?><option value="<?= e($b[0]) ?>"><?php endforeach; ?></datalist>
 
   <div class="prot-sign">
     <div><?= te('Egzaminatorius') ?>: <b><?= e((string) $p['examiner_name'] ?: '______________________') ?></b> <span class="muted">(<?= te('vardas, pavardė') ?>)</span></div>
@@ -430,6 +431,8 @@ page_start(t('Egzamino protokolas') . ': ' . $event['title'], ['admin' => true, 
   }
   var t = document.getElementById('protTable'), base = parseFloat(t.dataset.base) || 5;
   function num(v) { v = String(v).replace(',', '.').trim(); return v !== '' && !isNaN(v) ? parseFloat(v) : null; }
+  // #133: balas 6,3 ar mažesnis - langelis raudonas (neišlaikius - raudona visa eilutė)
+  function markLow(inp) { var v = num(inp.value), td = inp.closest('td'); if (td) td.classList.toggle('low', v !== null && v <= <?= json_encode(EXAM_LOW_SCORE) ?>); }
   function fmt(n) { return (Math.round(n * 100) / 100).toString(); }
   // Pavardės eilutė apačioje: gimimo data · telefonas · klubas (+ spausdinimui - atskiri stulpeliai)
   function sub(tr) {
@@ -440,7 +443,7 @@ page_start(t('Egzamino protokolas') . ': ' . $event['title'], ['admin' => true, 
   }
   t.addEventListener('change', function (e) {
     var f = e.target.dataset.f, tr = e.target.closest('tr[data-row]'); if (!f || !tr) return;
-    if (e.target.classList.contains('pi-score')) { var v = num(e.target.value); if (v !== null) e.target.value = fmt(v); }
+    if (e.target.classList.contains('pi-score')) { var v = num(e.target.value); if (v !== null) e.target.value = fmt(v); markLow(e.target); }
     if (e.target.closest('.prot-subedit')) sub(tr);
     if (f === 'kyu') { var ps = tr.querySelector('.pay-sum'); if (ps) ps.textContent = prices[e.target.value.trim().toLowerCase()] || '€'; }
     send(tr.dataset.row, f, e.target.value.replace(',', '.'));
@@ -450,7 +453,7 @@ page_start(t('Egzamino protokolas') . ': ' . $event['title'], ['admin' => true, 
   function bump(inp, d) {
     var v = num(inp.value), tr = inp.closest('tr[data-row]');
     v = v === null ? base : Math.min(10, Math.max(0, Math.round((v + d * 0.1) * 10) / 10));
-    inp.value = fmt(v);
+    inp.value = fmt(v); markLow(inp);
     inp.classList.remove('bump'); void inp.offsetWidth; inp.classList.add('bump');
     var key = tr.dataset.row + inp.dataset.f;
     clearTimeout(timers[key]);
@@ -482,7 +485,7 @@ page_start(t('Egzamino protokolas') . ': ' . $event['title'], ['admin' => true, 
   });
   // Balai be kablelio: įvedus du skaitmenis - taškas pats (71 → 7.1); 10 lieka 10
   t.addEventListener('input', function (e) {
-    if (e.target.classList.contains('pi-score')) { var m = String(e.target.value).match(/^(\d)(\d)$/); if (m && e.target.value !== '10') e.target.value = m[1] + '.' + m[2]; }
+    if (e.target.classList.contains('pi-score')) { var m = String(e.target.value).match(/^(\d)(\d)$/); if (m && e.target.value !== '10') e.target.value = m[1] + '.' + m[2]; markLow(e.target); }
     if (e.target.tagName === 'TEXTAREA') { e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px'; }
   });
   t.querySelectorAll('textarea.pi').forEach(function (x) { if (x.value) { x.style.height = x.scrollHeight + 'px'; } });

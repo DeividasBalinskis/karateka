@@ -126,8 +126,8 @@ if ($edit !== '') {
         <label><?= te('Pavadinimas') ?> <input type="text" name="title" value="<?= e($n['title']) ?>" maxlength="190" required></label>
         <label><?= te('Tekstas') ?> <span class="hint"><?= te('tuščia eilutė - nauja pastraipa; nuorodos tampa paspaudžiamos') ?></span>
           <textarea name="body" rows="10" required><?= e($n['body']) ?></textarea></label>
-        <label><?= te('Nuotraukos') ?> <span class="hint"><?= te('galima pasirinkti kelias; sumažinamos automatiškai') ?></span>
-          <input type="file" name="images[]" accept="image/jpeg,image/png,image/webp" multiple></label>
+        <div class="qf-field"><span class="qf-label"><?= te('Nuotraukos') ?> <span class="hint"><?= te('galima pasirinkti kelias; sumažinamos automatiškai') ?></span></span>
+          <?= file_drop('images[]', 'image/jpeg,image/png,image/webp', t('Pasirinkite nuotraukas'), t('galima kelias - arba nutempkite čia'), true) ?></div>
         <?= no_photo_consent_html() ?>
         <label><?= te('YouTube nuorodos') ?> <span class="hint"><?= te('po vieną eilutėje') ?></span>
           <textarea name="youtube" rows="2" placeholder="https://www.youtube.com/watch?v=..." style="min-height:70px;"><?= e(post('youtube')) ?></textarea></label>

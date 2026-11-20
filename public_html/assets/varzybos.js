@@ -473,6 +473,8 @@
     history.replaceState({ vz: 1, tab: null, run: null }, '');
     window.addEventListener('popstate', function (e) {
       var st = e.state || {};
+      // #62: naršyklės „Atgal“ su atidarytu kovos skydeliu - pirmiausia uždaro skydelį (balai išsaugomi), grupė lieka atidaryta
+      if (B) { boutHist = false; keepBout(); closeBout(); return; }
       if (!st.vz) return;
       if (st.run && cat(st.run)) { S.selected = st.run; setRun(true); showTab('live', true); return; }
       setRun(false);
@@ -535,7 +537,7 @@
     }).join('') || '<span class="muted small">Tempkite dalyvius čia</span>') + '</div>' : '';
     return '<div class="ovb' + (n < 2 ? ' few' : '') + (unfit ? ' unfit' : '') + (c.team ? ' team' : '') + (catStarted(c) ? ' started' : '') + '" data-ovb="' + c.id + '" data-drop-cat="' + c.id + '">' +
       '<div class="ovb-row"><span class="ovb-grip" draggable="true" title="Tempkite - perkelti">⋮⋮</span>' +
-      '<span class="ovb-years" title="Gimimo metai: jauniausi - vyriausi"><input class="ov-in" type="number" data-ov="y1" data-c="' + c.id + '" value="' + (k.y1 || '') + '" placeholder="+" title="' + (k.y1 ? 'Jauniausi gimę' : 'Be ribos (ir jaunesni) - paspauskite ir įrašykite metus') + '" aria-label="Gimę iki (jauniausi)">–<input class="ov-in" type="number" data-ov="y0" data-c="' + c.id + '" value="' + (k.y0 || '') + '" placeholder="+" title="' + (k.y0 ? 'Vyriausi gimę' : 'Be ribos (ir vyresni) - paspauskite ir įrašykite metus') + '" aria-label="Gimę nuo (vyriausi)"></span>' +
+      '<span class="ovb-years" title="Gimimo metai: jauniausi - vyriausi"><input class="ov-in" type="number" data-ov="y1" data-c="' + c.id + '" value="' + (k.y1 || '') + '" placeholder="−" title="' + (k.y1 ? 'Jauniausi gimę' : 'Be ribos (ir jaunesni) - paspauskite ir įrašykite metus') + '" aria-label="Gimę iki (jauniausi)">–<input class="ov-in" type="number" data-ov="y0" data-c="' + c.id + '" value="' + (k.y0 || '') + '" placeholder="+" title="' + (k.y0 ? 'Vyriausi gimę' : 'Be ribos (ir vyresni) - paspauskite ir įrašykite metus') + '" aria-label="Gimę nuo (vyriausi)"></span>' +
       '<select class="ov-sel" data-ov="g" data-c="' + c.id + '" aria-label="Lytis"><option value="M"' + (g === 'M' ? ' selected' : '') + '>M</option><option value="F"' + (g === 'F' ? ' selected' : '') + '>F</option><option value="X"' + (g === 'X' ? ' selected' : '') + '>Mix</option></select>' +
       '<span class="ovb-kyu" title="Kyu nuo - iki"><select class="ov-sel" data-ov="b0" data-c="' + c.id + '" aria-label="Diržas nuo">' + kyuOpts(k.b0) + '</select>–<select class="ov-sel" data-ov="b1" data-c="' + c.id + '" aria-label="Diržas iki">' + kyuOpts(k.b1) + '</select></span>' +
       '<button type="button" class="ovb-n" data-ov-open="' + c.id + '" aria-expanded="' + !!ovOpen[c.id] + '" title="' + (n < 2 ? 'Per mažai dalyvių' : 'Rodyti dalyvius') + (unfit ? ' · netinka: ' + unfit : '') + '">' + n + (unfit ? '<b>!</b>' : '') + '</button>' +
@@ -1002,7 +1004,7 @@
     var catOpts = S.categories.map(function (c) { return '<option value="' + c.id + '">' + esc(c.name) + '</option>'; }).join('');
     var clubOpts = function (cur) { return S.clubs.map(function (k) { return '<option' + (k === cur ? ' selected' : '') + '>' + esc(k) + '</option>'; }).join(''); };
     var noneCount = Object.keys(S.people).filter(function (id) { return !catsOf(id).length; }).length;
-    document.getElementById('people-view').innerHTML =
+    document.getElementById('people-view').innerHTML = findStrip(q) +
       '<h2>Dalyviai (' + list.length + ')' + (noneCount ? ' <span class="pill warn">' + noneCount + ' be kategorijos</span>' : '') + '</h2>' +
       '<div class="table-scroll"><table class="ppl-table"><thead><tr><th>Vardas, pavardė</th><th>Klubas</th><th class="num">Gim. metai</th><th>Lytis</th><th>Diržas</th><th>Kategorijos</th><th class="num">Įrašai</th><th></th></tr></thead><tbody>' +
       list.map(function (x) {
@@ -1015,14 +1017,59 @@
           '<td class="cats-cell" data-label="Kategorijos">' + x.cats.map(function (c) { return '<span class="cchip"><span class="disc d-' + c.discipline + '"></span>' + esc(c.name) + '<button type="button" data-p-rm="' + p.id + '" data-c="' + c.id + '" aria-label="Išimti iš ' + esc(c.name) + '">×</button></span>'; }).join('') +
           '<select class="sel add-cat" data-p-add="' + p.id + '" aria-label="Pridėti į kategoriją"><option value="">+ kategorija…</option>' + catOpts + '</select></td>' +
           '<td class="num cnt-cell">' + x.cats.length + '</td><td class="del-cell"><button class="btn btn-danger btn-xs" type="button" data-p-del="' + p.id + '" aria-label="Ištrinti ' + esc(p.name) + '">×</button></td></tr>';
-      }).join('') + '</tbody></table></div>' + (list.length ? '' : '<p class="muted" style="padding:12px 14px;">Pagal filtrą dalyvių nėra.</p>');
+      }).join('') + '</tbody></table></div>' + (list.length ? '' : '<p class="muted" style="padding:12px 14px;">' + (q || pplClub || noCat ? 'Pagal filtrą dalyvių nėra.' : 'Dalyvių dar nėra - įrašykite vardą paieškoje ar „Naujas“ laukelyje arba spauskite „+ Karateka nariai“.') + '</p>');
   }
+  // Paieška ir kartu pridėjimas: randami dar nepridėti klubo nariai (vienu paspaudimu) arba pridedamas naujas žmogus tokiu vardu
+  function findStrip(q) {
+    if (!q || CFG.readOnly) return '';
+    var mem = (CFG.members || []).filter(function (m) { return !S.people['m' + m.id] && m.name.toLowerCase().indexOf(q) !== -1; }).slice(0, 12);
+    var raw = document.getElementById('ppl-search').value.trim(), exists = Object.keys(S.people).some(function (id) { return S.people[id].name.toLowerCase() === q; });
+    return '<div class="find-strip">' + (mem.length ? '<span class="small muted">Klubo nariai:</span>' + mem.map(function (m) {
+      return '<button type="button" class="btn btn-sm" data-find-member="' + m.id + '">+ ' + esc(m.name) + (m.birth ? ' <span class="muted">' + m.birth + '</span>' : '') + '</button>'; }).join('') : '') +
+      (!exists && raw.length > 2 ? '<button type="button" class="btn btn-sm btn-ghost" data-find-new="1">+ Pridėti naują: <b>' + esc(raw) + '</b></button>' : '') + '</div>';
+  }
+  function addMemberPeople(ids) {
+    if (S.clubs.indexOf(HOME) === -1) S.clubs.unshift(HOME);
+    (CFG.members || []).forEach(function (m) {
+      if (ids.indexOf(m.id) === -1 || S.people['m' + m.id]) return;
+      S.people['m' + m.id] = { id: 'm' + m.id, name: m.name, club: HOME, birth: m.birth, gender: m.gender, belt: m.belt, member: m.id, noPhoto: m.photo === 0 };
+    });
+  }
+  function addNewPeople(names, club) {
+    var added = [];
+    names.forEach(function (n) {
+      n = n.replace(/\s+/g, ' ').trim(); if (!n) return;
+      if (Object.keys(S.people).some(function (id) { return S.people[id].name.toLowerCase() === n.toLowerCase(); })) return;
+      var id = newId('c'); S.people[id] = { id: id, name: n, club: club || HOME, birth: null, gender: null, belt: null, member: null }; added.push(id);
+    });
+    if (club && S.clubs.indexOf(club) === -1) S.clubs.push(club);
+    return added;
+  }
+  document.getElementById('people-view').addEventListener('click', function (e) {
+    var fm = e.target.closest('[data-find-member]'), fn = e.target.closest('[data-find-new]');
+    if (!fm && !fn) return;
+    snapshot();
+    if (fm) { addMemberPeople([+fm.dataset.findMember]); toastPlaced(['m' + fm.dataset.findMember]); }
+    else { addNewPeople([document.getElementById('ppl-search').value], document.getElementById('ppl-new-club').value || HOME); }
+    var s = document.getElementById('ppl-search'); s.value = ''; save(); render(); s.focus();
+  });
   ['ppl-search', 'ppl-nocat'].forEach(function (id) { document.getElementById(id).addEventListener('input', function () { renderPeople(); }); });
   document.getElementById('ppl-club').addEventListener('change', function (e) { pplClub = e.target.value; renderPeople(); });
   document.getElementById('ppl-add').addEventListener('click', function () {
     var inp = document.getElementById('ppl-new-name'), n = inp.value.trim(); if (!n) { inp.focus(); return; }
-    snapshot(); var id = newId('c'); S.people[id] = { id: id, name: n, club: document.getElementById('ppl-new-club').value, birth: null, gender: null, belt: null, member: null };
-    inp.value = ''; save(); render();
+    snapshot(); addNewPeople(n.split(/\n|;/), document.getElementById('ppl-new-club').value);
+    inp.value = ''; save(); render(); inp.focus();
+  });
+  // Enter - pridėti iškart; įklijavus kelias eilutes - pridedami visi
+  document.getElementById('ppl-new-name').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); document.getElementById('ppl-add').click(); } });
+  document.getElementById('ppl-new-name').addEventListener('paste', function (e) {
+    var tx = (e.clipboardData || window.clipboardData).getData('text'); if (!/\n/.test(tx)) return;
+    e.preventDefault(); snapshot(); var n = addNewPeople(tx.split(/\n/), document.getElementById('ppl-new-club').value).length;
+    save(); render(); if (n) setStatus('Pridėta dalyvių: ' + n, 'ok');
+  });
+  document.getElementById('ppl-search').addEventListener('keydown', function (e) {
+    if (e.key !== 'Enter') return; e.preventDefault();
+    var b = document.querySelector('#people-view [data-find-member], #people-view [data-find-new]'); if (b) b.click();
   });
   document.getElementById('people-view').addEventListener('change', function (e) {
     var t = e.target;
@@ -1692,7 +1739,9 @@
     liveMatch = { cat: c.id, mid: mid };
     boutEl.hidden = false; document.body.classList.add('bout-open-body');
     renderBout(); pushLive(); render();
+    if (!POPUP) { try { history.pushState({ vz: 1, tab: 'live', run: S.selected, bout: mid }, ''); boutHist = true; } catch (e) {} }
   }
+  var boutHist = false;
   function keepBout() {
     // Nebaigtos kovos balai išsaugomi (perkrovus puslapį - tęsiama)
     var c = cat(B.cat); c.draw.bouts = c.draw.bouts || {};
@@ -1705,6 +1754,8 @@
     var area = areaOf(cat(B.cat));
     B = null; liveMatch = null; boutEl.hidden = true; document.body.classList.remove('bout-open-body');
     pushLive(area); render();
+    if (boutHist && history.state && history.state.bout) { boutHist = false; history.back(); }
+    boutHist = false;
   }
   // Enbu (t.up): laikas skaičiuojamas nuo 0 į priekį; „remaining“ tada - jau praėjęs laikas
   function timeLeft() { var t = B.timer; if (t.up) return Math.min(30 * 60000, t.running ? t.remaining + (Date.now() - t.at) : t.remaining); return Math.max(0, t.running ? t.remaining - (Date.now() - t.at) : t.remaining); }
@@ -1714,14 +1765,17 @@
   function toggleTimer() {
     var t = B.timer;
     if (t.running) { t.remaining = timeLeft(); t.running = false; clearInterval(tickTimer); }
-    else { if (!t.up && timeLeft() <= 0) return; audio(); t.at = Date.now(); t.running = true; beeped = false; tickTimer = setInterval(tick, 200); }
+    else { if (!t.up && timeLeft() <= 0) return; audio(); t.at = Date.now(); t.running = true; beeped = false; warned30 = timeLeft() <= 30000; tickTimer = setInterval(tick, 200); }
     t.at = Date.now(); renderTimer(); pushLive();
   }
   function setTime(ms) { var t = B.timer; t.remaining = Math.max(0, Math.min(ms, 30 * 60000)); t.at = Date.now(); if (t.running) { clearInterval(tickTimer); tickTimer = setInterval(tick, 200); } renderTimer(); pushLive(); }
   function tick() {
     if (!B) { clearInterval(tickTimer); return; }
+    if (B.timer.running && !B.timer.up && isJiyu() && !warned30 && timeLeft() <= 30000 && timeLeft() > 0) { warned30 = true; beep(); }
     if (!B.timer.up && timeLeft() <= 0 && B.timer.running) {
-      B.timer.remaining = 0; B.timer.running = false; clearInterval(tickTimer); if (!beeped) { beep(); beeped = true; } pushLive();
+      B.timer.remaining = 0; B.timer.running = false; clearInterval(tickTimer);
+      if (!beeped) { beep(); beeped = true; if (isJiyu()) setTimeout(function () { beep(); }, 380); }   // #152: dvigubas gongas - antras iškart po pirmo
+      pushLive();
       // Laikas baigėsi pats - po 3 s laikmatis atsistato iš naujo (kitai kovai / pratęsimui), jei niekas jo nepalietė
       var bt = B;
       setTimeout(function () { if (B === bt && !B.timer.running && !B.timer.up && timeLeft() <= 0) setTime(B.timer.total); }, 3000);
@@ -1734,7 +1788,12 @@
     try { if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)(); if (actx.state === 'suspended') actx.resume(); } catch (e) { actx = null; }
     return actx;
   }
-  function beep() {
+  // #151: gongo garsai - pasirenkama kovos skydelyje (šiam įrenginiui)
+  var GONGS = { deep: 'Gilus gongas', bright: 'Šviesus gongas', bell: 'Varpas' };
+  function gongKind() { try { var k = localStorage.getItem('budo-gong'); return GONGS[k] ? k : 'deep'; } catch (e) { return 'deep'; } }
+  function beep(kind) {
+    kind = kind || gongKind();
+    if (kind !== 'deep') { gongTone(kind); return; }
     var a = audio(); if (!a) return;
     try {
       var t = a.currentTime + 0.02, comp = a.createDynamicsCompressor(), out = a.createGain();
@@ -1751,6 +1810,25 @@
       var ng = a.createGain(); ng.gain.value = 0.5; n.buffer = buf; n.connect(ng); ng.connect(comp); n.start(t);
     } catch (e) {}
   }
+  // Šviesus gongas ir varpas: kiti dažniai ir nuslopimas (be failų - sugeneruojama naršyklėje)
+  function gongTone(kind) {
+    var a = audio(); if (!a) return;
+    try {
+      var t = a.currentTime + 0.02, comp = a.createDynamicsCompressor(), out = a.createGain();
+      comp.threshold.value = -20; comp.ratio.value = 6; out.gain.value = 1.5; comp.connect(out); out.connect(a.destination);
+      var parts = kind === 'bell' ? [[523, 1, 2.6], [1046, .5, 2.0], [1318, .35, 1.6], [1568, .25, 1.3], [2093, .18, 1.0], [2637, .1, .8]]
+        : [[196, 1, 3.4], [294, .7, 3.0], [392, .6, 2.6], [587, .45, 2.2], [784, .3, 1.8], [1175, .18, 1.2]];
+      parts.forEach(function (pt, i) {
+        var o = a.createOscillator(), g = a.createGain();
+        o.type = 'sine'; o.frequency.setValueAtTime(pt[0] * (kind === 'bell' ? 1 : 1.01), t); o.frequency.exponentialRampToValueAtTime(pt[0], t + 0.3);
+        g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(pt[1], t + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + pt[2]);
+        o.connect(g); g.connect(comp); o.start(t); o.stop(t + pt[2] + 0.05);
+      });
+    } catch (e) {}
+  }
+  // „Jiyu / Pratęsimas“: likus 30 s - vienas gongas, laikui baigiantis - du (#151)
+  function isJiyu() { return B && B.timer && /Jiyu \/ Pratęsimas/.test(B.timer.preset || ''); }
+  var warned30 = false;
   function renderTimer() {
     var el = document.getElementById('bt-timer'); if (!el || !B || el.tagName === 'INPUT') return;
     var left = timeLeft();
@@ -1789,6 +1867,15 @@
   // Kumite laiko šablonai: Jiyu ippon ir Ko-Go - 10 s (pradinis), Jiyu / Pratęsimas - 1:30, Enbu - paprastas laikmatis nuo 0 (skaičiuoja į priekį)
   var TIME_PRESETS = [['Jiyu ippon', 10], ['Ko-Go', 10], ['Jiyu / Pratęsimas', 90], ['Enbu', 0, 1]];
   function timePresets() { return TIME_PRESETS; }
+  var TOUCH = window.matchMedia && matchMedia('(pointer: coarse)').matches;
+  // #126: kovos skydelyje matosi, kas ruošiasi (kita pora šioje grupėje arba kita grupė)
+  function boutNextHtml(c) {
+    var nx = upcoming(c).filter(function (x) { return x.id !== B.mid; })[0];
+    var nm = function (id) { return esc((person(c, id) || {}).name || ''); };
+    if (nx && nx.a && nx.b) return '<div class="sv-prep bt-next"><b>Ruošiasi:</b> <span class="sv-dot a"></span>' + nm(nx.a) + ' <span class="muted">vs</span> <span class="sv-dot b"></span>' + nm(nx.b) + '</div>';
+    var later = prepLater(c, { id: B.mid });
+    return later ? later.replace('class="sv-prep"', 'class="sv-prep bt-next"') : '';
+  }
   function renderBout() {
     if (!B) return;
     var c = cat(B.cat), area = areaOf(c), body, mode = B.mode, f = cfg(c);
@@ -1805,8 +1892,10 @@
           var on = B.timer.preset === x[0];
           return '<button type="button" class="btn btn-sm' + (on ? ' on' : '') + '" data-preset="' + x[1] + '" data-preset-name="' + esc(x[0]) + '"' + (x[2] ? ' data-up="1" title="Paprastas laikmatis nuo 0"' : '') + '>' + esc(x[0]) + ' <b>' + fmtTime(x[1] * 1000) + (x[2] ? ' ↑' : '') + '</b></button>';
         }).join('') + '</div>' : '') +
+        '<label class="bt-gong small">🔔 <select id="bt-gong" aria-label="Gongo garsas">' + Object.keys(GONGS).map(function (k) { return '<option value="' + k + '"' + (k === gongKind() ? ' selected' : '') + '>' + GONGS[k] + '</option>'; }).join('') + '</select>' +
+        (isJiyu() ? ' <span class="muted">likus 30 s - 1 gongas, pabaigoje - 2</span>' : '') + '</label>' +
         (mode === 'team' && B.log.length ? '<ol class="bt-log">' + B.log.map(function (l, j) { return '<li>' + (j + 1) + ' kova: ' + esc(l.an) + ' <b>' + l.a + ':' + l.b + '</b> ' + esc(l.bn) + '</li>'; }).join('') + '</ol>' : '') +
-        '<p class="muted small">Tarpas - laikrodis</p></div>';
+        (TOUCH ? '' : '<p class="muted small">Tarpas - laikrodis</p>') + '</div>';
       body = '<div class="bt-sides">' + sideHtml('a') + mid + sideHtml('b') + '</div>';
     }
     var tie = mode === 'score2' ? (function () { var a = judgeTotal(c, B.parts.a.k), b = judgeTotal(c, B.parts.a.p), x = judgeTotal(c, B.parts.b.k), y = judgeTotal(c, B.parts.b.p); return a !== null && b !== null && x !== null && y !== null && a + b === x + y; })() : B.sa === B.sb;
@@ -1817,7 +1906,7 @@
     // Telefone: perpiešus (pvz. +1 taškas) lieka toje pačioje slinkimo vietoje
     var oldCard = boutEl.querySelector('.bout-card'), keepY = oldCard ? oldCard.scrollTop : 0, keepX = oldCard ? oldCard.scrollLeft : 0, keepWin = window.scrollY;
     var oldTs = oldCard && oldCard.querySelector('.table-scroll'), keepTs = oldTs ? oldTs.scrollLeft : 0;
-    boutEl.innerHTML = '<div class="bout-card">' + head + '<div class="bout-body">' + body + '</div>' + foot + '</div>';
+    boutEl.innerHTML = '<div class="bout-card">' + head + boutNextHtml(c) + '<div class="bout-body">' + body + '</div>' + foot + '</div>';
     renderTimer();
     var nc = boutEl.querySelector('.bout-card');
     if (keepY) nc.scrollTop = keepY;
@@ -2977,11 +3066,7 @@
       var ids = [].slice.call(this.querySelectorAll('.mp-list input:checked:not(:disabled)')).map(function (i) { return +i.value; });
       if (!ids.length) return;
       snapshot();
-      if (S.clubs.indexOf(HOME) === -1) S.clubs.unshift(HOME);
-      (CFG.members || []).forEach(function (m) {
-        if (ids.indexOf(m.id) === -1 || S.people['m' + m.id]) return;
-        S.people['m' + m.id] = { id: 'm' + m.id, name: m.name, club: HOME, birth: m.birth, gender: m.gender, belt: m.belt, member: m.id, noPhoto: m.photo === 0 };
-      });
+      addMemberPeople(ids);
       toastPlaced(ids.map(function (x) { return 'm' + x; }));
       save(); render(); renderMembersPick();
     }
@@ -3222,10 +3307,29 @@
   load();
   // Naujos test varžybos: kategorijos sudaromos ir dalis kovų „sužaidžiama“ pirmą kartą atidarius
   if (S.autoCats) { delete S.autoCats; autoCategories(); save(); }
+  // Greitos varžybos: kuriant pažymėta „po vieną grupę visiems“ - grupė kiekvienai rungčiai su visais dalyviais
+  if (Array.isArray(S.quickCats)) {
+    var qc = S.quickCats; delete S.quickCats;
+    qc.forEach(function (d) { if (!DISC[d]) return; var c = newCatIn(d, null); Object.keys(S.people).forEach(function (id) { addToCat(id, c.id); }); c.name = critName(c); });
+    save(); render();
+  }
   if (S.simulate) { var fr = +S.simulate; delete S.simulate; simulate(fr); save(); }
   var startTab = 'live';
   try { startTab = location.hash.replace('#', '') || sessionStorage.getItem(KEY + '-tab') || 'live'; } catch (e) {}
   if (startTab === 'lenteles') { setRun(true); startTab = 'live'; } else if (startTab === 'tvarkarastis') startTab = 'live';
   if (POPUP && cat(POPUP)) { S.selected = POPUP; runOpen = true; startTab = 'live'; document.title = cat(POPUP).name + ' · ' + document.title; }
   showTab(tabs.indexOf(startTab) >= 0 || startTab === 'admin' ? startTab : 'live', true);
+
+  // Iššokantys langai (pvz. „⚙ Tatamiai ir kovų trukmė“) visada telpa ekrane - anksčiau atsidarydavo už kairio krašto ir „+ Tatamis“ nebuvo pasiekiamas
+  document.addEventListener('toggle', function (e) {
+    var d = e.target; if (!d.matches || !d.matches('details.live-settings') || !d.open) return;
+    var box = d.querySelector('.toolbar'); if (!box) return;
+    box.style.transform = ''; box.style.right = '0px'; box.style.left = 'auto';
+    var r = box.getBoundingClientRect(), vw = document.documentElement.clientWidth, dx = 0;
+    if (r.left < 12) dx = 12 - r.left; else if (r.right > vw - 12) dx = vw - 12 - r.right;
+    if (dx) box.style.transform = 'translateX(' + Math.round(dx) + 'px)';
+  }, true);
+  document.addEventListener('change', function (e) {
+    if (e.target && e.target.id === 'bt-gong') { try { localStorage.setItem('budo-gong', e.target.value); } catch (x) {} beep(e.target.value); }
+  });
 })();

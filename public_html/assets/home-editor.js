@@ -153,3 +153,15 @@
   });
   window.addEventListener('beforeunload', function (ev) { if (dirty) { ev.preventDefault(); ev.returnValue = ''; } });
 })();
+
+// #138/#139: atėjus iš instruktoriaus lango (…?redaguoti=1#ins-…) - nuslenkama prie tos kortelės ir ji pažymima
+(function () {
+  function go() {
+    var h = location.hash; if (!/^#ins-[0-9a-f]{8}$/.test(h)) return;
+    var card = document.querySelector(h); if (!card) return;
+    card.scrollIntoView({ block: 'center' }); card.classList.add('ins-target');
+    var f = card.querySelector('[contenteditable], textarea, input'); if (f) { try { f.focus({ preventScroll: true }); } catch (e) {} }
+    setTimeout(function () { card.classList.remove('ins-target'); }, 3500);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { setTimeout(go, 300); }); else setTimeout(go, 300);
+})();

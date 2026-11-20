@@ -196,12 +196,18 @@ html{scrollbar-gutter:stable;}
 .site-header .fold-btn{border:0; background:none; cursor:pointer; font:inherit; display:inline-flex; align-items:center; gap:4px; white-space:nowrap;}
 .site-header .fold-ic{opacity:.6; font-weight:700;}
 @media(min-width:1101px){
-  .site-header .nav-onpage.folded .fold-items{position:relative; width:0; padding:0; margin:0;}
-  .site-header .nav-onpage.folded .fold-list{display:none; position:absolute; right:4px; top:50%; transform:translateY(-50%); z-index:20; gap:2px; padding:4px; border-radius:12px; white-space:nowrap;
-    background:#EFEBE3; box-shadow:0 8px 22px rgba(23,20,15,.16);}
+  /* #131: sąrašas atsiveria žemyn po mygtuku (kaip logotipo meniu), nebeuždengia logotipo, kalbos ir temos mygtukų */
+  .site-header .nav-onpage.folded{position:relative;}
+  .site-header .nav-onpage.folded .fold-items{position:static; width:0; padding:0; margin:0;}
+  .site-header .nav-onpage.folded .fold-list{display:none; position:absolute; left:0; top:calc(100% + 8px); z-index:60; flex-direction:column; gap:2px; padding:6px; min-width:200px; border-radius:14px; white-space:nowrap;
+    background:#fff; box-shadow:0 12px 30px rgba(23,20,15,.16); border:1px solid rgba(23,20,15,.08);}
+  .site-header .nav-onpage.folded .fold-list a{display:block; padding:9px 12px; border-radius:10px;}
+  .site-header .nav-onpage.folded .fold-list a:hover{background:#F4F1EA;}
   .site-header .nav-onpage.folded.open .fold-list{display:flex;}
-  .site-header .nav-onpage.folded.open .fold-ic{transform:rotate(180deg); display:inline-block;}
-  body.theme-dark .site-header .nav-onpage.folded .fold-list{background:#24212E;}
+  .site-header .fold-ic{display:inline-block; transition:transform .15s;}
+  .site-header .nav-onpage.folded.open .fold-ic{transform:rotate(180deg);}
+  body.theme-dark .site-header .nav-onpage.folded .fold-list{background:#24212E; border-color:rgba(255,255,255,.08);}
+  body.theme-dark .site-header .nav-onpage.folded .fold-list a:hover{background:rgba(255,255,255,.08);}
 }
 @media(max-width:1100px){ .site-header .nav-onpage .fold-main{display:none;} .site-header .fold-items, .site-header .fold-list{display:contents;} }
 /* #97: be Admin slankiklio - „Žiūrėti kaip“ meniu ir aiškus grįžimas */
@@ -344,3 +350,15 @@ body.theme-dark .pm-site > summary{background:rgba(255,255,255,.1);}
 .site-header .fold-btn{padding:10px 12px; font-size:14px; font-weight:600; line-height:1; color:#2B2620; border-radius:10px;}
 .site-header .fold-btn:hover{background:rgba(255,255,255,.7);}
 body.theme-dark .site-header .fold-btn{color:#ECE8F4;}
+
+/* #144: „Mano paskyra“ ir „Atsijungti“ - Valdymo ▾ lango apačioje */
+.vs-account{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 12px 12px; border-top:1px solid rgba(23,20,15,.1);}
+.vs-acc-link{display:flex; flex-direction:column; font-weight:600; font-size:14px; color:#17140F !important; text-decoration:none;}
+.vs-acc-link small{font-weight:500; color:#8A8273;}
+.vs-logout{border:1px solid rgba(23,20,15,.18); background:#fff; border-radius:10px; padding:7px 12px; font:600 13px inherit; cursor:pointer;}
+.vs-logout:hover{background:#F4F1EA;}
+/* B4: „Žiūrėti kaip“ telefono „⋯ Daugiau“ lape - tas pats komponentas, kaip kompiuteryje, tik išskleistas */
+.m-vs .view-switch{display:block; position:static;}
+.m-vs .view-switch > summary{display:none;}
+.m-vs .vs-panel{position:static; display:block; width:auto; margin:0 0 6px; box-shadow:none; border:1px solid rgba(23,20,15,.08); transform:none;}
+.m-vs .vs-title, .m-vs .vs-account form{display:none;}   /* pavadinimas jau virš; „Atsijungti“ - lapo apačioje */

@@ -7,6 +7,8 @@
 const EXAM_ORG_DEFAULT = 'LIETUVOS TRADICINIO KARATE DO FEDERACIJA';
 const EXAM_ROW_FIELDS = ['name', 'birth_date', 'kyu', 'kihon', 'kata', 'kumite', 'test', 'seminars', 'notes', 'result', 'club'];
 const EXAM_BUILTIN_COLS = ['kihon', 'kata', 'kumite', 'test'];
+// #133 (Denis): balas 6,3 ar mažesnis - tas langelis raudonas; neišlaikius - raudona visa eilutė
+const EXAM_LOW_SCORE = 6.3;
 
 function exam_protocol_ready(): bool
 {

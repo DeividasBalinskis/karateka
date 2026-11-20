@@ -31,7 +31,7 @@ site and the Dojo game. One repo, one database.
    Never commit `config.php`.
 6. All screen text is Lithuanian with correct letters, through `t()` / `te()` with EN and RU.
    Write "karate" (never "karatė"), "karate-do", "Budo" (never "Taika"),
-   "Aktyvumo taškai" (XP only inside the game).
+   "XP = aktyvumo taškai" (one system: activity gives XP, each level gives a gift in the Dojo).
 7. Check the state yourself (git, files, tests). Do not ask Deividas to paste output.
 8. If something is impossible here, say so in one line and offer the nearest thing that works.
 9. When Deividas must do something himself: numbered steps, exact clicks or PowerShell lines.
@@ -55,7 +55,8 @@ site and the Dojo game. One repo, one database.
 - `docs/decisions.md` — what was agreed. Check it before any design or menu change.
 
 ## Feature flags
-- Game (Dojo): only accounts in the setting `game_access` (Nustatymai → „🏯 Žaidimas“). Testers never.
+- Game (Dojo): hidden from all menus until it is opened to members (setting `game_access` = `all`; no switch on screen since v1.50, #145).
+  Real admins open it from Valdymas → Testavimas → „Atidaryti Dojo →“. Testers never.
 - Feedback button: staff only by default (`feedback_button`).
 - Registration switches: `reg_off` (accounts, events, exams, Budo).
 - SMS: provider `log` (test mode) unless `config.php` says otherwise; admins only.

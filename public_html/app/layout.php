@@ -426,7 +426,7 @@ function admin_menu_groups_html(string $cur, bool $withDesc): string
 function game_nav_ready(): bool
 {
     require_once APP_DIR . '/game.php';
-    return game_allowed();
+    return game_public() && game_allowed();   // #140: kol žaidimas nebaigtas - meniu jo nėra niekam (administratoriai - per Testavimą)
 }
 
 /** Nario paskyros skirtukai */
@@ -547,8 +547,8 @@ function site_header(bool $home = false, ?string $area = null, ?string $tab = nu
           <ul class="nav-group nav-onpage<?= $fold ? ' folded' : '' ?>" aria-label="<?= te('Pagrindinis puslapis') ?>">
             <?php if ($fold): ?><li class="fold-items"><ul class="fold-list"><?php endif; ?>
             <?php foreach ($onpage as $i => [$label, $anchor]): ?><li><a class="nav-link" href="<?= $h . e($anchor) ?>"><?= e(t($label)) ?></a></li><?php endforeach; ?>
-            <?php if ($fold): // #117: paspaudus išsiskleidžia į kairę (virš kitų, niekas nepasislenka), paspaudus dar kartą - susiskleidžia ?></ul></li>
-              <li class="fold-main"><button type="button" class="nav-link fold-btn" aria-expanded="false"><span class="fold-t"><?= e(t($onpage[$mainIdx][0])) ?></span><span class="fold-ic" aria-hidden="true">‹</span></button></li>
+            <?php if ($fold): // #117/#131: paspaudus atsiveria žemyn (virš turinio, niekas nepasislenka), paspaudus dar kartą - susiskleidžia ?></ul></li>
+              <li class="fold-main"><button type="button" class="nav-link fold-btn" aria-expanded="false"><span class="fold-t"><?= e(t($onpage[$mainIdx][0])) ?></span><span class="fold-ic" aria-hidden="true">▾</span></button></li>
             <?php endif; ?>
           </ul>
         <?php endif; ?>
@@ -608,7 +608,9 @@ function site_header(bool $home = false, ?string $area = null, ?string $tab = nu
     <?php endif; endforeach; ?>
     <?php $rest = array_diff_key($tflat, array_flip($tkeys)); $rb = array_sum(array_map(function ($i) { return (int) $i[3]; }, $rest)); ?>
     <details class="m-more"><summary class="<?= isset($rest[$mk]) ? 'active' : '' ?>"><span class="mt-ic" aria-hidden="true">⋯</span><span><?= te('Daugiau') ?></span><?= $rb ? '<em class="count-badge">' . $rb . '</em>' : '' ?></summary>
-      <div class="m-sheet"><div class="pm-h"><?= te('🛠 Valdymas') ?></div>
+      <div class="m-sheet"><?php $mvs = admin_mode_toggle(); if (strpos($mvs, 'view-switch') !== false): /* B4: „Žiūrėti kaip“ telefone - pirma eilutė */ ?>
+          <div class="pm-h"><?= te('Žiūrėti kaip') ?></div><div class="m-vs"><?= str_replace('<details class="view-switch', '<details open class="view-switch', $mvs) ?></div>
+        <?php endif; ?><div class="pm-h"><?= te('🛠 Valdymas') ?></div>
         <?php foreach ($rest as $k => $it) { echo admin_menu_link($k, $it, $mk, 'am-row'); } ?>
         <div class="pm-h"><?= te('🌐 Svetainė') ?></div><?= phone_site_links($h, $onpage, $a) ?>
         <form method="post" action="<?= url('atsijungti.php') ?>" class="inline-form"><?= csrf_field() ?><button type="submit" class="am-row am-logout"><span class="am-ic">🚪</span><span class="am-t"><?= te('Atsijungti') ?></span></button></form>
@@ -634,7 +636,10 @@ function admin_mode_toggle(): string
     if (!$on) {
         return $form('1', 'adm-sw adm-back', '🛠 ' . e(t('Grįžti į valdymą')) . ($n ? '<span class="count-badge nav-bubble">' . $n . '</span>' : ''));
     }
-    $member = '<div class="vs-member">' . $form('0', 'vs-member-btn', '👤 ' . e(t('Kaip narys (be redagavimo)'))) . '<p class="vs-hint">' . e(t('Svetainė be trenerio mygtukų - kaip ją mato nariai. Grįžti - mygtuku „Grįžti į valdymą“.')) . '</p></div>';
+    $member = '<div class="vs-member">' . $form('0', 'vs-member-btn', '👤 ' . e(t('Kaip narys (be redagavimo)'))) . '<p class="vs-hint">' . e(t('Svetainė be trenerio mygtukų - kaip ją mato nariai. Grįžti - mygtuku „Grįžti į valdymą“.')) . '</p></div>'
+        // #144: paskyra ir atsijungimas - čia pat, ne kažkur Nustatymuose
+        . '<div class="vs-account"><a class="vs-acc-link" href="' . e(url('admin/nustatymai.php#paskyra')) . '">⚙️ ' . e(t('Mano paskyra')) . ' <small>' . e(trim($a['first_name'] . ' ' . $a['last_name'])) . '</small></a>'
+        . '<form method="post" action="' . e(url('atsijungti.php')) . '">' . csrf_field() . '<button type="submit" class="vs-logout">' . e(t('Atsijungti')) . '</button></form></div>';
     $vs = render_view_switch(true, $member);
     return $vs !== '' ? $vs : '<details class="view-switch vs-compact"><summary aria-label="' . e(t('Žiūrėti kaip')) . '"><span aria-hidden="true">▾</span></summary><div class="vs-panel">' . $member . '</div></details>';
 }
@@ -703,7 +708,7 @@ function date_from_input($v): string
 /** Paskyros nustatymų kortelė (atidaroma ta dalis, kurioje buvo klaida) */
 function render_account_settings(array $a, string $id = 'nustatymai', string $title = 'Paskyros nustatymai'): string
 {
-    $openSetting = in_array(post('action'), ['email', 'password', 'profile'], true) ? post('action') : '';
+    $openSetting = in_array(post('action'), ['email', 'password', 'profile', 'name'], true) ? post('action') : '';
     if (strpos(post('action'), 'tfa_') === 0 || !empty($_SESSION['tfa_enable'])) {
         $openSetting = 'tfa';
     }
@@ -713,7 +718,17 @@ function render_account_settings(array $a, string $id = 'nustatymai', string $ti
     ?>
 <div class="panel card" id="<?= e($id) ?>" style="margin-top:20px;">
   <h2><?= e($title) ?></h2>
-  <p class="muted small"><?= e($a['first_name'] . ' ' . $a['last_name']) ?></p>
+  <details class="setting" <?= $openSetting === 'name' ? 'open' : '' ?>>
+    <summary><span class="setting-label"><?= te('Vardas, pavardė') ?></span><span class="setting-value"><?= e(trim($a['first_name'] . ' ' . $a['last_name'])) ?></span><span class="setting-btn"><?= te('Keisti') ?></span></summary>
+    <form method="post" class="form">
+      <?= csrf_field() ?><input type="hidden" name="action" value="name">
+      <div class="form-row">
+        <label><?= te('Vardas') ?> <input name="first_name" maxlength="80" required value="<?= e($a['first_name']) ?>" autocomplete="given-name"></label>
+        <label><?= te('Pavardė') ?> <input name="last_name" maxlength="80" value="<?= e($a['last_name']) ?>" autocomplete="family-name"></label>
+      </div>
+      <div><button class="btn btn-primary btn-sm" type="submit"><?= te('Išsaugoti') ?></button></div>
+    </form>
+  </details>
 
   <details class="setting" <?= $openSetting === 'email' ? 'open' : '' ?>>
     <summary><span class="setting-label"><?= te('El. paštas') ?></span><span class="setting-value"><?= e($a['email']) ?></span><span class="setting-btn"><?= te('Keisti') ?></span></summary>
@@ -746,7 +761,8 @@ function render_account_settings(array $a, string $id = 'nustatymai', string $ti
       <input type="hidden" name="action" value="password">
       <div class="form-row">
         <label><?= te('Dabartinis slaptažodis') ?> <input type="password" name="current" autocomplete="current-password" required></label>
-        <label><?= te('Naujas slaptažodis') ?> <span class="hint">bent <?= MIN_PASSWORD ?> simboliai</span><input type="password" name="password" autocomplete="new-password" minlength="<?= MIN_PASSWORD ?>" required></label>
+        <label><?= te('Naujas slaptažodis') ?> <span class="hint"><?= te('bent {n} simboliai', ['n' => MIN_PASSWORD]) ?></span><input type="password" name="password" autocomplete="new-password" minlength="<?= MIN_PASSWORD ?>" required></label>
+        <label><?= te('Pakartokite naują slaptažodį') ?> <input type="password" name="password2" autocomplete="new-password" required></label>
       </div>
       <div><button class="btn btn-primary btn-sm" type="submit"><?= te('Keisti slaptažodį') ?></button></div>
     </form>

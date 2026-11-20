@@ -1,5 +1,6 @@
 <?php
-// XP ir lygiai. XP = tie patys taškai, iš kurių skaičiuojamas reitingas. Lygis - nuo visų kada nors surinktų taškų
+// XP ir lygiai. XP = aktyvumo taškai (viena sistema, v1.49): už treniruotes, renginius, testus gauni XP, nuo jų - lygis,
+// kiekvienas naujas lygis - dovanų dėžė Dojo (app/game.php game_sync). XP = tie patys taškai, iš kurių skaičiuojamas reitingas. Lygis - nuo visų kada nors surinktų taškų
 // (sezonas jo nenuima), kiek XP reikia vienam lygiui - nustatoma Treneriams -> Taškai.
 // Egzamino programos punktai: narys pažymi „Moku“, Denis patvirtina pranešime - tada skiriami punkto XP.
 
@@ -30,13 +31,32 @@ function xp_check_level_up(int $memberId, int $before): void
     $m = q_one('SELECT first_name FROM members WHERE id = ?', [$memberId]);
     try {
         notify_member($memberId, 'level_up', ($m['first_name'] ?? 'Narys') . ' pasiekė ' . $new['level'] . ' lygį!',
-            t('Surinkta {a} aktyvumo taškų. Iki {l} lygio - {n}.', ['a' => $after, 'l' => $new['level'] + 1, 'n' => $new['need']]), 'paskyra.php?m=' . $memberId, $new['level']);
+            t('Surinkta {a} XP (aktyvumo taškų). Iki {l} lygio - {n} XP.', ['a' => $after, 'l' => $new['level'] + 1, 'n' => $new['need']])
+            . (xp_gifts_open() ? ' ' . t('🎁 Dovanų dėžė laukia Dojo.') : ''), xp_gifts_open() ? 'dojo.php' : 'paskyra.php?m=' . $memberId, $new['level']);
     } catch (PDOException $ex) {
         // dar neimportuotas db/021 - taškai skirti, tik be pranešimo
     }
 }
 
-/** Lygio kortelė: lygis diržo spalva, XP juosta, kiek trūksta iki kito lygio */
+/** Ar už lygius jau gaunamos dovanos (Dojo atidarytas visiems nariams) - tada apie jas rašoma pranešimuose */
+/** Kortelėje rodyti dovaną už kitą lygį - tik tiems, kurie mato Dojo */
+function xp_card_gift(): bool
+{
+    if (!function_exists('game_allowed')) {
+        require_once APP_DIR . '/game.php';
+    }
+    return game_ready() && game_public() && game_allowed();
+}
+
+function xp_gifts_open(): bool
+{
+    if (!function_exists('game_access_ids')) {
+        require_once APP_DIR . '/game.php';
+    }
+    return game_ready() && game_access_ids() === null;
+}
+
+/** Lygio kortelė: lygis diržo spalva, XP juosta, kiek trūksta iki kito lygio, dovana už kitą lygį */
 function render_xp_card(array $member, bool $compact = false, bool $showBelt = true): string
 {
     $total = member_points_total((int) $member['id']);
@@ -46,7 +66,8 @@ function render_xp_card(array $member, bool $compact = false, bool $showBelt = t
     $beltName = t($beltName);
     return '<div class="xp-card' . ($compact ? ' compact' : '') . ($belt === 1 ? ' belt-light' : '') . '" style="--belt:' . e($color) . ';">'
         . '<div class="xp-level" title="' . e(t('Lygis')) . '"><span class="xp-level-n">' . $l['level'] . '</span><span class="xp-level-l">' . e(t('lygis')) . '</span></div>'
-        . '<div class="xp-main"><div class="xp-row"><strong>' . $l['xp'] . ' ' . e(t('taškai')) . '</strong><span class="xp-next">' . e(t('iki {n} lygio: {xp} taškų', ['n' => $l['level'] + 1, 'xp' => $l['need']])) . '</span></div>'
+        . '<div class="xp-main"><div class="xp-row"><strong title="' . e(t('XP - aktyvumo taškai: už treniruotes, renginius, testus ir egzaminus')) . '">' . $l['xp'] . ' XP</strong> <span class="xp-what">' . e(t('aktyvumo taškai')) . '</span>'
+        . '<span class="xp-next">' . e(t('iki {n} lygio: {xp} XP', ['n' => $l['level'] + 1, 'xp' => $l['need']])) . (xp_card_gift() ? ' · 🎁' : '') . '</span></div>'
         . '<div class="xp-bar" role="progressbar" aria-valuemin="0" aria-valuemax="' . $l['per'] . '" aria-valuenow="' . $l['into'] . '"><span style="width:' . $l['pct'] . '%"></span></div>'
         . ($showBelt ? '<div class="xp-belt">' . belt_icon_svg($belt) . ' ' . e(BELTS[$belt][0] . ' · ' . $beltName) . '</div>' : '') . '</div></div>';
 }

@@ -1,143 +1,84 @@
 <?php
-// uzklausa.php - "2 treniruotės nemokamai" formos duomenis siunčia el. paštu į info@karateka.lt per SMTP.
-// Tame pačiame aplanke kaip index.php.
+// uzklausa.php - „2 treniruotės nemokamai“ forma (pagrindinis puslapis, assets/home.js) → laiškas klubui (config notify_email).
+// Apsauga (planas A5): CSRF, „spąstų“ laukas (honeypot), mažiausias pildymo laikas, riba - 3 per valandą iš to paties IP ir el. pašto,
+// patikra serveryje. Lankytojas mato tik „išsiųsta“ arba bendrą klaidą; smulkmenos - serverio žurnale.
+// Atsakymas - JSON: {"ok": true} arba {"ok": false, "error": "tekstas lankytojui"}.
+require __DIR__ . '/app/bootstrap.php';
 
 header('Content-Type: application/json; charset=utf-8');
+header('Cache-Control: no-store');
 
-// ============================================================
-//  NUSTATYMAI - SMTP prisijungimai laikomi config.php (jo nėra Git'e)
-// ============================================================
-$config    = require __DIR__ . '/config.php';
-$SMTP_HOST = $config['smtp']['host'];
-$SMTP_PORT = $config['smtp']['port'];
-$SMTP_USER = $config['smtp']['user'];
-$SMTP_PASS = $config['smtp']['pass'];
+const TRIAL_MIN_SECONDS = 3;   // greičiau užpildyta forma - robotas
+const TRIAL_PER_HOUR = 3;      // daugiausia užklausų per valandą iš vieno IP ir vieno el. pašto
 
-$to             = 'info@karateka.lt';
-$from_name      = 'Karateka svetainė';
-$subject_prefix = 'Nauja registracija — Karateka';
-// ============================================================
-
-function clean($v) {
-    return htmlspecialchars(trim($v ?? ''), ENT_QUOTES, 'UTF-8');
-}
-
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    http_response_code(405);
-    echo json_encode(['ok' => false, 'error' => 'method_not_allowed']);
+function trial_reply(int $code, ?string $error = null): void
+{
+    http_response_code($code);
+    echo json_encode($error === null ? ['ok' => true] : ['ok' => false, 'error' => $error], JSON_UNESCAPED_UNICODE);
     exit;
 }
 
-$vardas       = clean($_POST['vardas'] ?? '');
-$email        = clean($_POST['email'] ?? '');
-$telefonas    = clean($_POST['telefonas'] ?? '');
-$lokacija     = clean($_POST['lokacija'] ?? '');
-$gimimo_metai = clean($_POST['gimimo_metai'] ?? '');
-$zinute       = clean($_POST['zinute'] ?? '');
-
-// Būtini laukai
-if ($vardas === '' || $email === '' || $telefonas === '' || $lokacija === '') {
-    http_response_code(400);
-    echo json_encode(['ok' => false, 'error' => 'missing_fields']);
-    exit;
+if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
+    trial_reply(405, t('Netinkama užklausa.'));
 }
 
-if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-    http_response_code(400);
-    echo json_encode(['ok' => false, 'error' => 'invalid_email']);
-    exit;
+// CSRF (be HTML klaidos puslapio - home.js laukia JSON)
+$sent = $_POST['_csrf'] ?? '';
+if (!is_string($sent) || empty($_SESSION['csrf']) || !hash_equals($_SESSION['csrf'], $sent)) {
+    trial_reply(400, t('Puslapis per ilgai buvo atidarytas. Atnaujinkite jį ir bandykite dar kartą.'));
 }
 
-$body = "Nauja registracija iš karateka.lt svetainės:\r\n\r\n"
-    . "Vardas, pavardė: $vardas\r\n"
-    . "El. paštas: $email\r\n"
-    . "Telefonas: $telefonas\r\n"
-    . "Lokacija: $lokacija\r\n"
-    . "Gimimo metai: " . ($gimimo_metai !== '' ? $gimimo_metai : '-') . "\r\n"
-    . "Žinutė: " . ($zinute !== '' ? $zinute : '-') . "\r\n";
-
-$subject = "=?UTF-8?B?" . base64_encode("$subject_prefix — $vardas") . "?=";
-$from_name_enc = "=?UTF-8?B?" . base64_encode($from_name) . "?=";
-
-// ============================================================
-//  SMTP siuntimas
-// ============================================================
-
-/**
- * Nuskaito serverio atsakymą ir patikrina, ar kodas toks, kokio tikimės.
- */
-function smtp_read($socket, $expected) {
-    $response = '';
-    while ($line = fgets($socket, 515)) {
-        $response .= $line;
-        // Paskutinė eilutė neturi brūkšnio po kodo, pvz. "250 OK"
-        if (isset($line[3]) && $line[3] === ' ') break;
-    }
-    $code = (int) substr($response, 0, 3);
-    return in_array($code, (array) $expected, true) ? $response : false;
+// Spąstai robotams: paslėptas laukas turi likti tuščias, forma - pildoma bent kelias sekundes.
+// Robotui atsakome „išsiųsta“, kad nebandytų iš naujo.
+$started = trial_form_started((string) ($_POST['ft'] ?? ''));
+if (post('website') !== '' || $started === null || time() - $started < TRIAL_MIN_SECONDS) {
+    error_log('uzklausa.php: atmesta kaip robotas (' . (post('website') !== '' ? 'honeypot' : 'per greitai') . ', ip ' . client_ip() . ')');
+    trial_reply(200);
 }
 
-/**
- * Nusiunčia komandą ir patikrina atsakymą.
- */
-function smtp_cmd($socket, $cmd, $expected) {
-    fwrite($socket, $cmd . "\r\n");
-    return smtp_read($socket, $expected);
+$name = mb_substr(post('vardas'), 0, 120);
+$email = mb_strtolower(mb_substr(post('email'), 0, 190));
+$phone = mb_substr(post('telefonas'), 0, 40);
+$place = mb_substr(post('lokacija'), 0, 120);
+$year = post('gimimo_metai');
+$note = mb_substr(post('zinute'), 0, 2000);
+
+$errors = [];
+if ($name === '' || $email === '' || $phone === '' || $place === '') {
+    $errors[] = t('Užpildykite vardą, el. paštą, telefoną ir lokaciją.');
+}
+if ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    $errors[] = t('Patikrinkite el. pašto adresą.');
+}
+if ($phone !== '' && !preg_match('/^\+?[0-9 ()\-]{6,20}$/', $phone)) {
+    $errors[] = t('Patikrinkite telefono numerį.');
+}
+if ($year !== '' && (!ctype_digit($year) || (int) $year < 1930 || (int) $year > (int) date('Y'))) {
+    $errors[] = t('Patikrinkite gimimo metus.');
+}
+if ($errors) {
+    trial_reply(400, implode(' ', $errors));
 }
 
-$errorDetail = '';
-$sent = false;
-
-// Portas 465 = SSL nuo pat pradžių
-$socket = @stream_socket_client(
-    "ssl://{$SMTP_HOST}:{$SMTP_PORT}",
-    $errno,
-    $errstr,
-    20,
-    STREAM_CLIENT_CONNECT
-);
-
-if (!$socket) {
-    $errorDetail = "connect: $errstr ($errno)";
-} else {
-    stream_set_timeout($socket, 20);
-
-    do {
-        if (!smtp_read($socket, 220))                                    { $errorDetail = 'greeting';  break; }
-        if (!smtp_cmd($socket, 'EHLO karateka.lt', 250))                 { $errorDetail = 'ehlo';      break; }
-        if (!smtp_cmd($socket, 'AUTH LOGIN', 334))                       { $errorDetail = 'auth';      break; }
-        if (!smtp_cmd($socket, base64_encode($SMTP_USER), 334))          { $errorDetail = 'user';      break; }
-        if (!smtp_cmd($socket, base64_encode($SMTP_PASS), 235))          { $errorDetail = 'password';  break; }
-        if (!smtp_cmd($socket, "MAIL FROM:<{$SMTP_USER}>", 250))         { $errorDetail = 'mailfrom';  break; }
-        if (!smtp_cmd($socket, "RCPT TO:<{$to}>", [250, 251]))           { $errorDetail = 'rcptto';    break; }
-        if (!smtp_cmd($socket, 'DATA', 354))                             { $errorDetail = 'data';      break; }
-
-        $message  = "From: {$from_name_enc} <{$SMTP_USER}>\r\n";
-        $message .= "To: <{$to}>\r\n";
-        $message .= "Reply-To: {$email}\r\n";
-        $message .= "Subject: {$subject}\r\n";
-        $message .= "Date: " . date('r') . "\r\n";
-        $message .= "MIME-Version: 1.0\r\n";
-        $message .= "Content-Type: text/plain; charset=UTF-8\r\n";
-        $message .= "Content-Transfer-Encoding: 8bit\r\n";
-        $message .= "\r\n";
-        // Taškas eilutės pradžioje SMTP protokole reiškia pabaigą - apsaugome
-        $message .= preg_replace('/^\./m', '..', $body);
-        $message .= "\r\n.";
-
-        if (!smtp_cmd($socket, $message, 250))                           { $errorDetail = 'send';      break; }
-
-        $sent = true;
-    } while (false);
-
-    @smtp_cmd($socket, 'QUIT', [221, 250]);
-    @fclose($socket);
+// Riba: 3 per valandą iš to paties IP ir to paties el. pašto
+$ip = client_ip();
+$recent = (int) q_value("SELECT COUNT(*) FROM form_submissions WHERE form = 'trial' AND (ip = ? OR email = ?) AND created_at > NOW() - INTERVAL 1 HOUR", [$ip, $email]);
+if ($recent >= TRIAL_PER_HOUR) {
+    trial_reply(429, t('Jau gavome jūsų užklausą - susisieksime. Jei skubate, parašykite mums el. paštu.'));
 }
+q("INSERT INTO form_submissions (form, ip, email) VALUES ('trial', ?, ?)", [$ip, $email]);
 
-if ($sent) {
-    echo json_encode(['ok' => true]);
-} else {
-    http_response_code(500);
-    // $errorDetail padeda suprasti, kurioje vietoje užstrigo (pvz. "password" = blogas slaptažodis)
-    echo json_encode(['ok' => false, 'error' => 'mail_failed', 'stage' => $errorDetail]);
+$body = "Nauja užklausa „2 treniruotės nemokamai“ iš svetainės:\n\n"
+    . "Vardas, pavardė: $name\n"
+    . "El. paštas: $email\n"
+    . "Telefonas: $phone\n"
+    . "Lokacija: $place\n"
+    . 'Gimimo metai: ' . ($year !== '' ? $year : '-') . "\n"
+    . 'Žinutė: ' . ($note !== '' ? $note : '-') . "\n";
+
+$to = (string) config('notify_email', '');
+if ($to === '' || !send_mail($to, 'Nauja registracija - ' . $name, $body, [], $email)) {
+    error_log('uzklausa.php: laiškas neišsiųstas (notify_email: ' . ($to === '' ? 'nenurodytas' : 'yra') . ')');
+    trial_reply(500, t('Nepavyko išsiųsti. Bandykite vėliau arba parašykite mums el. paštu.'));
 }
+trial_reply(200);

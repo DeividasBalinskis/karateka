@@ -291,6 +291,15 @@ function game_access_ids(): ?array
     return is_array($ids) ? array_values(array_unique(array_map('intval', $ids))) : [];
 }
 
+/**
+ * Ar žaidimas jau atidarytas nariams (Dojo meniu, kortelė paskyroje, kvietimai). Kol nebaigtas - paslėptas visiems (#140):
+ * administratoriai jį atsidaro per Nustatymai → Testavimas → „🏯 Dojo“.
+ */
+function game_public(): bool
+{
+    return game_ready() && game_access_ids() === null;
+}
+
 /** Ar ši paskyra mato žaidimą (žiūrint „kaip vaikas“ - pagal tikrąją, administratoriaus, paskyrą) */
 function game_allowed(?array $a = null): bool
 {
@@ -301,12 +310,18 @@ function game_allowed(?array $a = null): bool
     if (!$a) {
         return false;
     }
+    // Sprendžia dabartinė paskyra: žiūrint „kaip vaikas“ matoma tiksliai tai, ką mato vaikas (#148)
+    if (is_tester($a)) {
+        return false;   // testuotojai žaidimo nemato (kad nesugadintume staigmenos)
+    }
+    if (is_admin($a)) {
+        return true;    // tikri administratoriai (Denis, Deividas) gali atsidaryti visada - testavimui
+    }
     $ids = game_access_ids();
     if ($ids === null) {
         return true;
     }
-    $real = !empty($_SESSION['view_admin']) ? (int) $_SESSION['view_admin'] : (int) $a['id'];
-    return in_array((int) $a['id'], $ids, true) || in_array($real, $ids, true);
+    return in_array((int) $a['id'], $ids, true);
 }
 
 function game_ready(): bool

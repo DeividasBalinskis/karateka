@@ -19,14 +19,8 @@ return [
     // Federacijos (LTKF) svetainė - nuoroda apačioje ir prie LTKF logotipo. Tuščia: test svetainėje - juodraštis /ltkf/, oficialioje - be nuorodos.
     'ltkf_url' => '',
 
-    // "2 treniruotės nemokamai" formai (uzklausa.php)
-    'smtp' => [
-        'host' => 'smtp.example.com',
-        'port' => 465,
-        'user' => 'info@karateka.lt',
-        'pass' => 'CHANGE_ME',
-    ],
-    // Narių sistemos laiškams
+    // Visi svetainės laiškai (ir „2 treniruotės nemokamai“ forma - ji siunčia adresu notify_email).
+    // secure: ssl (465 prievadas) arba tls (587, STARTTLS). Be šifravimo laiškai siunčiami tik į Mailpit šiame kompiuteryje.
     'mail' => [
         'host'      => 'smtp.example.com',
         'port'      => 465,

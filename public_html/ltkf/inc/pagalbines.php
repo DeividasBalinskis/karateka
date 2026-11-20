@@ -353,11 +353,11 @@ function karateka_adminas(): bool
         return false;
     }
     try {
-        $st = $db->prepare('SELECT role, status FROM accounts WHERE id = ?');
+        $st = $db->prepare('SELECT * FROM accounts WHERE id = ?');
         $st->execute([$id]);
         $r = $st->fetch(PDO::FETCH_ASSOC);
     } catch (PDOException $e) {
         return false;
     }
-    return $r && $r['role'] === 'admin' && $r['status'] === 'active';
+    return $r && $r['role'] === 'admin' && $r['status'] === 'active' && empty($r['is_tester']);   // testuotojas - ne administratorius (db/044)
 }

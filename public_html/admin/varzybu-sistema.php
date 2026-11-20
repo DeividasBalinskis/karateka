@@ -375,7 +375,7 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
       <button class="btn btn-primary" id="ppl-members" type="button"<?= $demo || $asSekr ? ' hidden' : '' ?>>+ Karateka nariai</button>
       <button class="btn btn-test" id="ppl-test100" type="button"<?= $asSekr ? ' hidden' : '' ?> title="Išgalvoti dalyviai iš kitų klubų - patikrinti, kaip veikia su daug dalyvių">🧪 +100 testinių</button>
       <button class="btn btn-xs" id="ppl-test-del" type="button" hidden>Ištrinti testinius</button>
-      <input type="search" class="sel" id="ppl-search" placeholder="Ieškoti dalyvio" aria-label="Ieškoti dalyvio">
+      <input type="search" class="sel" id="ppl-search" placeholder="Ieškoti ar pridėti dalyvį" aria-label="Ieškoti ar pridėti dalyvį">
       <select class="sel" id="ppl-club" aria-label="Klubas"></select>
       <label class="small"><input type="checkbox" id="ppl-nocat"> Tik be kategorijos</label>
       <span class="spacer"></span>
@@ -404,7 +404,7 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
       <input class="sel" id="club-new-name" placeholder="Naujo klubo pavadinimas" aria-label="Naujo klubo pavadinimas">
       <button class="btn btn-primary" id="club-add" type="button">+ Klubas</button>
       <span class="spacer"></span><span class="muted small">Klubai paimti iš LTKF sąrašo. Pavadinimą galima pataisyti lentelėje - pasikeis visur.</span>
-      <a class="btn" id="clubs-xlsx" href="<?= url('admin/varzybu-sistema.php?id=' . (int) $t['id'] . '&kontaktai=1') ?>" title="Visų klubų kontaktai - Excel failas">⬇ Kontaktai (Excel)</a>
+      <a class="btn" id="clubs-xlsx" href="<?= url('admin/varzybu-sistema.php?id=' . (int) $t['id'] . '&kontaktai=1') ?>" title="Visų klubų kontaktai - Excel failas"><?= icon('download') ?> <span>Kontaktai (Excel)</span></a>
     </div>
     <div class="panel" id="clubs-view"></div>
   </section>
@@ -545,7 +545,7 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
       <span class="spacer"></span>
       <?php if ($t['is_test']): ?><button class="btn btn-test" id="res-sim" type="button" title="Tik test varžybose">🎲 Užbaigti visas kovas</button><?php endif; ?>
       <details class="tool-menu" id="dipl-menu"><summary class="btn" title="Diplomai prizininkams: pagal jūsų Excel šabloną arba paprastas dizainas">🎓 Diplomai</summary><div class="tool-menu-body dipl-body" id="dipl-body"></div></details>
-      <button class="btn" id="res-csv" type="button">⬇ CSV (Excel)</button>
+      <button class="btn" id="res-csv" type="button"><?= icon('download') ?> <span>CSV (Excel)</span></button>
       <button class="btn btn-primary" id="res-print" type="button">🖨 Spausdinti</button>
     </div>
     <div class="panel aw-panel" id="award-view"></div>

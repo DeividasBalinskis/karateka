@@ -48,15 +48,15 @@ Status: ☐ not started · ◐ partly done · ☑ done
 | **A1** | Budo: results must never disappear | Denis, secretariat, everyone at a competition | S | — | ◐ v1.48 |
 | **A2** | Lock the doors (5 quick security fixes) | Denis, parents | S | — | ☑ v1.48 |
 | **A3** | Exam links: no stranger gets a child's page | kids, parents, examiners | M | plan first | ☐ |
-| **A4** | Real admins vs testers; your login | Deividas, Denis, testers | M | reikia leidimo | ☐ |
-| **A5** | Secure the trial form (old step 1) | guests, Denis | S | — | ☐ |
+| **A4** | Real admins vs testers; your login | Deividas, Denis, testers | M | reikia leidimo | ☑ v1.49 (your login: still to create) |
+| **A5** | Secure the trial form (old step 1) | guests, Denis | S | — | ☑ v1.50 |
 | **A6** | One source of truth: main branch, deploy guide, zip script | Deividas | S | reikia leidimo | ☐ |
-| **B1** | Small feedback batch + text fixes (old step 2) | Denis | S | — | ◐ v1.48 |
-| **B2** | "Greitos varžybos": 4 athletes in under a minute | Denis, coaches | M | plan first | ☐ |
+| **B1** | Small feedback batch + text fixes (old step 2) | Denis | S | — | ◐ v1.48, v1.49, v1.50 (#138-#151) |
+| **B2** | "Greitos varžybos": 4 athletes in under a minute | Denis, coaches | M | plan first | ◐ v1.49 (participants + one group per discipline) |
 | **B3** | Budo on a phone on competition day | Denis, secretariat, judges | M | — | ☐ |
-| **B4** | Phone admin: view-as, one floating button (old step 6) | Denis, coaches, members | M | — | ☐ |
+| **B4** | Phone admin: view-as, one floating button (old step 6) | Denis, coaches, members | M | — | ◐ v1.51 (view-as in ⋯ Daugiau, floats hide over sheet and while typing, 🔔 above chat, 🎨 for all; left: 💡 + chat as one button) |
 | **B5** | Notifications: the red number means "to do" | Denis, coaches, parents | M | plan first | ☐ |
-| **B6** | Exams: counts, tablet, 10 kyu, test bank export/import | Denis, examiners | M | — | ☐ |
+| **B6** | Exams: counts, tablet, 10 kyu, test bank export/import | Denis, examiners | M | — | ◐ v1.49 (10 kyu, #133, #137), v1.50 (question review with ✕, comments, pictures, ChatGPT notes), v1.51 (editor redesign, file with a new quiz) |
 | **B7** | Family accounts: parent trains too, child login in one button | parents, kids | M | plan first | ☐ |
 | **B8** | Kid and member home; Dojo in the corner; Paskyra page | kids, members | M | plan first | ☐ |
 | **B9** | Valdymas: one shell, one start page, final names | Denis, coaches | M | reikia leidimo | ☐ |
@@ -76,7 +76,7 @@ Status: ☐ not started · ◐ partly done · ☑ done
 | **D4** | Multi-tablet saving (old step 9) | secretariat, judges | L | plan first, Fable | ☐ |
 | **D5** | Polish one page (old step 7, repeat) | everyone | S each | — | ☐ |
 | **D6** | LTKF: real content model, own domain | federation | L | plan first | ☐ |
-| **D7** | Dojo: one fight model, ranking, fair rewards | kids (later), Denis | L | plan first | ☐ |
+| **D7** | Dojo: one fight model, ranking, fair rewards | kids (later), Denis | L | plan first | ◐ v1.49 (calm look, #128 ranking); v1.50 hidden from menus until opened (#140) |
 | **D8** | New pixel characters | kids (later) | L | plan first | ☐ |
 | **E1** | Go live (old step 12) | everyone | M | waits for your GO | ☐ |
 
@@ -161,11 +161,12 @@ Feedback #85 contains a live exam link. May it be blanked out? ____ (yes/no)
 - **What to build:** a flag `accounts.is_tester` (new migration `db/044_…`, adds a column, loses nothing). Real admin = admin and not tester. Testers get a "Testuotojas" badge, keep testing rights, never see Dojo. Only real admins change roles, flags, game access, backups, site-wide switches and SMS.
 - **Who it helps:** Deividas, Denis, testers.
 - **Likely files:** `db/044_testuotojai.sql`, `app/auth.php`, `app/game.php`, `admin/paskyros.php`, `admin/nustatymai.php`, `admin/kopijos.php`, `app/layout.php`.
-- **Done when:**
-  - [ ] Paskyros shows a "Testuotojas" switch per admin account; only a real admin can change it.
-  - [ ] A tester sees the badge next to their name, sees no Dojo anywhere, and gets "Nėra prieigos" on roles, game access, backups and site-wide switches.
-  - [ ] A real admin cannot remove the last real admin.
-  - [ ] Your account exists and is a real admin.
+- **Done in v1.49:**
+  - [x] `db/044` adds the flag and, the first time only, marks every admin as a tester except the accounts in the game list (Denis) and the account without chat (#21).
+  - [x] Paskyros shows a "🧪 Testuotojas" switch per coach/admin account; only a real admin can change it.
+  - [x] A tester has the badge, coach rights, read-only Nustatymai, no Dojo; roles, backups, feedback inbox, broadcasts and site-wide switches are closed.
+  - [x] Real admins always see the game. The last real admin cannot be demoted, disabled or made a tester.
+  - [ ] Your account exists and is a real admin. **Still to do on the server:** Denis creates it (steps in "Start here").
 - **Tests:** tester cannot change a role, open the game or restore a backup; view-as still works.
 - **Screenshots:** Paskyros with the badge, tester's menu, 375 and 1440.
 - **Depends on:** your decisions 1 and 8. **Model:** Opus 5.5, high.
@@ -187,6 +188,9 @@ Your text stands as written:
 
 - **Added by the review:** `app/mail.php` sends the password without encryption if `secure` is not `ssl`. Refuse to log in over a plain connection.
 - **Done when:** a valid submit reaches Mailpit; honeypot, too-fast and 4th-in-an-hour submits are rejected; `smtp` is gone from the example config.
+- **Status (v1.50): done.** `uzklausa.php` goes through bootstrap and `send_mail()` (Reply-To = visitor), recipient `notify_email`, CSRF + honeypot `website` +
+  signed open time (≥ 3 s) + 3 per hour per IP or e-mail (`form_submissions`, db/045, cleaned after 7 days), Lithuanian messages, details only in the log.
+  `send_mail()`: `secure = tls` does STARTTLS; a password is never sent unencrypted except to localhost (Mailpit). Test: `tests/e2e/07f-v150.spec.js`.
 - **Screenshots:** empty, error and success states, 375 and 1440.
 - **Depends on:** nothing. **Model:** Opus 5.5, medium.
 
@@ -231,8 +235,9 @@ Do step A6 from docs/darbo-planas.md. Do only that step.
   - Old step 2 as written: "karate" never "karatė" (footer in `app/tournaments.php` and its EN/RU keys; LTKF translation keys that broke EN/RU); "karate-do"; a proper no-access message in `zaidimas.php`; "Taika" leftovers → "Budo"; a `tests/checks.sh` rule that fails on "karatė".
 - **Who it helps:** Denis, coaches, examiners.
 - **Likely files:** `assets/theme-pick.js`, `assets/header.css`, `admin/index.php`, `assets/varzybos.js`, `assets/varzybos-gyvai.js`, `assets/varzybos.css`, `admin/egzamino-protokolas.php`, `assets/app.css`, `admin/pranesimai.php`, `admin/taskai.php`, `app/xp.php`, `app/points.php`, `app/tournaments.php`, `tools/vertimai/ltkf.tsv`, `tests/checks.sh`.
-- **Done in v1.48:** #127 (picker closes; the "for all" tick works after choosing), #134 (stopwatch from 0:00, also on TV), the stray points form, the black-circle hint, "taškai" instead of "XP" in the training line and the "Moku" notice, the footer "karate", the no-access message of the game API.
-- **Still open:** #129, #130, #131, #133, #135 (needs answer 10), the sideways scroll on Aktyvumo taškai, "karate-do" and "Taika" leftovers in code, the LTKF EN/RU translation keys, the `checks.sh` rule for "karatė".
+- **Done in v1.48:** #127 (picker closes; the "for all" tick works after choosing), #134 (stopwatch from 0:00, also on TV), the stray points form, the black-circle hint, the footer "karate", the no-access message of the game API.
+- **Done in v1.49:** #126 (who is next in the bout panel), #129 (side menu starts with the first card), #130 (no text cursor; the panel stays on screen), #131 (fold opens downward), #133 (≤ 6.3 red), #135 (youngest "−", oldest "+": common age notation; flip it if Denis meant the other way).
+- **Still open:** the sideways scroll on Aktyvumo taškai, "karate-do" and "Taika" leftovers in code, the LTKF EN/RU translation keys, the `checks.sh` rule for "karatė".
 - **Done when:** each open line has a test or a screenshot; feedback items get the reply "Padaryta (vX.YY)" with the click path.
 - **Depends on:** answer 10 for #135 (the rest does not wait). **Model:** Opus 5.5, medium.
 

@@ -165,15 +165,15 @@ if ($edit !== '') {
             <label><?= te('Trumpai') ?> <span class="hint"><?= te('rodoma renginių sąraše, iki 300 simbolių') ?></span>
               <textarea name="summary" rows="2" maxlength="300" placeholder="<?= te('pvz. Kyu egzaminas visoms grupėms. Reikia išlaikyti testą.') ?>"><?= e((string) ($ev['summary'] ?? '')) ?></textarea></label>
             <label><?= te('Plačiau') ?> <span class="hint"><?= te('rodoma atidarius renginį') ?></span><textarea name="description" rows="6"><?= e((string) $ev['description']) ?></textarea></label>
-            <label><?= te('Priedas') ?> <span class="hint"><?= te('nebūtina; pvz. reglamentas - PDF, Word ar Excel, iki 10 MB') ?></span>
-              <input type="file" name="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.odt,.ods,.ppt,.pptx,.jpg,.jpeg,.png"></label>
+            <div class="qf-field"><span class="qf-label"><?= te('Priedas') ?> <span class="hint"><?= te('nebūtina; pvz. reglamentas - PDF, Word ar Excel, iki 10 MB') ?></span></span>
+              <?= file_drop('file', '.pdf,.doc,.docx,.xls,.xlsx,.odt,.ods,.ppt,.pptx,.jpg,.jpeg,.png', t('Pasirinkite failą'), t('PDF, Word, Excel ar nuotrauka - arba nutempkite čia')) ?></div>
             <?php if (!empty($ev['file_path'])): ?>
               <div class="row" style="gap:12px; align-items:center;"><?= event_file_link($ev) ?>
                 <label class="check"><input type="checkbox" name="file_remove" value="1"><span><?= te('Pašalinti priedą') ?></span></label></div>
             <?php endif; ?>
             <?php if (event_cover_ready()): $cov = !empty($ev['cover']) ? event_cover($ev) : null; ?>
-              <label><?= te('Nuotrauka') ?> <span class="hint"><?= te('nebūtina; rodoma renginių sąraše ir „Naujienos ir renginiai“') ?></span>
-                <input type="file" name="cover" accept="image/jpeg,image/png,image/webp"></label>
+              <div class="qf-field"><span class="qf-label"><?= te('Nuotrauka') ?> <span class="hint"><?= te('nebūtina; rodoma renginių sąraše ir „Naujienos ir renginiai“') ?></span></span>
+                <?= file_drop('cover', 'image/jpeg,image/png,image/webp', t('Pasirinkite nuotrauką'), t('JPG, PNG ar WEBP - arba nutempkite čia')) ?></div>
               <?php if ($cov): ?>
                 <div class="row" style="gap:12px; align-items:center;"><img src="<?= e($cov) ?>" alt="" style="width:120px; height:72px; object-fit:cover; border-radius:10px;">
                   <label class="check"><input type="checkbox" name="cover_remove" value="1"><span><?= te('Pašalinti nuotrauką') ?></span></label></div>

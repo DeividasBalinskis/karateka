@@ -75,6 +75,19 @@ function ranking(array $partition, string $from, string $to): array
     return $rows;
 }
 
+/** #141: visi aktyvūs nariai su šio sezono taškais (ir 0), gimimo metais ir diržu - rikiuojama puslapyje */
+function all_members_points(string $from, string $to): array
+{
+    $rows = q_all('SELECT m.id AS member_id, m.first_name, m.last_name, YEAR(m.birth_date) AS year, m.belt_level AS belt,
+                          COALESCE((SELECT SUM(pa.points) FROM point_awards pa WHERE pa.member_id = m.id AND pa.awarded_on BETWEEN ? AND ?), 0) AS total
+                     FROM members m WHERE m.status = "active" ORDER BY m.last_name, m.first_name', [$from, $to]);
+    foreach ($rows as $i => &$r) {
+        $r['total'] = (int) $r['total'];
+        $r['rank'] = $i + 1;
+    }
+    return $rows;
+}
+
 /** Ar narys priklauso šiai reitingo "lygai" (savo kategorija / grupė / visas klubas) */
 function member_in_partition(array $member, array $partition): bool
 {
@@ -263,8 +276,11 @@ function render_staff_ranking(bool $give = false): string
         }
     }
     $choices['klubas'] = ['club', null, t('Visas klubas')];
+    if ($give) {
+        $choices['visi'] = ['all', null, t('👥 Visi nariai')];   // #141: visi nariai (ir be taškų), rikiuojami, taškai - paspaudus
+    }
     $current = isset($choices[get('rt')]) ? get('rt') : array_key_first($choices);
-    $rows = ranking($choices[$current], $from, $to);
+    $rows = $current === 'visi' ? all_members_points($from, $to) : ranking($choices[$current], $from, $to);
     $xpCats = $give ? manual_xp_categories() : [];
     ob_start();
     ?>
@@ -279,20 +295,31 @@ function render_staff_ranking(bool $give = false): string
     <p class="muted"><?= te('Šį sezoną aktyvumo taškų dar niekas neturi.') ?></p>
   <?php else: ?>
     <input type="search" class="rank-search" id="rankSearch" placeholder="<?= te('Ieškoti pagal vardą ar pavardę') ?>" aria-label="<?= te('Ieškoti reitinge') ?>">
-    <ol class="ranking ranking-all" id="rankAll">
+    <?php if ($current === 'visi'): ?>
+      <div class="rank-sort chips-row" role="group" aria-label="<?= te('Rikiuoti') ?>">
+        <span class="small muted"><?= te('Rikiuoti:') ?></span>
+        <button type="button" class="fchip" data-sort="name" aria-pressed="true"><?= te('A–Ž') ?></button>
+        <button type="button" class="fchip" data-sort="year" aria-pressed="false"><?= te('Gimimo metai') ?></button>
+        <button type="button" class="fchip" data-sort="belt" aria-pressed="false"><?= te('Kyu') ?></button>
+        <button type="button" class="fchip" data-sort="pts" aria-pressed="false"><?= te('Taškai') ?></button>
+      </div>
+    <?php endif; ?>
+    <ol class="ranking ranking-all<?= $current === 'visi' ? ' all-members' : '' ?>" id="rankAll">
       <?php foreach ($rows as $r): ?>
-        <li data-name="<?= e(mb_strtolower($r['first_name'] . ' ' . $r['last_name'])) ?>" class="<?= $r['rank'] <= 5 ? 'top5' : '' ?>">
-          <span class="pos r<?= (int) $r['rank'] ?>"><?= (int) $r['rank'] ?></span><a href="<?= url('admin/nariai.php?id=' . (int) $r['member_id']) ?>"><?= e($r['first_name'] . ' ' . $r['last_name']) ?></a><span class="pts"><?= (int) $r['total'] ?></span>
+        <li data-name="<?= e(mb_strtolower($r['first_name'] . ' ' . $r['last_name'])) ?>" data-sname="<?= e(mb_strtolower($r['last_name'] . ' ' . $r['first_name'])) ?>" data-year="<?= (int) ($r['year'] ?? 0) ?>" data-belt="<?= (int) ($r['belt'] ?? 0) ?>" data-pts="<?= (int) $r['total'] ?>" class="<?= $current !== 'visi' && $r['rank'] <= 5 ? 'top5' : '' ?>">
+          <?php if ($current !== 'visi'): ?><span class="pos r<?= (int) $r['rank'] ?>"><?= (int) $r['rank'] ?></span><?php endif; ?><a href="<?= url('admin/nariai.php?id=' . (int) $r['member_id']) ?>"><?= e($r['first_name'] . ' ' . $r['last_name']) ?></a>
+          <?php if ($current === 'visi'): ?><span class="am-meta"><?= $r['year'] ? (int) $r['year'] : '—' ?><?php if ($r['belt'] && isset(BELTS[(int) $r['belt']])): ?> · <i class="am-belt" style="background:<?= e(BELTS[(int) $r['belt']][2]) ?>"></i><?= e(BELTS[(int) $r['belt']][0]) ?><?php endif; ?></span><?php endif; ?>
+          <span class="pts"><?= (int) $r['total'] ?></span>
           <?php if ($xpCats): ?><button type="button" class="xp-btn rank-xp" data-member="<?= (int) $r['member_id'] ?>" title="<?= te('Skirti taškus') ?>"><?= te('+ Taškai') ?></button><?php endif; ?>
         </li>
       <?php endforeach; ?>
     </ol>
     <p class="hint" id="rankEmpty" style="display:none;"><?= te('Nieko nerasta.') ?></p>
-    <p class="hint" style="margin-top:8px;"><?= te('Su taškais:') ?> <?= count($rows) ?>. <?= te('Paspaudę vardą atidarysite nario puslapį.') ?><?php if ($xpCats): ?> <?= te('„+ Taškai“ prie vardo - skirti taškų iškart.') ?><?php endif; ?></p>
+    <p class="hint" style="margin-top:8px;"><?= $current === 'visi' ? te('Aktyvių narių:') : te('Su taškais:') ?> <?= count($rows) ?>. <?= te('Paspaudę vardą atidarysite nario puslapį.') ?><?php if ($xpCats): ?> <?= te('„+ Taškai“ prie vardo - skirti taškų iškart.') ?><?php endif; ?></p>
     <?php if ($xpCats): ?>
     <div class="xp-quick rank-quick" id="rankQuick" hidden>
       <label><?= te('Už ką') ?>
-        <select id="rqCat"><?php foreach ($xpCats as $c): ?><option value="<?= (int) $c['id'] ?>" data-points="<?= (int) $c['points'] ?>"><?= e($c['name']) ?></option><?php endforeach; ?></select></label>
+        <select id="rqCat"><?php foreach ($xpCats as $c): ?><option value="<?= (int) $c['id'] ?>" data-points="<?= (int) $c['points'] ?>"<?= $c['code'] === 'other' ? ' data-other="1"' : '' ?>><?= e($c['code'] === 'other' ? t('✎ Kita - įrašysiu pats (komentare)') : $c['name']) ?></option><?php endforeach; ?></select></label>
       <label class="xp-pts"><?= te('Aktyvumo taškai') ?> <input type="number" id="rqPts" min="1" max="1000" value="<?= (int) $xpCats[0]['points'] ?>"></label>
       <label class="xp-note"><?= te('Komentaras') ?> <span class="hint"><?= te('nebūtina, mato narys') ?></span><input type="text" id="rqNote" maxlength="190"></label>
       <div class="row"><button type="button" class="btn btn-primary btn-sm" id="rqGive"><?= te('Skirti') ?></button><button type="button" class="btn btn-ghost btn-sm" id="rqCancel"><?= te('Atšaukti') ?></button></div>
@@ -314,6 +341,7 @@ function render_staff_ranking(bool $give = false): string
         var li = cur, data = new FormData();
         data.append('_csrf', <?= json_encode(csrf_token()) ?>);
         data.append('action', 'xp_one'); data.append('member_id', li.querySelector('.rank-xp').dataset.member);
+        if (cat.selectedOptions[0].dataset.other && !note.value.trim()) { note.focus(); note.placeholder = <?= json_encode(t('Parašykite, už ką')) ?>; return; }
         data.append('category_id', cat.value); data.append('points', pts.value); data.append('note', note.value.trim());
         fetch(<?= json_encode(url('admin/taskai.php')) ?>, { method: 'POST', body: data, credentials: 'same-origin', headers: { 'Accept': 'application/json' } })
           .then(function (r) { return r.json(); })
@@ -332,6 +360,19 @@ function render_staff_ranking(bool $give = false): string
     (function () {
       // Paieška be lietuviškų raidžių skirtumo: "austeja" randa "Austėja"
       var input = document.getElementById('rankSearch'), items = document.querySelectorAll('#rankAll li');
+      // #141: visi nariai - rikiavimas pagal abėcėlę, metus, kyu, taškus
+      document.querySelectorAll('.rank-sort [data-sort]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          var k = b.dataset.sort, list = document.getElementById('rankAll'), arr = Array.prototype.slice.call(list.children);
+          document.querySelectorAll('.rank-sort [data-sort]').forEach(function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); });
+          arr.sort(function (x, y) {
+            if (k === 'name') return x.dataset.sname.localeCompare(y.dataset.sname, 'lt');
+            if (k === 'year') return (+y.dataset.year || 0) - (+x.dataset.year || 0);
+            if (k === 'belt') return (+y.dataset.belt || 0) - (+x.dataset.belt || 0);
+            return (+y.dataset.pts) - (+x.dataset.pts);
+          }).forEach(function (li) { list.appendChild(li); });
+        });
+      });
       var plain = function (s) { return s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase(); };
       input.addEventListener('input', function () {
         var q = plain(input.value.trim()), shown = 0;

@@ -694,7 +694,11 @@ tr.club-contacts > td { background: var(--surface-2); padding: 12px 14px; }
 .live-settings { position: relative; }
 .live-settings > summary { list-style: none; }
 .live-settings > summary::-webkit-details-marker { display: none; }
-.live-settings > .toolbar { position: absolute; right: 0; top: calc(100% + 6px); z-index: 40; width: min(560px, calc(100vw - 40px)); box-shadow: 0 18px 44px rgba(16, 24, 40, .22); }
+.live-settings > .toolbar { position: absolute; right: 0; top: calc(100% + 6px); z-index: 40; width: min(560px, calc(100vw - 24px)); box-shadow: 0 18px 44px rgba(16, 24, 40, .22); }
+/* #130: virš užrašų - įprasta rodyklė (ne teksto žymeklis); rašyti galima tik langeliuose */
+.live-settings > .toolbar { cursor: default; user-select: none; }
+.live-settings > .toolbar input { cursor: text; user-select: text; }
+.live-settings > .toolbar label, .live-settings > .toolbar .btn { cursor: pointer; }
 .area-meta { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; }
 .delay { font-size: .74rem; font-weight: 800; border-radius: 999px; padding: 2px 9px; white-space: nowrap; }
 .delay.ok { background: var(--green-soft); color: var(--green); }
@@ -1371,3 +1375,35 @@ body.vz.vz-public:not(.scr) .vz-top-row, body.vz.vz-public:not(.scr) .tabs { max
 .apd-runlist li { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; padding: 8px 12px; border-radius: 10px; background: var(--surface-2); }
 .apd-runbox { margin-top: 14px; }
 .apd-runbox summary { cursor: pointer; font-weight: 700; padding: 8px 0; }
+/* #126: kovos skydelyje - kas ruošiasi (viršuje, iškart po antrašte) */
+.bout-card .bt-next { margin: 0 0 10px; padding: 8px 14px; font-size: .95rem; position: sticky; top: 0; z-index: 3; }
+@media (max-width: 640px) { .bout-card .bt-next { font-size: .88rem; padding: 7px 10px; } }
+
+/* Naujos varžybos: dalyviai iškart (nariai iš sąrašo + nauji žmonės) */
+.vn-people { border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 14px 14px; margin: 4px 0 6px; display: grid; gap: 10px; min-width: 0; }
+.vn-people legend { font-weight: 700; padding: 0 6px; }
+.vn-pick { display: grid; gap: 8px; }
+.vn-groups { display: flex; flex-wrap: wrap; gap: 6px; }
+.vn-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 6px; max-height: 260px; overflow: auto; padding: 2px; }
+.vn-item { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; cursor: pointer; min-height: 44px; }
+.vn-item small { margin-left: auto; color: var(--muted); white-space: nowrap; }
+.vn-item:has(input:checked) { border-color: var(--ink); background: var(--surface); }
+.vn-item[hidden] { display: none; }
+.vn-count { margin: 0; }
+.vn-quick { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; padding-top: 4px; border-top: 1px dashed var(--line); }
+.vn-quick label { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; }
+/* Dalyviai: paieška ir kartu pridėjimas (klubo nariai vienu paspaudimu arba naujas žmogus) */
+.find-strip { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; padding: 10px 14px; border-bottom: 1px solid var(--line); background: var(--surface); }
+.find-strip:empty { display: none; }
+.find-strip .btn { min-height: 38px; }
+/* Telefone „Tatamiai ir kovų trukmė“ - per visą plotį, visada ekrane (be JS skaičiavimų) */
+@media (max-width: 760px) { .live-settings > .toolbar { position: fixed; left: 10px; right: 10px; top: 96px; width: auto; transform: none !important; max-height: calc(100vh - 120px); overflow: auto; } }
+/* Narių sąrašas formoje - eilutė (varnelė, vardas, metai), ne bendras formos „label“ stulpelis */
+.varz-form .vn-item { display: flex; flex-direction: row; align-items: center; gap: 8px; font-weight: 500; color: var(--ink); font-size: .92rem; }
+.varz-form .vn-item input { width: auto; flex: none; margin: 0; }
+.varz-form .vn-item span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.varz-form .vn-item small { font-size: .78rem; }
+.varz-form .vn-quick label { display: inline-flex; flex-direction: row; color: var(--ink); }
+@media (max-width: 480px) { .vn-list { grid-template-columns: 1fr; } .vn-item small { display: none; } }
+.bt-gong { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; justify-content: center; margin-top: 8px; }
+.bt-gong select { padding: 6px 8px; border-radius: 8px; border: 1px solid var(--line); font: inherit; }

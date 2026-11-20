@@ -30,6 +30,10 @@ page_start(t('Testavimas'), ['admin' => true]);
 <a class="small" href="<?= url('admin/nustatymai.php') ?>"><?= te('← Nustatymai') ?></a>
 <h1 class="styled" style="margin-top:8px;"><?= te('Testavimas') ?></h1>
 <p class="muted"><?= te('Čia - tik testiniai nariai. Tikri žmonės, naujienos, renginiai ir pamokos šiame puslapyje nekeičiami.') ?></p>
+<?php require_once APP_DIR . '/game.php'; if (game_ready() && !game_public() && is_admin()): ?>
+  <p class="panel card game-hidden-note">🏯 <?= te('Dojo (žaidimas) kol kas paslėptas - meniu jo nemato niekas. Administratoriai jį gali išbandyti:') ?>
+    <a class="btn btn-sm" href="<?= url('dojo.php') ?>"><?= te('Atidaryti Dojo →') ?></a></p>
+<?php endif; ?>
 
 <div class="grid-2 testing-grid">
   <form method="post" class="panel card form">

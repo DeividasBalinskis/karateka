@@ -89,6 +89,29 @@ h1.styled::after{
 .btn-danger{background:transparent; color:var(--danger); border:1px solid rgba(181,40,31,0.35);}
 .btn-danger:hover{background:rgba(181,40,31,0.06);}
 .btn-sm{padding:8px 14px; font-size:0.82rem;}
+.btn .ico{width:18px; height:18px;}
+.btn[hidden], .icon-btn[hidden], .file-drop[hidden]{display:none;}   /* standartai 8.9: „hidden“ visada paslepia */
+/* Piktogramos (app/icons.php) ir kvadratinis mygtukas tik su piktograma - 44 × 44 (standartai 8.6) */
+.ico{width:1.15em; height:1.15em; flex:none; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; vertical-align:-0.2em;}
+.icon-btn{display:inline-grid; place-items:center; width:44px; height:44px; flex:none; padding:0; border-radius:10px; border:1px solid rgba(23,20,15,0.14); background:#fff; color:var(--muted); cursor:pointer; font:inherit;}
+.icon-btn .ico{width:20px; height:20px;}
+.icon-btn:hover{border-color:var(--accent); color:var(--ink);}
+.icon-btn:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+.icon-btn.danger{color:var(--danger); border-color:rgba(181,40,31,0.3);}
+.icon-btn.danger:hover{background:rgba(181,40,31,0.06); border-color:var(--danger);}
+/* Failo laukas: rėmelis su piktograma vietoj naršyklės „Choose File“; visas plotas paspaudžiamas ir priima nutemptą failą */
+.file-drop, .form label.file-drop{position:relative; display:flex; align-items:center; gap:14px; min-height:72px; padding:14px 16px; border:2px dashed rgba(23,20,15,0.2); border-radius:14px; background:rgba(255,255,255,0.6); cursor:pointer; transition:border-color .15s, background .15s;}
+.file-drop input[type=file]{position:absolute; inset:0; width:100%; height:100%; opacity:0; cursor:pointer;}
+.file-drop:hover, .file-drop.drag{border-color:var(--accent); background:rgba(47,107,90,0.06);}
+.file-drop:focus-within{outline:2px solid var(--accent); outline-offset:2px;}
+.file-drop.has-file{border-style:solid; border-color:var(--accent);}
+.fd-ico{flex:none; width:44px; height:44px; display:grid; place-items:center; border-radius:50%; background:rgba(47,107,90,0.1); color:var(--accent-dark);}
+.fd-ico .ico{width:22px; height:22px;}
+.fd-text{display:grid; gap:2px; min-width:0; font-weight:400;}
+.fd-text b{font-size:.95rem;}
+.fd-hint{font-size:.82rem; color:var(--muted);}
+.fd-name{font-size:.86rem; font-weight:600; color:var(--accent-dark); overflow-wrap:anywhere;}
+.fd-name:empty{display:none;}
 .btn-block{width:100%;}
 
 /* ---------- Formos (kaip pagrindinio puslapio registracijos forma) ---------- */
@@ -647,22 +670,73 @@ label.q-answer:has(input:checked){border-color:var(--accent); background:rgba(47
 .q-item[open] summary{margin-bottom:14px;}
 .q-num{flex-shrink:0; width:28px; height:28px; border-radius:50%; background:rgba(23,20,15,0.07); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.85rem;}
 .q-sum{display:flex; flex-direction:column; gap:2px; min-width:0;}
+/* Klausimo forma (kortelė): klausimas, 4 atsakymai su raide - paspaudus raidę ji tampa teisinga (žalia su ✓), papildomi laukai - „Paaiškinimas, tema…“ */
+.qf{gap:16px;}
+.qf-field, .form label.qf-field{display:grid; gap:6px; font-size:inherit; font-weight:400;}
+.qf-label{display:flex; align-items:center; gap:6px; flex-wrap:wrap; font-size:.86rem; font-weight:600; color:var(--ink);}
+.qf-label .hint{font-weight:400;}
+.form textarea.qf-question{min-height:72px; font-size:1.05rem; font-weight:600; line-height:1.4;}
 .q-answers-edit{display:grid; gap:8px;}
-.ans-row{display:flex; gap:10px; align-items:center;}
-.ans-row input[type=radio]{width:20px; height:20px; accent-color:var(--accent); flex-shrink:0;}
-.ans-row input[type=text]{flex:1;}
+.ans-row{display:flex; gap:10px; align-items:center; padding:4px; border-radius:12px; border:1px solid transparent; transition:background .15s, border-color .15s;}
+.ans-row input[type=text]{flex:1; min-width:0;}
+.qf .qf-ok{position:relative; flex:none; width:44px; height:44px; display:grid; place-items:center; border-radius:50%; border:2px solid rgba(23,20,15,0.18); background:#fff; font-weight:700; color:var(--muted); cursor:pointer;}
+.qf-ok input{position:absolute; inset:0; width:100%; height:100%; margin:0; opacity:0; cursor:pointer;}
+.qf-ok .qf-tick{display:none;}
+.qf-ok:hover{border-color:var(--accent);}
+.qf-ok:focus-within{outline:2px solid var(--accent); outline-offset:2px;}
+.qf-ok-label{display:none; flex:none; font-size:.8rem; font-weight:700; color:var(--accent-dark);}
+.ans-row:has(input[type=radio]:checked){background:rgba(47,107,90,0.08); border-color:rgba(47,107,90,0.35);}
+.ans-row:has(input[type=radio]:checked) .qf-ok{background:var(--accent); border-color:var(--accent); color:#fff;}
+.ans-row:has(input[type=radio]:checked) .qf-letter{display:none;}
+.ans-row:has(input[type=radio]:checked) .qf-tick{display:grid;}
+.ans-row:has(input[type=radio]:checked) .qf-ok-label{display:inline;}
+.qf-more{border-top:1px solid rgba(23,20,15,0.08); padding-top:10px;}
+.qf-more > summary{display:inline-flex; align-items:center; gap:8px; min-height:44px; cursor:pointer; font-weight:600; font-size:.9rem; color:var(--accent-dark); list-style:none;}
+.qf-more > summary::-webkit-details-marker{display:none;}
+.qf-more[open] > summary .ico{transform:rotate(45deg);}
+.qf-more-grid{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:8px; align-items:start;}
+.qf-img{display:flex; align-items:center; gap:12px;}
+.qf-img img{height:64px; border-radius:8px;}
+.qf-foot{display:flex; align-items:center; justify-content:space-between; gap:10px; padding-top:4px;}
 .q-thumb{height:36px; border-radius:6px; vertical-align:middle; margin-left:6px;}
+@media (max-width:767px){ .qf-more-grid{grid-template-columns:1fr;} }
+@media (max-width:479px){ .ans-row:has(input[type=radio]:checked) .qf-ok-label{display:none;} }
 /* Klausimų sąrašas: varnelė trynimui kairėje, įkėlimas iš failo, nuoroda be paskyros (v1.21) */
-.q-row{display:grid; grid-template-columns:26px minmax(0, 1fr); gap:6px; align-items:start;}
-.q-pick{padding-top:22px; display:flex; justify-content:center; cursor:pointer;}
-.q-pick input{width:18px; height:18px; accent-color:var(--accent);}
+.q-row{display:grid; grid-template-columns:44px minmax(0, 1fr); gap:4px; align-items:start;}
+.q-pick{width:44px; height:44px; margin-top:12px; display:grid; place-items:center; cursor:pointer; border-radius:10px;}
+.q-pick:hover{background:rgba(23,20,15,0.05);}
+.q-pick input, .bulk-all input{width:20px; height:20px; accent-color:var(--accent);}
 .bulk-bar{gap:12px; align-items:center; margin-bottom:10px;}
+.bulk-all{display:flex; align-items:center; gap:10px; min-height:44px; padding:0 12px; cursor:pointer;}
 .q-err[hidden]{display:none;}
-.import-box summary{cursor:pointer;}
+/* „Įkelti klausimus iš failo“: antraštė kaip mygtukas, kairėje - failas ar tekstas, dešinėje - atsisiuntimas ir ChatGPT pagalba */
+.import-box > summary{cursor:pointer; list-style:none;}
+.import-box > summary::-webkit-details-marker{display:none;}
+.ib-head{display:flex; align-items:center; gap:14px; min-height:48px;}
+.ib-ico{flex:none; width:44px; height:44px; display:grid; place-items:center; border-radius:12px; background:rgba(47,107,90,0.1); color:var(--accent-dark);}
+.ib-ico .ico{width:22px; height:22px;}
+.ib-title{display:grid; gap:2px; flex:1; min-width:0;}
+.ib-title .hint{font-size:.82rem; color:var(--muted);}
+.ib-chev{flex:none; color:var(--muted); transition:transform .2s;}
+.import-box[open] .ib-chev{transform:rotate(180deg);}
+.ib-grid{display:grid; grid-template-columns:minmax(0, 3fr) minmax(0, 2fr); gap:24px; margin-top:18px;}
+.ib-main{gap:14px;}
+.ib-side{display:grid; gap:10px; align-content:start; padding-left:24px; border-left:1px solid rgba(23,20,15,0.08);}
+.ib-sub{display:flex; align-items:center; gap:6px; margin:4px 0 0; font-size:1rem;}
+.ib-dl{justify-self:start;}
+.ib-side .hint{margin:0; font-size:.82rem; color:var(--muted);}
+.ib-help{border-radius:12px; background:rgba(23,20,15,0.035);}
+.ib-help > summary{min-height:44px; display:flex; align-items:center; padding:0 14px; cursor:pointer; font-weight:600; font-size:.88rem;}
+.ib-help[open]{padding-bottom:12px;}
+.ib-help > :not(summary){margin-left:14px; margin-right:14px;}
+.ib-help pre{white-space:pre-wrap; max-height:220px; overflow:auto; background:#fff; padding:10px 12px; border-radius:10px; font-size:.8rem; border:1px solid rgba(23,20,15,0.08);}
+.ib-help ol{padding-left:18px;}
+.ib-actions{display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin:12px 0 4px;}
+.ib-actions .hint{flex-basis:100%; margin:0; font-size:.82rem; color:var(--muted);}
+@media (max-width:1099px){ .ib-grid{grid-template-columns:1fr;} .ib-side{padding-left:0; border-left:0; border-top:1px solid rgba(23,20,15,0.08); padding-top:14px;} }
 .import-preview{max-height:440px; overflow:auto;}
 .import-preview .imp-ok{font-weight:700; color:var(--accent-dark);}
 .import-preview tr.warn-row td{background:rgba(217,83,79,0.07);}
-.import-help pre{white-space:pre-wrap; background:rgba(23,20,15,0.04); padding:10px 12px; border-radius:10px; font-size:0.82rem;}
 .share-row input{flex:1; min-width:0;}
 .req-admin{padding:10px 0; border-bottom:1px solid rgba(23,20,15,0.07);}
 .req-admin summary{cursor:pointer;}
@@ -1410,6 +1484,9 @@ span.req-check:hover{transform:none;}
 .res-btn.no.on{background:#C0392B; border-color:#C0392B; color:#fff;}
 tr.res-passed td{background:rgba(47,125,79,0.07);}
 tr.res-failed td{background:rgba(192,57,43,0.06);}
+/* #133: balas ≤ 6,3 - langelis raudonas ir išlaikiusiųjų eilutėje */
+#protTable td.sc.low, #protTable tr.res-passed td.sc.low{background:rgba(192,57,43,0.16); -webkit-print-color-adjust:exact; print-color-adjust:exact;}
+#protTable td.sc.low .pi-score{color:#A3271C; font-weight:700;}
 .prot-sign{display:flex; flex-wrap:wrap; gap:10px 40px; margin:18px 0 10px;}
 @media print{
   @page{size:A4 landscape; margin:12mm;}
@@ -1730,3 +1807,87 @@ input.tg:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
 .ga-acts{display:flex; flex-wrap:wrap; gap:8px; align-items:center;}
 .ga-add{display:flex; gap:6px;}
 .ga-add input{min-width:0; width:220px; max-width:100%;}
+
+/* Testuotojai (db/044): ženkliukas, nustatymai tik skaityti */
+.badge-tester{background:linear-gradient(135deg, #EFE7FF, #E3F1FF); color:#4B3A8C; border:1px solid rgba(75,58,140,.18); font-size:.72rem; vertical-align:middle; margin-left:6px; white-space:nowrap;}
+h1 .badge-tester{font:600 .8rem/1.6 'Inter', sans-serif; letter-spacing:0; padding:3px 10px;}
+.ro-set{display:contents; border:0; margin:0; padding:0; min-width:0;}
+.ro-set .settings-group{opacity:.86;}
+.ro-note{margin:0; padding:12px 16px; font-size:.9rem; background:rgba(239,231,255,.7);}
+.tester-tg{margin-top:6px;}
+.tester-tg .btn.on{background:#EFE7FF; color:#4B3A8C; border-color:rgba(75,58,140,.25);}
+
+/* #137: klausimyno atsisiuntimas */
+
+/* XP = aktyvumo taškai (v1.49) */
+.xp-card .xp-what{font-size:.82em; color:var(--muted); font-weight:500;}
+
+/* #143: slaptažodis su 👁 */
+.pw-wrap{position:relative; display:block;}
+.pw-wrap input, .form .pw-wrap input:not([type=checkbox]):not([type=radio]):not([type=file]){width:100%; padding-right:46px;}
+.pw-eye{position:absolute; right:6px; top:50%; transform:translateY(-50%); width:36px; height:36px; border:0; background:none; cursor:pointer; font-size:17px; opacity:.55; border-radius:8px;}
+.pw-eye:hover, .pw-eye.on{opacity:1; background:rgba(23,20,15,.06);}
+/* #141: „👥 Visi nariai“ - rikiavimas ir metai / diržas prie vardo */
+.rank-sort{align-items:center; margin:0 0 8px;}
+.rank-sort, .rv-filter{display:flex; flex-wrap:wrap; gap:6px;}
+.rv-filter .fchip, .rank-sort .fchip{text-decoration:none; border:1px solid rgba(23,20,15,0.16); background:rgba(255,255,255,0.8); border-radius:999px; padding:4px 12px; font:600 .84rem/1.3 inherit; font-family:inherit; cursor:pointer; color:inherit;}
+.rank-sort .fchip[aria-pressed="true"], .rv-filter .fchip[aria-pressed="true"]{background:var(--ink, #17140F); color:#fff; border-color:transparent;}
+.ranking-all.all-members li{gap:8px;}
+.am-meta{font-size:.8rem; color:var(--muted, #6b6459); white-space:nowrap; display:inline-flex; align-items:center; gap:4px;}
+.am-belt{display:inline-block; width:14px; height:6px; border-radius:2px; border:1px solid rgba(0,0,0,.25);}
+.ranking-all.all-members li .pts{margin-left:auto;}
+.imp-thumb{width:64px; height:48px; object-fit:cover; border-radius:6px; display:block;}
+
+/* Testo klausimų peržiūra (admin/testo-perziura.php): po vieną klausimą, ✕ - netinka, komentaras, taisymas vietoje */
+.back-link{display:inline-flex; align-items:center; gap:6px; min-height:44px;}
+.rv-top{display:flex; flex-direction:column; gap:12px;}
+.rv-how{margin:0;}
+.rv-stats{display:flex; align-items:center; gap:12px; flex-wrap:wrap;}
+.rv-bar{flex:1 1 160px; height:8px; border-radius:99px; background:rgba(23,20,15,.08); overflow:hidden;}
+.rv-bar i{display:block; height:100%; background:var(--accent); border-radius:99px; transition:width .3s;}
+.rv-strip{display:flex; gap:6px; overflow-x:auto; padding:2px 2px 6px; scrollbar-width:thin;}
+.rv-strip button{flex:none; min-width:44px; height:44px; border-radius:10px; border:1px solid rgba(23,20,15,.14); background:#fff; font:600 .85rem/1 'Inter', sans-serif; color:inherit; cursor:pointer;}
+.rv-strip button.seen{background:rgba(47,107,90,.12); border-color:rgba(47,107,90,.35);}
+.rv-strip button.noted{background:rgba(217,83,79,.14); border-color:rgba(217,83,79,.5); color:#9B2C28;}
+.rv-strip button.cur{outline:2px solid var(--ink); outline-offset:1px;}
+.rv-card:not([hidden]){display:flex; flex-direction:column; gap:12px;}
+.rv-card.flagged{box-shadow:0 0 0 2px rgba(217,83,79,.55);}
+.rv-head{display:flex; align-items:center; gap:8px; flex-wrap:wrap;}
+.rv-num{font-weight:700;}
+.rv-tools{margin-left:auto; display:flex; gap:8px;}
+.rv-x-wide{width:auto; display:inline-flex; gap:6px; padding:0 14px; font-weight:600;}
+.rv-x[aria-pressed="true"]{background:var(--danger); border-color:var(--danger); color:#fff;}
+.rv-c[aria-pressed="true"]{background:rgba(92,104,160,.16); border-color:rgba(92,104,160,.5); color:#33406F;}
+.rv-body{width:100%; font:600 1.05rem/1.4 'Inter', sans-serif; padding:12px 14px; border-radius:10px; border:1px solid rgba(23,20,15,.14); resize:vertical; min-height:56px;}
+.rv-comment textarea{width:100%; font:400 16px/1.4 'Inter', sans-serif; padding:10px 12px; border-radius:10px; border:1px dashed rgba(92,104,160,.6); background:rgba(92,104,160,.05); resize:vertical;}
+.rv-img{display:flex; flex-direction:column; gap:8px; border-radius:12px; padding:4px; transition:background .2s;}
+.rv-img.drop{background:rgba(47,107,90,.1); outline:2px dashed rgba(47,107,90,.5);}
+.rv-img img{max-width:100%; max-height:320px; object-fit:contain; border-radius:10px; align-self:flex-start;}
+.rv-img-note{display:flex; align-items:center; gap:8px; margin:0; padding:10px 12px; border-radius:10px; background:rgba(240,203,78,.18);}
+.rv-img-btns{display:flex; align-items:center; gap:10px; flex-wrap:wrap;}
+.rv-img-btns .btn{min-height:44px;}
+.rv-img-pick{cursor:pointer;}
+.rv-answers{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:8px;}
+.rv-ans{display:flex; flex-wrap:wrap; align-items:center; gap:8px; padding:6px; border-radius:12px; border:1px solid rgba(23,20,15,.08);}
+.rv-ans.correct{background:rgba(47,107,90,.08); border-color:rgba(47,107,90,.35);}
+.rv-ans.flagged{background:rgba(217,83,79,.08); border-color:rgba(217,83,79,.45);}
+.rv-ans.flagged .rv-a{text-decoration:line-through; text-decoration-color:rgba(217,83,79,.7);}
+.rv-ok{position:relative; display:inline-flex; align-items:center; justify-content:center; gap:4px; min-width:44px; height:44px; font-weight:700; cursor:pointer;}
+.rv-ok input{width:20px; height:20px; accent-color:var(--accent);}
+.rv-a{flex:1 1 120px; min-width:0; min-height:44px; padding:10px 12px; border-radius:10px; border:1px solid rgba(23,20,15,.12); font:400 16px 'Inter', sans-serif;}
+.rv-ans .rv-comment{flex-basis:100%;}
+.rv-del:hover{color:var(--danger); border-color:var(--danger);}
+.rv-more label{display:block; margin-top:8px;}
+.rv-more textarea, .rv-more input{width:100%; font-size:16px;}
+.rv-more > summary{min-height:44px; display:flex; align-items:center; cursor:pointer;}
+.rv-nav{display:flex; align-items:center; gap:10px; justify-content:space-between; padding-top:10px; border-top:1px solid rgba(23,20,15,.08);}
+.rv-state{flex:1; text-align:center;}
+.rv-actions{display:flex; flex-wrap:wrap; gap:10px; align-items:center;}
+.rv-steps{margin:12px 0 8px; padding-left:20px;}
+@media (max-width:479px){
+  .rv-x-wide span{display:none;}
+  .rv-x-wide{width:44px; padding:0;}
+  .rv-nav .btn{padding-left:14px; padding-right:14px;}
+  .rv-ans .rv-a{flex:1 1 calc(100% - 56px);}
+  .rv-ans .rv-x{margin-left:auto;}
+}

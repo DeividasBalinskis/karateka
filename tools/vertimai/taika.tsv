@@ -687,3 +687,14 @@ Nerasta. Patikrinkite vardą ar pavardę.	Not found. Check the name or surname.	
 Transliacija	Stream	Трансляция
 (atidarius kategoriją).	(open the category).	(открыв категорию).
 Paruošimas: klubai, komandos, dalyviai, kategorijos, tinklai	Preparation: clubs, teams, participants, categories, draws	Подготовка: клубы, команды, участники, категории, сетки
+Klubo nariai:	Club members:	Члены клуба:
++ Pridėti naują:	+ Add new:	+ Добавить нового:
+Ieškoti ar pridėti dalyvį	Search or add a participant	Найти или добавить участника
+Pridėta dalyvių: {#}	Participants added: {#}	Добавлено участников: {#}
+Dalyvių dar nėra - įrašykite vardą paieškoje ar „Naujas“ laukelyje arba spauskite „+ Karateka nariai“.	No participants yet - type a name in the search or the “New” field, or press “+ Karateka members”.	Участников пока нет - введите имя в поиске или в поле «Новый» либо нажмите «+ Члены Karateka».
+Gilus gongas	Deep gong	Глубокий гонг
+Šviesus gongas	Bright gong	Звонкий гонг
+Varpas	Bell	Колокол
+likus 30 s - 1 gongas, pabaigoje - 2	30 s left - 1 gong, at the end - 2	за 30 с - 1 гонг, в конце - 2
+Kontaktai (Excel)	Contacts (Excel)	Контакты (Excel)
+CSV (Excel)	CSV (Excel)	CSV (Excel)

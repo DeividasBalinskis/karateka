@@ -4,6 +4,117 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.51 - 2026-11-20 (testų redaktorius pagal standartus, klausimų failas kuriant testą, bendri mygtukai ir failo laukai)
+**Duomenų bazės atnaujinti nereikia** (jei v1.50 dar neįkelta - db/045 iš v1.50). Zip'o turinį išpakuokite **tiesiai į svetainės aplanką**.
+
+**📋 Testai**
+- **Kuriant testą galima iškart įkelti klausimų failą** (.txt, .csv, .json, paveikslėliai ar ZIP): testas sukuriamas, klausimai įkeliami peržiūrai
+  ir atsidaro „Klausimų peržiūra“.
+- Klausimo forma perdaryta: klausimas didesniu šriftu; prie atsakymo - raidės mygtukas A–D, paspaudus jis tampa žalias su ✓ ir eilutė pažymima „teisingas“;
+  paaiškinimas, tema, video ir paveikslėlis - po „Paaiškinimas, tema, paveikslėlis, video“; ištrynimas - šiukšliadėžės mygtukas, ne pabraukta nuoroda.
+- „Įkelti klausimus iš failo“: kairėje - failų laukas (pasirinkti ar nutempti) ir teksto laukas, dešinėje - „Atsisiųsti visus klausimus“ (su atsisiuntimo piktograma)
+  ir ChatGPT pagalba (nustatymas vieną kartą, prašymai) su „Kopijuoti“ mygtukais.
+- „Klausimų peržiūra“: mygtukai su piktogramomis, 44 px dydžio, laukeliai 16 px; „Pašalinti“ paveikslėlį rodomas tik kai jis yra.
+
+**📱 Telefone ir planšetėje (plano žingsnis B4, dalis)**
+- „⋯ Daugiau“ lapo viršuje - **„Žiūrėti kaip“** (Adminas / Tėvai / Vaikas / Kaip narys) ir „Mano paskyra“: pasiekiama dviem paspaudimais.
+- Kai atidarytas „⋯ Daugiau“ - 💡, pokalbio ir 🔔 mygtukų nėra; kai rašote į laukelį - jie pasislepia ir neuždengia klaviatūros ar mygtukų.
+- 🔔 pranešimai - virš pokalbio mygtuko, nebe ant jo.
+- 🎨 temos pasirinkimas veikia kiekvienam prisijungusiam (anksčiau - tik administratoriams).
+
+**🧩 Visoje svetainėje**
+- Failų laukai (testai, renginio priedas ir nuotrauka, naujienų nuotraukos) - lietuviškas rėmelis „Pasirinkite… arba nutempkite čia“ su pasirinkto failo pavadinimu,
+  vietoj naršyklės „Choose File“.
+- Atsisiuntimo mygtukai (Excel, CSV, kontaktai, klausimai) - su atsisiuntimo piktograma.
+- Standartų pataisos: nebėra naujų `!important`, plotai tik 480 / 768 / 1100 / 1440, paslėpti mygtukai tikrai paslėpti.
+  Dojo kompiuteryje: gyvūnėliai vaikšto ten pat, kur stovi personažas.
+
+## v1.50 - 2026-11-20 (testų peržiūra Deniui, „Visi nariai“ taškuose, paskyros patogumai, Dojo paslėptas, gongai, saugi bandomosios treniruotės forma)
+**Reikia atnaujinti duomenų bazę: db/045** (Pradžia → „Atnaujinkite duomenų bazę“). Zip'o turinį išpakuokite **tiesiai į svetainės aplanką**.
+
+**🔍 Testų klausimų peržiūra (db/045)**
+- Testai → testas → „📥 Įkelti klausimus“: galima įkelti kartu ir **paveikslėlius** (.png, .jpg) arba **vieną ZIP** su klausimais ir paveikslėliais.
+  Paveikslėlis priskiriamas pagal eilutę „Paveikslėlis: Q12.png“ arba pagal numerį pavadinime (Q12.png, 12.jpg).
+  „Paveikslėlis: aprašymas“ (be failo) - išsaugomas kaip priminimas „🖼 Reikia paveikslėlio: …“.
+- Du mygtukai: **„🔍 Įkelti peržiūrai“** (nariams nerodomi, kol nepatvirtinsite) ir „Įkelti iš karto į testą“ (kaip anksčiau).
+- Naujas puslapis **„🔍 Peržiūrėti klausimus“** (testo viršuje): klausimai po vieną, „Toliau →“. Nieko nepažymėta - gerai.
+  ✕ - visas klausimas netinka; ✕ prie atsakymo - tas atsakymas netinka; 💬 - komentaras (klausimui ar atsakymui).
+  Tekstą, atsakymus, teisingą atsakymą, paaiškinimą ir paveikslėlį galima taisyti iškart - išsaugoma savaime.
+  Paveikslėlį galima pridėti mygtuku, įklijuoti (Ctrl+V) ar nutempti. Viršuje - numerių juosta: žalia - peržiūrėta, raudona - su pastabomis.
+- „⬇ Atsisiųsti pastabas ChatGPT“ - tik pažymėti klausimai, pastabos eilutėse „>>“. ChatGPT pataiso, failas įkeliamas atgal („Įkelti peržiūrai“) -
+  pataisyti klausimai vėl laukia peržiūros, senos pastabos išvalomos.
+- „✓ Įtraukti į testą peržiūrėtus be pastabų“ - peržiūrėti ir nepažymėti klausimai tampa matomi nariams.
+- „🤖 ChatGPT nustatymas vieną kartą“: tekstas, kurį Denis įklijuoja ChatGPT projekto „Instructions“ - tada ChatGPT visada ruošia tinkamu formatu.
+
+**⭐ Aktyvumo taškai**
+- #141: reitinge mygtukas **„👥 Visi nariai“** - visi aktyvūs nariai (ir be taškų), rikiuoti A–Ž, pagal gimimo metus, kyu ar taškus;
+  „+ Taškai“ prie vardo - iš sąrašo arba „✎ Kita - įrašysiu pats“ (tada komentaras privalomas).
+
+**👤 Paskyros**
+- #146: Nustatymai → Mano paskyra → **„Vardas, pavardė“** - galima pasikeisti pačiam.
+- #143: slaptažodžio laukai su 👁 (parodyti / paslėpti); keičiant slaptažodį - „Pakartokite naują slaptažodį“ (ir Paskyrose kuriant).
+- #144: viršuje ▾ (Žiūrėti kaip) - „⚙️ Mano paskyra“ ir **„Atsijungti“**.
+- #142: Paskyrose nebėra „be pokalbių lango“ jungiklio.
+- „🧪 Testuotojas“ ženkliuką administratorius gali uždėti bet kuriai paskyrai (ne tik administratoriams).
+
+**🏯 Dojo**
+- #140: kol žaidimas neatidarytas nariams, **meniu ir paskyroje jo nemato niekas**. Administratoriai jį atidaro: Valdymas → Testavimas → „Atidaryti Dojo →“.
+  Jei Dojo buvo atidarytas visiems, db/045 jį vieną kartą paslepia.
+- #145: Nustatymuose nebėra „🏯 Žaidimas“ skilties.
+- #148: „Žiūrėti kaip vaikas“ - matai tiksliai tai, ką mato vaikas (be žaidimo).
+- #149, #150: fonas nebeblukintas; kompiuteryje personažas centre, skydeliai kampuose kaip žaidimuose (savybės kairėje viršuje, „Žaisti“ dešinėje).
+
+**🥋 Budo**
+- #151, #152: Jiyu ir pratęsime likus 30 s - vienas gongas, pabaigoje - dvigubas (du iškart vienas po kito). Laikmačio nustatymuose 🔔 galima pasirinkti gongo garsą (gilus, šviesus, varpas).
+
+**🏠 Pagrindinis puslapis**
+- #138, #139: trenerio kortelės lange - „✎ Redaguoti šią kortelę“ (savo kortelėje - „✎ Pasitaisyti savo informaciją“): atidaro redagavimą iškart prie tos kortelės.
+- **Plano žingsnis A5:** „2 treniruotės nemokamai“ forma apsaugota - CSRF, paslėptas laukas robotams, mažiausias pildymo laikas, ne daugiau 3 užklausų per valandą,
+  aiškios klaidos lietuviškai; laiškas siunčiamas per bendrą pašto modulį adresu iš `notify_email`. Serverio `config.php` blokas `smtp` nebereikalingas.
+
+## v1.49 - 2026-11-20 (testuotojai, Budo dalyviai lengviau, atsiliepimai #126-#137, XP = aktyvumo taškai, švelnesnės temos, ramesnis Dojo)
+**Reikia atnaujinti duomenų bazę: db/044** (Pradžia → „Atnaujinkite duomenų bazę“). Zip'o turinį išpakuokite **tiesiai į svetainės aplanką**.
+
+**🧪 Testuotojai (db/044)**
+- Visi administratoriai, išskyrus Denį (ir paskyrą be pokalbių lango), tampa **testuotojais**: šalia vardo ženkliukas „🧪 Testuotojas“.
+- Testuotojas gali tiek, kiek treneris; Nustatymus mato, bet keisti negali; Dojo ir žaidimo nemato.
+- Valdymas → Nustatymai → Paskyros ir rolės: prie kiekvienos trenerio ar administratoriaus paskyros mygtukas „🧪 Testuotojas“ (įjungti / išjungti).
+- Tikri administratoriai (ne testuotojai) žaidimą mato visada. Paskutinio administratoriaus pakeisti ar išjungti negalima.
+
+**🥋 Budo: dalyvius pridėti lengva**
+- „+ Naujos varžybos“: data jau šiandienos; iškart galima pažymėti klubo narius (paieška, visa grupė vienu paspaudimu) ir įrašyti naujus žmones (po vieną eilutėje).
+  Varnelės „Kata“ / „Kumite“ - iškart po vieną grupę visiems ir vienas tatamis: mažas varžybas per treniruotę galima pradėti iškart.
+- Dalyviai: paieškos laukelis ir ieško, ir prideda - rodo dar nepridėtus klubo narius (vienu paspaudimu) arba „+ Pridėti naują: …“. Enter prideda.
+  „Naujas“ laukelyje Enter prideda; įklijavus kelias eilutes - pridedami visi.
+- #126: kovos skydelyje viršuje - „Ruošiasi: A vs B“.
+- #130: virš „Tatamiai ir kovų trukmė“ užrašų nebėra teksto žymeklio; langelis visada telpa ekrane („+ Tatamis“ vėl pasiekiamas telefone ir kompiuteryje).
+- #135: jauniausių amžiaus grupės langelyje „−“, vyriausių - „+“.
+
+**📋 Egzaminai ir testai**
+- #133: protokole balas 6,3 ir mažiau - langelis raudonas (ir išlaikiusiųjų eilutėje); neišlaikius - raudona visa eilutė.
+- #136: 10 kyu - laipsnių sąraše ir kainose (Egzaminai → Kainos). Jau įrašytos kainos nepasislenka.
+- #137: Testai → testas → „📥 Įkelti klausimus“ → „⬇ Atsisiųsti visus klausimus su atsakymais“. Pataisykite failą (pvz. su ChatGPT)
+  ir įkelkite atgal - klausimai su [#numeriu] pataisomi vietoje, nauji pridedami, kiti nepaliečiami.
+
+**⭐ XP = aktyvumo taškai**
+- Viena sistema: už treniruotes, renginius, testus gauni XP (aktyvumo taškus), nuo jų - lygis, kiekvienas naujas lygis - dovanų dėžė Dojo.
+- Nario puslapyje: „45 XP · aktyvumo taškai“, „iki 2 lygio: 55 XP“ (🎁 - jei mato Dojo). Pranešimas apie naują lygį - su dovana, kai Dojo atidarytas visiems.
+
+**🎨 Temos (#112)**
+- Kalnai, Jūra, Kopos, Sakura, Ruduo, Žiema, Dojo ir Vulkanas nupiešti iš naujo: švelnios kreivės vietoj kampų, rūkas tolumoje, saulės šviesa, daugiau detalių.
+- Kosmosas: žiedinė planeta su šviesa, juodoji skylė su švytinčiu disku, ryškesni ūkai.
+
+**🏯 Dojo (mato tik administratoriai)**
+- Paprastesnis, kaip visa svetainė: šviesi kortelė vietoj medinio rėmo, aplinka išblukinta, personažas su šviesa ir baltu kontūru - aiškiai išsiskiria.
+  Mygtukai - švarios baltos kortelės; telefone mygtukai po paveikslu, personažo neuždengia.
+- #128: reitingas skiltimis - ⭐ Lygis (pagal tikrus XP), ⚔ Karate kova, ⚡ Greita kova, 🟦 Keturi iš eilės, 🥁 Kata ritmas; „Tavo vieta“.
+
+**🛠 Valdymas**
+- #129: šoninis meniu prasideda kartu su pirmu turinio bloku (nebe aukščiau).
+- #87 (praleista anksčiau): „Šiandien: N“ Pradžioje skaičiuoja tas pačias grupes, kaip „Treniruotė“ (nebe tvarkaraščio eilutes).
+- #62 (praleista anksčiau): Budo telefone su atidarytu kovos skydeliu naršyklės „Atgal“ pirmiausia uždaro skydelį, grupė lieka atidaryta.
+- #131: „Apie klubą ▾“ atsiveria žemyn po mygtuku - nebeuždengia logotipo, kalbos ir temos mygtukų.
+
 ## v1.48 - 2026-11-20 (Budo rezultatai nebedingsta; saugumo pataisos; laikmatis nuo 0; smulkmenos)
 **Duomenų bazės atnaujinti nereikia.** Zip'o turinį išpakuokite **tiesiai į svetainės aplanką**.
 

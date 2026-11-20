@@ -23,7 +23,7 @@
 4. The way of working needs three fixes: `main` is 92 commits behind, there is no `CLAUDE.md` in the repo, and asks get lost between sessions.
 5. Every finding below points to a step in `docs/darbo-planas.md`.
 
-**Already fixed in v1.48 (right after this review):** B-1, B-2, B-9, R-2, R-3, R-4, R-5, F-1, F-10, N-10, M-8 (wording), S-7, D-7 and the footer spelling. The rows stay in the tables below as a record; `docs/darbo-planas.md` shows what is still open.
+**Already fixed in v1.48 (right after this review):** B-1, B-2, B-9, R-2, R-3, R-4, R-5, F-1, F-10, N-10, M-8 (wording), S-7, D-7 and the footer spelling. **In v1.49:** R-1 (testers), B-8, B-10, N-4, N-5, N-15, E-1, E-2, G-4, part of B-6 (participants and quick groups). The rows stay in the tables below as a record; `docs/darbo-planas.md` shows what is still open.
 
 **How this was done.** Eleven areas were read by separate readers, each claim with `file:line` and a quoted line that a script then checked against the code: 1,538 references, none wrong. Two areas (Budo, Valdymas) were also walked in a browser at 375, 768, 1280/1440, 1920 and 2560 px, with about 200 screenshots. I re-checked the most serious claims myself in the code.
 

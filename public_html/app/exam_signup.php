@@ -156,11 +156,30 @@ function exam_row_find(int $eventId, string $name, string $birth): ?array
 }
 
 /** Diržo lygis pagal protokolo „kyu“ tekstą (pvz. „8 kyu“ → 2) */
+/**
+ * Egzaminų laipsniai (#136): 10 kyu (pradinis, baltas) + diržai nuo 9 kyu iki 1 dan.
+ * 10 kyu turi raktą 0 - nauji raktai, jau išsaugotos kainos (1-10) nepasislenka.
+ */
+const EXAM_EXTRA_GRADES = [0 => ['10 kyu', 'baltas', '#FFFFFF']];
+function exam_grades(): array
+{
+    $out = EXAM_EXTRA_GRADES;
+    foreach (BELTS as $lvl => $b) {
+        if ($lvl <= 10) {
+            $out[$lvl] = $b;
+        }
+    }
+    return $out;
+}
+
 function exam_kyu_level(?string $kyu): ?int
 {
     $k = mb_strtolower(trim((string) $kyu));
     if ($k === '') {
         return null;
+    }
+    if ($k === '10 kyu' || $k === '10') {
+        return 0;
     }
     foreach (BELTS as $lvl => $b) {
         if ($k === mb_strtolower($b[0]) || $k === (string) (int) $b[0] && mb_strpos(mb_strtolower($b[0]), 'kyu') !== false) {
@@ -178,7 +197,7 @@ function exam_prices(): array
     $p = json_decode((string) site_setting('exam_prices', '{}'), true);
     $out = [];
     foreach (is_array($p) ? $p : [] as $lvl => $v) {
-        if (isset(BELTS[(int) $lvl]) && is_numeric($v) && (float) $v > 0) {
+        if (isset(exam_grades()[(int) $lvl]) && is_numeric($v) && (float) $v > 0) {
             $out[(int) $lvl] = round((float) $v, 2);
         }
     }
@@ -188,7 +207,7 @@ function exam_prices(): array
 function exam_price_for(?string $kyu): ?float
 {
     $lvl = exam_kyu_level($kyu);
-    return $lvl ? (exam_prices()[$lvl] ?? null) : null;
+    return $lvl !== null ? (exam_prices()[$lvl] ?? null) : null;
 }
 
 /** Mokėjimo informacija (rekvizitai, kol nėra mokėjimų internetu) */

@@ -129,7 +129,7 @@ test('Budo: centred on a wide screen; phone score cards keep the view in place',
   noJsErrors(a, p);
 });
 
-test('game hidden: only chosen accounts (Denis) see Dojo; settings switch', async ({ browser }) => {
+test('game hidden: nobody sees Dojo in menus until it is open to all; real admins open it from Testavimas (#140, #145)', async ({ browser }) => {
   const adminId = +sql("SELECT id FROM accounts WHERE email = 'info@karateka.lt'");
   sql(`INSERT INTO site_settings (name, value) VALUES ('game_access', '[${adminId}]') ON DUPLICATE KEY UPDATE value = '[${adminId}]'`);
   const k = await login(browser, 'jaunuolis@karateka.test', 1280, 900);
@@ -141,13 +141,15 @@ test('game hidden: only chosen accounts (Denis) see Dojo; settings switch', asyn
   check('kid: game API closed', r.status() === 403 && /neprieinamas/.test(await r.text()), r.status() + ' ' + (await r.text()).slice(0, 80));
   const a = await login(browser, 'info@karateka.lt', 1280, 900);
   await a.goto('dojo.php');
-  check('Denis sees the game', a.url().includes('dojo.php') && await a.locator('.nav-game').count() === 1);
+  check('Denis can open the game', a.url().includes('dojo.php'));
+  check('but no Dojo in the menu while hidden', await a.locator('.nav-game').count() === 0);
   await a.goto('admin/nustatymai.php');
-  check('settings: who sees it', /Mato tik/.test(await a.textContent('#zaidimas')));
-  await nav(a, () => a.click('#zaidimas button:has-text("Rodyti visiems")'));
-  check('switched to everyone', sql("SELECT value FROM site_settings WHERE name = 'game_access'") === 'all');
+  check('no game section in settings (#145)', await a.locator('#zaidimas').count() === 0);
+  await a.goto('admin/testavimas.php');
+  check('admin link in Testavimas', await a.locator('a:has-text("Atidaryti Dojo")').count() === 1);
+  sql("UPDATE site_settings SET value = 'all' WHERE name = 'game_access'");
   await k.goto('paskyra.php');
-  check('kid sees Dojo again', await k.locator('.nav-game').count() === 1);
+  check('open to all: kid sees Dojo again', await k.locator('.nav-game').count() === 1);
   sql("DELETE FROM site_settings WHERE name = 'game_access'");
   noJsErrors(a, k);
 });

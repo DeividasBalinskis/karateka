@@ -46,13 +46,14 @@
     var hour = new Date().getHours(), night = hour >= 21 || hour < 6;
     html += '<div class="dw-obj dw-hero live" title="' + esc(H.name) + '">' + A.hero(cfg(H)) + '</div>';
     (H.pets || []).forEach(function (p, i) {
-      html += '<div class="dw-obj dw-pet" data-pet="' + p.id + '" style="left:' + [22, 48, 14, 54, 8, 60][i % 6] + '%;bottom:' + (4 + (i * 5) % 9) + '%" title="' + esc(p.name) + '">' + A.pet(p.species, p.color) + '</div>';
+      html += '<div class="dw-obj dw-pet" data-pet="' + p.id + '" style="left:' + [22, 48, 14, 54, 8, 60][i % 6] + '%;bottom:calc(var(--pet-lift, 0%) + ' + (4 + (i * 5) % 9) + '%)" title="' + esc(p.name) + '">' + A.pet(p.species, p.color) + '</div>';
     });
     html += '<div class="dw-fx">' + particles(night) + '</div>';
     // Pirmą kartą - kvietimas susikurti herojų (ne iššokantis langas, kad neuždengtų kitų pranešimų)
     if (!ro && !(H.look && +H.look.setup)) html += '<button type="button" class="dw-setup" data-act="editor">👋 ' + T('Susikurk savo herojų!') + '</button>';
     var w = $('.dw');
     w.style.backgroundImage = 'url(' + A.sceneUrl(bg ? bg.a.sc : 'dojo') + ')';
+    w.style.setProperty('--scene', 'url(' + A.sceneUrl(bg ? bg.a.sc : 'dojo') + ')');   // v1.49: ramus vaizdas - aplinka išblukinta, personažas ryškus
     w.innerHTML = html;
     wander();
   }
@@ -86,7 +87,7 @@
         el.classList.toggle('flip', nx < cur);
         el.classList.add('walk');
         el.style.left = nx.toFixed(1) + '%';
-        el.style.bottom = (3 + Math.random() * 12).toFixed(1) + '%';
+        el.style.bottom = 'calc(var(--pet-lift, 0%) + ' + (3 + Math.random() * 12).toFixed(1) + '%)';   // --pet-lift: kur „žemė“ (CSS)
         clearTimeout(el._t); el._t = setTimeout(function () { el.classList.remove('walk'); }, 2600);
       });
     };
@@ -131,7 +132,8 @@
       '<button type="button" class="xp-track df-xp" data-xp-more aria-expanded="false" title="' + esc(T('Už ką gauta ir kaip gauti daugiau')) + '"><i style="width:' + pct + '%"></i><span>' + x.into + ' / ' + per + ' XP</span></button>' +
       (H.xpWays ? '<button type="button" class="df-more" data-xp-more>' + T('Už ką XP?') + ' ▾</button>' +
         '<div class="df-log" hidden><div><h4>' + T('Už ką gauta') + '</h4>' + ((H.xpLog || []).length ? '<ul>' + H.xpLog.map(function (r) { return '<li><span>' + esc(r.n) + (r.e ? ' <small>' + esc(r.e) + '</small>' : '') + ' <small>' + esc(r.d) + '</small></span><b>+' + r.p + '</b></li>'; }).join('') + '</ul>' : '<p class="small muted">' + T('Dar nieko - XP ateina iš aktyvumo taškų klube.') + '</p>') + '</div>' +
-        '<div><h4>' + T('Kaip gauti daugiau') + '</h4><ul>' + H.xpWays.map(function (w) { return '<li><span>' + esc(w.n) + '</span><b>+' + w.p + '</b></li>'; }).join('') + '</ul></div></div>' : '');
+        '<div><h4>' + T('Kaip gauti daugiau') + '</h4><ul>' + H.xpWays.map(function (w) { return '<li><span>' + esc(w.n) + '</span><b>+' + w.p + '</b></li>'; }).join('') + '</ul>' +
+        '<p class="small df-gift">🎁 ' + T('XP = aktyvumo taškai klube. Kiekvienas naujas lygis - dovanų dėžė.') + '</p></div></div>' : '');
     if (foot && !foot.dataset.xpBound) {
       foot.dataset.xpBound = '1';
       foot.addEventListener('click', function (e) {
@@ -325,6 +327,7 @@
   function renderAll() { head(); world(); ui(); side(); renderEquip(); renderInv(); renderPets(); renderHome(); renderTest(); renderCol(); }
 
   function build() {
+    root.classList.add('calm');   // v1.49: paprastesnis Dojo, kaip visa svetainė (šviesios kortelės)
     var pane = function (name, inner) { return '<section class="sc-pane" data-pane="' + name + '" hidden>' + inner + '</section>'; };
     root.innerHTML = '<div class="dojo-head"></div><div class="dw-frame"><i class="fr-c tl"></i><i class="fr-c tr"></i><i class="fr-c bl"></i><i class="fr-c br"></i><div class="dw-wrap"><div class="dw"></div><div class="dw-ui"></div>' +
       '<div class="dw-scroll" hidden><i class="sc-rod top"></i><div class="sc-paper"><button type="button" class="sc-x" data-act="pane-close" aria-label="' + esc(T('Uždaryti')) + '">×</button><h3 class="sc-title"></h3><div class="sc-body">' +

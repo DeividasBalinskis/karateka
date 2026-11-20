@@ -47,6 +47,9 @@ if (is_post()) {
         if (!$cat || isset(XP_AUTO_RULES[(string) $cat['code']]) || $pts < 1 || $pts > 1000) {
             exit(json_encode(['ok' => false, 'error' => t('Pasirinkite, už ką, ir kiek taškų (1-1000).')], JSON_UNESCAPED_UNICODE));
         }
+        if ($cat['code'] === 'other' && trim((string) post('note')) === '') {   // #141: „Kita“ - būtinas komentaras
+            exit(json_encode(['ok' => false, 'error' => t('Parašykite, už ką skiriate taškus.')], JSON_UNESCAPED_UNICODE));
+        }
         if (!award_xp_to_members([(int) post('member_id')], $cat, $pts, date('Y-m-d'), post('note') ?: null, (int) $me['id'])) {
             exit(json_encode(['ok' => false, 'error' => t('Narys nerastas.')], JSON_UNESCAPED_UNICODE));
         }
@@ -103,7 +106,7 @@ $recent = q_all('SELECT pa.*, pc.name AS category_name, m.first_name, m.last_nam
 page_start(t('Aktyvumo taškai'), ['admin' => true]);
 ?>
 <div class="page-head">
-  <h1 class="styled"><?= te('Aktyvumo taškai ir reitingas') ?></h1>
+  <h1 class="styled"><?= te('Aktyvumo taškai (XP) ir reitingas') ?></h1>
   <p><?= e($seasonLabel) ?> (<?= e(fmt_date($from, true)) ?> – <?= e(fmt_date($to, true)) ?>).
     <?= te('Aktyvumo taškai: iš sezono taškų skaičiuojamas reitingas, iš visų kada nors surinktų - nario lygis.') ?></p>
 </div>

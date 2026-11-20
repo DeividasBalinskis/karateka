@@ -17,7 +17,7 @@ Paths are relative to `public_html/` unless they start with `db/`, `tools/`, `te
 |---|---|
 | Competition system | **Budo**. Never "Taika" in visible text. Old internal keys (`taika_*`) keep working until step C2 renames them. |
 | Game | **Dojo**. |
-| Points | **Aktyvumo taškai** everywhere. **XP** only inside the game. |
+| Points | One system (v1.49, Deividas): **XP = aktyvumo taškai**. Shown as "45 XP · aktyvumo taškai"; menus and pages keep "Aktyvumo taškai". Levels come from XP; every new level gives a gift box in the Dojo. |
 | Sport | **karate**, never "karatė". **karate-do** with a hyphen. |
 | Call to action for guests | **Išbandyti** (the header still says "2 treniruotės nemokamai" — ask Denis, step B9). |
 | Members | "nariai", not "karatekai". |
@@ -195,6 +195,14 @@ Kinds: `sekr`, `demo`, `live`, `reg`, `awards`, `quiz`, `exam_signup`, `exam_row
 11. Header, side menu and content share one container width per breakpoint.
 12. Content is centred and capped on wide screens (Budo: 1680 px).
 13. Once a look is agreed, it is not replaced by a simpler one. Supplied or approved pictures are used as they are.
+14. **Shared parts (v1.51), use them instead of new ones:**
+    - Icons: `icon('download' | 'upload' | 'trash' | 'plus' | 'check' | 'x' | 'copy' | 'search' | 'image' | 'comment' | …)` from `app/icons.php`,
+      placed before the button text. No emoji or ⬇ / 🗑 / ✕ characters as button icons.
+    - File inputs: only `file_drop($name, $accept, $title, $hint, $multiple)` (Lithuanian text, drag and drop, chosen file names).
+      Never the browser's own "Choose File".
+    - A button with only an icon: `.icon-btn` (44 × 44, `title` + `icon($name, $label)` for screen readers); red only for delete (`.danger`).
+    - Downloads: `.btn.btn-ghost` with `icon('download')`; copy buttons: `data-copy="<id of the text>"`.
+    - Text inside a `.btn` goes in one `<span>` (otherwise the flex gap splits "Ištrinti (3)" into pieces).
 
 **Game art (target, step D8)**
 - One grid per kind: characters one fixed size, pets 32×32, items 24×24, icons 18×18, scenes 320×180. Whole-number scaling, sharp pixels.
@@ -282,7 +290,7 @@ Gyva svetainė (karateka.lt): neliesta
 These were agreed. Do not change them without asking. (They move to `docs/decisions.md` in step C9.)
 
 - **Workflow:** GitHub is the source of truth; the local folder and test.karateka.lt stay current. Nothing goes to live karateka.lt without an explicit GO and settled privacy and photo consent.
-- **Names:** Budo (addresses and data unchanged); Dojo; Aktyvumo taškai / XP; "Išbandyti"; "nariai".
+- **Names:** Budo (addresses and data unchanged); Dojo; XP = aktyvumo taškai (one system since v1.49; replaces "XP only in the game" from #89); "Išbandyti"; "nariai".
 - **Accounts:** only Deividas and Denis are real admins; everyone else is a tester. The game is visible only to chosen accounts (today: Denis). The IT account has no chat. Parents register first.
 - **Navigation:** admin menu B+C — desktop side menu grouped Kasdien / Klubas / Tvarkyti, at most 2 levels; phone and tablet: bottom tab bar with "⋯ Daugiau". Logo ▾ switches Karateka / Budo / LTKF. One admin switch with "Žiūrėti kaip". Arrows only on things that open; menus open on click, close on a second click or a click outside; nothing shifts. Theme and language per account with an admin default.
 - **Budo:** default bracket per category type; Fukugo/KITEI alternation; team kumite carries points; team kata with 2 scores (dropped highs and lows stay visible); sumo first to N; round robin by flag count. Kata final starts with the lowest semi-final score. The scoring system is named after the discipline; medals are a separate setting; a final keeps its system. Kumite +4. AKA fully red, SHIRO fully white. Scores have one decimal and move on by themselves; no average anywhere. Timer: starts at 0:10, Enbu counts up, "Jiyu / Pratęsimas 1:30", a gong, reset after 3 s. Brackets are an admin-only tree; spectators use "Rask save". The schedule is the main page. "Group finished" card, then awards. Secretariat by link with a first name only. Only the main admin removes a tatami. Any number of judges.

@@ -12,6 +12,7 @@ date_default_timezone_set('Europe/Vilnius');
 mb_internal_encoding('UTF-8');
 
 require APP_DIR . '/helpers.php';
+require APP_DIR . '/icons.php';
 require APP_DIR . '/i18n.php';
 require APP_DIR . '/translations.php';
 

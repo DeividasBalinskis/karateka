@@ -7,10 +7,24 @@ $me = require_staff();
 const QUIZ_DIR = PUBLIC_DIR . '/uploads/quiz';
 
 $id = (int) (get('id') ?: post('id'));
+
+// #137: atsisiųsti visą klausimyną su atsakymais (tekstas, kurį galima pataisyti ir įkelti atgal)
+if ($id && get('eksportas') === '1') {
+    $qz = q_one('SELECT title FROM quizzes WHERE id = ?', [$id]);
+    if ($qz) {
+        $fn = preg_replace('/[^\w\-]+/u', '-', mb_strtolower(trim((string) $qz['title']))) ?: 'testas';
+        header('Content-Type: text/plain; charset=utf-8');
+        $fn = trim($fn, '-') . '-klausimai.txt';
+        header('Content-Disposition: attachment; filename="testas-' . $id . '-klausimai.txt"; filename*=UTF-8\'\'' . rawurlencode($fn));
+        echo "\u{FEFF}" . quiz_export_text($id);
+        exit;
+    }
+}
 $errors = [];
 $failed = null;        // klausimas, kurio nepavyko išsaugoti (rodomas su įvestais duomenimis)
 $importItems = null;   // įkeliamų klausimų peržiūra
 $importText = '';
+$importImages = ['by_name' => [], 'by_num' => []];
 
 /** Klausimo formos duomenys -> DB (naujas arba esamas) */
 function save_question(int $quizId, int $qid, array &$errors): ?int
@@ -89,6 +103,49 @@ function question_from_post(): array
             'youtube_id' => '', 'youtube_raw' => $yt, 'image' => post('qid') ? q_value('SELECT image FROM quiz_questions WHERE id = ?', [(int) post('qid')]) : null];
 }
 
+/**
+ * Įkelti failai (laukai import_files[] ar import_file): klausimų tekstas (.txt, .csv, .json), paveikslėliai ir/ar ZIP.
+ * Grąžina [tekstas, paveikslėliai (quiz_import_images), klaidos, ar buvo paveikslėlių / ZIP].
+ */
+function quiz_collect_upload(string $text): array
+{
+    $upl = $errors = [];
+    foreach (['import_file', 'import_files'] as $fk) {
+        $f = $_FILES[$fk] ?? null;
+        if (!$f) {
+            continue;
+        }
+        foreach ((array) $f['name'] as $k => $nm) {
+            $tmp = is_array($f['tmp_name']) ? $f['tmp_name'][$k] : $f['tmp_name'];
+            if ($nm !== '' && $tmp && is_uploaded_file($tmp)) {
+                $upl[] = ['name' => (string) $nm, 'tmp_name' => $tmp, 'size' => (int) (is_array($f['size']) ? $f['size'][$k] : $f['size'])];
+            }
+        }
+    }
+    $textFiles = array_values(array_filter($upl, function ($f) { return preg_match('/\.(txt|csv|json|md)$/i', $f['name']); }));
+    $mediaFiles = array_values(array_filter($upl, function ($f) { return preg_match('/\.(zip|png|jpe?g|webp)$/i', $f['name']); }));
+    if ($textFiles) {
+        if ($textFiles[0]['size'] > 2 * 1024 * 1024) {
+            $errors[] = t('Failas per didelis (iki 2 MB).');
+        } else {
+            $text = (string) file_get_contents($textFiles[0]['tmp_name']);
+        }
+    }
+    $images = ['by_name' => [], 'by_num' => []];
+    if ($mediaFiles) {
+        $got = quiz_import_images($mediaFiles, QUIZ_DIR);
+        $images = ['by_name' => $got['by_name'], 'by_num' => $got['by_num']];
+        if (!$textFiles && $got['text'] !== '') {
+            $text = $got['text'];   // klausimai.txt ZIP viduje
+        }
+        $errors = array_merge($errors, $got['errors']);
+    }
+    if ($text !== '' && !mb_check_encoding($text, 'UTF-8')) {
+        $text = mb_convert_encoding($text, 'UTF-8', 'Windows-1257');   // Excel CSV lietuviškai
+    }
+    return [$text, $images, $errors, (bool) $mediaFiles];
+}
+
 /** Klausimo forma (naujam - tuščia); $errs - klaidos rodomos pačioje formoje */
 function question_form(int $quizId, ?array $q, array $errs = []): string
 {
@@ -96,26 +153,39 @@ function question_form(int $quizId, ?array $q, array $errs = []): string
     while (count($answers) < 4) {
         $answers[] = ['id' => 0, 'body' => '', 'is_correct' => 0];
     }
-    $html = '<form method="post" enctype="multipart/form-data" class="form q-form" novalidate>' . csrf_field() . ($errs ? form_errors($errs) : '')
+    $qid = (int) ($q['id'] ?? 0);
+    $yt = isset($q['youtube_raw']) ? (string) $q['youtube_raw'] : (!empty($q['youtube_id']) ? 'https://youtu.be/' . $q['youtube_id'] : '');
+    $hasMore = trim((string) ($q['explanation'] ?? '')) !== '' || trim((string) ($q['topic'] ?? '')) !== '' || $yt !== '' || !empty($q['image']);
+    $html = '<form method="post" enctype="multipart/form-data" class="form q-form qf" novalidate>' . csrf_field() . ($errs ? form_errors($errs) : '')
         . '<p class="q-err flash flash-err" hidden></p>'
-        . '<input type="hidden" name="id" value="' . $quizId . '"><input type="hidden" name="action" value="question"><input type="hidden" name="qid" value="' . (int) ($q['id'] ?? 0) . '">'
-        . ('<label>' . t('Klausimas') . ' <textarea name="body" rows="2" required>') . e($q['body'] ?? '') . '</textarea></label>'
-        . ('<div class="q-answers-edit"><span class="hint">' . t('Atsakymai (užtenka 2; pažymėkite teisingą)') . '</span>');
+        . '<input type="hidden" name="id" value="' . $quizId . '"><input type="hidden" name="action" value="question"><input type="hidden" name="qid" value="' . $qid . '">'
+        . '<label class="qf-field"><span class="qf-label">' . te('Klausimas') . '</span>'
+        . '<textarea name="body" rows="2" required class="qf-question" placeholder="' . te('pvz. Kaip japoniškai „vienas“?') . '">' . e($q['body'] ?? '') . '</textarea></label>'
+        . '<div class="q-answers-edit qf-answers" role="radiogroup" aria-label="' . te('Atsakymai') . '">'
+        . '<span class="qf-label">' . te('Atsakymai') . ' <span class="hint">' . te('paspauskite raidę prie teisingo; užtenka 2') . '</span></span>';
     foreach (array_slice($answers, 0, 4) as $i => $an) {
-        $html .= '<div class="ans-row"><input type="radio" name="correct" value="' . $i . '" ' . ($an['is_correct'] ? 'checked' : '') . ' aria-label="' . e(t('Teisingas')) . '">'
+        $L = chr(65 + $i);
+        $html .= '<div class="ans-row qf-ans">'
+            . '<label class="qf-ok" title="' . te('Teisingas atsakymas') . '"><input type="radio" name="correct" value="' . $i . '" ' . ($an['is_correct'] ? 'checked' : '') . ' aria-label="' . e(t('Teisingas') . ': ' . $L) . '">'
+            . '<span class="qf-letter" aria-hidden="true">' . $L . '</span><span class="qf-tick" aria-hidden="true">' . icon('check') . '</span></label>'
             . '<input type="hidden" name="ans_id[' . $i . ']" value="' . (int) $an['id'] . '">'
-            . '<input type="text" name="ans_body[' . $i . ']" value="' . e($an['body']) . '" placeholder="' . ($i + 1) . ' atsakymas" enterkeyhint="next"></div>';
+            . '<input type="text" name="ans_body[' . $i . ']" value="' . e($an['body']) . '" placeholder="' . e(t('Atsakymas') . ' ' . $L) . '" enterkeyhint="next" maxlength="255">'
+            . '<span class="qf-ok-label">' . te('teisingas') . '</span></div>';
     }
-    $html .= '</div><div class="form-row">'
-        . ('<label>' . t('Paaiškinimas') . ' <span class="hint">' . t('nebūtina, rodomas po atsakymo') . '</span><input type="text" name="explanation" value="') . e($q['explanation'] ?? '') . '"></label>'
-        . ('<label>YouTube <span class="hint">' . t('nebūtina') . '</span><input type="text" name="youtube" value="') . (isset($q['youtube_raw']) ? e($q['youtube_raw']) : (!empty($q['youtube_id']) ? 'https://youtu.be/' . e($q['youtube_id']) : '')) . '"></label></div>'
-        . ('<label>' . t('Tema') . ' <span class="hint">' . t('nebūtina; to paties klausimo kitos formuluotės turi tą pačią temą - teste būna tik viena iš jų') . '</span>')
-        . '<input type="text" name="topic" value="' . e($q['topic'] ?? '') . '" maxlength="190" list="quizTopics"></label>'
-        . ('<div class="form-row"><label>' . t('Paveikslėlis') . ' <span class="hint">' . t('nebūtina, pvz. stovėsena ar smūgis') . '</span><input type="file" name="image" accept="image/jpeg,image/png,image/webp"></label>');
+    $html .= '</div>'
+        . '<details class="qf-more"' . ($hasMore ? ' open' : '') . '><summary>' . icon('plus') . ' ' . te('Paaiškinimas, tema, paveikslėlis, video') . '</summary><div class="qf-more-grid">'
+        . '<label class="qf-field"><span class="qf-label">' . icon('bulb') . ' ' . te('Paaiškinimas') . '</span><input type="text" name="explanation" value="' . e($q['explanation'] ?? '') . '" placeholder="' . te('rodomas po atsakymo') . '"></label>'
+        . '<label class="qf-field"><span class="qf-label">' . icon('tag') . ' ' . te('Tema') . '</span><input type="text" name="topic" value="' . e($q['topic'] ?? '') . '" maxlength="190" list="quizTopics" placeholder="' . te('tik to paties klausimo kitoms formuluotėms') . '"></label>'
+        . '<label class="qf-field"><span class="qf-label">' . icon('video') . ' YouTube</span><input type="text" name="youtube" value="' . e($yt) . '" placeholder="https://youtu.be/…" inputmode="url"></label>'
+        . '<div class="qf-field"><span class="qf-label">' . icon('image') . ' ' . te('Paveikslėlis') . '</span>';
     if (!empty($q['image'])) {
-        $html .= '<label class="check" style="align-self:end;"><input type="checkbox" name="remove_image" value="1"><span>Pašalinti esamą <img src="' . e(quiz_image_url($q['image'])) . '" alt="" class="q-thumb"></span></label>';
+        $html .= '<div class="qf-img"><img src="' . e(quiz_image_url($q['image'])) . '" alt=""><label class="check"><input type="checkbox" name="remove_image" value="1"><span>' . te('Pašalinti') . '</span></label></div>';
     }
-    $html .= '</div><div class="row"><button class="btn btn-primary btn-sm" type="submit">' . (!empty($q['id']) ? t('Išsaugoti klausimą') : t('+ Pridėti klausimą')) . '</button></div></form>';
+    $html .= file_drop('image', 'image/jpeg,image/png,image/webp', !empty($q['image']) ? t('Pakeisti paveikslėlį') : t('Pasirinkite paveikslėlį'), t('JPG, PNG ar WEBP - arba nutempkite čia')) . '</div>'
+        . '</div></details>'
+        . '<div class="qf-foot"><button class="btn btn-primary" type="submit">' . icon($qid ? 'check' : 'plus') . ' ' . ($qid ? te('Išsaugoti klausimą') : te('Pridėti klausimą')) . '</button>'
+        . ($qid ? '<button class="icon-btn danger" type="submit" form="delq' . $qid . '" title="' . te('Ištrinti klausimą') . '">' . icon('trash', t('Ištrinti klausimą')) . '</button>' : '')
+        . '</div></form>';
     return $html;
 }
 
@@ -146,6 +216,19 @@ if (is_post()) {
             } else {
                 q('INSERT INTO quizzes (title, audience, belt_level, description, question_count, pass_percent, time_limit, kids_mode, is_published) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', array_values($data));
                 $id = (int) db()->lastInsertId();
+                // Kartu su nauju testu - klausimų failas (įkeliami peržiūrai: nariams nerodomi, kol nepatvirtinsite)
+                [$qText, $qImages, $qErrors] = quiz_collect_upload('');
+                if ($qText !== '') {
+                    $items = array_slice(quiz_import_parse($qText), 0, 1000);
+                    $bad = count(array_filter($items, function ($x) { return $x['error']; }));
+                    $n = quiz_import_save($id, $items, $upd, true, $qImages);
+                    flash('ok', t('Testas sukurtas. Įkelta peržiūrai: {n}.', ['n' => $n]) . ($bad ? ' ' . t('Praleista dėl klaidų: {n}.', ['n' => $bad]) : '')
+                        . ($qErrors ? ' ' . implode(' ', $qErrors) : ''));
+                    redirect('admin/testo-perziura.php?id=' . $id);
+                }
+                if ($qErrors) {
+                    flash('err', implode(' ', $qErrors));
+                }
             }
             flash('ok', t('Testas išsaugotas.'));
             redirect('admin/testai.php?id=' . $id);
@@ -167,24 +250,31 @@ if (is_post()) {
         }
         redirect('admin/testai.php?id=' . $id . '#nuoroda');
     } elseif (($action === 'import_preview' || $action === 'import_do') && $id) {
-        $importText = (string) ($_POST['import_text'] ?? '');
-        if (!empty($_FILES['import_file']['tmp_name']) && is_uploaded_file($_FILES['import_file']['tmp_name'])) {
-            if ($_FILES['import_file']['size'] > 2 * 1024 * 1024) {
-                $errors[] = t('Failas per didelis (iki 2 MB).');
-            } else {
-                $importText = (string) file_get_contents($_FILES['import_file']['tmp_name']);
-                if (!mb_check_encoding($importText, 'UTF-8')) {
-                    $importText = mb_convert_encoding($importText, 'UTF-8', 'Windows-1257');   // Excel CSV lietuviškai
+        [$importText, $importImages, $upErrors, $hadMedia] = quiz_collect_upload((string) ($_POST['import_text'] ?? ''));
+        $errors = array_merge($errors, $upErrors);
+        if (!$hadMedia && post('import_images') !== '') {
+            // Peržiūros metu jau išsaugoti paveikslėliai (tik mūsų sugeneruoti vardai)
+            $raw = json_decode((string) post('import_images'), true);
+            foreach (['by_name', 'by_num'] as $part) {
+                foreach ((array) ($raw[$part] ?? []) as $k => $f) {
+                    if (is_string($f) && preg_match('/^[a-f0-9]{24}\.jpg$/', $f) && is_file(QUIZ_DIR . '/' . $f)) {
+                        $importImages[$part][$part === 'by_num' ? (int) $k : mb_substr((string) $k, 0, 120)] = $f;
+                    }
                 }
             }
         }
-        $importItems = $errors ? [] : array_slice(quiz_import_parse($importText), 0, 1000);
-        if (!$errors && !$importItems) {
+        $importItems = array_slice(quiz_import_parse($importText), 0, 1000);
+        if (!$importItems) {
             $errors[] = t('Neradau klausimų. Patikrinkite formatą (pavyzdys - žemiau).');
         }
         if ($action === 'import_do' && $importItems) {
-            $n = quiz_import_save($id, $importItems);
-            flash('ok', t('Įkelta klausimų: {n}. Juos galite taisyti ar ištrinti žemiau.', ['n' => $n]));
+            $draft = post('draft') === '1';
+            $n = quiz_import_save($id, $importItems, $upd, $draft, $importImages);
+            if ($draft) {
+                flash('ok', t('Įkelta peržiūrai: {n}. Nariams jie dar nerodomi - peržiūrėkite ir patvirtinkite.', ['n' => $n]) . ($upd ? ' ' . t('Pataisyta: {n}.', ['n' => $upd]) : ''));
+                redirect('admin/testo-perziura.php?id=' . $id);
+            }
+            flash('ok', t('Įkelta klausimų: {n}. Juos galite taisyti ar ištrinti žemiau.', ['n' => $n]) . ($upd ? ' ' . t('Pataisyta: {n}.', ['n' => $upd]) : ''));
             redirect('admin/testai.php?id=' . $id . '#klausimai');
         }
     } elseif ($action === 'delete_questions' && $id) {
@@ -233,16 +323,23 @@ if ($id || get('id') === 'new' || get('new')) {
             $all[] = $row;
         }
     }
-    $distinct = quiz_distinct_count($all);   // skirtingų klausimų (to paties klausimo formuluotės - vienas)
+    $drafts = count(array_filter($all, function ($r) { return (int) ($r['is_draft'] ?? 0) === 1; }));
+    $distinct = quiz_distinct_count(array_filter($all, function ($r) { return (int) ($r['is_draft'] ?? 0) === 0; }));   // skirtingų klausimų (to paties klausimo formuluotės - vienas)
     page_start($id ? (t('Testas:') . ' ') . $quiz['title'] : t('Naujas testas'), ['admin' => true]);
     ?>
     <a class="small" href="<?= url('admin/testai.php') ?>"><?= te('← Visi testai') ?></a>
     <div class="page-head row between" style="margin-top:8px;">
       <h1 class="styled"><?= $id ? e($quiz['title']) : t('Naujas testas') ?></h1>
-      <?php if ($id): ?><a class="btn btn-ghost btn-sm" href="<?= url('testas.php?q=' . $id . '&rezimas=treniruote') ?>"><?= te('Išbandyti →') ?></a><?php endif; ?>
+      <?php if ($id): ?><div class="row" style="gap:8px;">
+        <a class="btn btn-sm<?= $drafts ? ' btn-primary' : ' btn-ghost' ?>" href="<?= url('admin/testo-perziura.php?id=' . $id) ?>"><?= icon('search') ?> <span><?= te('Peržiūrėti klausimus') ?><?= $drafts ? ' (' . $drafts . ')' : '' ?></span></a>
+        <a class="btn btn-ghost btn-sm" href="<?= url('testas.php?q=' . $id . '&rezimas=treniruote') ?>"><?= icon('eye') ?> <span><?= te('Išbandyti') ?></span></a>
+      </div><?php endif; ?>
     </div>
+    <?php if ($id && $drafts): ?>
+      <p class="flash flash-info"><?= te('Peržiūros laukia klausimų:') ?> <strong><?= $drafts ?></strong>. <?= te('Nariams jie dar nerodomi.') ?> <a href="<?= url('admin/testo-perziura.php?id=' . $id) ?>"><?= te('Peržiūrėti →') ?></a></p>
+    <?php endif; ?>
     <?= $importItems === null ? form_errors($errors) : '' ?>
-    <form method="post" class="panel card form">
+    <form method="post" class="panel card form" enctype="multipart/form-data">
       <?= csrf_field() ?>
       <input type="hidden" name="id" value="<?= $id ?>"><input type="hidden" name="action" value="quiz">
       <label><?= te('Pavadinimas') ?> <input type="text" name="title" value="<?= e($quiz['title']) ?>" placeholder="<?= te('pvz. Teorija geltonam diržui') ?>" required></label>
@@ -263,6 +360,12 @@ if ($id || get('id') === 'new' || get('new')) {
         </div>
       </div>
       <label><?= te('Aprašymas') ?> <span class="hint"><?= te('nebūtina') ?></span><input type="text" name="description" value="<?= e($quiz['description']) ?>"></label>
+      <?php if (!$id): ?>
+        <div class="qf-field">
+          <span class="qf-label"><?= te('Klausimai') ?> <span class="hint"><?= te('nebūtina - galima ir vėliau; įkelti klausimai laukia jūsų peržiūros') ?></span></span>
+          <?= file_drop('import_files[]', '.txt,.csv,.json,.md,.zip,.png,.jpg,.jpeg,.webp,text/plain,text/csv,application/json,application/zip,image/*', t('Įkelti klausimų failą'), t('pvz. iš ChatGPT: .txt, .csv, .json, paveikslėliai ar vienas ZIP - galima nutempti čia'), true) ?>
+        </div>
+      <?php endif; ?>
       <div class="row">
         <button class="btn btn-primary" type="submit"><?= te('Išsaugoti') ?></button>
         <?php if ($id): ?><button class="btn btn-danger" type="submit" name="action" value="delete_quiz" formnovalidate onclick="return confirm('Ištrinti testą su visais klausimais ir rezultatais?')"><?= te('Ištrinti testą') ?></button><?php endif; ?>
@@ -310,40 +413,67 @@ if ($id || get('id') === 'new' || get('new')) {
       </div>
 
       <details class="panel card import-box" id="ikelti"<?= $importItems !== null ? ' open' : '' ?>>
-        <summary><strong><?= te('📥 Įkelti klausimus iš failo ar teksto (pvz. iš ChatGPT)') ?></strong></summary>
+        <summary class="ib-head"><span class="ib-ico"><?= icon('upload') ?></span><span class="ib-title"><strong><?= te('Įkelti klausimus iš failo') ?></strong>
+          <span class="hint"><?= te('pvz. iš ChatGPT: .txt, .csv, .json, paveikslėliai ar vienas ZIP') ?></span></span><span class="ib-chev"><?= icon('chevron') ?></span></summary>
         <?= $importItems !== null ? form_errors($errors) : '' ?>
         <?php if ($importItems): $okCount = count(array_filter($importItems, function ($x) { return !$x['error']; })); ?>
-          <h3 style="margin:12px 0 6px;"><?= te('Peržiūra') ?>: <?= $okCount ?> <?= te('tinkamų') ?><?= count($importItems) - $okCount ? ', ' . (count($importItems) - $okCount) . ' ' . t('su klaidomis (nebus įkelti)') : '' ?></h3>
+          <h3 class="ib-sub"><?= te('Peržiūra') ?>: <?= $okCount ?> <?= te('tinkamų') ?><?= count($importItems) - $okCount ? ', ' . (count($importItems) - $okCount) . ' ' . t('su klaidomis (nebus įkelti)') : '' ?></h3>
           <div class="table-scroll import-preview"><table class="table small">
-            <thead><tr><th>#</th><th><?= te('Klausimas') ?></th><th><?= te('Atsakymai') ?></th><th></th></tr></thead>
+            <thead><tr><th>#</th><th><?= te('Klausimas') ?></th><th><?= te('Atsakymai') ?></th><th><?= icon('image', t('Paveikslėlis')) ?></th><th></th></tr></thead>
             <tbody>
             <?php foreach ($importItems as $k => $it): ?>
-              <tr class="<?= $it['error'] ? 'warn-row' : '' ?>"><td><?= $k + 1 ?></td><td><?= e($it['body']) ?><?= $it['topic'] ? '<div class="muted">' . te('tema:') . ' ' . e($it['topic']) . '</div>' : '' ?></td>
+              <tr class="<?= $it['error'] ? 'warn-row' : '' ?>"><td><?= $k + 1 ?></td><td><?= !empty($it['qid']) ? '<span class="badge badge-tag">' . te('pataisomas') . ' #' . (int) $it['qid'] . '</span> ' : '' ?><?= e($it['body']) ?><?= $it['topic'] ? '<div class="muted">' . te('tema:') . ' ' . e($it['topic']) . '</div>' : '' ?></td>
                 <td><?php foreach ($it['answers'] as $ai => $an): ?><div<?= $ai === $it['correct'] ? ' class="imp-ok"' : '' ?>><?= $ai === $it['correct'] ? '✓ ' : '' ?><?= e($an) ?></div><?php endforeach; ?></td>
+                <td><?php [$pimg, $pnote] = quiz_import_pick_image($it, $importImages);
+                  if ($pimg): ?><img class="imp-thumb" src="<?= e(url('uploads/quiz/thumb_' . $pimg)) ?>" alt=""><?php
+                  elseif ($it['image_ref'] !== '' && $pnote === ''): ?><span class="badge badge-warn"><?= e($it['image_ref']) ?> <?= te('nerastas') ?></span><?php
+                  elseif ($pnote !== ''): ?><span class="small muted" title="<?= e($pnote) ?>"><?= te('reikės:') ?> <?= e(mb_strimwidth($pnote, 0, 60, '…')) ?></span><?php endif; ?></td>
                 <td><?= $it['error'] ? '<span class="badge badge-warn">' . e($it['error']) . '</span>' : '<span class="badge badge-ok">OK</span>' ?></td></tr>
             <?php endforeach; ?>
             </tbody>
           </table></div>
-          <form method="post" class="row" style="gap:8px; margin-top:10px;">
+          <form method="post" class="ib-actions">
             <?= csrf_field() ?><input type="hidden" name="id" value="<?= $id ?>"><input type="hidden" name="action" value="import_do">
             <textarea name="import_text" hidden><?= e($importText) ?></textarea>
-            <button class="btn btn-primary" type="submit"<?= $okCount ? '' : ' disabled' ?>><?= te('Įkelti') ?> <?= $okCount ?> <?= te('klaus.') ?></button>
-            <span class="small muted"><?= te('Jau esantys (tokiu pačiu tekstu) praleidžiami.') ?></span>
+            <input type="hidden" name="import_images" value="<?= e(json_encode($importImages)) ?>">
+            <button class="btn btn-primary" type="submit" name="draft" value="1"<?= $okCount ? '' : ' disabled' ?>><?= icon('search') ?> <?= te('Įkelti peržiūrai') ?> (<?= $okCount ?>)</button>
+            <button class="btn btn-ghost" type="submit" name="draft" value="0"<?= $okCount ? '' : ' disabled' ?>><?= icon('upload') ?> <?= te('Įkelti iš karto į testą') ?></button>
+            <p class="hint"><?= te('„Peržiūrai“ - nariams nerodomi, kol nepatvirtinsite. Jau esantys (tokiu pačiu tekstu) praleidžiami. Su [#numeriu] - pataisomi vietoje.') ?></p>
           </form>
-          <hr>
         <?php endif; ?>
-        <form method="post" enctype="multipart/form-data" class="form" style="margin-top:10px;">
-          <?= csrf_field() ?><input type="hidden" name="id" value="<?= $id ?>"><input type="hidden" name="action" value="import_preview">
-          <label><?= te('Įklijuokite klausimus') ?> <span class="hint"><?= te('pvz. ką sugeneravo ChatGPT') ?></span>
-            <textarea name="import_text" rows="8" placeholder="1. Klausimas?&#10;A) ...&#10;B) ...&#10;C) ...&#10;Atsakymas: B"><?= e($importItems === null ? '' : $importText) ?></textarea></label>
-          <label><?= te('arba pasirinkite failą') ?> <span class="hint">.txt, .csv, .json</span><input type="file" name="import_file" accept=".txt,.csv,.json,.md,text/plain,text/csv,application/json"></label>
-          <div class="row"><button class="btn btn-ghost" type="submit"><?= te('Peržiūrėti →') ?></button></div>
-        </form>
-        <div class="import-help small">
-          <p><strong><?= te('Kaip gauti klausimus iš ChatGPT:') ?></strong> <?= te('įkelkite jam taisykles (failą ar tekstą) ir nukopijuokite šį prašymą. Atsakymą įklijuokite čia aukščiau.') ?></p>
-          <pre id="importPrompt"><?= e(quiz_import_prompt()) ?></pre>
-          <button class="btn btn-ghost btn-sm" type="button" onclick="var t=document.getElementById('importPrompt').textContent; try { navigator.clipboard.writeText(t); } catch (e) {} this.textContent='✓ Nukopijuota';"><?= te('Kopijuoti prašymą') ?></button>
-          <p class="muted"><?= te('Tinka ir Excel CSV: klausimas; A; B; C; D; teisingas (raidė); paaiškinimas; tema.') ?></p>
+        <div class="ib-grid">
+          <form method="post" enctype="multipart/form-data" class="form ib-main">
+            <?= csrf_field() ?><input type="hidden" name="id" value="<?= $id ?>"><input type="hidden" name="action" value="import_preview">
+            <?= file_drop('import_files[]', '.txt,.csv,.json,.md,.zip,.png,.jpg,.jpeg,.webp,text/plain,text/csv,application/json,application/zip,image/*', t('Pasirinkite failus'), t('klausimai (.txt, .csv, .json) ir paveikslėliai arba vienas ZIP - galima nutempti čia'), true) ?>
+            <label class="qf-field"><span class="qf-label"><?= te('arba įklijuokite tekstą') ?></span>
+              <textarea name="import_text" rows="4" placeholder="1. Klausimas?&#10;A) ...&#10;B) ...&#10;Atsakymas: B"><?= e($importItems === null ? '' : $importText) ?></textarea></label>
+            <div><button class="btn btn-primary" type="submit"><?= te('Peržiūrėti') ?> <?= icon('arrow-right') ?></button></div>
+          </form>
+          <aside class="ib-side">
+            <h3 class="ib-sub"><?= te('Pataisyti esamus') ?></h3>
+            <a class="btn btn-ghost ib-dl" href="<?= url('admin/testai.php?id=' . $id . '&eksportas=1') ?>" download><?= icon('download') ?> <?= te('Atsisiųsti visus klausimus') ?></a>
+            <p class="hint"><?= te('Failas su atsakymais ir [#numeriais]. Pataisykite (pvz. su ChatGPT) ir įkelkite atgal - tie klausimai bus pataisyti vietoje.') ?></p>
+            <h3 class="ib-sub"><?= icon('sparkle') ?> ChatGPT</h3>
+            <details class="ib-help" id="chatgpt-projektas"><summary><?= te('Nustatymas vieną kartą (kad visada ruoštų tinkamu formatu)') ?></summary>
+              <ol class="small">
+                <li><?= te('ChatGPT kairėje: „Projects“ → „New project“ → pavadinkite „Karateka testai“.') ?></li>
+                <li><?= te('Projekte: „Instructions“ (Instrukcijos) → įklijuokite žemiau esantį tekstą → „Save“.') ?></li>
+                <li><?= te('Visus testų pokalbius pradėkite šiame projekte - formato kartoti nereikės.') ?></li>
+              </ol>
+              <pre id="projectPrompt"><?= e(quiz_chatgpt_project_text()) ?></pre>
+              <button class="btn btn-ghost btn-sm" type="button" data-copy="projectPrompt"><?= icon('copy') ?> <span><?= te('Kopijuoti nurodymus') ?></span></button>
+            </details>
+            <details class="ib-help"><summary><?= te('Prašymas naujiems klausimams') ?></summary>
+              <p class="small"><?= te('Įkelkite ChatGPT taisykles (failą ar tekstą) ir nukopijuokite šį prašymą.') ?></p>
+              <pre id="importPrompt"><?= e(quiz_import_prompt()) ?></pre>
+              <button class="btn btn-ghost btn-sm" type="button" data-copy="importPrompt"><?= icon('copy') ?> <span><?= te('Kopijuoti prašymą') ?></span></button>
+              <p class="hint"><?= te('Tinka ir Excel CSV: klausimas; A; B; C; D; teisingas (raidė); paaiškinimas; tema.') ?></p>
+            </details>
+            <details class="ib-help fix-prompt"><summary><?= te('Prašymas pataisyti atsisiųstus') ?></summary>
+              <pre id="fixPrompt"><?= e(quiz_fix_prompt()) ?></pre>
+              <button class="btn btn-ghost btn-sm" type="button" data-copy="fixPrompt"><?= icon('copy') ?> <span><?= te('Kopijuoti prašymą') ?></span></button>
+            </details>
+          </aside>
         </div>
       </details>
 
@@ -355,8 +485,8 @@ if ($id || get('id') === 'new' || get('new')) {
       <?php if ($all): ?>
         <form method="post" id="bulkDel" class="row bulk-bar" onsubmit="var n = document.querySelectorAll('.q-pick input:checked').length; if (!n) { alert('Pažymėkite klausimus, kuriuos ištrinti.'); return false; } return confirm('Ištrinti pažymėtus klausimus (' + n + ')?');">
           <?= csrf_field() ?><input type="hidden" name="id" value="<?= $id ?>"><input type="hidden" name="action" value="delete_questions">
-          <label class="check"><input type="checkbox" id="pickAll"><span><?= te('Pažymėti visus') ?></span></label>
-          <button class="btn btn-danger btn-sm" type="submit"><?= te('Ištrinti pažymėtus') ?> (<span id="pickN">0</span>)</button>
+          <label class="check bulk-all"><input type="checkbox" id="pickAll"><span><?= te('Pažymėti visus') ?></span></label>
+          <button class="btn btn-danger btn-sm" type="submit"><?= icon('trash') ?> <span><?= te('Ištrinti pažymėtus') ?> (<b id="pickN">0</b>)</span></button>
         </form>
       <?php endif; ?>
       <?php foreach ($all as $i => $qq): $correct = array_values(array_filter($qq['answers'], function ($an) { return $an['is_correct']; }));
@@ -366,13 +496,12 @@ if ($id || get('id') === 'new' || get('new')) {
         <details class="panel card q-item" id="q<?= (int) $qq['id'] ?>"<?= $isFailed ? ' open' : '' ?>>
           <summary>
             <span class="q-num"><?= $i + 1 ?></span>
-            <span class="q-sum"><strong><?= e(mb_strimwidth($qq['body'], 0, 120, '…')) ?></strong>
+            <span class="q-sum"><strong><?= !empty($qq['is_draft']) ? '<span class="badge badge-warn">' . te('peržiūrai') . '</span> ' : '' ?><?= e(mb_strimwidth($qq['body'], 0, 120, '…')) ?></strong>
               <span class="small muted">✓ <?= e($correct ? $correct[0]['body'] : t('nepažymėtas teisingas atsakymas!')) ?> · <?= count($qq['answers']) ?> ats.<?= !empty($qq['topic']) ? (' ' . t('· tema:') . ' ') . e($qq['topic']) : '' ?><?= $qq['image'] ? (' ' . t('· paveikslėlis')) : '' ?><?= $qq['youtube_id'] ? (' ' . t('· video')) : '' ?></span></span>
           </summary>
           <?= $isFailed ? question_form($id, $failed['q'], $failed['errors']) : question_form($id, $qq) ?>
-          <form method="post" class="inline-form" onsubmit="return confirm('Ištrinti klausimą?')">
-            <?= csrf_field() ?><input type="hidden" name="id" value="<?= $id ?>"><input type="hidden" name="qid" value="<?= (int) $qq['id'] ?>">
-            <button class="linklike small muted" name="action" value="delete_question" style="border:none; padding:0; text-decoration:underline;"><?= te('ištrinti klausimą') ?></button>
+          <form method="post" id="delq<?= (int) $qq['id'] ?>" hidden onsubmit="return confirm(<?= e(json_encode(t('Ištrinti klausimą?'))) ?>)">
+            <?= csrf_field() ?><input type="hidden" name="id" value="<?= $id ?>"><input type="hidden" name="qid" value="<?= (int) $qq['id'] ?>"><input type="hidden" name="action" value="delete_question">
           </form>
         </details>
         </div>

@@ -40,7 +40,7 @@ page_start(t('Federacijos registras'), ['admin' => true]);
 <form method="get" class="panel card form inline-fields">
   <label><?= te('Paieška') ?> <input type="search" name="q" value="<?= e($q) ?>" placeholder="<?= te('Vardas, numeris ar klubas') ?>"></label>
   <button class="btn btn-ghost" type="submit"><?= te('Ieškoti') ?></button>
-  <a class="btn btn-ghost" href="?<?= $q !== '' ? 'q=' . rawurlencode($q) . '&amp;' : '' ?>xlsx=1"><?= te('⬇ Excel') ?></a>
+  <a class="btn btn-ghost" href="?<?= $q !== '' ? 'q=' . rawurlencode($q) . '&amp;' : '' ?>xlsx=1"><?= icon('download') ?> <span>Excel</span></a>
 </form>
 <div class="panel card">
   <?php if (!$people): ?><p class="muted"><?= te('Registre dar nieko nėra - egzamino protokole spauskite „📨 Siųsti protokolą Federacijai“.') ?></p><?php endif; ?>

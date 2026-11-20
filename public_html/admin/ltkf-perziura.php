@@ -56,7 +56,7 @@ page_start(t('LTKF peržiūra'), ['admin' => true]);
 <div class="panel card form" id="redaktoriai">
   <h2><?= te('✏️ Redaktoriai') ?></h2>
   <p class="muted"><?= te('Žmonės, kurie gali patys keisti LTKF svetainę: tekstus, nuotraukas, failus, meniu, naujus puslapius. Kiekvienam - asmeninė nuoroda (paskyros nereikia, tik vardas). Išjungus nuorodą, redaguoti nebegalima.') ?></p>
-  <p><a class="btn" href="<?= url('ltkf/index.php?redaguoti=1') ?>"><?= te('✏️ Redaguoti pačiam') ?></a> <a class="btn btn-ghost" href="<?= url('ltkf/failai.php') ?>"><?= te('📥 Failų dėžė') ?></a></p>
+  <p><a class="btn" href="<?= url('ltkf/index.php?redaguoti=1') ?>"><?= te('✏️ Redaguoti pačiam') ?></a> <a class="btn btn-ghost" href="<?= url('ltkf/failai.php') ?>"><?= icon('upload') ?> <?= te('Failų dėžė') ?></a></p>
   <?php foreach ($editors as $ed): $elink = abs_url('ltkf-redaktorius.php?k=' . $ed['t']); ?>
     <div class="row ltkf-ed<?= empty($ed['on']) ? ' muted' : '' ?>" style="gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0;">
       <b style="min-width:140px;"><?= e($ed['n']) ?></b>

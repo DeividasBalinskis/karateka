@@ -504,7 +504,7 @@ page_start(t('Nariai'), ['admin' => true]);
 <div class="page-head row between">
   <h1 class="styled"><?= te('Nariai') ?></h1>
   <div class="row" style="gap:8px; flex-wrap:wrap;">
-    <a class="btn btn-ghost" href="?<?= e(http_build_query(['q' => $search, 'g' => $groupFilter ?: '', 's' => $status, 'excel' => 1])) ?>" title="<?= te('Rodomų narių kontaktai (ir tėvų) - Excel failas') ?>"><?= te('⬇ Kontaktai (Excel)') ?></a>
+    <a class="btn btn-ghost" href="?<?= e(http_build_query(['q' => $search, 'g' => $groupFilter ?: '', 's' => $status, 'excel' => 1])) ?>" title="<?= te('Rodomų narių kontaktai (ir tėvų) - Excel failas') ?>"><?= icon('download') ?> <span><?= te('Kontaktai (Excel)') ?></span></a>
     <a class="btn btn-primary" href="?new=1"><?= te('+ Naujas narys') ?></a>
   </div>
 </div>

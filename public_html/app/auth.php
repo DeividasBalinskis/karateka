@@ -31,10 +31,54 @@ function is_staff(?array $a = null): bool
     return is_active_account($a) && in_array($a['role'], ['coach', 'admin'], true);
 }
 
+/**
+ * Tikras administratorius (Denis, Deividas). Testuotojas (db/044, accounts.is_tester) turi administratoriaus rolę,
+ * bet sistema jį laiko treneriu: gali tiek, kiek treneris, nustatymus mato tik skaityti, Dojo ir žaidimo nemato.
+ */
 function is_admin(?array $a = null): bool
 {
     $a = $a ?? current_account();
-    return is_active_account($a) && $a['role'] === 'admin';
+    return is_active_account($a) && $a['role'] === 'admin' && empty($a['is_tester']);
+}
+
+/** Testuotojas: ženkliukas „🧪 Testuotojas“, už testavimą vėliau - bonusai */
+function is_tester(?array $a = null): bool
+{
+    $a = $a ?? current_account();
+    return is_active_account($a) && !empty($a['is_tester']);
+}
+
+/** Ar jau yra db/044 stulpelis is_tester (iki duomenų bazės atnaujinimo - nėra) */
+function tester_ready(): bool
+{
+    static $ok = null;
+    if ($ok === null) {
+        try {
+            $ok = (bool) q_one("SHOW COLUMNS FROM accounts LIKE 'is_tester'");
+        } catch (Throwable $e) {
+            $ok = false;
+        }
+    }
+    return $ok;
+}
+
+/** SQL sąlyga „tikras administratorius“ (be testuotojų); $al - lentelės sinonimas */
+function real_admin_sql(string $al = ''): string
+{
+    $p = $al !== '' ? $al . '.' : '';
+    return $p . "role = 'admin' AND " . $p . "status = 'active'" . (tester_ready() ? ' AND ' . $p . 'is_tester = 0' : '');
+}
+
+/** Kiek aktyvių tikrų administratorių liktų, jei paskyra $exceptId nebūtų administratorius */
+function real_admins_left(int $exceptId): int
+{
+    return (int) q_value('SELECT COUNT(*) FROM accounts WHERE ' . real_admin_sql() . ' AND id <> ?', [$exceptId]);
+}
+
+/** Ženkliukas prie vardo */
+function tester_badge(?array $a = null): string
+{
+    return is_tester($a) ? ' <span class="badge badge-tester" title="' . e(t('Testuoja svetainę. Dojo ir žaidimo nemato, nustatymus mato tik skaityti.')) . '">🧪 ' . te('Testuotojas') . '</span>' : '';
 }
 
 /**
@@ -351,6 +395,17 @@ function handle_account_settings(array $a, string $back, array &$errors): void
 {
     $aid = (int) $a['id'];
     $action = post('action');
+    if ($action === 'name') {   // #146: vardą ir pavardę galima pasikeisti pačiam
+        $fn = mb_substr(trim((string) post('first_name')), 0, 80);
+        $ln = mb_substr(trim((string) post('last_name')), 0, 80);
+        if ($fn === '') {
+            $errors[] = t('Įrašykite vardą.');
+            return;
+        }
+        q('UPDATE accounts SET first_name = ?, last_name = ? WHERE id = ?', [$fn, $ln, $aid]);
+        flash('ok', t('Vardas pakeistas.'));
+        redirect($back);
+    }
     if ($action === 'profile') {
         q('UPDATE accounts SET phone = ? WHERE id = ?', [post('phone') ?: null, $aid]);
         flash('ok', t('Duomenys išsaugoti.'));
@@ -430,6 +485,8 @@ function handle_account_settings(array $a, string $back, array &$errors): void
             $errors[] = t('Neteisingas dabartinis slaptažodis.');
         } elseif (mb_strlen($pw) < MIN_PASSWORD) {
             $errors[] = (t('Naujas slaptažodis turi būti bent') . ' ') . MIN_PASSWORD . (' ' . t('simbolių.'));
+        } elseif (isset($_POST['password2']) && $pw !== (string) $_POST['password2']) {
+            $errors[] = t('Slaptažodžiai nesutampa.');
         } else {
             q('UPDATE accounts SET password_hash = ? WHERE id = ?', [password_hash($pw, PASSWORD_DEFAULT), $aid]);
             session_regenerate_id(true);

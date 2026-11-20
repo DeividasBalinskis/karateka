@@ -8,8 +8,10 @@ if (is_post() && post('action') === 'create') {
     csrf_check();
     $email = normalize_email(post('email'));
     $role = in_array(post('role'), ['member', 'coach', 'admin'], true) ? post('role') : 'member';
-    if (!filter_var($email, FILTER_VALIDATE_EMAIL) || trim(post('first_name')) === '' || mb_strlen((string) post('password')) < 6) {
-        flash('err', t('Įrašykite el. paštą, vardą ir bent 6 simbolių slaptažodį.'));
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL) || trim(post('first_name')) === '' || mb_strlen((string) post('password')) < MIN_PASSWORD) {
+        flash('err', t('Įrašykite el. paštą, vardą ir bent {n} simbolių slaptažodį.', ['n' => MIN_PASSWORD]));
+    } elseif ((string) post('password') !== (string) post('password2')) {
+        flash('err', t('Slaptažodžiai nesutampa.'));
     } elseif (q_value('SELECT 1 FROM accounts WHERE email = ?', [$email])) {
         flash('err', t('Tokia paskyra jau yra:') . ' ' . $email);
     } else {
@@ -32,9 +34,24 @@ if (is_post()) {
     $id = (int) post('id');
     $acc = q_one('SELECT * FROM accounts WHERE id = ?', [$id]);
     if ($acc && $id !== (int) $me['id']) {   // savo rolės nekeičiame, kad neliktume be administratoriaus
+        // Bent vienas tikras administratorius (ne testuotojas) turi likti visada
+        $lastReal = is_admin($acc) && real_admins_left($id) === 0;
         if (post('action') === 'role' && in_array(post('role'), ['member', 'coach', 'admin'], true)) {
-            q('UPDATE accounts SET role = ? WHERE id = ?', [post('role'), $id]);
-            flash('ok', "Rolė pakeista: {$acc['first_name']} {$acc['last_name']}");
+            if ($lastReal && post('role') !== 'admin') {
+                flash('err', t('Tai paskutinis administratorius - rolės pakeisti negalima.'));
+            } else {
+                q('UPDATE accounts SET role = ? WHERE id = ?', [post('role'), $id]);
+                flash('ok', t('Rolė pakeista:') . " {$acc['first_name']} {$acc['last_name']}");
+            }
+        }
+        if (post('action') === 'tester' && tester_ready()) {
+            $on = post('on') === '1';
+            if ($on && $lastReal) {
+                flash('err', t('Tai paskutinis administratorius - testuotoju padaryti negalima.'));
+            } else {
+                q('UPDATE accounts SET is_tester = ? WHERE id = ?', [$on ? 1 : 0, $id]);
+                flash('ok', ($on ? t('Testuotojas:') : t('Nebe testuotojas:')) . " {$acc['first_name']} {$acc['last_name']}");
+            }
         }
         if (post('action') === 'chat') {
             try {
@@ -43,8 +60,12 @@ if (is_post()) {
             }
         }
         if (post('action') === 'disable') {
-            q('UPDATE accounts SET status = "disabled" WHERE id = ?', [$id]);
-            flash('ok', "Paskyra išjungta: {$acc['email']}");
+            if ($lastReal) {
+                flash('err', t('Tai paskutinis administratorius - išjungti negalima.'));
+            } else {
+                q('UPDATE accounts SET status = "disabled" WHERE id = ?', [$id]);
+                flash('ok', "Paskyra išjungta: {$acc['email']}");
+            }
         }
         if (post('action') === 'enable' && $acc['status'] === 'disabled') {
             q('UPDATE accounts SET status = "active" WHERE id = ?', [$id]);
@@ -73,7 +94,8 @@ page_start(t('Paskyros'), ['admin' => true]);
 ?>
 <div class="page-head">
   <h1 class="styled"><?= te('Paskyros') ?></h1>
-  <p><?= te('Treneriai mato trenerio panelę. Administratorius dar gali keisti roles.') ?></p>
+  <p><?= te('Treneriai mato trenerio panelę. Administratorius dar gali keisti roles.') ?>
+    <?php if (tester_ready()): ?><?= te('🧪 Testuotojas - turi administratoriaus rolę, bet gali tiek, kiek treneris: nustatymus mato tik skaityti, Dojo ir žaidimo nemato.') ?><?php endif; ?></p>
 </div>
 <details class="panel card form new-account">
   <summary><strong><?= te('+ Nauja paskyra') ?></strong> <span class="muted small"><?= te('pvz. kitam adminui ar treneriui - iškart aktyvi') ?></span></summary>
@@ -82,9 +104,9 @@ page_start(t('Paskyros'), ['admin' => true]);
     <label><?= te('El. paštas') ?> <input type="email" name="email" required autocomplete="off"></label>
     <label><?= te('Vardas') ?> <input name="first_name" required maxlength="80"></label>
     <label><?= te('Pavardė') ?> <input name="last_name" maxlength="80"></label>
-    <label><?= te('Slaptažodis') ?> <input type="text" name="password" required minlength="6" autocomplete="new-password"></label>
+    <label><?= te('Slaptažodis') ?> <input type="password" name="password" required minlength="<?= MIN_PASSWORD ?>" autocomplete="new-password"></label>
+    <label><?= te('Pakartokite slaptažodį') ?> <input type="password" name="password2" required autocomplete="new-password"></label>
     <label><?= te('Rolė') ?> <select name="role"><?php foreach ($roleLabel as $k => $label): ?><option value="<?= $k ?>"<?= $k === 'member' ? ' selected' : '' ?>><?= $label ?></option><?php endforeach; ?></select></label>
-    <label class="check"><input type="checkbox" name="chat_off" value="1"><span><?= te('Be pokalbių lango') ?></span></label>
     <button class="btn btn-primary" type="submit"><?= te('Sukurti') ?></button>
   </form>
 </details>
@@ -99,14 +121,11 @@ page_start(t('Paskyros'), ['admin' => true]);
       <?php foreach ($rows as $r): $self = (int) $r['id'] === (int) $me['id']; ?>
         <tr>
           <td><strong><?= e($r['first_name'] . ' ' . $r['last_name']) ?></strong><div class="muted small"><?= e($r['email']) ?></div>
-            <?php if ($r['role'] !== 'member' && array_key_exists('chat_off', $r)): ?>
-              <form method="post" class="small"><?= csrf_field() ?><input type="hidden" name="id" value="<?= (int) $r['id'] ?>"><input type="hidden" name="action" value="chat"><input type="hidden" name="chat_off" value="<?= $r['chat_off'] ? '0' : '1' ?>">
-                <button class="linkish" type="submit"><?= $r['chat_off'] ? te('💬 Įjungti pokalbių langą') : te('Išjungti pokalbių langą') ?></button></form>
-            <?php endif; ?></td>
+            </td>
           <td><span class="badge <?= $r['status'] === 'active' ? 'badge-ok' : 'badge-warn' ?>"><?= $statusLabel[$r['status']] ?></span></td>
           <td>
             <?php if ($self): ?>
-              <?= $roleLabel[$r['role']] ?> <span class="muted small"><?= te('(jūs)') ?></span>
+              <?= $roleLabel[$r['role']] ?><?= tester_badge($r) ?> <span class="muted small"><?= te('(jūs)') ?></span>
             <?php else: ?>
               <form method="post" class="inline-form form">
                 <?= csrf_field() ?><input type="hidden" name="id" value="<?= (int) $r['id'] ?>"><input type="hidden" name="action" value="role">
@@ -114,6 +133,10 @@ page_start(t('Paskyros'), ['admin' => true]);
                   <?php foreach ($roleLabel as $k => $label): ?><option value="<?= $k ?>" <?= $r['role'] === $k ? 'selected' : '' ?>><?= $label ?></option><?php endforeach; ?>
                 </select>
               </form>
+              <?php if (tester_ready()): ?>
+                <form method="post" class="tester-tg"><?= csrf_field() ?><input type="hidden" name="id" value="<?= (int) $r['id'] ?>"><input type="hidden" name="action" value="tester"><input type="hidden" name="on" value="<?= !empty($r['is_tester']) ? '0' : '1' ?>">
+                  <button type="submit" class="btn btn-sm <?= !empty($r['is_tester']) ? 'on' : 'btn-ghost' ?>" aria-pressed="<?= !empty($r['is_tester']) ? 'true' : 'false' ?>" title="<?= te('Testuotojas: gali tiek, kiek treneris, nustatymus mato tik skaityti, Dojo nemato') ?>">🧪 <?= !empty($r['is_tester']) ? te('Testuotojas ✓') : te('Testuotojas') ?></button></form>
+              <?php endif; ?>
             <?php endif; ?>
           </td>
           <td>

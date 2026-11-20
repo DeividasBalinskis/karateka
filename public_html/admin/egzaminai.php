@@ -10,7 +10,7 @@ if (is_post() && post('action') === 'prices' && is_admin($me)) {
     $out = [];
     foreach ((array) ($_POST['price'] ?? []) as $lvl => $v) {
         $v = str_replace(',', '.', trim((string) $v));
-        if (isset(BELTS[(int) $lvl]) && is_numeric($v) && (float) $v > 0) {
+        if (isset(exam_grades()[(int) $lvl]) && is_numeric($v) && (float) $v > 0) {
             $out[(int) $lvl] = round((float) $v, 2);
         }
     }
@@ -92,7 +92,7 @@ page_start(t('Egzaminai'), ['admin' => true]);
         <?= csrf_field() ?><input type="hidden" name="action" value="prices">
         <p class="small muted" style="margin:0;"><?= te('Egzamino kaina kiekvienam diržui. Vaikas mato savo kainą egzamino puslapyje, treneris protokole pažymi „€ Sumokėjo“.') ?></p>
         <div class="price-grid">
-          <?php foreach (BELTS as $lvl => [$kyu, $name, $color]): if ($lvl < 2 || $lvl > 10) { continue; } ?>
+          <?php foreach (exam_grades() as $lvl => [$kyu, $name, $color]): ?>
             <label><span><i class="belt-dot" style="background:<?= e($color) ?>"></i><?= e($kyu) ?></span>
               <input type="text" inputmode="decimal" name="price[<?= $lvl ?>]" value="<?= isset($prices[$lvl]) ? e((string) $prices[$lvl]) : '' ?>" placeholder="€" aria-label="<?= e($kyu) ?> €"></label>
           <?php endforeach; ?>

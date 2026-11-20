@@ -162,6 +162,18 @@ function home_edit_mode(): bool
     return $on;
 }
 
+/** Ar ši instruktoriaus kortelė - prisijungusio žmogaus (pagal paskyros vardą ir pavardę) */
+function home_is_me(string $name): bool
+{
+    $a = current_account();
+    if (!$a || !is_active_account($a)) {
+        return false;
+    }
+    $key = function (string $n): string { return preg_replace('/\s+/u', ' ', mb_strtolower(trim($n))); };
+    $me = $key($a['first_name'] . ' ' . $a['last_name']);
+    return $me !== '' && $me === $key($name);
+}
+
 /** Kas gali redaguoti pagrindinį puslapį: adminas ir instruktoriai, kurių vardas yra instruktorių bloke (pagal paskyros vardą ir pavardę) */
 function home_can_edit(?array $a = null): bool
 {
@@ -513,6 +525,9 @@ function home_render_block(array $b): string
                 $edit = home_edit_mode();
                 $more = '';
                 $bio = trim((string) ($p['bio'] ?? ''));
+                $cid = 'ins-' . substr(md5(mb_strtolower(trim((string) ($p['name'] ?? '')))), 0, 8);
+                $editUrl = url('index.php?redaguoti=1') . '#' . $cid;   // #138: iš lango - iškart į redagavimą, prie šios kortelės
+                $mine = home_is_me((string) ($p['name'] ?? ''));          // #139: instruktorius pats pasitaiso savo kortelę
                 // Langas atsidaro tik jei yra ką parodyti (adminui - visada, kad matytų, kur įrašyti)
                 $hasMore = !$edit && ($bio !== '' || trim((string) ($p['role'] ?? '')) !== '' || home_can_edit());
                 if ($hasMore) {
@@ -521,9 +536,10 @@ function home_render_block(array $b): string
                         . ((string) $p['rank'] !== '' ? '<div class="ins-pop-rank">' . e((string) $p['rank']) . '</div>' : '')
                         . (trim((string) ($p['role'] ?? '')) !== '' ? '<div class="ins-pop-role">' . e((string) $p['role']) . '</div>' : '')
                         . '<div class="ins-pop-bio">' . ($bio !== '' ? home_text_html($bio)
-                            : (home_can_edit() ? ('<p class="ins-pop-hint">' . t('Lankytojams šis langas neatsidaro, kol nėra teksto. Įrašykite: ✎ Redaguoti puslapį → instruktoriaus kortelė → „Plačiau“.') . '</p>') : '')) . '</div></div></template>';
+                            : (home_can_edit() ? ('<p class="ins-pop-hint">' . t('Lankytojams šis langas neatsidaro, kol nėra teksto.') . '</p>') : '')) . '</div>'
+                        . (home_can_edit() ? '<a class="btn btn-sm ins-pop-edit" href="' . e($editUrl) . '">' . ($mine ? te('✎ Pasitaisyti savo informaciją') : te('✎ Redaguoti šią kortelę')) . '</a>' : '') . '</div></template>';
                 }
-                return '<div class="panel instructor-card' . (!empty($p['lead']) ? ' lead' : '') . ' reveal"' . hb_item()
+                return '<div id="' . $cid . '" class="panel instructor-card' . (!empty($p['lead']) ? ' lead' : '') . ($mine && !$edit ? ' mine' : '') . ' reveal"' . hb_item()
                     . ($hasMore ? ' role="button" tabindex="0" aria-haspopup="dialog" aria-label="' . e((string) $p['name']) . ' - daugiau informacijos" data-instructor' : '') . '>'
                     . '<div class="avatar' . ($photo ? ' has-photo' : '') . '"' . hb_img_attrs('photo', $photo) . '>'
                     . ($photo || $edit ? '<img src="' . e($photo ? url($photo) : '') . '" alt=""' . ($photo ? '' : ' hidden') . '>' : '')
@@ -603,7 +619,7 @@ function home_render_block(array $b): string
             }
             return '<section class="contact" id="' . $id . '"><div class="wrap"><div class="section-head reveal">' . hb_t('title', $d['title'], 'h2', 'styled') . hb_t('subtitle', $d['subtitle'], 'p') . '</div>'
                 . '<div class="panel registration-grid reveal"><div class="registration-panel">' . hb_t('heading', $d['heading'], 'h3', 'registration-title') . hb_t('text', $d['text'], 'p') . '</div>'
-                . '<div class="registration-panel"><form class="contact-form" id="registrationForm">'
+                . '<div class="registration-panel"><form class="contact-form" id="registrationForm">' . ($edit ? '' : trial_form_guard())
                 . '<input type="text" name="vardas" placeholder="' . e(t('Mokinio vardas, pavardė')) . '" required><input type="email" name="email" placeholder="' . e(t('El. paštas')) . '" required>'
                 . ('<input type="tel" name="telefonas" placeholder="' . e(t('Telefono numeris')) . '" required><select name="lokacija" required><option value="" disabled selected>' . t('Pasirinkite lokaciją') . '</option>')
                 . render_trial_location_options() . ('</select><select name="gimimo_metai" id="gimimoMetai" class="is-empty"><option value="" disabled selected>' . t('Gimimo metai') . '</option></select>')

@@ -109,11 +109,11 @@ test('quiz: form keeps input, Enter to next answer, import from text, bulk delet
   check('question saved', sql(`SELECT COUNT(*) FROM quiz_questions WHERE quiz_id = ${qz}`) === '1');
 
   // Įkėlimas iš teksto (kaip iš ChatGPT): peržiūra, tada įkelti; klaidingas praleidžiamas
-  await a.click('#ikelti summary');
+  await a.click('#ikelti > summary');
   await a.fill('#ikelti textarea[name=import_text]', '1. Kas yra kiai?\nA) šūksnis\nB) smūgis\nAtsakymas: A\n\n2. Kiek teisėjų kata finale?\nA) 3\nB) 5\nC) 7\nAtsakymas: B\nPaaiškinimas: pagal taisykles\n\n3. Be teisingo?\nA) x\nB) y\n');
   await nav(a, () => a.click('#ikelti button:has-text("Peržiūrėti")'));
   check('import preview', /2\s*tinkam/.test(await a.locator('#ikelti').innerText()));
-  await nav(a, () => a.click('#ikelti button:has-text("Įkelti 2")'));
+  await nav(a, () => a.click('#ikelti button[name=draft][value="0"]'));
   check('imported', sql(`SELECT COUNT(*) FROM quiz_questions WHERE quiz_id = ${qz}`) === '3', await flashes(a));
   check('import keeps correct answer', sql(`SELECT a.body FROM quiz_answers a JOIN quiz_questions q ON q.id = a.question_id WHERE q.quiz_id = ${qz} AND q.body LIKE 'Kiek teisėjų%' AND a.is_correct = 1`) === '5');
 

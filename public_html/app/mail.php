@@ -2,10 +2,21 @@
 // Laiškų siuntimas per SMTP (nustatymai config.php -> 'mail').
 // Lokaliai laiškai keliauja į Mailpit: http://localhost:8025
 
-/** $attachments: [['name' => 'failas.csv', 'type' => 'text/csv', 'data' => turinys], ...] */
-function send_mail(string $to, string $subject, string $body, array $attachments = []): bool
+/**
+ * $attachments: [['name' => 'failas.csv', 'type' => 'text/csv', 'data' => turinys], ...]
+ * $replyTo - kam atsakyti (pvz. lankytojo el. paštas formoje); netinkamas adresas praleidžiamas.
+ * Saugumas: secure = 'ssl' (iškart šifruota) arba 'tls' (STARTTLS). Be šifravimo slaptažodis siunčiamas tik į šį kompiuterį (Mailpit).
+ */
+function send_mail(string $to, string $subject, string $body, array $attachments = [], ?string $replyTo = null): bool
 {
     $c = config('mail');
+    $secure = strtolower((string) ($c['secure'] ?? ''));
+    $localHost = in_array(strtolower((string) $c['host']), ['localhost', '127.0.0.1', '::1', 'mailpit'], true);
+    if (($c['user'] ?? '') !== '' && !in_array($secure, ['ssl', 'tls'], true) && !$localHost) {
+        error_log('send_mail: atsisakyta - slaptažodis būtų siunčiamas nešifruotai (config mail.secure turi būti ssl arba tls)');
+        return false;
+    }
+    $replyTo = $replyTo !== null && filter_var($replyTo, FILTER_VALIDATE_EMAIL) && !preg_match('/[\r\n]/', $replyTo) ? $replyTo : null;
     $fromName = '=?UTF-8?B?' . base64_encode($c['from_name']) . '?=';
     $subjectEnc = '=?UTF-8?B?' . base64_encode($subject) . '?=';
 
@@ -14,6 +25,7 @@ function send_mail(string $to, string $subject, string $body, array $attachments
 
     $head = "From: {$fromName} <{$c['from']}>\r\n"
         . "To: <{$to}>\r\n"
+        . ($replyTo ? "Reply-To: <{$replyTo}>\r\n" : '')
         . "Subject: {$subjectEnc}\r\n"
         . 'Date: ' . date('r') . "\r\n"
         . 'Message-ID: <' . bin2hex(random_bytes(12)) . '@karateka.lt>' . "\r\n"
@@ -33,7 +45,7 @@ function send_mail(string $to, string $subject, string $body, array $attachments
         $message .= "--{$bnd}--\r\n";
     }
 
-    $prefix = $c['secure'] === 'ssl' ? 'ssl://' : 'tcp://';
+    $prefix = $secure === 'ssl' ? 'ssl://' : 'tcp://';
     $socket = @stream_socket_client($prefix . $c['host'] . ':' . $c['port'], $errno, $errstr, 20);
     if (!$socket) {
         error_log("send_mail connect failed: $errstr ($errno)");
@@ -62,6 +74,12 @@ function send_mail(string $to, string $subject, string $body, array $attachments
         if (!$read(220)) break;
         $stage = 'ehlo';
         if (!$cmd('EHLO karateka.lt', 250)) break;
+        if ($secure === 'tls') {   // STARTTLS: toliau - tik šifruotai
+            $stage = 'starttls';
+            if (!$cmd('STARTTLS', 220)) break;
+            if (!@stream_socket_enable_crypto($socket, true, STREAM_CRYPTO_METHOD_TLSv1_2_CLIENT | STREAM_CRYPTO_METHOD_TLSv1_3_CLIENT)) break;
+            if (!$cmd('EHLO karateka.lt', 250)) break;
+        }
         if ($c['user'] !== '') {
             $stage = 'auth';
             if (!$cmd('AUTH LOGIN', 334)) break;

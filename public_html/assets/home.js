@@ -138,10 +138,11 @@ if (regForm && !document.body.classList.contains('home-edit')) regForm.addEventL
       regForm.reset();
       if (yearSelect) yearSelect.classList.add('is-empty');
     } else {
-      throw new Error('send failed');
+      // Serverio paaiškinimas (pvz. „Patikrinkite el. pašto adresą.“) - jei yra
+      throw new Error(data && data.error ? data.error : '');
     }
   } catch(err){
-    formStatus.textContent = 'Nepavyko išsiųsti. Parašykite mums tiesiogiai: info@karateka.lt';
+    formStatus.textContent = (err && err.message) || 'Nepavyko išsiųsti. Parašykite mums tiesiogiai: info@karateka.lt';
     formStatus.className = 'form-status err';
   } finally {
     submitBtn.disabled = false;

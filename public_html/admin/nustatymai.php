@@ -85,7 +85,8 @@ page_start(t('Nustatymai'), ['admin' => true]);
         <?php endforeach; ?>
       </section>
     <?php endforeach; ?>
-    <?php if (is_admin($me)): $mvAll = (string) site_setting('menu_variant', 'abu'); $mvAll = isset(MENU_VARIANTS[$mvAll]) ? $mvAll : 'abu'; ?>
+    <?php if (is_admin($me) || is_tester($me)): $ro = !is_admin($me); $mvAll = (string) site_setting('menu_variant', 'abu'); $mvAll = isset(MENU_VARIANTS[$mvAll]) ? $mvAll : 'abu'; ?>
+      <?php if ($ro): ?><p class="panel card ro-note">🧪 <?= te('Jūs - testuotojas: nustatymus matote, bet keisti gali tik administratorius.') ?></p><fieldset disabled class="ro-set"><?php endif; ?>
       <section class="panel card settings-group menu-pick" id="meniu">
         <div class="kicker"><?= te('Meniu išdėstymas') ?></div>
         <p class="small muted" style="margin:0 0 8px;"><?= te('„Peržiūrėti“ - tik jums (šioje naršyklėje), „Visiems“ - visiems treneriams.') ?></p>
@@ -105,31 +106,7 @@ page_start(t('Nustatymai'), ['admin' => true]);
               <?php if ($pmAll !== $k): ?><form method="post"><?= csrf_field() ?><input type="hidden" name="action" value="phone_menu"><input type="hidden" name="v" value="<?= e($k) ?>"><button class="btn btn-sm" type="submit"><?= te('Visiems') ?></button></form><?php endif; ?></span></div>
         <?php endforeach; ?>
       </section>
-      <?php if (is_admin($me)): require_once APP_DIR . '/game.php'; $gIds = game_access_ids();
-        $gAcc = $gIds ? q_all('SELECT id, first_name, last_name, email FROM accounts WHERE id IN (' . implode(',', array_map('intval', $gIds)) . ') ORDER BY first_name') : []; ?>
-      <section class="panel card settings-group game-access" id="zaidimas">
-        <div class="kicker"><?= te('🏯 Žaidimas') ?></div>
-        <p class="small muted" style="margin:0 0 8px;"><?= te('Kas mato Dojo, areną ir žaidimus. Kiti meniu žaidimo nemato ir į jį nepatenka.') ?></p>
-        <p style="margin:0 0 8px;"><b><?= $gIds === null ? te('Mato visi nariai') : ($gAcc ? te('Mato tik:') : te('Niekas nemato')) ?></b></p>
-        <?php if ($gAcc): ?>
-          <ul class="ga-list">
-            <?php foreach ($gAcc as $g): ?>
-              <li><span><?= e(trim($g['first_name'] . ' ' . $g['last_name'])) ?> <small class="muted"><?= e($g['email']) ?></small></span>
-                <form method="post" class="inline-form"><?= csrf_field() ?><input type="hidden" name="action" value="game_access"><input type="hidden" name="do" value="remove"><input type="hidden" name="id" value="<?= (int) $g['id'] ?>"><button class="btn btn-ghost btn-sm" type="submit" title="<?= te('Nebematys') ?>">✕</button></form></li>
-            <?php endforeach; ?>
-          </ul>
-        <?php endif; ?>
-        <div class="ga-acts">
-          <?php if ($gIds !== null): ?>
-            <form method="post" class="inline-form ga-add"><?= csrf_field() ?><input type="hidden" name="action" value="game_access"><input type="hidden" name="do" value="add">
-              <input type="email" name="email" required placeholder="<?= te('el. paštas') ?>" aria-label="<?= te('Pridėti paskyrą (el. paštas)') ?>"><button class="btn btn-sm" type="submit"><?= te('+ Pridėti') ?></button></form>
-            <form method="post" class="inline-form"><?= csrf_field() ?><input type="hidden" name="action" value="game_access"><input type="hidden" name="do" value="all"><button class="btn btn-sm" type="submit"><?= te('Rodyti visiems') ?></button></form>
-          <?php else: ?>
-            <form method="post" class="inline-form"><?= csrf_field() ?><input type="hidden" name="action" value="game_access"><input type="hidden" name="do" value="me"><button class="btn btn-sm" type="submit"><?= te('Paslėpti - matysiu tik aš') ?></button></form>
-          <?php endif; ?>
-        </div>
-      </section>
-      <?php endif; ?>
+      <?php /* „🏯 Žaidimas“ skiltis išimta (#145): mato administratoriai, testuotojai - ne; Dojo - Testavimas puslapyje */ ?>
       <section class="panel card settings-group reg-toggles" id="registracija">
         <div class="kicker"><?= te('Registracija') ?></div>
         <p class="small muted" style="margin:0 0 8px;"><?= te('Išjungus - registracijos mygtukas dingsta, o puslapis sako, kad registracija išjungta.') ?></p>
@@ -142,6 +119,7 @@ page_start(t('Nustatymai'), ['admin' => true]);
           <noscript><button class="btn btn-primary btn-sm" type="submit"><?= te('Išsaugoti') ?></button></noscript>
         </form>
       </section>
+      <?php if ($ro): ?></fieldset><?php endif; ?>
     <?php endif; ?>
   </div>
   <aside class="settings-side">

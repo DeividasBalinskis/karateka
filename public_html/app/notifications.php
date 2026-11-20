@@ -47,7 +47,7 @@ function notify_member(int $memberId, string $type, string $title, ?string $body
 /** Administratoriams (Deniui ir kitiems adminams) */
 function notify_admins(string $type, string $title, ?string $body = null, ?string $link = null, ?int $memberId = null, ?int $refId = null): void
 {
-    foreach (q('SELECT id FROM accounts WHERE role = "admin" AND status = "active"')->fetchAll(PDO::FETCH_COLUMN) as $aid) {
+    foreach (q('SELECT id FROM accounts WHERE ' . real_admin_sql())->fetchAll(PDO::FETCH_COLUMN) as $aid) {
         notify_account((int) $aid, $type, $title, $body, $link, $memberId, $refId);
     }
 }
@@ -253,7 +253,7 @@ function page_widgets(): string
 {
     $chat = chat_widget_html();
     return celebration_html() . $chat . feedback_widget_html() . notify_popup_html() . '<script src="' . e(asset_url('assets/site.js')) . '" defer></script>'
-        . (is_admin() ? '<script src="' . e(asset_url('assets/theme-pick.js')) . '" defer></script>' : '')
+        . (current_account() ? '<script src="' . e(asset_url('assets/theme-pick.js')) . '" defer></script>' : '')   // 🎨 - kiekvienam prisijungusiam (B4)
         . ($chat ? '<script src="' . e(asset_url('assets/chat.js')) . '" defer></script>' : '');
 }
 
