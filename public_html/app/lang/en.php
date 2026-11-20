@@ -3518,4 +3518,13 @@ From 2013 he trained with the team of the traditional karate-do club "Sanrei", a
     'Gali rašyti treneriui' => 'Can write to the coach',
     'Išjungus - žinutes treneriui rašote tik jūs.' => 'When off, only you write to the coach.',
     '🔔 Naujienos' => '🔔 News',
+    'Bandė užsiregistruoti dar kartą' => 'Tried to register again',
+    'Egzaminas jau įvyko - savo rezultatą sužinokite iš trenerio.' => 'The exam has taken place - ask the coach for your result.',
+    'Jūs jau užregistruotas (-a)' => 'You are already registered',
+    'Nauja asmeninė nuoroda - senoji nebeveiks (jei nuoroda pateko ne tam žmogui)' => 'New personal link - the old one stops working (if the link reached the wrong person)',
+    'Nauja asmeninė nuoroda sukurta - senoji nebeveikia. Nukopijuokite 🔗 ir nusiųskite.' => 'New personal link created - the old one no longer works. Copy 🔗 and send it.',
+    'Savo egzamino puslapio nuorodą rasite registracijos metu gautoje žinutėje arba „Jau užsiregistravai?“ žemiau. Jei nepavyksta - parašykite treneriui.' => 'You will find the link to your exam page in the message you got when registering, or use "Already registered?" below. If that fails, write to the coach.',
+    'Sukurti naują asmeninę nuorodą? Senoji nebeveiks.' => 'Create a new personal link? The old one will stop working.',
+    'jau buvo užregistruotas (-a); nuoroda neparodyta' => 'was already registered; the link was not shown',
+    '{n} jau yra šio egzamino sąraše - dar kartą registruotis nereikia. Treneriui pranešėme.' => '{n} is already on this exam\'s list - no need to register again. We have told the coach.',
 ];

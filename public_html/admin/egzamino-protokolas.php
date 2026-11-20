@@ -123,6 +123,14 @@ if (is_post()) {
             }
             flash('ok', t('Dalyvis įtrauktas.'));
             break;
+        case 'new_link':
+            // A3: ↻ nauja asmeninė nuoroda - senoji nebeveikia
+            $nr = q_one('SELECT id FROM exam_protocol_rows WHERE id = ? AND event_id = ?', [(int) post('row'), $id]);
+            if ($nr) {
+                exam_row_new_token((int) $nr['id']);
+                flash('ok', t('Nauja asmeninė nuoroda sukurta - senoji nebeveikia. Nukopijuokite 🔗 ir nusiųskite.'));
+            }
+            break;
         case 'delete_row':
             q('UPDATE exam_protocol_rows SET deleted_at = NOW() WHERE id = ? AND event_id = ?', [(int) post('row'), $id]);
             flash('ok', t('Ištrinta. Šis numeris daugiau niekam nebus priskirtas.'));
@@ -252,7 +260,8 @@ page_start(t('Egzamino protokolas') . ': ' . $event['title'], ['admin' => true, 
           <div class="prot-sub no-print">
             <span class="nr-in" title="Nr."><?= e($fedNo[(int) $r['id']] ?? $r['number']) ?></span>
             <button type="button" class="linklike pr-sub-t" data-subedit title="<?= te('Gimimo data, telefonas, klubas, seminarai') ?>"><span class="pr-sub-txt"><?= $sub ? e(implode(' · ', $sub)) : te('+ gimimo data, telefonas') ?></span> ✎</button>
-            <?php if ($pu): ?><button type="button" class="linklike pr-link" data-copy="<?= e($pu) ?>" title="<?= te('Kopijuoti asmeninę nuorodą (mano egzaminas be paskyros) - nusiųsti SMS ar Messenger') ?>">🔗</button><?php endif; ?>
+            <?php if ($pu): ?><button type="button" class="linklike pr-link" data-copy="<?= e($pu) ?>" title="<?= te('Kopijuoti asmeninę nuorodą (mano egzaminas be paskyros) - nusiųsti SMS ar Messenger') ?>">🔗</button>
+              <button type="submit" form="nl<?= (int) $r['id'] ?>" class="linklike pr-newlink" title="<?= te('Nauja asmeninė nuoroda - senoji nebeveiks (jei nuoroda pateko ne tam žmogui)') ?>">↻</button><?php endif; ?>
           </div>
           <div class="prot-subedit no-print" hidden>
             <label><?= te('Gimimo data') ?><input class="pi" type="date" data-f="birth_date" value="<?= e((string) $r['birth_date']) ?>"></label>
@@ -281,6 +290,7 @@ page_start(t('Egzamino protokolas') . ': ' . $event['title'], ['admin' => true, 
           <span class="print-only"><?= $r['result'] === 'passed' ? te('Išlaikė') : ($r['result'] === 'failed' ? te('Neišlaikė') : '') ?></span>
         </td>
         <td class="no-print prot-del">
+          <form method="post" id="nl<?= (int) $r['id'] ?>" hidden onsubmit="return confirm('<?= e(t('Sukurti naują asmeninę nuorodą? Senoji nebeveiks.')) ?>')"><?= csrf_field() ?><input type="hidden" name="id" value="<?= $id ?>"><input type="hidden" name="action" value="new_link"><input type="hidden" name="row" value="<?= (int) $r['id'] ?>"></form>
           <form method="post" onsubmit="return confirm('<?= e(t('Neatvyko - ištrinti iš protokolo? Numeris daugiau niekam nebus priskirtas.')) ?>')">
             <?= csrf_field() ?><input type="hidden" name="id" value="<?= $id ?>"><input type="hidden" name="action" value="delete_row"><input type="hidden" name="row" value="<?= (int) $r['id'] ?>">
             <button class="linklike small muted" type="submit" title="<?= te('Neatvyko - ištrinti') ?>">✕</button></form>

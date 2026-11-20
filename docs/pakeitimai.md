@@ -4,6 +4,18 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.56 - 2026-11-20 (egzamino nuorodos saugios - A3)
+Duomenų bazės atnaujinti nereikia. Zip'o turinį išpakuokite **tiesiai į svetainės aplanką**.
+
+**🔒 Registracija į egzaminą per nuorodą**
+- Jei registruojamas žmogus jau yra sąraše (užsiregistravo anksčiau arba įrašė treneris) - rodoma **„Jūs jau užregistruotas (-a)“**:
+  kito žmogaus asmeninė nuoroda **neberodoma**, telefonas **neperrašomas**, ištrinta eilutė neatgaivinama, treneriui - pranešimas „Bandė užsiregistruoti dar kartą“.
+- Vien vardo neužtenka: žmogus atpažįstamas tik pagal vardą **ir tą pačią gimimo datą**.
+- „Jau užsiregistravai? Rask savo egzaminą“: ne daugiau 10 nesėkmių per valandą iš vieno interneto adreso (saugoma duomenų bazėje);
+  po egzamino dienos paieška išjungiama.
+- Protokole prie 🔗 - **↻ nauja asmeninė nuoroda** (jei nuoroda pateko ne tam žmogui - senoji nebeveiks).
+- Atsiliepimuose nebesaugomos slaptos adreso dalys (`k=`, `t=`, `e=`, `key=`).
+
 ## v1.55 - 2026-11-20 (pranešimai: raudonas skaičius - tik darbai, B5)
 Duomenų bazės atnaujinti nereikia. Zip'o turinį išpakuokite **tiesiai į svetainės aplanką**.
 
