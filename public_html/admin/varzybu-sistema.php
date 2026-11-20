@@ -150,6 +150,18 @@ if (get('ui') && is_post()) {
     exit(json_encode(['ok' => true, 'ui' => $demo || $sekr ? varz_ui() : varz_ui_save(json_decode((string) file_get_contents('php://input'), true) ?: [])], JSON_UNESCAPED_UNICODE));
 }
 
+// Kelios planšetės (D4): naujausia būsena - ?state=1&v=N (jei versija ta pati - tik „same“, kad būtų pigu)
+if (get('state') && !is_post()) {
+    header('Content-Type: application/json; charset=utf-8');
+    header('Cache-Control: no-store');
+    $cur = (int) q_value('SELECT version FROM tournaments WHERE id = ?', [(int) $t['id']]);
+    if ($demo || (int) get('v') === $cur) {
+        exit(json_encode(['ok' => true, 'version' => $cur, 'same' => true]));
+    }
+    $fresh = tournament_get((int) $t['id']);
+    exit(json_encode(['ok' => true, 'version' => $cur, 'state' => varz_state_maps(varz_drop_example_clubs(tournament_state($fresh)))], JSON_UNESCAPED_UNICODE));
+}
+
 // Istorija: kopijų sąrašas (JSON) ir atkūrimas
 if (get('history') && !is_post()) {
     header('Content-Type: application/json; charset=utf-8');
@@ -256,7 +268,7 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
     <div class="vz-top-right">
       <?= render_lang_switch(tl_lang()) ?>
       <span class="save-state ok" id="save-state" role="status">Išsaugota ✓</span>
-      <?= $asSekr ? '' : theme_picker_html('taika', varz_ui()['theme'], 'vz-link') ?>
+      <?= theme_picker_html($asSekr ? 'device' : 'taika', varz_ui()['theme'], 'vz-link') ?>
       <?php if ($sekr): ?><span class="vz-link vz-sekr-who" title="Prisijungta per sekretoriato nuorodą">🧑‍💼 <?= e($me['first_name']) ?></span><?php endif; ?>
       <?php if (!$asSekr && !$demo): ?><button type="button" class="vz-link" id="sekr-toggle" aria-expanded="false" title="Nuoroda sekretoriatui be paskyros">🧑‍💼<span class="hide-sm"> Sekretoriatas</span></button><?php endif; ?>
       <button type="button" class="vz-link" id="hist-toggle" aria-expanded="false" title="Atkurti, kaip buvo anksčiau">⟲<span class="hide-sm"> Istorija</span></button>

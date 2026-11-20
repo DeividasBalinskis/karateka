@@ -15,6 +15,11 @@
     box.querySelectorAll('.tp-sw').forEach(function (x) { x.classList.toggle('on', x === sw); x.setAttribute('aria-pressed', x === sw); });
     box.querySelector('.tp-now').textContent = sw.querySelector('.tp-name').textContent.split(' ')[0];
     var all = box.querySelector('.tp-all-chk');
+    if (box.dataset.scope === 'device') {   // Budo sekretoriatas: tema tik šiame įrenginyje (numatytąją nustato administratorius)
+      try { localStorage.setItem('budo-theme', id + '|' + (sw.dataset.dark === '1' ? 1 : 0)); } catch (x) {}
+      panel.hidden = true; box.querySelector('.tp-btn').setAttribute('aria-expanded', 'false');
+      return;
+    }
     var f = new FormData(); f.append('_csrf', box.dataset.csrf); f.append('scope', box.dataset.scope); f.append('theme', id); if (all && all.checked) f.append('all', '1');
     fetch(box.dataset.api, { method: 'POST', body: f, credentials: 'same-origin', headers: { 'X-CSRF-Token': box.dataset.csrf } }).catch(function () {});
     // Pasirinkus temą langelis užsidaro pats (#127)
@@ -28,6 +33,15 @@
     var f = new FormData(); f.append('_csrf', box.dataset.csrf); f.append('scope', box.dataset.scope); f.append('theme', on.dataset.themeId); f.append('all', '1');
     fetch(box.dataset.api, { method: 'POST', body: f, credentials: 'same-origin', headers: { 'X-CSRF-Token': box.dataset.csrf } }).catch(function () {});
   });
+  // Įrenginio tema (Budo sekretoriatas) - pritaikoma iš karto atidarius
+  if (document.querySelector('.theme-pick[data-scope="device"]')) {
+    try {
+      var saved = (localStorage.getItem('budo-theme') || '').split('|');
+      if (saved[0]) { document.body.dataset.theme = saved[0]; document.body.classList.toggle('theme-dark', saved[1] === '1');
+        var sw0 = document.querySelector('.theme-pick[data-scope="device"] .tp-sw[data-theme-id="' + saved[0] + '"]');
+        if (sw0) { document.querySelectorAll('.theme-pick[data-scope="device"] .tp-sw').forEach(function (x) { x.classList.toggle('on', x === sw0); }); } }
+    } catch (x) {}
+  }
   document.addEventListener('keydown', function (e) {
     if (e.key !== 'Escape') return;
     document.querySelectorAll('.theme-pick .tp-panel:not([hidden])').forEach(function (p) { p.hidden = true; p.parentNode.querySelector('.tp-btn').setAttribute('aria-expanded', 'false'); });

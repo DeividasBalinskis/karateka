@@ -20,6 +20,11 @@ Visi sprendimai surašyti `docs/decisions.md`.
 **🥋 Budo**
 - 10 kyu - diržų sąraše (dalyviai, registracija).
 - Sekretoriato nuoroda: galioja iki 2 dienų po varžybų; sekretoriatas mato tik „Tvarkaraštį“, „Rezultatus“ ir apdovanojimus (be „Administracijos“).
+- **Kelios planšetės vienu metu (D4):** jei kita planšetė ką tik išsaugojo, rezultatai nebedingsta ir nebereikia perkrauti puslapio -
+  pakeitimai sujungiami automatiškai (kiekviena planšetė išsaugo savo grupes). Laisva planšetė kas 8 s pati pasiima kitų tatamių pakeitimus.
+- „Rask save“ (žiūrovams) randa vaiką ir pagal pavardę; rezultate vis tiek rodoma „Jonas P.“.
+- Sekretoriato įrenginys gali pasirinkti savo foną 🎨 (prisimenamas tame įrenginyje); numatytąjį nustato administratorius.
+- Apdovanojimų planšetėje - pilni vardai ir pavardės (jau buvo).
 - Primename: kata vėliavėlėmis ar balais, teisėjų skaičius (1-15), bronzos (2 be kovos / kova dėl 3 vietos / paguoda) ir ratų sistema mažoms grupėms
   nustatomi kiekvienai grupei (grupės ⚙ nustatymai).
 

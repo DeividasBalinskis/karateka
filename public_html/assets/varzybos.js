@@ -111,7 +111,7 @@
   if (stateCh) stateCh.onmessage = function (ev) {
     var d = ev.data || {}; if (!d.state || d.v <= version || dirty || saving) return;
     var sel = S.selected;
-    CFG.state = d.state; load(); S.selected = sel; version = d.v;
+    CFG.state = d.state; load(); S.selected = sel; version = d.v; markSaved(stateObj());
     setStatus('Išsaugota ✓', 'ok'); render();
   };
   function flush(keepalive) {
@@ -125,9 +125,10 @@
       .then(function (r) { return r.json().then(function (d) { return { status: r.status, d: d }; }); })
       .then(function (x) {
         saving = false;
-        if (x.status === 409) { conflict = true; setStatus('Kitas žmogus pakeitė varžybas - perkraukite puslapį', 'err'); showConflict(); return; }
+        if (x.status === 409) { resolveConflict(); return; }
         if (!x.d.ok) { dirty = true; setStatus('Neišsaugota: ' + (x.d.error || 'klaida'), 'err'); return; }
         version = x.d.version;
+        markSaved(JSON.parse(body).state);
         setStatus('Išsaugota ✓', 'ok');
         // Baigtos rungtys automatiškai pažymimos „apdovanojama“ (#122) - būsena atnaujinama iš karto
         if (x.d.awards && !Array.isArray(x.d.awards) && JSON.stringify(x.d.awards) !== JSON.stringify(AW)) {
@@ -139,6 +140,69 @@
       })
       .catch(function () { saving = false; dirty = true; setStatus('Nėra ryšio - bandysime dar kartą', 'err'); saveTimer = setTimeout(flush, 5000); });
   }
+  // ---------- Kelios planšetės (D4): kas išsaugota paskutinį kartą - kad konflikto atveju būtų galima sujungti, o ne prašyti perkrauti ----------
+  var savedSnap = null;
+  function stateObj() { var st = {}; Object.keys(S).forEach(function (k) { if (k !== 'history' && k !== 'tournament') st[k] = S[k]; }); return JSON.parse(JSON.stringify(st)); }
+  function markSaved(st) {
+    var o = { cats: {}, people: {}, other: {} };
+    (st.categories || []).forEach(function (c) { o.cats[c.id] = JSON.stringify(c); });
+    Object.keys(st.people || {}).forEach(function (id) { o.people[id] = JSON.stringify(st.people[id]); });
+    Object.keys(st).forEach(function (k) { if (k !== 'categories' && k !== 'people' && k !== 'selected') o.other[k] = JSON.stringify(st[k]); });
+    savedSnap = o;
+  }
+  // Serverio būsena + šios planšetės pakeitimai (tik tos grupės, dalyviai ir nustatymai, kuriuos čia keitėme po paskutinio išsaugojimo)
+  function rebase(server) {
+    var local = stateObj(), snap = savedSnap || { cats: {}, people: {}, other: {} }, out = [], onServer = {}, inLocal = {};
+    local.categories.forEach(function (c) { inLocal[c.id] = c; });
+    (server.categories || []).forEach(function (c) {
+      onServer[c.id] = true;
+      var lc = inLocal[c.id];
+      if (!lc) { if (snap.cats[c.id] === undefined) out.push(c); return; }   // čia ištrinta - neliko; kitur sukurta - lieka
+      out.push(JSON.stringify(lc) !== snap.cats[c.id] ? lc : c);
+    });
+    local.categories.forEach(function (c) { if (!onServer[c.id] && snap.cats[c.id] === undefined) out.push(c); });   // čia sukurtos naujos
+    server.categories = out;
+    server.people = server.people && !Array.isArray(server.people) ? server.people : {};
+    Object.keys(local.people || {}).forEach(function (id) { if (JSON.stringify(local.people[id]) !== snap.people[id]) server.people[id] = local.people[id]; });
+    Object.keys(snap.people).forEach(function (id) { if (!(local.people || {})[id]) delete server.people[id]; });
+    Object.keys(local).forEach(function (k) {
+      if (k === 'categories' || k === 'people') return;
+      if (k === 'selected' || snap.other[k] === undefined || JSON.stringify(local[k]) !== snap.other[k]) server[k] = local[k];
+    });
+    return server;
+  }
+  function applyServer(st, ver) {
+    var sel = S.selected;
+    CFG.state = st; load(); if (cat(sel)) S.selected = sel; version = ver;
+  }
+  // Konfliktas: kita planšetė ką tik išsaugojo - sujungiama automatiškai ir išsaugoma iš naujo (be perkrovimo)
+  function resolveConflict() {
+    setStatus('Sujungiama su kitų planšečių pakeitimais…', 'busy');
+    fetch(CFG.api + '&state=1&v=-1', { credentials: 'same-origin', headers: { Accept: 'application/json' } })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (!d.ok || !d.state) throw new Error('state');
+        var serverSnapState = JSON.parse(JSON.stringify(d.state));
+        var merged = rebase(d.state);
+        applyServer(merged, d.version);
+        markSaved(serverSnapState);   // tai, kas jau serveryje; mūsų pakeitimai - dar neišsaugoti
+        dirty = true; conflict = false;
+        if (!typingNow() && !dragId) render(); else awPending = true;
+        flush();
+      })
+      .catch(function () { conflict = true; setStatus('Kitas žmogus pakeitė varžybas - perkraukite puslapį', 'err'); showConflict(); });
+  }
+  // Laisva planšetė kas 8 s pasiima kitų pakeitimus (kai niekas nerašoma ir neatidarytas kovos langas)
+  function pullServer() {
+    if (!CFG.api || CFG.readOnly || document.hidden || dirty || saving || conflict || typingNow() || dragId) return;
+    fetch(CFG.api + '&state=1&v=' + version, { credentials: 'same-origin', headers: { Accept: 'application/json' } })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (!d.ok || !d.state || d.version <= version || dirty || saving || typingNow() || dragId) return;
+        applyServer(d.state, d.version); markSaved(stateObj()); render();
+      }).catch(function () {});
+  }
+  setInterval(pullServer, 8000);
   function save() {
     if (CFG.readOnly) return;
     dirty = true;
@@ -3149,7 +3213,7 @@
       .then(function (r) { return r.json(); }).then(function (d) {
         if (!d.ok) { toast(esc(d.error || 'Nepavyko atkurti.')); return; }
         var sel = S.selected; CFG.state = d.state; load(); if (cat(sel)) S.selected = sel;
-        version = d.version; dirty = false; conflict = false;
+        version = d.version; dirty = false; conflict = false; markSaved(stateObj());
         var cf = document.getElementById('conflict'); if (cf) cf.hidden = true;
         if (stateCh) { try { stateCh.postMessage({ v: version, state: d.state }); } catch (e) {} }
         setStatus('Atkurta ✓', 'ok'); toast('Atkurta: <b>' + esc(label) + '</b>. Jei ne tai - atkurkite kitą kopiją (ir „Prieš atkūrimą“).');
@@ -3305,7 +3369,7 @@
     if (tab === 'klubai') renderClubs(); else if (tab === 'dalyviai') { renderEntries(); renderPeople(); } else if (tab === 'komandos') renderTeams(); else if (tab === 'kategorijos') renderCats(); else if (tab === 'rezultatai') renderResults(); else if (tab === 'tinklai') renderDraws(); else renderLive();
     renderPins();
   }
-  load();
+  load(); markSaved(stateObj());
   // Naujos test varžybos: kategorijos sudaromos ir dalis kovų „sužaidžiama“ pirmą kartą atidarius
   if (S.autoCats) { delete S.autoCats; autoCategories(); save(); }
   // Greitos varžybos: kuriant pažymėta „po vieną grupę visiems“ - grupė kiekvienai rungčiai su visais dalyviais

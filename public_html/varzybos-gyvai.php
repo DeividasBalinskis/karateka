@@ -39,6 +39,21 @@ if (get('json')) {
             }
         }
         $found = [];
+        // „Rask save“ ir pagal pavardę (sprendimas 2026-11-20): pilnas vardas iš varžybų būsenos → kaip jis rodomas viešai („Jonas P.“)
+        $byFull = [];
+        if (mb_strlen($q) >= 2) {
+            foreach ((array) (tournament_state($t)['people'] ?? []) as $p) {
+                $full = trim((string) ($p['name'] ?? ''));
+                if ($full === '' || strpos($fold($full . ' ' . (string) ($p['club'] ?? '')), $q) === false) {
+                    continue;
+                }
+                $parts = preg_split('/\s+/u', $full);
+                $short = count($parts) > 1 ? $parts[0] . ' ' . mb_substr(end($parts), 0, 1) . '.' : $full;
+                foreach ([$full, $short] as $shown) {
+                    $byFull[$fold($shown . '|' . (string) ($p['club'] ?? ''))] = true;
+                }
+            }
+        }
         if (mb_strlen($q) >= 2) {
             foreach ((array) ($r['categories'] ?? []) as $c) {
                 $b = $r['brackets'][(string) ($c['id'] ?? '')] ?? null;
@@ -59,7 +74,7 @@ if (get('json')) {
                     }
                 }
                 foreach ($names as [$n, $club]) {
-                    if ($n === '' || $n === '…' || strpos($fold($n . ' ' . $club), $q) === false) {
+                    if ($n === '' || $n === '…' || (strpos($fold($n . ' ' . $club), $q) === false && !isset($byFull[$fold($n . '|' . $club)]))) {
                         continue;
                     }
                     $k = $n . '|' . $club;
