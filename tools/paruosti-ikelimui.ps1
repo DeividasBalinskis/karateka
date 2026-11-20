@@ -38,6 +38,8 @@ Remove-Item -Recurse -Force -ErrorAction SilentlyContinue (Join-Path $stage 'upl
 # DB atnaujinimas vienu mygtuku (Nustatymai -> Atsarginės kopijos ir sistema): db failai keliauja kartu, į app\db (iš interneto nepasiekiami)
 New-Item -ItemType Directory -Force (Join-Path $stage 'app\db') | Out-Null
 Copy-Item (Join-Path $root 'db\0*.sql') (Join-Path $stage 'app\db')
+# „Kas naujo“ puslapiui (Valdymas, paspaudus versijos numerį): pakeitimų sąrašas
+Copy-Item (Join-Path $root 'docs\pakeitimai.md') (Join-Path $stage 'app\pakeitimai.md')
 
 # Versija (rodoma prie logotipo test svetainėje) - ir ZIP pavadinime
 $version = (Get-Content -Raw (Join-Path $root 'public_html\app\VERSION')).Trim()

@@ -1891,3 +1891,9 @@ h1 .badge-tester{font:600 .8rem/1.6 'Inter', sans-serif; letter-spacing:0; paddi
   .rv-ans .rv-a{flex:1 1 calc(100% - 56px);}
   .rv-ans .rv-x{margin-left:auto;}
 }
+/* „Kas naujo“ (admin/kas-naujo.php) */
+.kn-ver h2{margin:0 0 4px; font-size:1.3rem;}
+.kn-sub{margin:0 0 12px; color:var(--muted); font-weight:600;}
+.kn-ver h3{margin:16px 0 6px; font-size:1rem;}
+.kn-ver ul{margin:0 0 6px; padding-left:20px; display:grid; gap:4px;}
+.ver-tag[role="link"]{cursor:pointer;}

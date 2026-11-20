@@ -521,7 +521,7 @@ function site_header(bool $home = false, ?string $area = null, ?string $tab = nu
 <?php $pm = $a && is_staff($a) && admin_mode() ? phone_menu_variant() : ''; ?>
 <header class="site-header<?= $pm ? ' pm-' . $pm : '' ?>">
   <nav>
-    <a class="logo" href="<?= $home ? '#' : url('index.php') ?>"><img src="<?= url('img/logo.png') ?>" alt="<?= te('Karateka logotipas') ?>"><?php if (config('env') !== 'live'): ?><span class="ver-tag" title="<?= te('Svetainės versija (rodoma tik testuojant)') ?>">v<?= e(site_version()) ?><?= config('env') === 'local' ? (' ' . t('· local')) : '' ?></span><?php endif; ?></a>
+    <a class="logo" href="<?= $home ? '#' : url('index.php') ?>"><img src="<?= url('img/logo.png') ?>" alt="<?= te('Karateka logotipas') ?>"><?php if (config('env') !== 'live'): ?><span class="ver-tag" title="<?= is_staff() ? te('Kas naujo šioje versijoje') : te('Svetainės versija (rodoma tik testuojant)') ?>"<?= is_staff() ? ' role="link" tabindex="0" onclick="event.preventDefault(); event.stopPropagation(); location.href=' . e(json_encode(url('admin/kas-naujo.php'))) . '"' : '' ?>>v<?= e(site_version()) ?><?= config('env') === 'local' ? (' ' . t('· local')) : '' ?></span><?php endif; ?></a>
     <?php if ($a && is_staff($a)): ?>
       <!-- Kitos sistemos: Budo varžybos ir LTKF - per logotipo meniu (#91/#92) -->
       <details class="site-switch"><summary title="<?= te('Kitos sistemos: Budo varžybos, LTKF') ?>" aria-label="<?= te('Kitos sistemos') ?>"><svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
