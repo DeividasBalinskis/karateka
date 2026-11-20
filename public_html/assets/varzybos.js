@@ -61,9 +61,27 @@
   var BELTS = CFG.belts || {};
 
   var S;
+  // PHP tuščią žemėlapį {} grąžina kaip sąrašą []. Į sąrašą įrašytas rezultatas (results['r0m0'] = ...) ekrane matomas,
+  // bet JSON.stringify jo neperduoda - po perkrovimo dingdavo. Todėl visi būsenos žemėlapiai užkraunant verčiami objektais.
+  function asMap(x) {
+    if (x && typeof x === 'object' && !Array.isArray(x)) return x;
+    var o = {};
+    if (Array.isArray(x)) x.forEach(function (v, i) { if (v !== null && v !== undefined) o[i] = v; });
+    return o;
+  }
+  function fixMaps(c) {
+    if (Array.isArray(c.crit)) c.crit = asMap(c.crit);
+    if (Array.isArray(c.cfg)) c.cfg = asMap(c.cfg);
+    var d = c.draw;
+    if (!d || typeof d !== 'object') return;
+    d.results = asMap(d.results); d.scores = asMap(d.scores);
+    ['final', 'bouts', 'kata'].forEach(function (k) { if (Array.isArray(d[k])) d[k] = asMap(d[k]); });
+    if (d.kata) ['scores', 'final'].forEach(function (k) { if (Array.isArray(d.kata[k])) d.kata[k] = asMap(d.kata[k]); });
+  }
   function load() {
     S = CFG.state && typeof CFG.state === 'object' ? CFG.state : {};
     S.categories = Array.isArray(S.categories) ? S.categories : [];
+    S.categories.forEach(fixMaps);
     S.people = S.people && !Array.isArray(S.people) ? S.people : {};
     S.teams = S.teams && !Array.isArray(S.teams) ? S.teams : {};
     S.categories.forEach(function (c) { c.competitors.forEach(function (p) { if (!p.team && !S.people[p.id]) S.people[p.id] = { id: p.id, name: p.name, club: p.club }; }); });
@@ -170,15 +188,27 @@
     }
     return order;
   }
-  function shuffle(a) { for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
-  function makeDraw(c, system) {
+  function shuffle(a, rnd) { rnd = rnd || Math.random; for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(rnd() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+  // Burtai, kurių dar niekas neprašė (grupė tik atidaryta), neišsaugomi iki pirmo veiksmo. Kad perkrovus puslapį ar kitoje
+  // planšetėje poros būtų tos pačios, jie traukiami pagal pastovų skaičių iš varžybų, rungties ir dalyvių. „Burti iš naujo“ - tikrai atsitiktinai.
+  function seededRnd(str) {
+    var h = 1779033703 ^ str.length;
+    for (var i = 0; i < str.length; i++) { h = Math.imul(h ^ str.charCodeAt(i), 3432918353); h = (h << 13) | (h >>> 19); }
+    return function () {
+      h = Math.imul(h ^ (h >>> 16), 2246822507); h = Math.imul(h ^ (h >>> 13), 3266489909); h ^= h >>> 16;
+      var a = (h >>> 0) + 0x6D2B79F5; a = Math.imul(a ^ (a >>> 15), a | 1); a ^= a + Math.imul(a ^ (a >>> 7), a | 61);
+      return ((a ^ (a >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+  function drawSeed(c, system) { return [CFG.id || 0, c.id, system, c.competitors.map(function (p) { return p.id; }).sort().join(',')].join('|'); }
+  function makeDraw(c, system, rnd) {
     if (system === 'rr' || system === 'score') {
-      return { system: system, order: shuffle(c.competitors.map(function (p) { return p.id; })), results: {}, scores: {}, final: {}, locked: false };
+      return { system: system, order: shuffle(c.competitors.map(function (p) { return p.id; }), rnd), results: {}, scores: {}, final: {}, locked: false };
     }
     var n = c.competitors.length, size = 1;
     while (size < n) size *= 2;
     var byClub = {};
-    shuffle(c.competitors.slice()).forEach(function (p) { (byClub[p.club] = byClub[p.club] || []).push(p.id); });
+    shuffle(c.competitors.slice(), rnd).forEach(function (p) { (byClub[p.club] = byClub[p.club] || []).push(p.id); });
     var groups = Object.keys(byClub).map(function (k) { return byClub[k]; }).sort(function (a, b) { return b.length - a.length; });
     var seeds = [];
     while (seeds.length < n) groups.forEach(function (g) { if (g.length) seeds.push(g.shift()); });
@@ -1319,7 +1349,7 @@
     if (!c.draw || (drawStale(c) && !c.draw.locked)) {
       if (c.competitors.length < 2) { view.innerHTML = '<p class="muted">Kategorijoje per mažai dalyvių lentelei.</p>'; return; }
     }
-    if (!c.draw) c.draw = makeDraw(c, defaultSystem(c));
+    if (!c.draw) { var sys0 = defaultSystem(c); c.draw = makeDraw(c, sys0, seededRnd(drawSeed(c, sys0))); }
     c.draw.scores = c.draw.scores || {};
     // Pasikeitė dalyviai, o kovų dar nebuvo - burtai traukiami iš naujo automatiškai
     var started = Object.keys(c.draw.results).length || (!isElim(c.draw.system) && scoreDone(c));

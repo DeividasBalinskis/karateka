@@ -219,7 +219,7 @@ $cfg = [
     'api' => url('admin/varzybu-sistema.php?id=' . (int) $t['id']), 'csrf' => csrf_token(), 'year' => (int) substr($t['starts_on'], 0, 4),
     'date' => $t['starts_on'], 'dateEnd' => $t['ends_on'] ?: $t['starts_on'],
     'popup' => get('langas') && get('cat') !== '' ? (string) get('cat') : null,   // atkabinta rungtis atskirame lange
-    'homeClub' => VARZ_HOME_CLUB, 'belts' => $belts, 'members' => $demo || $asSekr ? [] : varz_club_members(), 'state' => varz_drop_example_clubs(tournament_state($t)),
+    'homeClub' => VARZ_HOME_CLUB, 'belts' => $belts, 'members' => $demo || $asSekr ? [] : varz_club_members(), 'state' => varz_state_maps(varz_drop_example_clubs(tournament_state($t))),
     'clubContacts' => tournament_club_contacts((int) $t['id']), 'clubDirectory' => $demo || $asSekr ? [] : varz_club_directory(), 'demo' => $demo, 'sekr' => $asSekr,
     'admin' => (is_admin() && !$preview) || $demo,
     'diplomaApi' => url('admin/varzybu-sistema.php?id=' . (int) $t['id'] . '&diplomai=1'), 'diplomaTpl' => diploma_template(),   // tatamio šalinimas - tik pagrindiniam adminui (ir bandymo nuorodai)

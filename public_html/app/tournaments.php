@@ -300,12 +300,49 @@ function tournament_create(string $title, string $startsOn, ?string $endsOn, ?st
 }
 
 /**
+ * Būsenos žemėlapiai (rezultatai, balai, kovos...) visada lieka JSON objektais.
+ * PHP tuščią {} paverčia [] - naršyklėje į tokį sąrašą įrašyti rezultatai nebeišsaugomi (dingdavo po perkrovimo).
+ */
+function varz_state_maps(array $state): array
+{
+    $map = static function (&$holder, string $key): void {
+        if (is_array($holder) && array_key_exists($key, $holder) && $holder[$key] === []) {
+            $holder[$key] = new stdClass();
+        }
+    };
+    foreach (['people', 'teams', 'clubInfo'] as $k) {
+        $map($state, $k);
+    }
+    if (isset($state['categories']) && is_array($state['categories'])) {
+        foreach ($state['categories'] as &$c) {
+            if (!is_array($c)) {
+                continue;
+            }
+            $map($c, 'crit');
+            $map($c, 'cfg');
+            if (isset($c['draw']) && is_array($c['draw'])) {
+                foreach (['results', 'scores', 'final', 'bouts', 'kata'] as $k) {
+                    $map($c['draw'], $k);
+                }
+                if (isset($c['draw']['kata']) && is_array($c['draw']['kata'])) {
+                    $map($c['draw']['kata'], 'scores');
+                    $map($c['draw']['kata'], 'final');
+                }
+            }
+        }
+        unset($c);
+    }
+    return $state;
+}
+
+/**
  * Išsaugo naršyklės pakeitimus. $version - kokią versiją redaguotojas matė: jei kitas žmogus jau išsaugojo naujesnę,
  * grąžinama null (nieko neperrašoma), kitaip - nauja versija.
  */
 function tournament_save_state(int $id, array $state, array $results, int $version): ?int
 {
     unset($state['history']);
+    $state = varz_state_maps($state);
     $st = q('UPDATE tournaments SET state = ?, results = ?, version = version + 1, updated_at = NOW() WHERE id = ? AND version = ?',
         [json_encode($state, JSON_UNESCAPED_UNICODE), json_encode($results, JSON_UNESCAPED_UNICODE), $id, $version]);
     if (!$st->rowCount()) {
