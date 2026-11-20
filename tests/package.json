@@ -5,7 +5,8 @@
   "scripts": {
     "reset-db": "bash setup/reset-db.sh",
     "test": "playwright test",
-    "test:clean": "bash setup/reset-db.sh && playwright test"
+    "test:clean": "bash setup/reset-db.sh && playwright test",
+    "smoke": "bash smoke.sh"
   },
   "devDependencies": {
     "@playwright/test": "1.63.0"
