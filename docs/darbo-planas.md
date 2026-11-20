@@ -53,7 +53,7 @@ Status: ☐ not started · ◐ partly done · ☑ done
 | **A6** | One source of truth: main branch, deploy guide, zip script | Deividas | S | reikia leidimo | ☐ |
 | **B1** | Small feedback batch + text fixes (old step 2) | Denis | S | — | ◐ v1.48, v1.49, v1.50 (#138-#151) |
 | **B2** | "Greitos varžybos": 4 athletes in under a minute | Denis, coaches | M | plan first | ◐ v1.49 (participants + one group per discipline) |
-| **B3** | Budo on a phone on competition day | Denis, secretariat, judges | M | — | ☐ |
+| **B3** | Budo on a phone on competition day | Denis, secretariat, judges | M | — | ☑ v1.54 (bout fits 375×812, time section folds, floats hidden, header 224→146 px, tablet overflow, confirmations, TV tatami picker, no-birth-year names shortened) |
 | **B4** | Phone admin: view-as, one floating button (old step 6) | Denis, coaches, members | M | — | ☑ v1.51–v1.52 (view-as in ⋯ Daugiau, one floating button, floats hide over sheet and while typing, 🎨 for all) |
 | **B5** | Notifications: the red number means "to do" | Denis, coaches, parents | M | plan first | ☐ |
 | **B6** | Exams: counts, tablet, 10 kyu, test bank export/import | Denis, examiners | M | — | ◐ v1.49 (10 kyu, #133, #137), v1.50 (question review with ✕, comments, pictures, ChatGPT notes), v1.51 (editor redesign, file with a new quiz) |
