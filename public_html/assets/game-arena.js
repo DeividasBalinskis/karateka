@@ -1,4 +1,4 @@
-// Žaidimų arena: laukiamasis (kvietimai, botai, reitingai), karatė kova ėjimais ir „Greita kova“ realiu laiku.
+// Žaidimų arena: laukiamasis (kvietimai, botai, reitingai), karate kova ėjimais ir „Greita kova“ realiu laiku.
 (function () {
   var R = window.ARENA, root = document.getElementById('arena');
   if (!R || !root) return;
