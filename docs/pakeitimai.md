@@ -4,6 +4,13 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.62 - 2026-11-20 (renginių puslapiai telefone; protokolas telpa planšetėje)
+Duomenų bazės atnaujinti nereikia.
+
+- Renginiai: „← Naujienos ir renginiai“, „← Visi renginiai“ ir „📲 Į telefono kalendorių“ - patogūs pirštui (40 px);
+  telefone „Visiems / Grupėms: …“ - po renginio tekstu (anksčiau nukrypdavo po data).
+- Egzamino protokolas planšetėje 1100-1366 px vėl telpa be slinkimo į šoną (#124), mygtukai lieka 40 px aukščio.
+
 ## v1.61 - 2026-11-20 (pradžios puslapio šlifavimas telefone - D5)
 Duomenų bazės atnaujinti nereikia.
 
