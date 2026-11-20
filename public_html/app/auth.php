@@ -148,7 +148,51 @@ function normalize_email(string $email): string
 
 function valid_email(string $email): bool
 {
-    return (bool) filter_var($email, FILTER_VALIDATE_EMAIL) && strlen($email) <= 190;
+    // .invalid - rezervuota sritis, laiškai į ją niekada nenueina; ja žymimi vaikų prisijungimai (žr. žemiau)
+    return (bool) filter_var($email, FILTER_VALIDATE_EMAIL) && strlen($email) <= 190 && !preg_match('/\.invalid$/i', $email);
+}
+
+// ---------- Vaiko prisijungimas: vardas + PIN (B7, sprendimas 2026-11-20) ----------
+// Nuo 7 m. tėvai paskyroje sukuria vaikui prisijungimo vardą ir PIN; trenerio patvirtinti nereikia.
+// Paskyra - kaip paprasta (rolė member, ryšys „self“), tik vietoj el. pašto saugoma „vardas@vaikas.invalid“
+// (ne tikras adresas: laiškai ten nesiunčiami). Vaikas prisijungia įvesdamas vardą vietoj el. pašto ir PIN vietoj slaptažodžio.
+
+const KID_LOGIN_DOMAIN = 'vaikas.invalid';
+const KID_LOGIN_MIN_AGE = 7;
+
+function kid_login_email(string $username): string
+{
+    return mb_strtolower(trim($username)) . '@' . KID_LOGIN_DOMAIN;
+}
+
+function is_kid_login(?array $a): bool
+{
+    return $a !== null && str_ends_with((string) $a['email'], '@' . KID_LOGIN_DOMAIN);
+}
+
+/** Ką rodyti vietoj el. pašto: vaikui - prisijungimo vardą */
+function login_name(string $email): string
+{
+    return str_ends_with($email, '@' . KID_LOGIN_DOMAIN) ? substr($email, 0, -strlen('@' . KID_LOGIN_DOMAIN)) : $email;
+}
+
+/** Vardas: 3-20 mažųjų lotyniškų raidžių, skaitmenų, taškų, brūkšnelių; prasideda raide */
+function valid_kid_username(string $u): bool
+{
+    return (bool) preg_match('/^[a-z][a-z0-9._-]{2,19}$/', $u);
+}
+
+function valid_kid_pin(string $pin): bool
+{
+    return (bool) preg_match('/^\d{4,6}$/', $pin);
+}
+
+/** Pasiūlymas pagal vardą: „Jonas“ → „jonas“ (be lietuviškų raidžių) */
+function kid_username_suggest(string $first): string
+{
+    $u = strtr(mb_strtolower(trim($first)), ['ą' => 'a', 'č' => 'c', 'ę' => 'e', 'ė' => 'e', 'į' => 'i', 'š' => 's', 'ų' => 'u', 'ū' => 'u', 'ž' => 'z']);
+    $u = preg_replace('/[^a-z0-9]/', '', $u);
+    return strlen($u) >= 3 ? substr($u, 0, 16) : 'karate' . ($u !== '' ? '.' . $u : '');
 }
 
 // ---------- Prisijungimas ----------
@@ -157,7 +201,10 @@ function login_throttled(string $email): bool
 {
     $byEmail = (int) q_value('SELECT COUNT(*) FROM login_attempts WHERE email = ? AND success = 0 AND attempted_at > NOW() - INTERVAL 15 MINUTE', [$email]);
     $byIp = (int) q_value('SELECT COUNT(*) FROM login_attempts WHERE ip = ? AND success = 0 AND attempted_at > NOW() - INTERVAL 15 MINUTE', [client_ip()]);
-    return $byEmail >= 5 || $byIp >= 30;
+    // PIN trumpas - vaiko vardui papildomai ne daugiau 15 klaidų per parą (tada tėvai gali pakeisti PIN)
+    $byDay = str_ends_with($email, '@' . KID_LOGIN_DOMAIN)
+        ? (int) q_value('SELECT COUNT(*) FROM login_attempts WHERE email = ? AND success = 0 AND attempted_at > NOW() - INTERVAL 1 DAY', [$email]) : 0;
+    return $byEmail >= 5 || $byIp >= 30 || $byDay >= 15;
 }
 
 /**
@@ -167,6 +214,9 @@ function login_throttled(string $email): bool
 function attempt_login(string $email, string $password): array
 {
     $email = normalize_email($email);
+    if ($email !== '' && strpos($email, '@') === false) {
+        $email = kid_login_email($email);   // vaiko vardas (B7)
+    }
     if (login_throttled($email)) {
         return ['ok' => false, 'error' => 'throttled'];
     }
@@ -288,7 +338,9 @@ function account_members(int $accountId): array
     return q_all(
         'SELECT m.*, am.relation, g.name AS group_name,
                 (SELECT a2.email FROM account_members am2 JOIN accounts a2 ON a2.id = am2.account_id
-                  WHERE am2.member_id = m.id AND am2.relation = "self") AS own_login_email
+                  WHERE am2.member_id = m.id AND am2.relation = "self") AS own_login_email,
+                (SELECT a2.status FROM account_members am2 JOIN accounts a2 ON a2.id = am2.account_id
+                  WHERE am2.member_id = m.id AND am2.relation = "self") AS own_login_status
            FROM account_members am
            JOIN members m ON m.id = am.member_id
            LEFT JOIN training_groups g ON g.id = m.group_id
@@ -395,6 +447,9 @@ function pending_approvals_count(): int
  */
 function handle_account_settings(array $a, string $back, array &$errors): void
 {
+    if (is_kid_login($a)) {
+        return;   // vaiko vardą, PIN ir duomenis keičia tėvai
+    }
     $aid = (int) $a['id'];
     $action = post('action');
     if ($action === 'name') {   // #146: vardą ir pavardę galima pasikeisti pačiam

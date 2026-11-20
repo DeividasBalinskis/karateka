@@ -45,6 +45,9 @@ if (is_post()) {
         'disabled'       => t('Ši paskyra išjungta. Susisiekite su klubu: info@karateka.lt'),
     ];
     $error = $messages[$result['error']];
+    if ($result['error'] === 'disabled' && is_kid_login($result['account'] ?? null)) {
+        $error = t('Tavo prisijungimas išjungtas - paprašyk tėvų.');
+    }
     if ($result['error'] === 'pending_email') {
         $resendFor = $email;
     }
@@ -67,10 +70,10 @@ page_start(t('Prisijungti'), ['narrow' => true, 'noindex' => true]);
   <form method="post" class="form">
     <?= csrf_field() ?>
     <?php if ($askedFor): ?><input type="hidden" name="r" value="<?= e($return) ?>"><?php endif; ?>
-    <label><?= te('El. paštas') ?>
-      <input type="email" name="email" value="<?= e($email) ?>" autocomplete="email" required autofocus>
+    <label><?= te('El. paštas') ?> <span class="hint"><?= te('vaikas - savo vardas') ?></span>
+      <input type="text" inputmode="email" name="email" value="<?= e($email) ?>" autocomplete="username" autocapitalize="none" spellcheck="false" required autofocus>
     </label>
-    <label><?= te('Slaptažodis') ?>
+    <label><?= te('Slaptažodis') ?> <span class="hint"><?= te('vaikas - PIN') ?></span>
       <input type="password" name="password" autocomplete="current-password" required>
     </label>
     <button class="btn btn-primary btn-block" type="submit"><?= te('Prisijungti') ?></button>

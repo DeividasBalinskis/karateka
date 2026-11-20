@@ -1922,3 +1922,9 @@ h1 .badge-tester{font:600 .8rem/1.6 'Inter', sans-serif; letter-spacing:0; paddi
   background:rgba(230,132,43,0.14); color:#6B3A0B; font-weight:600; font-size:0.9rem;}
 .dc-bar form{margin:0;}
 .login-more{margin-top:12px; display:flex; justify-content:center; gap:8px 18px; flex-wrap:wrap; text-align:center;}
+/* B7: vaiko prisijungimas (paskyra.php) */
+.kid-login{margin-bottom:12px;}
+.kl-form{display:flex; gap:10px 14px; flex-wrap:wrap; align-items:flex-end;}
+.kl-form label{flex:1 1 180px; margin:0;}
+.kl-toggle{margin-top:10px;}
+.kl-user{font-weight:700; font-size:1.05em;}

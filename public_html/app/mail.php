@@ -9,6 +9,9 @@
  */
 function send_mail(string $to, string $subject, string $body, array $attachments = [], ?string $replyTo = null): bool
 {
+    if (preg_match('/\.invalid$/i', trim($to))) {
+        return true;   // vaiko prisijungimas be el. pašto (app/auth.php, KID_LOGIN_DOMAIN) - laiškų nėra kur siųsti
+    }
     $c = config('mail');
     $secure = strtolower((string) ($c['secure'] ?? ''));
     $localHost = in_array(strtolower((string) $c['host']), ['localhost', '127.0.0.1', '::1', 'mailpit'], true);

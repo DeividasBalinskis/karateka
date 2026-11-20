@@ -61,6 +61,53 @@ if (is_post()) {
         redirect('paskyra.php?skiltis=nustatymai&m=' . $mid);
     }
 
+    // B7: vaiko prisijungimas vardu ir PIN (sukuria ir tvarko tėvai; trenerio patvirtinti nereikia)
+    if (in_array($action, ['kid_login', 'kid_pin', 'kid_login_toggle'], true)) {
+        $mid = (int) post('member_id');
+        $m = q_one('SELECT * FROM members WHERE id = ?', [$mid]);
+        $own = q_one('SELECT a.* FROM account_members am JOIN accounts a ON a.id = am.account_id WHERE am.member_id = ? AND am.relation = "self"', [$mid]);
+        $pin = preg_replace('/\s+/', '', (string) ($_POST['pin'] ?? ''));
+        $back = 'paskyra.php?skiltis=nustatymai&m=' . $mid . '#vaiko-prisijungimas';
+        if (!$m || account_relation($aid, $mid) !== 'parent') {
+            $errors[] = t('Šio nario prisijungimo keisti negalima.');
+        } elseif ($action === 'kid_login') {
+            $u = mb_strtolower(trim((string) post('username')));
+            if ($own) {
+                $errors[] = t('Šis vaikas jau turi savo prisijungimą.');
+            } elseif (empty($m['birth_date']) || age_on((string) $m['birth_date']) < KID_LOGIN_MIN_AGE) {
+                $errors[] = t('Savo prisijungimą vaikas gali turėti nuo 7 metų.');
+            } elseif (!valid_kid_username($u)) {
+                $errors[] = t('Vardas: 3-20 lotyniškų raidžių ar skaitmenų, be tarpų (pvz. jonas.k).');
+            } elseif (!valid_kid_pin($pin)) {
+                $errors[] = t('PIN: 4-6 skaitmenys.');
+            } elseif (q_value('SELECT 1 FROM accounts WHERE email = ?', [kid_login_email($u)])) {
+                $errors[] = t('Toks vardas jau užimtas - pasirinkite kitą.');
+            } else {
+                $kid = create_account(kid_login_email($u), $pin, $m['first_name'], $m['last_name'], null, 'active');
+                q('UPDATE accounts SET approved_at = NOW() WHERE id = ?', [$kid]);
+                link_member($kid, $mid, 'self');
+                flash('ok', t('Prisijungimas sukurtas. Vaikas jungiasi su vardu {u} ir PIN.', ['u' => $u]));
+                redirect($back);
+            }
+        } elseif (!$own || !is_kid_login($own)) {
+            $errors[] = t('Šio nario prisijungimo keisti negalima.');
+        } elseif ($action === 'kid_pin') {
+            if (!valid_kid_pin($pin)) {
+                $errors[] = t('PIN: 4-6 skaitmenys.');
+            } else {
+                q('UPDATE accounts SET password_hash = ? WHERE id = ?', [password_hash($pin, PASSWORD_DEFAULT), (int) $own['id']]);
+                q('DELETE FROM login_attempts WHERE email = ? AND success = 0', [$own['email']]);   // užsirakinęs vaikas vėl gali jungtis
+                flash('ok', t('PIN pakeistas.'));
+                redirect($back);
+            }
+        } else {
+            $on = $own['status'] !== 'active';
+            q('UPDATE accounts SET status = ? WHERE id = ?', [$on ? 'active' : 'disabled', (int) $own['id']]);
+            flash('ok', $on ? t('Vaiko prisijungimas vėl įjungtas.') : t('Vaiko prisijungimas išjungtas - vaikas nebegali prisijungti.'));
+            redirect($back);
+        }
+    }
+
     if ($action === 'invite') {
         $mid = (int) post('member_id');
         $email = normalize_email(post('email'));
@@ -536,11 +583,43 @@ page_start($tab === 'nustatymai' ? t('Nustatymai') : t('Mano paskyra'), ['noinde
       <p class="small muted" style="margin-top:12px;"><?= te('Sutikimas dėl nuotraukų:') ?> <?= $selected['photo_consent'] ? 'duotas' : 'neduotas' ?> <?= te('(keičia tėvai).') ?></p>
     <?php endif; ?>
 
-    <?php if ($selected['relation'] === 'parent'): ?>
+    <?php if ($selected['relation'] === 'parent'):
+        $kidAge = !empty($selected['birth_date']) ? age_on((string) $selected['birth_date']) : 0;
+        $kidPin = $selected['own_login_email'] && str_ends_with((string) $selected['own_login_email'], '@' . KID_LOGIN_DOMAIN); ?>
       <hr class="divider">
-      <?php if ($selected['own_login_email']): ?>
+      <?php if ($kidPin): $kidOff = $selected['own_login_status'] !== 'active'; ?>
+        <div class="kid-login" id="vaiko-prisijungimas">
+          <p><b><?= e($selected['first_name']) ?> <?= te('jungiasi pats (-i)') ?></b> · <?= te('vardas') ?> <code class="kl-user"><?= e(login_name((string) $selected['own_login_email'])) ?></code>
+            <?= $kidOff ? '<span class="badge">' . te('išjungta') . '</span>' : '' ?></p>
+          <p class="small muted"><?= te('Prisijungti → vietoj el. pašto įrašyti vardą, vietoj slaptažodžio - PIN.') ?></p>
+          <form method="post" class="form kl-form">
+            <?= csrf_field() ?><input type="hidden" name="action" value="kid_pin"><input type="hidden" name="member_id" value="<?= (int) $selected['id'] ?>">
+            <label><?= te('Naujas PIN') ?> <span class="hint"><?= te('4-6 skaitmenys') ?></span>
+              <input type="text" name="pin" inputmode="numeric" pattern="[0-9]{4,6}" minlength="4" maxlength="6" autocomplete="off" required></label>
+            <button class="btn btn-ghost" type="submit"><?= te('Keisti PIN') ?></button>
+          </form>
+          <form method="post" class="kl-toggle"<?= $kidOff ? '' : ' onsubmit="return confirm(this.dataset.ask)" data-ask="' . e(t('Išjungti vaiko prisijungimą?')) . '"' ?>>
+            <?= csrf_field() ?><input type="hidden" name="action" value="kid_login_toggle"><input type="hidden" name="member_id" value="<?= (int) $selected['id'] ?>">
+            <button class="btn btn-sm <?= $kidOff ? 'btn-primary' : 'btn-danger' ?>" type="submit"><?= $kidOff ? te('Įjungti vėl') : te('Išjungti prisijungimą') ?></button>
+          </form>
+        </div>
+      <?php elseif ($selected['own_login_email']): ?>
         <p class="small"><?= e($selected['first_name']) ?> <?= te('turi savo prisijungimą:') ?> <strong><?= e($selected['own_login_email']) ?></strong></p>
       <?php else: ?>
+        <?php if ($kidAge >= KID_LOGIN_MIN_AGE): $kidOpen = $errors && post('action') === 'kid_login'; ?>
+        <details class="kid-login" id="vaiko-prisijungimas" <?= $kidOpen ? 'open' : '' ?>>
+          <summary class="summary-link"><?= te('Prisijungimas vaikui: vardas ir PIN') ?></summary>
+          <p class="small muted" style="margin:10px 0;"><?= te('Vaikui nereikia el. pašto: sugalvokite prisijungimo vardą ir PIN. Vaikas matys savo tvarkaraštį, XP ir užduotis, bet ne kainas. PIN bet kada pakeisite čia; treneriui tvirtinti nereikia.') ?></p>
+          <form method="post" class="form kl-form">
+            <?= csrf_field() ?><input type="hidden" name="action" value="kid_login"><input type="hidden" name="member_id" value="<?= (int) $selected['id'] ?>">
+            <label><?= te('Prisijungimo vardas') ?> <span class="hint"><?= te('lotyniškos raidės, be tarpų') ?></span>
+              <input type="text" name="username" value="<?= e($kidOpen ? post('username') : kid_username_suggest((string) $selected['first_name'])) ?>" pattern="[a-zA-Z][a-zA-Z0-9._\-]{2,19}" maxlength="20" autocapitalize="none" autocomplete="off" spellcheck="false" required></label>
+            <label><?= te('PIN') ?> <span class="hint"><?= te('4-6 skaitmenys') ?></span>
+              <input type="text" name="pin" inputmode="numeric" pattern="[0-9]{4,6}" minlength="4" maxlength="6" autocomplete="off" required></label>
+            <button class="btn btn-primary" type="submit"><?= te('Sukurti prisijungimą') ?></button>
+          </form>
+        </details>
+        <?php endif; ?>
         <details <?= $errors && post('action') === 'invite' ? 'open' : '' ?>>
           <summary class="summary-link"><?= te('Ar') ?> <?= e($selected['first_name']) ?> <?= te('nori jungtis pats (-i)? Sukurkite atskirą prisijungimą') ?></summary>
           <p class="small muted" style="margin:10px 0;">

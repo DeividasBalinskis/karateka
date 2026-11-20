@@ -120,7 +120,7 @@ page_start(t('Paskyros'), ['admin' => true]);
     <tbody>
       <?php foreach ($rows as $r): $self = (int) $r['id'] === (int) $me['id']; ?>
         <tr>
-          <td><strong><?= e($r['first_name'] . ' ' . $r['last_name']) ?></strong><div class="muted small"><?= e($r['email']) ?></div>
+          <td><strong><?= e($r['first_name'] . ' ' . $r['last_name']) ?></strong><div class="muted small"><?= str_ends_with((string) $r['email'], '@' . KID_LOGIN_DOMAIN) ? te('vaiko vardas') . ' ' . e(login_name((string) $r['email'])) . ' (PIN)' : e($r['email']) ?></div>
             </td>
           <td><span class="badge <?= $r['status'] === 'active' ? 'badge-ok' : 'badge-warn' ?>"><?= $statusLabel[$r['status']] ?></span></td>
           <td>

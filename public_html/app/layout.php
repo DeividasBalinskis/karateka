@@ -446,7 +446,10 @@ function game_nav_ready(): bool
 /** Nario paskyros skirtukai */
 function account_nav_items(array $a): array
 {
-    $items = ['apzvalga' => [t('Apžvalga'), 'paskyra.php', account_attention_count((int) $a['id'])]];
+    // Sprendimas (27): 7-10 m. vaikui, kuris jungiasi pats - „Mano diena“ vietoj „Apžvalga“
+    $selfBirth = (string) q_value('SELECT m.birth_date FROM account_members am JOIN members m ON m.id = am.member_id WHERE am.account_id = ? AND am.relation = "self"', [(int) $a['id']]);
+    $little = $selfBirth !== '' && age_on($selfBirth) <= 10;
+    $items = ['apzvalga' => [$little ? t('Mano diena') : t('Apžvalga'), 'paskyra.php', account_attention_count((int) $a['id'])]];
     if ($a['status'] === 'active') {
         if (!is_staff($a) || account_members((int) $a['id'])) {
             foreach (account_nav_extra($a) as $key => $item) {
@@ -722,6 +725,13 @@ function date_from_input($v): string
 /** Paskyros nustatymų kortelė (atidaroma ta dalis, kurioje buvo klaida) */
 function render_account_settings(array $a, string $id = 'nustatymai', string $title = 'Paskyros nustatymai'): string
 {
+    if (is_kid_login($a)) {
+        // Vaiko prisijungimas (vardas + PIN): nieko keisti pats negali - tvarko tėvai
+        return '<div class="panel card" id="' . e($id) . '" style="margin-top:20px;"><h2>' . e(t('Mano prisijungimas')) . '</h2>'
+            . '<p>' . e(t('Vardas')) . ': <code class="kl-user">' . e(login_name((string) $a['email'])) . '</code></p>'
+            . '<p class="small muted">' . e(t('Pamiršai PIN ar nori jį pakeisti? Paprašyk tėvų - jie pakeis savo paskyroje.')) . '</p>'
+            . '<form method="post" action="' . url('atsijungti.php') . '">' . csrf_field() . '<button type="submit" class="btn btn-ghost btn-sm">' . e(t('Atsijungti')) . '</button></form></div>';
+    }
     $openSetting = in_array(post('action'), ['email', 'password', 'profile', 'name'], true) ? post('action') : '';
     if (strpos(post('action'), 'tfa_') === 0 || !empty($_SESSION['tfa_enable'])) {
         $openSetting = 'tfa';

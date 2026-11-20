@@ -63,7 +63,9 @@ function member_profile_html(int $memberId): string
     foreach ($accounts as $acc) {
         $html .= '<div class="mp-contact"><strong>' . e($acc['first_name'] . ' ' . $acc['last_name']) . '</strong> <span class="muted small">' . ($acc['relation'] === 'parent' ? t('tėvai') : 'pats')
             . ($acc['status'] !== 'active' ? (' ' . t('· paskyra nepatvirtinta')) : '') . '</span>'
-            . '<div class="small"><a href="mailto:' . e($acc['email']) . '">' . e($acc['email']) . '</a>'
+            . '<div class="small">' . (str_ends_with((string) $acc['email'], '@' . KID_LOGIN_DOMAIN)
+                ? t('vaiko vardas') . ' <code>' . e(login_name((string) $acc['email'])) . '</code> (PIN)'
+                : '<a href="mailto:' . e($acc['email']) . '">' . e($acc['email']) . '</a>')
             . ($acc['phone'] ? ' · <a href="tel:' . e(preg_replace('/[^\d+]/', '', $acc['phone'])) . '">' . e($acc['phone']) . '</a>' : '') . '</div></div>';
     }
     $html .= '</div>';
