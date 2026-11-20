@@ -3517,4 +3517,5 @@ Nuo 2013 m. treniravosi Tradicinio karate-do klubo „Sanrei“ komandoje, o 201
     'Žinutės treneriui vaikui išjungtos - rašote jūs.' => 'Сообщения тренеру для ребёнка выключены - пишете вы.',
     'Gali rašyti treneriui' => 'Может писать тренеру',
     'Išjungus - žinutes treneriui rašote tik jūs.' => 'Если выключено, тренеру пишете только вы.',
+    '🔔 Naujienos' => '🔔 Новости',
 ];

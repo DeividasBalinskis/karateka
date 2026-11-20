@@ -43,13 +43,15 @@ if (!$trainings) {
 
 // Reikia padaryti (tas pats skaičius - ant „Valdymas“ mygtuko)
 $todo = admin_todo_items();
-// Pranešimai: registracijos į egzaminą, pavėlavusieji, „Moku“ patvirtinimai, atšaukti sutikimai - sprendžiami čia pat
-$notifs = account_notifications((int) $me['id']);
+// B5: darbai (patvirtinti „Moku“, pavėlavusieji, atšauktas sutikimas) ir naujienos kraunami atskirai
+$notifs = account_notifications((int) $me['id'], null, 0, 'action');
+$allNews = account_notifications((int) $me['id'], null, 200, 'notice');
 // Atsakymai į atsiliepimus - ne darbai: rodomi 2 naujausi, kiti išskleidžiami, ir „Supratau visus“
-$fbNotifs = array_values(array_filter($notifs, function ($n) { return $n['type'] === 'feedback'; }));
+$fbNotifs = array_values(array_filter($allNews, function ($n) { return $n['type'] === 'feedback'; }));
 // Iš viršaus žemyn 1, 2, 3 - pagal atsiliepimo numerį (seniausias viršuje)
 usort($fbNotifs, function ($x, $y) { return ((int) ($x['ref_id'] ?: 0) <=> (int) ($y['ref_id'] ?: 0)) ?: ((int) $x['id'] <=> (int) $y['id']); });
-$notifs = array_values(array_filter($notifs, function ($n) { return $n['type'] !== 'feedback'; }));
+// Kitos naujienos (registracijos į egzaminą, komentarai, registracijos į varžybas...): 2 naujausios, kitos suskleistos
+$news = array_values(array_filter($allNews, function ($n) { return $n['type'] !== 'feedback'; }));
 
 $upcoming = q_all('SELECT * FROM events WHERE COALESCE(ends_on, starts_on) >= CURDATE() AND starts_on <= DATE_ADD(CURDATE(), INTERVAL 21 DAY) ORDER BY starts_on, start_time');
 
@@ -74,7 +76,7 @@ $todoCount = count($notifs) + count($todo);
   <div class="dash-main">
     <section class="panel card important" id="svarbu">
       <div class="row between" style="gap:10px; flex-wrap:wrap;">
-        <div class="kicker" style="margin:0;"><?= te('Reikia padaryti') ?><?= ($nn = notification_count((int) $me['id'])) ? ' <span class="badge badge-new">' . $nn . ' nauj.</span>' : '' ?></div>
+        <div class="kicker" style="margin:0;"><?= te('Reikia padaryti') ?><?= $todoCount ? ' <span class="count-badge">' . $todoCount . '</span>' : '' ?></div>
         <?php if ($notifs): ?><span class="small muted"><?= te('Patvirtinkite čia pat - punktas dings.') ?></span><?php endif; ?>
       </div>
       <?php if ($todo): ?>
@@ -87,6 +89,17 @@ $todoCount = count($notifs) + count($todo);
       <?php endif; ?>
       <?= render_notifications($notifs, 'admin/#svarbu') ?>
       <?php if (!$todoCount): ?><p class="all-done"><?= te('✓ Viskas padaryta') ?></p><?php endif; ?>
+      <?php if ($news): ?>
+        <div class="fb-replies news-replies">
+          <div class="row between" style="gap:8px;flex-wrap:wrap;"><span class="small muted"><?= te('🔔 Naujienos') ?> (<?= count($news) ?>)</span>
+            <form method="post" action="<?= url('pranesimas.php') ?>" class="inline-form"><?= csrf_field() ?><input type="hidden" name="action" value="done_notices"><input type="hidden" name="back" value="admin/#svarbu">
+              <button class="btn btn-ghost btn-sm" type="submit"><?= te('Supratau visus') ?></button></form></div>
+          <?= render_notifications(array_slice($news, 0, 2), 'admin/#svarbu') ?>
+          <?php if (count($news) > 2): ?>
+            <details class="fb-more"><summary class="small"><?= te('Rodyti ankstesnius') ?> (<?= count($news) - 2 ?>)</summary><?= render_notifications(array_slice($news, 2), 'admin/#svarbu') ?></details>
+          <?php endif; ?>
+        </div>
+      <?php endif; ?>
       <?php if ($fbNotifs): ?>
         <div class="fb-replies">
           <div class="row between" style="gap:8px;flex-wrap:wrap;"><span class="small muted"><?= te('💡 Atsakymai į jūsų atsiliepimus') ?> (<?= count($fbNotifs) ?>)</span>

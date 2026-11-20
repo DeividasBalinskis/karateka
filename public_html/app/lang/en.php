@@ -3517,4 +3517,5 @@ From 2013 he trained with the team of the traditional karate-do club "Sanrei", a
     'Žinutės treneriui vaikui išjungtos - rašote jūs.' => 'Messages to the coach are off for the child - you write.',
     'Gali rašyti treneriui' => 'Can write to the coach',
     'Išjungus - žinutes treneriui rašote tik jūs.' => 'When off, only you write to the coach.',
+    '🔔 Naujienos' => '🔔 News',
 ];

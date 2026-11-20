@@ -28,6 +28,11 @@ done
 # config.php su slaptažodžiais niekada nekeliamas
 if git ls-files --error-unmatch public_html/config.php >/dev/null 2>&1; then err "public_html/config.php įkeltas į git"; fi
 
+# Pranešimų tipai (B5): kiekvienas naudojamas tipas turi būti NOTIFY_TYPES sąraše (app/notifications.php)
+known=$(grep -oP "^\s+'\K[a-z_]+(?=' +=> \[)" public_html/app/notifications.php | sort -u)
+used=$( (grep -rhoP "notify_(admins|staff)\(\s*'\K[a-z_]+" public_html --include=*.php; grep -rhoP "notify_(account|member)\([^,()]+(\([^()]*\))?[^,()]*,\s*'\K[a-z_]+" public_html --include=*.php) | sort -u)
+for ty in $used; do echo "$known" | grep -qx "$ty" || err "pranešimo tipas '$ty' nėra NOTIFY_TYPES sąraše (app/notifications.php)"; done
+
 # Vertimai (LT/EN/RU): tik praneša, kurių naujų tekstų dar neišversta
 php tests/i18n-keys.php public_html | head -8
 

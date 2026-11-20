@@ -29,6 +29,12 @@ if (post('action') === 'done_feedback') {
     q('UPDATE notifications SET done_at = NOW(), read_at = COALESCE(read_at, NOW()) WHERE account_id = ? AND type = "feedback" AND done_at IS NULL', [(int) $a['id']]);
     redirect($back);
 }
+// B5: visos naujienos (ne darbai, ne atsakymai į atsiliepimus) - „Supratau visus“
+if (post('action') === 'done_notices') {
+    q('UPDATE notifications SET done_at = NOW(), read_at = COALESCE(read_at, NOW()) WHERE account_id = ? AND done_at IS NULL AND type <> "feedback"
+        AND type NOT IN (' . notify_types_sql(notify_types('action')) . ')', [(int) $a['id']]);
+    redirect($back);
+}
 $n = q_one('SELECT * FROM notifications WHERE id = ? AND account_id = ?', [(int) post('id'), (int) $a['id']]);
 if (!$n) {
     redirect($back);

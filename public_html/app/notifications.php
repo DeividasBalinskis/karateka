@@ -3,27 +3,45 @@
 // ir administratoriui (registracija į egzaminą, pavėlavę, „Moku“ tvirtinimas, atšauktas sutikimas dėl nuotraukų).
 // Svarbūs pranešimai skaičiuojami raudoname skaičiuke, kol neperskaityti ar neišspręsti.
 
-// Tipas => ženkliukas
-const NOTIFY_ICONS = [
-    'level_up'          => '⭐',
-    'exam_passed'       => '🎉',
-    'skill_approved'    => '✅',
-    'skill_rejected'    => '↩️',
-    'skill_request'     => '🥋',
-    'late_request'      => '⏰',
-    'late_approved'     => '✅',
-    'exam_registration' => '📝',
-    'consent_withdrawn' => '📷',
-    'broadcast'         => '📣',
-    'training'          => '🥋',
-    'comment'           => '💬',
-    'cancelled'         => '🚫',
-    'feedback'          => '💡',
-    'xp_award'          => '✨',
-    'tournament_entries' => '🥋',
+// B5: vienas pranešimų tipų sąrašas: tipas => [ženkliukas, klasė].
+// action - darbas treneriui / administratoriui: skaičiuojamas raudoname skaičiuke, kol atliktas (ne kol perskaitytas);
+// notice - naujiena: neskaičiuojama treneriui, rodomos 2 naujausios, kitos suskleistos, „Supratau visus“;
+// celebration - šventė ekrane vieną kartą, po to - kaip naujiena. Naujas tipas - tik čia (tests/checks.sh tikrina).
+const NOTIFY_TYPES = [
+    'level_up'           => ['⭐', 'celebration'],
+    'exam_passed'        => ['🎉', 'celebration'],
+    'skill_approved'     => ['✅', 'notice'],
+    'skill_rejected'     => ['↩️', 'notice'],
+    'skill_request'      => ['🥋', 'action'],
+    'late_request'       => ['⏰', 'action'],
+    'late_approved'      => ['✅', 'notice'],
+    'exam_registration'  => ['📝', 'notice'],
+    'consent_withdrawn'  => ['📷', 'action'],
+    'broadcast'          => ['📣', 'notice'],
+    'training'           => ['🥋', 'notice'],
+    'comment'            => ['💬', 'notice'],
+    'cancelled'          => ['🚫', 'notice'],
+    'feedback'           => ['💡', 'notice'],
+    'xp_award'           => ['✨', 'notice'],
+    'tournament_entries' => ['🥋', 'notice'],
 ];
-// Šventė ekrane (vieną kartą, kol neperskaityta)
-const NOTIFY_CELEBRATE = ['level_up', 'exam_passed'];
+
+function notify_icon(string $type): string
+{
+    return NOTIFY_TYPES[$type][0] ?? '🔔';
+}
+
+/** Visi tam tikros klasės tipai: 'action', 'notice', 'celebration' */
+function notify_types(string $class): array
+{
+    return array_keys(array_filter(NOTIFY_TYPES, function ($x) use ($class) { return $x[1] === $class; }));
+}
+
+/** SQL sąrašas tipams: 'a','b' */
+function notify_types_sql(array $types): string
+{
+    return "'" . implode("','", array_map(function ($x) { return preg_replace('/[^a-z_]/', '', $x); }, $types)) . "'";
+}
 
 function notify_account(int $accountId, string $type, string $title, ?string $body = null, ?string $link = null,
                         ?int $memberId = null, ?int $refId = null, bool $important = true): void
@@ -68,12 +86,12 @@ function notifications_popup(int $accountId): array
 {
     try {
         $rows = q_all('SELECT id, type, title, body, link, created_at FROM notifications WHERE account_id = ? AND read_at IS NULL AND done_at IS NULL
-                         AND type IN ("' . implode('","', NOTIFY_POPUP) . '") AND created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY) ORDER BY id DESC LIMIT 6', [$accountId]);
+                         AND type IN (' . notify_types_sql(NOTIFY_POPUP) . ') AND created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY) ORDER BY id DESC LIMIT 6', [$accountId]);
     } catch (PDOException $ex) {
         return [];
     }
     return array_map(function ($n) {
-        return ['id' => (int) $n['id'], 'icon' => NOTIFY_ICONS[$n['type']] ?? '🔔', 'title' => (string) $n['title'], 'body' => (string) $n['body'],
+        return ['id' => (int) $n['id'], 'icon' => notify_icon((string) $n['type']), 'title' => (string) $n['title'], 'body' => (string) $n['body'],
                 'link' => $n['link'] ? url((string) $n['link']) : '', 'when' => notification_when((string) $n['created_at'])];
     }, $rows);
 }
@@ -95,30 +113,30 @@ function notify_popup_html(): string
  * Neišspręsti pranešimai (naujausi viršuje); $memberId - tik apie šį narį (ir bendri paskyrai).
  * Nesvarbūs (pvz. „treneris patvirtino“) po 14 d. nebe rodomi, kad sąrašas neaugtų.
  */
-function account_notifications(int $accountId, ?int $memberId = null, int $limit = 30): array
+function account_notifications(int $accountId, ?int $memberId = null, int $limit = 30, ?string $class = null): array
 {
+    // B5: darbai ir naujienos kraunami atskirai - 35 atsakymai į atsiliepimus nebeišstumia tikro prašymo
+    $types = $class === null ? '' : ($class === 'action' ? ' AND type IN (' . notify_types_sql(notify_types('action')) . ')'
+        : ' AND type NOT IN (' . notify_types_sql(notify_types('action')) . ')');
     try {
         return q_all('SELECT * FROM notifications WHERE account_id = ? AND done_at IS NULL
-                        AND (important = 1 OR created_at >= DATE_SUB(NOW(), INTERVAL 14 DAY))'
+                        AND (important = 1 OR created_at >= DATE_SUB(NOW(), INTERVAL 14 DAY))' . $types
             . ($memberId !== null ? ' AND (member_id IS NULL OR member_id = ' . (int) $memberId . ')' : '')
-            . ' ORDER BY created_at DESC, id DESC LIMIT ' . (int) $limit, [$accountId]);
+            . ' ORDER BY created_at DESC, id DESC' . ($class === 'action' ? '' : ' LIMIT ' . (int) $limit), [$accountId]);
     } catch (PDOException $ex) {
         return [];   // dar neimportuotas db/021
     }
 }
 
-/** Kiek svarbių neperskaitytų / neišspręstų pranešimų */
-/** Pranešimų tipai, kurie reiškia darbą treneriui ar administratoriui (patvirtinti, atsakyti, sutvarkyti) */
-const NOTIFY_TODO_TYPES = ['skill_request', 'late_request', 'consent_withdrawn'];
-
-/** Neatlikti darbų pranešimai (raudonas skaičius prie „Valdymas“ - tik darbai, ne naujienos; sprendimas 2026-11-20) */
+/** Neatlikti darbų pranešimai (raudonas skaičius prie „Valdymas“ - tik darbai, ne naujienos; sprendimas 2026-11-20).
+ *  Skaičiuojama, kol atlikta (patvirtinta, „Supratau“ sąraše), ne kol perskaityta: „Supratau“ iššokusiame langelyje darbo nepaslepia (B5). */
 function notification_todo_count(int $accountId): int
 {
     static $cache = [];
     if (!isset($cache[$accountId])) {
         try {
-            $in = "'" . implode("','", NOTIFY_TODO_TYPES) . "'";
-            $cache[$accountId] = (int) q_value("SELECT COUNT(*) FROM notifications WHERE account_id = ? AND done_at IS NULL AND read_at IS NULL AND type IN ($in)", [$accountId]);
+            $in = notify_types_sql(notify_types('action'));
+            $cache[$accountId] = (int) q_value("SELECT COUNT(*) FROM notifications WHERE account_id = ? AND done_at IS NULL AND (important = 1 OR created_at >= DATE_SUB(NOW(), INTERVAL 14 DAY)) AND type IN ($in)", [$accountId]);
         } catch (PDOException $ex) {
             $cache[$accountId] = 0;
         }
@@ -210,7 +228,7 @@ function render_notifications(array $list, string $back): string
                 $actions = notification_button($n, 'done', $n['read_at'] ? t('Paslėpti') : t('Supratau'), 'btn-ghost', $back);
         }
         $new = !$n['read_at'] && $n['important'];
-        $html .= '<li class="notif' . ($new ? ' is-new' : '') . ' t-' . e($n['type']) . '"><span class="notif-icon" aria-hidden="true">' . (NOTIFY_ICONS[$n['type']] ?? '🔔') . '</span>'
+        $html .= '<li class="notif' . ($new ? ' is-new' : '') . ' t-' . e($n['type']) . '"><span class="notif-icon" aria-hidden="true">' . notify_icon((string) $n['type']) . '</span>'
             . '<div class="notif-body"><div class="notif-title">' . ($n['link'] ? '<a href="' . e(url($n['link'])) . '"' . $chatAttr . '>' . e($n['title']) . '</a>' : e($n['title']))
             . ($new ? (' <span class="badge badge-new">' . t('Nauja') . '</span>') : '') . '</div>'
             . ($n['body'] ? '<div class="notif-text">' . nl2br(e($n['body'])) . '</div>' : '')
@@ -231,7 +249,7 @@ function celebration_html(): string
         return '';
     }
     try {
-        $n = q_one('SELECT * FROM notifications WHERE account_id = ? AND read_at IS NULL AND type IN ("' . implode('","', NOTIFY_CELEBRATE) . '")
+        $n = q_one('SELECT * FROM notifications WHERE account_id = ? AND read_at IS NULL AND type IN (' . notify_types_sql(notify_types('celebration')) . ')
                      ORDER BY created_at LIMIT 1', [(int) $a['id']]);
     } catch (PDOException $ex) {
         return '';
