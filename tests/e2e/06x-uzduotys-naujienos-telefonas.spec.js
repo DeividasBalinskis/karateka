@@ -77,6 +77,8 @@ test('phone menu variants for staff: one menu at a time', async ({ browser }) =>
 });
 
 test('dojo: ranking and invite a friend; arena without wood', async ({ browser }) => {
+  // Žaidimas atidarytas visiems (kiti testai jį uždaro - #140)
+  sql("INSERT INTO site_settings (name, value) VALUES ('game_access', 'all') ON DUPLICATE KEY UPDATE value = 'all'");
   const k = await login(browser, 'jaunuolis@karateka.test', 1280, 900);
   await k.goto('dojo.php');
   await k.waitForSelector('.dojo-social');
