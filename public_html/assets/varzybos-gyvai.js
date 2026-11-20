@@ -265,14 +265,19 @@
     if (CFG.screen) { var el = document.getElementById('scr-timer'), p = liveFor(CFG.area); if (el && p) { var l = timeLeft(p); el.textContent = fmt(l, p.d.timer && p.d.timer.up); el.className = 'scr-timer' + (p.d.timer && p.d.timer.up ? '' : l <= 0 ? ' over' : l <= 15000 ? ' last' : ''); } return; }
     root.querySelectorAll('[data-timer]').forEach(function (el) { var p = liveFor(el.dataset.timer); if (p) el.textContent = fmt(timeLeft(p), p.d.timer && p.d.timer.up); });
   }, 250);
+  // C7: paslėptame skirtuke (ir žiūrovų telefone, ir ekrane) netikrinama; grįžus - iš karto
+  var pollT = null;
+  function schedule(ms) { clearTimeout(pollT); pollT = setTimeout(poll, ms); }
   function poll() {
+    if (document.hidden) { schedule(5000); return; }
     var sent = Date.now();
     fetch(CFG.json, { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (d) {
       failed = 0;
       offset = d.now - Math.round((sent + Date.now()) / 2);
       data = d; render();
     }).catch(function () { failed++; render(); })
-      .then(function () { setTimeout(poll, CFG.screen ? 1000 : 3000); });
+      .then(function () { schedule(CFG.screen ? 1000 : 3000); });
   }
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) schedule(0); });
   poll();
 })();

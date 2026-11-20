@@ -290,7 +290,8 @@ function page_widgets(): string
     $chat = chat_widget_html();
     return celebration_html() . $chat . feedback_widget_html() . notify_popup_html() . '<script src="' . e(asset_url('assets/site.js')) . '" defer></script>'
         . (current_account() ? '<script src="' . e(asset_url('assets/theme-pick.js')) . '" defer></script>' : '')   // 🎨 - kiekvienam prisijungusiam (B4)
-        . ($chat ? '<script src="' . e(asset_url('assets/chat.js')) . '" defer></script>' : '');
+        . ($chat ? '<script src="' . e(asset_url('assets/chat.js')) . '" defer></script>' : '')
+        . (($pa = current_account()) && is_active_account($pa) ? '<script src="' . e(asset_url('assets/pulse.js')) . '" data-api="' . e(url('pulsas.php')) . '" defer></script>' : '');   // C7
 }
 
 /**

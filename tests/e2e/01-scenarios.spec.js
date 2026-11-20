@@ -133,7 +133,13 @@ test('admin: notifications, chat, comments at the post, broadcast, events, atten
   }
   check('late approved -> going', sql(`SELECT status FROM event_participants WHERE event_id=${sem} AND member_id=${I.jonas}`) === 'going');
   check('late approved notif member', +sql(`SELECT COUNT(*) FROM notifications WHERE type='late_approved' AND member_id=${I.jonas}`) >= 1);
-  await nav(a, () => a.locator('#svarbu .notif.t-exam_registration button').first().click());
+  // B5: registracijos į egzaminą - naujienos (2 naujausios matomos, kitos suskleistos) - atskleidžiame visas
+  const unfold = () => a.evaluate(() => document.querySelectorAll('#svarbu .news-block details').forEach(d => { d.open = true; }));
+  await unfold();
+  while (await a.locator('#svarbu .notif.t-exam_registration button').count()) {
+    await nav(a, () => a.locator('#svarbu .notif.t-exam_registration button').first().click());
+    await unfold();
+  }
   check('exam reg dismissed', await a.locator('#svarbu .notif.t-exam_registration').count() === 0);
   // Komentarai: atskirų pranešimų nėra - viena eilutė „Naujos žinutės ir komentarai“, atidaro pokalbį
   check('no comment notifications', !types.includes('t-comment'));

@@ -890,3 +890,26 @@ function game_club_heroes(int $exceptId = 0, int $limit = 200): array
                 'ratingFair' => (int) $h['rating_fair'], 'invites' => (bool) $h['invites'], 'wins' => (int) $h['wins']];
     }, $rows);
 }
+
+/** Kvietimai ir vykstančios kovos visiems mano personažams (zaidimas.php?invites=1 ir bendras pulsas.php) */
+function game_invites_list(array $mine): array
+{
+    $ids = array_values(array_filter(array_map(function ($h) { return (int) $h['id']; }, $mine)));
+    if (!$ids) {
+        return [];
+    }
+    $list = q_all('SELECT * FROM game_matches WHERE status IN ("invited", "active") AND (a_hero IN (' . implode(',', $ids) . ') OR b_hero IN (' . implode(',', $ids) . '))
+                    AND updated_at > DATE_SUB(NOW(), INTERVAL 1 DAY) ORDER BY id DESC LIMIT 20');
+    $rows = [];
+    foreach ($list as $m) {
+        if ($m['status'] === 'invited' && strtotime((string) $m['deadline']) < time()) {
+            q('UPDATE game_matches SET status = "cancelled" WHERE id = ?', [(int) $m['id']]);
+            continue;
+        }
+        $ha = game_hero_row((int) $m['a_hero']);
+        $hb = $m['b_hero'] ? game_hero_row((int) $m['b_hero']) : null;
+        $rows[] = ['id' => (int) $m['id'], 'game' => $m['game'], 'mode' => $m['mode'], 'status' => $m['status'], 'incoming' => $hb && in_array((int) $m['b_hero'], $ids, true) && $m['status'] === 'invited',
+                   'from' => $ha ? game_public_name($ha) : '', 'to' => $hb ? game_public_name($hb) : '', 'fromHero' => (int) $m['a_hero'], 'toHero' => (int) $m['b_hero']];
+    }
+    return $rows;
+}

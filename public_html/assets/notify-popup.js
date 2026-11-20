@@ -66,9 +66,6 @@
   var first = cfg.items || [], fresh = first.some(function (n) { return !seen[n.id]; });
   render(first); remember(first);
   if (first.length && !fresh) fold(true);
-  setInterval(function () {
-    if (document.hidden) return;
-    fetch(cfg.api + '?naujausi=1', { credentials: 'same-origin', headers: { Accept: 'application/json' } }).then(function (r) { return r.json(); })
-      .then(function (d) { if (d.items) { render(d.items); remember(d.items); } }).catch(function () {});
-  }, 60000);
+  // C7: nauji pranešimai - iš bendro pulso (pulsas.php kas 30 s), ne atskira užklausa
+  document.addEventListener('karateka:pulse', function (e) { var d = e.detail; if (d.ntf) { render(d.ntf); remember(d.ntf); } });
 })();
