@@ -607,3 +607,8 @@ a.partner:hover .partner-logo{transform:translateY(-3px); box-shadow:0 16px 32px
 .instructor-card.ins-target{animation:insPulse 1.2s ease-in-out 3;}
 @keyframes insPulse{0%,100%{box-shadow:0 0 0 0 rgba(107,79,176,0);} 50%{box-shadow:0 0 0 6px rgba(107,79,176,.45);}}
 form .hp-field{position:absolute; left:-10000px; top:auto; width:1px; height:1px; overflow:hidden;}
+/* D5 (pradžios puslapis): telefone vietų sąrašas - patogūs paspaudimui (bent 44 px) */
+.loc-group summary{min-height:44px;}
+.picker-locations ul li{padding-top:10px; padding-bottom:10px;}
+.group-arrow{min-width:44px; min-height:44px;}
+.group-tabs button, [role=tablist] > button[role=tab]{min-height:40px;}

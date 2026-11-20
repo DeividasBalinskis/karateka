@@ -4,6 +4,14 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.61 - 2026-11-20 (pradžios puslapio šlifavimas telefone - D5)
+Duomenų bazės atnaujinti nereikia.
+
+- Telefone ir planšetėje antraštės mygtukai patogesni pirštui: ☰ meniu 44 px, „2 treniruotės nemokamai“ ir kalba - 40 px.
+- „Kam ieškote treniruočių?“: skirtukai „Vaikams / Jaunimui / Suaugusiems“ 40 px, „Sporto centras / Mokyklos / Darželiai“ - 44 px,
+  vietos - bent 39 px, grupių rodyklės ‹ › - 44 px.
+- Telefone niekas nebeišlenda į šoną (tikrinta 375, 768, 1440).
+
 ## v1.60 - 2026-11-20 (naujas renginys: „Kita“ ir „Bus pakviesta: N“ - B6 pabaiga)
 Duomenų bazės atnaujinti nereikia.
 
