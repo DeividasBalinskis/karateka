@@ -79,6 +79,12 @@ test('phone menu variants for staff: one menu at a time', async ({ browser }) =>
 test('dojo: ranking and invite a friend; arena without wood', async ({ browser }) => {
   // Žaidimas atidarytas visiems (kiti testai jį uždaro - #140)
   sql("INSERT INTO site_settings (name, value) VALUES ('game_access', 'all') ON DUPLICATE KEY UPDATE value = 'all'");
+  // Kiti žaidėjai: personažai atsiranda, kai narys pirmą kartą atidaro Dojo (nepriklausomai nuo kitų testų)
+  for (const who of ['tevai@karateka.test', 'narys@karateka.test']) {
+    const o = await login(browser, who, 1280, 900);
+    await o.goto('dojo.php');
+    await o.context().close();
+  }
   const k = await login(browser, 'jaunuolis@karateka.test', 1280, 900);
   await k.goto('dojo.php');
   await k.waitForSelector('.dojo-social');
