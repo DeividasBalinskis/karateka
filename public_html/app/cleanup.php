@@ -44,6 +44,15 @@ function run_cleanup(): void
     } catch (PDOException $ex) {
         // dar neimportuotas db/028
     }
+    try {
+        // Sprendimas 2026-11-20: seni pranešimai, privačios žinutės ir SMS žurnalas (su gavėjų telefonais) saugomi 1 metus.
+        // Viešos žinutės (klausimai ir atsakymai, komentarai prie įrašų) lieka.
+        q('DELETE FROM notifications WHERE created_at < NOW() - INTERVAL 1 YEAR');
+        q('DELETE FROM member_messages WHERE is_public = 0 AND created_at < NOW() - INTERVAL 1 YEAR');
+        q('DELETE FROM sms_messages WHERE created_at < NOW() - INTERVAL 1 YEAR');   // sms_recipients - kaskadiškai
+    } catch (PDOException $ex) {
+        error_log('cleanup: ' . $ex->getMessage());
+    }
 }
 
 function maybe_run_cleanup(): void

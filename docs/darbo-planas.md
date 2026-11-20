@@ -68,7 +68,7 @@ Status: ☐ not started · ◐ partly done · ☑ done
 | **C6** | Tests: faster, independent, engine unit tests (old step 10) | Deividas | M | — | ☐ |
 | **C7** | One polling request (old step 11) | everyone (speed) | M | — | ☐ |
 | **C8** | E-mail: templates, outbox, the reader's language | parents | M | plan first | ☐ |
-| **C9** | Project memory: CLAUDE.md, handoff, decisions, "Kas naujo" | Deividas, Denis | S | — | ☐ |
+| **C9** | Project memory: CLAUDE.md, handoff, decisions, "Kas naujo" | Deividas, Denis | S | — | ◐ v1.52 (CLAUDE.md, handoff, decisions; „Kas naujo“ page left) |
 | **C10** | Data care: retention, orphans, backups of uploads | parents, Deividas | M | reikia leidimo | ☐ |
 | **D1** | Compare Budo with the external Varžybos app (old step 3a) | Deividas, Denis | M | plan first | ☐ |
 | **D2** | Apply the decision (old step 3b) | Deividas | L | reikia leidimo | ☐ |

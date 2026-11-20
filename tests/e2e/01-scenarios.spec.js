@@ -255,7 +255,7 @@ test('admin: notifications, chat, comments at the post, broadcast, events, atten
   // Valdymo meniu (#106): kompiuteryje - kairėje, grupėmis; visi skyriai vienoje vietoje, be trečio lygio
   const tabs = await a.locator('.adm-side a').allTextContents();
   check('admin side menu has all sections', tabs.some(t => /Nustatymai/.test(t)) && tabs.some(t => /Nariai/.test(t)) && !tabs.some(t => /^\s*Grupės\s*$/.test(t)), tabs.join(','));
-  check('side menu groups', await a.locator('.adm-side .am-group').count() === 3 && await a.locator('.adm-side a.active', { hasText: 'Pradžia' }).count() === 1);
+  check('side menu groups', await a.locator('.adm-side .am-group').count() === 3 && await a.locator('.adm-side a.active', { hasText: 'Šiandien' }).count() === 1);
   await nav(a, () => a.click('.adm-side a:has-text("Nustatymai")'));
   check('settings page', a.url().includes('admin/nustatymai.php') && await a.locator('.adm-side a.active', { hasText: 'Nustatymai' }).count() === 1);
   check('settings links and account', await a.locator('.settings-link[href*="grupes.php"]').count() === 1 && await a.locator('.settings-link[href*="kopijos.php"]').count() === 1

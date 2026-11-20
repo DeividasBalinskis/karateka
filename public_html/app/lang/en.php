@@ -3424,4 +3424,9 @@ From 2013 he trained with the team of the traditional karate-do club "Sanrei", a
     'Prašymas pataisyti atsisiųstus' => 'Request to fix downloaded ones',
     'Ištrinti klausimą?' => 'Delete the question?',
     'arba nutempkite čia' => 'or drag it here',
+    'Federacijos kalendoriuje (patvirtinta LTKF)' => 'In the federation calendar (approved by LTKF)',
+    'Asmeninė egzamino nuoroda galioja 30 dienų po egzamino. Rezultatą ir sertifikatą rasite paskyroje arba paklauskite trenerio.' => 'The personal exam link works for 30 days after the exam. Find the result and certificate in your account or ask the coach.',
+    'Lietuvos tradicinio karate federacija' => 'Lithuanian Traditional Karate Federation',
+    'Mano diena' => 'My day',
+    'Geriausi ·' => 'Best ·',
 ];

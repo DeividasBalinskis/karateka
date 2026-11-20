@@ -2,6 +2,8 @@
 require __DIR__ . '/app/bootstrap.php';
 
 $return = safe_return(get('r') ?: post('r'));
+// Sprendimas 2026-11-20: treneris ar administratorius be nurodyto puslapio - iškart į Valdymas → Šiandien
+$askedFor = (string) (get('r') ?: post('r')) !== '';
 if (current_account()) {
     redirect($return);
 }
@@ -26,7 +28,8 @@ if (is_post()) {
 
     $result = attempt_login($email, (string) ($_POST['password'] ?? ''));
     if ($result['ok']) {
-        redirect($return);
+        $me = current_account();
+        redirect(!$askedFor && $me && is_staff($me) ? url('admin/') : $return);
     }
     if ($result['error'] === 'code') {
         if ($result['mail_error']) {

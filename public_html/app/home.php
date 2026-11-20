@@ -93,7 +93,7 @@ function home_block_defaults(string $type): array
                 'button' => t('Siųsti')];
         case 'partners':
             return ['title' => t('Partneriai'), 'items' => [
-                ['image' => 'img/partneriai/ltkf.jpg', 'name' => t('Lietuvos tradicinio karate-do federacija'), 'url' => ''],
+                ['image' => 'img/partneriai/ltkf.jpg', 'name' => t('Lietuvos tradicinio karate federacija'), 'url' => ''],
                 ['image' => 'img/partneriai/sanrei.jpg', 'name' => t('Sanrei karate klubas'), 'url' => ''],
                 ['image' => 'img/partneriai/vilniaus-karate-mokykla.jpg', 'name' => t('Vilniaus karate mokykla'), 'url' => ''],
                 ['image' => 'img/partneriai/karate-akademija.jpg', 'name' => t('Karate akademija'), 'url' => ''],

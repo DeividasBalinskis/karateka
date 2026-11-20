@@ -81,6 +81,13 @@ function varz_demo_start(string $token, string $name): bool
 
 // ---------- Sekretoriato nuoroda (be paskyros): tik vienoms varžyboms, be klubo narių duomenų ----------
 
+/** Sekretoriato nuoroda galioja iki 2 dienų po varžybų pabaigos (sprendimas 2026-11-20) */
+function varz_sekr_valid_date(int $tid): bool
+{
+    $end = (string) q_value('SELECT COALESCE(ends_on, starts_on) FROM tournaments WHERE id = ?', [$tid]);
+    return $end !== '' && $end >= date('Y-m-d', strtotime('-2 days'));
+}
+
 function varz_sekr_token(int $tid): string
 {
     return (string) site_setting('varz_sekr_' . $tid, '');
@@ -98,7 +105,8 @@ function varz_sekr_find(string $token): int
         return 0;
     }
     $n = q_value("SELECT name FROM site_settings WHERE name LIKE 'varz\\_sekr\\_%' AND value = ?", [$token]);
-    return $n ? (int) substr((string) $n, 10) : 0;
+    $tid = $n ? (int) substr((string) $n, 10) : 0;
+    return $tid && varz_sekr_valid_date($tid) ? $tid : 0;
 }
 
 /** Galiojanti sekretoriato sesija (['tid', 'name']) - šioms varžyboms ar bet kurioms; nuorodą pakeitus ar išjungus - baigiasi */
@@ -109,7 +117,7 @@ function varz_sekr(?int $tid = null): ?array
             continue;
         }
         $tok = varz_sekr_token((int) $id);
-        if ($tok !== '' && is_array($s) && hash_equals(hash('sha256', $tok), (string) ($s['tok'] ?? ''))) {
+        if ($tok !== '' && is_array($s) && hash_equals(hash('sha256', $tok), (string) ($s['tok'] ?? '')) && varz_sekr_valid_date((int) $id)) {
             return ['tid' => (int) $id, 'name' => (string) ($s['name'] ?? '')];
         }
     }

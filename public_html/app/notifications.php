@@ -108,6 +108,24 @@ function account_notifications(int $accountId, ?int $memberId = null, int $limit
 }
 
 /** Kiek svarbių neperskaitytų / neišspręstų pranešimų */
+/** Pranešimų tipai, kurie reiškia darbą treneriui ar administratoriui (patvirtinti, atsakyti, sutvarkyti) */
+const NOTIFY_TODO_TYPES = ['skill_request', 'late_request', 'consent_withdrawn'];
+
+/** Neatlikti darbų pranešimai (raudonas skaičius prie „Valdymas“ - tik darbai, ne naujienos; sprendimas 2026-11-20) */
+function notification_todo_count(int $accountId): int
+{
+    static $cache = [];
+    if (!isset($cache[$accountId])) {
+        try {
+            $in = "'" . implode("','", NOTIFY_TODO_TYPES) . "'";
+            $cache[$accountId] = (int) q_value("SELECT COUNT(*) FROM notifications WHERE account_id = ? AND done_at IS NULL AND read_at IS NULL AND type IN ($in)", [$accountId]);
+        } catch (PDOException $ex) {
+            $cache[$accountId] = 0;
+        }
+    }
+    return $cache[$accountId];
+}
+
 function notification_count(int $accountId): int
 {
     static $cache = [];

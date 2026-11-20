@@ -326,7 +326,7 @@ function menu_variant_preview(): void
 function admin_menu_groups(): array
 {
     $day = [
-        'siandien'   => ['🏠', t('Pradžia'), 'admin/', 0, t('Darbai, pranešimai, šiandienos grupės')],
+        'siandien'   => ['🏠', t('Šiandien'), 'admin/', 0, t('Darbai, pranešimai, šiandienos grupės')],
         'treniruote' => ['🥋', t('Treniruotė'), 'admin/treniruote.php', 0, t('Lankomumas, pastabos, taškai')],
         'egzaminai'  => ['📋', t('Egzaminai'), 'admin/egzaminai.php', 0, t('Protokolai, registracija, kainos')],
     ];
@@ -647,7 +647,7 @@ function admin_mode_toggle(): string
 /** Treneriui: kiek laukia - pranešimai ir „Reikia padaryti“ punktai (patvirtinimai, rezultatai, žinutės...) */
 function staff_attention_count(int $accountId): int
 {
-    return notification_count($accountId) + count(admin_todo_items());
+    return notification_todo_count($accountId) + count(admin_todo_items());   // tik darbai (sprendimas 2026-11-20)
 }
 
 

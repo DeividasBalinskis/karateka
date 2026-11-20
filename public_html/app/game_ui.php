@@ -66,12 +66,14 @@ function game_rankings(int $myHero): array
         }
     }
     $out['lygis'] = ['label' => t('⭐ Lygis'), 'unit' => t('lygis'), 'empty' => t('Dar niekas nesurinko XP.'), 'rows' => $rows, 'me' => $me];
-    // Pergalės kiekviename žaidime (ir prieš treniruočių partnerius)
+    // Pergalės kiekviename žaidime - tik prieš žmones (be botų / treniruočių partnerių) ir tik šį sezoną (sprendimas 2026-11-20)
+    [$sFrom, $sTo] = season_bounds();
+    $sTo .= ' 23:59:59';
     foreach (['kova' => t('⚔ Karate kova'), 'greita' => t('⚡ Greita kova'), 'keturi' => t('🟦 Keturi iš eilės')] as $g => $label) {
         $wins = q_all('SELECT hero, COUNT(*) AS n FROM (
-                         SELECT a_hero AS hero FROM game_matches WHERE game = ? AND status = "done" AND winner = 1
-                         UNION ALL SELECT b_hero FROM game_matches WHERE game = ? AND status = "done" AND winner = 2 AND b_hero IS NOT NULL) w
-                       GROUP BY hero ORDER BY n DESC', [$g, $g]);
+                         SELECT a_hero AS hero FROM game_matches WHERE game = ? AND status = "done" AND winner = 1 AND b_hero IS NOT NULL AND created_at BETWEEN ? AND ?
+                         UNION ALL SELECT b_hero FROM game_matches WHERE game = ? AND status = "done" AND winner = 2 AND b_hero IS NOT NULL AND created_at BETWEEN ? AND ?) w
+                       GROUP BY hero ORDER BY n DESC', [$g, $sFrom, $sTo, $g, $sFrom, $sTo]);
         $rows = [];
         $me = null;
         foreach ($wins as $i => $r) {
@@ -85,7 +87,7 @@ function game_rankings(int $myHero): array
         $out[$g] = ['label' => $label, 'unit' => t('perg.'), 'empty' => t('Dar niekas nelaimėjo - būk pirmas!'), 'rows' => $rows, 'me' => $me];
     }
     // Kata ritmas: geriausias rezultatas
-    $best = q_all('SELECT hero_id, MAX(score) AS s FROM game_scores WHERE game = "ritmas" GROUP BY hero_id ORDER BY s DESC');
+    $best = q_all('SELECT hero_id, MAX(score) AS s FROM game_scores WHERE game = "ritmas" AND created_at BETWEEN ? AND ? GROUP BY hero_id ORDER BY s DESC', [$sFrom, $sTo]);
     $rows = [];
     $me = null;
     foreach ($best as $i => $r) {

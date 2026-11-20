@@ -215,11 +215,13 @@ if ($active) {
     $meTag = ($selected['relation'] ?? '') === 'self' ? '<span class="me-tag">tu</span>' : '';
 }
 
+// Mažas vaikas (iki 10 m.) savo paskyroje: paprastesni žodžiai - „Mano diena“, „XP“, „Geriausi“ (sprendimas 2026-11-20)
+$little = $selected && !empty($selected['birth_date']) && account_relation((int) $a['id'], (int) $selected['id']) === 'self' && age_on((string) $selected['birth_date']) <= 10;
 page_start($tab === 'nustatymai' ? t('Nustatymai') : t('Mano paskyra'), ['noindex' => true, 'account' => $tab]);
 ?>
 <div class="account-top">
   <div>
-    <div class="eyebrow"><?= $tab === 'nustatymai' ? t('Nustatymai') : t('Apžvalga') ?></div>
+    <div class="eyebrow"><?= $tab === 'nustatymai' ? t('Nustatymai') : ($little ? t('Mano diena') : t('Apžvalga')) ?></div>
     <div class="hello"><?= te('Sveiki,') ?> <?= e($a['first_name']) ?>!</div>
     <?= $selected && $active && $tab === 'apzvalga' ? belt_strip_html($selected) : '' ?>
   </div>
@@ -349,7 +351,7 @@ page_start($tab === 'nustatymai' ? t('Nustatymai') : t('Mano paskyra'), ['noinde
           <div>
             <div class="kicker"><?= count($members) > 1 ? e($selected['first_name']) . ' · ' : (t('Mano') . ' ') ?><?= te('taškai ·') ?> <?= e($seasonLabel) ?></div>
             <div class="row" style="align-items:baseline; gap:8px;">
-              <span class="big-number"><?= $seasonPoints ?></span><span class="muted"><?= te('aktyvumo taškai') ?></span>
+              <span class="big-number"><?= $seasonPoints ?></span><span class="muted"><?= $little ? 'XP' : te('aktyvumo taškai') ?></span>
             </div>
           </div>
         </div>
@@ -361,7 +363,7 @@ page_start($tab === 'nustatymai' ? t('Nustatymai') : t('Mano paskyra'), ['noinde
           <?php endforeach; ?>
         </div>
 
-        <div class="kicker" style="margin-top:4px;"><?= te('Top 5 ·') ?> <?= e($partition[2]) ?></div>
+        <div class="kicker" style="margin-top:4px;"><?= $little ? te('Geriausi ·') : te('Top 5 ·') ?> <?= e($partition[2]) ?></div>
         <?php if (!$rows): ?>
           <p class="muted"><?= te('Šį sezoną aktyvumo taškų dar niekas neturi.') ?></p>
         <?php endif; ?>
@@ -393,7 +395,8 @@ page_start($tab === 'nustatymai' ? t('Nustatymai') : t('Mano paskyra'), ['noinde
           <?= render_attendance((int) $selected['id']) ?>
           <?php // Mokestis pagal lankomumą (jei grupei nustatyta kaina už treniruotę): šio mėnesio suma
           $fg = !empty($selected['group_id']) ? q_one('SELECT * FROM training_groups WHERE id = ?', [(int) $selected['group_id']]) : null;
-          if ($fg && group_visit_price($fg)): $ym = date('Y-m'); $ff = group_month_fees($fg, $ym)[(int) $selected['id']] ?? null; $vp = group_visit_price($fg); ?>
+          $selfKid = account_relation((int) $a['id'], (int) $selected['id']) === 'self' && !empty($selected['birth_date']) && age_on((string) $selected['birth_date']) < 18;   // vaikas kainų nemato - tik tėvai
+          if (!$selfKid && $fg && group_visit_price($fg)): $ym = date('Y-m'); $ff = group_month_fees($fg, $ym)[(int) $selected['id']] ?? null; $vp = group_visit_price($fg); ?>
             <p class="fee-line" style="font-size:15px;">💶 <b><?= e(group_fee_text($fg, $ff, $ym)) ?></b><?= $vp['cap'] !== null ? ' <span class="muted small">· ' . te('ne daugiau kaip {s} per mėn.', ['s' => money_fmt($vp['cap'])]) . '</span>' : '' ?></p>
           <?php endif; ?>
         <?php else: ?>

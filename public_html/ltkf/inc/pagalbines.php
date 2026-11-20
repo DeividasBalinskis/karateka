@@ -152,7 +152,14 @@ function karateka_turnyrai(): array
         if ($db = karateka_db()) {
             try {
                 $live = (karateka_config()['env'] ?? 'live') === 'live';
-                $rows = $db->query('SELECT id, title, starts_on, ends_on, location, status, is_test, results FROM tournaments WHERE is_public = 1'
+                $cols = 'id, title, starts_on, ends_on, location, status, is_test, results';
+                try {
+                    $db->query('SELECT ltkf_approved FROM tournaments LIMIT 1');
+                    $cols .= ', ltkf_approved';
+                } catch (Throwable $ex) {
+                    // dar neimportuotas db/046
+                }
+                $rows = $db->query('SELECT ' . $cols . ' FROM tournaments WHERE is_public = 1'
                     . ($live ? ' AND is_test = 0' : '') . ' ORDER BY starts_on DESC, id DESC')->fetchAll();
             } catch (Throwable $ex) {
                 $rows = [];   // karateka dar be db/025
@@ -216,7 +223,7 @@ function partneriai(): array
         }
     }
     if (!$items) {   // numatytieji (kaip karateka.lt)
-        foreach (['ltkf' => 'Lietuvos tradicinio karate-do federacija', 'sanrei' => 'Sanrei karate klubas', 'vilniaus-karate-mokykla' => 'Vilniaus karate mokykla',
+        foreach (['ltkf' => 'Lietuvos tradicinio karate federacija', 'sanrei' => 'Sanrei karate klubas', 'vilniaus-karate-mokykla' => 'Vilniaus karate mokykla',
                   'karate-akademija' => 'Karate akademija', 'takami' => 'Takami tradicinio karate-do klubas', 'budo-cup' => 'Budo Cup Open'] as $f => $n) {
             $items[] = ['image' => 'img/partneriai/' . $f . '.jpg', 'name' => $n, 'url' => ''];
         }
@@ -284,6 +291,9 @@ function varzybos_renginiai(): array
 {
     $out = [];
     foreach (karateka_turnyrai() as $t) {
+        if (array_key_exists('ltkf_approved', $t) && !(int) $t['ltkf_approved']) {
+            continue;   // kalendoriuje - tik federacijos patvirtintos (sprendimas 2026-11-20)
+        }
         $out[] = [
             'id' => 'k' . (int) $t['id'], 'pavadinimas' => (string) $t['title'], 'nuo' => (string) $t['starts_on'], 'iki' => $t['ends_on'] ?: null,
             'vieta' => (string) $t['location'], 'tipas' => 'varzybos', 'registracija' => $t['status'] === 'registration', 'is_sistemos' => true,

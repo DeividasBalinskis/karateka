@@ -12,6 +12,15 @@ if (!$event) {
 }
 $self = 'mano-egzaminas.php?t=' . $tok;
 $past = event_last_day($event) < date('Y-m-d');
+// Asmeninė nuoroda galioja 30 dienų po egzamino (sprendimas 2026-11-20): vėliau - tik paaiškinimas, be asmens duomenų
+if (event_last_day($event) < date('Y-m-d', strtotime('-30 days'))) {
+    http_response_code(410);
+    page_start(t('Mano egzaminas'), ['noindex' => true]);
+    echo '<div class="panel card" style="max-width:560px; margin:40px auto;"><h1 class="styled">' . te('Nuoroda nebegalioja') . '</h1><p>'
+        . te('Asmeninė egzamino nuoroda galioja 30 dienų po egzamino. Rezultatą ir sertifikatą rasite paskyroje arba paklauskite trenerio.') . '</p></div>';
+    page_end();
+    exit;
+}
 
 // Kokį diržą laikys - pasirenka pats (kol egzaminas neįvyko ir treneris nepažymėjo rezultato)
 if (is_post() && post('action') === 'belt' && !$past && !$row['result']) {
@@ -60,7 +69,7 @@ page_start(t('Mano egzaminas') . ': ' . tr_text($event['title']), ['noindex' => 
   <ol class="exam-steps my-exam-steps">
     <li class="ok">
       <strong><?= te('Registracija') ?></strong>
-      <span class="small muted"><?= e((string) $row['name']) ?><?= $row['birth_date'] ? ' · ' . e(fmt_date($row['birth_date'])) : '' ?><?= !empty($row['phone']) ? ' · ' . e((string) $row['phone']) : '' ?></span>
+      <span class="small muted"><?= e((string) $row['name']) ?><?= $row['birth_date'] ? ' · ' . e(substr((string) $row['birth_date'], 0, 4)) . ' ' . te('m.') : '' ?></span>
     </li>
     <li id="programa" class="<?= $lvl ? 'ok' : '' ?>">
       <strong><?= te('Kokį diržą laikysi?') ?></strong>

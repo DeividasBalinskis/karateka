@@ -3424,4 +3424,9 @@ Nuo 2013 m. treniravosi Tradicinio karate-do klubo „Sanrei“ komandoje, o 201
     'Prašymas pataisyti atsisiųstus' => 'Запрос исправить скачанные',
     'Ištrinti klausimą?' => 'Удалить вопрос?',
     'arba nutempkite čia' => 'или перетащите сюда',
+    'Federacijos kalendoriuje (patvirtinta LTKF)' => 'В календаре федерации (утверждено LTKF)',
+    'Asmeninė egzamino nuoroda galioja 30 dienų po egzamino. Rezultatą ir sertifikatą rasite paskyroje arba paklauskite trenerio.' => 'Личная ссылка экзамена действует 30 дней после экзамена. Результат и сертификат - в аккаунте или у тренера.',
+    'Lietuvos tradicinio karate federacija' => 'Литовская федерация традиционного каратэ',
+    'Mano diena' => 'Мой день',
+    'Geriausi ·' => 'Лучшие ·',
 ];

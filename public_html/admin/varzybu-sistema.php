@@ -186,7 +186,7 @@ if (is_post()) {
     exit(json_encode(['ok' => true, 'version' => $v, 'awards' => (object) tournament_awards((int) $t['id'])]));
 }
 
-$belts = [];
+$belts = [0 => ['10 kyu', 'baltas', '#FFFFFF']];   // 10 kyu (raktas 0) - kaip egzaminuose
 foreach (BELTS as $lvl => $b) {
     $belts[$lvl] = [$b[0], $b[1], $b[2]];
 }
@@ -269,8 +269,8 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
     <button role="tab" id="tab-live" aria-selected="false" aria-controls="v-live" class="tab-live"><span class="live-dot" aria-hidden="true"></span>Tvarkaraštis</button>
     <button role="tab" id="tab-rezultatai" aria-selected="false" aria-controls="v-rezultatai"><span class="tab-n">🏅</span>Rezultatai</button>
     <span class="tabs-sep" aria-hidden="true"></span>
-    <button role="tab" id="tab-admin" aria-selected="false" class="tab-admin" title="Paruošimas: klubai, komandos, dalyviai, kategorijos, tinklai"><span class="tab-n">🗂</span>Administracija</button>
-    <button type="button" class="tab-cfg" id="menu-cfg" aria-expanded="false" title="Meniu: pervadinti, sukeisti vietomis">⚙</button>
+    <button role="tab" id="tab-admin" aria-selected="false"<?= $asSekr ? ' hidden' : '' ?> class="tab-admin" title="Paruošimas: klubai, komandos, dalyviai, kategorijos, tinklai"><span class="tab-n">🗂</span>Administracija</button>
+    <button type="button"<?= $asSekr ? ' hidden' : '' ?> class="tab-cfg" id="menu-cfg" aria-expanded="false" title="Meniu: pervadinti, sukeisti vietomis">⚙</button>
   </nav>
   <nav class="tabs tabs-sub" id="tabs-sub" role="tablist" aria-label="Administracija" hidden>
     <button role="tab" id="tab-klubai" aria-selected="false" aria-controls="v-klubai"><span class="tab-n">1</span>Klubai</button>

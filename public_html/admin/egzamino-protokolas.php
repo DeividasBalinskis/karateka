@@ -432,7 +432,7 @@ page_start(t('Egzamino protokolas') . ': ' . $event['title'], ['admin' => true, 
   var t = document.getElementById('protTable'), base = parseFloat(t.dataset.base) || 5;
   function num(v) { v = String(v).replace(',', '.').trim(); return v !== '' && !isNaN(v) ? parseFloat(v) : null; }
   // #133: balas 6,3 ar mažesnis - langelis raudonas (neišlaikius - raudona visa eilutė)
-  function markLow(inp) { var v = num(inp.value), td = inp.closest('td'); if (td) td.classList.toggle('low', v !== null && v <= <?= json_encode(EXAM_LOW_SCORE) ?>); }
+  function markLow(inp) { if (inp.dataset.f === 'test') return; var v = num(inp.value), td = inp.closest('td'); if (td) td.classList.toggle('low', v !== null && v <= <?= json_encode(EXAM_LOW_SCORE) ?>); }   // „Testas“ - be raudonos taisyklės
   function fmt(n) { return (Math.round(n * 100) / 100).toString(); }
   // Pavardės eilutė apačioje: gimimo data · telefonas · klubas (+ spausdinimui - atskiri stulpeliai)
   function sub(tr) {

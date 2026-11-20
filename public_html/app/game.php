@@ -577,7 +577,7 @@ function game_sync(array $hero): array
     if ($hero['member_id']) {
         try {
             foreach (q_all('SELECT e.id, e.title FROM event_participants ep JOIN events e ON e.id = ep.event_id
-                             WHERE ep.member_id = ? AND (ep.attended = 1 OR (ep.attended IS NULL AND ep.status = "going")) AND COALESCE(e.ends_on, e.starts_on) < CURDATE()
+                             WHERE ep.member_id = ? AND ep.attended = 1 AND COALESCE(e.ends_on, e.starts_on) < CURDATE()   -- tik pažymėjus „Buvo“ (sprendimas 2026-11-20)
                              ORDER BY e.starts_on DESC LIMIT 30', [(int) $hero['member_id']]) as $ev) {
                 q('INSERT IGNORE INTO game_boxes (hero_id, reason, title) VALUES (?, ?, ?)', [$hid, 'ev:' . $ev['id'], t('Renginys:') . ' ' . mb_substr($ev['title'], 0, 120)]);
             }

@@ -90,6 +90,13 @@ if (is_post() && $ready) {
                 q('UPDATE tournaments SET title = ?, starts_on = ?, ends_on = ?, location = ?, status = ?, is_public = ? WHERE id = ?',
                     [mb_substr(trim((string) post('title')) ?: $t['title'], 0, 190), $start, $end, trim((string) post('location')) ?: null,
                      isset(TOURNAMENT_STATUS[post('status')]) ? post('status') : $t['status'], post('is_public') === '1' ? 1 : 0, $id]);
+                if (is_admin()) {   // LTKF kalendoriuje - tik federacijos patvirtintos (db/046)
+                    try {
+                        q('UPDATE tournaments SET ltkf_approved = ? WHERE id = ?', [post('ltkf_approved') === '1' ? 1 : 0, $id]);
+                    } catch (PDOException $ex) {
+                        // dar neimportuotas db/046
+                    }
+                }
                 flash('ok', t('Išsaugota.'));
             }
             break;
@@ -152,6 +159,7 @@ $card = function (array $t): string {
             <div class="varz-2">
               <label><?= te('Būsena') ?> <select class="sel" name="status"><?php foreach (TOURNAMENT_STATUS as $k => $l): ?><option value="<?= $k ?>"<?= $k === $t['status'] ? ' selected' : '' ?>><?= e(t($l)) ?></option><?php endforeach; ?></select></label>
               <label class="small"><input type="checkbox" name="is_public" value="1"<?= $t['is_public'] ? ' checked' : '' ?>> <?= te('Rezultatai viešai (LTKF, karateka.lt)') ?></label>
+              <?php if (is_admin() && array_key_exists('ltkf_approved', $t)): ?><label class="small"><input type="checkbox" name="ltkf_approved" value="1"<?= $t['ltkf_approved'] ? ' checked' : '' ?>> <?= te('Federacijos kalendoriuje (patvirtinta LTKF)') ?></label><?php endif; ?>
             </div>
             <button class="btn btn-primary" type="submit"><?= te('Išsaugoti') ?></button>
           </form>

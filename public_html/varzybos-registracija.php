@@ -29,7 +29,8 @@ if (is_post() && $open) {
         }
         $birth = (int) ($_POST['birth'][$i] ?? 0);
         $gender = in_array($_POST['gender'][$i] ?? '', ['M', 'F'], true) ? $_POST['gender'][$i] : null;
-        $belt = (int) ($_POST['belt'][$i] ?? 0);
+        $beltRaw = (string) ($_POST['belt'][$i] ?? '');
+        $belt = $beltRaw === '' ? null : (int) $beltRaw;   // 0 = 10 kyu
         $phone = trim(mb_substr((string) ($_POST['phone'][$i] ?? ''), 0, 40));
         $photo = $_POST['photo'][$i] ?? '';
         if (mb_strlen($name) < 3 || $birth < $year - 90 || $birth > $year - 3) {
@@ -48,7 +49,7 @@ if (is_post() && $open) {
             $errors[] = t('{name}: pasirinkite, ar sutinka būti fotografuojamas ir filmuojamas.', ['name' => $name]);
             continue;
         }
-        $rows[] = [mb_substr($name, 0, 120), $birth, $gender, isset(BELTS[$belt]) ? $belt : null, $phone !== '' ? $phone : null, (int) $photo];
+        $rows[] = [mb_substr($name, 0, 120), $birth, $gender, $belt !== null && ($belt === 0 || isset(BELTS[$belt])) ? $belt : null, $phone !== '' ? $phone : null, (int) $photo];
     }
     if (post('website') !== '' || count($_SESSION['reg_posts']) >= 10) {
         $errors[] = t('Per daug bandymų. Pabandykite vėliau.');
@@ -117,7 +118,7 @@ $pv = function (string $key, int $i): string { return (string) ($_POST[$key][$i]
         <input type="text" name="name[]" maxlength="120" placeholder="<?= te('Vardenis Pavardenis') ?>" aria-label="<?= te('Vardas ir pavardė') ?>" value="<?= e($pv('name', $i)) ?>">
         <input type="number" name="birth[]" min="<?= $year - 90 ?>" max="<?= $year - 3 ?>" placeholder="<?= te('metai') ?>" aria-label="<?= te('Gimimo metai') ?>" value="<?= e($pv('birth', $i)) ?>">
         <select name="gender[]" aria-label="<?= te('Lytis') ?>"><option value=""><?= te('lytis') ?></option><option value="M"<?= $pv('gender', $i) === 'M' ? ' selected' : '' ?>>M</option><option value="F"<?= $pv('gender', $i) === 'F' ? ' selected' : '' ?>>F</option></select>
-        <select name="belt[]" aria-label="<?= te('Diržas') ?>"><option value=""><?= te('diržas') ?></option><?php foreach (BELTS as $lvl => $b): ?><option value="<?= (int) $lvl ?>"<?= (int) $pv('belt', $i) === (int) $lvl ? ' selected' : '' ?>><?= e($b[0]) ?></option><?php endforeach; ?></select>
+        <select name="belt[]" aria-label="<?= te('Diržas') ?>"><option value=""><?= te('diržas') ?></option><option value="0"<?= $pv('belt', $i) === '0' ? ' selected' : '' ?>>10 kyu</option><?php foreach (BELTS as $lvl => $b): ?><option value="<?= (int) $lvl ?>"<?= (int) $pv('belt', $i) === (int) $lvl ? ' selected' : '' ?>><?= e($b[0]) ?></option><?php endforeach; ?></select>
         <input type="tel" name="phone[]" maxlength="40" placeholder="<?= te('tėvų tel. Nr.') ?>" aria-label="<?= te('Vieno iš tėvų tel. Nr.') ?>" value="<?= e($pv('phone', $i)) ?>">
         <select name="photo[]" aria-label="<?= te('Sutinka būti fotografuojamas ir filmuojamas') ?>"><option value=""><?= te('nuotraukos?') ?></option>
           <option value="1"<?= $pv('photo', $i) === '1' ? ' selected' : '' ?>><?= te('Sutinka') ?></option><option value="0"<?= $pv('photo', $i) === '0' ? ' selected' : '' ?>><?= te('Nesutinka') ?></option></select>

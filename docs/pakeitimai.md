@@ -4,6 +4,39 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.52 - 2026-11-20 (tavo atsakymai į 43 klausimus įdiegti; LTKF kalendorius; sekretoriatas; Dojo reitingas)
+**Reikia atnaujinti duomenų bazę: db/046** (Pradžia → „Atnaujinkite duomenų bazę“). Zip'o turinį išpakuokite **tiesiai į svetainės aplanką**.
+Visi sprendimai surašyti `docs/decisions.md`.
+
+**🛠 Valdymas**
+- Prisijungęs treneris ar administratorius iškart patenka į Valdymas → **„Šiandien“** (pradžios puslapis taip ir vadinasi).
+- Raudonas skaičius prie „Valdymas“ - **tik darbai** (patvirtinti „Moku“, pavėluotos registracijos, atšauktas sutikimas), ne naujienos.
+- Seni pranešimai, privačios žinutės ir SMS žurnalas ištrinami po 1 metų (viešos žinutės lieka).
+
+**📋 Egzaminai**
+- Asmeninis egzamino puslapis (nuoroda be paskyros): be telefono numerio, tik gimimo metai; nuoroda galioja 30 dienų po egzamino.
+- Protokole raudona taisyklė (6,3 ir mažiau) netaikoma stulpeliui „Testas“ ir rašant.
+
+**🥋 Budo**
+- 10 kyu - diržų sąraše (dalyviai, registracija).
+- Sekretoriato nuoroda: galioja iki 2 dienų po varžybų; sekretoriatas mato tik „Tvarkaraštį“, „Rezultatus“ ir apdovanojimus (be „Administracijos“).
+- Primename: kata vėliavėlėmis ar balais, teisėjų skaičius (1-15), bronzos (2 be kovos / kova dėl 3 vietos / paguoda) ir ratų sistema mažoms grupėms
+  nustatomi kiekvienai grupei (grupės ⚙ nustatymai).
+
+**🌐 LTKF**
+- Pavadinimas visur - „Lietuvos tradicinio karate federacija“.
+- Kalendoriuje - tik federacijos patvirtintos varžybos: Budo → varžybų nustatymai → „Federacijos kalendoriuje (patvirtinta LTKF)“ (db/046).
+
+**🏯 Dojo**
+- Reitinge pergalės skaičiuojamos tik prieš žmones (ne botus) ir tik šį sezoną (nuo rugsėjo 1 d.).
+- Dovanų dėžė už renginį - tik kai treneris pažymėjo „Buvo“.
+
+**👶 Vaikai**
+- Vaikui iki 10 m. savo paskyroje: „Mano diena“, „XP“, „Geriausi“ vietoj „Apžvalga“, „aktyvumo taškai“, „Top 5“.
+- Vaikas savo paskyroje nemato mokesčių - tik tėvai.
+
+**📄 Projekto atmintis (C9)**: `CLAUDE.md`, `docs/handoff.md`, `docs/decisions.md`.
+
 ## v1.51 - 2026-11-20 (testų redaktorius pagal standartus, klausimų failas kuriant testą, bendri mygtukai ir failo laukai)
 **Duomenų bazės atnaujinti nereikia** (jei v1.50 dar neįkelta - db/045 iš v1.50). Zip'o turinį išpakuokite **tiesiai į svetainės aplanką**.
 

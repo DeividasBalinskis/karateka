@@ -173,9 +173,10 @@
   }
   function removeFromCat(id, catId) { var c = cat(catId); if (c) c.competitors = c.competitors.filter(function (x) { return x.id !== id; }); }
   function esc(s) { return String(s).replace(/[&<>"]/g, function (ch) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]; }); }
-  function beltDot(l) { return l && BELTS[l] ? '<span class="belt-dot" style="background:' + BELTS[l][2] + '" title="' + esc(BELTS[l][0]) + '"></span>' : ''; }
-  function beltName(l) { return l && BELTS[l] ? BELTS[l][0] : ''; }
-  function beltOpts(cur) { return '<option value="">—</option>' + Object.keys(BELTS).map(function (k) { return '<option value="' + k + '"' + (+k === +cur ? ' selected' : '') + '>' + esc(BELTS[k][0]) + '</option>'; }).join(''); }
+  function hasBelt(l) { return l !== null && l !== undefined && l !== '' && !!BELTS[l]; }   // 0 = 10 kyu (ne „nėra“)
+  function beltDot(l) { return hasBelt(l) ? '<span class="belt-dot" style="background:' + BELTS[l][2] + '" title="' + esc(BELTS[l][0]) + '"></span>' : ''; }
+  function beltName(l) { return hasBelt(l) ? BELTS[l][0] : ''; }
+  function beltOpts(cur) { return '<option value="">—</option>' + Object.keys(BELTS).map(function (k) { return '<option value="' + k + '"' + (cur !== null && cur !== undefined && cur !== '' && +k === +cur ? ' selected' : '') + '>' + esc(BELTS[k][0]) + '</option>'; }).join(''); }
   function newId(prefix) { return prefix + Date.now().toString(36) + Math.floor(Math.random() * 1000); }
   var YEAR = CFG.year || new Date().getFullYear();
 
@@ -490,8 +491,8 @@
     if (!p || (k.g && k.g !== 'X' && p.gender && p.gender !== k.g)) return false;
     if (k.y0 && y && y < k.y0) return false;
     if (k.y1 && y && y > k.y1) return false;
-    if (k.b0 && p.belt && p.belt < k.b0) return false;
-    if (k.b1 && p.belt && p.belt > k.b1) return false;
+    if (k.b0 && hasBelt(p.belt) && p.belt < k.b0) return false;
+    if (k.b1 && hasBelt(p.belt) && p.belt > k.b1) return false;
     return true;
   }
   function critName(c) {
@@ -507,7 +508,7 @@
   var catView = 'ov', ovQuery = '', ovGender = '', ovProblems = false, ovSort = 'order', ovOpen = {}, bDrag = null;
   try { catView = sessionStorage.getItem(KEY + '-catview') || 'ov'; } catch (e) {}
   function setCatView(v) { catView = v; try { sessionStorage.setItem(KEY + '-catview', v); } catch (e) {} renderCats(); }
-  function kyuOpts(cur) { return '<option value="">—</option>' + Object.keys(BELTS).map(function (k) { return '<option value="' + k + '"' + (+k === +cur ? ' selected' : '') + '>' + kyu(+k).replace(' kyu', '') + '</option>'; }).join(''); }
+  function kyuOpts(cur) { return '<option value="">—</option>' + Object.keys(BELTS).filter(function (k) { return +k > 0; }).map(function (k) { return '<option value="' + k + '"' + (+k === +cur ? ' selected' : '') + '>' + kyu(+k).replace(' kyu', '') + '</option>'; }).join(''); }   // ribose 10 kyu nereikia - tai „nuo pradžios“
   function catUnfit(c) { return c.competitors.filter(function (p) { return !p.team && S.people[p.id] && !fits(c, S.people[p.id]); }).length; }
   function catProblems(c) { return c.competitors.length < 2 || catUnfit(c) > 0; }
   // Rikiavimas didėjančia tvarka (gimimo metai, diržas, dalyvių sk.); ovDir: 1 - didėjančia, -1 - mažėjančia
@@ -1077,7 +1078,7 @@
     else if (t.dataset.pClub) { snapshot(); updatePerson(t.dataset.pClub, { club: t.value }); }
     else if (t.dataset.pBirth) { snapshot(); S.people[t.dataset.pBirth].birth = +t.value || null; toastPlaced([t.dataset.pBirth]); }
     else if (t.dataset.pGender) { snapshot(); S.people[t.dataset.pGender].gender = t.value || null; toastPlaced([t.dataset.pGender]); }
-    else if (t.dataset.pBelt) { snapshot(); S.people[t.dataset.pBelt].belt = +t.value || null; toastPlaced([t.dataset.pBelt]); }
+    else if (t.dataset.pBelt) { snapshot(); S.people[t.dataset.pBelt].belt = t.value === '' ? null : +t.value; toastPlaced([t.dataset.pBelt]); }
     else if (t.dataset.pAdd && t.value) { snapshot(); addToCat(t.dataset.pAdd, t.value); }
     else return;
     save(); renderSoon();
@@ -1426,7 +1427,7 @@
     var p = person(c, id) || {}, pp = S.people[id] || {}, belt = pp.belt;
     return '<div class="sv-who"><div class="sv-label">' + (side === 'a' ? 'AKA' : side === 'b' ? 'SHIRO' : '') + '</div>' +
       '<div class="sv-name">' + esc(p.name || '—') + '</div><div class="sv-club">' + esc(p.club || '') + (pp.birth ? ' · ' + pp.birth : '') + '</div>' +
-      (belt && BELTS[belt] ? '<div class="sv-belt"><span style="background:' + BELTS[belt][2] + '"></span>' + esc(kyu(+belt)) + '</div>' : '') + '</div>';
+      (hasBelt(belt) ? '<div class="sv-belt"><span style="background:' + BELTS[belt][2] + '"></span>' + esc(kyu(+belt)) + '</div>' : '') + '</div>';
   }
   // Kai kita pora dar nežinoma (laukia šios kovos nugalėtojo) - rodoma, kas ruošiasi: žinomas dalyvis ir „šios kovos nugalėtojas“, arba kita grupė
   function prepLater(c, cur) {
@@ -2932,7 +2933,7 @@
 
   // ---------- Kategorijos automatiškai: rungtis × lytis × amžius × diržas, mažos sujungiamos su artimiausiomis ----------
   var AGE_GROUPS = [[0, 7], [8, 9], [10, 11], [12, 13], [14, 15], [16, 17], [18, 34], [35, 99]];
-  var BELT_GROUPS = [[1, 3], [4, 6], [7, 99]];
+  var BELT_GROUPS = [[0, 3], [4, 6], [7, 99]];
   var DISC_ORDER = { kihon: 0, kata: 1, kumite: 2, fukugo: 3 };
   function kyu(l) { return l <= 9 ? (10 - l) + ' kyu' : (l - 9) + ' dan'; }
   function catName(b) {
@@ -2950,7 +2951,7 @@
       var p = S.people[id]; if (!p.birth) return;
       var a = YEAR - p.birth, ai = AGE_GROUPS.findIndex(function (g) { return a >= g[0] && a <= g[1]; });
       if (ai < 0) return;
-      var bl = p.belt || 1, bi = BELT_GROUPS.findIndex(function (g) { return bl >= g[0] && bl <= g[1]; });
+      var bl = hasBelt(p.belt) ? p.belt : 1, bi = BELT_GROUPS.findIndex(function (g) { return bl >= g[0] && bl <= g[1]; });
       var g = a < 8 ? 'X' : (p.gender === 'F' ? 'F' : 'M');
       var discs = a < 8 ? ['kihon', 'kata'] : ['kata', 'kumite'];
       if (a >= 16 && bl >= 7) discs.push('fukugo');
@@ -3049,7 +3050,7 @@
     box.querySelector('.mp-list').innerHTML = shown.map(function (m) {
       var added = !!S.people['m' + m.id];
       return '<label class="mp-item' + (added ? ' added' : '') + '"><input type="checkbox" value="' + m.id + '"' + (added ? ' checked disabled' : '') + '>' +
-        beltDot(m.belt) + '<span class="mp-name">' + esc(m.name) + '</span><span class="mp-meta">' + (m.birth || '?') + ' · ' + (m.gender || '?') + (m.belt ? ' · ' + esc(beltName(m.belt)) : '') + (added ? ' · jau pridėtas' : '') + '</span></label>';
+        beltDot(m.belt) + '<span class="mp-name">' + esc(m.name) + '</span><span class="mp-meta">' + (m.birth || '?') + ' · ' + (m.gender || '?') + (hasBelt(m.belt) ? ' · ' + esc(beltName(m.belt)) : '') + (added ? ' · jau pridėtas' : '') + '</span></label>';
     }).join('') || '<p class="muted small">Narių nerasta.</p>';
     box.querySelector('#mp-all').textContent = 'Pažymėti visus (' + free.length + ')';
   }
@@ -3264,7 +3265,7 @@
       if (S.clubs.indexOf(en.club) === -1) S.clubs.push(en.club);
       // Tas pats žmogus (vardas, gimimo metai, klubas) nepridedamas antrą kartą
       var dup = Object.keys(S.people).some(function (id) { var p = S.people[id]; return p.name === en.name && p.club === en.club && (+p.birth || 0) === (+en.birth_year || 0); });
-      if (!dup) S.people[entryPersonId(en)] = { id: entryPersonId(en), name: en.name, club: en.club, birth: +en.birth_year || null, gender: en.gender || null, belt: +en.belt || null, member: null,
+      if (!dup) S.people[entryPersonId(en)] = { id: entryPersonId(en), name: en.name, club: en.club, birth: +en.birth_year || null, gender: en.gender || null, belt: en.belt === null || en.belt === undefined || en.belt === '' ? null : +en.belt, member: null,
         noPhoto: en.photo_ok !== null && en.photo_ok !== undefined && !+en.photo_ok };
     });
     markEntries(list.map(function (en) { return +en.id; }), 'added');
