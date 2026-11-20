@@ -1,7 +1,7 @@
 // v1.27: atsiliepimų langas visose svetainėse (karateka.lt, Taika, LTKF): išsaugoma pati, Ctrl+V nuotraukos (daug),
 // Enter - išsaugoti ir naujas, ankstesni atsiliepimai (pavadinimas, nuotraukų skaičius) - paspaudus taisyti; Claude prieiga su raktu.
 const { test } = require('@playwright/test');
-const { sql, login, nav, check, noJsErrors, flashes } = require('./helpers');
+const { sql, login, nav, check, noJsErrors, flashes, openFeedback } = require('./helpers');
 
 /** Įklijuoja n ekrano nuotraukų (kaip Ctrl+V) į atsiliepimo laukelį */
 async function pasteImages(page, n) {
@@ -22,7 +22,7 @@ test('feedback widget: autosave, paste many images, Enter for next, edit earlier
 
   // Taika: rašai - išsaugoma pati (be mygtuko), įklijuoji 3 nuotraukas
   await a.goto('admin/varzybos.php');
-  await a.click('#fbFab');
+  await openFeedback(a);
   await a.fill('#fbText', 'Kategorijų struktūroje trūksta filtro pagal kyu\nIr dar viena mintis');
   await a.waitForFunction(() => /Išsaugota/.test(document.getElementById('fbState').textContent), null, { timeout: 5000 });
   check('autosaved without button', sql("SELECT CONCAT(site, '|', page) FROM feedback") === 'taika|/admin/varzybos.php');
@@ -57,7 +57,7 @@ test('feedback widget: autosave, paste many images, Enter for next, edit earlier
   // LTKF - tas pats langas, svetainė pažymima
   await a.goto('ltkf/klubai.php');
   await a.waitForSelector('#fbFab');
-  await a.click('#fbFab');
+  await openFeedback(a);
   await a.fill('#fbText', 'LTKF klubų žemėlapis per mažas');
   await a.press('#fbText', 'Enter');
   await a.waitForFunction(() => /Išsaugota/.test(document.getElementById('fbState').textContent));

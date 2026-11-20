@@ -2,7 +2,7 @@
 // komandinės katos finalas lieka vėliavėlėmis; paprastame vaizde - kas ruošiasi, „Laimėjo AKA / SHIRO“ ir su vėliavėlėmis, juodas tekstas laukeliuose;
 // perburtos grupės nebelieka „apdovanota“; registracijoje vietos pagal rajonus; LTKF peržiūros nuoroda (atsiliepimai be paskyros, be nuorodos į karateka.lt).
 const { test } = require('@playwright/test');
-const { sql, login, check, noJsErrors } = require('./helpers');
+const { sql, login, check, noJsErrors, openFeedback } = require('./helpers');
 
 const BASE_URL = process.env.BASE_URL || 'http://127.0.0.1:8088/';
 
@@ -112,7 +112,7 @@ test('LTKF review link: guests leave feedback, karateka.lt link only for the adm
   check('link opens the LTKF site', /\/ltkf\/(index\.php)?$/.test(g.url()), g.url());
   check('reviewer: no karateka.lt link', await g.locator('.karateka-bar a', { hasText: 'karateka.lt' }).count() === 0);
   await g.waitForSelector('#fbFab', { timeout: 8000 });
-  await g.click('#fbFab');
+  await openFeedback(g);
   await g.fill('#fbText', 'LTKF peržiūra: meniu aiškus');
   await g.press('#fbText', 'Enter');
   await g.waitForTimeout(1200);

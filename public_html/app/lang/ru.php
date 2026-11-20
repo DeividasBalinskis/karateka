@@ -3429,4 +3429,5 @@ Nuo 2013 m. treniravosi Tradicinio karate-do klubo „Sanrei“ komandoje, o 201
     'Lietuvos tradicinio karate federacija' => 'Литовская федерация традиционного каратэ',
     'Mano diena' => 'Мой день',
     'Geriausi ·' => 'Лучшие ·',
+    'Tema šiame įrenginyje' => 'Тема на этом устройстве',
 ];

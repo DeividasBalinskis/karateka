@@ -1,7 +1,7 @@
 // Atsiliepimai (mygtukas visuose puslapiuose, admino sąrašas) ir varžybų sistema svetainėje:
 // test varžybos (Karateka nariai + kiti klubai, automatinės kategorijos, dalis kovų), išsaugojimas, viešas puslapis, LTKF, rezultatai → taškai.
 const { test } = require('@playwright/test');
-const { sql, login, nav, check, noJsErrors, flashes } = require('./helpers');
+const { sql, login, nav, check, noJsErrors, flashes, openFeedback } = require('./helpers');
 
 test('feedback: visitor and member write, admin answers', async ({ browser }) => {
   sql('DELETE FROM feedback');
@@ -10,7 +10,7 @@ test('feedback: visitor and member write, admin answers', async ({ browser }) =>
   // Lankytojas (test svetainėje mygtukas rodomas visiems)
   const v = await login(browser, null);
   await v.goto('renginiai.php');
-  await v.click('#fbFab');
+  await openFeedback(v);
   await v.fill('#fbName', 'Lankytojas Jonas');
   await v.fill('#fbText', 'Renginių puslapyje trūksta filtro');
   await v.press('#fbText', 'Enter');   // Enter - išsaugoti ir naujas
@@ -21,7 +21,8 @@ test('feedback: visitor and member write, admin answers', async ({ browser }) =>
   // Narys mato savo atsiliepimą lange
   const m = await login(browser, 'narys@karateka.test', 390, 800);
   await m.goto('paskyra.php');
-  await m.click('#fbFab');
+  // Telefone 💡 ir 💬 - vienas mygtukas su meniu (B4)
+  await openFeedback(m);
   await m.fill('#fbText', 'Telefone mygtukas per mažas');
   await m.click('#fbSend');
   await m.waitForSelector('#fbPanel .fb-list .fb-item');
@@ -44,7 +45,7 @@ test('feedback: visitor and member write, admin answers', async ({ browser }) =>
   check('saved', /Išsaugota/.test(await flashes(a)));
   check('member notified', +sql("SELECT COUNT(*) FROM notifications n JOIN accounts a ON a.id = n.account_id WHERE a.email = 'narys@karateka.test' AND n.type = 'feedback'") === 1);
   await m.goto('paskyra.php');
-  await m.click('#fbFab');
+  await openFeedback(m);
   await m.waitForSelector('#fbPanel .fb-list .fb-reply');
   check('member sees reply', /Padidinome, ačiū!/.test(await m.locator('#fbPanel .fb-list').textContent()));
 
@@ -120,11 +121,12 @@ test('competitions: test tournament, editor saves, public results, LTKF, points'
   await a.waitForTimeout(1500);
   check('belt saved', JSON.parse(sql('SELECT state FROM tournaments ORDER BY id DESC LIMIT 1')).people[pid].belt === 12);
 
-  // Konfliktas: kitas žmogus išsaugojo - perrašyti neleidžiama
+  // Konfliktas: kitas žmogus ką tik išsaugojo - sujungiama automatiškai, perkrauti nereikia (D4, v1.52)
   sql('UPDATE tournaments SET version = version + 5');
   await a.locator(`[data-p-belt="${pid}"]`).selectOption('11');
-  await a.waitForSelector('#conflict:not([hidden])');
-  check('conflict shown', /perkraukite/.test(await a.locator('#save-state').textContent()));
+  await a.waitForFunction(() => /Išsaugota/.test(document.querySelector('#save-state').textContent), null, { timeout: 10000 });
+  check('no reload notice after a conflict', await a.locator('#conflict').isHidden());
+  check('change kept after the merge', JSON.parse(sql('SELECT state FROM tournaments ORDER BY id DESC LIMIT 1')).people[pid].belt === 11);
 
   // Viešas puslapis ir LTKF
   const tid = sql('SELECT id FROM tournaments ORDER BY id DESC LIMIT 1');

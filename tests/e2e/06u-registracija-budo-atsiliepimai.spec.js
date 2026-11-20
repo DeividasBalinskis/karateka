@@ -1,7 +1,7 @@
 // v1.44: registracijos mygtukų jungikliai (Nustatymai → Registracija), Budo „🧪 +100 testinių“ dalyvių,
 // atsiliepimai: „Mano“ - tik savo (net bendroje paskyroje kitoje naršyklėje), „Visi“ - tik skaityti, kito teksto taisyti negalima.
 const { test } = require('@playwright/test');
-const { sql, day, login, nav, check, noJsErrors } = require('./helpers');
+const { sql, day, login, nav, check, noJsErrors, openFeedback } = require('./helpers');
 
 test('registration toggles hide every registration button', async ({ browser }) => {
   sql("DELETE FROM site_settings WHERE name = 'reg_off'");
@@ -59,7 +59,7 @@ test('feedback: own list per browser even on a shared account, all list is read 
   sql("DELETE FROM feedback WHERE body LIKE 'E2E bendra paskyra%'");
   const a = await login(browser, 'info@karateka.lt');
   await a.goto('naujienos.php');
-  await a.click('#fbFab');
+  await openFeedback(a);
   await a.fill('#fbText', 'E2E bendra paskyra: pirmo žmogaus tekstas');
   await a.click('#fbSend');
   await a.waitForTimeout(1200);
@@ -69,7 +69,7 @@ test('feedback: own list per browser even on a shared account, all list is read 
   // Kitas žmogus ta pačia paskyra, kita naršyklė
   const b = await login(browser, 'info@karateka.lt');
   await b.goto('naujienos.php');
-  await b.click('#fbFab');
+  await openFeedback(b);
   await b.waitForTimeout(800);
   check('not in the other person\'s own list', await b.locator('#fbList .fb-item', { hasText: 'pirmo žmogaus' }).count() === 0);
   await b.click('[data-fb-tab="all"]');

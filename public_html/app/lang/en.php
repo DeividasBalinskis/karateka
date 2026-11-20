@@ -3429,4 +3429,5 @@ From 2013 he trained with the team of the traditional karate-do club "Sanrei", a
     'Lietuvos tradicinio karate federacija' => 'Lithuanian Traditional Karate Federation',
     'Mano diena' => 'My day',
     'Geriausi ·' => 'Best ·',
+    'Tema šiame įrenginyje' => 'Theme on this device',
 ];

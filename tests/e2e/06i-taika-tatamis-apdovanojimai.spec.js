@@ -3,7 +3,7 @@
 // viršuje, „✓ Apdovanota“ - nukeliama žemyn, sistemoje „Užbaigta ir apdovanota“; katos balai: 75 → 7.5, katos sąrašas, finalas = pusfinalis + finalas;
 // kumite laiko šablonai; kategorijų rikiavimas didėjančia / mažėjančia; ekranas telefone nešokinėja į viršų.
 const { test } = require('@playwright/test');
-const { sql, login, check, noJsErrors } = require('./helpers');
+const { sql, login, check, noJsErrors, openFeedback } = require('./helpers');
 
 test('my tatami, next group, send to awards, awards tablet finishes the age group', async ({ browser }) => {
   const a = await login(browser, 'info@karateka.lt', 1400, 1000);
@@ -207,7 +207,7 @@ test('Taika test link: no account, only demo competitions, no real members, can 
 
   // Atsiliepimas su vardu
   await g.goto(`admin/varzybu-sistema.php?id=${tid}`);
-  await g.click('#fbFab');
+  await openFeedback(g);
   await g.fill('#fbText', 'Bandymas: patogu, bet norėčiau didesnių mygtukų');
   await g.press('#fbText', 'Enter');
   await g.waitForTimeout(800);
