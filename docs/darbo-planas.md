@@ -74,7 +74,7 @@ Status: ☐ not started · ◐ partly done · ☑ done
 | **D2** | Apply the decision (old step 3b) | Deividas | L | reikia leidimo | ☐ |
 | **D3** | Split `assets/varzybos.js` into modules (old step 8) | Deividas | L | plan first | ☐ |
 | **D4** | Multi-tablet saving (old step 9) | secretariat, judges | L | plan first, Fable | ◐ v1.52 (conflict = automatic merge by group, idle tablets pull every 8 s; same group on two tablets: last one wins) |
-| **D5** | Polish one page (old step 7, repeat) | everyone | S each | — | ◐ v1.61 index (tap targets in header and „Kam ieškote treniruočių?“); next: renginiai/renginys |
+| **D5** | Polish one page (old step 7, repeat) | everyone | S each | — | ◐ v1.61 index, v1.62 renginiai/renginys; next: registracija/prisijungti/kodas |
 | **D6** | LTKF: real content model, own domain | federation | L | plan first | ☐ |
 | **D7** | Dojo: one fight model, ranking, fair rewards | kids (later), Denis | L | plan first | ◐ v1.49 (calm look, #128 ranking); v1.50 hidden from menus until opened (#140) |
 | **D8** | New pixel characters | kids (later) | L | plan first | ☐ |

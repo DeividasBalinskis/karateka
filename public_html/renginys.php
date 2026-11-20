@@ -24,7 +24,7 @@ page_start(tr_text($ev['title']), ['section' => 'renginiai', 'description' => $e
     'og' => $ev['members_only'] ? null : ['type' => 'website', 'title' => $ev['title'], 'description' => $ev['summary'] ?: mb_strimwidth((string) $ev['description'], 0, 160, '…'),
         'url' => abs_url('renginys.php?id=' . $id), 'image' => abs_url('img/apie-1.jpg')]]);
 ?>
-<a class="small" href="<?= url('renginiai.php#e' . $id) ?>"><?= te('← Visi renginiai') ?></a>
+<nav class="crumbs"><a href="<?= url('renginiai.php#e' . $id) ?>"><?= te('← Visi renginiai') ?></a></nav>
 <article class="event-page">
   <header class="panel card ep-head">
     <div class="ep-date"><span class="d"><?= date('j', $ts) ?></span><span class="m"><?= e(mb_substr(month_names_gen()[(int) date('n', $ts)], 0, 3)) ?></span></div>

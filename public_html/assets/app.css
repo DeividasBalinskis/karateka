@@ -1946,3 +1946,17 @@ h1 .badge-tester{font:600 .8rem/1.6 'Inter', sans-serif; letter-spacing:0; paddi
 .ev-will{white-space:normal; display:inline-block; vertical-align:middle; margin-left:6px; font-family:Inter, system-ui, sans-serif;}
 .ev-will:empty{display:none;}
 .ev-will.ok{background:rgba(47,107,90,0.14); color:var(--accent-dark, #1F4E40);}
+/* D5 (renginiai): atgal nuorodos ir „Į telefono kalendorių“ - patogios pirštui; „Visiems / Grupėms“ - po renginio tekstu, ne po data */
+.crumbs a{display:inline-flex; align-items:center; min-height:40px;}
+.ev-ics > summary{display:inline-flex; align-items:center; min-height:40px;}
+@media(max-width:760px){ .events-for{margin-left:74px;} }
+/* B6: 1100-1300 px planšetė - protokolas telpa be slinkimo į šoną (#124), mygtukai lieka 40 px aukščio */
+@media (max-width: 1300px) {
+  .prot-table .sc-b{min-width:26px; width:26px; flex-basis:26px;}
+  .prot-table .prot-name{min-width:146px;}
+  .prot-table .pi-kyu{min-width:62px;}
+  .prot-table .prot-note{min-width:64px;}
+  .prot-table .res-btn{padding:0 4px; font-size:.7rem;}
+  .prot-table .pay-btn{min-width:34px;}
+  .prot-table .prot-del button{min-width:34px;}
+}
