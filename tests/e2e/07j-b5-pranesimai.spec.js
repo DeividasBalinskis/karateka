@@ -22,16 +22,16 @@ test('B5: 35 feedback replies + 1 request - the request stays; header number = l
     kicker: +((document.querySelector('#svarbu .kicker .count-badge') || {}).textContent || 0),
     listed: document.querySelectorAll('#svarbu > .notif-list .notif').length }));
   check('header number = number in the list = items listed', nums.head === nums.kicker && nums.kicker === nums.listed && nums.head >= 1, JSON.stringify(nums));
-  check('notices: 2 shown, the rest folded', await a.locator('.news-replies > .notif-list .notif').count() === 2 && /Rodyti ankstesnius \(1\)/.test(await a.locator('.news-replies details summary').textContent()));
-  check('feedback replies folded too', await a.locator('.fb-replies:not(.news-replies) > .notif-list .notif').count() === 2);
+  check('notices: 2 shown, the rest folded', await a.locator('.news-block > .notif-list .notif').count() === 2 && /Rodyti ankstesnius \(1\)/.test(await a.locator('.news-block details summary').textContent()));
+  check('feedback replies folded too', await a.locator('.fb-replies > .notif-list .notif').count() === 2);
 
   // „Supratau“ iššokusiame langelyje (perskaityta) - darbas lieka skaičiuje
   sql(`UPDATE notifications SET read_at = NOW() WHERE id = ${req}`);
   await a.reload();
   check('read but not done: still counted', await a.locator('#svarbu .notif.t-skill_request').count() === 1 && +(await a.locator('.nav-login .count-badge').textContent()) === nums.head);
 
-  await Promise.all([a.waitForNavigation(), a.click('.news-replies button:has-text("Supratau visus")')]);
-  check('„Supratau visus“ hides notices, keeps the request', await a.locator('.news-replies').count() === 0 && await a.locator('#svarbu .notif.t-skill_request').count() === 1
+  await Promise.all([a.waitForNavigation(), a.click('.news-block button:has-text("Supratau visus")')]);
+  check('„Supratau visus“ hides notices, keeps the request', await a.locator('.news-block').count() === 0 && await a.locator('#svarbu .notif.t-skill_request').count() === 1
     && +sql(`SELECT COUNT(*) FROM notifications WHERE account_id = ${aid} AND type = 'feedback' AND done_at IS NULL`) === 35);
   sql(`DELETE FROM notifications WHERE account_id = ${aid} AND title LIKE 'E2E%'`);
   noJsErrors(a);

@@ -1541,8 +1541,8 @@ tr.res-failed td{background:rgba(192,57,43,0.06);}
 .join-who{border:0; padding:0; margin:0 0 6px; display:grid; gap:6px;}
 .join-who legend{font-weight:700; margin-bottom:6px;}
 /* Admin pradžia: atsakymai į atsiliepimus - kompaktiškai, po darbų */
-.fb-replies{margin-top:14px; padding-top:10px; border-top:1px dashed rgba(23,20,15,0.15);}
-.fb-replies .notif-list{opacity:.85;}
+.fb-replies, .news-block{margin-top:14px; padding-top:10px; border-top:1px dashed rgba(23,20,15,0.15);}
+.fb-replies .notif-list, .news-block .notif-list{opacity:.85;}
 .fb-more summary{cursor:pointer; margin:6px 0;}
 /* Paskyra: kortelė į „🎮 Žaidimas“ (personažas gyvena atskirame puslapyje) */
 .game-teaser{display:flex; align-items:center; gap:14px; text-decoration:none; color:inherit; margin-top:14px; background:linear-gradient(135deg,#FFF7E6,#FDEBD3); border:2px solid #F2C14E;}

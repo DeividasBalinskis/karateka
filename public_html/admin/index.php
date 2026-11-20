@@ -90,7 +90,7 @@ $todoCount = count($notifs) + count($todo);
       <?= render_notifications($notifs, 'admin/#svarbu') ?>
       <?php if (!$todoCount): ?><p class="all-done"><?= te('✓ Viskas padaryta') ?></p><?php endif; ?>
       <?php if ($news): ?>
-        <div class="fb-replies news-replies">
+        <div class="news-block">
           <div class="row between" style="gap:8px;flex-wrap:wrap;"><span class="small muted"><?= te('🔔 Naujienos') ?> (<?= count($news) ?>)</span>
             <form method="post" action="<?= url('pranesimas.php') ?>" class="inline-form"><?= csrf_field() ?><input type="hidden" name="action" value="done_notices"><input type="hidden" name="back" value="admin/#svarbu">
               <button class="btn btn-ghost btn-sm" type="submit"><?= te('Supratau visus') ?></button></form></div>

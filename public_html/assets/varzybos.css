@@ -1445,7 +1445,8 @@ body.vz.vz-public:not(.scr) .vz-top-row, body.vz.vz-public:not(.scr) .tabs { max
   .bt-btns .btn:not(.bt-big) { min-height: 48px; min-width: 48px; }
   .bt-timer { font-size: 2.4rem; padding: 4px 12px; }
   .bt-mid .bt-tbtns .btn { min-height: 44px; }
-  .bout-card .bt-foot { gap: 6px 8px; padding: 10px; padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px)); }
+  /* apačioje - vieta naršyklės juostai (iOS Safari), kad „Laimėjo SHIRO“ būtų pasiekiamas */
+  .bout-card .bt-foot { gap: 6px 8px; padding: 10px; padding-bottom: calc(56px + env(safe-area-inset-bottom, 0px)); }
   .bout-card .bt-foot .btn { min-height: 44px; }
 }
 /* B3: planšetėje grupės juosta (tatamiai, „Grupė 4 iš 10“, „Visos grupės ↓“) lankstosi, neišlenda į šoną;
