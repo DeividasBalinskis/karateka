@@ -23,6 +23,10 @@ Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar
   Trenerio patvirtinti nereikia. Ten pat - „Keisti PIN“ ir „Išjungti prisijungimą“.
 - Vaikas: Prisijungti → vietoj el. pašto **savo vardas**, vietoj slaptažodžio **PIN**. Mato „Mano diena“, XP, užduotis; kainų nemato.
   Nieko paskyroje keisti negali („Pamiršai PIN? Paprašyk tėvų“). Po 15 klaidingų PIN per parą - užrakinama, kol tėvai pakeis PIN.
+- Ten pat tėvai gali išjungti „Gali rašyti treneriui“ (tada žinutes rašo tik tėvai).
+- **Tėvai treniruojasi ir patys:** Mano paskyra → Nustatymai → **„+ Treniruojuosi ir aš“** (gimimo data, diržas, sutikimas) - treneris patvirtina ir priskiria grupę.
+- **Suaugęs narys gali pridėti vaiką** (anksčiau - tik tėvų paskyros): Nustatymai → „+ Pridėti vaiką“.
+- 7-10 m. vaikui skirtukas vadinasi „Mano diena“.
 
 ## v1.52 - 2026-11-20 (tavo atsakymai į 43 klausimus įdiegti; LTKF kalendorius; sekretoriatas; Dojo reitingas)
 **Reikia atnaujinti duomenų bazę: db/046** (Pradžia → „Atnaujinkite duomenų bazę“). Zip'o turinį išpakuokite **tiesiai į svetainės aplanką**.

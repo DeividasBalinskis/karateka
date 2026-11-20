@@ -10,7 +10,29 @@ if (is_post()) {
     csrf_check();
     $action = post('action');
 
-    if ($action === 'add_kid' && !is_staff($a)) {
+    // B7: vaiką gali pridėti bet kuri suaugusio paskyra (ir pats treniruojantis suaugęs); vaiko PIN paskyra - ne
+    $selfM = q_one('SELECT m.* FROM account_members am JOIN members m ON m.id = am.member_id WHERE am.account_id = ? AND am.relation = "self"', [$aid]);
+    $adult = !$selfM || empty($selfM['birth_date']) || age_on((string) $selfM['birth_date']) >= 18;
+    if ($action === 'add_self' && !is_staff($a) && !is_kid_login($a)) {
+        $birth = date_from_input($_POST['birth_date'] ?? '');
+        if ($selfM) {
+            $errors[] = t('Jūs jau esate narys.');
+        } elseif (!valid_birth_date($birth) || age_on($birth) < 18) {
+            $errors[] = t('Įveskite savo gimimo datą (nuo 18 metų).');
+        } elseif (!in_array(post('photo_consent'), ['0', '1'], true)) {
+            $errors[] = t('Pasirinkite, ar sutinkate dėl nuotraukų.');
+        } else {
+            $mid = create_member($a['first_name'], $a['last_name'], $birth, !empty($_POST['photo_consent']), belt_from_post('belt_level'));
+            link_member($aid, $mid, 'self');
+            if ($a['status'] === 'active') {
+                notify_coach_pending($a);
+            }
+            flash('ok', t('Pridėta: treniruojatės ir jūs. Treneris patvirtins ir priskirs grupę.'));
+            redirect('paskyra.php?m=' . $mid);
+        }
+    }
+
+    if ($action === 'add_kid' && !is_staff($a) && !is_kid_login($a) && $adult) {
         $first = post('first_name');
         $last = post('last_name');
         $birth = date_from_input($_POST['birth_date'] ?? '');
@@ -62,7 +84,7 @@ if (is_post()) {
     }
 
     // B7: vaiko prisijungimas vardu ir PIN (sukuria ir tvarko tėvai; trenerio patvirtinti nereikia)
-    if (in_array($action, ['kid_login', 'kid_pin', 'kid_login_toggle'], true)) {
+    if (in_array($action, ['kid_login', 'kid_pin', 'kid_login_toggle', 'kid_chat'], true)) {
         $mid = (int) post('member_id');
         $m = q_one('SELECT * FROM members WHERE id = ?', [$mid]);
         $own = q_one('SELECT a.* FROM account_members am JOIN accounts a ON a.id = am.account_id WHERE am.member_id = ? AND am.relation = "self"', [$mid]);
@@ -100,6 +122,10 @@ if (is_post()) {
                 flash('ok', t('PIN pakeistas.'));
                 redirect($back);
             }
+        } elseif ($action === 'kid_chat') {
+            q('UPDATE accounts SET chat_off = ? WHERE id = ?', [post('chat') === '1' ? 0 : 1, (int) $own['id']]);
+            flash('ok', post('chat') === '1' ? t('Vaikas gali rašyti treneriui.') : t('Žinutės treneriui vaikui išjungtos - rašote jūs.'));
+            redirect($back);
         } else {
             $on = $own['status'] !== 'active';
             q('UPDATE accounts SET status = ? WHERE id = ?', [$on ? 'active' : 'disabled', (int) $own['id']]);
@@ -212,6 +238,10 @@ if ($tab === 'apzvalga' && $a['status'] === 'active' && game_public() && game_al
 }
 // Vaikus prideda tėvai; treneriai - per Treneriams -> Nariai
 $isParent = !$isStaff && ((bool) array_filter($members, function ($m) { return $m['relation'] === 'parent'; }) || !array_filter($members, function ($m) { return $m['relation'] === 'self'; }));
+// B7: pridėti vaiką gali ir suaugęs narys (ne tik tėvai); tėvai - pridėti save kaip treniruojantį
+$selfRow = array_values(array_filter($members, function ($m) { return $m['relation'] === 'self'; }))[0] ?? null;
+$canAddKid = !$isStaff && !is_kid_login($a) && (!$selfRow || empty($selfRow['birth_date']) || age_on((string) $selfRow['birth_date']) >= 18);
+$canAddSelf = !$isStaff && !is_kid_login($a) && !$selfRow;
 
 
 $active = $selected && $selected['status'] === 'active' && $a['status'] === 'active';
@@ -598,6 +628,14 @@ page_start($tab === 'nustatymai' ? t('Nustatymai') : t('Mano paskyra'), ['noinde
               <input type="text" name="pin" inputmode="numeric" pattern="[0-9]{4,6}" minlength="4" maxlength="6" autocomplete="off" required></label>
             <button class="btn btn-ghost" type="submit"><?= te('Keisti PIN') ?></button>
           </form>
+          <?php $kidChat = !q_value('SELECT chat_off FROM accounts WHERE email = ?', [$selected['own_login_email']]); ?>
+          <form method="post" class="kl-chat">
+            <?= csrf_field() ?><input type="hidden" name="action" value="kid_chat"><input type="hidden" name="member_id" value="<?= (int) $selected['id'] ?>">
+            <input type="hidden" name="chat" value="0">
+            <label class="tg-row"><input type="checkbox" class="tg" name="chat" value="1"<?= $kidChat ? ' checked' : '' ?> onchange="this.form.submit()">
+              <span><b><?= te('Gali rašyti treneriui') ?></b><small><?= te('Išjungus - žinutes treneriui rašote tik jūs.') ?></small></span></label>
+            <noscript><button class="btn btn-ghost btn-sm" type="submit"><?= te('Išsaugoti') ?></button></noscript>
+          </form>
           <form method="post" class="kl-toggle"<?= $kidOff ? '' : ' onsubmit="return confirm(this.dataset.ask)" data-ask="' . e(t('Išjungti vaiko prisijungimą?')) . '"' ?>>
             <?= csrf_field() ?><input type="hidden" name="action" value="kid_login_toggle"><input type="hidden" name="member_id" value="<?= (int) $selected['id'] ?>">
             <button class="btn btn-sm <?= $kidOff ? 'btn-primary' : 'btn-danger' ?>" type="submit"><?= $kidOff ? te('Įjungti vėl') : te('Išjungti prisijungimą') ?></button>
@@ -640,7 +678,7 @@ page_start($tab === 'nustatymai' ? t('Nustatymai') : t('Mano paskyra'), ['noinde
   </div>
 <?php endif; ?>
 
-<?php if ($isParent && ($tab === 'nustatymai' || !$members)): ?>
+<?php if ($canAddKid && ($tab === 'nustatymai' || !$members)): ?>
   <details class="panel card" id="vaikai" style="margin-top:20px;" <?= !$members || ($errors && post('action') === 'add_kid') ? 'open' : '' ?>>
     <summary style="cursor:pointer; font-family:'Space Grotesk',sans-serif; font-weight:700;"><?= te('+ Pridėti vaiką') ?></summary>
     <form method="post" class="form" style="margin-top:16px;">
@@ -656,6 +694,23 @@ page_start($tab === 'nustatymai' ? t('Nustatymai') : t('Mano paskyra'), ['noinde
       </div>
       <?= photo_consent_choice('photo_consent', post('action') === 'add_kid' ? post('photo_consent') : null, t('Ar sutinkate, kad klubas skelbtų vaiko nuotraukas ir vaizdo įrašus?')) ?>
       <div><button class="btn btn-primary" type="submit"><?= te('Pridėti') ?></button></div>
+    </form>
+  </details>
+<?php endif; ?>
+
+<?php if ($canAddSelf && $tab === 'nustatymai' && $members): $selfOpen = $errors && post('action') === 'add_self'; ?>
+  <details class="panel card" id="as-pats" style="margin-top:20px;" <?= $selfOpen ? 'open' : '' ?>>
+    <summary style="cursor:pointer; font-family:'Space Grotesk',sans-serif; font-weight:700;"><?= te('+ Treniruojuosi ir aš') ?></summary>
+    <p class="small muted" style="margin:12px 0 0;"><?= te('Jei treniruojatės ir jūs - pridėkite save. Treneris patvirtins ir priskirs grupę; vaikai lieka jūsų paskyroje.') ?></p>
+    <form method="post" class="form" style="margin-top:12px;">
+      <?= csrf_field() ?>
+      <input type="hidden" name="action" value="add_self">
+      <div class="form-row">
+        <label><?= te('Mano gimimo data') ?> <?= date_parts_field('birth_date', null) ?></label>
+        <label><?= te('Diržas') ?> <span class="hint"><?= te('nežinote - palikite tuščią') ?></span><select name="belt_level"><?= belt_options(null, t('— nežinau / dar neturi —')) ?></select></label>
+      </div>
+      <?= photo_consent_choice('photo_consent', $selfOpen ? post('photo_consent') : null, t('Ar sutinkate, kad klubas skelbtų jūsų nuotraukas ir vaizdo įrašus?')) ?>
+      <div><button class="btn btn-primary" type="submit"><?= te('Pridėti save') ?></button></div>
     </form>
   </details>
 <?php endif; ?>

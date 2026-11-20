@@ -95,3 +95,51 @@ test('B7: parents create a username + PIN for a child (7+), the child logs in, P
   sql("DELETE FROM accounts WHERE email LIKE '%@vaikas.invalid'");
   noJsErrors(p, k, w);
 });
+
+test('B7: a parent adds themselves as a trainee; an adult member adds a child; parent switches the child chat off', async ({ browser }) => {
+  sql("DELETE m FROM members m JOIN account_members am ON am.member_id = m.id JOIN accounts a ON a.id = am.account_id WHERE a.email = 'tevai@karateka.test' AND am.relation = 'self'");
+  sql("DELETE FROM members WHERE first_name = 'E2E' AND last_name = 'Vaikas'");
+  sql("DELETE FROM accounts WHERE email LIKE '%@vaikas.invalid'");
+  const p = await login(browser, 'tevai@karateka.test', 375, 812);
+  await p.goto('paskyra.php?skiltis=nustatymai');
+  await closeCelebrate(p);
+  check('parent sees „Treniruojuosi ir aš“', await p.locator('#as-pats').count() === 1);
+  await p.click('#as-pats > summary');
+  await p.selectOption('#as-pats select[name="birth_date[y]"]', '1985');
+  await p.selectOption('#as-pats select[name="birth_date[m]"]', '3');
+  await p.selectOption('#as-pats select[name="birth_date[d]"]', '14');
+  await p.check('#as-pats input[name=photo_consent][value="0"]', { force: true });
+  await Promise.all([p.waitForNavigation(), p.click('#as-pats button[type=submit]')]);
+  check('parent is now a trainee too', sql("SELECT COUNT(*) FROM account_members am JOIN accounts a ON a.id = am.account_id WHERE a.email = 'tevai@karateka.test' AND am.relation = 'self'") === '1');
+  check('children stay', +sql("SELECT COUNT(*) FROM account_members am JOIN accounts a ON a.id = am.account_id WHERE a.email = 'tevai@karateka.test' AND am.relation = 'parent'") >= 2);
+
+  const n = await login(browser, 'narys@karateka.test', 375, 812);
+  await n.goto('paskyra.php?skiltis=nustatymai');
+  await closeCelebrate(n);
+  check('adult member can add a child', await n.locator('#vaikai').count() === 1);
+  await n.click('#vaikai > summary');
+  await n.fill('#vaikai input[name=first_name]', 'E2E'); await n.fill('#vaikai input[name=last_name]', 'Vaikas');
+  await n.selectOption('#vaikai select[name="birth_date[y]"]', '2016');
+  await n.selectOption('#vaikai select[name="birth_date[m]"]', '5');
+  await n.selectOption('#vaikai select[name="birth_date[d]"]', '2');
+  await n.check('#vaikai input[name=photo_consent][value="0"]', { force: true });
+  await Promise.all([n.waitForNavigation(), n.click('#vaikai button[type=submit]')]);
+  check('child added to the adult member', sql("SELECT COUNT(*) FROM account_members am JOIN accounts a ON a.id = am.account_id JOIN members m ON m.id = am.member_id WHERE a.email = 'narys@karateka.test' AND am.relation = 'parent' AND m.last_name = 'Vaikas'") === '1');
+
+  const mid = sql("SELECT id FROM members WHERE first_name = 'E2E' AND last_name = 'Vaikas'");
+  await n.goto(`paskyra.php?skiltis=nustatymai&m=${mid}`);
+  await n.click('#vaiko-prisijungimas > summary');
+  await n.fill('#vaiko-prisijungimas input[name=username]', 'e2e.mazas');
+  await n.fill('#vaiko-prisijungimas input[name=pin]', '5150');
+  await Promise.all([n.waitForNavigation(), n.click('#vaiko-prisijungimas button[type=submit]')]);
+  check('chat on by default', sql("SELECT chat_off FROM accounts WHERE email = 'e2e.mazas@vaikas.invalid'") === '0');
+  await Promise.all([n.waitForNavigation(), n.locator('.kl-chat input[type=checkbox]').uncheck({ force: true })]);
+  check('parent switched chat off', sql("SELECT chat_off FROM accounts WHERE email = 'e2e.mazas@vaikas.invalid'") === '1');
+  const k = await login(browser, 'e2e.mazas', 375, 812, '5150');
+  await closeCelebrate(k);
+  check('child without chat sees no chat button', await k.locator('.chat-fab').count() === 0);
+  sql("DELETE FROM accounts WHERE email LIKE '%@vaikas.invalid'");
+  sql("DELETE FROM members WHERE first_name = 'E2E' AND last_name = 'Vaikas'");
+  sql("DELETE m FROM members m JOIN account_members am ON am.member_id = m.id JOIN accounts a ON a.id = am.account_id WHERE a.email = 'tevai@karateka.test' AND am.relation = 'self'");
+  noJsErrors(p, n, k);
+});

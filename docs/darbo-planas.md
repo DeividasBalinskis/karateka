@@ -57,7 +57,7 @@ Status: ☐ not started · ◐ partly done · ☑ done
 | **B4** | Phone admin: view-as, one floating button (old step 6) | Denis, coaches, members | M | — | ☑ v1.51–v1.52 (view-as in ⋯ Daugiau, one floating button, floats hide over sheet and while typing, 🎨 for all) |
 | **B5** | Notifications: the red number means "to do" | Denis, coaches, parents | M | plan first | ☐ |
 | **B6** | Exams: counts, tablet, 10 kyu, test bank export/import | Denis, examiners | M | — | ◐ v1.49 (10 kyu, #133, #137), v1.50 (question review with ✕, comments, pictures, ChatGPT notes), v1.51 (editor redesign, file with a new quiz) |
-| **B7** | Family accounts: parent trains too, child login in one button | parents, kids | M | plan first | ◐ v1.53 (child login: username + PIN by parents, from 7, no coach approval) |
+| **B7** | Family accounts: parent trains too, child login in one button | parents, kids | M | plan first | ☑ v1.53 (child login: username + PIN by parents, from 7, no coach approval; parent trains too; adult member adds a child; parent switches child chat) |
 | **B8** | Kid and member home; Dojo in the corner; Paskyra page | kids, members | M | plan first | ☐ |
 | **B9** | Valdymas: one shell, one start page, final names | Denis, coaches | M | reikia leidimo | ☐ |
 | **C1** | Permissions: one `can()` and one table | everyone | M | plan first, Fable | ☐ |
