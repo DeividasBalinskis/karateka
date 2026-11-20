@@ -4,6 +4,25 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.54 - 2026-11-20 (Budo telefone varžybų dieną - B3)
+Duomenų bazės atnaujinti nereikia (jei v1.53 jau įkeltas su db/047). Zip'o turinį išpakuokite **tiesiai į svetainės aplanką**.
+
+**📱 Kovos langas telefone**
+- Pirma - **pora ir balų mygtukai** (+1, +2, +4, −1 - dideli, bent 48 px), po jais laikrodis su „Pradėti“ ir „↺“.
+  Telefone visa kova telpa viename ekrane, nereikia slinkti.
+- **„⏱ … laikas ir gongas“** - ±10 s, laiko šablonai (Jiyu ippon, Ko-Go, Jiyu / Pratęsimas, Enbu) ir gongo garsas viename skyriuje:
+  telefone suskleistas, kompiuteryje atidarytas; atsimenama, kaip palikote.
+- Viršuje - pavadinimas vienoje eilutėje, „📺“ ir „✕“ - mygtukai be teksto; „Ruošiasi: …“ - ne daugiau 2 eilučių.
+- Kovos metu telefone ir planšetėje 💡 / 💬 / pranešimų mygtukai paslepiami - nebeuždengia „+2“ ir vardų.
+- Planšetėje (768) kovos lange irgi pirma pora; antraštė vienoje eilutėje.
+
+**🥋 Budo puslapis**
+- Telefone antraštė žemesnė (224 → 146 px): ←, ženklas ir pavadinimas vienoje eilutėje, įrankiai - antroje.
+- Planšetėje grupės juosta („1-4 TATAMIS“, „Grupė 4 iš 10“, „Visos grupės ↓“) nebeišlenda į šoną.
+- **Patvirtinimai** („Varžybos sukurtos…“, „Sekretoriato nuoroda sukurta…“) dabar matomi varžybų puslapyje (anksčiau dingdavo).
+- TV ekrano adresas be tatamio numerio - **dideli tatamių mygtukai** („Kurio tatamio ekranas?“).
+- Viešuose rezultatuose ranka įrašyti dalyviai **be gimimo metų** rodomi trumpai („Jonas P.“), kaip vaikai - saugiau.
+
 ## v1.53 - 2026-11-20 (Kas naujo; kodas kitam įrenginiui; vaiko prisijungimas vardu ir PIN)
 **Reikia atnaujinti duomenų bazę: db/047** (Pradžia → „Atnaujinkite duomenų bazę“). Zip'o turinį išpakuokite **tiesiai į svetainės aplanką**.
 

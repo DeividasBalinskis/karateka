@@ -1407,3 +1407,88 @@ body.vz.vz-public:not(.scr) .vz-top-row, body.vz.vz-public:not(.scr) .tabs { max
 @media (max-width: 480px) { .vn-list { grid-template-columns: 1fr; } .vn-item small { display: none; } }
 .bt-gong { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; justify-content: center; margin-top: 8px; }
 .bt-gong select { padding: 6px 8px; border-radius: 8px; border: 1px solid var(--line); font: inherit; }
+
+/* ---------- B3: kovos langas telefone - pirma pora ir balų mygtukai, laikas po jais ---------- */
+.bt-more { width: 100%; text-align: center; }
+.bt-more > summary { cursor: pointer; list-style: none; display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 12px; border-radius: 10px; font-size: .85rem; font-weight: 700; color: var(--muted); }
+.bt-more > summary::-webkit-details-marker { display: none; }
+.bt-more > summary::after { content: "▾"; font-size: .8em; }
+.bt-more[open] > summary::after { content: "▴"; }
+.bt-more > summary:hover { background: var(--surface-2); }
+.bt-more > .bt-tbtns { margin-top: 4px; }
+/* Telefone ir planšetėje kovos metu plaukiojantys 💡 / 💬 mygtukai neuždengia „+2“ ir vardų */
+@media (max-width: 1099px) {
+  body.bout-open-body .fb, body.bout-open-body .fab-hub, body.bout-open-body .chat-fab, body.bout-open-body .ntf-pop { display: none !important; }
+}
+@media (max-width: 600px) {
+  .bout { padding: 0; place-items: start stretch; }
+  .bout-card { max-height: 100vh; max-height: 100dvh; height: 100dvh; border-radius: 0; }
+  .bout-top { padding: 8px 10px; gap: 6px 8px; border-radius: 0; flex-wrap: nowrap; }
+  .bout-info { flex: 1 1 auto; min-width: 0; font-size: .82rem; gap: 2px 6px; }
+  .bout-info b { flex: 1 1 100%; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: .95rem; }
+  .bout-info .pill { font-size: .7rem; padding: 1px 7px; }
+  .bout-top .spacer { display: none; }
+  .bout-top .btn { min-width: 44px; min-height: 44px; padding: 0 10px; font-size: 1.05rem; flex: 0 0 auto; }
+  .bout-top .bt-lbl { display: none; }
+  .bout-card .bt-next { font-size: .8rem; padding: 6px 10px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .bout-card .bt-next .sv-prep-list, .bout-card .bt-next br { display: none; }
+  .bout-body { padding: 8px; }
+  .bt-sides { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; }
+  .bt-mid { grid-column: 1 / -1; grid-row: 2; padding: 8px; gap: 6px; }
+  .bt-side { padding: 10px 6px; gap: 4px; border-radius: 14px; }
+  .bt-tag { font-size: .7rem; }
+  .bt-name { font-size: 1rem; overflow-wrap: anywhere; }
+  .bt-club { font-size: .72rem; }
+  .bt-score { font-size: 3.2rem; }
+  .bt-btns { gap: 6px; }
+  .bt-big { min-width: 48px; min-height: 48px; font-size: 1.05rem; padding: 0 6px; }
+  .bt-btns .btn:not(.bt-big) { min-height: 48px; min-width: 48px; }
+  .bt-timer { font-size: 2.4rem; padding: 4px 12px; }
+  .bt-mid .bt-tbtns .btn { min-height: 44px; }
+  .bout-card .bt-foot { gap: 6px 8px; padding: 10px; padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px)); }
+  .bout-card .bt-foot .btn { min-height: 44px; }
+}
+/* B3: planšetėje grupės juosta (tatamiai, „Grupė 4 iš 10“, „Visos grupės ↓“) lankstosi, neišlenda į šoną;
+   kovos lange pora ir balai - viršuje, laikas po jais; antraštė vienoje eilutėje */
+@media (max-width: 1100px) {
+  .run-strip { flex-wrap: wrap; }
+  .rs-area.seg { max-width: 100%; overflow-x: auto; flex-wrap: nowrap; }
+}
+@media (max-width: 860px) {
+  .bt-mid { grid-row: 2; }
+  .bout-top { flex-wrap: nowrap; }
+  .bout-info { flex: 1 1 auto; min-width: 0; }
+  .bout-top .btn { flex: 0 0 auto; }
+}
+.bt-btns .btn:not(.bt-big) { min-width: 48px; min-height: 52px; }
+/* B3: telefone Budo antraštė žemesnė - ←, ženklas ir pavadinimas vienoje eilutėje, įrankiai - antroje, skirtukai - trečioje */
+@media (max-width: 600px) {
+  .vz-top-row { padding: 8px 10px 4px; gap: 6px 8px; flex-wrap: wrap; }
+  .vz-back { width: 40px; height: 40px; }
+  .vz-brand { font-size: 0; gap: 0; padding: 0; }
+  .vz-brand .vz-logo { width: 30px; height: 30px; }
+  .vz-title { order: 0; flex: 1 1 0; flex-basis: 0; min-width: 0; }
+  .vz-title h1 { font-size: 1.02rem; }
+  .vz-title .sub { font-size: 0; line-height: 1; }
+  .vz-title .sub .vz-test { font-size: .66rem; }
+  .vz-top-right { order: 1; width: 100%; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; gap: 6px; }
+  .vz-top-right::-webkit-scrollbar { display: none; }
+  .vz-top-right > * { flex: 0 0 auto; }
+  .vz-top-right .vz-link { min-height: 40px; min-width: 40px; display: inline-flex; align-items: center; justify-content: center; }
+  .tabs { padding: 2px 10px 6px; }
+  .tabs button { padding: 8px 12px; min-height: 40px; }
+}
+/* B3: TV ekranas be tatamio numerio - pasirinkti tatamį dideliais mygtukais */
+.scr-pickt { min-height: 100vh; display: grid; place-content: center; justify-items: center; gap: 2.4vh; padding: 4vh 4vw; text-align: center; background: #12151C; color: #fff; }
+.scr-pickt .scr-title { font-size: clamp(22px, 3.4vw, 54px); font-weight: 800; }
+.scr-pickt p { margin: 0; font-size: clamp(16px, 2vw, 32px); color: #AEB5C2; }
+.scr-pickt-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(240px, 80vw), 1fr)); gap: 2vh 2vw; width: min(1200px, 92vw); }
+.scr-pickt-btn { display: grid; place-items: center; min-height: 18vh; border-radius: 2vh; background: var(--accent, #D7263D); color: #fff; text-decoration: none;
+  font-size: clamp(24px, 3vw, 56px); font-weight: 900; letter-spacing: .02em; line-height: 1.1; padding: 1vh 1vw; text-align: center; box-shadow: 0 1vh 3vh rgba(0, 0, 0, .35); }
+.scr-pickt-btn:hover, .scr-pickt-btn:focus-visible { filter: brightness(1.1); outline: 4px solid #F7D27A; outline-offset: 4px; }
+/* B3: patvirtinimai varžybų puslapyje */
+.vz-flash { display: flex; align-items: center; gap: 10px; margin: 0 0 12px; padding: 10px 12px 10px 16px; border-radius: 12px; font-weight: 600; background: var(--green-soft, #E3F4EA); color: var(--green, #0B6B3A); border: 1px solid rgba(11, 107, 58, .18); }
+.vz-flash span { flex: 1; }
+.vz-flash-err { background: var(--accent-soft, #FDE8EB); color: var(--accent, #B5281F); border-color: rgba(181, 40, 31, .2); }
+.vz-flash-x { border: 0; background: transparent; color: inherit; font: inherit; min-width: 40px; min-height: 40px; border-radius: 10px; cursor: pointer; }
+.vz-flash-x:hover { background: rgba(0, 0, 0, .06); }
