@@ -89,7 +89,9 @@ test('Budo: open ends show − and + (#135); tatami settings inside the screen, 
   await a.locator('details.live-settings > summary').click();
 
   const st = JSON.parse(sql(`SELECT state FROM tournaments WHERE id = ${tid}`));
-  const kum = st.categories.find(c => c.discipline === 'kumite' && !c.team && c.competitors.length >= 6 && c.draw && c.draw.slots);
+  // Test varžybos sudaromos atsitiktinai: jei nėra grupės su 6+ dalyviais - tinka ir 4+ (bent dvi kovos)
+  const kumOf = n => st.categories.find(c => c.discipline === 'kumite' && !c.team && c.competitors.length >= n && c.draw && c.draw.slots);
+  const kum = kumOf(6) || kumOf(4);
   await a.locator(`[data-open-cat="${kum.id}"]`).first().click();
   await a.waitForSelector('#run:not([hidden])');
   await a.locator('#draw-view .bout-open').first().click();

@@ -1929,3 +1929,16 @@ h1 .badge-tester{font:600 .8rem/1.6 'Inter', sans-serif; letter-spacing:0; paddi
 .kl-form label{flex:1 1 180px; margin:0;}
 .kl-toggle{margin-top:10px;}
 .kl-user{font-weight:700; font-size:1.05em;}
+/* B6: protokolas planšetėje (iki 1366 px arba jutiklinis ekranas) - Išlaikė / Neišlaikė, €, ✕, − / + bent 40 px */
+@media (max-width: 1366px), (pointer: coarse) {
+  .prot-table .res-btn{min-height:40px; padding:0 8px; font-size:.78rem;}
+  .prot-table .pay-btn{min-width:40px; min-height:40px;}
+  .prot-table .prot-del{width:auto;}
+  .prot-table .prot-del button{min-width:40px; min-height:40px; font-size:1rem;}
+  .prot-table .sc-b{min-width:32px; min-height:40px; width:32px; flex-basis:32px;}
+  .prot-table .prot-name{min-width:190px;}
+  .prot-table .pi-kyu{min-width:74px; width:100%;}
+  .prot-table .prot-note{min-width:90px;}
+  .prot-table .res-btn{padding:0 6px;}
+  .prot-table .pr-link, .prot-table .pr-newlink{min-width:36px; min-height:36px;}
+}

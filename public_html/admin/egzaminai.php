@@ -28,17 +28,25 @@ if ($ready && $exams) {
     foreach (q_all("SELECT event_id, COUNT(*) AS n, SUM(result = 'passed') AS ok, SUM(result = 'failed') AS bad FROM exam_protocol_rows WHERE deleted_at IS NULL AND event_id IN ($ids) GROUP BY event_id") as $r) {
         $rowsBy[(int) $r['event_id']] = $r;
     }
+    // B6: užsiregistravę per svetainę (renginio dalyviai), dar neįkelti į protokolą
+    foreach (q_all("SELECT ep.event_id, COUNT(*) AS n, SUM(NOT EXISTS (SELECT 1 FROM exam_protocol_rows r WHERE r.event_id = ep.event_id AND r.member_id = ep.member_id)) AS missing
+                      FROM event_participants ep WHERE ep.status IN ('going', 'late') AND ep.event_id IN ($ids) GROUP BY ep.event_id") as $r) {
+        $signBy[(int) $r['event_id']] = $r;
+    }
 }
 $upcoming = array_values(array_filter($exams, function ($ev) { return event_last_day($ev) >= date('Y-m-d'); }));
 $past = array_values(array_filter($exams, function ($ev) { return event_last_day($ev) < date('Y-m-d'); }));
 $prices = exam_prices();
 
-$item = function (array $ev, bool $isPast) use ($rowsBy): string {
+$item = function (array $ev, bool $isPast) use ($rowsBy, $signBy): string {
     $id = (int) $ev['id'];
     $r = $rowsBy[$id] ?? null;
     $l = $isPast ? null : exam_signup_link($id);
     $n = (int) ($r['n'] ?? 0);
-    $info = $n ? t('dalyvių: {n}', ['n' => $n]) : t('dalyvių dar nėra');
+    $reg = (int) ($signBy[$id]['n'] ?? 0);
+    $missing = (int) ($signBy[$id]['missing'] ?? 0);
+    // B6 (sprendimas 23): abu skaičiai - kiek užsiregistravo ir kiek jau protokole
+    $info = t('užsiregistravo {a} · protokole {b}', ['a' => $reg, 'b' => $n]);
     if ($r && ($r['ok'] || $r['bad'])) {
         $info .= ' · ' . t('išlaikė {a}, neišlaikė {b}', ['a' => (int) $r['ok'], 'b' => (int) $r['bad']]);
     }
@@ -50,6 +58,8 @@ $item = function (array $ev, bool $isPast) use ($rowsBy): string {
         <div class="small muted"><?= $ev['location'] ? e($ev['location']) . ' · ' : '' ?><?= e($info) ?><?php if ($l): ?> · <?= exam_signup_open($ev, $l) ? '<span class="badge ok">' . te('registracija atidaryta') . '</span>' : '<span class="badge">' . te('registracija uždaryta') . '</span>' ?><?php endif; ?></div>
       </div>
       <div class="exam-row-acts">
+        <?php if ($missing && !$isPast): ?><form method="post" action="<?= url('admin/egzamino-protokolas.php?id=' . $id) ?>" class="inline-form"><?= csrf_field() ?><input type="hidden" name="id" value="<?= $id ?>"><input type="hidden" name="action" value="add_members">
+          <button class="btn btn-ghost btn-sm" type="submit" title="<?= te('Užsiregistravusius per svetainę įrašyti į protokolą') ?>"><?= te('↓ Į protokolą ({n})', ['n' => $missing]) ?></button></form><?php endif; ?>
         <?php if ($l): ?><button type="button" class="btn btn-ghost btn-sm" data-copy="<?= e(exam_signup_url($l)) ?>" title="<?= te('Kopijuoti registracijos nuorodą') ?>"><?= te('🔗 Nuoroda') ?></button><?php endif; ?>
         <a class="btn btn-primary btn-sm" href="<?= url('admin/egzamino-protokolas.php?id=' . $id) ?>"><?= te('📋 Protokolas') ?></a>
       </div>

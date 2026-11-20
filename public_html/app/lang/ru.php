@@ -3527,4 +3527,7 @@ Nuo 2013 m. treniravosi Tradicinio karate-do klubo „Sanrei“ komandoje, o 201
     'Sukurti naują asmeninę nuorodą? Senoji nebeveiks.' => 'Создать новую личную ссылку? Старая перестанет работать.',
     'jau buvo užregistruotas (-a); nuoroda neparodyta' => 'уже был зарегистрирован; ссылка не показана',
     '{n} jau yra šio egzamino sąraše - dar kartą registruotis nereikia. Treneriui pranešėme.' => '{n} уже в списке этого экзамена - регистрироваться повторно не нужно. Мы сообщили тренеру.',
+    'užsiregistravo {a} · protokole {b}' => 'зарегистрировалось {a} · в протоколе {b}',
+    'Užsiregistravusius per svetainę įrašyti į protokolą' => 'Внести зарегистрировавшихся на сайте в протокол',
+    '↓ Į protokolą ({n})' => '↓ В протокол ({n})',
 ];
