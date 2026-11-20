@@ -1602,10 +1602,11 @@ tr.res-failed td{background:rgba(192,57,43,0.06);}
 @keyframes tileShine{0%, 70%{left:-60%;} 100%{left:130%;}}
 @media (prefers-reduced-motion: reduce){ .today-tiles .group-tile::after{animation:none;} }
 /* Nustatymai → Registracija: jungikliai */
-.reg-toggles .tg-row{display:flex; gap:12px; align-items:center; padding:9px 4px; border-top:1px solid rgba(23,20,15,0.08); cursor:pointer;}
-.reg-toggles .tg-row:first-of-type{border-top:0;}
-.reg-toggles .tg-row span{display:grid; gap:1px;}
-.reg-toggles .tg-row small{color:var(--muted, #6B6458); font-size:.8rem;}
+.reg-toggles .tg-row, .kl-chat .tg-row{display:flex; gap:12px; align-items:center; padding:9px 4px; border-top:1px solid rgba(23,20,15,0.08); cursor:pointer;}
+.reg-toggles .tg-row:first-of-type, .kl-chat .tg-row{border-top:0;}
+.reg-toggles .tg-row span, .kl-chat .tg-row span{display:grid; gap:1px;}
+.reg-toggles .tg-row small, .kl-chat .tg-row small{color:var(--muted, #6B6458); font-size:.8rem;}
+.kl-chat{margin:10px 0 0;}
 input.tg{appearance:none; -webkit-appearance:none; flex:0 0 auto; width:44px; height:26px; border-radius:99px; background:#CFC8BC; position:relative; cursor:pointer; transition:background .2s; margin:0;}
 input.tg::after{content:""; position:absolute; top:3px; left:3px; width:20px; height:20px; border-radius:50%; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.25); transition:transform .2s;}
 input.tg:checked{background:#2F7D4F;}
