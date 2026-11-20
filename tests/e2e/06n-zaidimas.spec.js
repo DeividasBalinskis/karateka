@@ -11,7 +11,10 @@ test('admin mode: on by default; view as a member from the menu, clear way back'
   await a.goto('prisijungti.php');
   await a.fill('input[name=email]', 'info@karateka.lt'); await a.fill('input[name=password]', 'testas123');
   await nav(a, () => a.click('button[type=submit]'));
-  check('lands on own account with a link to the game', /paskyra\.php/.test(a.url()) && await a.locator('.game-teaser').count() === 1 && await a.locator('.nav-game').count() === 1);
+  // Sprendimas 2026-11-20 (40): treneris ar adminas po prisijungimo - Valdymas → Šiandien
+  check('lands on Valdymas → Šiandien', new URL(a.url()).pathname.endsWith('/admin/'), a.url());
+  await a.goto('paskyra.php');
+  check('own account with a link to the game', await a.locator('.game-teaser').count() === 1 && await a.locator('.nav-game').count() === 1);
   check('no on/off slider; Management link and view menu', await a.locator('.adm-sw.is-on, .adm-knob:visible').count() === 0 && await a.locator('.nav-account a[href$="admin/"]').count() === 1 && await a.locator('.adm-li .view-switch').count() === 1);
   await a.goto('renginiai.php');
   check('staff tools by default', await a.locator('.staff-bar').count() === 1);
