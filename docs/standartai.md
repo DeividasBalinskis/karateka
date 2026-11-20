@@ -39,6 +39,12 @@ Paths are relative to `public_html/` unless they start with `db/`, `tools/`, `te
 5. Role, status, tester, game-access and consent changes are written to a log that real admins can read.
 6. Dangerous changes need a button and a confirm that names the person and the new value. No saving on touch.
 7. Every form that changes something checks the CSRF token. Exceptions are listed in this file only: the feedback API (key in a header).
+8. **Code for another device** (v1.53, `app/device_codes.php`): only a real admin creates it; 8 signs, entered within 10 minutes, once;
+   the device works with that admin's rights for 4 h / 12 h / 2 days and shows the „🔑“ bar; any real admin can disconnect it;
+   only the hash is stored; every code and use stays in the log for 1 year. No shared "dev code" exists or may be added.
+9. **Child login** (v1.53, B7): a parent creates it for a child aged 7+ (username + PIN 4–6 digits, no coach approval). The account
+   is a normal member account whose e-mail is `username@vaikas.invalid` (never mailed). The child changes nothing in the account;
+   the parent changes the PIN, chat and on/off. 5 wrong PINs in 15 min or 15 in a day lock it until the parent changes the PIN.
 
 **Who may do what (target).** ✔ yes · – no · ◐ limited as noted
 

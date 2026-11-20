@@ -4,6 +4,26 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.53 - 2026-11-20 (Kas naujo; kodas kitam įrenginiui; vaiko prisijungimas vardu ir PIN)
+**Reikia atnaujinti duomenų bazę: db/047** (Pradžia → „Atnaujinkite duomenų bazę“). Zip'o turinį išpakuokite **tiesiai į svetainės aplanką**.
+
+**🆕 Kas naujo**
+- Treneris ar administratorius paspaudžia versijos numerį prie logotipo (pvz. v1.53) - atsidaro „Kas naujo“: 3 naujausios versijos.
+
+**🔑 Kodas kitam įrenginiui** (vietoj bendro „dev code“ - saugiau)
+- Valdymas → Nustatymai → **Kodas kitam įrenginiui** → „Sukurti kodą“ (pvz. „Tatami 2 planšetė“, 4 val. / 12 val. / 2 dienos).
+- Kitame įrenginyje: Prisijungti → **„Turiu kodą iš administratoriaus“** (Budo sekretoriate - mygtukas 🔑 viršuje) → įvesti kodą.
+  Tas įrenginys dirba jūsų teisėmis, viršuje rodoma juosta „🔑 prisijungęs su kodu · iki …“.
+- Kodas tinka vieną kartą ir tik 10 min.; po 10 klaidingų bandymų per 15 min. - užrakinama. Saugomas tik kodo „pirštų atspaudas“ (hash).
+- Ten pat - žurnalas: kas sukūrė, kada ir kokiame įrenginyje panaudota; mygtukas **„Atjungti“** iškart išjungia įrenginį.
+  Kodus kurti gali tik tikri administratoriai (ne testuotojai).
+
+**🧒 Vaiko prisijungimas (B7)**
+- Tėvai: Mano paskyra → Nustatymai → pasirinkti vaiką (nuo 7 m.) → **„Prisijungimas vaikui: vardas ir PIN“** → sugalvoti vardą ir PIN (4-6 skaitmenys).
+  Trenerio patvirtinti nereikia. Ten pat - „Keisti PIN“ ir „Išjungti prisijungimą“.
+- Vaikas: Prisijungti → vietoj el. pašto **savo vardas**, vietoj slaptažodžio **PIN**. Mato „Mano diena“, XP, užduotis; kainų nemato.
+  Nieko paskyroje keisti negali („Pamiršai PIN? Paprašyk tėvų“). Po 15 klaidingų PIN per parą - užrakinama, kol tėvai pakeis PIN.
+
 ## v1.52 - 2026-11-20 (tavo atsakymai į 43 klausimus įdiegti; LTKF kalendorius; sekretoriatas; Dojo reitingas)
 **Reikia atnaujinti duomenų bazę: db/046** (Pradžia → „Atnaujinkite duomenų bazę“). Zip'o turinį išpakuokite **tiesiai į svetainės aplanką**.
 Visi sprendimai surašyti `docs/decisions.md`.

@@ -57,7 +57,7 @@ Status: ☐ not started · ◐ partly done · ☑ done
 | **B4** | Phone admin: view-as, one floating button (old step 6) | Denis, coaches, members | M | — | ☑ v1.51–v1.52 (view-as in ⋯ Daugiau, one floating button, floats hide over sheet and while typing, 🎨 for all) |
 | **B5** | Notifications: the red number means "to do" | Denis, coaches, parents | M | plan first | ☐ |
 | **B6** | Exams: counts, tablet, 10 kyu, test bank export/import | Denis, examiners | M | — | ◐ v1.49 (10 kyu, #133, #137), v1.50 (question review with ✕, comments, pictures, ChatGPT notes), v1.51 (editor redesign, file with a new quiz) |
-| **B7** | Family accounts: parent trains too, child login in one button | parents, kids | M | plan first | ☐ |
+| **B7** | Family accounts: parent trains too, child login in one button | parents, kids | M | plan first | ◐ v1.53 (child login: username + PIN by parents, from 7, no coach approval) |
 | **B8** | Kid and member home; Dojo in the corner; Paskyra page | kids, members | M | plan first | ☐ |
 | **B9** | Valdymas: one shell, one start page, final names | Denis, coaches | M | reikia leidimo | ☐ |
 | **C1** | Permissions: one `can()` and one table | everyone | M | plan first, Fable | ☐ |
@@ -68,7 +68,7 @@ Status: ☐ not started · ◐ partly done · ☑ done
 | **C6** | Tests: faster, independent, engine unit tests (old step 10) | Deividas | M | — | ☐ |
 | **C7** | One polling request (old step 11) | everyone (speed) | M | — | ☐ |
 | **C8** | E-mail: templates, outbox, the reader's language | parents | M | plan first | ☐ |
-| **C9** | Project memory: CLAUDE.md, handoff, decisions, "Kas naujo" | Deividas, Denis | S | — | ◐ v1.52 (CLAUDE.md, handoff, decisions; „Kas naujo“ page left) |
+| **C9** | Project memory: CLAUDE.md, handoff, decisions, "Kas naujo" | Deividas, Denis | S | — | ☑ v1.52–v1.53 (CLAUDE.md, handoff, decisions, „Kas naujo“ from the version number) |
 | **C10** | Data care: retention, orphans, backups of uploads | parents, Deividas | M | reikia leidimo | ☐ |
 | **D1** | Compare Budo with the external Varžybos app (old step 3a) | Deividas, Denis | M | plan first | ☐ |
 | **D2** | Apply the decision (old step 3b) | Deividas | L | reikia leidimo | ☐ |
