@@ -80,6 +80,7 @@ site and the Dojo game. One repo, one database.
 
 ## Tests (local)
 - Fast checks: `bash tests/checks.sh`
+- Smoke set (~2 min, after each change): `bash tests/smoke.sh` - checks, fresh test database, key scenarios.
 - Browser tests: `cd tests && npx playwright test e2e/<file> --reporter=line`
 - Never two runs at once. Do not change code while a run is going.
 - Test logins are created by `tests/setup/reset-db.sh`; their password is in that script, not here.

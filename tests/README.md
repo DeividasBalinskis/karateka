@@ -43,3 +43,7 @@ DB_HOST=127.0.0.1 DB_USER=root DB_PASS=root npm run test:clean
 ```
 
 `npm test` runs the tests without resetting the database (the scenarios expect fresh demo data).
+
+## Greitas rinkinys (smoke, ~2 min)
+`bash tests/smoke.sh` - greitos patikros, švari testų duomenų bazė ir svarbiausi scenarijai (prisijungimas su kodu,
+v1.53-v1.54 naujovės, pranešimai, egzamino nuorodos, testų peržiūra). Pilnas rinkinys (~20 min) - prieš įkėlimą.
