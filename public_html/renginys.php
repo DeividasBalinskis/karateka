@@ -1,0 +1,116 @@
+<?php
+// Vienas renginys: visas aprašymas, registracija su laikmačiu, dalyvių skaičius,
+// egzaminui - testas, programa ir pamokos; klausimai Deniui (mato tik jis)
+require __DIR__ . '/app/bootstrap.php';
+
+$id = (int) get('id');
+$ev = $id ? q_one('SELECT * FROM events WHERE id = ? AND ' . visibility_sql(), [$id]) : null;
+if (!$ev) {
+    not_found();
+}
+$acc = current_account();
+$isStaff = is_staff();
+$members = $acc && is_active_account($acc) && !$isStaff
+    ? array_values(array_filter(account_members((int) $acc['id']), function ($m) { return $m['status'] === 'active'; })) : [];
+$counts = event_participant_counts($id);
+$going = $counts['going'] + $counts['late'];   // pavėlavę (net ir Deniui nepatvirtinus) - irgi dalyviai
+$ts = strtotime($ev['starts_on']);
+$when = fmt_date($ev['starts_on'], true) . ($ev['ends_on'] && $ev['ends_on'] !== $ev['starts_on'] ? ' – ' . fmt_date($ev['ends_on'], true) : '')
+    . ($ev['start_time'] ? ', ' . fmt_time($ev['start_time']) : '');
+$past = ($ev['ends_on'] ?: $ev['starts_on']) < date('Y-m-d');
+$back = 'renginys.php?id=' . $id;
+
+page_start(tr_text($ev['title']), ['section' => 'renginiai', 'description' => $ev['summary'] ?: mb_strimwidth((string) $ev['description'], 0, 160, '…'),
+    'og' => $ev['members_only'] ? null : ['type' => 'website', 'title' => $ev['title'], 'description' => $ev['summary'] ?: mb_strimwidth((string) $ev['description'], 0, 160, '…'),
+        'url' => abs_url('renginys.php?id=' . $id), 'image' => abs_url('img/apie-1.jpg')]]);
+?>
+<a class="small" href="<?= url('renginiai.php#e' . $id) ?>"><?= te('← Visi renginiai') ?></a>
+<article class="event-page">
+  <header class="panel card ep-head">
+    <div class="ep-date"><span class="d"><?= date('j', $ts) ?></span><span class="m"><?= e(mb_substr(month_names_gen()[(int) date('n', $ts)], 0, 3)) ?></span></div>
+    <div class="ep-title">
+      <div class="row" style="gap:6px; flex-wrap:wrap;"><span class="badge type-badge t-<?= e($ev['type']) ?>"><?= e(t(EVENT_TYPES[$ev['type']])) ?></span><?= members_only_badge($ev) ?><?= $past ? (' <span class="badge">' . t('įvyko') . '</span>') : '' ?></div>
+      <h1><?= e(tr_text($ev['title'])) ?></h1>
+      <div class="muted"><?= e($when) ?><?= $ev['location'] ? ' · ' . e($ev['location']) : '' ?></div>
+      <div class="small muted" style="margin-top:4px;"><?= te('Kam:') ?> <?= e(event_audience_label($ev)) ?><?= !$past && $going ? (' ' . t('· Dalyvauja:') . ' <strong>') . (int) $going . '</strong>' : '' ?></div>
+    </div>
+  </header>
+
+  <div class="ep-grid">
+    <div class="stack">
+      <div class="panel card">
+        <?php if ($ev['summary']): ?><p class="ep-summary"><?= e($ev['summary']) ?></p><?php endif; ?>
+        <?php if ($ev['description']): ?>
+          <div class="news-body"><?= text_to_html(tr_text($ev['description'])) ?></div>
+        <?php elseif (!$ev['summary'] && empty($ev['file_path'])): ?>
+          <p class="muted"><?= te('Daugiau informacijos - netrukus.') ?></p>
+        <?php endif; ?>
+        <?php if (!empty($ev['file_path'])): ?><p class="ep-file"><?= event_file_link($ev, 'btn btn-ghost') ?></p><?php endif; ?>
+        <?php if ($ev['location']): ?>
+          <p class="ep-place">📍 <?= e($ev['location']) ?> · <a href="https://www.google.com/maps/search/?api=1&amp;query=<?= e(rawurlencode($ev['location'])) ?>" target="_blank" rel="noopener"><?= te('Žemėlapis ↗') ?></a></p>
+        <?php endif; ?>
+      </div>
+
+      <?php if ($ev['type'] === 'exam' && $members && !$past): ?>
+        <!-- Egzaminui: testas, kito diržo programa, pamokos -->
+        <div class="panel card ep-exam">
+          <div class="kicker"><?= te('Pasiruošimas egzaminui') ?></div>
+          <?php foreach ($members as $m): $st = exam_test_status($m); $next = next_belt($m['belt_level'] !== null ? (int) $m['belt_level'] : null); ?>
+            <div class="ep-exam-row">
+              <?php if (count($members) > 1): ?><strong><?= e($m['first_name']) ?></strong><?php endif; ?>
+              <?php if ($next): ?><span class="small"><?= te('Laiko:') ?> <?= belt_chip($next) ?></span><?php endif; ?>
+              <span class="small"><?php if (!$st): ?><?= te('Testo šiam diržui nėra.') ?><?php elseif ($st['passed']): ?><?= te('✓ Testas išlaikytas') ?><?php else: ?><?= te('Testas:') ?> <?= $st['best'] !== null ? 'geriausias ' . (int) $st['best'] . (' ' . t('%, reikia') . ' ') . (int) $st['quiz']['pass_percent'] . ' %' : 'dar nelaikytas' ?><?php endif; ?></span>
+              <span class="row" style="gap:6px; flex-wrap:wrap;">
+                <?php if ($st && !$st['passed']): ?><a class="btn btn-primary btn-sm" href="<?= url('testas.php?q=' . (int) $st['quiz']['id'] . '&m=' . (int) $m['id']) ?>"><?= te('Laikyti testą') ?></a><?php endif; ?>
+                <a class="btn btn-ghost btn-sm" href="<?= url('egzaminas.php?m=' . (int) $m['id']) ?>"><?= te('Egzamino programa') ?></a>
+                <?php if ($next): ?><a class="btn btn-ghost btn-sm" href="<?= url('pamokos.php?dirzas=' . $next) ?>"><?= te('Pamokos egzaminui') ?></a><?php endif; ?>
+              </span>
+            </div>
+          <?php endforeach; ?>
+        </div>
+      <?php endif; ?>
+
+      <?= questions_box('event', $id, $back) ?>
+    </div>
+
+    <aside class="stack">
+      <div class="panel card ep-reg" id="registracija">
+        <div class="kicker"><?= te('Registracija') ?></div>
+        <?php if (!$past && ($regBtn = event_reg_button($ev, 'btn btn-primary ep-reg-link', true))): ?><p><?= $regBtn ?></p><?php endif; ?>
+        <?php if ($isStaff && !$past && $ev['type'] === 'exam' && exam_signup_ready()): $suL = exam_signup_link($id); ?>
+          <div class="ep-su small">
+            <?php if ($suL): ?>
+              <b><?= te('Registracijos nuoroda (be paskyros):') ?></b>
+              <div class="row" style="gap:6px; margin-top:4px;"><input type="text" readonly value="<?= e(exam_signup_url($suL)) ?>" onclick="this.select()" style="flex:1; min-width:0;" aria-label="<?= te('Registracijos nuoroda') ?>">
+                <button type="button" class="btn btn-sm" onclick="var i=this.previousElementSibling;i.select();(navigator.clipboard?navigator.clipboard.writeText(i.value):document.execCommand('copy'));this.textContent='✓';"><?= te('Kopijuoti') ?></button></div>
+              <a href="<?= url('admin/egzamino-protokolas.php?id=' . $id . '#registracija') ?>"><?= te('Kas užsiregistravo, kvietimai el. paštu →') ?></a>
+            <?php else: ?>
+              <a class="btn btn-ghost btn-sm" href="<?= url('admin/egzamino-protokolas.php?id=' . $id . '#registracija') ?>"><?= te('🔗 Sukurti registracijos nuorodą') ?></a>
+            <?php endif; ?>
+          </div>
+        <?php endif; ?>
+        <?php if ($past): ?>
+          <p class="muted"><?= te('Renginys jau įvyko.') ?></p>
+        <?php elseif ($members): ?>
+          <?php $rsvp = render_event_rsvp($ev, $members, $back); ?>
+          <?php if (!reg_on('events')): ?><p class="muted small"><?= te('Registracija šiuo metu išjungta.') ?></p>
+          <?php else: ?><?= $rsvp ?: ('<p class="muted small">' . t('Šis renginys skirtas kitoms grupėms')) . (!empty($ev['invited_only']) ? (' ' . t('(tik pakviestiems)')) : '') . '.</p>' . event_deadline_html($ev) ?><?php endif; ?>
+        <?php elseif ($isStaff): ?>
+          <?= event_deadline_html($ev) ?>
+          <p class="small"><?= te('Dalyvauja:') ?> <strong><?= (int) $going ?></strong><?= $counts['late'] ? (' ' . t('(iš jų pavėlavę:') . ' ') . (int) $counts['late'] . ')' : '' ?> <?= te('· pakviesti, neatsakė:') ?> <?= (int) $counts['invited'] ?> <?= te('· negalės:') ?> <?= (int) $counts['declined'] ?></p>
+        <?php elseif ($acc): ?>
+          <p class="muted small"><?= te('Registruotis galės patvirtinti nariai.') ?></p>
+        <?php else: ?>
+          <?= event_deadline_html($ev) ?>
+          <p class="small"><a href="<?= url('prisijungti.php?r=' . rawurlencode(url($back))) ?>"><?= te('Prisijunkite') ?></a><?= te(', kad užsiregistruotumėte.') ?></p>
+        <?php endif; ?>
+      </div>
+      <?php if ($ev['type'] === 'competition' && $members && varzybos_enabled()): ?>
+        <a class="panel card small" href="<?= url('varzybos.php') ?>" style="display:block;"><?= te('🥋 Varžybų kategorijos ir registracija varžybų sistemoje →') ?></a>
+      <?php endif; ?>
+      <?= event_staff_actions($ev, 'renginiai') ?>
+    </aside>
+  </div>
+</article>
+<?php
+page_end();

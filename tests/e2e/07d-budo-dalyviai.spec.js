@@ -1,0 +1,59 @@
+// v1.49: Budo - dalyvius lengva pridėti ir kuriant varžybas, ir vėliau: iš narių sąrašo, paieška, nauji žmonės (kelis iš karto)
+const { test } = require('@playwright/test');
+const { sql, login, check, noJsErrors } = require('./helpers');
+
+test('new competition: pick members, type new people, one group per discipline - ready to start', async ({ browser }) => {
+  const a = await login(browser, 'info@karateka.lt', 375, 812);
+  await a.goto('admin/varzybos.php');
+  await a.locator('#nauja > summary').click();
+  await a.fill('#nauja input[name=title]', 'E2E greitos varžybos');
+  check('date filled with today', (await a.inputValue('#nauja input[name=starts_on]')).length === 10);
+  await a.fill('#nauja .vn-search', sql("SELECT first_name FROM members WHERE status = 'active' ORDER BY id LIMIT 1"));
+  const vis = a.locator('#nauja .vn-item:not([hidden])');
+  check('search filters the members', await vis.count() >= 1 && await vis.count() < await a.locator('#nauja .vn-item').count());
+  await vis.first().locator('input').check();
+  await a.fill('#nauja .vn-search', '');
+  await a.locator('#nauja .vn-item:not([hidden]) input:not(:checked)').first().check();
+  check('count shown', (await a.textContent('#nauja .vn-count b')).trim() === '2');
+  await a.fill('#nauja textarea[name=names]', 'Svečias Pirmas\nSvečias Antras\n');
+  await a.check('#nauja input[name="quick[]"][value=kata]');
+  await a.check('#nauja input[name="quick[]"][value=kumite]');
+  await a.uncheck('#nauja input[name=event]');
+  await Promise.all([a.waitForNavigation(), a.click('#nauja button[type=submit]')]);
+  const tid = +sql("SELECT MAX(id) FROM tournaments WHERE title = 'E2E greitos varžybos'");
+  await a.waitForFunction(() => /Išsaugota/.test((document.querySelector('.save-state') || {}).textContent || ''), null, { timeout: 15000 });
+  await a.waitForTimeout(800);
+  const st = JSON.parse(sql(`SELECT state FROM tournaments WHERE id = ${tid}`));
+  check('4 participants', Object.keys(st.people).length === 4, Object.keys(st.people).length);
+  check('kata and kumite groups with everyone', st.categories.length === 2 && st.categories.every(c => c.competitors.length === 4), JSON.stringify(st.categories.map(c => [c.discipline, c.competitors.length])));
+  check('one tatami', st.areas.length === 1);
+  check('lands on the schedule', /#live/.test(a.url()) || await a.locator('#v-live').isVisible());
+  noJsErrors(a);
+});
+
+test('participants tab: search finds club members to add in one tap, Enter adds, pasting many names adds all', async ({ browser }) => {
+  const a = await login(browser, 'info@karateka.lt', 1280, 900);
+  await a.goto('admin/varzybos.php');
+  await a.locator('#nauja > summary').click();
+  await a.fill('#nauja input[name=title]', 'E2E dalyviai vėliau');
+  await a.uncheck('#nauja input[name=event]');
+  await Promise.all([a.waitForNavigation(), a.click('#nauja button[type=submit]')]);
+  const tid = +sql("SELECT MAX(id) FROM tournaments WHERE title = 'E2E dalyviai vėliau'");
+  await a.waitForSelector('#v-dalyviai:not([hidden])');
+  const member = sql("SELECT CONCAT(first_name, ' ', last_name) FROM members WHERE status = 'active' ORDER BY id DESC LIMIT 1");
+  await a.fill('#ppl-search', member.slice(0, 5));
+  await a.locator('#people-view [data-find-member]').first().click();
+  await a.fill('#ppl-search', 'Visai Naujas Žmogus');
+  await a.press('#ppl-search', 'Enter');
+  await a.fill('#ppl-new-name', 'Enteris Pridėtas');
+  await a.press('#ppl-new-name', 'Enter');
+  await a.focus('#ppl-new-name');
+  await a.evaluate(() => { const dt = new DataTransfer(); dt.setData('text/plain', 'Kelias Viena\nKelias Du\nKelias Trys'); document.getElementById('ppl-new-name').dispatchEvent(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true })); });
+  await a.waitForTimeout(1500);
+  const names = Object.values(JSON.parse(sql(`SELECT state FROM tournaments WHERE id = ${tid}`)).people).map(p => p.name);
+  check('club member added from search', names.length >= 1 && names.some(n => n.startsWith(member.slice(0, 5))), JSON.stringify(names));
+  check('new person from search with Enter', names.includes('Visai Naujas Žmogus'));
+  check('Enter in "Naujas"', names.includes('Enteris Pridėtas'));
+  check('pasted 3 names', ['Kelias Viena', 'Kelias Du', 'Kelias Trys'].every(n => names.includes(n)), JSON.stringify(names));
+  noJsErrors(a);
+});

@@ -1,0 +1,84 @@
+/* karateka.lt temos (app/themes.php): fonas su peizažu, kortelės lieka šviesios ir aiškiai skaitomos.
+   Tamsiose temose (theme-dark) - tamsi viršutinė juosta, šviesūs užrašai ant fono. */
+body[data-theme]:not([data-theme="light"]){background-attachment:fixed;}
+body[data-theme="nature"]   {background:url("../img/temos/gamta.svg") center bottom / cover fixed no-repeat, #F2E8D8;}
+body[data-theme="dunes"]    {background:url("../img/temos/kopos.svg") center bottom / cover fixed no-repeat, #FBE3B8;}
+body[data-theme="dojo"]     {background:url("../img/temos/dojo.svg") center bottom / cover fixed no-repeat, #F1E7D2;}
+body[data-theme="aurora"]   {background:url("../img/temos/pasvaiste.svg") center bottom / cover fixed no-repeat, #071A2B;}
+body[data-theme="mountains"]{background:url("../img/temos/kalnai.svg") center bottom / cover fixed no-repeat, #EEF3F8;}
+body[data-theme="sea"]      {background:url("../img/temos/jura.svg") center bottom / cover fixed no-repeat, #E6F6FC;}
+body[data-theme="sakura"]   {background:url("../img/temos/sakura.svg") center bottom / cover fixed no-repeat, #FFF6F8;}
+body[data-theme="autumn"]   {background:url("../img/temos/ruduo.svg") center bottom / cover fixed no-repeat, #FCEBD2;}
+body[data-theme="winter"]   {background:url("../img/temos/ziema.svg") center bottom / cover fixed no-repeat, #F4F8FC;}
+body[data-theme="dark"]     {background:radial-gradient(ellipse 70% 45% at 15% 10%, rgba(120,96,160,.35), transparent 60%), radial-gradient(ellipse 60% 40% at 85% 80%, rgba(47,107,90,.3), transparent 60%), #14121A fixed;}
+body[data-theme="space"]    {background:url("../img/temos/kosmosas.svg") center / cover fixed no-repeat, #050816;}
+body[data-theme="volcano"]  {background:url("../img/temos/vulkanas.svg") center bottom / cover fixed no-repeat, #140806;}
+
+/* Kortelės ant peizažo - šiek tiek tankesnės, kad tekstas būtų aiškus */
+body[data-theme]:not([data-theme="light"]) .panel{background:rgba(255,255,255,0.8);}
+body[data-theme="nature"]   {--accent:#2F7D4F; --accent-dark:#24653F;}
+body[data-theme="mountains"]{--accent:#2F5D8A; --accent-dark:#244A70;}
+body[data-theme="sea"]      {--accent:#1E6F9E; --accent-dark:#175A80;}
+body[data-theme="sakura"]   {--accent:#B4436F; --accent-dark:#8E3357;}
+body[data-theme="autumn"]   {--accent:#B5541F; --accent-dark:#8E4118;}
+body[data-theme="winter"]   {--accent:#2F5263; --accent-dark:#233F4C;}
+body[data-theme="dunes"]    {--accent:#B4572E; --accent-dark:#8E4220;}
+body[data-theme="dojo"]     {--accent:#7A4E2C; --accent-dark:#5E3B20;}
+body[data-theme="aurora"]   {--accent:#2E9C7A; --accent-dark:#237A5F;}
+
+/* ---------- Tamsios temos: juosta, antraštės ir užrašai ant fono ---------- */
+body.theme-dark .site-header{background:rgba(20,18,26,0.92); border-bottom-color:rgba(255,255,255,0.08); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);}
+body.theme-dark .site-header .nav-link, body.theme-dark .site-header .nav-page, body.theme-dark .site-header .nav-login, body.theme-dark .site-header .logout-btn{color:#ECE8F4;}
+body.theme-dark .site-header .nav-group{background:rgba(255,255,255,0.08);}
+body.theme-dark .lang-switch{background:rgba(255,255,255,0.1);}
+body.theme-dark .lang-switch a{color:#C9C3D6;}
+body.theme-dark .lang-switch a.active{background:#ECE8F4; color:#3E2C55;}
+body.theme-dark .tp-btn{background:rgba(255,255,255,0.12);}
+body.theme-dark h1.styled, body.theme-dark .section-head h2.styled, body.theme-dark h2.styled-dark, body.theme-dark .chooser-title, body.theme-dark .about-sub-head h3{
+  background:linear-gradient(90deg, #FFFFFF 0%, #D9C9F2 100%); -webkit-background-clip:text; background-clip:text;}
+body.theme-dark .section-head p, body.theme-dark main > p, body.theme-dark main > .muted, body.theme-dark main > a, body.theme-dark main > .small,
+body.theme-dark .page-head, body.theme-dark .page-head .muted, body.theme-dark main > h1, body.theme-dark main > h2{color:#E4DFEE; text-shadow:0 1px 2px rgba(0,0,0,.45);}
+body.theme-dark .footer-bottom{color:#C9C3D6; border-top-color:rgba(255,255,255,0.14);}
+body.theme-dark .footer-bottom a{color:#ECE8F4;}
+body.theme-dark .panel{background:rgba(255,255,255,0.88);}
+@media (max-width:1100px){ body.theme-dark .site-header .nav-menu, body.theme-dark .nav-menu{background:#1A1722;} }
+body.theme-dark .view-switch > summary{color:#ECE8F4; background:rgba(255,255,255,0.1);}
+body.theme-dark .site-header .logo img{background:rgba(255,255,255,0.92); border-radius:12px; padding:2px 6px;}
+
+/* ---------- v1.31: viršutinė juosta ir meniu pagal temą (ne visada rožinė) ---------- */
+body[data-theme]:not([data-theme="light"]) .site-header a.nav-page.is-current,
+body[data-theme]:not([data-theme="light"]) .sub-nav a.active,
+body[data-theme]:not([data-theme="light"]) .lang-switch a.active{color:var(--accent);}
+body[data-theme]:not([data-theme="light"]) .site-header a.nav-page::after{color:var(--accent);}
+body[data-theme]:not([data-theme="light"]) .site-header .nav-login.is-current{background:linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%); box-shadow:0 6px 16px rgba(0,0,0,0.18);}
+body[data-theme="nature"]    .site-header{background:linear-gradient(180deg, #CFE3EE 0%, #E4EEF0 100%);}
+body[data-theme="nature"]    .sub-nav{background:linear-gradient(90deg, #E2EEDD 0%, #D6E8D2 100%); border-top-color:rgba(47,125,79,0.15);}
+body[data-theme="mountains"] .site-header{background:linear-gradient(180deg, #D6E3EF 0%, #E9EFF6 100%);}
+body[data-theme="mountains"] .sub-nav{background:linear-gradient(90deg, #E2EAF3 0%, #D8E3EF 100%); border-top-color:rgba(47,93,138,0.15);}
+body[data-theme="sea"]       .site-header{background:linear-gradient(180deg, #CDEBF6 0%, #E4F5FA 100%);}
+body[data-theme="sea"]       .sub-nav{background:linear-gradient(90deg, #DDF0F6 0%, #CFE8F2 100%); border-top-color:rgba(30,111,158,0.15);}
+body[data-theme="dunes"]     .site-header{background:linear-gradient(180deg, #F6D7C0 0%, #FBE7D3 100%);}
+body[data-theme="dunes"]     .sub-nav{background:linear-gradient(90deg, #FCEBD8 0%, #F8DFC6 100%); border-top-color:rgba(180,87,46,0.15);}
+body[data-theme="sakura"]    .site-header{background:linear-gradient(180deg, #FBE4EC 0%, #FDF0F4 100%);}
+body[data-theme="sakura"]    .sub-nav{background:linear-gradient(90deg, #FBE6EE 0%, #F8DCE7 100%);}
+body[data-theme="autumn"]    .site-header{background:linear-gradient(180deg, #F8DEC0 0%, #FCECD8 100%);}
+body[data-theme="autumn"]    .sub-nav{background:linear-gradient(90deg, #FBE6CF 0%, #F6DABD 100%); border-top-color:rgba(181,84,31,0.15);}
+body[data-theme="winter"]    .site-header{background:linear-gradient(180deg, #E1ECF5 0%, #F3F7FB 100%);}
+body[data-theme="winter"]    .sub-nav{background:linear-gradient(90deg, #E8F0F6 0%, #DDE8F1 100%); border-top-color:rgba(47,82,99,0.15);}
+body[data-theme="dojo"]      .site-header{background:linear-gradient(180deg, #F3E9D5 0%, #EFE3CB 100%); border-bottom:3px solid #7A4E2C;}
+body[data-theme="dojo"]      .sub-nav{background:linear-gradient(90deg, #EDE1C9 0%, #E5D6B8 100%); border-top-color:rgba(122,78,44,0.2);}
+body.theme-dark .sub-nav{background:rgba(26,23,34,0.92); border-top-color:rgba(255,255,255,0.08);}
+body.theme-dark .sub-nav a{color:#D9D4E4;}
+body.theme-dark .sub-nav a:hover{background:rgba(255,255,255,0.08); color:#fff;}
+body.theme-dark .sub-nav a.active{background:#ECE8F4; color:#3E2C55;}
+body[data-theme="aurora"] .site-header{background:rgba(6,20,32,0.94);}
+body[data-theme="aurora"] .sub-nav{background:rgba(8,28,40,0.92);}
+/* v1.45: tamsiose temose - be šviesaus ruoželio viršuje (#112), matoma kalba (LT) */
+
+body.theme-dark .lang-dd > summary{background:rgba(255,255,255,0.12); color:#ECE8F4;}
+body.theme-dark .site-switch > summary{background:rgba(255,255,255,.92);}
+/* v1.45 (#112): tamsiose temose meniu - dizaino dalis: permatoma „stiklo“ juosta, fonas (planeta, žvaigždės) matosi ir po juo, niekas nenusikerpa */
+body.theme-dark .site-header{background:linear-gradient(180deg, rgba(10,10,24,.55), rgba(10,10,24,.28)); border-bottom-color:rgba(255,255,255,.10); backdrop-filter:blur(10px) saturate(1.3); -webkit-backdrop-filter:blur(10px) saturate(1.3);}
+body.theme-dark .sub-nav{background:rgba(10,10,24,.30); border-top-color:rgba(255,255,255,.08);}
+body.theme-dark .sub-nav-2{background:rgba(10,10,24,.18);}
+body.theme-dark .progress-wrap{background-color:transparent;}

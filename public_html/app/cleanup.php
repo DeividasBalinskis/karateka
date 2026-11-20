@@ -1,0 +1,70 @@
+<?php
+// Automatinis senų duomenų valymas (žr. privatumo politiką, 5 skyrius).
+// Serveryje nėra cron, todėl paleidžiama retkarčiais apsilankius svetainėje (~1 iš 100 užklausų).
+
+function run_cleanup(): void
+{
+    $days = (int) config('retention.unfinished_days', 30);
+
+    // Nebaigtos registracijos: el. paštas nepatvirtintas arba negautas tėvų sutikimas
+    $ids = q("SELECT id FROM accounts WHERE status IN ('pending_email', 'pending_parent') AND created_at < NOW() - INTERVAL $days DAY")
+        ->fetchAll(PDO::FETCH_COLUMN);
+    foreach ($ids as $id) {
+        // Nariai, kurie priklausė tik šiai paskyrai, ištrinami kartu
+        $memberIds = q('SELECT member_id FROM account_members WHERE account_id = ?', [$id])->fetchAll(PDO::FETCH_COLUMN);
+        q('DELETE FROM accounts WHERE id = ?', [$id]);   // account_members ir žetonai ištrinami kaskadiškai
+        foreach ($memberIds as $mid) {
+            q('DELETE FROM members WHERE id = ? AND status = "pending" AND NOT EXISTS (SELECT 1 FROM account_members WHERE member_id = ?)', [$mid, $mid]);
+        }
+    }
+
+    q('DELETE FROM email_tokens WHERE (used_at IS NOT NULL OR expires_at < NOW()) AND created_at < NOW() - INTERVAL 30 DAY');
+    q('DELETE FROM login_attempts WHERE attempted_at < NOW() - INTERVAL 30 DAY');
+    try {
+        q('DELETE FROM form_submissions WHERE created_at < NOW() - INTERVAL 7 DAY');   // A5: viešų formų ribai užtenka valandos
+    } catch (PDOException $ex) {
+        // dar neimportuotas db/045
+    }
+    try {
+        q('DELETE FROM login_codes WHERE created_at < NOW() - INTERVAL 1 DAY');
+        q('DELETE FROM trusted_devices WHERE expires_at < NOW()');
+    } catch (PDOException $ex) {
+        // dar neimportuotas db/023
+    }
+    // Kitų klubų registracija į varžybas: telefonai ištrinami praėjus mėnesiui po varžybų (vardai ir rezultatai lieka)
+    try {
+        q('UPDATE tournament_entries te JOIN tournaments t ON t.id = te.tournament_id SET te.contact = NULL, te.parent_phone = NULL
+           WHERE COALESCE(t.ends_on, t.starts_on) < CURDATE() - INTERVAL 30 DAY AND (te.contact IS NOT NULL OR te.parent_phone IS NOT NULL)');
+    } catch (PDOException $ex) {
+        // dar neimportuotas db/027
+    }
+    // Testai per nuorodą be paskyros: vardas ir rezultatas saugomi metus
+    try {
+        q('DELETE FROM quiz_guest_attempts WHERE created_at < NOW() - INTERVAL 1 YEAR');
+    } catch (PDOException $ex) {
+        // dar neimportuotas db/028
+    }
+    try {
+        // Sprendimas 2026-11-20: seni pranešimai, privačios žinutės ir SMS žurnalas (su gavėjų telefonais) saugomi 1 metus.
+        // Viešos žinutės (klausimai ir atsakymai, komentarai prie įrašų) lieka.
+        q('DELETE FROM notifications WHERE created_at < NOW() - INTERVAL 1 YEAR');
+        q('DELETE FROM member_messages WHERE is_public = 0 AND created_at < NOW() - INTERVAL 1 YEAR');
+        q('DELETE FROM sms_messages WHERE created_at < NOW() - INTERVAL 1 YEAR');   // sms_recipients - kaskadiškai
+    } catch (PDOException $ex) {
+        error_log('cleanup: ' . $ex->getMessage());
+    }
+    if (device_codes_ready()) {
+        q('DELETE FROM device_codes WHERE created_at < NOW() - INTERVAL 1 YEAR');   // kodų kitam įrenginiui žurnalas
+    }
+}
+
+function maybe_run_cleanup(): void
+{
+    if (PHP_SAPI !== 'cli' && random_int(1, 100) === 1) {
+        try {
+            run_cleanup();
+        } catch (Throwable $ex) {
+            error_log('cleanup failed: ' . $ex->getMessage());
+        }
+    }
+}

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="lt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#811517">
+<title>Nėra ryšio - Karateka</title>
+<style>
+  body{margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px; box-sizing:border-box;
+       font-family:'Inter', system-ui, sans-serif; background:#F7F4EC; color:#17140F; text-align:center; line-height:1.55;}
+  img{width:88px; height:88px; border-radius:20px;}
+  h1{font-size:1.4rem; margin:18px 0 8px;}
+  p{color:#5A5448; margin:0 0 20px;}
+  button{font:inherit; font-weight:700; border:0; border-radius:999px; padding:12px 22px; background:#2F6B5A; color:#fff; cursor:pointer;}
+</style>
+</head>
+<body>
+  <main>
+    <img src="icon-512.png" alt="">
+    <h1>Nėra interneto ryšio</h1>
+    <p>Kai ryšys atsiras, puslapis atsidarys.</p>
+    <button type="button" onclick="location.reload()">Bandyti dar kartą</button>
+  </main>
+  <script>window.addEventListener('online', function () { location.reload(); });</script>
+</body>
+</html>

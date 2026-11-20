@@ -1,0 +1,682 @@
+/* Pikselinis žaidimo stilius: personažai ir gyvūnėliai - pikseliai (ne apvalūs SVG), žaidimo mygtukai ir kovos arena kaip tikrame žaidime.
+   Kraunamas po game.css. Šriftas - Pixelify Sans (su lietuviškomis raidėmis). */
+.px{image-rendering:pixelated; image-rendering:crisp-edges; display:block; width:100%; height:auto; user-select:none; -webkit-user-drag:none;}
+.px-ic{display:inline-block; width:1.5em; height:1.5em; vertical-align:-.35em; flex:none;}
+.pxui, .dojo-play, .k4-lobby{--px-ink:#1B1D3A; --px-panel:#23264A; --px-line:#5A66A8; --px-gold:#FFD65C; font-family:'Pixelify Sans','Space Grotesk',system-ui,sans-serif;}
+
+/* ---------- Pasaulis (dojo langas) ---------- */
+.dw{image-rendering:pixelated; background-size:cover;}
+.dw-obj img.px{overflow:visible;}
+.dw-hero{width:21%;}
+.dw-pet{width:6.5%;}
+.dw-pet.walk img{animation:petHop .35s steps(2) infinite alternate;}
+.dw-pet.flip img{transform:scaleX(-1);}
+.dw-pet.walk.flip img{animation-name:petHopF;}
+.live > img.px-hero{animation:pxIdle 1.1s steps(2) infinite;}
+@keyframes pxIdle{0%{transform:translateY(0)}50%{transform:translateY(-1.6%)}}
+.g-pet img.px, .g-starter img.px{width:64px; height:64px; object-fit:contain; margin:0 auto;}
+.g-pet img.px{margin:0;}
+.ed-prev img.px{width:100%; max-width:220px;}
+.g-hcard img.ga-hero{width:110px; height:124px; object-fit:contain; margin:0 auto;}
+.ar-me img{width:100%;}
+.k4-hero img.ga-hero{width:100%; max-width:140px;} .k4-pet img{width:100%;}
+.rt-me img, .rt-hero img{width:100%;}
+@media (max-width:900px){ .ed-prev img.px{max-width:160px;} .k4-hero img.ga-hero{max-width:80px;} }
+@media (prefers-reduced-motion: reduce){ .live > img.px-hero, .dw-pet img{animation:none !important;} }
+
+/* Daiktų, namų ir dekoracijų pikseliniai paveikslėliai */
+.g-slot img.px{width:54px; height:54px; object-fit:contain; margin:0 auto;}
+.g-item img.px{width:60px; height:60px; object-fit:contain; margin:0 auto;}
+.g-pick img.px{width:100%; height:60px; object-fit:contain;}
+.g-pick img.px-bg, .g-item img.px-bg{object-fit:cover; height:54px;}
+.col-it img.px{width:40px; height:40px; object-fit:contain;} .col-it.no img.px{filter:brightness(0) opacity(.18);}
+.box-item img.px{width:140px; height:140px; object-fit:contain; margin:0 auto;}
+.dw-decor.flip img{transform:scaleX(-1);}
+.dw-night{opacity:.45 !important;}
+
+/* ---------- Žaidimo mygtukai ---------- */
+.px-btn{display:inline-flex; align-items:center; justify-content:center; gap:8px; font:700 1rem 'Pixelify Sans','Space Grotesk',sans-serif; letter-spacing:.02em; color:#fff; text-decoration:none !important; cursor:pointer;
+        background:#3B4285; border:0; border-radius:0; padding:8px 16px; position:relative;
+        box-shadow:0 -3px 0 0 #6672C4 inset, 0 3px 0 0 #252A5C inset, -3px 0 0 0 #2E3470 inset, 3px 0 0 0 #2E3470 inset, 0 0 0 3px #14162E, 0 6px 0 3px rgba(20,22,46,.55);
+        transition:transform .06s, filter .1s; text-shadow:0 2px 0 rgba(0,0,0,.45);}
+.px-btn:hover{filter:brightness(1.12);}
+.px-btn:active{transform:translateY(4px); box-shadow:0 -3px 0 0 #6672C4 inset, 0 3px 0 0 #252A5C inset, -3px 0 0 0 #2E3470 inset, 3px 0 0 0 #2E3470 inset, 0 0 0 3px #14162E, 0 2px 0 3px rgba(20,22,46,.55);}
+.px-btn[disabled]{filter:grayscale(.9) brightness(.75); cursor:default;}
+.px-btn.sm{font-size:.85rem; padding:5px 10px;}
+.px-btn kbd{font:600 .62rem 'JetBrains Mono',monospace; background:rgba(0,0,0,.3); padding:1px 5px; color:#fff; border:0; border-radius:0;}
+.px-btn.go{font-size:1.25rem; padding:10px 30px; background:#D8413A; box-shadow:0 -4px 0 0 #FF7A66 inset, 0 4px 0 0 #9C2630 inset, -4px 0 0 0 #B8323A inset, 4px 0 0 0 #B8323A inset, 0 0 0 3px #14162E, 0 6px 0 3px rgba(20,22,46,.6);}
+.px-btn.go:not([disabled]){animation:goPulse 1.2s steps(2) infinite;}
+@keyframes goPulse{50%{filter:brightness(1.18)}}
+
+/* Dideli žaidimų mygtukai puslapyje „Žaidimas“ */
+.g-games{gap:14px 12px; margin:14px 0 18px; padding:0 4px 6px;}
+.g-game{font-family:'Pixelify Sans','Space Grotesk',sans-serif; border-radius:0; padding:10px 12px 12px; gap:12px; font-size:1.08rem; letter-spacing:.02em; text-shadow:0 2px 0 rgba(0,0,0,.4); position:relative;
+        box-shadow:0 -4px 0 0 rgba(255,255,255,.28) inset, 0 5px 0 0 rgba(0,0,0,.3) inset, -4px 0 0 0 rgba(0,0,0,.16) inset, 4px 0 0 0 rgba(0,0,0,.16) inset, 0 0 0 3px #14162E, 0 7px 0 3px rgba(20,22,46,.55); transition:transform .06s, filter .1s;}
+.g-game:hover{transform:none; filter:brightness(1.1);}
+.g-game:active{transform:translateY(5px); box-shadow:0 -4px 0 0 rgba(255,255,255,.28) inset, 0 5px 0 0 rgba(0,0,0,.3) inset, -4px 0 0 0 rgba(0,0,0,.16) inset, 4px 0 0 0 rgba(0,0,0,.16) inset, 0 0 0 3px #14162E, 0 2px 0 3px rgba(20,22,46,.55);}
+.g-game .gi{font-size:1rem; width:52px; height:52px; flex:none; background:rgba(10,12,34,.38); display:grid; place-items:center; box-shadow:0 0 0 2px rgba(255,255,255,.22) inset;}
+.g-game .gi img{width:42px; height:42px;}
+.g-game small{font-family:'Inter',system-ui,sans-serif; font-size:.72rem; text-shadow:none; opacity:.92; letter-spacing:0; margin-top:2px;}
+.g-game.kova{background:#C0362F;} .g-game.greita{background:#E0731C;} .g-game.keturi{background:#2F62B8;} .g-game.ritmas{background:#7C3FCB;}
+
+/* ---------- Kova: viena arena ---------- */
+.fa.pxui{color:#fff; width:min(1280px, calc(100vw - 32px)); position:relative; left:50%; transform:translateX(-50%);}
+.fa.pxui .fa-top{color:var(--ink,#17140F);}
+.fa.pxui .fa-mode{font-weight:700; font-size:1.05rem;}
+.fa.pxui .fa-timer{border-radius:0; background:#14162E; box-shadow:0 0 0 2px #5A66A8 inset; font-family:'Pixelify Sans',sans-serif; padding:4px 12px;}
+.fa-wrap{display:grid; grid-template-columns:minmax(0,1fr) 250px; gap:12px; align-items:stretch;}
+.fa-stage.fa-arena{position:relative; aspect-ratio:16/9; border-radius:0; overflow:hidden; background:#23264A center top/100% 100% no-repeat; image-rendering:pixelated;
+                   box-shadow:0 0 0 3px #14162E, 0 0 0 6px #5A66A8, 0 0 0 9px #14162E, 0 14px 0 6px rgba(20,22,46,.25);}
+.fa-stage.fa-arena::after{display:none;}
+.fa-arena > *{image-rendering:auto;}
+/* Gyvybės viršuje */
+.fa-arena .fa-hp{position:absolute; top:2.5%; width:23%; z-index:6; color:#fff; text-align:left; background:rgba(20,22,46,.82); padding:5px 7px 6px; box-shadow:0 0 0 2px #5A66A8 inset, 0 0 0 2px #14162E;}
+.fa-arena .fa-hp.a{left:1.6%; right:auto;} .fa-arena .fa-hp.b{right:1.6%; left:auto; text-align:left;}
+.fa-arena.flip .fa-hp.a{right:1.6%; left:auto;} .fa-arena.flip .fa-hp.b{left:1.6%; right:auto;}
+.fa-arena .fa-hp .nm{font-weight:700; font-size:.92rem; text-shadow:0 2px 0 rgba(0,0,0,.5); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.fa-arena .fa-hp .nm small{font-weight:500; opacity:.8; font-size:.74rem;}
+.fa-arena .fa-hp .bar{position:relative; height:14px; background:#3A1420; border-radius:0; overflow:hidden; margin-top:3px; border:0; box-shadow:0 0 0 2px #14162E inset;}
+.fa-arena .fa-hp .bar i{display:block; height:100%; margin:0 !important; background:linear-gradient(180deg,#8CF08A 0 35%,#3CC25A 35% 75%,#2A9248 75%); transition:width .5s steps(8);}
+.fa-arena .fa-hp .bar i.low{background:linear-gradient(180deg,#FF9A8A 0 35%,#E8483C 35% 75%,#B02A30 75%);}
+.fa-arena .fa-hp .bar span{position:absolute; inset:0; font-size:.72rem; font-weight:700; display:flex; align-items:center; justify-content:center; color:#fff; text-shadow:0 1px 0 #000, 1px 0 0 #000, -1px 0 0 #000, 0 -1px 0 #000;}
+.fa-arena .fa-hp .cards{display:flex; gap:3px; margin-top:4px; font-size:.64rem; justify-content:flex-start !important;}
+.fa-arena .fa-hp .cards span{background:#FFD65C; color:#14162E; border-radius:0; padding:0 5px; font-weight:700;}
+.fa-arena .fa-hp .cards span.used{opacity:.3; text-decoration:line-through;}
+.fa-arena .fa-hp .petab{font:500 .64rem 'Inter',sans-serif; opacity:.85; margin-top:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.fa-arena .fa-turn{position:absolute; left:50%; top:2.5%; transform:translateX(-50%); z-index:6; background:#FFD65C; color:#14162E; border-radius:0; padding:3px 12px; font-weight:700; font-size:.86rem; box-shadow:0 0 0 2px #14162E, 0 3px 0 2px rgba(20,22,46,.5);}
+/* Kovotojai: abu ant tų pačių grindų, veidu vienas į kitą (savas - kairėje) */
+.fa-arena .fa-f{position:absolute; bottom:5%; width:24.2%; z-index:3; transition:transform .2s;}
+.fa-arena .fa-f.a{left:1.5%; right:auto;} .fa-arena .fa-f.b{right:1.5%; left:auto;}
+.fa-arena.flip .fa-f.a{right:1.5%; left:auto;} .fa-arena.flip .fa-f.b{left:1.5%; right:auto;}
+.fa-f .fa-body{filter:drop-shadow(0 3px 0 rgba(10,12,34,.35));}
+/* Pikselinė lapė žiūri į kairę: kairysis kovotojas apverčiamas */
+.fa-arena .fa-pet{position:absolute; bottom:0; width:30%;}
+.fa-arena .fa-f.a .fa-pet{left:auto; right:-18%; transform:scaleX(-1);} .fa-arena .fa-f.b .fa-pet{right:auto; left:-18%; transform:none;}
+.fa-arena.flip .fa-f.a .fa-pet{right:auto; left:-18%; transform:none;} .fa-arena.flip .fa-f.b .fa-pet{left:auto; right:-18%; transform:scaleX(-1);}
+.fa-arena.flip .fa-f.lunge.a{animation-name:lungeL;} .fa-arena.flip .fa-f.lunge.b{animation-name:lungeR;}
+.fa-arena.flip .fa-f.dodge.a{animation-name:dodgeR;} .fa-arena.flip .fa-f.dodge.b{animation-name:dodgeL;}
+.fa-f.hit .fa-body img{filter:drop-shadow(0 0 0 #ff3b30) brightness(1.5) saturate(1.6);}
+.fa-f.block .fa-body img{filter:drop-shadow(0 0 6px #6FB1FF);}
+.fa-f.me::after{content:"▼"; position:absolute; left:50%; top:-9%; transform:translateX(-50%); color:#FFD65C; font-size:.8rem; text-shadow:0 2px 0 #14162E; animation:pxIdle 1.1s steps(2) infinite;}
+/* Lentelė ant fono */
+.fa-ui{position:absolute; left:24.5%; right:24.5%; top:11%; bottom:2.5%; z-index:5; display:flex; align-items:flex-end; justify-content:center; pointer-events:none;}
+.fa-ui > *{pointer-events:auto;}
+.fa-arena .fa-panel{margin:0; width:100%;}
+.fa-board{display:grid; grid-template-columns:1fr 1fr; gap:6px; background:rgba(20,22,46,.86); padding:7px; border-radius:0; box-shadow:0 0 0 2px #5A66A8 inset, 0 0 0 3px #14162E, 0 5px 0 3px rgba(20,22,46,.45);}
+.fb-col{display:flex; flex-direction:column; gap:4px; min-width:0;}
+.fa-board{align-items:start;}
+.fb-h{height:26px; font-weight:700; font-size:.84rem; letter-spacing:.03em; padding:2px 4px 4px; display:flex; align-items:center; gap:5px; text-transform:uppercase; text-shadow:0 2px 0 rgba(0,0,0,.5);}
+.fb-h.h-att{color:#FF9A8A;} .fb-h.h-def{color:#8CC4FF;}
+.fa-chk{position:relative; display:grid; grid-template-columns:16px minmax(0,1fr) 24px; gap:0 6px; align-items:center; text-align:left; font:inherit; color:#fff; cursor:pointer; min-height:0;
+        background:#30356B; border:0; border-radius:0; padding:4px 6px 5px; box-shadow:0 -2px 0 0 #4B54A0 inset, 0 2px 0 0 #232756 inset, 0 0 0 2px #14162E;}
+.fa-chk:hover{filter:brightness(1.18); transform:none;}
+.fa-chk .box{grid-row:auto; width:14px; height:14px; border:0; border-radius:0; background:#14162E; box-shadow:0 0 0 2px #8A94D8 inset; position:relative;}
+.fa-chk.sel .box::after{content:""; position:absolute; inset:4px; background:#FFD65C;}
+.fa-chk .tx{min-width:0; line-height:1.12;}
+.fa-chk b{display:block; font-size:.9rem; font-weight:600; letter-spacing:.01em;}
+.fa-chk small{display:block; font:500 .68rem 'Inter',system-ui,sans-serif; color:#C6CCF2;}
+.fa-chk small em{font-style:normal; color:#FFD65C; margin-left:2px;}
+.fa-chk .zi{width:24px; height:24px;}
+.fa-chk kbd{position:absolute; top:1px; right:2px; font:600 .54rem 'JetBrains Mono',monospace; background:none; border:0; color:#8A94D8; padding:0;}
+.fa-chk.att.sel{background:#B8322F; box-shadow:0 -2px 0 0 #F06A5A inset, 0 2px 0 0 #7E1E26 inset, 0 0 0 2px #FFD65C;}
+.fa-chk.def.sel{background:#2C62B8; box-shadow:0 -2px 0 0 #6CA4F4 inset, 0 2px 0 0 #1C3E7E inset, 0 0 0 2px #FFD65C;}
+.fa-chk.sel small{color:#fff;}
+/* Ypatingi veiksmai (kortos) */
+.fa-arena .fa-cards{display:flex; gap:5px; margin-top:7px; flex-wrap:nowrap; align-items:stretch; background:rgba(20,22,46,.86); padding:5px; box-shadow:0 0 0 2px #5A66A8 inset, 0 0 0 3px #14162E;}
+.fa-cards .fc-h{writing-mode:vertical-rl; transform:rotate(180deg); font-size:.6rem; text-transform:uppercase; letter-spacing:.08em; color:#FFD65C; text-align:center;}
+.fa-arena .fa-card{flex:1; min-width:0; display:flex; gap:5px; align-items:center; border:0; border-radius:0; background:#5A3A12; color:#fff; padding:4px 6px; font:inherit; text-align:left; cursor:pointer; max-width:none;
+                   box-shadow:0 -2px 0 0 #C88A2A inset, 0 2px 0 0 #3A2408 inset, 0 0 0 2px #14162E;}
+.fa-arena .fa-card .px-ic{width:26px; height:26px;}
+.fa-arena .fa-card b{display:block; font-size:.8rem;} .fa-arena .fa-card small{display:block; font:500 .58rem 'Inter',sans-serif; color:#F4DDB0; line-height:1.15; max-height:2.3em; overflow:hidden;}
+.fa-arena .fa-card.sel{background:#C8821A; box-shadow:0 -2px 0 0 #FFD65C inset, 0 2px 0 0 #7A4A08 inset, 0 0 0 2px #FFD65C; transform:none;}
+.fa-arena .fa-card[disabled]{filter:grayscale(1) brightness(.6); opacity:1; cursor:default;}
+.fa-arena .fa-go{margin-top:12px;}
+.fa-arena .fa-wait{background:rgba(20,22,46,.86); color:#fff; border-radius:0; box-shadow:0 0 0 2px #5A66A8 inset, 0 0 0 3px #14162E; padding:16px; font-size:1rem;}
+.fa-arena .fa-end{border-radius:0; background:rgba(20,22,46,.92); color:#fff; border:0; box-shadow:0 0 0 2px #5A66A8 inset, 0 0 0 3px #14162E; padding:14px;}
+.fa-arena .fa-end.win{background:rgba(48,40,10,.94); box-shadow:0 0 0 2px #FFD65C inset, 0 0 0 3px #14162E;}
+.fa-arena .fa-end .big{font-family:'Pixelify Sans',sans-serif; font-size:1.4rem;}
+.fa-arena .fa-end .g-btn{border-radius:0;}
+.fa-arena .fa-flash{bottom:auto; top:15%; border-radius:0; background:rgba(20,22,46,.9); font-family:'Pixelify Sans',sans-serif; font-size:.9rem; box-shadow:0 0 0 2px #FFD65C;}
+.fa-arena .fa-pop{font-family:'Pixelify Sans',sans-serif; text-shadow:0 3px 0 #14162E, 2px 0 0 #14162E, -2px 0 0 #14162E, 0 -2px 0 #14162E;}
+.fa-arena .fa-pop.dmg{font-size:2.2rem; color:#FF5A4C;}
+.fa-arena .fa-ippon{font-family:'Pixelify Sans',sans-serif; -webkit-text-stroke:0; color:#FFD65C; text-shadow:0 5px 0 #B02A30, 4px 0 0 #14162E, -4px 0 0 #14162E, 0 -4px 0 #14162E;}
+/* Kovos eiga dešinėje */
+.fa-side{display:flex; flex-direction:column; min-height:0; background:#23264A; color:#fff; box-shadow:0 0 0 2px #5A66A8 inset, 0 0 0 3px #14162E, 0 8px 0 3px rgba(20,22,46,.25); padding:8px;}
+.fa-side-h{font-weight:700; font-size:.92rem; letter-spacing:.04em; text-transform:uppercase; color:#FFD65C; padding:0 2px 6px; display:flex; gap:6px; align-items:center;}
+.fa-side .fa-log{flex:1 1 0; min-height:150px; max-height:none; overflow:auto; background:#14162E; border-radius:0; padding:6px; font:500 .76rem/1.3 'Inter',system-ui,sans-serif; box-shadow:0 0 0 2px #3B4285 inset; scrollbar-width:thin; scrollbar-color:#5A66A8 #14162E;}
+.fa-side .fa-log .tn{font:700 .64rem 'Pixelify Sans',sans-serif; color:#8A94D8; text-transform:uppercase; letter-spacing:.08em; margin:6px 0 2px; padding-top:5px; border-top:2px dotted #3B4285;}
+.fa-side .fa-log .tn:first-child{margin-top:0; padding-top:0; border-top:0;}
+.fa-side .fa-log .ln{display:flex; gap:5px; align-items:flex-start; padding:2px 0; border:0; color:#E4E8FF;}
+.fa-side .fa-log .ln .px-ic{width:15px; height:15px; margin-top:1px;} .fa-side .fa-log .ln .em{width:15px; text-align:center; flex:none; font-size:.7rem;}
+.fa-side .fa-log .ln.mine{color:#FFE9A8;} .fa-side .fa-log .ln.opp{color:#D6DCFF;}
+.fa-side .fa-log .ln.k-end{color:#FFD65C; font-weight:700;}
+.fa-side .fa-log b.dmg{color:#FF6A5C; font:700 .86rem 'Pixelify Sans',sans-serif;} .fa-side .fa-log b.heal{color:#7CF08A; font:700 .86rem 'Pixelify Sans',sans-serif;}
+.fa-side .fa-log .g-empty{color:#8A94D8; font-size:.74rem;}
+.fa-side .fa-reveal{margin:6px 0 0; font:500 .68rem/1.3 'Inter',sans-serif; color:#C6CCF2; display:flex; flex-direction:column; gap:2px;}
+.fa-side .fa-reveal small{color:#8A94D8; text-transform:uppercase; letter-spacing:.06em; font:700 .6rem 'Pixelify Sans',sans-serif;}
+.fa-side .fa-reveal span{color:#E4E8FF;} .fa-side .fa-reveal span.mine{color:#FFE9A8;} .fa-side .fa-reveal .px-ic{width:13px; height:13px;}
+.fa-side .fa-react{display:grid; grid-template-columns:repeat(8,1fr); gap:3px; margin-top:8px;}
+.fa-side .fa-react button{width:auto; height:28px; border-radius:0; border:0; background:#30356B; font-size:.9rem; box-shadow:0 0 0 2px #14162E; padding:0;}
+.fa-side .fa-react button:hover{filter:brightness(1.3);}
+
+@media (max-width: 1000px){
+  .fa-wrap{grid-template-columns:1fr;}
+  .fa-side .fa-log{flex:none; height:150px;}
+}
+@media (max-width: 767px){
+  /* Telefone: kovotojai viršuje, lentelė - žemiau, bet vis tiek ant arenos fono */
+  .fa-stage.fa-arena{aspect-ratio:auto; display:flex; flex-direction:column; padding-top:66%; background-size:177.8% auto; background-position:center top; background-color:#7A4E36;}
+  .fa-arena .fa-f{bottom:auto; top:0; margin-top:25%; width:33%;}
+  .fa-arena .fa-hp{width:44%;}
+  .fa-arena .fa-turn{top:auto; margin-top:0; top:13%; font-size:.72rem; padding:1px 8px;}
+  .fa-ui{position:static; padding:6px; margin-top:0;}
+  .fa-chk b{white-space:normal; font-size:.8rem;} .fa-chk small{white-space:normal;}
+  .fa-chk .zi{width:20px; height:20px;} .fa-chk{grid-template-columns:14px minmax(0,1fr) 20px; gap:0 4px;}
+  .fa-arena .fa-cards{flex-wrap:wrap;} .fa-cards .fc-h{writing-mode:horizontal-tb; transform:none; width:100%; text-align:left;}
+}
+
+/* Greita kova: ta pati pikselinė arena ir žaidimo mygtukai */
+.fa-stage{image-rendering:pixelated; border-radius:0; box-shadow:0 0 0 3px #14162E, 0 0 0 6px #5A66A8, 0 0 0 9px #14162E;}
+.fa-stage > *{image-rendering:auto;}
+.fa-stage .fa-f{width:24%;}
+.gr-b{border-radius:0; font-family:'Pixelify Sans','Space Grotesk',sans-serif; text-shadow:0 2px 0 rgba(0,0,0,.45);
+      box-shadow:0 -4px 0 0 rgba(255,255,255,.28) inset, 0 4px 0 0 rgba(0,0,0,.3) inset, 0 0 0 3px #14162E, 0 6px 0 3px rgba(20,22,46,.5);}
+.gr-b.blk{background:#2F62B8;} .gr-b.atk{background:#C0362F;}
+.gr-b.on{transform:translateY(4px); box-shadow:0 -4px 0 0 rgba(255,255,255,.28) inset, 0 4px 0 0 rgba(0,0,0,.3) inset, 0 0 0 3px #14162E, 0 2px 0 3px rgba(20,22,46,.5);}
+.gr-b.warn{box-shadow:0 0 0 3px #14162E, 0 0 0 6px #FFD65C, 0 6px 0 6px rgba(20,22,46,.5);}
+.gr-row{gap:12px;} .gr-pad{gap:14px;}
+
+/* ---------- Keturi iš eilės: pikselinė lenta ---------- */
+.k4{font-family:'Pixelify Sans','Space Grotesk',system-ui,sans-serif;}
+.k4-hero{background:#23264A; color:#fff; border-radius:0; border:0; box-shadow:0 0 0 2px #5A66A8 inset, 0 0 0 3px #14162E, 0 6px 0 3px rgba(20,22,46,.3);}
+.k4-hero.turn{border:0; box-shadow:0 0 0 2px #FFD65C inset, 0 0 0 3px #14162E, 0 6px 0 3px rgba(20,22,46,.3);}
+.k4-pet{width:42px; top:auto; bottom:38%;}
+.k4-hint{font-size:1.05rem;}
+.k4-board{background:#2F62B8; border-radius:0; padding:10px; box-shadow:0 -5px 0 0 #5C8CE0 inset, 0 5px 0 0 #1E3F86 inset, -5px 0 0 0 #2852A0 inset, 5px 0 0 0 #2852A0 inset, 0 0 0 3px #14162E, 0 8px 0 3px rgba(20,22,46,.4);}
+.k4-col{border-radius:0;}
+.k4-cell::before{background:#14162E; box-shadow:inset 0 4px 0 rgba(0,0,0,.45);}
+.k4-dot.p1, .k4-tok.p1{background:#E8483C; box-shadow:inset 0 -5px 0 #A82830, inset 0 5px 0 #FF8A7A, 0 0 0 3px #14162E;}
+.k4-dot.p2, .k4-tok.p2{background:#FFD65C; box-shadow:inset 0 -5px 0 #C8922A, inset 0 5px 0 #FFF2B0, 0 0 0 3px #14162E;}
+.k4-dot{box-shadow:0 0 0 2px #14162E !important;}
+.k4-tok.win{box-shadow:0 0 0 4px #fff, 0 0 0 7px #14162E;}
+.k4 .fa-card, .k4-cards .fa-card{border-radius:0; border:0; background:#5A3A12; color:#fff; box-shadow:0 -2px 0 0 #C88A2A inset, 0 2px 0 0 #3A2408 inset, 0 0 0 3px #14162E;}
+.k4 .fa-card small{color:#F4DDB0;}
+.k4 .fa-card.sel{background:#C8821A; box-shadow:0 0 0 3px #FFD65C; transform:none;}
+.k4 .fa-log, .k4 .fa-react button{border-radius:0;}
+
+/* =====================================================================
+   v1.40: pasaulis = tik fonas; visa sąsaja - aplinkoje (medis, popierius, ritiniai)
+   ===================================================================== */
+:root{--tex:url(../img/zaidimas/tex/);}
+.wood, .dw-tool, .dw-sign, .dw-board, .pq-body, .px-wood{background:#8A5A36 url(../img/zaidimas/tex/mediena.png) 0 0/128px 64px repeat; image-rendering:pixelated;}
+.dw-wrap{position:relative; margin-bottom:10px;}
+.dojo .dw{position:relative; z-index:0; isolation:isolate; aspect-ratio:16/9; border-radius:0; background-size:cover; background-position:center bottom; box-shadow:0 0 0 3px #1A120C, 0 0 0 7px #5A3820, 0 0 0 10px #1A120C, 0 14px 0 6px rgba(26,18,12,.25);}
+.dojo .dw > *{image-rendering:auto;}
+.dojo .dw-hero{left:35%; bottom:3%; width:34%; height:62%; transform:translateX(-50%); display:flex; align-items:flex-end; justify-content:center;}
+.dojo .dw-hero img{width:100%; height:100%; object-fit:contain; object-position:bottom center;}
+.dojo .dw-hero img.px{image-rendering:pixelated;}
+.dojo .dw-pet{width:6.4%;}
+.px-char{display:block; image-rendering:auto; user-select:none; -webkit-user-drag:none; filter:drop-shadow(0 4px 0 rgba(10,8,20,.28));}
+.dw-ui{position:absolute; inset:0; pointer-events:none; z-index:20; font-family:'Pixelify Sans','Space Grotesk',sans-serif;}
+.dw-ui > *{pointer-events:auto;}
+/* Kabanti lentelė: vardas, lygis, XP */
+.dw-plaque{position:absolute; left:2.4%; top:0; width:24%; min-width:170px;}
+.pq-rope{position:absolute; top:0; height:14px; width:3px; background:repeating-linear-gradient(180deg,#D8B878 0 3px,#8A6A3A 3px 6px);}
+.pq-rope.l{left:16%;} .pq-rope.r{right:16%;}
+.pq-body{position:relative; margin-top:14px; padding:7px 10px 8px; color:#FFF3DC; text-shadow:0 2px 0 #3A2414; box-shadow:0 0 0 3px #2A1A10, inset 0 3px 0 rgba(255,255,255,.18), inset 0 -4px 0 rgba(0,0,0,.25), 0 6px 0 3px rgba(20,12,8,.35);}
+.pq-body b{display:block; font-size:1.02rem; letter-spacing:.02em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.pq-lv{font-size:.8rem; color:#FFD65C;}
+.pq-body .xp-track{position:relative; height:12px; margin:4px 0 2px; background:#2A1A10; box-shadow:0 0 0 2px #1A100A; border-radius:0; overflow:hidden;}
+.pq-body .xp-track i{display:block; height:100%; background:linear-gradient(180deg,#FFE58A 0 40%,#F2B23A 40%); border-radius:0;}
+.pq-body .xp-track span{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:.62rem; color:#fff; text-shadow:0 1px 0 #000;}
+.pq-body small{font:500 .62rem 'Inter',sans-serif; opacity:.85;}
+/* Įrankiai viršuje dešinėje: mediniai kvadratėliai su ikonomis */
+.dw-bar{position:absolute; right:2%; top:3%; display:flex; gap:7px; flex-wrap:wrap; justify-content:flex-end; max-width:56%;}
+.dw-tool{position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1px; width:58px; height:56px; border:0; cursor:pointer; padding:3px 2px 2px; color:#FFF3DC; font:600 .58rem 'Pixelify Sans',sans-serif; letter-spacing:.02em; text-shadow:0 1px 0 #2A1A10;
+         box-shadow:0 0 0 3px #2A1A10, inset 0 3px 0 rgba(255,255,255,.2), inset 0 -4px 0 rgba(0,0,0,.28), 0 5px 0 3px rgba(20,12,8,.35); transition:transform .06s, filter .1s;}
+.dw-tool .px-ic{width:28px; height:28px;}
+.dw-tool span{max-width:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.dw-tool:hover{filter:brightness(1.15);} .dw-tool:active{transform:translateY(3px);}
+.dw-tool em{position:absolute; top:-8px; right:-8px; min-width:20px; height:20px; padding:0 4px; display:grid; place-items:center; background:#D8413A; color:#fff; font:700 .7rem 'Pixelify Sans',sans-serif; font-style:normal; box-shadow:0 0 0 2px #2A1A10;}
+.dw-tool em.soft{background:#2A1A10; color:#FFD65C;} .dw-tool em.soft:empty{display:none;} .dw-tool em.wide{right:-12px; font-size:.58rem;}
+.dw-tool.glow{animation:toolGlow 1s steps(2) infinite;}
+@keyframes toolGlow{50%{box-shadow:0 0 0 3px #FFD65C, inset 0 3px 0 rgba(255,255,255,.2), inset 0 -4px 0 rgba(0,0,0,.28), 0 5px 0 3px rgba(20,12,8,.35);}}
+/* Lenta su savybėmis (stovi ant žemės šalia personažo) */
+.dw-board{position:absolute; left:55%; bottom:4%; width:20%; min-width:150px; padding:8px 9px 9px; border:0; cursor:pointer; text-align:left; color:#FFF3DC; font-family:'Pixelify Sans',sans-serif; text-shadow:0 2px 0 #2A1A10;
+          box-shadow:0 0 0 3px #2A1A10, inset 0 3px 0 rgba(255,255,255,.2), inset 0 -4px 0 rgba(0,0,0,.28); margin-bottom:22px; transition:transform .1s;}
+.dw-board:hover{transform:translateY(-3px);}
+.bd-leg{position:absolute; bottom:-25px; width:8px; height:25px; background:#4A2E1C; box-shadow:0 0 0 2px #2A1A10; z-index:-1;}
+.bd-leg.l{left:16%;} .bd-leg.r{right:16%;}
+.bd-h{display:block; font-size:.86rem; letter-spacing:.06em; text-transform:uppercase; color:#FFD65C; border-bottom:2px dotted rgba(255,243,220,.4); padding-bottom:3px; margin-bottom:4px;}
+.bd-h em{font-style:normal; background:#D8413A; color:#fff; padding:0 4px; margin-left:4px; font-size:.7rem; text-shadow:none;}
+.bd-big{display:flex; justify-content:space-between; gap:4px;}
+.bd-big > span{display:flex; align-items:center; gap:2px;} .bd-big .px-ic{width:20px; height:20px;} .bd-big b{font-size:1rem;}
+.bd-st{display:grid; grid-template-columns:1fr 1fr; gap:0 6px; margin-top:4px; font-size:.78rem;}
+.bd-more{display:block; text-align:right; font-size:.62rem; color:#FFD65C; margin-top:3px; opacity:.85;}
+/* Rodyklės į žaidimus */
+.dw-post{position:absolute; right:2.6%; bottom:3%; width:18%; min-width:148px; display:flex; flex-direction:column; gap:7px; align-items:stretch; padding-bottom:6px;}
+.dp-pole{position:absolute; left:50%; top:-14px; bottom:-10px; width:10px; transform:translateX(-50%); background:#4A2E1C; box-shadow:0 0 0 2px #2A1A10, inset 3px 0 0 #6A4428; z-index:-1;}
+.dw-sign{position:relative; display:flex; align-items:center; gap:6px; padding:5px 18px 5px 8px; color:#FFF3DC !important; text-decoration:none !important; font:700 .82rem 'Pixelify Sans',sans-serif; letter-spacing:.02em; text-shadow:0 2px 0 #2A1A10;
+         clip-path:polygon(0 0, calc(100% - 14px) 0, 100% 50%, calc(100% - 14px) 100%, 0 100%); box-shadow:inset 0 3px 0 rgba(255,255,255,.18), inset 0 -4px 0 rgba(0,0,0,.3); transition:transform .08s, filter .1s;}
+.dw-sign:nth-child(odd){clip-path:polygon(14px 0, 100% 0, 100% 100%, 14px 100%, 0 50%); padding:5px 8px 5px 18px; margin-left:8px; margin-right:-8px;}
+.dw-sign .px-ic{width:26px; height:26px; flex:none;}
+.dw-sign:hover{filter:brightness(1.15); transform:translateX(3px);}
+.dw-sign.kova{background-image:url(../img/zaidimas/tex/mediena-raudona.png);} .dw-sign.keturi{background-image:url(../img/zaidimas/tex/mediena-tamsi.png);}
+/* Ritinys: išsivynioja scenoje */
+.dw-scroll{position:absolute; left:5%; right:5%; top:17%; bottom:3%; z-index:40; display:flex; flex-direction:column; filter:drop-shadow(0 10px 0 rgba(20,12,8,.35));}
+.dw-scroll[hidden]{display:none;}
+.dw-scroll.unroll .sc-paper{animation:unroll .35s steps(7);}
+@keyframes unroll{from{clip-path:inset(0 0 100% 0)}to{clip-path:inset(0 0 0 0)}}
+.sc-rod{display:block; height:14px; margin:0 -14px; background:#5A3820 url(../img/zaidimas/tex/mediena-tamsi.png) 0 0/128px 64px; box-shadow:0 0 0 3px #1A100A, inset 0 3px 0 rgba(255,255,255,.18); position:relative; z-index:2;}
+.sc-rod::before, .sc-rod::after{content:""; position:absolute; top:-3px; width:14px; height:20px; background:#C8372D; box-shadow:0 0 0 3px #1A100A, inset 0 3px 0 #E85A4A;}
+.sc-rod::before{left:-12px;} .sc-rod::after{right:-12px;}
+.sc-paper{position:relative; flex:1; min-height:0; overflow:auto; background:#EADBB8 url(../img/zaidimas/tex/popierius.png) 0 0/64px 64px; image-rendering:pixelated; box-shadow:inset 6px 0 0 rgba(120,90,50,.18), inset -6px 0 0 rgba(120,90,50,.18); padding:12px 16px 16px; color:#2A1A10; scrollbar-color:#8A5A36 #EADBB8;}
+.sc-paper > *{image-rendering:auto;}
+.sc-title{margin:0 0 10px; font:700 1.25rem 'Pixelify Sans',sans-serif; display:flex; align-items:center; gap:8px; color:#5A2A1A;}
+.sc-title .px-ic{width:30px; height:30px;}
+.sc-x{position:sticky; float:right; top:0; width:34px; height:34px; border:0; cursor:pointer; font:700 1.3rem 'Pixelify Sans',sans-serif; color:#fff; background:#C8372D; box-shadow:0 0 0 3px #1A100A, inset 0 3px 0 #E85A4A, inset 0 -3px 0 #8A1E1E; z-index:3;}
+.sc-paper .g-sub{font-family:'Pixelify Sans',sans-serif; color:#5A2A1A;}
+.sc-paper .g-derived > div, .sc-paper .g-stat, .sc-paper .g-item, .sc-paper .g-slot, .sc-paper .g-pet, .sc-paper .g-starter, .sc-paper .col-set{background:rgba(255,250,236,.75); border-radius:0; box-shadow:0 0 0 2px rgba(90,56,32,.35);}
+.g-derived.big > div{display:flex; flex-direction:column; align-items:center;} .g-derived.big .px-ic{width:30px; height:30px;}
+.g-scenes{display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:10px;}
+.g-scenes button{border:0; padding:0 0 6px; cursor:pointer; background:#3A2414; color:#FFF3DC; font:600 .86rem 'Pixelify Sans',sans-serif; text-align:center; box-shadow:0 0 0 3px #1A100A; display:flex; flex-direction:column; gap:3px;}
+.g-scenes .bgthumb{display:block; aspect-ratio:16/9; background-size:cover; background-position:center bottom; image-rendering:pixelated;}
+.g-scenes .st{font:500 .64rem 'Inter',sans-serif; opacity:.8;}
+.g-scenes button.sel{box-shadow:0 0 0 3px #1A100A, 0 0 0 6px #FFD65C;}
+/* Išvaizda: personažų pasirinkimas */
+.ed-chars{display:grid; grid-template-columns:repeat(auto-fill,minmax(92px,1fr)); gap:6px; max-height:300px; overflow:auto; padding:4px;}
+.ed-chars button{display:flex; flex-direction:column; align-items:center; gap:2px; padding:4px 2px; border:0; cursor:pointer; background:#2A2440; color:#fff; font:600 .66rem 'Pixelify Sans',sans-serif; box-shadow:0 0 0 2px #14162E;}
+.ed-chars button img{width:84px; height:66px; object-fit:contain;}
+.ed-chars button.sel{box-shadow:0 0 0 2px #14162E, 0 0 0 5px #FFD65C; background:#3B3466;}
+.ed-prev img.px-char{width:100%; max-width:260px; height:220px; object-fit:contain; margin:0 auto;}
+/* Senos sekcijos nebenaudojamos */
+.dojo-main, .dojo-side, .dojo-xp, .dojo-play{display:none !important;}
+.dojo-head .g-btn, .dojo-head .g-switch{display:none;}
+@media (max-width: 767px){
+  .dojo .dw{aspect-ratio:3/4; background-size:cover; background-position:42% bottom;}
+  .dojo .dw-hero{left:36%; bottom:27%; width:62%; height:40%;}
+  .dojo .dw-pet{width:11%;}
+  .dw-plaque{width:46%; min-width:0; left:2%;}
+  .pq-body b{font-size:.86rem;}
+  .dw-bar{top:auto; bottom:auto; top:2%; right:2%; max-width:50%; gap:5px;}
+  .dw-tool{width:44px; height:42px;} .dw-tool span{display:none;} .dw-tool .px-ic{width:26px; height:26px;}
+  .dw-board{left:auto; right:3%; bottom:auto; top:44%; width:38%; min-width:0; margin-bottom:0;}
+  .bd-leg{display:none;}
+  .bd-st{grid-template-columns:1fr 1fr; font-size:.7rem;} .bd-big b{font-size:.84rem;} .bd-big .px-ic{width:16px; height:16px;}
+  .dw-post{left:2%; right:2%; width:auto; min-width:0; bottom:2%; display:grid; grid-template-columns:1fr 1fr; gap:6px;}
+  .dp-pole{display:none;}
+  .dw-sign, .dw-sign:nth-child(odd){clip-path:none; margin:0; padding:6px 8px; font-size:.78rem; box-shadow:0 0 0 2px #2A1A10, inset 0 3px 0 rgba(255,255,255,.18), inset 0 -4px 0 rgba(0,0,0,.3);}
+  .dw-scroll{left:2%; right:2%; top:22%;}
+}
+
+/* Kovotojai: veidu vienas į kitą (.flipx nustato JS pagal paveikslėlį), aukštis vienodas, plotis pagal personažą */
+.fa-f .fa-body{transform:none;} .fa-f .fa-body.flipx{transform:scaleX(-1);}
+.fa-stage .fa-f, .fa-arena .fa-f{height:50%; width:30%; display:flex; align-items:flex-end; justify-content:center;}
+.fa-f .fa-body{width:100%; height:100%; display:flex; align-items:flex-end; justify-content:center;}
+.fa-f .fa-body img{width:100%; height:100%; object-fit:contain; object-position:bottom center;}
+.fa-f .fa-body img.px{image-rendering:pixelated;}
+.fa-arena .fa-f.a, .fa-arena .fa-f.b{width:28%;}
+.fa-f.hit .fa-body img{filter:brightness(1.6) saturate(1.5) drop-shadow(0 0 0 #ff3b30);}
+
+/* ---------- Kovos lentelė: popierinės juostelės (ofuda) ant medinės lentos; pasirinkta - antspaudas ---------- */
+.fa-board{display:grid !important; grid-template-columns:minmax(0,1fr) 54px minmax(0,1fr); gap:5px 6px; align-items:stretch;
+          background:#5A3A2A url(../img/zaidimas/tex/mediena-tamsi.png) 0 0/128px 64px; image-rendering:pixelated; padding:8px;
+          box-shadow:0 0 0 3px #1A100A, inset 0 3px 0 rgba(255,255,255,.15), inset 0 -4px 0 rgba(0,0,0,.3), 0 6px 0 3px rgba(20,12,8,.4) !important;}
+.fa-board > *{image-rendering:auto;}
+.fa-board .fb-h{height:auto; padding:2px 2px 4px; color:#FFE9C0; text-shadow:0 2px 0 #1A100A; font:700 .82rem 'Pixelify Sans',sans-serif; letter-spacing:.04em; text-transform:uppercase;}
+.fa-board .fb-h.h-att{justify-content:flex-end; color:#FFB4A0;} .fa-board .fb-h.h-def{color:#B4D8FF;}
+.fb-cell{display:flex; flex-direction:column; gap:5px; justify-content:center; min-width:0;}
+.fb-zone{display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1px; background:rgba(26,16,10,.45); box-shadow:inset 0 0 0 2px rgba(255,233,192,.18);}
+.fb-zone .px-ic{width:30px; height:30px;} .fb-zone small{font:600 .6rem 'Pixelify Sans',sans-serif; color:#FFE9C0; text-transform:uppercase; letter-spacing:.04em;}
+.fa-board .fa-chk{display:flex; align-items:center; gap:6px; padding:6px 22px 6px 9px; min-height:44px; color:#2A1A10; text-align:left; cursor:pointer; border:0; border-radius:0; position:relative;
+                  background:#EADBB8 url(../img/zaidimas/tex/popierius.png) 0 0/64px 64px; image-rendering:pixelated;
+                  box-shadow:0 0 0 2px #1A100A, inset 0 -3px 0 rgba(120,90,50,.25) !important; transition:transform .08s;}
+.fa-board .fa-chk > *{image-rendering:auto;}
+.fa-board .fa-chk.def{border-left:6px solid #2E62B8;} .fa-board .fa-chk.att{border-right:6px solid #C0362F; padding:6px 9px 6px 22px; text-align:right; flex-direction:row-reverse;}
+.fa-board .fa-chk .tx{flex:1; min-width:0;}
+.fa-board .fa-chk b{display:block; font:700 .88rem 'Pixelify Sans',sans-serif; color:#2A1A10; letter-spacing:.01em;}
+.fa-board .fa-chk small{display:block; font:500 .66rem 'Inter',sans-serif; color:#6A4A2E;}
+.fa-board .fa-chk small em{font-style:normal; color:#A8322A; font-weight:700;}
+.fa-board .fa-chk kbd{position:absolute; top:2px; right:4px; left:auto; font:600 .54rem 'JetBrains Mono',monospace; background:none; border:0; color:#8A6A4A; padding:0;}
+.fa-board .fa-chk.att kbd{right:auto; left:4px;}
+.fa-board .fa-chk:hover{transform:translateY(-2px); filter:none;}
+.fa-board .fa-chk .seal{position:absolute; top:50%; width:30px; height:30px; margin-top:-15px; border-radius:50%; opacity:0; transform:scale(1.6) rotate(-14deg); transition:opacity .12s, transform .15s steps(3); pointer-events:none;}
+.fa-board .fa-chk.def .seal{right:5px; box-shadow:0 0 0 3px #2E62B8, inset 0 0 0 2px rgba(46,98,184,.5); background:rgba(46,98,184,.14);}
+.fa-board .fa-chk.att .seal{left:5px; box-shadow:0 0 0 3px #C0362F, inset 0 0 0 2px rgba(192,54,47,.5); background:rgba(192,54,47,.14);}
+.fa-board .fa-chk .seal::after{content:"✓"; position:absolute; inset:0; display:grid; place-items:center; font:900 1.1rem 'Pixelify Sans',sans-serif;}
+.fa-board .fa-chk.def .seal::after{color:#2E62B8;} .fa-board .fa-chk.att .seal::after{color:#C0362F;}
+.fa-board .fa-chk.sel{background:#FFF4D8 url(../img/zaidimas/tex/popierius.png) 0 0/64px 64px; transform:translateY(-2px); box-shadow:0 0 0 2px #1A100A, 0 0 0 5px #FFD65C !important;}
+.fa-board .fa-chk.sel .seal{opacity:1; transform:scale(1) rotate(-14deg);}
+.fa-board .fa-chk.def.sel{padding-right:40px;} .fa-board .fa-chk.att.sel{padding-left:40px;}
+/* Ypatingi veiksmai - medinės lentelės */
+.fa-arena .fa-cards{background:#5A3A2A url(../img/zaidimas/tex/mediena-tamsi.png) 0 0/128px 64px; image-rendering:pixelated; box-shadow:0 0 0 3px #1A100A !important;}
+.fa-arena .fa-cards > *{image-rendering:auto;}
+.fa-arena .fa-card{background:#8A5A36 url(../img/zaidimas/tex/mediena.png) 0 0/128px 64px; image-rendering:pixelated; color:#FFF3DC; text-shadow:0 2px 0 #2A1A10; box-shadow:0 0 0 2px #1A100A, inset 0 3px 0 rgba(255,255,255,.2), inset 0 -3px 0 rgba(0,0,0,.3) !important;}
+.fa-arena .fa-card > *{image-rendering:auto;}
+.fa-arena .fa-card small{color:#FFE9C0; text-shadow:none;}
+.fa-arena .fa-card.sel{box-shadow:0 0 0 2px #1A100A, 0 0 0 5px #FFD65C !important; transform:translateY(-2px);}
+.fa-arena .fa-go .px-btn.go{background:#C0362F url(../img/zaidimas/tex/mediena-raudona.png) 0 0/128px 64px; image-rendering:pixelated;}
+@media (max-width: 767px){
+  .fa-board{grid-template-columns:minmax(0,1fr) 34px minmax(0,1fr); gap:4px;}
+  .fb-zone .px-ic{width:22px; height:22px;} .fb-zone small{display:none;}
+  .fa-board .fa-chk{padding:5px 18px 5px 7px; min-height:38px;} .fa-board .fa-chk.att{padding:5px 7px 5px 18px;}
+  .fa-board .fa-chk b{font-size:.76rem;} .fa-board .fa-chk small{font-size:.6rem;}
+  .fa-board .fa-chk.def.sel{padding-right:34px;} .fa-board .fa-chk.att.sel{padding-left:34px;}
+  .fa-board .fa-chk .seal{width:24px; height:24px; margin-top:-12px;}
+}
+
+/* Žaidimų mygtukai (arena, keturi iš eilės): medinės lentelės su ikonomis, ne plokščios spalvos */
+.g-game{background:#8A5A36 url(../img/zaidimas/tex/mediena.png) 0 0/128px 64px !important; image-rendering:pixelated; color:#FFF3DC;}
+.g-game > *{image-rendering:auto;}
+.g-game.kova{background-image:url(../img/zaidimas/tex/mediena-raudona.png) !important;}
+.g-game.keturi, .g-game.ritmas{background-image:url(../img/zaidimas/tex/mediena-tamsi.png) !important;}
+.g-game .gi{background:#EADBB8 url(../img/zaidimas/tex/popierius.png) 0 0/64px 64px; box-shadow:0 0 0 3px #1A100A, inset 0 -3px 0 rgba(120,90,50,.3);}
+.k4-bot{background:#EADBB8 url(../img/zaidimas/tex/popierius.png) 0 0/64px 64px !important; image-rendering:pixelated; border:0 !important; border-radius:0 !important; box-shadow:0 0 0 3px #1A100A, 0 6px 0 3px rgba(20,12,8,.35); font-family:'Pixelify Sans',sans-serif;}
+.k4-bot > *{image-rendering:auto;}
+.ar-bot .g-btn, .fa-end .g-btn{border-radius:0;}
+@media (max-width: 767px){
+  .fa-arena .fa-f, .fa-arena .fa-f.a, .fa-arena .fa-f.b{top:0; bottom:auto; margin-top:20%; width:40%; height:auto; aspect-ratio:1/1;}
+}
+
+.dw-tool[data-pane].on{box-shadow:0 0 0 3px #FFD65C, inset 0 3px 0 rgba(255,255,255,.2), inset 0 -4px 0 rgba(0,0,0,.28);}
+/* Greita kova: popieriniai mygtukai su spalvota juostele (ne plokščios spalvos) */
+.gr-b, .gr-b.blk, .gr-b.atk{background:#EADBB8 url(../img/zaidimas/tex/popierius.png) 0 0/64px 64px; image-rendering:pixelated; color:#2A1A10; text-shadow:none;
+      box-shadow:0 0 0 3px #1A100A, inset 0 -4px 0 rgba(120,90,50,.28), 0 6px 0 3px rgba(20,12,8,.35);}
+.gr-b > *{image-rendering:auto;}
+.gr-b.blk{border-left:8px solid #2E62B8;} .gr-b.atk{border-left:8px solid #C0362F;}
+.gr-b.on{background-color:#FFF4D8; transform:translateY(4px); box-shadow:0 0 0 3px #1A100A, 0 0 0 6px #FFD65C;}
+.gr-b.warn{box-shadow:0 0 0 3px #1A100A, 0 0 0 7px #FFD65C, 0 6px 0 6px rgba(20,12,8,.35);}
+
+/* ---------- Arenos laukiamasis: aplinkoje (dojo fonas), skelbimai - popierius, mygtukai - medis ---------- */
+.arena[data-view="lobby"]{position:relative; padding:16px; background:#3A2418 url(../img/temos/px/dojo.png) center top/100% auto no-repeat; image-rendering:pixelated;
+  box-shadow:0 0 0 3px #1A120C, 0 0 0 7px #5A3820, 0 0 0 10px #1A120C; font-family:'Pixelify Sans','Space Grotesk',sans-serif;}
+.arena[data-view="lobby"] > *{image-rendering:auto;}
+.arena[data-view="lobby"] .ar-head{background:#8A5A36 url(../img/zaidimas/tex/mediena-tamsi.png) 0 0/128px 64px; image-rendering:pixelated; color:#FFF3DC; padding:8px 12px; text-shadow:0 2px 0 #1A100A; box-shadow:0 0 0 3px #1A100A, inset 0 3px 0 rgba(255,255,255,.15);}
+.arena[data-view="lobby"] .ar-head > *{image-rendering:auto;}
+.arena[data-view="lobby"] .ar-title{font-family:'Pixelify Sans',sans-serif; color:#FFD65C;} .arena[data-view="lobby"] .ar-sub{color:#FFE9C0;}
+.arena .ar-me{width:96px; height:84px;} .arena .ar-me img{width:100%; height:100%; object-fit:contain;}
+.arena[data-view="lobby"] .ar-head .g-btn{background:#8A5A36 url(../img/zaidimas/tex/mediena.png) 0 0/128px 64px; color:#FFF3DC; border:0; border-radius:0; box-shadow:0 0 0 3px #1A100A, inset 0 3px 0 rgba(255,255,255,.2); text-shadow:0 2px 0 #1A100A; font-family:'Pixelify Sans',sans-serif;}
+.arena[data-view="lobby"] .g-card, .arena[data-view="lobby"] .ar-invites{background:#EADBB8 url(../img/zaidimas/tex/popierius.png) 0 0/64px 64px; image-rendering:pixelated; border:0; border-radius:0; color:#2A1A10;
+  box-shadow:0 0 0 3px #1A100A, inset 6px 0 0 rgba(120,90,50,.15), inset -6px 0 0 rgba(120,90,50,.15), 0 8px 0 3px rgba(20,12,8,.35);}
+.arena[data-view="lobby"] .g-card > *, .arena[data-view="lobby"] .ar-invites > *{image-rendering:auto;}
+.arena[data-view="lobby"] .g-card h3{font-family:'Pixelify Sans',sans-serif; color:#5A2A1A; font-size:1.05rem;}
+.arena[data-view="lobby"] .ar-mode{border-radius:0; background:rgba(255,250,236,.7); box-shadow:0 0 0 2px rgba(90,56,32,.35);}
+.arena[data-view="lobby"] .ar-bot .g-btn, .arena[data-view="lobby"] .g-hcard .g-btn, .arena[data-view="lobby"] .ar-inv .g-btn{background:#8A5A36 url(../img/zaidimas/tex/mediena.png) 0 0/128px 64px; color:#FFF3DC; border:0; border-radius:0;
+  box-shadow:0 0 0 2px #1A100A, inset 0 2px 0 rgba(255,255,255,.2), inset 0 -3px 0 rgba(0,0,0,.25); text-shadow:0 1px 0 #1A100A; font-family:'Pixelify Sans',sans-serif;}
+.arena[data-view="lobby"] .ar-bot .g-btn:hover{filter:brightness(1.15);}
+.arena[data-view="lobby"] .g-hcard{background:rgba(255,250,236,.75); border-radius:0; box-shadow:0 0 0 2px rgba(90,56,32,.35);}
+.arena[data-view="lobby"] .g-hcard img.ga-hero{width:110px; height:96px; object-fit:contain;}
+.arena[data-view="lobby"] .g-empty{color:#6A4A2E;}
+.arena[data-view="lobby"] input[type=search]{border-radius:0 !important; border:2px solid #5A3820 !important; background:#FFF8E6;}
+@media (max-width:767px){ .arena[data-view="lobby"]{padding:8px; margin:0 -8px;} }
+
+.k4-hero img.ga-hero{width:100%; max-width:150px; height:130px; object-fit:contain; margin:0 auto;}
+.k4-hero .k4-pet{bottom:auto; top:96px;}
+@media (max-width:900px){ .k4-hero img.ga-hero{height:80px;} .k4-hero .k4-pet{top:52px;} }
+/* Personažo gebėjimas ir antras gyvūnėlis kovoje (v1.42) */
+.g-skill{margin:8px 0; padding:8px 10px; background:rgba(255,236,170,.35); box-shadow:0 0 0 2px rgba(150,104,30,.35); font-size:13px; line-height:1.35;}
+.g-skill small{opacity:.8;}
+.ed-chars .ed-sk{display:block; font-size:10px; line-height:1.1; opacity:.85; margin-top:2px;}
+.fa-arena .fa-f .fa-pet.p2{width:24%; bottom:22%;}
+.petab.skillab{background:rgba(255,215,90,.25);}
+.ln.k-skill{color:#B8860B; font-weight:700;}
+
+/* =====================================================================
+   v1.43: Dojo - rėmas aplink buveinę, šviesios lentelės (matosi ant bet kokio fono), lygis ir XP apačioje, vienodas UI (#80, #84)
+   ===================================================================== */
+.dw-frame{position:relative; padding:14px; margin:6px 0 18px; background:#7A4E2E url(../img/zaidimas/tex/mediena.png) 0 0/128px 64px repeat; image-rendering:pixelated;
+  box-shadow:0 0 0 3px #1A120C, inset 0 0 0 3px #E9C27A, inset 0 0 0 6px #6B4226, 0 10px 0 4px rgba(26,18,12,.22);}
+.dw-frame .fr-c{position:absolute; width:22px; height:22px; z-index:3; background:#F2C14E; box-shadow:0 0 0 3px #1A120C, inset -4px -4px 0 #B07A1E, inset 4px 4px 0 #FFE59A;}
+.dw-frame .fr-c.tl{left:-6px; top:-6px;} .dw-frame .fr-c.tr{right:-6px; top:-6px;} .dw-frame .fr-c.bl{left:-6px; bottom:-6px;} .dw-frame .fr-c.br{right:-6px; bottom:-6px;}
+.dw-frame .dw-wrap{margin:0;}
+.dw-frame .dojo .dw, .dojo .dw-frame .dw{box-shadow:0 0 0 3px #1A120C, 0 0 0 6px #E9C27A, 0 0 0 9px #1A120C;}
+/* Lygis ir XP - po buveine */
+.dw-foot{display:flex; align-items:center; gap:14px; margin-top:14px; padding:10px 14px; background:#F3E3C0 url(../img/zaidimas/tex/popierius.png) 0 0/128px 128px repeat; color:#2A1A10;
+  font-family:'Pixelify Sans','Space Grotesk',sans-serif; box-shadow:0 0 0 3px #1A120C, inset 0 3px 0 rgba(255,255,255,.5), inset 0 -4px 0 rgba(120,80,40,.25);}
+.dw-foot:empty{display:none;}
+.df-name{display:flex; flex-direction:column; min-width:0;}
+.df-name b{font-size:1.15rem; line-height:1.1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.df-name small{font:600 .78rem 'Inter',sans-serif; opacity:.75;}
+.df-lv{flex:none; padding:4px 10px; background:#2A1A10; color:#FFD65C; font-size:1rem; box-shadow:0 0 0 2px #1A120C;}
+.dw-foot .df-xp{position:relative; flex:1; min-width:120px; height:22px; background:#3A2414; box-shadow:0 0 0 3px #1A120C; overflow:hidden;}
+.dw-foot .df-xp i{display:block; height:100%; background:linear-gradient(180deg,#FFE58A 0 45%,#F2B23A 45%);}
+.dw-foot .df-xp span{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:.85rem; color:#fff; text-shadow:0 1px 0 #000, 0 0 3px #000;}
+/* Šviesi mediena + tamsus tekstas: lentelės nepasimeta ant tamsaus ar ryškaus fono */
+.dw-tool, .dw-board{background-image:linear-gradient(rgba(255,236,200,.5), rgba(255,236,200,.5)), url(../img/zaidimas/tex/mediena.png); background-size:auto, 128px 64px;
+  color:#2A1A10; text-shadow:0 1px 0 rgba(255,255,255,.55); box-shadow:0 0 0 3px #1A120C, inset 0 0 0 2px #FFE7B0, inset 0 -4px 0 rgba(90,56,32,.35), 0 5px 0 2px rgba(10,8,20,.4);}
+.dw-tool:hover, .dw-board:hover{filter:brightness(1.06);}
+.dw-tool{width:76px; height:70px; gap:3px; font-size:.74rem; font-weight:700;}
+.dw-tool .px-ic{width:32px; height:32px;}
+.dw-bar{gap:9px; max-width:62%;}
+.dw-tool[data-pane].on{box-shadow:0 0 0 3px #1A120C, 0 0 0 6px #FFD65C, inset 0 0 0 2px #FFE7B0;}
+.dw-board{width:24%; min-width:190px; padding:10px 12px 11px;}
+.dw-board .bd-h{color:#7A2E10; border-bottom-color:rgba(42,26,16,.35); font-size:.95rem;}
+.dw-board .bd-big b{font-size:1.15rem;} .dw-board .bd-big .px-ic{width:24px; height:24px;}
+.dw-board .bd-st{font-size:.9rem;}
+.dw-board .bd-more{color:#7A2E10; font-size:.72rem;}
+.dw-sign{font-size:.95rem; padding-top:7px; padding-bottom:7px; box-shadow:0 0 0 3px #1A120C, inset 0 3px 0 rgba(255,255,255,.22), inset 0 -4px 0 rgba(0,0,0,.3), 0 5px 0 2px rgba(10,8,20,.4);}
+.dw-sign .px-ic{width:30px; height:30px;}
+@media (max-width: 767px){
+  .dw-frame{padding:8px;}
+  .dw-frame .fr-c{width:14px; height:14px;}
+  .dw-foot{flex-wrap:wrap; gap:8px 10px; padding:8px 10px;}
+  .dw-foot .df-xp{flex-basis:100%;}
+  .dw-tool{width:50px; height:48px;} .dw-tool .px-ic{width:28px; height:28px;}
+  .dw-board{min-width:0; width:40%;}
+  .dw-board .bd-st{font-size:.74rem;} .dw-board .bd-big b{font-size:.9rem;}
+}
+.dw-foot .df-xp, .dw-foot .df-xp i{border-radius:0;}
+.dw-tool{font-size:.78rem;}
+@media (max-width: 767px){
+  .dw-bar{max-width:64%; gap:6px;}
+  .dw-tool{width:42px; height:40px;} .dw-tool .px-ic{width:24px; height:24px;}
+  .dw-tool em{top:-6px; right:-6px; min-width:16px; height:16px; font-size:.6rem;}
+  .dw-setup{top:auto; bottom:44%; font-size:.9rem; padding:9px 14px;}
+}
+
+/* =====================================================================
+   v1.45 (#108): be medienos ir rudos - šviesios „stiklo“ lentelės su auksu ir indigo, tvarkingas rėmas; XP išskleidžiamas (#110)
+   ===================================================================== */
+.wood, .dw-tool, .dw-sign, .dw-board, .pq-body, .px-wood{background:linear-gradient(180deg, rgba(255,255,255,.96), rgba(241,239,252,.94)); background-image:linear-gradient(180deg, rgba(255,255,255,.96), rgba(241,239,252,.94)); image-rendering:auto;}
+.dw-tool, .dw-board{color:#1F1B3A; text-shadow:none; border-radius:12px; box-shadow:0 0 0 2px rgba(31,27,58,.85), inset 0 -3px 0 rgba(110,90,190,.18), 0 6px 14px rgba(10,8,30,.35);}
+.dw-tool:hover, .dw-board:hover{filter:none; box-shadow:0 0 0 2px #F2B705, inset 0 -3px 0 rgba(110,90,190,.18), 0 8px 18px rgba(10,8,30,.4);}
+.dw-tool em{border-radius:8px;}
+.bd-h{color:#5B3FA8; border-bottom:2px solid rgba(91,63,168,.18);}
+.bd-more{color:#5B3FA8;}
+.bd-leg{width:6px; background:rgba(31,27,58,.7); box-shadow:none; border-radius:3px;}
+/* Rodyklės į žaidimus - švarios kortelės su spalvota juostele kairėje (be medžio stulpo) */
+.dp-pole{display:none;}
+.dw-post{gap:8px;}
+.dw-sign, .dw-sign:nth-child(odd){clip-path:none; margin:0; padding:7px 12px 7px 10px; border-radius:12px; color:#1F1B3A !important; text-shadow:none;
+  box-shadow:0 0 0 2px rgba(31,27,58,.85), inset 5px 0 0 var(--sg, #6E5A9A), 0 6px 14px rgba(10,8,30,.35);}
+.dw-sign:hover{filter:none; transform:translateX(-3px); box-shadow:0 0 0 2px #F2B705, inset 5px 0 0 var(--sg, #6E5A9A), 0 8px 18px rgba(10,8,30,.4);}
+.dw-sign.kova{--sg:#E0465A; background-image:linear-gradient(180deg, rgba(255,255,255,.96), rgba(241,239,252,.94));}
+.dw-sign.greita{--sg:#F2B705;} .dw-sign.keturi{--sg:#3B82F6; background-image:linear-gradient(180deg, rgba(255,255,255,.96), rgba(241,239,252,.94));} .dw-sign.ritmas{--sg:#22A06B;} .dw-sign.lab{--sg:#8B5CF6;}
+/* Rėmas aplink buveinę - indigo su auksine linija, be medžio */
+.dw-frame{background:linear-gradient(160deg, #2B2660, #1B1A3E); border-radius:6px; box-shadow:0 0 0 2px #0F0E24, inset 0 0 0 2px rgba(242,183,5,.75), 0 14px 30px rgba(15,14,36,.28);}
+.dw-frame .dojo .dw, .dojo .dw-frame .dw{box-shadow:0 0 0 2px #0F0E24, 0 0 0 4px rgba(242,183,5,.55);}
+.dojo .dw{box-shadow:0 0 0 2px #0F0E24, 0 0 0 5px rgba(242,183,5,.5), 0 14px 30px rgba(15,14,36,.25);}
+/* Vardas, lygis, XP - šviesi juosta; paspaudus XP - už ką gauta ir kaip gauti daugiau */
+.dw-foot{background:linear-gradient(180deg, rgba(255,255,255,.97), rgba(241,239,252,.95)); color:#1F1B3A; border-radius:12px; box-shadow:0 0 0 2px rgba(31,27,58,.85), 0 6px 16px rgba(10,8,30,.18); flex-wrap:wrap;}
+.df-lv{background:#2B2660; color:#FFD65C; border-radius:8px; box-shadow:none;}
+.dw-foot .df-xp{background:#E4E0F5; box-shadow:inset 0 0 0 2px rgba(31,27,58,.6); border-radius:8px; cursor:pointer; border:0; padding:0; font:inherit;}
+.dw-foot .df-xp i{background:linear-gradient(90deg, #8B5CF6, #F2B705);}
+.dw-foot .df-xp span{color:#1F1B3A; text-shadow:0 1px 0 rgba(255,255,255,.8); font-weight:700;}
+.df-more{flex:none; border:0; background:#2B2660; color:#fff; border-radius:8px; padding:5px 10px; font:700 .8rem 'Pixelify Sans',sans-serif; cursor:pointer;}
+.df-log{flex-basis:100%; display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:4px; padding-top:10px; border-top:2px dashed rgba(91,63,168,.2); font-family:'Inter',sans-serif;}
+.df-log[hidden]{display:none;}
+.df-log h4{margin:0 0 6px; font:700 .78rem 'Inter',sans-serif; letter-spacing:.08em; text-transform:uppercase; color:#5B3FA8;}
+.df-log ul{list-style:none; margin:0; padding:0; display:grid; gap:4px; font-size:.85rem;}
+.df-log li{display:flex; justify-content:space-between; gap:10px; padding:4px 8px; border-radius:8px; background:rgba(110,90,190,.07);}
+.df-log li b{color:#22A06B; white-space:nowrap;}
+.df-log li small{color:#6B6588;}
+@media (max-width:700px){ .df-log{grid-template-columns:1fr;} }
+/* Dojo apačioje (#115): reitingas ir draugų kvietimai - tas pats šviesus stilius kaip lentelės */
+.dojo-social{display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:16px 0 0; font-family:'Inter',sans-serif;}
+.ds-col{padding:16px 18px; border-radius:14px; background:linear-gradient(180deg, rgba(255,255,255,.97), rgba(241,239,252,.95)); color:#1F1B3A; box-shadow:0 0 0 2px rgba(31,27,58,.85), 0 8px 20px rgba(10,8,30,.15);}
+.ds-col h2{margin:0 0 10px; font:700 1.1rem 'Pixelify Sans','Space Grotesk',sans-serif; color:#2B2660;}
+.ds-rank, .ds-players{list-style:none; margin:0; padding:0; display:grid; gap:4px;}
+.ds-rank li, .ds-players li{display:flex; align-items:center; gap:10px; padding:6px 8px; border-radius:10px; background:rgba(110,90,190,.06);}
+.ds-rank li.me{background:rgba(242,183,5,.2); box-shadow:inset 0 0 0 2px rgba(242,183,5,.6);}
+.ds-pos{width:26px; height:26px; flex:none; border-radius:50%; display:grid; place-items:center; font-weight:800; font-size:.8rem; background:#E4E0F5;}
+.ds-pos.p1{background:#F2B705;} .ds-pos.p2{background:#C9CED6;} .ds-pos.p3{background:#D69A5B;}
+.ds-n{flex:1; min-width:0; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.ds-n small, .ds-rank b small{color:#6B6588; font-weight:500;}
+.ds-me{margin:8px 0 0; font-size:.9rem;}
+.ds-link{display:inline-block; margin-top:10px; font-weight:600;}
+.ds-q{width:100%; margin-bottom:8px; padding:8px 10px; border-radius:10px; border:1px solid rgba(31,27,58,.2);}
+.ds-players{max-height:340px; overflow:auto;}
+.ds-acts{display:flex; gap:6px; flex:none;}
+.ds-btn{border:0; border-radius:8px; padding:6px 10px; font:700 .8rem 'Inter',sans-serif; background:linear-gradient(135deg, #5B5FDA, #8A4FC9); color:#fff !important; cursor:pointer; text-decoration:none !important;}
+.ds-btn.ghost{background:#fff; color:#2B2660 !important; box-shadow:inset 0 0 0 1.5px rgba(43,38,96,.3);}
+.ds-off{color:#6B6588;}
+.ds-toast{margin:10px 0 0; padding:8px 10px; border-radius:10px; background:#E3F4EA; color:#0B6B3A; font-weight:600;}
+.ds-empty{color:#6B6588;}
+@media (max-width:767px){ .dojo-social{grid-template-columns:1fr;} }
+
+/* =====================================================================
+   v1.46 (#116): vientisas žaidimo dizainas visur - be medienos, pergamento ir rudai geltonų spalvų.
+   Skydeliai - šviesus „stiklas“ su indigo kontūru, antraštės - naktinis indigo, mygtukai - violetinis gradientas.
+   ===================================================================== */
+:root{--g-ink:#1F1B3A; --g-line:rgba(31,27,58,.85); --g-glass:linear-gradient(180deg, rgba(255,255,255,.97), rgba(241,239,252,.95)); --g-night:linear-gradient(160deg, #2B2660, #1B1A3E); --g-btn:linear-gradient(135deg, #5B5FDA 0%, #8A4FC9 60%, #C2569A 100%);}
+/* Arenos laukiamasis */
+.arena[data-view="lobby"]{background:var(--g-night); border-radius:10px; box-shadow:0 0 0 2px #0F0E24, inset 0 0 0 2px rgba(139,92,246,.45), 0 14px 30px rgba(15,14,36,.28); padding:16px;}
+.arena[data-view="lobby"] .ar-head{background:linear-gradient(135deg, rgba(91,95,218,.35), rgba(194,86,154,.25)); border-radius:12px; box-shadow:0 0 0 2px rgba(255,255,255,.15); text-shadow:none;}
+.arena[data-view="lobby"] .ar-title{color:#fff;} .arena[data-view="lobby"] .ar-sub{color:#D8D4F5;}
+.arena[data-view="lobby"] .g-btn, .arena[data-view="lobby"] .ar-head .g-btn, .arena[data-view="lobby"] .ar-bot .g-btn, .arena[data-view="lobby"] .g-hcard .g-btn, .arena[data-view="lobby"] .ar-inv .g-btn{
+  background:var(--g-btn); color:#fff; border:0; border-radius:10px; text-shadow:none; box-shadow:0 4px 10px rgba(91,95,218,.3), inset 0 1px 0 rgba(255,255,255,.25); font-family:'Inter',sans-serif; font-weight:700;}
+.arena[data-view="lobby"] .g-btn:hover{filter:brightness(1.08);}
+.arena[data-view="lobby"] .g-card, .arena[data-view="lobby"] .ar-invites{background:var(--g-glass); border-radius:14px; color:var(--g-ink); box-shadow:0 0 0 2px var(--g-line), 0 8px 20px rgba(10,8,30,.25);}
+.arena[data-view="lobby"] .g-card h3{color:#2B2660;}
+.arena[data-view="lobby"] .ar-mode{border-radius:12px; background:#fff; box-shadow:0 0 0 1.5px rgba(43,38,96,.2);}
+.arena[data-view="lobby"] .g-hcard{background:#fff; border-radius:14px; box-shadow:0 0 0 1.5px rgba(43,38,96,.18), 0 4px 10px rgba(10,8,30,.08);}
+.arena[data-view="lobby"] .g-empty{color:#5E5A80;}
+.arena[data-view="lobby"] input[type=search]{border-radius:10px !important; border:1.5px solid rgba(43,38,96,.3) !important; background:#fff;}
+/* Žaidimų kortelės (Greita kova, Kata ritmas ir kt.) */
+.g-game, .g-game.kova, .g-game.keturi, .g-game.ritmas{background:var(--g-glass) !important; color:var(--g-ink); text-shadow:none; border-radius:14px; box-shadow:0 0 0 2px var(--g-line), inset 5px 0 0 #8B5CF6, 0 6px 14px rgba(10,8,30,.2) !important;}
+.g-game.kova{box-shadow:0 0 0 2px var(--g-line), inset 5px 0 0 #E0465A, 0 6px 14px rgba(10,8,30,.2) !important;}
+.g-game .gi{background:#EEEBFB; border-radius:10px; box-shadow:0 0 0 2px rgba(43,38,96,.25);}
+/* Kovos ekranas: pasirinkimų lenta, kortos, mygtukas */
+.fa-board, .fa-arena .fa-cards{background:var(--g-night) !important; border-radius:12px; box-shadow:0 0 0 2px #0F0E24 !important;}
+.fa-board .fa-chk{background:var(--g-glass); border-radius:10px; color:var(--g-ink);}
+.fa-board .fa-chk b{color:var(--g-ink);}
+.fa-board .fa-chk.sel{background:#fff; box-shadow:0 0 0 2px #0F0E24, 0 0 0 5px #8B5CF6 !important;}
+.fa-arena .fa-card{background:var(--g-glass); color:var(--g-ink); text-shadow:none; border-radius:10px; box-shadow:0 0 0 2px var(--g-line) !important;}
+.fa-arena .fa-go .px-btn.go{background:var(--g-btn); border-radius:12px; color:#fff;}
+/* Keturi iš eilės, greita kova, ritiniai (Kuprinė, Gyvūnėliai...) */
+.k4-bot{background:var(--g-glass) !important; border-radius:14px !important; box-shadow:0 0 0 2px var(--g-line), 0 6px 14px rgba(10,8,30,.2) !important;}
+.gr-b, .gr-b.blk, .gr-b.atk{background:var(--g-glass); border-radius:12px;}
+.sc-rod{background:var(--g-night); border-radius:6px;}
+.sc-paper{background:var(--g-glass); color:var(--g-ink); scrollbar-color:#8B5CF6 #EEEBFB; box-shadow:none;}
+.g-scenes button{background:#2B2660; border-radius:10px;}
+.pq-body{border-radius:12px;}
+
+/* ===== v1.49: paprastesnis Dojo - šviesi kortelė kaip visoje svetainėje, aplinka išblukinta, personažas ryškus =====
+   Pikselinis personažas lieka; mygtukai, savybės ir apačios juosta - švarios baltos kortelės su svetainės šriftu. */
+.dojo.calm{--calm-ink:#2A2440; --calm-muted:#6E6886; --calm-violet:#6B4FB0; --calm-shadow:0 6px 18px rgba(40,30,80,.12);}
+.dojo.calm .dw-frame{background:none; padding:0; margin:6px 0 16px; box-shadow:none; border:0;}
+.dojo.calm .dw-frame .fr-c{display:none;}
+.dojo.calm .dw-frame .dw, .dojo.calm .dw{border-radius:24px; overflow:hidden; image-rendering:auto;
+  background:radial-gradient(ellipse 55% 60% at 38% 74%, rgba(255,255,255,.9) 0, rgba(255,255,255,0) 70%), linear-gradient(180deg, #ECE6F7 0%, #F7F1EA 60%, #E9DDCC 100%) !important;
+  box-shadow:0 18px 50px rgba(40,30,80,.14), inset 0 0 0 1px rgba(255,255,255,.7);}
+.dojo.calm .dw::before{content:""; position:absolute; inset:-14px; z-index:-2; background:var(--scene) center bottom / cover no-repeat; filter:blur(6px) saturate(.7) brightness(1.08); opacity:.34;}
+.dojo.calm .dw::after{content:""; position:absolute; left:0; right:0; bottom:0; height:30%; z-index:-1; background:linear-gradient(180deg, rgba(233,221,204,0), rgba(214,196,170,.55));}
+.dojo.calm .dw-fx{display:none;}
+/* Personažas: šviesos dėmė už nugaros, šešėlis po kojomis, baltas kontūras */
+.dojo.calm .dw-hero{z-index:2;}
+.dojo.calm .dw-hero::before{content:""; position:absolute; left:50%; bottom:-6%; width:150%; height:120%; transform:translateX(-50%); z-index:-1;
+  background:radial-gradient(ellipse 46% 50% at 50% 58%, rgba(255,255,255,.95) 0, rgba(255,255,255,.55) 45%, rgba(255,255,255,0) 72%);}
+.dojo.calm .dw-hero::after{content:""; position:absolute; left:50%; bottom:-2%; width:62%; height:9%; transform:translateX(-50%); z-index:-1; border-radius:50%;
+  background:radial-gradient(ellipse at center, rgba(40,30,70,.32) 0, rgba(40,30,70,0) 70%);}
+.dojo.calm .dw-hero img{filter:drop-shadow(2px 0 0 #fff) drop-shadow(-2px 0 0 #fff) drop-shadow(0 2px 0 #fff) drop-shadow(0 -2px 0 #fff) drop-shadow(0 14px 18px rgba(30,20,60,.32));}
+.dojo.calm .dw-hero.live img{animation:calmBreath 3.2s ease-in-out infinite;}
+@keyframes calmBreath{0%,100%{transform:translateY(0);} 50%{transform:translateY(-1.2%);}}
+.dojo.calm .dw-pet img{filter:drop-shadow(0 6px 6px rgba(30,20,60,.25));}
+/* Mygtukai viršuje kairėje: baltos „piliulės“ su ikona ir žodžiu */
+.dojo.calm .dw-ui{font-family:'Inter', system-ui, sans-serif;}
+.dojo.calm .dw-bar{left:16px; right:auto; top:16px; max-width:calc(100% - 32px); gap:8px; justify-content:flex-start;}
+.dojo.calm .dw-tool{width:auto; height:auto; flex-direction:row; gap:7px; padding:8px 13px 8px 9px; border-radius:14px; color:var(--calm-ink); text-shadow:none;
+  font:600 .82rem/1.1 'Inter', system-ui, sans-serif; letter-spacing:0; background:rgba(255,255,255,.92) !important; background-image:none !important;
+  box-shadow:var(--calm-shadow); image-rendering:auto; animation:none; backdrop-filter:blur(6px);}
+.dojo.calm .dw-tool .px-ic{width:22px; height:22px;}
+.dojo.calm .dw-tool:hover{filter:none; background:#fff !important; transform:translateY(-1px);}
+.dojo.calm .dw-tool:active{transform:translateY(1px);}
+.dojo.calm .dw-tool.on, .dojo.calm .dw-tool[data-pane].on{box-shadow:0 0 0 2px var(--calm-violet), var(--calm-shadow);}
+.dojo.calm .dw-tool.glow{box-shadow:0 0 0 2px #F2B23A, 0 0 18px rgba(242,178,58,.55);}
+.dojo.calm .dw-tool em{top:-7px; right:-7px; border-radius:10px; box-shadow:0 0 0 2px #fff; font-family:'Inter', sans-serif;}
+.dojo.calm .dw-tool em.soft{background:#EFE9FB; color:var(--calm-violet);}
+/* Žaidimai dešinėje: aiškūs mygtukai su spalvos juostele */
+.dojo.calm .dw-post{right:16px; bottom:16px; width:220px; gap:8px; padding:0;}
+.dojo.calm .dp-pole{display:none;}
+.dojo.calm .dw-sign, .dojo.calm .dw-sign:nth-child(odd){clip-path:none; margin:0; padding:10px 14px 10px 10px; gap:9px; border-radius:14px; color:var(--calm-ink) !important; text-shadow:none;
+  font:700 .92rem/1.15 'Inter', system-ui, sans-serif; letter-spacing:0; background:rgba(255,255,255,.94) !important; background-image:none !important;
+  box-shadow:var(--calm-shadow); border-left:5px solid var(--sg, #6B4FB0); image-rendering:auto;}
+.dojo.calm .dw-sign:hover{background:#fff !important; transform:translateX(-2px);}
+.dojo.calm .dw-sign .px-ic{width:24px; height:24px;}
+.dojo.calm .dw-sign.kova{--sg:#D7263D;} .dojo.calm .dw-sign.greita{--sg:#F2A93B;} .dojo.calm .dw-sign.keturi{--sg:#3B6FD7;} .dojo.calm .dw-sign.ritmas{--sg:#2F9C6B;} .dojo.calm .dw-sign.lab{--sg:#9A8BC2; opacity:.85;}
+/* Savybės: balta kortelė */
+.dojo.calm .dw-board{left:auto; right:252px; bottom:16px; width:210px; min-width:0; padding:12px 14px; border-radius:16px; color:var(--calm-ink); text-shadow:none;
+  font-family:'Inter', system-ui, sans-serif; background:rgba(255,255,255,.94) !important; background-image:none !important; box-shadow:var(--calm-shadow); image-rendering:auto;}
+.dojo.calm .dw-board:hover{transform:translateY(-2px); filter:none;}
+.dojo.calm .dw-board .bd-h{color:var(--calm-violet); border-bottom-color:rgba(107,79,176,.18); font:700 .8rem 'Inter', sans-serif; letter-spacing:.08em; text-transform:uppercase;}
+.dojo.calm .dw-board .bd-more{color:var(--calm-muted); font:600 .72rem 'Inter', sans-serif;}
+.dojo.calm .dw-board .bd-leg{display:none;}
+.dojo.calm .dw-board .bd-big b{font-family:'Inter', sans-serif;}
+.dojo.calm .dw-setup{border-radius:999px; font-family:'Inter', sans-serif; box-shadow:var(--calm-shadow);}
+/* Apačia: vardas, lygis, XP */
+.dojo.calm .dw-foot{background:#fff; background-image:none; border-radius:18px; box-shadow:var(--calm-shadow); border:0; color:var(--calm-ink); font-family:'Inter', system-ui, sans-serif; image-rendering:auto;}
+.dojo.calm .dw-foot .df-name b{font-family:'Inter', sans-serif;}
+.dojo.calm .dw-foot .df-xp{height:20px; border-radius:999px; background:#EFE9FB; box-shadow:none;}
+.dojo.calm .dw-foot .df-xp i{border-radius:999px; background:linear-gradient(90deg, #8A6FD6, #F2B23A);}
+.dojo.calm .dw-foot .df-xp span{color:var(--calm-ink); text-shadow:0 0 3px #fff, 0 0 2px #fff; font:700 .78rem 'Inter', sans-serif;}
+.dojo.calm .dw-foot .df-lv{border-radius:999px;}
+.dojo.calm .df-gift{color:var(--calm-violet); margin-top:8px;}
+/* Telefonas ir planšetė: vaizdas viršuje, mygtukai po juo (neuždengia personažo) */
+@media (max-width:767px){
+  .dojo.calm .dw{aspect-ratio:4/3;}
+  .dojo.calm .dw-hero{left:50%; bottom:6%; width:66%; height:76%;}
+  .dojo.calm .dw-ui{position:static; display:grid; gap:10px; margin-top:12px;}
+  .dojo.calm .dw-plaque{position:static; width:auto;}
+  .dojo.calm .dw-bar{position:static; max-width:none; flex-wrap:nowrap; overflow-x:auto; padding:2px 2px 6px; scrollbar-width:none;}
+  .dojo.calm .dw-tool{flex:none; padding:9px 12px 9px 9px;} .dojo.calm .dw-tool span{display:inline;}
+  .dojo.calm .dw-board{position:static; width:auto; right:auto;}
+  .dojo.calm .dw-post{position:static; width:auto; display:grid; grid-template-columns:1fr 1fr; gap:8px;}
+  .dojo.calm .dw-sign, .dojo.calm .dw-sign:nth-child(odd){font-size:.86rem; padding:11px 10px 11px 8px; min-height:48px;}
+  .dojo.calm .dw-scroll{position:fixed; left:8px; right:8px; top:72px; bottom:8px; overflow:auto; z-index:60;}
+}
+/* v1.49: lygio ženkliukas, „Už ką XP?“, kvietimas susikurti herojų ir apatinės kortelės - kaip visoje svetainėje */
+.dojo.calm .dw-foot .df-lv{background:#EFE9FB; color:#4B3A8C; font:700 .9rem 'Inter', sans-serif; padding:6px 12px;}
+.dojo.calm .dw-foot .df-more{background:#fff; color:var(--calm-violet); border:1px solid rgba(107,79,176,.25); border-radius:999px; font:600 .8rem 'Inter', sans-serif; padding:6px 12px;}
+.dojo.calm .dw-setup{top:78px; bottom:auto;}
+@media (max-width:767px){ .dojo.calm .dw-setup{top:10px; bottom:auto; font-size:.86rem; padding:8px 14px;} }
+.dojo-social .ds-col{border-radius:18px; background:#fff; box-shadow:0 6px 18px rgba(40,30,80,.10); border:0;}
+.dojo-social .ds-col h2{font:700 1.02rem 'Inter', system-ui, sans-serif; color:#2A2440;}
+/* #128: reitingo skiltys - slenkama juosta */
+.dojo-social .ds-tabs{display:flex; gap:6px; overflow-x:auto; padding:2px 2px 8px; margin:0 0 6px; scrollbar-width:none;}
+.dojo-social .ds-tab{flex:none; border:1px solid rgba(107,79,176,.22); background:#fff; color:#4B3A8C; border-radius:999px; padding:7px 12px; font:600 .82rem 'Inter', sans-serif; cursor:pointer; min-height:36px;}
+.dojo-social .ds-tab[aria-selected="true"]{background:#6B4FB0; color:#fff; border-color:#6B4FB0;}
+.dojo-social .ds-panel[hidden]{display:none;}
+
+/* ===== Dojo kaip žaidimo pradžios ekranas (#149, #150) =====
+   Personažas - per vidurį; viršuje kairėje - vardas, lygis, XP; po juo - savybės; dešinėje - „Žaisti“;
+   apačioje per vidurį - personažo mygtukai. Fonas aiškus (be suliejimo), tik lengvas šviesus sluoksnis. */
+.dojo.calm .dw::before{filter:none; opacity:.92; inset:0; image-rendering:pixelated;}
+.dojo.calm .dw::after{height:100%; background:radial-gradient(ellipse 40% 55% at 50% 72%, rgba(255,255,255,.55) 0, rgba(255,255,255,0) 70%), linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,0) 40%, rgba(40,30,60,.12));}
+@media (min-width:768px){
+  .dojo.calm .dw-frame{position:relative;}
+  .dojo.calm .dw-hero{left:50%; bottom:17%; width:34%; height:58%;}
+  .dojo.calm .dw-pet{--pet-lift:13%;}   /* gyvūnėliai vaikšto ten pat, kur stovi personažas */
+  .dojo.calm .dw-foot{position:absolute; z-index:25; top:16px; left:16px; width:300px; margin:0; padding:12px 14px; flex-wrap:wrap; gap:8px 10px; background:rgba(255,255,255,.94); backdrop-filter:blur(6px);}
+  .dojo.calm .dw-foot .df-name{flex:1 1 auto;}
+  .dojo.calm .dw-foot .df-xp{flex:1 1 100%; order:5;}
+  .dojo.calm .dw-foot .df-more{order:6;}
+  .dojo.calm .dw-foot .df-log{flex:1 1 100%; order:7;}
+  .dojo.calm .dw-board{left:16px; right:auto; top:146px; bottom:auto; width:300px;}
+  .dojo.calm .dw-bar{left:50%; right:auto; top:auto; bottom:16px; transform:translateX(-50%); max-width:calc(100% - 64px); justify-content:center; flex-wrap:nowrap; gap:6px; z-index:45;}
+  .dojo.calm .dw-tool{padding:7px 11px 7px 8px; font-size:.78rem;}
+  .dojo.calm .dw-post{top:16px; right:16px; bottom:auto; width:230px; padding:12px; border-radius:18px; background:rgba(255,255,255,.55); backdrop-filter:blur(6px); box-shadow:0 6px 18px rgba(40,30,80,.10);}
+  .dojo.calm .dw-post::before{content:"Žaisti"; display:block; padding:0 4px 4px; font:800 .76rem 'Inter', sans-serif; letter-spacing:.12em; text-transform:uppercase; color:var(--calm-violet);}
+  .dojo.calm .dw-setup{top:16px;}
+  /* Atidarytas langas (aplinka, inventorius ir kt.) baigiasi virš mygtukų juostos - juosta lieka paspaudžiama */
+  .dojo.calm .dw-scroll{top:16px; bottom:72px;}
+}

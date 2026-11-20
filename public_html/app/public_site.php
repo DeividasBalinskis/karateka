@@ -1,0 +1,260 @@
+<?php
+// Pagrindinio puslapio kainos ir tvarkaraštis iš duomenų bazės (tvarkoma: Treneriams -> Grupės)
+
+const PLACE_TYPES = [
+    'sporto_centras' => 'Sporto centras',
+    'mokykla'        => 'Mokyklos',
+    'darzelis'       => 'Darželiai',
+    'kita'           => 'Kitos vietos',
+];
+
+/** "Pirmadieniais" ... "Sekmadieniais" */
+
+function category_price(string $category): array
+{
+    return q_one('SELECT * FROM category_prices WHERE category = ?', [$category])
+        ?? ['price_main' => '', 'price_note' => '', 'price_alt' => ''];
+}
+
+function render_price(string $category): string
+{
+    $p = category_price($category);
+    return '<div class="group-price"><span class="price-main">' . e($p['price_main']) . '</span>'
+        . ($p['price_note'] ? '<span class="price-condition">' . e($p['price_note']) . '</span>' : '') . '</div>'
+        . ($p['price_alt'] ? '<div class="group-price-alt">' . e($p['price_alt']) . '</div>' : '');
+}
+
+/**
+ * Sujungia vienodo laiko dienas į vieną eilutę:
+ * Pirm 18:00-19:15, Treč 18:00-19:15 -> "Pirmadieniais, trečiadieniais  18:00-19:15"
+ */
+function schedule_lines(array $slots, ?string $label = null): array
+{
+    $byTime = [];
+    foreach ($slots as $s) {
+        $key = ($s['start_time'] ?? '') . '|' . ($s['end_time'] ?? '') . '|' . ($s['note'] ?? '');
+        $byTime[$key]['days'][] = (int) $s['weekday'];
+        $byTime[$key]['slot'] = $s;
+    }
+    uasort($byTime, function ($x, $y) { return min($x['days']) <=> min($y['days']); });
+
+    $lines = [];
+    foreach ($byTime as $t) {
+        $days = array_map(function ($d) { return weekday_names_plural()[$d]; }, $t['days']);
+        $dayText = implode(', ', $days);
+        $dayText = mb_strtoupper(mb_substr($dayText, 0, 1)) . mb_substr($dayText, 1);
+        if ($label) {
+            $dayText .= ' — ' . $label;
+        }
+        $s = $t['slot'];
+        $time = $s['start_time'] ? fmt_time($s['start_time']) . '–' . fmt_time($s['end_time']) : 'tikslinama';
+        if ($s['note'] && $s['start_time']) {
+            $dayText .= ' (' . $s['note'] . ')';
+        }
+        $lines[] = [$dayText, $time];
+    }
+    return $lines;
+}
+
+function render_schedule_lines(array $lines): string
+{
+    if (!$lines) {
+        return ('<p class="schedule-placeholder" style="font-style:normal;">' . t('Tvarkaraštis tikslinamas.') . '</p>');
+    }
+    $html = '';
+    foreach ($lines as [$day, $time]) {
+        $html .= '<div class="schedule-line"><span class="schedule-day">' . e($day) . '</span><span class="schedule-time">' . e($time) . '</span></div>';
+    }
+    return $html;
+}
+
+/** Aktyvios kategorijos grupės su tvarkaraščiu (pagrindiniame puslapyje kviečiama kelis kartus - įsimenama) */
+function public_groups(string $category): array
+{
+    static $cache = [];
+    if (!isset($cache[$category])) {
+        $groups = q_all('SELECT * FROM training_groups WHERE is_active = 1 AND category = ? ORDER BY sort_order, name', [$category]);
+        foreach ($groups as &$g) {
+            $g['slots'] = group_schedule((int) $g['id']);
+        }
+        unset($g);
+        $cache[$category] = $groups;
+    }
+    return $cache[$category];
+}
+
+/** Jaunimui / suaugusiems: visų kategorijos grupių tvarkaraštis vienoje vietoje */
+function render_category_schedule(string $category): string
+{
+    $groups = public_groups($category);
+    $lines = [];
+    foreach ($groups as $g) {
+        $lines = array_merge($lines, schedule_lines($g['slots'], count($groups) > 1 ? ($g['label'] ?: null) : null));
+    }
+    return render_cancellation_notes(cancellations_for_groups(array_column($groups, 'id'), 21)) . render_schedule_lines($lines);
+}
+
+function render_category_locations(string $category): string
+{
+    $locs = array_unique(array_filter(array_column(public_groups($category), 'location')));
+    if (!$locs) {
+        return ('<p class="muted">' . t('Tikslinama.') . '</p>');
+    }
+    $html = '<ul class="loc-list">';
+    foreach ($locs as $l) {
+        $html .= '<li>' . e($l) . '</li>';
+    }
+    return $html . '</ul>';
+}
+
+/** Vaikams: vietos pagal tipą (sporto centras / mokyklos / darželiai), paspaudus - tos vietos tvarkaraštis */
+function render_kids_locations(): string
+{
+    $byType = [];
+    foreach (public_groups('vaikai') as $g) {
+        $loc = $g['location'] ?: $g['name'];
+        $byType[$g['place_type']][$loc][] = $g;
+    }
+    $html = '';
+    $first = true;
+    foreach (array_map('t', PLACE_TYPES) as $type => $typeLabel) {
+        if (empty($byType[$type])) {
+            continue;
+        }
+        $html .= '<details class="loc-group"' . ($first ? ' open' : '') . '><summary>' . e($typeLabel) . '</summary><ul>';
+        foreach ($byType[$type] as $loc => $groups) {
+            $lines = [];
+            $prices = [];
+            foreach ($groups as $g) {
+                $lines = array_merge($lines, schedule_lines($g['slots'], count($groups) > 1 ? ($g['label'] ?: null) : null));
+                if (!empty($g['price_note'])) {
+                    $prices[] = $g['price_note'];
+                }
+            }
+            // "Sporto centras Viršuliškės (...)" -> sąraše užtenka "Viršuliškės (...)"
+            $short = $type === 'sporto_centras' ? preg_replace('/^Sporto centras\s+/u', '', $loc) : $loc;
+            // Atskira grupės kaina (pvz. mokykloje) - po tvarkaraščiu
+            $priceHtml = $prices ? ('<div class="schedule-line schedule-price"><span class="schedule-day">' . t('Kaina') . '</span><span class="schedule-time">') . e(implode(' · ', array_unique($prices))) . '</span></div>' : '';
+            $notes = render_cancellation_notes(cancellations_for_groups(array_column($groups, 'id'), 21));
+            $html .= '<li data-name="' . e($loc) . '" data-schedule="' . e($notes . render_schedule_lines($lines) . $priceHtml) . '">' . e($short) . '</li>';
+        }
+        $html .= '</ul></details>';
+        $first = false;
+    }
+    return $html;
+}
+
+/** Bandomosios treniruotės formos vietų sąrašas */
+function render_trial_location_options(): string
+{
+    // Pirma rajonas (Viršuliškės, Pašilaičiai...), po juo - vietos ir kam skirta (vaikai, jaunimas, suaugusieji)
+    $byLoc = [];
+    foreach (array_map('t', GROUP_CATEGORIES) as $cat => $catLabel) {
+        foreach (array_unique(array_filter(array_column(public_groups($cat), 'location'))) as $l) {
+            $byLoc[$l][] = $catLabel;
+        }
+    }
+    $byDistrict = [];
+    foreach ($byLoc as $l => $cats) {
+        $byDistrict[location_district($l)][$l] = $cats;
+    }
+    $plain = function (string $s): string { return strtr(mb_strtolower($s), ['ą' => 'a', 'č' => 'c', 'ę' => 'e', 'ė' => 'e', 'į' => 'i', 'š' => 's', 'ų' => 'u', 'ū' => 'u', 'ž' => 'z']); };
+    uksort($byDistrict, function ($a, $b) use ($plain) { return strcmp($plain($a), $plain($b)); });
+    $html = '';
+    foreach ($byDistrict as $district => $locs) {
+        $html .= '<optgroup label="' . e($district) . '">';
+        foreach ($locs as $l => $cats) {
+            $name = trim(preg_replace('/\s*\(' . preg_quote($district, '/') . '\)\s*$/u', '', $l));
+            $html .= '<option value="' . e($l . ' — ' . implode(', ', $cats)) . '">' . e($name . ' · ' . mb_strtolower(implode(', ', $cats))) . '</option>';
+        }
+        $html .= '</optgroup>';
+    }
+    return $html;
+}
+
+/** Rajonas iš vietos: skliaustuose, jei ne adresas („Avižienių gimnazija (Avižieniai)“), kitaip - paskutinis žodis („Sporto centras Viršuliškės“) */
+function location_district(string $loc): string
+{
+    if (preg_match('/\(([^()]*)\)\s*$/u', $loc, $m) && !preg_match('/\d/', $m[1])) {
+        return trim($m[1]);
+    }
+    $words = preg_split('/\s+/u', trim(preg_replace('/\s*\([^()]*\)\s*$/u', '', $loc)));
+    return (string) end($words);
+}
+
+// ---------- Tvarkaraščio ir kainų redagavimas (tik adminui; išsaugoma iš karto per admin/tvarkarastis.php) ----------
+
+/** Viena tvarkaraščio eilutė: diena, nuo, iki, pastaba */
+function schedule_row_editor(array $s): string
+{
+    $html = '<div class="sl-row" data-id="' . (int) ($s['id'] ?? 0) . '"><select class="sl-day" aria-label="' . e(t('Diena')) . '">';
+    foreach (weekday_names() as $n => $day) {
+        $html .= '<option value="' . $n . '"' . ((int) ($s['weekday'] ?? 1) === $n ? ' selected' : '') . '>' . e($day) . '</option>';
+    }
+    return $html . '</select>'
+        . '<span class="sl-time"><input type="time" class="sl-start" value="' . e($s['start_time'] ? fmt_time($s['start_time']) : '') . '" aria-label="' . e(t('Nuo')) . '">'
+        . '<span>–</span><input type="time" class="sl-end" value="' . e($s['end_time'] ? fmt_time($s['end_time']) : '') . '" aria-label="' . e(t('Iki')) . '"></span>'
+        . '<input type="text" class="sl-note" value="' . e((string) ($s['note'] ?? '')) . '" maxlength="190" placeholder="' . e(t('Pastaba, pvz. pažengę')) . '" aria-label="' . e(t('Pastaba')) . '">'
+        . '<span class="sl-state" aria-live="polite"></span>'
+        . '<button type="button" class="sl-copy" title="' . e(t('Kopijuoti į kitą dieną')) . '">⧉</button><button type="button" class="sl-del" title="' . e(t('Ištrinti laiką')) . '">✕</button></div>';
+}
+
+/** Grupių tvarkaraščiai redagavimui */
+function schedule_editor(array $groups): string
+{
+    $html = '<div class="sl-editor">';
+    foreach ($groups as $g) {
+        $html .= '<div class="sl-group" data-group="' . (int) $g['id'] . '"><div class="sl-head"><strong>' . e($g['name']) . '</strong>'
+            . ($g['location'] ? '<span class="small muted">' . e($g['location']) . '</span>' : '')
+            . (!$g['is_active'] ? '<span class="badge">neaktyvi</span>' : '') . '</div><div class="sl-rows">';
+        foreach (group_schedule((int) $g['id']) as $s) {
+            $html .= schedule_row_editor($s);
+        }
+        $html .= ('</div><button type="button" class="btn btn-ghost btn-sm sl-add">' . t('+ Pridėti laiką') . '</button></div>');
+    }
+    return $html . '<template class="sl-tpl">' . schedule_row_editor(['id' => 0, 'weekday' => 1, 'start_time' => null, 'end_time' => null, 'note' => '']) . '</template></div>'
+        . schedule_editor_script();
+}
+
+/** Redaktoriaus skriptas - vieną kartą puslapyje */
+function schedule_editor_script(): string
+{
+    static $done = false;
+    if ($done) {
+        return '';
+    }
+    $done = true;
+    return '<script>window.SCHEDULE_API = ' . json_encode(['url' => url('admin/tvarkarastis.php'), 'csrf' => csrf_token()]) . ';</script>'
+        . '<script src="' . e(asset_url('assets/schedule-editor.js')) . '"></script>';
+}
+
+/** Kategorijos kainos redagavimui (išsaugoma iš karto) */
+function price_editor(string $category): string
+{
+    $p = category_price($category);
+    return '<div class="pr-edit" data-cat="' . e($category) . '">'
+        . '<label>Kaina <input type="text" class="pr-main" value="' . e($p['price_main']) . '" placeholder="' . e(t('60€/mėn')) . '" maxlength="40"></label>'
+        . '<label>Sąlyga <input type="text" class="pr-note" value="' . e((string) $p['price_note']) . '" placeholder="' . e(t('(pasirašius metinę sutartį)')) . '" maxlength="120"></label>'
+        . '<label>Kita kaina <input type="text" class="pr-alt" value="' . e((string) $p['price_alt']) . '" placeholder="' . e(t('90€/mėn be sutarties')) . '" maxlength="120"></label>'
+        . '<span class="sl-state" aria-live="polite"></span></div>' . schedule_editor_script();
+}
+
+// ---------- „2 treniruotės nemokamai“ forma (uzklausa.php, plano žingsnis A5) ----------
+
+/** Paslėpti formos laukai: CSRF, „spąstai“ robotams (turi likti tuščias) ir pasirašytas atvėrimo laikas */
+function trial_form_guard(): string
+{
+    $t = (string) time();
+    return csrf_field()
+        . '<input type="hidden" name="ft" value="' . e($t . '.' . substr(hash_hmac('sha256', $t, csrf_token()), 0, 16)) . '">'
+        . '<div class="hp-field" aria-hidden="true"><label>Svetainė <input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>';
+}
+
+/** Kada forma atverta (iš trial_form_guard()), arba null, jei laukas suklastotas */
+function trial_form_started(string $v): ?int
+{
+    if (!preg_match('/^(\d{9,11})\.([a-f0-9]{16})$/', $v, $m)) {
+        return null;
+    }
+    return hash_equals(substr(hash_hmac('sha256', $m[1], csrf_token()), 0, 16), $m[2]) ? (int) $m[1] : null;
+}
