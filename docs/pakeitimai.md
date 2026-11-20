@@ -4,6 +4,10 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.64 - 2026-11-20 (paskyra ir visi maži mygtukai telefone - D5)
+- Telefone ir planšetėje visi maži mygtukai (pvz. „Dalyvausiu“, „Negalėsiu“, „Supratau“, „Atsijungti“) - bent 40 px aukščio;
+  „Rodyti ankstesnius“ ir reitingo skirtukai („Jaunimas (mano)“, „Visas klubas“) - irgi 40 px. Kompiuteryje - kaip buvo.
+
 ## v1.63 - 2026-11-20 (prisijungimas telefone - D5)
 - Prisijungti: 👁 (parodyti slaptažodį) - 44 px, „Pamiršote slaptažodį?“ ir „Turiu kodą iš administratoriaus“ - 40 px aukščio.
 

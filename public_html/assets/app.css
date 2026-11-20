@@ -1963,3 +1963,11 @@ h1 .badge-tester{font:600 .8rem/1.6 'Inter', sans-serif; letter-spacing:0; paddi
 /* D5 (prisijungti): 👁 ir nuorodos po forma - patogūs pirštui */
 .pw-wrap .pw-eye{min-width:44px; min-height:44px;}
 .login-more a{display:inline-flex; align-items:center; min-height:40px;}
+/* D5 (paskyra ir visur): telefone ir planšetėje maži mygtukai bent 40 px aukščio, „Rodyti ankstesnius“ - patogus pirštui */
+@media (max-width: 1099px), (pointer: coarse) {
+  .btn-sm{min-height:40px;}
+  .fb-more > summary{min-height:40px; display:flex; align-items:center;}
+}
+@media (max-width: 1099px), (pointer: coarse) {
+  .top-tabs a{min-height:40px; display:inline-flex; align-items:center;}
+}
