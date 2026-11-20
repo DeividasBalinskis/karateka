@@ -1971,3 +1971,9 @@ h1 .badge-tester{font:600 .8rem/1.6 'Inter', sans-serif; letter-spacing:0; paddi
 @media (max-width: 1099px), (pointer: coarse) {
   .top-tabs a{min-height:40px; display:inline-flex; align-items:center;}
 }
+/* D5 (naujienos, treniruotė): telefone reakcijos, „Dalintis“, datos nuorodos ir grupės pasirinkimas - bent 40 px */
+@media (max-width: 1099px), (pointer: coarse) {
+  .reactions .reaction, .reactions button, .share-btn{min-height:40px;}
+  .gp-date a.small, .gp-edit{display:inline-flex; align-items:center; min-height:40px;}
+  .group-picker > summary{min-height:44px;}
+}
