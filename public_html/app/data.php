@@ -359,9 +359,19 @@ function site_setting(string $name, ?string $default = null): ?string
     return $cache[$name];
 }
 
+/** Vienintelis rašymas į site_settings: išsaugo ir įrašo į pakeitimų žurnalą (C2, app/settings.php) */
 function set_site_setting(string $name, string $value): void
 {
+    $old = null;
+    try {
+        $o = q_value('SELECT value FROM site_settings WHERE name = ?', [$name]);
+        $old = $o === false || $o === null ? null : (string) $o;
+    } catch (PDOException $ex) {
+    }
     q('INSERT INTO site_settings (name, value) VALUES (?, ?) ON DUPLICATE KEY UPDATE value = VALUES(value)', [$name, $value]);
+    if (function_exists('settings_log_write')) {
+        settings_log_write($name, $old, $value);
+    }
 }
 
 // ---------- Reakcijos į naujienas ----------

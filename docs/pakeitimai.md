@@ -4,6 +4,12 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.81 - 2026-11-21 (Visi nustatymai: žemėlapis ir pakeitimų žurnalas - C2)
+- Valdymas → Nustatymai → **Visi nustatymai**: kiekvienas jungiklis su dabartine reikšme ir nuoroda „Keisti →“ (svetainė, klubas, žaidimas,
+  Budo, LTKF), serverio nustatymai (tik skaityti) ir **pakeitimų žurnalas** - kas ir kada keitė; visai svetainei skirtus galima **„Atkurti“**.
+- Visi nustatymai aprašyti viename registre (`app/settings.php`); `tests/checks.sh` neleidžia naujo nustatymo be įrašo registre.
+- Duomenų bazė: naujas failas `db/051_nustatymu_zurnalas.sql`.
+
 ## v1.80 - 2026-11-21 (LTKF: atskiri vienodi tekstai, versijos, naujienos ir dokumentai kaip įrašai, būsena - D6 1-3 dalys)
 - LTKF redagavimas: vienodi tekstai (pvz. 5 valdybos narių „[vardas, pavardė]“) keičiami **kiekvienas atskirai**.
 - **🕘 Versijos**: kiekvienas išsaugojimas lieka istorijoje (30 paskutinių kiekvienam puslapiui), bet kurią galima **atkurti**;
