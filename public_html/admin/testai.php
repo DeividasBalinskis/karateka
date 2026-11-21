@@ -332,6 +332,7 @@ if ($id || get('id') === 'new' || get('new')) {
       <h1 class="styled"><?= $id ? e($quiz['title']) : t('Naujas testas') ?></h1>
       <?php if ($id): ?><div class="row" style="gap:8px;">
         <a class="btn btn-sm<?= $drafts ? ' btn-primary' : ' btn-ghost' ?>" href="<?= url('admin/testo-perziura.php?id=' . $id) ?>"><?= icon('search') ?> <span><?= te('Peržiūrėti klausimus') ?><?= $drafts ? ' (' . $drafts . ')' : '' ?></span></a>
+        <a class="btn btn-ghost btn-sm" href="<?= url('admin/testai.php?id=' . $id . '&eksportas=1') ?>" download title="<?= te('Visi klausimai su atsakymais ir [#numeriais] - pataisyti ir įkelti atgal') ?>"><?= icon('download') ?> <span><?= te('Atsisiųsti klausimus') ?></span></a>
         <a class="btn btn-ghost btn-sm" href="<?= url('testas.php?q=' . $id . '&rezimas=treniruote') ?>"><?= icon('eye') ?> <span><?= te('Išbandyti') ?></span></a>
       </div><?php endif; ?>
     </div>
@@ -413,8 +414,8 @@ if ($id || get('id') === 'new' || get('new')) {
       </div>
 
       <details class="panel card import-box" id="ikelti"<?= $importItems !== null ? ' open' : '' ?>>
-        <summary class="ib-head"><span class="ib-ico"><?= icon('upload') ?></span><span class="ib-title"><strong><?= te('Įkelti klausimus iš failo') ?></strong>
-          <span class="hint"><?= te('pvz. iš ChatGPT: .txt, .csv, .json, paveikslėliai ar vienas ZIP') ?></span></span><span class="ib-chev"><?= icon('chevron') ?></span></summary>
+        <summary class="ib-head"><span class="ib-ico"><?= icon('upload') ?></span><span class="ib-title"><strong><?= te('Įkelti arba atsisiųsti klausimus (failas)') ?></strong>
+          <span class="hint"><?= te('įkelti: .txt, .csv, .json, paveikslėliai ar vienas ZIP (pvz. iš ChatGPT); atsisiųsti - visi klausimai su atsakymais') ?></span></span><span class="ib-chev"><?= icon('chevron') ?></span></summary>
         <?= $importItems !== null ? form_errors($errors) : '' ?>
         <?php if ($importItems): $okCount = count(array_filter($importItems, function ($x) { return !$x['error']; })); ?>
           <h3 class="ib-sub"><?= te('Peržiūra') ?>: <?= $okCount ?> <?= te('tinkamų') ?><?= count($importItems) - $okCount ? ', ' . (count($importItems) - $okCount) . ' ' . t('su klaidomis (nebus įkelti)') : '' ?></h3>

@@ -4,6 +4,12 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.69 - 2026-11-21 (testo klausimų atsisiuntimas, Dojo administratoriams)
+- Valdymas → Testai → testas: „⬇ Atsisiųsti klausimus“ dabar viršuje, šalia „Peržiūrėti klausimus“ ir „Išbandyti“.
+  Dėžutė apačioje vadinasi „Įkelti arba atsisiųsti klausimus (failas)“.
+- Dojo: kol žaidimas neatidarytas nariams, meniu „🏯 Dojo“ mato tikri administratoriai (Denis, Deividas).
+  Testuotojai ir nariai - nemato (sprendimas 2026-11-21).
+
 ## v1.68 - 2026-11-21 (LTKF telefone - D5)
 - LTKF: kalendoriaus ir klubų filtrų mygtukai, apačios nuorodos ir „English“ - bent 40 px aukščio (telefone ir planšetėje).
 

@@ -440,7 +440,8 @@ function admin_menu_groups_html(string $cur, bool $withDesc): string
 function game_nav_ready(): bool
 {
     require_once APP_DIR . '/game.php';
-    return game_public() && game_allowed();   // #140: kol žaidimas nebaigtas - meniu jo nėra niekam (administratoriai - per Testavimą)
+    // #140 + sprendimas 2026-11-21: kol žaidimas neatidarytas nariams - meniu jį mato tik tikri administratoriai (ne testuotojai, ne nariai)
+    return game_allowed() && (game_public() || is_admin());
 }
 
 /** Nario paskyros skirtukai */
