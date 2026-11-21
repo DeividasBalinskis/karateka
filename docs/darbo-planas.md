@@ -78,7 +78,7 @@ Status: ☐ not started · ◐ partly done · ☑ done
 | **D6** | LTKF: real content model, own domain | federation | L | plan first | ☐ |
 | **D7** | Dojo: one fight model, ranking, fair rewards | kids (later), Denis | L | plan first | ◐ v1.49 (calm look, #128 ranking); v1.50 hidden from menus until opened (#140) |
 | **D8** | New pixel characters | kids (later) | L | plan first | ☐ |
-| **E1** | Go live (old step 12) | everyone | M | waits for your GO | ☐ |
+| **E1** | Go live (old step 12) | everyone | M | waits for your GO | ◐ checklist ready: `docs/paleidimo-patikra.md` (old URLs: karateka.lt blocked in cloud) |
 
 **Old step → new step:** 1 → A5 · 2 → B1 · 3a → D1 · 3b → D2 · 4 → C4 · 5 → C5 · 6 → B3 + B4 · 7 → D5 · 8 → D3 · 9 → D4 · 10 → C6 · 11 → C7 · 12 → E1.
 
