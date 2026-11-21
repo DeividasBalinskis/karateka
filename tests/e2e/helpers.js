@@ -34,8 +34,18 @@ function ids() {
  * Naujas naršyklės kontekstas (ir prisijungimas, jei nurodytas el. paštas).
  * JS klaidos puslapyje surenkamos į page.jsErrors - testas jas patikrina pabaigoje (noJsErrors).
  */
+// C6: ankstesnių testų langai uždaromi - kitaip šimtai atvirų puslapių kas 30 s kreipiasi į serverį ir vėlesni testai lėtėja
+const openContexts = [];
+function currentTestId() {
+  try { return require('@playwright/test').test.info().testId; } catch (e) { return ''; }
+}
 async function login(browser, email, width = 1280, height = 900, password = PASSWORD, lang = 'lt') {
+  const tid = currentTestId();
+  for (let i = openContexts.length - 1; i >= 0; i--) {
+    if (openContexts[i].tid !== tid) { await openContexts[i].ctx.close().catch(() => {}); openContexts.splice(i, 1); }
+  }
   const ctx = await browser.newContext({ baseURL: BASE_URL, viewport: { width, height } });
+  openContexts.push({ tid, ctx });
   if (lang !== 'lt') await ctx.addCookies([{ name: 'kalba', value: lang, url: BASE_URL }]);
   // Treneriams / adminui - admin režimas įjungtas (redagavimo mygtukai), kaip anksčiau; žaidimo testai jį išjungia patys
   await ctx.addCookies([{ name: 'adm', value: '1', url: BASE_URL }]);
