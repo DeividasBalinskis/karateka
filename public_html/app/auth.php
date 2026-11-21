@@ -441,6 +441,27 @@ function pending_approvals_count(): int
     return $count;
 }
 
+/** #158: pakeitus vardą - Dojo personažo vardas irgi (jei jis buvo toks pat kaip senas vardas; savo slapyvardis lieka) */
+function sync_hero_names(?int $accountId, ?int $memberId, string $oldFirst, string $newFirst): void
+{
+    if ($oldFirst === $newFirst || $newFirst === '') {
+        return;
+    }
+    $new = mb_substr($newFirst, 0, 40);
+    try {
+        if ($accountId) {
+            q('UPDATE game_heroes SET name = ? WHERE account_id = ? AND name = ?', [$new, $accountId, $oldFirst]);
+            q('UPDATE game_heroes h JOIN account_members am ON am.member_id = h.member_id SET h.name = ? WHERE am.account_id = ? AND am.relation = "self" AND h.name = ?', [$new, $accountId, $oldFirst]);
+        }
+        if ($memberId) {
+            q('UPDATE game_heroes SET name = ? WHERE member_id = ? AND name = ?', [$new, $memberId, $oldFirst]);
+            q('UPDATE game_heroes h JOIN account_members am ON am.account_id = h.account_id SET h.name = ? WHERE am.member_id = ? AND am.relation = "self" AND h.name = ?', [$new, $memberId, $oldFirst]);
+        }
+    } catch (PDOException $ex) {
+        // žaidimo lentelių dar nėra (db/035)
+    }
+}
+
 /**
  * Paskyros nustatymai (el. paštas, telefonas, slaptažodis, prisijungimas su kodu) - tėvų paskyroje ir trenerio apžvalgoje.
  * Sėkmės atveju nukreipia į $back; klaidos įrašomos į $errors.
@@ -460,6 +481,9 @@ function handle_account_settings(array $a, string $back, array &$errors): void
             return;
         }
         q('UPDATE accounts SET first_name = ?, last_name = ? WHERE id = ?', [$fn, $ln, $aid]);
+        // #158: tas pats žmogus kaip narys („aš“) ir jo Dojo personažas - irgi naujas vardas
+        q('UPDATE members m JOIN account_members am ON am.member_id = m.id SET m.first_name = ?, m.last_name = ? WHERE am.account_id = ? AND am.relation = "self"', [$fn, $ln, $aid]);
+        sync_hero_names($aid, null, (string) $a['first_name'], $fn);
         flash('ok', t('Vardas pakeistas.'));
         redirect($back);
     }

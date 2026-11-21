@@ -28,6 +28,25 @@
   function go(url) { location.href = url; }
   function matchUrl(id, game) { return (game === 'keturi' ? R.urls.keturiMatch : R.urls.match).replace('MID', id); }
 
+  // #159: žaidimai ir priešininko lygiai (pasirinkimas prisimenamas šiame įrenginyje)
+  var GAMES = [
+    { k: 'power', ic: '🏆', n: T('Jėgos kova'), d: T('Svarbūs lygis, daiktai ir gyvūnėlis') },
+    { k: 'fair', ic: '🎯', n: T('Gudrumo kova'), d: T('Visi lygūs - laimi gudresnis') },
+    { k: 'keturi', ic: '🔴', n: T('Keturi iš eilės'), d: T('Sudėk 4 vienoje eilėje') },
+    { k: 'greita', ic: '⚡', n: T('Greita kova'), d: T('Realiu laiku - blokuok laiku') },
+    { k: 'ritmas', ic: '🥁', n: T('Kata ritmas'), d: T('Daryk techniką pagal būgnus') }
+  ];
+  var LEVELS = [{ k: 'easy', n: '🐢 ' + T('Lengvas') }, { k: 'normal', n: '🐸 ' + T('Vidutinis') }, { k: 'hard', n: '🐲 ' + T('Sunkus') }];
+  var arPick = { game: 'power', level: 'easy' };
+  try { var sp = JSON.parse(localStorage.getItem('arenaGame') || '{}'); if (sp.game) arPick.game = sp.game; if (sp.level) arPick.level = sp.level; } catch (e) {}
+  function needsBot(g) { return g === 'power' || g === 'fair' || g === 'keturi'; }
+  function playLabel() {
+    var g = GAMES.filter(function (x) { return x.k === arPick.game; })[0] || GAMES[0];
+    var l = LEVELS.filter(function (x) { return x.k === arPick.level; })[0] || LEVELS[0];
+    return esc(g.n) + (needsBot(arPick.game) ? ' · ' + esc(l.n) : '');
+  }
+  function savePick() { try { localStorage.setItem('arenaGame', JSON.stringify(arPick)); } catch (e) {} }
+
   // =================== Laukiamasis ===================
   function lobby() {
     var html = '<div class="ar-head"><div class="ar-me live">' + heroSvg(artOf(me)) + '</div><div><h1 class="ar-title">🎮 ' + T('Žaidimai') + '</h1>' +
@@ -36,15 +55,17 @@
       '</div><a class="g-btn" href="' + R.urls.dojo + '" style="margin-left:auto">🏯 ' + T('Mano dojo') + '</a></div>';
     html += '<div id="ar-inv"></div>';
     html += '<div class="ar-grid">';
-    html += '<section class="g-card ar-modes"><h3>🥋 ' + T('Treniruotė su partneriu') + '</h3><p class="g-empty">' + T('Botas - treniruočių partneris. Reitingas nesikeičia, bet pergalės skaičiuojamos dovanai (3 per dieną).') + '</p>' +
-      '<div class="ar-modes-grid">' +
-      modeCard('power', '🏆', T('Jėgos kova'), T('Svarbūs lygis, savybės, daiktai ir gyvūnėlis. Stipresnis dažniau laimi, bet gudrumas irgi padeda.')) +
-      modeCard('fair', '🎯', T('Gudrumo kova'), T('Visi lygūs: tos pačios gyvybės ir smūgiai, 3 kortos. Laimi tas, kuris geriau perpranta priešininką.')) +
-      '</div><div class="ar-bots">' + ['easy', 'normal', 'hard'].map(function (l) { return '<div class="ar-bot"><b>' + { easy: '🐢 ' + T('Lengvas'), normal: '🐸 ' + T('Vidutinis'), hard: '🐲 ' + T('Sunkus') }[l] + '</b>' +
-        '<button type="button" class="g-btn sm" data-bot="' + l + '" data-mode="power">🏆 ' + T('Jėgos') + '</button><button type="button" class="g-btn sm" data-bot="' + l + '" data-mode="fair">🎯 ' + T('Gudrumo') + '</button>' +
-        '<button type="button" class="g-btn sm" data-bot="' + l + '" data-game="keturi">🔴 ' + T('Keturi') + '</button></div>'; }).join('') + '</div>' +
-      '<a class="g-game greita" style="margin-top:14px" href="' + R.urls.greita + '"><span class="gi">' + A.icon('greita') + '</span><span>' + T('Greita kova') + '<small>' + T('Realiu laiku: matai, kur smūgiuos - blokuok laiku. Tobulas blokas = kontrataka!') + '</small></span></a>' +
-      '<a class="g-game ritmas" style="margin-top:14px" href="' + R.urls.ritmas + '"><span class="gi">' + A.icon('ritmas') + '</span><span>' + T('Kata ritmas') + '<small>' + T('Muša būgnai - daryk techniką laiku') + '</small></span></a></section>';
+    // #159: aiškus pasirinkimas - 1) ką žaisi, 2) priešininkas (kur jo reikia), 3) vienas didelis „▶ Žaisti“
+    html += '<section class="g-card ar-pick"><h3>🎮 ' + T('Ką žaisi?') + '</h3>' +
+      '<div class="ar-games">' + GAMES.map(function (g) {
+        return '<button type="button" class="ar-game' + (g.k === arPick.game ? ' on' : '') + '" data-pick-game="' + g.k + '" aria-pressed="' + (g.k === arPick.game) + '">' +
+          '<span class="gi">' + g.ic + '</span><b>' + g.n + '</b><small>' + g.d + '</small></button>';
+      }).join('') + '</div>' +
+      '<div class="ar-levels"' + (needsBot(arPick.game) ? '' : ' hidden') + '><span class="ar-lbl">' + T('Priešininkas') + '</span>' + LEVELS.map(function (l) {
+        return '<button type="button" class="ar-lvl' + (l.k === arPick.level ? ' on' : '') + '" data-pick-level="' + l.k + '" aria-pressed="' + (l.k === arPick.level) + '">' + l.n + '</button>';
+      }).join('') + '</div>' +
+      '<button type="button" class="ar-play" data-play="1">▶ ' + T('Žaisti') + ' <span id="ar-play-what">' + playLabel() + '</span></button>' +
+      '<p class="g-empty ar-note">' + T('Botas - treniruočių partneris. Reitingas nesikeičia, bet pergalės skaičiuojamos dovanai (3 per dieną).') + ' ' + T('Su draugu - žemiau, „Iššūkis klubo draugams“.') + '</p></section>';
     html += '<section class="g-card"><h3>🏅 ' + T('Reitingai') + '</h3><div class="ar-tops">' + topList('power', '🏆 ' + T('Jėgos')) + topList('fair', '🎯 ' + T('Gudrumo')) + '</div></section>';
     html += '</div>';
     html += '<section class="g-card" id="zaidejai" style="margin-top:12px"><div class="row" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px"><h3 style="margin:0">⚔️ ' + T('Iššūkis klubo draugams') + '</h3>' +
@@ -56,7 +77,6 @@
     root.addEventListener('click', lobbyClick);
     pollInvites();
   }
-  function modeCard(k, ic, n, d) { return '<div class="ar-mode ' + k + '"><div class="ic">' + ic + '</div><b>' + n + '</b><span>' + d + '</span></div>'; }
   function topList(k, title) {
     var rows = (R.top && R.top[k]) || [];
     return '<div><div class="g-sub" style="margin-top:0">' + title + '</div>' + (rows.length ? '<ol class="ar-top">' + rows.map(function (r) { return '<li class="' + (+r.id === +me.id ? 'me' : '') + '"><a href="' + R.urls.view.replace('HID', r.id) + '">' + esc(r.name) + '</a><b>' + r.r + '</b><small>' + r.w + ':' + r.l + '</small></li>'; }).join('') + '</ol>' : '<p class="g-empty">' + T('Dar niekas nekovojo - būk pirmas!') + '</p>') + '</div>';
@@ -72,6 +92,22 @@
   }
   function lobbyClick(e) {
     var t = e.target.closest('button'); if (!t) return;
+    if (t.dataset.pickGame || t.dataset.pickLevel) {
+      if (t.dataset.pickGame) arPick.game = t.dataset.pickGame; else arPick.level = t.dataset.pickLevel;
+      savePick();
+      root.querySelectorAll('[data-pick-game]').forEach(function (b) { var on = b.dataset.pickGame === arPick.game; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
+      root.querySelectorAll('[data-pick-level]').forEach(function (b) { var on = b.dataset.pickLevel === arPick.level; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
+      $('.ar-levels').hidden = !needsBot(arPick.game);
+      $('#ar-play-what').innerHTML = playLabel();
+      return;
+    }
+    if (t.dataset.play) {
+      if (arPick.game === 'greita') return go(R.urls.greita);
+      if (arPick.game === 'ritmas') return go(R.urls.ritmas);
+      t.disabled = true;
+      var game = arPick.game === 'keturi' ? 'keturi' : 'kova';
+      return api({ action: 'bot', level: arPick.level, mode: arPick.game === 'keturi' ? 'fair' : arPick.game, game: game }).then(function (d) { if (d.ok) go(matchUrl(d.id, game)); else t.disabled = false; });
+    }
     if (t.dataset.me) { var u = new URL(location.href); u.searchParams.set('h', t.dataset.me); return go(u.toString()); }
     if (t.dataset.bot) { t.disabled = true; return api({ action: 'bot', level: t.dataset.bot, mode: t.dataset.mode || 'fair', game: t.dataset.game || 'kova' }).then(function (d) { if (d.ok) go(matchUrl(d.id, t.dataset.game)); else t.disabled = false; }); }
     if (t.dataset.inv) { t.disabled = true; return api({ action: 'invite', to: t.dataset.inv, mode: t.dataset.mode || 'fair', game: t.dataset.game || 'kova' }).then(function (d) { if (d.ok) { toast('📨 ' + T('Kvietimas išsiųstas - laukiame atsakymo…')); pollInvites(); } t.disabled = false; }); }

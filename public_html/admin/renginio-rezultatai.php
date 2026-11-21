@@ -94,6 +94,11 @@ page_start((t('Rezultatai:') . ' ') . $event['title'], ['admin' => true, 'sectio
   <h1 class="styled" style="margin-top:8px;"><?= e($event['title']) ?></h1>
   <p><?= e(fmt_date($event['starts_on'], true)) ?><?= $event['location'] ? ' · ' . e($event['location']) : '' ?></p>
 </div>
+<?php if ($event['type'] === 'competition'):   // #157: iš kur rezultatai
+    try { $budoT = q_one('SELECT id, is_test FROM tournaments WHERE event_id = ? ORDER BY id DESC LIMIT 1', [$id]); } catch (PDOException $ex) { $budoT = null; } ?>
+  <p class="flash flash-info"><?php if ($budoT): ?><?= te('Šios varžybos vyko per Budo: mūsų narių vietos ir taškai persikelia patys kitą dieną po varžybų. Čia galite tik pataisyti.') ?> <a href="<?= url('admin/varzybos.php#t' . (int) $budoT['id']) ?>"><?= te('Budo varžybos →') ?></a>
+  <?php else: ?><?= te('Varžybos vyko ne per Budo (pvz. kitų organizatorių) - pažymėkite, kurią vietą užėmė mūsų nariai. Budo varžybų rezultatai persikelia patys.') ?><?php endif; ?></p>
+<?php endif; ?>
 
 <div class="panel card small" style="padding:16px 20px;">
   <?= te('Taškai:') ?>

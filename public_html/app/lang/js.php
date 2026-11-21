@@ -302,4 +302,12 @@ return [
     'Už ką gauta',
     'Dar nieko - XP ateina iš aktyvumo taškų klube.',
     'Kaip gauti daugiau',
+    'Ką žaisi?',
+    'Žaisti',
+    'Su draugu - žemiau, „Iššūkis klubo draugams“.',
+    'Svarbūs lygis, daiktai ir gyvūnėlis',
+    'Visi lygūs - laimi gudresnis',
+    'Sudėk 4 vienoje eilėje',
+    'Realiu laiku - blokuok laiku',
+    'Daryk techniką pagal būgnus',
 ];

@@ -4,6 +4,14 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.73 - 2026-11-21 (atsiliepimai #157-#159)
+- #157: varžybos, vykusios per Budo, nebeprašo „Įvesk rezultatus“ - kitą dieną po varžybų mūsų narių vietos ir taškai persikelia patys.
+  Varžyboms ne per Budo (kitų organizatorių) - „Įrašyk mūsų narių vietas“, o rezultatų puslapyje paaiškinta, iš kur jie.
+- #158: pakeitus vardą (Mano paskyra → Nustatymai arba Valdymas → Nariai) - tas pats vardas ir nario kortelėje, ir Dojo personaže
+  (jei personažui duotas savas slapyvardis - jis lieka).
+- #159: Arena - aiškus pasirinkimas: 1) „Ką žaisi?“ (5 kortelės), 2) priešininkas (Lengvas / Vidutinis / Sunkus - tik kur jo reikia),
+  3) vienas didelis „▶ Žaisti“ su užrašu, ką žaisi. Pasirinkimas prisimenamas.
+
 ## v1.72 - 2026-11-21 (nario apatinė juosta, Dojo kampe, atsiliepimai #154-#156)
 - Nariams, tėvams ir vaikams telefone ir planšetėje - apatinė juosta kaip programėlėje: Apžvalga (vaikui - Mano diena), Renginiai,
   Užduotys, Egzaminas ir ⋯ Daugiau (Nustatymai, Tėvams, svetainės skiltys, Atsijungti). ☰ ir paskyros skirtukų eilutė telefone nebereikalingi.

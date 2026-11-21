@@ -628,6 +628,31 @@ function render_attendance(int $memberId): string
 
 // ---------- Trenerio „Šiandien“ ----------
 
+/**
+ * #157: renginys susietas su Budo varžybomis - rezultatai ateina iš Budo. Pasibaigus varžyboms (kitą dieną) narių vietos ir taškai
+ * perkeliami automatiškai vieną kartą (tas pats, kas „→ Taškai“ Budo sąraše). true - renginys valdomas per Budo (rankiniu būdu vesti nereikia).
+ */
+function budo_results_auto_transfer(array $ev): bool
+{
+    try {
+        $t = q_one('SELECT * FROM tournaments WHERE event_id = ? AND is_test = 0 ORDER BY id DESC LIMIT 1', [(int) $ev['id']]);
+    } catch (PDOException $ex) {
+        return false;   // dar neimportuotas db/025
+    }
+    if (!$t) {
+        return false;
+    }
+    $a = current_account();
+    if ($a && is_staff($a) && !empty(tournament_results($t)['categories']) && (string) ($t['ends_on'] ?: $t['starts_on']) < date('Y-m-d')) {
+        try {
+            tournament_results_to_points($t, (int) $a['id']);
+        } catch (Throwable $ex) {
+            // nepavyko - lieka rankinis „→ Taškai“ Budo sąraše; punkto vis tiek nerodome
+        }
+    }
+    return true;
+}
+
 /** „Reikia padaryti“ punktai treneriui: [[tekstas, kelias, mygtukas], ...]. Skaičius rodomas ir ant „Valdymas“ mygtuko. */
 function admin_todo_items(): array
 {
@@ -650,9 +675,15 @@ function admin_todo_items(): array
         $past = q_all($sql . ' ORDER BY e.starts_on DESC');   // dar neimportuotas db/026
     }
     foreach ($past as $ev) {
-        $todo[] = in_array($ev['type'], ['exam', 'competition'], true)
-            ? [(t('Įvesk rezultatus:') . ' ') . $ev['title'] . ' (' . fmt_date($ev['starts_on']) . ')', 'admin/renginio-rezultatai.php?id=' . (int) $ev['id'], t('Rezultatai')]
-            : [(t('Pažymėk, kas buvo:') . ' ') . $ev['title'] . ' (' . fmt_date($ev['starts_on']) . ')', 'admin/treniruote.php?e=' . (int) $ev['id'], t('Kas buvo')];
+        // #157: varžybos per Budo - rezultatai ir taškai persikelia patys (kitą dieną po varžybų); vesti nieko nereikia
+        if ($ev['type'] === 'competition' && budo_results_auto_transfer($ev)) {
+            continue;
+        }
+        $todo[] = $ev['type'] === 'competition'
+            ? [(t('Įrašyk mūsų narių vietas:') . ' ') . $ev['title'] . ' (' . fmt_date($ev['starts_on']) . ')', 'admin/renginio-rezultatai.php?id=' . (int) $ev['id'], t('Rezultatai')]
+            : ($ev['type'] === 'exam'
+                ? [(t('Įvesk rezultatus:') . ' ') . $ev['title'] . ' (' . fmt_date($ev['starts_on']) . ')', 'admin/renginio-rezultatai.php?id=' . (int) $ev['id'], t('Rezultatai')]
+                : [(t('Pažymėk, kas buvo:') . ' ') . $ev['title'] . ' (' . fmt_date($ev['starts_on']) . ')', 'admin/treniruote.php?e=' . (int) $ev['id'], t('Kas buvo')]);
     }
     // Naujos žinutės ir komentarai (prie renginių, naujienų, pamokų) - viena eilutė, atsidaro pokalbis
     if ($n = staff_unread_messages()) {
