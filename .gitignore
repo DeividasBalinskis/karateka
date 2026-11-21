@@ -31,3 +31,8 @@ desktop.ini
 
 # Įkėlimo paketai (generuojami)
 /ikelimui/
+
+# C4 vaizdinė apsauga - nuotraukos tik kompiuteryje
+tests/visual/__baseline__/
+tests/visual-results/
+tests/visual-report/

@@ -1,0 +1,40 @@
+/* C4: dizaino žetonai - vienas mastelis visiems puslapiams (karateka.lt, Valdymas; Budo ir LTKF skaito tuos pačius dydžius).
+   Kraunama pirma (prieš header.css ir app.css). Reikšmės - tokios pat kaip iki šiol, todėl vaizdas nesikeičia.
+   Nauji ir taisomi stiliai naudoja šiuos kintamuosius, ne naujus skaičius (C5 tvarkys senus).
+
+   Pločiai (media užklausose kintamųjų naudoti negalima - tik šie skaičiai):
+     telefonas  ≤ 480px  ·  didelis telefonas / planšetė ≤ 768px  ·  planšetė / mažas kompiuteris ≤ 1100px  ·  platus ≥ 1440px
+   Valdymui ir Budo dar tikrinama 1280px ir 2560px (tests/visual). */
+:root{
+  /* Spalvos - karateka.lt */
+  --ink:#17140F;
+  --ink-deep:#120E0A;
+  --muted:#4A453A;
+  --cream:#F7F4EC;
+  --accent:#2F6B5A;
+  --accent-dark:#204B3F;
+  --pink:#A85C7E;
+  --blue:#5C68A0;
+  --danger:#B5281F;
+  --warn-ink:#8A4A0E;
+  --border:rgba(23,20,15,0.12);
+  --border-soft:rgba(23,20,15,0.08);
+  /* Valdymo mygtuko ir aktyvaus skyriaus spalva */
+  --admin-gradient:linear-gradient(135deg, #5B5FDA 0%, #8A4FC9 55%, #C2569A 100%);
+  --admin-gradient-hover:linear-gradient(135deg, #6468E6 0%, #9558D4 55%, #CC5FA4 100%);
+  /* Tarpai: 4 · 8 · 12 · 16 · 24 · 32 · 48 */
+  --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:24px; --sp-6:32px; --sp-7:48px;
+  /* Kampai */
+  --radius-sm:8px; --radius-md:12px; --radius:16px; --radius-pill:999px;
+  /* Šriftai ir dydžiai */
+  --font-body:'Inter', sans-serif;
+  --font-head:'Space Grotesk', 'Inter', sans-serif;
+  --font-mono:'JetBrains Mono', monospace;
+  --fs-xs:0.75rem; --fs-sm:0.875rem; --fs-md:1rem; --fs-lg:1.125rem; --fs-xl:1.375rem; --fs-2xl:1.75rem; --fs-3xl:2.25rem;
+  /* Šešėliai */
+  --shadow-sm:0 6px 16px rgba(23,20,15,0.08);
+  --shadow-md:0 10px 24px rgba(23,20,15,0.08);
+  --shadow-lg:0 20px 44px rgba(23,20,15,0.10);
+  /* Liečiamų mygtukų mažiausias aukštis (telefone ir planšetėje) */
+  --tap:44px;
+}

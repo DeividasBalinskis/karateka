@@ -47,3 +47,8 @@ DB_HOST=127.0.0.1 DB_USER=root DB_PASS=root npm run test:clean
 ## Greitas rinkinys (smoke, ~2 min)
 `bash tests/smoke.sh` - greitos patikros, švari testų duomenų bazė ir svarbiausi scenarijai (prisijungimas su kodu,
 v1.53-v1.54 naujovės, pranešimai, egzamino nuorodos, testų peržiūra). Pilnas rinkinys (~20 min) - prieš įkėlimą.
+
+## Vaizdinė apsauga (C4, prieš CSS darbus)
+`bash tests/visual.sh update` - 15 puslapių nuotraukos 375 / 768 / 1440 px (Valdymas ir Budo - dar 1280 ir 2560) į `tests/visual/__baseline__/`
+(į git nekeliamos). Pakeitus CSS - `bash tests/visual.sh`: palygina, skirtumai matomi `tests/visual-report/index.html`.
+Abu kartus - ta pati duomenų bazė ir ta pati diena (kitaip skiriasi datos ir skaičiai). Dizaino žetonai - `public_html/assets/tokens.css`.

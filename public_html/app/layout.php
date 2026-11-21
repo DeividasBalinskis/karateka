@@ -33,6 +33,7 @@ function page_start(string $title, array $opt = []): void
 <meta name="theme-color" content="#811517">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="<?= e(asset_url('assets/tokens.css')) ?>">
 <link rel="stylesheet" href="<?= e(asset_url('assets/header.css')) ?>">
 <link rel="stylesheet" href="<?= e($css) ?>">
 <link rel="stylesheet" href="<?= e(asset_url('assets/widgets.css')) ?>">
