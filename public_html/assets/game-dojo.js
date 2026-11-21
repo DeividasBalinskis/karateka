@@ -205,7 +205,7 @@
   // ---------- Skiltys ----------
   // Pikselinis personažas kol kas rodo kimono (spalvą) ir tikrą diržą; kiti priedai (kepurės, auros…) grįš, kai bus nupiešti pikseliais
   var PIXEL = !!A.pixel, HIDDEN = PIXEL ? ['belt', 'hair', 'head', 'face', 'neck', 'hands', 'back', 'aura', 'species', 'house', 'decor'] : [];
-  var SLOT_ORDER = PIXEL ? ['weapon', 'kimono'] : ['weapon', 'kimono', 'belt', 'hair', 'head', 'face', 'neck', 'hands', 'back', 'aura'];
+  var SLOT_ORDER = PIXEL ? ['weapon', 'offhand', 'kimono'] : ['weapon', 'offhand', 'kimono', 'belt', 'hair', 'head', 'face', 'neck', 'hands', 'back', 'aura'];
   function renderEquip() {
     var html = '<div class="g-slots">';
     SLOT_ORDER.forEach(function (sl) {

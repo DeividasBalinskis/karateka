@@ -3566,4 +3566,13 @@ Nuo 2013 m. treniravosi Tradicinio karate-do klubo „Sanrei“ komandoje, o 201
     'Treneris - tai paskyros rolė: Valdymas → Nustatymai → Paskyros.' => 'Тренер - это роль аккаунта: Управление → Настройки → Аккаунты.',
     'Siųsti ir el. paštu' => 'Отправить и по эл. почте',
     'Laiškas nariui ir tėvams su šiuo atsakymu' => 'Письмо участнику и родителям с этим ответом',
+    'Kairė ranka' => 'Левая рука',
+    'Bambukinis skydas' => 'Бамбуковый щит',
+    'Antra tonfa' => 'Вторая тонфа',
+    'Medinis skydas' => 'Деревянный щит',
+    'Antras sai' => 'Второй сай',
+    'Plieninis skydas' => 'Стальной щит',
+    'Antra šešėlių kama' => 'Вторая теневая кама',
+    'Skydas: gali blokuoti 2 lygius' => 'Щит: можно блокировать 2 уровня',
+    'Du ginklai: gali smūgiuoti 2 kartus' => 'Два оружия: можно бить дважды',
 ];
