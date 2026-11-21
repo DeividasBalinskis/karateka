@@ -3541,4 +3541,5 @@ From 2013 he trained with the team of the traditional karate-do club "Sanrei", a
     'Užduočių nėra' => 'No tasks',
     'Visos užduotys →' => 'All tasks →',
     'Kas toliau' => 'What\'s next',
+    'Tėvams' => 'Parents',
 ];

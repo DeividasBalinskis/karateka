@@ -328,7 +328,13 @@ body.theme-dark .am-gh{color:#A9A2B8;}
   .m-sheet{position:fixed; left:8px; right:8px; bottom:72px; max-height:70vh; overflow:auto; padding:8px; border-radius:18px; background:#FBF9F4; border:1px solid rgba(23,20,15,.08); box-shadow:0 -10px 40px rgba(23,20,15,.25);}
   body:has(.m-tabbar) .fb, body:has(.m-tabbar) .chat-fab, body:has(.m-tabbar) #chatFab, body:has(.m-tabbar) .fb-fab{bottom:84px !important;}
   body:has(.m-tabbar) .site-footer{padding-bottom:80px;}
+  html:has(.m-tabbar){scroll-padding-bottom:88px;}   /* laukelis, į kurį slenkama, nelieka po apatine juosta */
   body.m-more-open::after{content:""; position:fixed; inset:0; z-index:250; background:rgba(23,20,15,.32);}
+  /* B8: nario apatinė juosta - ☰ ir paskyros skirtukų eilutė nebereikalingi (viskas juostoje ir ⋯ Daugiau) */
+  .site-header.pm-nariams .burger{display:none !important;}
+  .site-header.pm-nariams .sub-nav{display:none;}
+  .m-tabbar.mt-member > a .count-badge{position:absolute; top:2px; right:18%;}
+  body:has(.mt-member) .account-top .logout{display:none;}   /* „Atsijungti“ - ⋯ Daugiau */
   /* 3) Eilutė + 🌐: ☰ nebėra, svetainė - 🌐 */
   .site-header.pm-eilute .burger{display:none !important;}
   .site-header.pm-eilute .pm-site{display:block; position:relative;}
@@ -372,4 +378,15 @@ body.theme-dark .site-header .fold-btn{color:#ECE8F4;}
 @media(max-width:400px){
   .site-header nav{gap:6px;}
   .site-header .nav-cta{padding:0 10px;}
+}
+
+/* B8: nariams 🏯 Dojo - ypatingas mygtukas dešiniame kampe (kompiuteryje šalia „Mano paskyra“, telefone - viršuje dešinėje) */
+.site-header .nav-dojo{display:inline-flex; align-items:center; gap:6px; min-height:40px; padding:8px 14px; border-radius:999px; font-weight:700; text-decoration:none;
+  background:linear-gradient(135deg,#1F1A2E,#3A2A55); color:#FFD27A !important; box-shadow:0 6px 16px rgba(31,26,46,.28), inset 0 1px 0 rgba(255,255,255,.12);}
+.site-header .nav-dojo:hover{filter:brightness(1.12);}
+.site-header .nav-dojo.is-current{box-shadow:0 0 0 3px rgba(255,210,122,.45), 0 6px 16px rgba(31,26,46,.3);}
+.m-dojo{display:none;}
+@media (max-width:1100px){
+  .site-header.pm-nariams .m-dojo{display:inline-flex; align-items:center; justify-content:center; width:44px; height:44px; margin-left:auto; border-radius:14px; font-size:22px; text-decoration:none;
+    background:linear-gradient(135deg,#1F1A2E,#3A2A55); box-shadow:0 4px 12px rgba(31,26,46,.25);}
 }
