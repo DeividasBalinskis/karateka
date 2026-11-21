@@ -250,6 +250,9 @@ function login_account(int $accountId): void
     $_SESSION['account_id'] = $accountId;
     unset($_SESSION['csrf'], $_SESSION['tfa'], $_SESSION['dev_login_code'], $_SESSION['device_code']);
     q('UPDATE accounts SET last_login_at = NOW() WHERE id = ?', [$accountId]);
+    if ($acc = q_one('SELECT * FROM accounts WHERE id = ?', [$accountId])) {
+        account_self_name_sync($acc);   // #158: senas vardų neatitikimas (iki v1.73)
+    }
     // C2: paskyros kalba - jei išsaugota, ji ir naršyklėje; jei ne - išsaugoma dabartinė
     try {
         $saved = (string) q_value('SELECT lang FROM accounts WHERE id = ?', [$accountId]);
@@ -466,6 +469,27 @@ function sync_hero_names(?int $accountId, ?int $memberId, string $oldFirst, stri
     } catch (PDOException $ex) {
         // žaidimo lentelių dar nėra (db/035)
     }
+}
+
+/**
+ * #158 likutis: paskyra ir jos „aš“ narys - tas pats žmogus. Nuo v1.73 vardas keičiamas abiem kartu; jei jie išsiskyrė anksčiau
+ * (vardas pakeistas iki v1.73), nario kortelė ir Dojo personažas gauna paskyros vardą. Kviečiama atidarius paskyrą, Dojo ir prisijungus.
+ */
+function account_self_name_sync(array $a): void
+{
+    $first = trim((string) $a['first_name']);
+    if ($first === '' || is_kid_login($a)) {
+        return;   // vaiko vardą tvarko tėvai
+    }
+    $m = q_one('SELECT m.id, m.first_name, m.last_name FROM members m JOIN account_members am ON am.member_id = m.id
+                 WHERE am.account_id = ? AND am.relation = "self" ORDER BY m.id LIMIT 1', [(int) $a['id']]);
+    $last = trim((string) $a['last_name']) !== '' ? trim((string) $a['last_name']) : (string) ($m['last_name'] ?? '');
+    if (!$m || ($m['first_name'] === $first && $m['last_name'] === $last)) {
+        return;
+    }
+    q('UPDATE members SET first_name = ?, last_name = ? WHERE id = ?', [$first, $last, (int) $m['id']]);
+    sync_hero_names((int) $a['id'], (int) $m['id'], (string) $m['first_name'], $first);
+    error_log('name sync: member #' . (int) $m['id'] . ' renamed to the account name (account #' . (int) $a['id'] . ')');
 }
 
 /**

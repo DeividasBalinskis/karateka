@@ -9,6 +9,7 @@ $a = require_login();
 if (!is_active_account($a) || !game_allowed($a)) {
     redirect('paskyra.php');
 }
+account_self_name_sync($a);   // #158: paskyros vardas - ir nariui, ir personažui
 $mine = game_my_heroes($a);
 $hero = $mine[0];
 foreach ($mine as $h) {

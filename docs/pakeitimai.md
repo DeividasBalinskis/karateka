@@ -4,6 +4,11 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.85 - 2026-11-21 (Dojo vardas = paskyros vardas ir anksčiau pakeistiems - #158)
+- Jei vardą paskyroje pakeitėte dar iki v1.73, nario kortelė ir Dojo personažas buvo likę su senu vardu (pvz. „Tomas B.“).
+  Dabar atidarius Mano paskyrą ar Dojo (ir prisijungus) jie gauna paskyros vardą. Nauji pakeitimai - kaip nuo v1.73, iškart visur.
+- Savo slapyvardžio personažui (jei duotas) tai nekeičia.
+
 ## v1.84 - 2026-11-21 (telefone 💡 ir 💬 - atskiri mygtukai)
 - Telefone ir planšetėje 💡 atsiliepimų mygtukas nebeslepiamas po 💬: 💡 - kairėje apačioje, 💬 žinutės - dešinėje (kaip kompiuteryje).
   Abu pasislepia, kai rašote tekstą, atidarytas „⋯ Daugiau“ ar vyksta kova Budo.

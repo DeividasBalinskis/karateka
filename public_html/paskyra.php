@@ -4,6 +4,7 @@ require __DIR__ . '/app/bootstrap.php';
 
 $a = require_login();
 $aid = (int) $a['id'];
+account_self_name_sync($a);   // #158: senas vardų neatitikimas (vardas pakeistas iki v1.73) sutvarkomas
 $errors = [];
 
 if (is_post()) {

@@ -1,5 +1,5 @@
 # Handoff
-Updated: 2026-11-21 · version v1.84 · branch claude/festive-curie-01jgx2
+Updated: 2026-11-21 · version v1.85 · branch claude/festive-curie-01jgx2
 
 ## Pending asks (answer these first)
 | Asked | By | What | Status |
@@ -40,6 +40,7 @@ Updated: 2026-11-21 · version v1.84 · branch claude/festive-curie-01jgx2
 - v1.82: C4 - `assets/tokens.css` (loaded first, same values, 55/55 screenshots identical) + `tests/visual.sh` (baseline / compare; PW_CHROMIUM for a custom browser path).
 - v1.83: B2 - quick competition (Kata/Kumite ticked) no longer creates a member event by default. B8 closed by decision (Nustatymai = Paskyra page). Full suite on v1.82: 154 passed, 1 skipped, 1 failed (07s - test login reset the language it checks; fixed, passes).
 - v1.84: Deividas - on a phone 💡 is its own button again (left), 💬 stays messages (right); the B4 combined button is removed. „į main“ given 2026-11-21: main = v1.84.
+- v1.85: #158 rest - an old account/member name mismatch (name changed before v1.73) heals on Paskyra, Dojo or login: the „self“ member and its hero take the account name (account_self_name_sync in app/auth.php). main is still v1.84 - v1.85 waits for „į main“.
 - Committed and pushed to the claude branch after each stage.
 
 ## Open
