@@ -1,5 +1,5 @@
 # Handoff
-Updated: 2026-11-21 · version v1.69 · branch claude/festive-curie-01jgx2
+Updated: 2026-11-21 · version v1.70 · branch claude/festive-curie-01jgx2
 
 ## Pending asks (answer these first)
 | Asked | By | What | Status |
@@ -21,10 +21,11 @@ Updated: 2026-11-21 · version v1.69 · branch claude/festive-curie-01jgx2
 - v1.61-v1.66: D5 polish of index, events, login, Paskyra, news, Treniruotė, exam pages, Valdymas lists, LTKF (tap targets; small buttons 40 px on touch); protocol fits 1100-1366 px again. C6 smoke set `tests/smoke.sh`.
 - v1.67-v1.68: D5 Valdymas lists + LTKF on a phone.
 - v1.69: quiz „Atsisiųsti klausimus“ in the page header; Dojo in the menu for real admins while hidden (decision 2026-11-21).
+- v1.70: B5 done - member/parent red number = only to-dos (tasks, unread notes and replies, invitations waiting for an answer).
 - Committed and pushed to the claude branch after each stage; `main` untouched.
 
 ## Open
-- B5 rest (member red number = only to-dos, decided 2026-11-21); B8 kid home variant B (decided 2026-11-21); C4-C6; D5 page polish; D7 shield / second weapon in the arena.
+B8 kid home variant B (decided 2026-11-21); C4-C6; D5 page polish; D7 shield / second weapon in the arena.
 - Budo registration by club leaders (add own kids, choose events); parent payments need a payment provider (later).
 
 ## Next

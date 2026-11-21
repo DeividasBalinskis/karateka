@@ -144,30 +144,6 @@ function notification_todo_count(int $accountId): int
     return $cache[$accountId];
 }
 
-function notification_count(int $accountId): int
-{
-    static $cache = [];
-    if (!isset($cache[$accountId])) {
-        try {
-            $cache[$accountId] = (int) q_value('SELECT COUNT(*) FROM notifications WHERE account_id = ? AND important = 1 AND done_at IS NULL AND read_at IS NULL AND type <> \'feedback\'', [$accountId]);
-        } catch (PDOException $ex) {
-            $cache[$accountId] = 0;
-        }
-    }
-    return $cache[$accountId];
-}
-
-/** Kiek svarbių neperskaitytų pranešimų apie konkretų narį (skaičiukas prie nario vardo) */
-function member_notification_count(int $accountId, int $memberId): int
-{
-    try {
-        return (int) q_value('SELECT COUNT(*) FROM notifications WHERE account_id = ? AND member_id = ? AND important = 1 AND done_at IS NULL AND read_at IS NULL',
-            [$accountId, $memberId]);
-    } catch (PDOException $ex) {
-        return 0;
-    }
-}
-
 /** Išsprendžia pranešimą visiems gavėjams (pvz. vienas adminas patvirtino - kitų kopijos irgi dingsta) */
 function notifications_done(string $type, ?int $refId, ?int $memberId = null): void
 {

@@ -590,7 +590,7 @@ function site_header(bool $home = false, ?string $area = null, ?string $tab = nu
           <?php if ($a && is_staff($a) && admin_mode()): ?>
             <li><a class="nav-login<?= $area === 'admin' ? ' is-current' : '' ?>" href="<?= url('admin/') ?>"><?= te('Valdymas') ?><?php if ($n = staff_attention_count((int) $a['id'])): ?><span class="count-badge nav-bubble" title="<?= te('Reikia padaryti: pranešimai, patvirtinimai ir kiti darbai') ?>"><?= $n ?></span><?php endif; ?></a></li>
           <?php elseif ($a): ?>
-            <li><a class="nav-login<?= $area === 'account' ? ' is-current' : '' ?>" href="<?= url('paskyra.php' . (($am = account_attention_member((int) $a['id'])) ? '?m=' . $am : '')) ?>"><?= te('Mano paskyra') ?><?php if ($att = account_attention_count((int) $a['id'])): ?><span class="count-badge nav-bubble" title="<?= te('Nauji pranešimai, pastabos ar neatliktos užduotys') ?>"><?= $att ?></span><?php endif; ?></a></li>
+            <li><a class="nav-login<?= $area === 'account' ? ' is-current' : '' ?>" href="<?= url('paskyra.php' . (($am = account_attention_member((int) $a['id'])) ? '?m=' . $am : '')) ?>"><?= te('Mano paskyra') ?><?php if ($att = account_attention_count((int) $a['id'])): ?><span class="count-badge nav-bubble" title="<?= te('Reikia padaryti: užduotys, pastabos, kvietimai') ?>"><?= $att ?></span><?php endif; ?></a></li>
           <?php endif; ?>
           <?php if ($a && is_staff($a)): ?>
             <li class="adm-li"><?= admin_mode_toggle() ?></li>

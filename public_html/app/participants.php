@@ -151,13 +151,22 @@ function event_participant_counts(int $eventId): array
     return $out;
 }
 
-/** Kiek neatsakytų kvietimų turi paskyros nariai (artėjantys renginiai) */
-function account_pending_invites(int $accountId): int
+/**
+ * Kiek kvietimų laukia atsakymo (paskyros nariai arba vienas narys - $memberId).
+ * Tik tie, į kuriuos dar galima atsakyti: renginys dar neprasidėjo (render_event_rsvp - iki dienos prieš) ir registracija įjungta.
+ */
+function account_pending_invites(int $accountId, ?int $memberId = null): int
 {
-    return (int) q_value('SELECT COUNT(*) FROM event_participants ep
+    static $cache = [];
+    $key = $accountId . ':' . (int) $memberId;
+    if (!isset($cache[$key])) {
+        $cache[$key] = !reg_on('events') ? 0 : (int) q_value('SELECT COUNT(*) FROM event_participants ep
                             JOIN account_members am ON am.member_id = ep.member_id
                             JOIN events e ON e.id = ep.event_id
-                           WHERE am.account_id = ? AND ep.status = "invited" AND COALESCE(e.ends_on, e.starts_on) >= CURDATE()', [$accountId]);
+                           WHERE am.account_id = ? AND ep.status = "invited" AND e.starts_on > CURDATE()'
+            . ($memberId !== null ? ' AND ep.member_id = ' . (int) $memberId : ''), [$accountId]);
+    }
+    return $cache[$key];
 }
 
 /**
