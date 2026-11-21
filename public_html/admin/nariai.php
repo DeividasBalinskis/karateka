@@ -233,6 +233,10 @@ if ($id) {
             q('UPDATE members SET first_name = ?, last_name = ?, birth_date = ?, gender = ?, group_id = ?, status = ?, photo_consent = ?, belt_level = ? WHERE id = ?',
                 [$first, $last, $birth, $gender, $group, $status, !empty($_POST['photo_consent']) ? 1 : 0, belt_from_post('belt_level'), $id]);
             set_member_tags($id, (array) ($_POST['tags'] ?? []));
+            if ($first !== $m['first_name'] || $last !== $m['last_name']) {   // #158: savo paskyros vardas ir Dojo personažas - irgi
+                q('UPDATE accounts a JOIN account_members am ON am.account_id = a.id SET a.first_name = ?, a.last_name = ? WHERE am.member_id = ? AND am.relation = "self"', [$first, $last, $id]);
+                sync_hero_names(null, $id, (string) $m['first_name'], $first);
+            }
             if ($birth !== $m['birth_date']) {
                 set_birth_precision($id, 0);   // data patikslinta
             }

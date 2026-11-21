@@ -118,7 +118,8 @@ test('arena: fight a bot, quick fight, four in a row and kata rhythm', async ({ 
   const k = await login(browser, 'jaunuolis@karateka.test', 1280, 900);
   await k.goto('arena.php');
   check('lobby with club players', await k.locator('#ar-heroes .g-hcard').count() > 3);
-  await nav(k, () => k.click('[data-bot=easy][data-mode=power]'));
+  await k.click('[data-pick-game=power]'); await k.click('[data-pick-level=easy]');   // #159: pasirinkimas, tada vienas „▶ Žaisti“
+  await nav(k, () => k.click('.ar-play'));
   await k.waitForSelector('.fa-chk');
   // Viena arena: abu pikseliniai kovotojai tame pačiame fone, lentelė - ant fono, kovos eiga - šone
   check('one arena: both pixel fighters, board over the background, log on the side', await k.locator('.fa-arena #f-a img.px-hero').count() === 1 && await k.locator('.fa-arena #f-b img.px-hero').count() === 1
