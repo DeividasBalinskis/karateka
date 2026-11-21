@@ -45,7 +45,7 @@ Status: ☐ not started · ◐ partly done · ☑ done
 
 | Step | What | Who it helps | Size | Flags | Status |
 |---|---|---|---|---|---|
-| **A1** | Budo: results must never disappear | Denis, secretariat, everyone at a competition | S | — | ◐ v1.48 |
+| **A1** | Budo: results must never disappear | Denis, secretariat, everyone at a competition | S | — | ☑ v1.48 + v1.76 (unsaved changes kept on the device and merged after reopening; past lost results: none known on test) |
 | **A2** | Lock the doors (5 quick security fixes) | Denis, parents | S | — | ☑ v1.48 |
 | **A3** | Exam links: no stranger gets a child's page | kids, parents, examiners | M | plan first | ☑ v1.52 + v1.56 (already-registered without link, no name-only match, no phone overwrite / un-delete, find limited per IP in DB and off after the exam, ↻ new link, feedback scrubs secrets; personal page without phone, birth year only) |
 | **A4** | Real admins vs testers; your login | Deividas, Denis, testers | M | reikia leidimo | ☑ v1.49 (your login: still to create) |

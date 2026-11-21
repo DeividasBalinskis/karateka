@@ -136,7 +136,7 @@
           if (!typingNow() && !dragId) render(); else awPending = true;
         }
         if (stateCh) { try { stateCh.postMessage({ v: version, state: JSON.parse(body).state }); } catch (e) {} }
-        if (dirty) flush();
+        if (dirty) flush(); else dropPending();
       })
       .catch(function () { saving = false; dirty = true; setStatus('Nėra ryšio - bandysime dar kartą', 'err'); saveTimer = setTimeout(flush, 5000); });
   }
@@ -203,9 +203,17 @@
       }).catch(function () {});
   }
   setInterval(pullServer, 8000);
+  // A1: neišsaugotų pakeitimų kopija šiame įrenginyje - jei skirtukas uždaromas, kol saugoma, po perkrovimo sujungiama ir išsaugoma
+  var PEND = 'taika-pend-' + CFG.id;
+  function keepPending() {
+    if (CFG.readOnly || !CFG.api) return;
+    try { localStorage.setItem(PEND, JSON.stringify({ t: Date.now(), v: version, snap: savedSnap, state: stateObj() })); } catch (e) {}
+  }
+  function dropPending() { try { localStorage.removeItem(PEND); } catch (e) {} }
   function save() {
     if (CFG.readOnly) return;
     dirty = true;
+    keepPending();
     setStatus('Keičiama…', 'busy');
     clearTimeout(saveTimer);
     saveTimer = setTimeout(flush, 700);
@@ -3377,6 +3385,19 @@
     renderPins();
   }
   load(); markSaved(stateObj());
+  (function restorePending() {
+    var p = null;
+    try { p = JSON.parse(localStorage.getItem(PEND) || 'null'); } catch (e) {}
+    if (!p || !p.state || !p.snap || CFG.readOnly || !CFG.api) return;
+    if (Date.now() - (p.t || 0) > 2 * 86400000) { dropPending(); return; }   // senesnė nei 2 d. - nebeaktuali
+    // Mūsų paskutiniai pakeitimai (palyginus su tuo, kas tada buvo išsaugota) uždedami ant dabartinės serverio būsenos ir išsaugomi
+    var server = stateObj(), before = JSON.stringify(server), serverCopy = JSON.parse(before);
+    CFG.state = p.state; load(); savedSnap = p.snap;
+    var merged = rebase(server);   // rebase keičia ir grąžina tą patį objektą - todėl palyginimui kopija
+    CFG.state = merged; load(); markSaved(serverCopy);
+    if (JSON.stringify(stateObj()) === before) { dropPending(); return; }   // viskas jau buvo išsaugota
+    dirty = true; setStatus('Atkurti neišsaugoti pakeitimai - saugoma…', 'busy'); setTimeout(flush, 300);
+  })();
   // Naujos test varžybos: kategorijos sudaromos ir dalis kovų „sužaidžiama“ pirmą kartą atidarius
   if (S.autoCats) { delete S.autoCats; autoCategories(); save(); }
   // Greitos varžybos: kuriant pažymėta „po vieną grupę visiems“ - grupė kiekvienai rungčiai su visais dalyviais
