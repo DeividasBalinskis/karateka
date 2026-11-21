@@ -183,7 +183,7 @@ function feedback_all(?array $a, int $limit = 60): array
 function feedback_json(array $f): array
 {
     return ['id' => (int) $f['id'], 'title' => feedback_title($f), 'body' => (string) $f['body'], 'status' => $f['status'], 'statusLabel' => t(FEEDBACK_STATUS[$f['status']][0] ?? ''),
-            'reply' => (string) $f['reply'], 'page' => (string) $f['page'], 'site' => (string) ($f['site'] ?? ''), 'date' => fmt_date(substr($f['created_at'], 0, 10)),
+            'reply' => (string) $f['reply'], 'page' => (string) $f['page'], 'site' => (string) ($f['site'] ?? ''), 'siteLabel' => FEEDBACK_SITES[$f['site'] ?? ''] ?? '', 'date' => fmt_date(substr($f['created_at'], 0, 10)),
             'images' => array_map(function ($i) { return ['id' => (int) $i['id'], 'thumb' => feedback_image_url($i, true), 'full' => feedback_image_url($i)]; }, feedback_images((int) $f['id'])),
             'author' => trim((string) ($f['first_name'] ?? '') . ' ' . (string) ($f['last_name'] ?? '')) ?: (string) ($f['name'] ?? ''), 'mine' => feedback_can_edit(current_account(), $f)];
 }

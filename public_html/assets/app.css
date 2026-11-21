@@ -1583,6 +1583,7 @@ tr.res-failed td{background:rgba(192,57,43,0.06);}
 /* Šiandien: treniruotės - tik nuoroda į „Treniruotė“ (viena vieta) */
 .today-trainings{display:flex; flex-wrap:wrap; align-items:center; gap:8px 14px; text-decoration:none; color:inherit;}
 .today-trainings .tt-line{flex:1; min-width:160px;}
+.today-trainings .kicker{flex-basis:100%;}   /* antraštė atskiroje eilutėje - tekstas nesusispaudžia į 4 eilutes */
 .today-trainings:hover{box-shadow:0 6px 20px rgba(0,0,0,.08);}
 .gt-done{font-weight:700;}
 /* Mokestis pagal lankomumą */
@@ -2041,4 +2042,15 @@ a.kid-mini:hover{border-color:var(--accent);}
   .kid-ring b{font-size:1.7rem;}
   .kid-hi h1{font-size:1.35rem;}
   .kid-mini{padding:12px; min-height:128px;}
+}
+
+/* #155: Šiandien „Reikia padaryti“ - kompaktiškesnės eilutės (kompiuteryje; telefone mygtukai lieka 40 px) */
+.dash-main #svarbu .notif{padding:7px 0; gap:10px; align-items:center;}
+.dash-main #svarbu .notif-icon{width:30px; height:30px; border-radius:9px; font-size:.9rem;}
+.dash-main #svarbu .notif-title{font-weight:650; font-size:.95rem; line-height:1.3;}
+.dash-main #svarbu .notif-text{margin-top:1px;}
+.dash-main #svarbu .notif:has(.notif-text){align-items:flex-start;}
+.dash-main #svarbu .notif .rsvp{margin-top:4px; padding-top:4px;}
+@media (min-width: 1100px) and (pointer: fine){
+  .dash-main #svarbu .notif-actions .btn-sm{min-height:30px; padding:4px 12px; font-size:.84rem;}
 }

@@ -1,5 +1,5 @@
 # Handoff
-Updated: 2026-11-21 · version v1.71 · branch claude/festive-curie-01jgx2
+Updated: 2026-11-21 · version v1.72 · branch claude/festive-curie-01jgx2
 
 ## Pending asks (answer these first)
 | Asked | By | What | Status |
@@ -23,11 +23,12 @@ Updated: 2026-11-21 · version v1.71 · branch claude/festive-curie-01jgx2
 - v1.69: quiz „Atsisiųsti klausimus“ in the page header; Dojo in the menu for real admins while hidden (decision 2026-11-21).
 - v1.70: B5 done - member/parent red number = only to-dos (tasks, unread notes and replies, invitations waiting for an answer).
 - v1.71: B8 kid home variant B (level ring + XP on top, next training + one task with „✓ Atlikau“, „Kas toliau“; fits 375x812; no logout/prices on the first screen).
+- v1.72: member bottom tab bar on a phone (Apžvalga/Mano diena, Renginiai, Užduotys, Egzaminas, ⋯ Daugiau), 🏯 Dojo as a corner button for members, feedback #154-#156 (LTKF list site tags, compact to-do rows, side menu aligned with the first card).
 - Committed and pushed to the claude branch after each stage; `main` untouched.
 
 ## Open
-- B8 rest: corner by role with 🏯 Dojo, separate Paskyra page, member bottom tab bar on a phone; C4-C6; D5 page polish; D7 shield / second weapon in the arena.
+- B8 rest: separate Paskyra page (Nustatymai covers it for now - confirm); C4-C6; D5 page polish; D7 shield / second weapon in the arena.
 - Budo registration by club leaders (add own kids, choose events); parent payments need a payment provider (later).
 
 ## Next
-- B8 rest (corner, Paskyra page, member tab bar) - needs a yes/no for the tab bar and the separate Paskyra page.
+- B8: confirm that Nustatymai is enough as the „Paskyra“ page. Then C4 design tokens (plan first) or D5 Budo live page.

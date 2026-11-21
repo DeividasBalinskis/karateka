@@ -83,7 +83,7 @@
     if (getComputedStyle(side).position === 'sticky') {
       var kids = Array.prototype.filter.call(main.children, function (el) { return el.offsetParent !== null; }), first = null;
       for (var i = 0; i < kids.length; i++) {
-        if (!kids[i].matches('.flash, .page-head, h1, .crumbs, .lead, .eyebrow')) { first = kids[i]; break; }
+        if (!kids[i].matches('.flash, .page-head, h1, .crumbs, .lead, .eyebrow, a.small, .back-links')) { first = kids[i]; break; }   // #156: ir „← Visi testai“ tipo nuorodos
       }
       if (first && first !== kids[0]) off = Math.max(0, Math.round(first.getBoundingClientRect().top - main.getBoundingClientRect().top + parseFloat(getComputedStyle(first).marginTop || 0) * 0));
     }

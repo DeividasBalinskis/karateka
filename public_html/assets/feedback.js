@@ -37,7 +37,7 @@
         var o = !!openAll[it.id];
         return '<li class="fb-item fb-ro' + (o ? ' open' : '') + '" data-all-id="' + it.id + '" tabindex="0" role="button" title="Paspauskite - visas tekstas">' +
           '<div class="fb-item-top"><span class="fb-item-title">' + esc(it.title) + '</span>' + (it.images.length ? '<span class="fb-item-img">🖼 ' + it.images.length + '</span>' : '') + '</div>' +
-          '<div class="fb-item-meta"><span>' + esc(it.author || '') + (it.mine ? ' · jūsų' : '') + ' · ' + esc(it.date) + '</span><span class="fb-st st-' + esc(it.status) + '">' + esc(it.statusLabel) + '</span></div>' +
+          '<div class="fb-item-meta"><span>' + esc(it.author || '') + (it.mine ? ' · jūsų' : '') + ' · ' + esc(it.date) + (it.siteLabel && it.site !== cfg.site ? ' · <b class="fb-site">' + esc(it.siteLabel) + '</b>' : '') + '</span><span class="fb-st st-' + esc(it.status) + '">' + esc(it.statusLabel) + '</span></div>' +
           (o ? '<div class="fb-ro-body">' + esc(it.body).replace(/\n/g, '<br>') + '</div>' + (it.images.length ? '<div class="fb-ro-imgs">' + it.images.map(function (im) { return '<a href="' + esc(im.full) + '" target="_blank" rel="noopener"><img src="' + esc(im.thumb) + '" alt=""></a>'; }).join('') + '</div>' : '') : '') +
           (it.reply ? '<div class="fb-reply"><b>Atsakymas:</b> ' + esc(it.reply) + '</div>' : '') + '</li>';
       }).join('') : '<li class="muted small">Atsiliepimų dar nėra.</li>';

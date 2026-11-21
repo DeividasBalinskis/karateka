@@ -468,6 +468,23 @@ function account_nav_items(array $a): array
     return $items;
 }
 
+/**
+ * B8: nario apatinės juostos skirtukai: [ženkliukas, pavadinimas, adresas, raudonas skaičius, ar dabartinis].
+ * Mažam vaikui (7-10) - „Mano diena“ vietoj „Apžvalga“.
+ */
+function member_tab_items(array $a, ?string $area, string $tab, ?string $section): array
+{
+    $selfBirth = (string) q_value('SELECT m.birth_date FROM account_members am JOIN members m ON m.id = am.member_id WHERE am.account_id = ? AND am.relation = "self"', [(int) $a['id']]);
+    $little = $selfBirth !== '' && age_on($selfBirth) <= 10;
+    $acc = $area === 'account';
+    return [
+        ['🏠', $little ? t('Mano diena') : t('Apžvalga'), 'paskyra.php', account_attention_count((int) $a['id']), $acc && $tab === 'apzvalga'],
+        ['📅', t('Renginiai'), 'naujienos.php', account_pending_invites((int) $a['id']), in_array($section, ['naujienos', 'renginiai'], true)],
+        ['📋', t('Užduotys'), 'uzduotys.php', 0, $acc && $tab === 'uzduotys'],
+        ['🥋', t('Egzaminas'), 'egzaminas.php', 0, $acc && $tab === 'egzaminas'],
+    ];
+}
+
 /** Skirtukai tarp „Apžvalga“ ir „Nustatymai“. Renginiai ir Pamokos - viršutinėje juostoje, čia nedubliuojama. */
 function account_nav_extra(array $a): array
 {
@@ -536,8 +553,11 @@ function site_header(bool $home = false, ?string $area = null, ?string $tab = nu
     }
     ?>
 <div class="progress-wrap"><div class="progress-bar" id="progressBar"></div></div>
-<?php $pm = $a && is_staff($a) && admin_mode() ? phone_menu_variant() : ''; ?>
-<header class="site-header<?= $pm ? ' pm-' . $pm : '' ?>">
+<?php $pm = $a && is_staff($a) && admin_mode() ? phone_menu_variant() : '';
+// B8 (sprendimas 6a): nariams, tėvams ir vaikams telefone - apatinė juosta kaip programėlėje (be žaidimų ir testo langų)
+$mt = !$pm && $a && !is_staff($a) && is_active_account($a) && $a['status'] === 'active'
+    && !in_array(basename($_SERVER['SCRIPT_NAME'] ?? ''), ['testas.php', 'testas-svecias.php', 'arena.php', 'keturi.php', 'ritmas.php', 'kova-bandymai.php'], true); ?>
+<header class="site-header<?= $pm ? ' pm-' . $pm : '' ?><?= $mt ? ' pm-nariams' : '' ?>">
   <nav>
     <a class="logo" href="<?= $home ? '#' : url('index.php') ?>"><img src="<?= url('img/logo.png') ?>" alt="<?= te('Karateka logotipas') ?>"><?php if (config('env') !== 'live'): ?><span class="ver-tag" title="<?= is_staff() ? te('Kas naujo šioje versijoje') : te('Svetainės versija (rodoma tik testuojant)') ?>"<?= is_staff() ? ' role="link" tabindex="0" onclick="event.preventDefault(); event.stopPropagation(); location.href=' . e(json_encode(url('admin/kas-naujo.php'))) . '"' : '' ?>>v<?= e(site_version()) ?><?= config('env') === 'local' ? (' ' . t('· local')) : '' ?></span><?php endif; ?></a>
     <?php if ($a && is_staff($a)): ?>
@@ -575,7 +595,7 @@ function site_header(bool $home = false, ?string $area = null, ?string $tab = nu
           <?php if ($a && can_see_lessons($a)): ?>
             <li><a class="nav-page<?= $cur('pamokos') ?>" href="<?= url('pamokos.php') ?>"><?= te('Pamokos') ?></a></li>
           <?php endif; ?>
-          <?php if ($a && is_active_account($a) && game_nav_ready()): ?>
+          <?php if ($a && is_active_account($a) && game_nav_ready() && is_staff($a)): // B8: nariams Dojo - atskiras mygtukas dešiniame kampe ?>
             <li><a class="nav-page nav-game<?= $cur('zaidimas') ?>" href="<?= url('dojo.php') ?>"><?= te('🏯 Dojo') ?></a></li>
           <?php endif; ?>
         </ul>
@@ -591,6 +611,9 @@ function site_header(bool $home = false, ?string $area = null, ?string $tab = nu
             <li><a class="nav-login<?= $area === 'admin' ? ' is-current' : '' ?>" href="<?= url('admin/') ?>"><?= te('Valdymas') ?><?php if ($n = staff_attention_count((int) $a['id'])): ?><span class="count-badge nav-bubble" title="<?= te('Reikia padaryti: pranešimai, patvirtinimai ir kiti darbai') ?>"><?= $n ?></span><?php endif; ?></a></li>
           <?php elseif ($a): ?>
             <li><a class="nav-login<?= $area === 'account' ? ' is-current' : '' ?>" href="<?= url('paskyra.php' . (($am = account_attention_member((int) $a['id'])) ? '?m=' . $am : '')) ?>"><?= te('Mano paskyra') ?><?php if ($att = account_attention_count((int) $a['id'])): ?><span class="count-badge nav-bubble" title="<?= te('Reikia padaryti: užduotys, pastabos, kvietimai') ?>"><?= $att ?></span><?php endif; ?></a></li>
+            <?php if (is_active_account($a) && game_nav_ready()): // B8: 🏯 Dojo - kampe, kaip ypatinga vieta ?>
+              <li class="dojo-li"><a class="nav-game nav-dojo<?= $cur('zaidimas') ?>" href="<?= url('dojo.php') ?>" title="<?= te('Tavo personažas, gyvūnėliai, namas ir kovos') ?>"><?= te('🏯 Dojo') ?></a></li>
+            <?php endif; ?>
           <?php endif; ?>
           <?php if ($a && is_staff($a)): ?>
             <li class="adm-li"><?= admin_mode_toggle() ?></li>
@@ -614,6 +637,7 @@ function site_header(bool $home = false, ?string $area = null, ?string $tab = nu
         <div class="am-more-panel"><?= phone_site_links($h, $onpage, $a) ?><?= $area !== 'admin' ? '<a class="am-row" href="' . e(url('admin/')) . '"><span class="am-ic">🛠</span><span class="am-t">' . te('Valdymas') . '</span></a>' : '' ?>
           <form method="post" action="<?= url('atsijungti.php') ?>" class="inline-form"><?= csrf_field() ?><button type="submit" class="am-row am-logout"><span class="am-ic">🚪</span><span class="am-t"><?= te('Atsijungti') ?></span></button></form></div></details>
     <?php endif; ?>
+    <?php if ($mt && game_nav_ready()): ?><a class="m-dojo" href="<?= url('dojo.php') ?>" aria-label="<?= te('🏯 Dojo') ?>"><span aria-hidden="true">🏯</span></a><?php endif; ?>
     <button class="burger" id="burgerBtn" type="button" aria-label="<?= te('Meniu') ?>"><span></span><span></span><span></span><?php if ($a && (is_staff($a) ? staff_attention_count((int) $a['id']) : account_attention_count((int) $a['id']))): ?><i class="burger-dot"></i><?php endif; ?></button>
   </nav>
   <?= $subNav ?>
@@ -630,6 +654,24 @@ function site_header(bool $home = false, ?string $area = null, ?string $tab = nu
           <div class="pm-h"><?= te('Žiūrėti kaip') ?></div><div class="m-vs"><?= str_replace('<details class="view-switch', '<details open class="view-switch', $mvs) ?></div>
         <?php endif; ?><div class="pm-h"><?= te('🛠 Valdymas') ?></div>
         <?php foreach ($rest as $k => $it) { echo admin_menu_link($k, $it, $mk, 'am-row'); } ?>
+        <div class="pm-h"><?= te('🌐 Svetainė') ?></div><?= phone_site_links($h, $onpage, $a) ?>
+        <form method="post" action="<?= url('atsijungti.php') ?>" class="inline-form"><?= csrf_field() ?><button type="submit" class="am-row am-logout"><span class="am-ic">🚪</span><span class="am-t"><?= te('Atsijungti') ?></span></button></form>
+      </div></details>
+  </nav>
+<?php endif; ?>
+<?php if ($mt): $mi = member_tab_items($a, $area, (string) $tab, $section); ?>
+  <!-- B8: nario apatinė juosta (telefone ir planšetėje): 4 skirtukai + ⋯ Daugiau (nustatymai, svetainė, atsijungti) -->
+  <nav class="m-tabbar mt-member" aria-label="<?= te('Mano paskyra') ?>">
+    <?php foreach ($mi as $it): ?>
+      <a href="<?= url($it[2]) ?>" class="<?= $it[4] ? 'active' : '' ?>"<?= $it[4] ? ' aria-current="page"' : '' ?>><span class="mt-ic" aria-hidden="true"><?= $it[0] ?></span><span><?= e($it[1]) ?></span><?= $it[3] ? '<em class="count-badge">' . (int) $it[3] . '</em>' : '' ?></a>
+    <?php endforeach; ?>
+    <details class="m-more"><summary class="<?= $area === 'account' && $tab === 'nustatymai' ? 'active' : '' ?>"><span class="mt-ic" aria-hidden="true">⋯</span><span><?= te('Daugiau') ?></span></summary>
+      <div class="m-sheet">
+        <div class="pm-h"><?= te('Mano paskyra') ?></div>
+        <a class="am-row" href="<?= url('paskyra.php?skiltis=nustatymai') ?>"><span class="am-ic" aria-hidden="true">⚙️</span><span class="am-t"><?= te('Nustatymai') ?></span></a>
+        <?php if (array_filter(account_members((int) $a['id']), function ($m) { return $m['relation'] === 'parent'; })): ?>
+          <a class="am-row" href="<?= url('paskyra.php?skiltis=nustatymai#vaikai') ?>"><span class="am-ic" aria-hidden="true">👪</span><span class="am-t"><?= te('Tėvams') ?></span></a>
+        <?php endif; ?>
         <div class="pm-h"><?= te('🌐 Svetainė') ?></div><?= phone_site_links($h, $onpage, $a) ?>
         <form method="post" action="<?= url('atsijungti.php') ?>" class="inline-form"><?= csrf_field() ?><button type="submit" class="am-row am-logout"><span class="am-ic">🚪</span><span class="am-t"><?= te('Atsijungti') ?></span></button></form>
       </div></details>

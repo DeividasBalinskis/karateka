@@ -53,6 +53,7 @@ test('admin: Pranešimai under Tvarkyti, no exam program in settings, protocol w
   const t = await login(browser, 'info@karateka.lt', 1175, 900);
   await t.goto(`admin/egzamino-protokolas.php?id=${ev}`);
   check('no average column', await t.locator('#protTable .avg, #protTable .col-avg').count() === 0);
+  await t.evaluate(() => document.fonts.ready);   // matuojama su tikru šriftu (apkrautame paleidime šriftas ateina vėliau)
   const w = await t.evaluate(() => [document.documentElement.scrollWidth, document.documentElement.clientWidth, Math.round(document.querySelector('#protTable').getBoundingClientRect().right), Math.round(document.querySelector('.prot-wrap').getBoundingClientRect().right)]);
   check('page not wider than the tablet', w[0] <= w[1] + 1, JSON.stringify(w));
   check('passed / failed buttons visible without scrolling', w[2] <= w[3] + 1 && await t.locator('#protTable tr[data-row] .res-btn').first().isVisible(), JSON.stringify(w));

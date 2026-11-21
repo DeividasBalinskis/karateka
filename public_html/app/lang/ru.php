@@ -3541,4 +3541,5 @@ Nuo 2013 m. treniravosi Tradicinio karate-do klubo „Sanrei“ komandoje, o 201
     'Užduočių nėra' => 'Заданий нет',
     'Visos užduotys →' => 'Все задания →',
     'Kas toliau' => 'Что дальше',
+    'Tėvams' => 'Родителям',
 ];

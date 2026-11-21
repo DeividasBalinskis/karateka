@@ -4,6 +4,15 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.72 - 2026-11-21 (nario apatinė juosta, Dojo kampe, atsiliepimai #154-#156)
+- Nariams, tėvams ir vaikams telefone ir planšetėje - apatinė juosta kaip programėlėje: Apžvalga (vaikui - Mano diena), Renginiai,
+  Užduotys, Egzaminas ir ⋯ Daugiau (Nustatymai, Tėvams, svetainės skiltys, Atsijungti). ☰ ir paskyros skirtukų eilutė telefone nebereikalingi.
+- 🏯 Dojo nariams - atskiras tamsus mygtukas dešiniame kampe (kompiuteryje šalia „Mano paskyra“, telefone viršuje dešinėje), kai žaidimas atidarytas.
+- #155: Valdymas → Šiandien → „Reikia padaryti“ - eilutės kompaktiškesnės (mažesnis ženkliukas ir mygtukas, mažiau tarpų).
+- #156: Valdymo šoninis meniu prasideda kartu su pirmu turinio bloku visuose puslapiuose - ir ten, kur viršuje „← Visi testai“, „← Nustatymai“.
+- Šiandien → „Treniruotės“: antraštė atskiroje eilutėje - tekstas nebesusispaudžia į 4 eilutes.
+- #154: atsiliepimų lange (ir LTKF svetainėje) skirtuke „Visi“ prie kitos svetainės atsiliepimų - žymė „karateka.lt“, „Budo“ ar „LTKF“.
+
 ## v1.71 - 2026-11-21 (vaiko „Mano diena“ - B8, variantas B)
 - 7-10 m. vaikas, prisijungęs savo vardu ir PIN: viršuje didelė kortelė „Labas, Jonas!“ su lygiu (ratas), XP ir kiek liko iki kito lygio,
   diržas. Po ja 2 kortelės: artimiausia treniruotė (diena, laikas, vieta) ir viena trenerio užduotis su dideliu „✓ Atlikau“.

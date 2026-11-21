@@ -15,7 +15,7 @@ test('tasks stay findable after marking them viewed or done', async ({ browser }
   await nav(k, () => k.locator('#svarbu .notif', { hasText: '20 kartų' }).locator('button').click());
   check('gone from Svarbu', await k.locator('#svarbu .notif', { hasText: 'E2E užduotis' }).count() === 0);
   // Bet „📋 Užduotys“ - abi lieka
-  await nav(k, () => k.click('.sub-nav a[href*="uzduotys.php"]'));
+  await nav(k, () => k.click('.mt-member a[href*="uzduotys.php"]'));   // B8: telefone - apatinė juosta
   check('tasks page lists both', await k.locator('.task-item', { hasText: 'E2E užduotis' }).count() === 2);
   check('status shown', /Atlikta/.test(await k.locator('.task-item', { hasText: '20 kartų' }).textContent()) && /Perskaityta/.test(await k.locator('.task-item', { hasText: 'pažiūrėk video' }).textContent()));
   // Grąžinti į neatliktas - lieka tame pačiame puslapyje
