@@ -37,6 +37,9 @@ known=$(grep -oP "^\s+'\K[a-z_]+(?=' +=> \[)" public_html/app/notifications.php 
 used=$( (grep -rhoP "notify_(admins|staff)\(\s*'\K[a-z_]+" public_html --include=*.php; grep -rhoP "notify_(account|member)\([^,()]+(\([^()]*\))?[^,()]*,\s*'\K[a-z_]+" public_html --include=*.php) | sort -u)
 for ty in $used; do echo "$known" | grep -qx "$ty" || err "pranešimo tipas '$ty' nėra NOTIFY_TYPES sąraše (app/notifications.php)"; done
 
+# C2: kiekvienas nustatymas - registre (public_html/app/settings.php)
+php tests/settings-check.php public_html || err "nustatymas ne registre (app/settings.php)"
+
 # Vertimai (LT/EN/RU): tik praneša, kurių naujų tekstų dar neišversta
 php tests/i18n-keys.php public_html | head -8
 

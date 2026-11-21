@@ -61,7 +61,7 @@ Status: ☐ not started · ◐ partly done · ☑ done
 | **B8** | Kid and member home; Dojo in the corner; Paskyra page | kids, members | M | plan first | ◐ v1.71 kid home variant B (fits 375x812); v1.72 member tab bar on a phone, 🏯 Dojo corner button; open: separate Paskyra page (Nustatymai for now) |
 | **B9** | Valdymas: one shell, one start page, final names | Denis, coaches | M | reikia leidimo | ☑ v1.74 (one layout, variants removed, Renginiai list in Valdymas, editors with side menu, LTKF row, hints) |
 | **C1** | Permissions: one `can()` and one table | everyone | M | plan first, Fable | ☐ |
-| **C2** | Settings: one registry, one map, a change log | Denis, Deividas | M | plan first | ◐ v1.78 (language saved on the account, used after login and for e-mails) |
+| **C2** | Settings: one registry, one map, a change log | Denis, Deividas | M | plan first | ☑ v1.78 + v1.81 (language on the account; registry checked by checks.sh; „Visi nustatymai“ map; change log with „Atkurti“; LTKF draft is a setting; old names like `reg_off` kept - renaming needs your OK) |
 | **C3** | Secret links: one model, one "Visos nuorodos" page | Denis, secretariat | L | plan first, Fable | ☐ |
 | **C4** | Design tokens + visual safety net (old step 4) | everyone | M | plan first | ☐ |
 | **C5** | CSS cleanup, zero visual change (old step 5) | Deividas | L | plan first | ☐ |

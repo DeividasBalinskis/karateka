@@ -326,7 +326,7 @@ function admin_menu_key(): string
     if (isset($map[$file])) {
         return $map[$file];
     }
-    return in_array($file, ['nustatymai', 'grupes', 'tvarkarastis', 'paskyros', 'kopijos', 'duomenys', 'atsaukimai', 'testavimas', 'vertimai'], true) ? 'nustatymai' : '';
+    return in_array($file, ['nustatymai', 'grupes', 'tvarkarastis', 'paskyros', 'kopijos', 'duomenys', 'nustatymai-visi', 'atsaukimai', 'testavimas', 'vertimai'], true) ? 'nustatymai' : '';
 }
 
 /** Visi skyriai vienu sąrašu: [raktas => [ikona, pavadinimas, kelias, skaičiukas, paaiškinimas]] */
