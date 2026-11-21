@@ -58,6 +58,13 @@ test('admin: Pranešimai under Tvarkyti, no exam program in settings, protocol w
   check('page not wider than the tablet', w[0] <= w[1] + 1, JSON.stringify(w));
   check('passed / failed buttons visible without scrolling', w[2] <= w[3] + 1 && await t.locator('#protTable tr[data-row] .res-btn').first().isVisible(), JSON.stringify(w));
   check('number under the name', await t.locator('#protTable .nr-in').first().isVisible());
+  // 4 įvertinimo stulpeliai su − / + (pridėtas „Bunkai“) - irgi telpa (− / + po skaičiumi)
+  const oldCols = sql(`SELECT IFNULL(cols, '') FROM exam_protocols WHERE event_id = ${ev}`);
+  sql(`UPDATE exam_protocols SET cols = '[["kihon","Kihon"],["kata","Kata"],["kumite","Kumite"],["x1","Bunkai"],["test","Testas"]]' WHERE event_id = ${ev}`);
+  await t.reload(); await t.evaluate(() => document.fonts.ready);
+  const w4 = await t.evaluate(() => [Math.round(document.querySelector('#protTable').getBoundingClientRect().right), Math.round(document.querySelector('.prot-wrap').getBoundingClientRect().right)]);
+  check('4 score columns: still fits the tablet', w4[0] <= w4[1] + 1 && await t.locator('#protTable tr[data-row] .res-btn').last().isVisible(), JSON.stringify(w4));
+  sql(oldCols ? `UPDATE exam_protocols SET cols = '${oldCols.replace(/'/g, "''")}' WHERE event_id = ${ev}` : `UPDATE exam_protocols SET cols = NULL WHERE event_id = ${ev}`);
   sql(`DELETE FROM exam_protocol_rows WHERE event_id = ${ev} AND name LIKE 'E2E planšetė%'`);
   noJsErrors(a, t);
 });

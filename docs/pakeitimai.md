@@ -11,6 +11,7 @@ Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar
 - #155: Valdymas → Šiandien → „Reikia padaryti“ - eilutės kompaktiškesnės (mažesnis ženkliukas ir mygtukas, mažiau tarpų).
 - #156: Valdymo šoninis meniu prasideda kartu su pirmu turinio bloku visuose puslapiuose - ir ten, kur viršuje „← Visi testai“, „← Nustatymai“.
 - Šiandien → „Treniruotės“: antraštė atskiroje eilutėje - tekstas nebesusispaudžia į 4 eilutes.
+- Egzamino protokolas planšetėje (iki 1300 px): kai įvertinimo stulpelių su − / + yra 4 ir daugiau (pvz. pridėtas „Bunkai“), − / + rodomi po skaičiumi - lentelė telpa, „Neišlaikė“ nebenukerpamas.
 - #154: atsiliepimų lange (ir LTKF svetainėje) skirtuke „Visi“ prie kitos svetainės atsiliepimų - žymė „karateka.lt“, „Budo“ ar „LTKF“.
 
 ## v1.71 - 2026-11-21 (vaiko „Mano diena“ - B8, variantas B)

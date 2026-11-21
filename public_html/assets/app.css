@@ -2054,3 +2054,11 @@ a.kid-mini:hover{border-color:var(--accent);}
 @media (min-width: 1100px) and (pointer: fine){
   .dash-main #svarbu .notif-actions .btn-sm{min-height:30px; padding:4px 12px; font-size:.84rem;}
 }
+
+/* Protokolas su 4+ įvertinimo stulpeliais (pvz. pridėtas „Bunkai“) planšetėje: − / + po skaičiumi - lentelė telpa, „Neišlaikė“ nenukerpamas */
+@media (max-width: 1300px) {
+  .prot-table.many-sc .sc-box{display:grid; grid-template-columns:repeat(2, minmax(30px, 1fr)); grid-template-areas:"v v" "m p"; gap:3px; justify-items:stretch;}
+  .prot-table.many-sc .sc-box > .sc-b:first-child{grid-area:m; width:auto;}
+  .prot-table.many-sc .sc-box > .sc-b:last-child{grid-area:p; width:auto;}
+  .prot-table.many-sc .sc-box > .pi-score{grid-area:v; width:100%; min-width:0;}
+}
