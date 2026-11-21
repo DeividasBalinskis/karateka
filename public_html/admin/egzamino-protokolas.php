@@ -241,7 +241,8 @@ page_start(t('Egzamino protokolas') . ': ' . $event['title'], ['admin' => true, 
   <p class="no-print small muted prot-hint"><?= te('Balai: − / + keičia po 0,1 (ar rodyklės ↑ ↓), galima ir įrašyti. Tuščias langelis prasideda nuo {b}. Viskas išsaugoma iš karto.', ['b' => $fmtBase]) ?></p>
 
   <div class="table-scroll prot-wrap">
-  <table class="prot-table" id="protTable" data-base="<?= e((string) $base) ?>">
+  <?php $steppers = count(array_filter($cols, function ($c) { return $c[0] !== 'test'; })); ?>
+  <table class="prot-table<?= $steppers >= 4 ? ' many-sc' : '' ?>" id="protTable" data-base="<?= e((string) $base) ?>">
     <thead>
       <tr><th rowspan="2" class="th-nr">Nr.</th><th rowspan="2"><?= te('Vardas Pavardė') ?></th><th rowspan="2" class="col-p"><?= te('Gimimo data') ?></th><th rowspan="2" class="col-p"><?= te('Klubas') ?></th><th rowspan="2">Kyu</th>
         <th colspan="<?= count($cols) ?>"><?= te('Įvertinimas') ?></th>
