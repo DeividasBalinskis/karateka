@@ -1977,3 +1977,9 @@ h1 .badge-tester{font:600 .8rem/1.6 'Inter', sans-serif; letter-spacing:0; paddi
   .gp-date a.small, .gp-edit{display:inline-flex; align-items:center; min-height:40px;}
   .group-picker > summary{min-height:44px;}
 }
+/* D5 (mano egzaminas, egzaminas): diržo pasirinkimas ir nuorodos laukelis - normalaus dydžio, patogūs pirštui */
+.my-exam select, .my-exam .su-url{min-height:44px; padding:8px 12px; border-radius:10px; border:1px solid rgba(23,20,15,0.18); background:#fff; font:inherit; font-size:1rem; color:inherit;}
+.my-exam select{min-width:220px; max-width:100%;}
+@media (max-width: 1099px), (pointer: coarse) {
+  .small-select{min-height:40px;}
+}

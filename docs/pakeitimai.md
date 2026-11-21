@@ -4,6 +4,10 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.66 - 2026-11-21 (egzamino puslapiai telefone - D5)
+- Mano egzaminas (nuoroda be paskyros): „Kokį diržą laikysi?“ pasirinkimas ir asmeninės nuorodos laukelis - normalaus dydžio (44 px), anksčiau buvo mažyčiai.
+- Mano paskyra → Egzaminas: diržo programos pasirinkimas telefone - 40 px.
+
 ## v1.65 - 2026-11-20 (naujienos ir treniruotė telefone - D5)
 - Naujienos: reakcijos (👏 🔥 🥋 👍) ir „Dalintis“ telefone - 40 px aukščio.
 - Valdymas → Treniruotė: „Pasirinkite grupę ar renginį“ - 44 px, „← Diena atgal“, „+ Nauja grupė“ - 40 px.
