@@ -18,6 +18,7 @@ test('new competition: pick members, type new people, one group per discipline -
   await a.fill('#nauja textarea[name=names]', 'Svečias Pirmas\nSvečias Antras\n');
   await a.check('#nauja input[name="quick[]"][value=kata]');
   await a.check('#nauja input[name="quick[]"][value=kumite]');
+  check('quick competition: no member event by default (B2)', !(await a.isChecked('#nauja input[name=event]')));
   await a.uncheck('#nauja input[name=event]');
   await Promise.all([a.waitForNavigation(), a.click('#nauja button[type=submit]')]);
   const tid = +sql("SELECT MAX(id) FROM tournaments WHERE title = 'E2E greitos varžybos'");

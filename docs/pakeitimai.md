@@ -4,6 +4,11 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.83 - 2026-11-21 (greitos varžybos be renginio nariams - B2; testai)
+- Budo → „+ Naujos varžybos“: pažymėjus „Iškart sudaryti po vieną grupę“ (Kata / Kumite), renginys nariams nebekuriamas savaime
+  (varžybos per treniruotę nesimato Renginiuose). Jei reikia - pažymėkite „Rodyti nariams Renginiuose“.
+- Testai: kiekvienas prisijungimas teste nustato kalbą iš naujo (kalba saugoma paskyroje). Pilnas rinkinys: 155 iš 156 praėjo, 1 praleistas.
+
 ## v1.82 - 2026-11-21 (dizaino žetonai ir vaizdinė apsauga - C4; vaizdas nesikeičia)
 - `assets/tokens.css`: viena vieta spalvoms, tarpams, kampams, šriftams, šešėliams ir pločiams (480 / 768 / 1100 / 1440).
   Patikrinta: 55 puslapių nuotraukos su ir be žetonų sutampa.
