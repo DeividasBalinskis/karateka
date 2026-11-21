@@ -3534,4 +3534,5 @@ From 2013 he trained with the team of the traditional karate-do club "Sanrei", a
     'Visi klausimai su atsakymais ir [#numeriais] - pataisyti ir įkelti atgal' => 'All questions with answers and [#numbers] - fix and upload back',
     'Įkelti arba atsisiųsti klausimus (failas)' => 'Upload or download questions (file)',
     'įkelti: .txt, .csv, .json, paveikslėliai ar vienas ZIP (pvz. iš ChatGPT); atsisiųsti - visi klausimai su atsakymais' => 'upload: .txt, .csv, .json, images or one ZIP (e.g. from ChatGPT); download - all questions with answers',
+    'Reikia padaryti: užduotys, pastabos, kvietimai' => 'To do: tasks, notes, invitations',
 ];

@@ -522,7 +522,9 @@ function member_attention_count(int $memberId): int
         + member_unread_replies($memberId);   // ir nauji trenerio atsakymai
 }
 
-/** Tas pats visiems paskyros nariams (pats + vaikai) - ženkliukas prie "Mano paskyra" */
+/** Raudonas skaičius prie „Mano paskyra“ (pats + vaikai): tik darbai - neperskaitytos pastabos, neatliktos užduotys,
+ *  nauji trenerio atsakymai ir kvietimai, laukiantys atsakymo. Naujienos (lygis, patvirtinti punktai, pranešimai visiems)
+ *  rodomos sąraše, bet neskaičiuojamos (sprendimas 2026-11-21). */
 function account_attention_count(int $accountId): int
 {
     static $cache = [];
@@ -530,7 +532,7 @@ function account_attention_count(int $accountId): int
         $cache[$accountId] = (int) q_value('SELECT COUNT(*) FROM coach_notes cn JOIN account_members am ON am.member_id = cn.member_id
                                              WHERE am.account_id = ? AND (cn.read_at IS NULL OR (cn.is_task = 1 AND cn.done_at IS NULL))', [$accountId])
             + account_unread_replies($accountId)
-            + notification_count($accountId);   // lygis, patvirtinti punktai, pranešimai visiems...
+            + account_pending_invites($accountId);
     }
     return $cache[$accountId];
 }
@@ -549,13 +551,10 @@ function account_attention_member(int $accountId): ?int
             $id = false;
         }
     }
-    if ($id === false) {
-        try {
-            $id = q_value('SELECT member_id FROM notifications WHERE account_id = ? AND member_id IS NOT NULL AND important = 1 AND done_at IS NULL AND read_at IS NULL
-                            ORDER BY created_at DESC LIMIT 1', [$accountId]);
-        } catch (PDOException $ex) {
-            $id = false;
-        }
+    if ($id === false && account_pending_invites($accountId)) {   // kvietimas, laukiantis atsakymo
+        $id = q_value('SELECT ep.member_id FROM event_participants ep JOIN account_members am ON am.member_id = ep.member_id
+                        JOIN events e ON e.id = ep.event_id
+                        WHERE am.account_id = ? AND ep.status = "invited" AND e.starts_on > CURDATE() ORDER BY e.starts_on LIMIT 1', [$accountId]);
     }
     return $id === false || $id === null ? null : (int) $id;
 }

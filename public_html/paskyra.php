@@ -306,7 +306,7 @@ page_start($tab === 'nustatymai' ? t('Nustatymai') : t('Mano paskyra'), ['noinde
     <div class="member-tabs">
       <?php foreach ($members as $m): ?>
         <a href="?<?= $tab === 'nustatymai' ? 'skiltis=nustatymai&amp;' : '' ?>m=<?= (int) $m['id'] ?>" class="<?= $selected && $m['id'] === $selected['id'] ? 'active' : '' ?>">
-          <?= e(member_short_name($m, $members)) ?><?= $m['relation'] === 'self' ? (' ' . t('(aš)')) : '' ?><?php if ($u = member_attention_count((int) $m['id']) + member_notification_count($aid, (int) $m['id'])): ?> <span class="count-badge" title="<?= te('Naujos pastabos ar neatliktos užduotys') ?>"><?= $u ?></span><?php endif; ?>
+          <?= e(member_short_name($m, $members)) ?><?= $m['relation'] === 'self' ? (' ' . t('(aš)')) : '' ?><?php if ($u = member_attention_count((int) $m['id']) + account_pending_invites($aid, (int) $m['id'])): ?> <span class="count-badge" title="<?= te('Reikia padaryti: užduotys, pastabos, kvietimai') ?>"><?= $u ?></span><?php endif; ?>
         </a>
       <?php endforeach; ?>
     </div>

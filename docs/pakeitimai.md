@@ -4,6 +4,12 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.70 - 2026-11-21 (nariams raudonas skaičius - tik darbai, B5)
+- Nariams ir tėvams raudonas skaičius prie „Mano paskyra“, „Apžvalga“ ir vaiko vardo skaičiuoja tik tai, ką reikia padaryti:
+  užduotys, neperskaitytos trenerio pastabos ir atsakymai, kvietimai, laukiantys atsakymo „Dalyvausiu / Negalėsiu“.
+- Naujienos (naujas lygis, patvirtinta, „Treniruočių nebus“, žinia visiems) rodomos sąraše, bet į skaičių neįeina.
+- Kvietimas skaičiuojamas, kol į jį dar galima atsakyti (iki renginio dienos); atsakius - dingsta iš skaičiaus.
+
 ## v1.69 - 2026-11-21 (testo klausimų atsisiuntimas, Dojo administratoriams)
 - Valdymas → Testai → testas: „⬇ Atsisiųsti klausimus“ dabar viršuje, šalia „Peržiūrėti klausimus“ ir „Išbandyti“.
   Dėžutė apačioje vadinasi „Įkelti arba atsisiųsti klausimus (failas)“.
