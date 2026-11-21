@@ -25,9 +25,9 @@ Paruošta 2026-11-21. Paleidžiame tik po tavo „GO“ (sprendimas: dar ne). Pi
 
 ## 4. Privatumas
 - ☐ Nuotraukų sutikimas (vienas „Taip / Ne“) - privatumo politikoje aprašyta.
-- ☐ Slapukų sąrašas privatumo puslapyje (C10 dalis).
+- ☑ Slapukų sąrašas privatumo puslapyje (v1.79).
 - ☐ Ką LTKF gali skelbti apie teisėjus ir vaikus (sprendimas: teisėjų vardai ir testo galiojimas - vieši).
-- ☐ Buvusių narių duomenys - 1 metai (dabar trinama ranka; C10).
+- ☐ Buvusių narių duomenys - 1 metai: Valdymas → Nustatymai → Duomenų priežiūra (sąrašas, trinama paspaudus; v1.79).
 
 ## 5. Seni adresai → nauji (301 nukreipimai `.htaccess`)
 - ☐ Surinkti senos karateka.lt adresus. **Kliūtis:** ši debesies sesija negali pasiekti karateka.lt (tinklo taisyklės).

@@ -20,6 +20,35 @@ if (($file = get('atsisiusti')) !== '') {
     exit;
 }
 
+// C10: nuotraukų ir failų kopija (uploads be DB kopijų) - vienas .zip atsisiųsti į kompiuterį
+if (get('failai') === '1') {
+    if (!class_exists('ZipArchive')) {
+        flash('err', t('Serveryje nėra ZIP palaikymo - nuotraukas atsisiųskite per hostingo failų tvarkyklę (aplankas uploads).'));
+        redirect('admin/kopijos.php');
+    }
+    @set_time_limit(600);
+    $tmp = tempnam(sys_get_temp_dir(), 'upl');
+    $zip = new ZipArchive();
+    $zip->open($tmp, ZipArchive::OVERWRITE);
+    $root = PUBLIC_DIR . '/uploads';
+    foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($root, FilesystemIterator::SKIP_DOTS)) as $f) {
+        $rel = substr($f->getPathname(), strlen($root) + 1);
+        if (strpos($rel, 'kopijos/') === 0 || $f->getFilename()[0] === '.') {
+            continue;   // DB kopijos atsisiunčiamos atskirai
+        }
+        $zip->addFile($f->getPathname(), 'uploads/' . $rel);
+        $zip->setCompressionName('uploads/' . $rel, ZipArchive::CM_STORE);   // nuotraukos jau suspaustos - greičiau
+    }
+    $zip->close();
+    header('Content-Type: application/zip');
+    header('Content-Disposition: attachment; filename="karateka-nuotraukos-' . date('Y-m-d') . '.zip"');
+    header('Content-Length: ' . filesize($tmp));
+    header('Cache-Control: no-store');
+    readfile($tmp);
+    @unlink($tmp);
+    exit;
+}
+
 if (is_post()) {
     csrf_check();
     if (post('action') === 'create') {
@@ -54,6 +83,23 @@ try {
     $dbFiles = null;   // db/022 dar neimportuotas
 }
 $dbSize = (int) q_value('SELECT COALESCE(SUM(data_length + index_length), 0) FROM information_schema.TABLES WHERE table_schema = DATABASE()');
+
+/** uploads dydis (be DB kopijų) */
+function uploads_size(): array
+{
+    $n = 0;
+    $bytes = 0;
+    $root = PUBLIC_DIR . '/uploads';
+    if (is_dir($root)) {
+        foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($root, FilesystemIterator::SKIP_DOTS)) as $f) {
+            if (strpos(substr($f->getPathname(), strlen($root) + 1), 'kopijos/') !== 0) {
+                $n++;
+                $bytes += $f->getSize();
+            }
+        }
+    }
+    return ['n' => $n, 'bytes' => $bytes];
+}
 
 function size_label(int $bytes): string
 {
@@ -116,8 +162,13 @@ page_start(t('Atsarginės kopijos'), ['admin' => true]);
         <li><?= te('Hostingo valdyme atidarykite') ?> <strong><?= te('phpMyAdmin') ?></strong> <?= te('→ kairėje pasirinkite svetainės duomenų bazę.') ?></li>
         <li><strong><?= te('Import') ?></strong> <?= te('→ pasirinkite failą →') ?> <strong><?= te('Import') ?></strong>. Visos lentelės pakeičiamos kopijos duomenimis.</li>
       </ol>
-      <p class="small muted"><?= te('Nuotraukų (') ?><code>uploads</code><?= te(') kopija čia nedaroma - jas saugo hostingas. Plačiau:') ?> <code>docs/atsargines-kopijos.md</code>.</p>
     </details>
+    <?php $up = uploads_size(); ?>
+    <div class="row between" style="gap:8px; flex-wrap:wrap; margin-top:14px; padding-top:12px; border-top:1px dashed rgba(23,20,15,0.12);">
+      <span><strong><?= te('Nuotraukos ir failai') ?></strong> <span class="muted small"><?= (int) $up['n'] ?> <?= te('failų') ?> · <?= e(size_label($up['bytes'])) ?></span></span>
+      <a class="btn btn-ghost btn-sm" href="<?= url('admin/kopijos.php?failai=1') ?>"><?= te('Atsisiųsti .zip') ?></a>
+    </div>
+    <p class="small muted"><?= te('Duomenų bazės kopija ir nuotraukų .zip kartu - visa svetainės informacija. Laikykite kompiuteryje, pvz. kartą per mėnesį.') ?></p>
   </div>
 
   <div class="panel card">

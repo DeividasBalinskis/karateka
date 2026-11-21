@@ -69,7 +69,7 @@ Status: ☐ not started · ◐ partly done · ☑ done
 | **C7** | One polling request (old step 11) | everyone (speed) | M | — | ☑ v1.57 (pulsas.php: chat count + staff pop-ups + game invites, ETag/304, one poller every 30 s paused when hidden; live/TV pause when hidden; open chat stays fast) |
 | **C8** | E-mail: templates, outbox, the reader's language | parents | M | plan first | ☑ v1.75 + v1.78 (coach reply e-mail only when ticked; one template file in the reader's language, one footer; outbox with result per person; chat link fixed; no game mention) |
 | **C9** | Project memory: CLAUDE.md, handoff, decisions, "Kas naujo" | Deividas, Denis | S | — | ☑ v1.52–v1.53 (CLAUDE.md, handoff, decisions, „Kas naujo“ from the version number) |
-| **C10** | Data care: retention, orphans, backups of uploads | parents, Deividas | M | reikia leidimo | ☐ |
+| **C10** | Data care: retention, orphans, backups of uploads | parents, Deividas | M | reikia leidimo | ☑ v1.79 (Duomenų priežiūra page: auto rules + delete list shown first, delete only on button; photo .zip; cookie list; retention 1 y since v1.52, outbox 90 d) |
 | **D1** | Compare Budo with the external Varžybos app (old step 3a) | Deividas, Denis | M | plan first | ☐ |
 | **D2** | Apply the decision (old step 3b) | Deividas | L | reikia leidimo | ☐ |
 | **D3** | Split `assets/varzybos.js` into modules (old step 8) | Deividas | L | plan first | ☐ |

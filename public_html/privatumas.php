@@ -74,7 +74,15 @@ page_start(t('Privatumo politika'), ['description' => t('Kaip VšĮ Karate Ateit
   <h2><?= te('6. Slapukai ir trečiųjų šalių turinys') ?></h2>
   <p><?= te('Naudojame tik būtinus slapukus: prisijungimo sesijai išlaikyti ir, jei įjungėte prisijungimą su kodu ir pažymėjote „Pasitikėti šiuo įrenginiu“,
      kad tame įrenginyje') ?> <?= (int) TRUSTED_DEVICE_DAYS ?> <?= te('dienų nereikėtų kodo. Reklamos ar sekimo slapukų nenaudojame.') ?></p>
-  <p><?= te('Pasirinkta svetainės kalba (LT / EN / RU) įsimenama slapuke „kalba“ 1 metams.') ?></p>
+  <p><?= te('Visi naudojami slapukai:') ?></p>
+  <ul class="cookie-list">
+    <li><code>karateka_sid</code> - <?= te('prisijungimo sesija; ištrinamas uždarius naršyklę ar atsijungus.') ?></li>
+    <li><code>karateka_dev…</code> - <?= te('„Pasitikėti šiuo įrenginiu“ (tik jei pažymėjote);') ?> <?= (int) TRUSTED_DEVICE_DAYS ?> <?= te('d.') ?></li>
+    <li><code>kalba</code> - <?= te('pasirinkta kalba (LT / EN / RU); 1 metai. Prisijungus kalba išsaugoma ir paskyroje.') ?></li>
+    <li><code>adm</code> - <?= te('tik treneriams ir administratoriams: ar rodyti redagavimo mygtukus; 1 metai.') ?></li>
+    <li><code>fbw</code> - <?= te('atsiliepimų mygtukas: kad matytumėte savo atsiliepimus ir atsakymus į juos; 2 metai.') ?></li>
+  </ul>
+  <p><?= te('Be slapukų, naršyklės atmintyje (tik jūsų įrenginyje, į serverį nesiunčiama) laikomi patogumo nustatymai: Budo varžybų skirtukai, tema ir garsas, dar neišsaugoti varžybų pakeitimai (iki 2 d.), žaidimo pasirinkimai, kurie pranešimai jau parodyti.') ?></p>
   <p><?= te('Įdiegus svetainę kaip programėlę telefone, naršyklė įsimena tik svetainės dizaino failus (be jūsų duomenų), kad ji greičiau atsidarytų.') ?></p>
   <p><?= te('Svetainės šriftai įkeliami iš „Google Fonts“, o vaizdo įrašai rodomi per „YouTube“ privatumo režimu (youtube-nocookie.com).
      Įkeliant šį turinį jūsų naršyklė susisiekia su „Google“ serveriais ir perduoda jūsų IP adresą.') ?></p>
