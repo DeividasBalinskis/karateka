@@ -14,7 +14,7 @@ Answers given by Deividas on 2026-11-20 (questions from `docs/darbo-planas.md`, 
 | 2026-11-21 | E-mail | Bulk e-mail through an outbox table, sent in batches, result per person (C8, new table allowed). | Deividas | questionnaire |
 | 2026-11-21 | Data | Start data care: show the delete list first, delete only after OK (C10). | Deividas | questionnaire |
 | 2026-11-21 | Data | Backups also include uploaded photos and files (C10). | Deividas | questionnaire |
-| 2026-11-21 | Budo | D1: Deividas uploads the external Varžybos code to a private GitHub repo for the comparison. | Deividas | questionnaire |
+| 2026-11-21 | Budo | D1: the external Varžybos code goes into the same repo for now (branch `varzybos-kodas`, folder `_varzybos`, no config/.env/.sql); may be split later. (Replaces „private repo“.) | Deividas | chat |
 | 2026-11-21 | LTKF | ltkf.lt = an extra domain on the karateka hosting (D6). | Deividas | questionnaire |
 | 2026-11-21 | LTKF | D6 order: 1 text versions + restore → 2 lists (clubs, news, documents) → 3 off/draft/public; 4 domain move later. | Deividas | questionnaire |
 | 2026-11-21 | LTKF | Real LTKF data (board, details, clubs, documents, contacts) is entered by the federation editors themselves. | Deividas | questionnaire |
