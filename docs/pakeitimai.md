@@ -4,6 +4,14 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.77 - 2026-11-21 (LTKF registrai: nariai, klubai, teisėjai - #160)
+- Valdymas → Tvarkyti → **📒 Federacijos registrai** su trimis skiltimis:
+  - **Nariai** - visi egzaminus laikę (kaip anksčiau) + „+ Naujas narys registre“ (kitų klubų nariai, senesni laipsniai), laipsnis ir klubas keičiami;
+  - **Klubai** - pavadinimas, miestas, vyr. treneris, kontaktai, būsena (narys / kandidatas / buvęs); pirmą kartą užpildoma iš LTKF juodraščio;
+  - **Teisėjai** - kitų klubų teisėjai: kategorija, licencijos Nr., galioja iki (pasibaigę pažymimi raudonai).
+- LTKF svetainė: „Klubai“ rodo klubų registrą, „Teisėjai“ - Karateka teisėjus kartu su registro teisėjais (su kategorija).
+- Duomenų bazė: naujas failas `db/048_ltkf_registrai.sql`.
+
 ## v1.76 - 2026-11-21 (Budo rezultatai neprapuola uždarius skirtuką; Dojo kairė ranka - #109)
 - Budo (A1): kiekvienas pakeitimas iš karto išsaugomas ir šiame įrenginyje. Jei skirtukas uždaromas ar dingsta ryšys, kol saugoma,
   atidarius varžybas iš naujo pakeitimai sujungiami su kitų planšečių darbu ir išsaugomi („Atkurti neišsaugoti pakeitimai - saugoma…“).

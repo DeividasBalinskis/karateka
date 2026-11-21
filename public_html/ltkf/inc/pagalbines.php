@@ -25,7 +25,48 @@ function n(string $key, $default = null)
 function turinys(string $name): array
 {
     static $cache = [];
+    if ($name === 'klubai' && !isset($cache[$name]) && ($db = registro_klubai())) {
+        return $cache[$name] = $db;   // #160: klubų registras (Valdymas → Federacijos registrai), jei jau užpildytas
+    }
     return $cache[$name] = $cache[$name] ?? require dirname(__DIR__) . '/turinys/' . $name . '.php';
+}
+
+/** #160: klubai iš karateka.lt registro (db/048) - ta pati forma kaip turinys/klubai.php; tuščias - jei registro dar nėra */
+function registro_klubai(): array
+{
+    $db = function_exists('karateka_db') ? karateka_db() : null;
+    if (!$db) {
+        return [];
+    }
+    try {
+        $rows = $db->query("SELECT * FROM ltkf_clubs WHERE status <> 'former' ORDER BY sort_order, name")->fetchAll();
+    } catch (Throwable $ex) {
+        return [];
+    }
+    return array_map(function ($r) {
+        return array_filter(['id' => $r['slug'], 'pavadinimas' => $r['name'], 'juridinis' => $r['legal_name'], 'miestas' => $r['city'] ?: '[miestas]',
+            'svetaine' => (string) $r['website'], 'treneris' => $r['coach'] ?: '[vyr. treneris]', 'el_pastas' => $r['email'], 'telefonas' => $r['phone'],
+            'nuo' => $r['since'] ? (int) $r['since'] : null, 'lat' => $r['lat'] !== null ? (float) $r['lat'] : null, 'lng' => $r['lng'] !== null ? (float) $r['lng'] : null,
+            'pavyzdys' => !$r['city'] || !$r['coach'], 'kandidatas' => $r['status'] === 'candidate'], function ($v) { return $v !== null; });
+    }, $rows);
+}
+
+/** #160: kitų klubų teisėjai iš registro (vardas, klubas, kategorija, galioja iki) - viešai (sprendimas 32) */
+function registro_teisejai(): array
+{
+    $db = function_exists('karateka_db') ? karateka_db() : null;
+    if (!$db) {
+        return [];
+    }
+    try {
+        $rows = $db->query('SELECT name, club, category, valid_until FROM ltkf_judges ORDER BY name')->fetchAll();
+    } catch (Throwable $ex) {
+        return [];
+    }
+    return array_map(function ($r) {
+        return ['vardas' => $r['name'], 'klubas' => (string) $r['club'], 'kategorija' => (string) $r['category'],
+                'galioja_iki' => $r['valid_until'] && $r['valid_until'] >= date('Y-m-d') ? $r['valid_until'] : null];
+    }, $rows);
 }
 
 function e($s): string

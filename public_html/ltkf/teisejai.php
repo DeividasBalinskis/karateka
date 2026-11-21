@@ -36,18 +36,18 @@ puslapis_pradzia('Teisėjai', 'teisejai');
   </div>
 
   <h2 class="mt">Teisėjų sąrašas</h2>
-  <?php $teisejai = karateka_teisejai(); ?>
+  <?php $teisejai = array_merge(karateka_teisejai(), registro_teisejai()); usort($teisejai, function ($a, $b) { return strcmp($a['vardas'], $b['vardas']); }); ?>
   <?php if ($teisejai): ?>
     <div class="tbl-wrap"><table class="judges">
-      <thead><tr><th>Vardas, pavardė</th><th>Klubas</th><th>Teisėjų testas</th></tr></thead>
+      <thead><tr><th>Vardas, pavardė</th><th>Klubas</th><th>Kategorija</th><th>Teisėjų testas</th></tr></thead>
       <tbody>
       <?php foreach ($teisejai as $tj): ?>
-        <tr><td><?= e($tj['vardas']) ?></td><td><?= e($tj['klubas']) ?></td>
+        <tr><td><?= e($tj['vardas']) ?></td><td><?= e($tj['klubas']) ?></td><td><?= e($tj['kategorija'] ?? '') ?></td>
           <td><?= $tj['galioja_iki'] ? '<span class="chip chip-open">✓ galioja iki ' . e(data_lt($tj['galioja_iki'])) . '</span>' : '<span class="muted">nelaikytas arba nebegalioja</span>' ?></td></tr>
       <?php endforeach; ?>
       </tbody>
     </table></div>
-    <p class="note">Sąrašas atsinaujina pats: karateka.lt pažymėjus narį „Teisėju“, jis atsiranda čia; testas galioja 12 mėn. Kitų klubų teisėjai bus pridėti, kai klubai prisijungs prie sistemos.</p>
+    <p class="note">Sąrašas atsinaujina pats: karateka.lt pažymėjus narį „Teisėju“, jis atsiranda čia; testas galioja 12 mėn. Kitų klubų teisėjus į registrą įrašo federacija (kategorija ir galiojimas).</p>
   <?php else: ?>
     <p class="empty">Teisėjų sąrašas dar tuščias.</p>
   <?php endif; ?>
