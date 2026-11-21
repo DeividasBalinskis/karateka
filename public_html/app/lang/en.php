@@ -3564,4 +3564,6 @@ From 2013 he trained with the team of the traditional karate-do club "Sanrei", a
     'Praėję (60 d.)' => 'Past (60 days)',
     'Praėjusių renginių nėra.' => 'No past events.',
     'Treneris - tai paskyros rolė: Valdymas → Nustatymai → Paskyros.' => 'Coach is an account role: Management → Settings → Accounts.',
+    'Siųsti ir el. paštu' => 'Also send by e-mail',
+    'Laiškas nariui ir tėvams su šiuo atsakymu' => 'An e-mail to the member and parents with this reply',
 ];

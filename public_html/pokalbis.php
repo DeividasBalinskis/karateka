@@ -78,7 +78,7 @@ if (is_post()) {
         if ($body === '') {
             chat_fail($ajax, t('Įrašykite atsakymą.'), $back);
         }
-        chat_staff_reply($mid, $a, $body, post('ctx'));
+        chat_staff_reply($mid, $a, $body, post('ctx'), post('email') === '1');
         if (!$ajax) {
             flash('ok', (t('Atsakyta -') . ' ') . $member['first_name'] . (' ' . t('matys atsakymą čia ir pokalbyje.')));
             redirect($back);
