@@ -69,6 +69,8 @@ require APP_DIR . '/lessons.php';
 require APP_DIR . '/test_data.php';
 require APP_DIR . '/test_people.php';
 require APP_DIR . '/pickers.php';
+require APP_DIR . '/mail_templates.php';
+require APP_DIR . '/mail_outbox.php';
 require APP_DIR . '/messages.php';
 require APP_DIR . '/home.php';
 require APP_DIR . '/notifications.php';

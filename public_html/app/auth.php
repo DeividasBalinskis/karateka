@@ -250,6 +250,19 @@ function login_account(int $accountId): void
     $_SESSION['account_id'] = $accountId;
     unset($_SESSION['csrf'], $_SESSION['tfa'], $_SESSION['dev_login_code'], $_SESSION['device_code']);
     q('UPDATE accounts SET last_login_at = NOW() WHERE id = ?', [$accountId]);
+    // C2: paskyros kalba - jei išsaugota, ji ir naršyklėje; jei ne - išsaugoma dabartinė
+    try {
+        $saved = (string) q_value('SELECT lang FROM accounts WHERE id = ?', [$accountId]);
+    } catch (PDOException $ex) {
+        return;   // dar neimportuotas db/049
+    }
+    if (isset(LANGS[$saved])) {
+        if ($saved !== current_lang()) {
+            lang_remember($saved);
+        }
+    } else {
+        lang_remember(current_lang(), $accountId);
+    }
 }
 
 function logout(): void
@@ -274,7 +287,13 @@ function create_account(string $email, string $password, string $first, string $
         $phone ?: null,
         $status,
     ]);
-    return (int) db()->lastInsertId();
+    $id = (int) db()->lastInsertId();
+    try {
+        q('UPDATE accounts SET lang = ? WHERE id = ?', [current_lang(), $id]);   // C2: kalba, kuria registravosi (laiškams)
+    } catch (PDOException $ex) {
+        // dar neimportuotas db/049
+    }
+    return $id;
 }
 
 /** $belt - diržas, kurį narys / tėvai nurodo registruodamiesi (treneris vėliau gali pataisyti) */
@@ -299,10 +318,7 @@ function member_join_link(array $m, string $email = ''): ?string
     }
     $link = abs_url('jungtis.php?t=' . $token);
     if ($email !== '' && valid_email($email)) {
-        send_mail($email, 'Kvietimas į karateka.lt — ' . $m['first_name'] . ' ' . $m['last_name'],
-            "Sveiki,\n\nVšĮ Karate Ateitis treneris pridėjo {$m['first_name']} {$m['last_name']} į klubo narių sistemą karateka.lt.\n"
-            . "Susikurkite prisijungimą - matysite tvarkaraštį, renginius, XP ir klubo žaidimą:\n\n" . $link . "\n\n"
-            . "Nuoroda galioja 60 dienų. Jei jau turite paskyrą karateka.lt - prisijunkite ir atidarykite nuorodą: narys bus pridėtas prie jūsų paskyros.");
+        mail_send_tpl($email, 'join_invite', ['child' => $m['first_name'] . ' ' . $m['last_name'], 'link' => $link], 'lt');   // kviečia treneris - gavėjo kalba dar nežinoma
     }
     return $link;
 }
@@ -397,24 +413,14 @@ function advance_account_status(int $accountId): void
 function send_verification_email(array $account): bool
 {
     $token = token_create('verify_email', $account['email'], (int) $account['id']);
-    return send_mail($account['email'], 'Patvirtinkite el. pašto adresą — Karateka',
-        "Sveiki, {$account['first_name']},\n\n"
-        . "ačiū, kad registruojatės karateka.lt. Patvirtinkite savo el. pašto adresą paspaudę nuorodą:\n\n"
-        . abs_url('patvirtinti.php?t=' . $token) . "\n\n"
-        . "Nuoroda galioja 3 dienas. Jei registravotės ne jūs, šį laišką tiesiog ištrinkite.");
+    return mail_send_tpl($account['email'], 'verify_email', ['name' => $account['first_name'], 'link' => abs_url('patvirtinti.php?t=' . $token)], account_lang($account));
 }
 
 function send_parent_consent_email(string $parentEmail, array $kidAccount, array $member): bool
 {
     $token = token_create('parent_consent', $parentEmail, (int) $kidAccount['id'], (int) $member['id']);
     $name = $member['first_name'] . ' ' . $member['last_name'];
-    return send_mail($parentEmail, "Prašome sutikimo: {$name} registruojasi karateka.lt",
-        "Sveiki,\n\n"
-        . "{$name} užsiregistravo VšĮ Karate Ateitis narių sistemoje karateka.lt ir nurodė jūsų el. paštą kaip tėvų / globėjų.\n\n"
-        . "Kadangi vaikui dar nėra 14 metų, paskyra bus aktyvuota tik gavus jūsų sutikimą. Peržiūrėkite ir patvirtinkite:\n\n"
-        . abs_url('tevu-sutikimas.php?t=' . $token) . "\n\n"
-        . "Patvirtinę galėsite susikurti ir savo tėvų paskyrą, matyti vaiko tvarkaraštį ir renginius.\n"
-        . "Jei nieko apie tai nežinote, laišką ignoruokite - paskyra nebus aktyvuota.");
+    return mail_send_tpl($parentEmail, 'parent_consent', ['child' => $name, 'link' => abs_url('tevu-sutikimas.php?t=' . $token)]);   // vaiko pasirinkta kalba
 }
 
 function notify_coach_pending(array $account): void
@@ -506,9 +512,7 @@ function handle_account_settings(array $a, string $back, array &$errors): void
         } else {
             // Pakeičiama tik paspaudus nuorodą naujame pašte - taip įsitikiname, kad adresas tikrai jūsų
             $token = token_create('change_email', $email, $aid);
-            send_mail($email, 'Patvirtinkite naują el. paštą — Karateka',
-                "Sveiki, {$a['first_name']},\n\nnorėdami pakeisti savo karateka.lt paskyros el. paštą į šį adresą, paspauskite nuorodą:\n\n"
-                . abs_url('el-pastas.php?t=' . $token) . "\n\nNuoroda galioja 1 dieną. Jei el. pašto nekeitėte, šį laišką ignoruokite.");
+            mail_send_tpl($email, 'change_email', ['name' => $a['first_name'], 'link' => abs_url('el-pastas.php?t=' . $token)], account_lang($a));
             flash('ok', "Išsiuntėme patvirtinimo nuorodą į $email. El. paštas pasikeis, kai ją paspausite.");
             redirect($back);
         }

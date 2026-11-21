@@ -5,9 +5,7 @@ $me = require_staff();
 
 function send_approved_mail(array $account): void
 {
-    send_mail($account['email'], 'Paskyra patvirtinta — Karateka',
-        "Sveiki, {$account['first_name']},\n\njūsų paskyra karateka.lt patvirtinta! Prisijungę matysite grupės tvarkaraštį ir artėjančius renginius:\n\n"
-        . abs_url('prisijungti.php'));
+    mail_send_tpl($account['email'], 'account_approved', ['name' => $account['first_name'], 'link' => abs_url('prisijungti.php')], account_lang($account));
 }
 
 if (is_post()) {
@@ -63,8 +61,7 @@ if (is_post()) {
                     redirect('admin/patvirtinimai.php');
                 }
                 foreach (q_all('SELECT a.* FROM accounts a JOIN account_members am ON am.account_id = a.id WHERE am.member_id = ? AND a.status = "active"', [$mid]) as $acc) {
-                    send_mail($acc['email'], 'Narys patvirtintas — Karateka',
-                        "Sveiki,\n\n{$m['first_name']} {$m['last_name']} patvirtintas (-a) ir priskirtas (-a) grupei. Tvarkaraštį matysite paskyroje:\n\n" . abs_url('paskyra.php'));
+                    mail_send_tpl($acc['email'], 'member_approved', ['child' => $m['first_name'] . ' ' . $m['last_name'], 'link' => abs_url('paskyra.php')], account_lang($acc));
                 }
                 flash('ok', "Patvirtinta: {$m['first_name']} {$m['last_name']}");
             } else {

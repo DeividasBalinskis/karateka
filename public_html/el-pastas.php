@@ -23,9 +23,7 @@ if (q_value('SELECT 1 FROM accounts WHERE email = ? AND id <> ?', [$token['email
 } else {
     q('UPDATE accounts SET email = ?, email_verified_at = NOW() WHERE id = ?', [$token['email'], $a['id']]);
     // Pranešimas senu adresu - jei keitė ne pats savininkas, jis sužinos
-    send_mail($a['email'], 'Jūsų el. paštas pakeistas — Karateka',
-        "Sveiki, {$a['first_name']},\n\njūsų karateka.lt paskyros el. paštas pakeistas į {$token['email']}.\n"
-        . "Nuo šiol prisijunkite nauju adresu.\n\nJei to nedarėte, nedelsdami parašykite info@karateka.lt.");
+    mail_send_tpl($a['email'], 'email_changed', ['name' => $a['first_name'], 'email' => $token['email']], account_lang($a));
     flash('ok', (t('El. paštas pakeistas. Nuo šiol prisijunkite:') . ' ') . $token['email']);
 }
 redirect(current_account() ? 'paskyra.php?skiltis=nustatymai' : 'prisijungti.php');

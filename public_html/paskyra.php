@@ -147,10 +147,7 @@ if (is_post()) {
         } else {
             $m = q_one('SELECT * FROM members WHERE id = ?', [$mid]);
             $token = token_create('invite', $email, $aid, $mid);
-            send_mail($email, 'Kvietimas prisijungti prie karateka.lt',
-                "Sveiki, {$m['first_name']},\n\n{$a['first_name']} {$a['last_name']} kviečia tave susikurti savo prisijungimą VšĮ Karate Ateitis narių sistemoje.\n"
-                . "Matysi savo grupės tvarkaraštį, egzaminus ir varžybas.\n\n"
-                . abs_url('pakvietimas.php?t=' . $token) . "\n\nNuoroda galioja 14 dienų.");
+            mail_send_tpl($email, 'kid_invite', ['name' => $m['first_name'], 'parent' => $a['first_name'] . ' ' . $a['last_name'], 'link' => abs_url('pakvietimas.php?t=' . $token)], account_lang($a));
             flash('ok', "Kvietimas išsiųstas: $email");
             redirect('paskyra.php?skiltis=nustatymai&m=' . $mid);
         }

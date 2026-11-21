@@ -91,7 +91,7 @@ function notifications_popup(int $accountId): array
         return [];
     }
     return array_map(function ($n) {
-        return ['id' => (int) $n['id'], 'icon' => notify_icon((string) $n['type']), 'title' => (string) $n['title'], 'body' => (string) $n['body'],
+        return ['id' => (int) $n['id'], 'icon' => notify_icon((string) $n['type']), 'title' => t((string) $n['title']), 'body' => t((string) $n['body']),
                 'link' => $n['link'] ? url((string) $n['link']) : '', 'when' => notification_when((string) $n['created_at'])];
     }, $rows);
 }
@@ -205,9 +205,9 @@ function render_notifications(array $list, string $back): string
         }
         $new = !$n['read_at'] && $n['important'];
         $html .= '<li class="notif' . ($new ? ' is-new' : '') . ' t-' . e($n['type']) . '"><span class="notif-icon" aria-hidden="true">' . notify_icon((string) $n['type']) . '</span>'
-            . '<div class="notif-body"><div class="notif-title">' . ($n['link'] ? '<a href="' . e(url($n['link'])) . '"' . $chatAttr . '>' . e($n['title']) . '</a>' : e($n['title']))
+            . '<div class="notif-body"><div class="notif-title">' . ($n['link'] ? '<a href="' . e(url($n['link'])) . '"' . $chatAttr . '>' . e(t($n['title'])) . '</a>' : e(t($n['title'])))
             . ($new ? (' <span class="badge badge-new">' . t('Nauja') . '</span>') : '') . '</div>'
-            . ($n['body'] ? '<div class="notif-text">' . nl2br(e($n['body'])) . '</div>' : '')
+            . ($n['body'] ? '<div class="notif-text">' . nl2br(e(t($n['body']))) . '</div>' : '')
             . '<div class="notif-meta">' . e(notification_when($n['created_at'])) . '</div></div>'
             . '<div class="notif-actions">' . $actions . '</div></li>';
     }
@@ -243,7 +243,7 @@ function celebration_html(): string
         . '<div class="celebrate-kicker">' . ($isExam ? t('Egzaminas išlaikytas') : t('Naujas lygis')) . '</div>'
         . '<div class="celebrate-big" id="celebrateTitle">' . ($isExam ? e($belt ? BELTS[$belt][0] : t('Sveikiname!')) : (t('Lygis') . ' ') . (int) ($level['level'] ?? $n['ref_id'])) . '</div>'
         . ($isExam && $belt ? '<div class="celebrate-belt">' . belt_icon_svg($belt) . '<span>' . e(t(BELTS[$belt][1])) . (' ' . t('diržas') . '</span></div>') : '')
-        . '<p class="celebrate-text">' . e($n['title']) . ($n['body'] ? '<br><span>' . e($n['body']) . '</span>' : '') . '</p>'
+        . '<p class="celebrate-text">' . e(t($n['title'])) . ($n['body'] ? '<br><span>' . e(t($n['body'])) . '</span>' : '') . '</p>'
         . '<form method="post" action="' . e(url('pranesimas.php')) . '" id="celebrateForm">' . csrf_field()
         . '<input type="hidden" name="id" value="' . (int) $n['id'] . '"><input type="hidden" name="action" value="read">'
         . '<input type="hidden" name="back" value="paskyra.php">'

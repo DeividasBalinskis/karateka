@@ -53,6 +53,9 @@ function run_cleanup(): void
     } catch (PDOException $ex) {
         error_log('cleanup: ' . $ex->getMessage());
     }
+    if (outbox_ready()) {
+        q('DELETE FROM mail_outbox WHERE created_at < NOW() - INTERVAL 90 DAY');   // C8: laiškų eilė (su adresais) - 90 dienų
+    }
     if (device_codes_ready()) {
         q('DELETE FROM device_codes WHERE created_at < NOW() - INTERVAL 1 YEAR');   // kodų kitam įrenginiui žurnalas
     }

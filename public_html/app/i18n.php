@@ -19,6 +19,58 @@ function current_lang(?string $force = null): string
     return $lang;
 }
 
+/** Vykdyti nurodyta kalba (laiškai gavėjo kalba) ir grąžinti ankstesnę */
+function in_lang(?string $lang, callable $fn)
+{
+    $was = current_lang();
+    current_lang(isset(LANGS[(string) $lang]) ? (string) $lang : 'lt');
+    try {
+        return $fn();
+    } finally {
+        current_lang($was);
+    }
+}
+
+/** Paskyros kalba (C2, db/049): accounts.lang; jei nenustatyta ar DB dar neatnaujinta - lietuvių */
+function account_lang(array $a): string
+{
+    if (!array_key_exists('lang', $a) && !empty($a['id'])) {
+        try {
+            $a['lang'] = q_value('SELECT lang FROM accounts WHERE id = ?', [(int) $a['id']]);
+        } catch (PDOException $ex) {
+            $a['lang'] = null;
+        }
+    }
+    $l = (string) ($a['lang'] ?? '');
+    return isset(LANGS[$l]) ? $l : 'lt';
+}
+
+/** Išsaugoti kalbą: slapukas „kalba“ (1 metai) ir, jei prisijungęs, paskyroje */
+function lang_remember(string $lang, ?int $accountId = null): void
+{
+    if (!isset(LANGS[$lang])) {
+        return;
+    }
+    if (!headers_sent()) {
+        setcookie('kalba', $lang, [
+            'expires' => time() + 365 * 86400,
+            'path' => (config('base_path') ?: '') . '/',
+            'secure' => !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
+            'httponly' => true,
+            'samesite' => 'Lax',
+        ]);
+    }
+    $_COOKIE['kalba'] = $lang;
+    current_lang($lang);
+    if ($accountId) {
+        try {
+            q('UPDATE accounts SET lang = ? WHERE id = ?', [$lang, $accountId]);
+        } catch (PDOException $ex) {
+            // dar neimportuotas db/049
+        }
+    }
+}
+
 /** Vertimų žodynas dabartine (ar nurodyta) kalba: [lietuviškas tekstas => vertimas] */
 function lang_dict(?string $lang = null): array
 {

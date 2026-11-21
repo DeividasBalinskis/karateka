@@ -4,6 +4,19 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.78 - 2026-11-21 (Budo registracija klubams su rungtimis; kalba paskyroje; laiškai gavėjo kalba ir per eilę - C2, C8)
+- Budo registracija klubams (sprendimas 12): kiekvienam dalyviui pažymima, kur varžosi (**Kata / Kumite / ...** - tik tos rungtys, kurioms varžybose yra grupių).
+  Klubo vadovas po registracijos mato **„Jūsų užregistruoti“** su būsena (laukia / įtrauktas / neįtrauktas) ir gali atšaukti dar nepatvirtintą;
+  klubas ir telefonas kitam kartui jau įrašyti. Budo „Užsiregistravę per nuorodą“ rodo rungtis, o pridėtas dalyvis dedamas tik į pasirinktų rungčių grupes.
+- Kalba (C2): pasirinkta LT / EN / RU išsaugoma paskyroje - prisijungus kitame telefone ar kompiuteryje svetainė atsidaro ta kalba.
+- Laiškai (C8): visi laiškai nariams ir tėvams - viename faile (`app/mail_templates.php`), siunčiami **gavėjo kalba**, su vienu parašu.
+  Laiške „Treneris atsakė“ nuoroda dabar atidaro pokalbį (anksčiau - neegzistuojanti vieta). Kvietime nebeminimas žaidimas.
+- Masiniai laiškai (Pranešimas nariams, Atšauktos treniruotės) siunčiami per eilę: atsidaro **„Laiškų siuntimas“** - matosi, kiek išsiųsta,
+  kiekvienam gavėjui „Išsiųsta / Nepavyko“, mygtukas „Pakartoti nepavykusius“. Pranešimų puslapyje - skiltis „Laiškai“ su „Tęsti →“.
+  Eilės įrašai (su adresais) ištrinami po 90 dienų.
+- Pranešimai paskyroje rodomi skaitytojo kalba, jei tekstas yra vertimų žodyne.
+- Duomenų bazė: naujas failas `db/049_kalba_rungtys.sql`.
+
 ## v1.77 - 2026-11-21 (LTKF registrai: nariai, klubai, teisėjai - #160)
 - Valdymas → Tvarkyti → **📒 Federacijos registrai** su trimis skiltimis:
   - **Nariai** - visi egzaminus laikę (kaip anksčiau) + „+ Naujas narys registre“ (kitų klubų nariai, senesni laipsniai), laipsnis ir klubas keičiami;

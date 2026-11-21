@@ -48,13 +48,19 @@ if (is_post()) {
             }
             $done[] = 'paskyroje: ' . count($accounts);
         }
+        $batch = null;
         if (in_array('email', $channels, true)) {
-            $mails = 0;
+            // C8: per eilę - siunčiama dalimis puslapyje „Laiškų siuntimas“, kiekvieno gavėjo kalba
+            $batch = outbox_new_batch();
+            $queued = 0;
             foreach ($accounts as $acc) {
-                $mails += send_mail($acc['email'], $title, "Sveiki, {$acc['first_name']},\n\n" . $body
-                    . "\n\n--\nVšĮ Karate Ateitis\n" . abs_url('paskyra.php')) ? 1 : 0;
+                $queued += outbox_add($batch, $title, $acc['email'], mail_tpl('broadcast', ['name' => $acc['first_name'], 'title' => $title, 'text' => $body, 'link' => abs_url('paskyra.php')], account_lang($acc)),
+                    (int) $acc['id'], (int) $me['id']) ? 1 : 0;
             }
-            $done[] = (t('el. paštu:') . ' ') . $mails;
+            $done[] = (t('el. paštu:') . ' ') . count($accounts);
+            if (!$queued) {
+                $batch = null;   // be db/049 - jau išsiųsta iš karto
+            }
         }
         if (in_array('sms', $channels, true)) {
             $rec = sms_recipients_for_members($memberIds)['recipients'];
@@ -64,7 +70,7 @@ if (is_post()) {
             $done[] = (t('SMS:') . ' ') . count($rec) . (sms_live() ? '' : (' ' . t('(bandomasis režimas)')));
         }
         flash('ok', t('Pranešimas išsiųstas (') . implode(', ', $done) . ').');
-        redirect('admin/pranesimai.php');
+        redirect($batch ? 'admin/siuntimas.php?b=' . $batch : 'admin/pranesimai.php');
     }
 }
 
@@ -119,5 +125,19 @@ page_start(t('Pranešimas nariams'), ['admin' => true]);
     <?php endforeach; ?>
   </ul>
 </div>
+<?php $batches = outbox_batches(10); if ($batches): ?>
+<div class="panel card" id="laiskai">
+  <h2><?= te('Laiškai') ?> <span class="hint" style="font-family:Inter,sans-serif;"><?= te('kiekvienam gavėjui - išsiųsta ar ne') ?></span></h2>
+  <ul class="list">
+    <?php foreach ($batches as $ob): ?>
+      <li class="row between" style="gap:8px; flex-wrap:wrap;">
+        <span><strong><?= e($ob['title']) ?></strong> <span class="small muted"><?= e(notification_when($ob['created_at'])) ?></span></span>
+        <span class="small"><?= (int) $ob['sent'] ?> / <?= (int) $ob['total'] ?> <?= te('išsiųsta') ?><?= (int) $ob['failed'] ? ' · <b class="warn-t">' . (int) $ob['failed'] . ' ' . te('nepavyko') . '</b>' : '' ?>
+          · <a href="<?= url('admin/siuntimas.php?b=' . $ob['batch']) ?>"><?= (int) $ob['left_n'] ? te('Tęsti →') : te('Atidaryti →') ?></a></span>
+      </li>
+    <?php endforeach; ?>
+  </ul>
+</div>
+<?php endif; ?>
 <?php
 page_end();

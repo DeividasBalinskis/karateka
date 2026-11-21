@@ -60,9 +60,7 @@ if (is_post()) {
     $recent = (int) q_value('SELECT COUNT(*) FROM email_tokens WHERE purpose = "password_reset" AND email = ? AND created_at > NOW() - INTERVAL 1 HOUR', [$email]);
     if ($a && $recent < 3) {
         $token = token_create('password_reset', $a['email'], (int) $a['id']);
-        send_mail($a['email'], 'Slaptažodžio atkūrimas — Karateka',
-            "Sveiki, {$a['first_name']},\n\nnorėdami nustatyti naują slaptažodį, paspauskite nuorodą:\n\n"
-            . abs_url('slaptazodis.php?t=' . $token) . "\n\nNuoroda galioja 1 valandą. Jei slaptažodžio nekeitėte, šį laišką ignoruokite.");
+        mail_send_tpl($a['email'], 'password_reset', ['name' => $a['first_name'], 'link' => abs_url('slaptazodis.php?t=' . $token)], account_lang($a));
     }
     // Atsakymas visada vienodas, kad nebūtų galima tikrinti, kurie el. paštai registruoti
     flash('ok', t('Jei toks el. paštas registruotas, išsiuntėme nuorodą slaptažodžiui atkurti.'));

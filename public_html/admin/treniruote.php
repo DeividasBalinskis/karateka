@@ -7,9 +7,8 @@ $me = require_staff();
 function notify_note(array $m, string $text, string $date, array $me): void
 {
     foreach (q_all('SELECT a.* FROM accounts a JOIN account_members am ON am.account_id = a.id WHERE am.member_id = ? AND a.status = "active"', [$m['id']]) as $acc) {
-        send_mail($acc['email'], "Trenerio pastaba: {$m['first_name']}",
-            "Sveiki,\n\ntreneris {$me['first_name']} paliko pastabą ({$m['first_name']}, " . fmt_date($date, true) . "):\n\n$text\n\n"
-            . 'Visas pastabas matysite paskyroje: ' . abs_url('paskyra.php?m=' . $m['id']));
+        mail_send_tpl($acc['email'], 'coach_note', ['child' => $m['first_name'], 'coach' => $me['first_name'], 'date' => function () use ($date) { return fmt_date($date, true); },
+            'text' => $text, 'lesson' => '', 'link' => abs_url('paskyra.php?m=' . $m['id']) . '#pastabos'], account_lang($acc));
     }
 }
 

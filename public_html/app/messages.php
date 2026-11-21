@@ -343,8 +343,8 @@ function notify_staff_message(array $member, array $from, string $body, ?int $no
 function notify_member_reply(array $member, array $coach, string $body): void
 {
     foreach (q_all('SELECT a.* FROM accounts a JOIN account_members am ON am.account_id = a.id WHERE am.member_id = ? AND a.status = "active"', [(int) $member['id']]) as $acc) {
-        send_mail($acc['email'], 'Treneris atsakė: ' . $member['first_name'],
-            "Sveiki,\n\ntreneris {$coach['first_name']} atsakė ({$member['first_name']}):\n\n$body\n\nPaskyroje: " . abs_url('paskyra.php?m=' . (int) $member['id']) . '#zinutes');
+        mail_send_tpl($acc['email'], 'coach_reply', ['child' => $member['first_name'], 'coach' => $coach['first_name'], 'text' => $body,
+            'link' => abs_url('paskyra.php?pokalbis=' . (int) $member['id'])], account_lang($acc));   // nuoroda atidaro pokalbį
     }
 }
 
@@ -363,10 +363,10 @@ function send_coach_note(array $member, array $coach, string $body, ?int $lesson
     if ($email) {
         $lesson = $lessonId ? q_value('SELECT title FROM lessons WHERE id = ?', [$lessonId]) : null;
         foreach (q_all('SELECT a.* FROM accounts a JOIN account_members am ON am.account_id = a.id WHERE am.member_id = ? AND a.status = "active"', [(int) $member['id']]) as $acc) {
-            send_mail($acc['email'], ($isTask ? 'Trenerio užduotis: ' : 'Trenerio pastaba: ') . $member['first_name'],
-                "Sveiki,\n\ntreneris {$coach['first_name']} paliko " . ($isTask ? 'užduotį' : 'pastabą') . " ({$member['first_name']}):\n\n$body\n"
-                . ($lesson ? "\nPamoka: $lesson - " . abs_url('pamokos.php?id=' . $lessonId) . "\n" : '')
-                . "\nPaskyroje galite atsakyti treneriui: " . abs_url('paskyra.php?m=' . (int) $member['id']) . '#n' . $id);
+            mail_send_tpl($acc['email'], $isTask ? 'coach_task' : 'coach_note', ['child' => $member['first_name'], 'coach' => $coach['first_name'], 'text' => $body,
+                'date' => function () { return fmt_date(date('Y-m-d'), true); },
+                'lesson' => function () use ($lesson, $lessonId) { return $lesson ? t('Pamoka:') . ' ' . $lesson . ' - ' . abs_url('pamokos.php?id=' . $lessonId) : ''; },
+                'link' => abs_url('paskyra.php?m=' . (int) $member['id']) . '#n' . $id], account_lang($acc));
         }
     }
     return $id;

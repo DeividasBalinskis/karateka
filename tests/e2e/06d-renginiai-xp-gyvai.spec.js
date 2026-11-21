@@ -110,6 +110,8 @@ test('competition: kumite bout panel, live link and screen, club registration, D
   await c.locator('input[name="birth[]"]').first().fill('2014');
   await c.locator('select[name="gender[]"]').first().selectOption('F');
   await c.locator('select[name="photo[]"]').first().selectOption('0');
+  check('events to choose (from the groups)', await c.locator('.reg-row:not(.reg-head) [data-disc]').count() >= 1);
+  await c.locator('.reg-row:not(.reg-head) [data-disc]').first().check();
   await c.check('input[name=consent_data]');
   await c.check('input[name=consent_privacy]');
   await nav(c, () => c.click('form.reg-form button[type=submit]'));
@@ -119,6 +121,9 @@ test('competition: kumite bout panel, live link and screen, club registration, D
   await c.check('input[name=consent_privacy]');
   await nav(c, () => c.click('form.reg-form button[type=submit]'));
   check('registration stored', sql(`SELECT CONCAT(status, '|', parent_phone, '|', photo_ok, '|', consent_at IS NOT NULL) FROM tournament_entries WHERE tournament_id = ${tid}`) === 'new|+370 611 22333|0|1');
+  check('chosen event stored', sql(`SELECT disciplines FROM tournament_entries WHERE tournament_id = ${tid}`) !== '');
+  check('club leader sees own registrations', (await c.locator('.reg-mine').innerText()).includes('Ona Testaitė'));
+  check('club and phone kept for the next one', await c.inputValue('input[name=club]') === 'Testo klubas');
   await a.click('#tab-admin'); await a.click('#tab-dalyviai');
   await a.click('#en-refresh');
   await a.waitForSelector('#en-add-all');
@@ -126,6 +131,7 @@ test('competition: kumite bout panel, live link and screen, club registration, D
   await a.waitForTimeout(1500);
   check('registration added', sql(`SELECT COUNT(*) FROM tournament_entries WHERE tournament_id = ${tid} AND status = 'added'`) === '1');
   check('registered person in state', /Ona Testaitė/.test(sql(`SELECT state FROM tournaments WHERE id = ${tid}`)));
+  check('chosen events kept in Budo', /"discs":\["/.test(sql(`SELECT state FROM tournaments WHERE id = ${tid}`)));
   check('no-photo badge', await a.locator('#people-view tr:has(input[value="Ona Testaitė"]) .nophoto').count() === 1);
 
   // Grupės atidarymas: tvarkaraštyje - jos lentelė; žiūrovams - kovos ir vietos

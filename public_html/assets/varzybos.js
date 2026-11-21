@@ -1222,7 +1222,7 @@
     var p = S.people[id]; if (!p || !p.birth || !p.gender) return [];   // be gimimo metų ir lyties - nespėliojama
     var mine = catsOf(id).filter(function (c) { return !c.team; }), out = [], discs = {};
     if (mine.length) mine.forEach(function (c) { discs[c.discipline] = true; });
-    else S.categories.forEach(function (c) { if (!c.team && hasCrit(c) && fits(c, p)) discs[c.discipline] = true; });
+    else S.categories.forEach(function (c) { if (!c.team && hasCrit(c) && fits(c, p) && (!p.discs || p.discs.indexOf(c.discipline) !== -1)) discs[c.discipline] = true; });
     Object.keys(discs).forEach(function (d) {
       var inD = mine.filter(function (c) { return c.discipline === d; });
       if (inD.some(function (c) { return fits(c, p); }) || inD.some(catStarted)) return;
@@ -3034,6 +3034,7 @@
       var g = a < 8 ? 'X' : (p.gender === 'F' ? 'F' : 'M');
       var discs = a < 8 ? ['kihon', 'kata'] : ['kata', 'kumite'];
       if (a >= 16 && bl >= 7) discs.push('fukugo');
+      if (p.discs && p.discs.length) discs = p.discs.slice();   // pats pasirinko registruodamasis
       discs.forEach(function (d) {
         var k = d + '|' + g + '|' + ai + '|' + bi, gs = {}; gs[g] = true;
         (buckets[k] = buckets[k] || { d: d, gs: gs, a0: ai, a1: ai, b0: bi, b1: bi, people: [] }).people.push(p);
@@ -3309,6 +3310,7 @@
   // Užsiregistravę per nuorodą: Denis peržiūri ir prideda (arba atmeta)
   var entries = CFG.entries || [];
   function entryPersonId(en) { return 'r' + en.id; }
+  function entryDiscs(en) { return String(en.disciplines || '').split(',').filter(function (d) { return INDIV.indexOf(d) !== -1; }); }
   function renderEntries() {
     var box = document.getElementById('entries-box'); if (!box) return;
     box.hidden = !entries.length && !CFG.regUrl;
@@ -3322,10 +3324,11 @@
     entries.forEach(function (en) { (byClub[en.club] = byClub[en.club] || []).push(en); });
     box.innerHTML = '<h2>Užsiregistravę per nuorodą' + (entries.length ? ' <span class="pill warn">' + entries.length + ' nauji</span>' : '') + '<span class="spacer"></span>' +
       '<button type="button" class="btn" id="en-refresh" title="Patikrinti, ar yra naujų">↻ Atnaujinti</button>' + (entries.length ? '<button type="button" class="btn btn-primary" id="en-add-all">Pridėti visus (' + entries.length + ')</button>' : '') + '</h2>' +
-      (entries.length ? '<div class="table-scroll"><table><thead><tr><th>Klubas</th><th>Vardas, pavardė</th><th class="num">Gim.</th><th>Lytis</th><th>Diržas</th><th>Nuotraukos</th><th>Tėvų tel.</th><th>Kontaktas</th><th></th></tr></thead><tbody>' +
+      (entries.length ? '<div class="table-scroll"><table><thead><tr><th>Klubas</th><th>Vardas, pavardė</th><th class="num">Gim.</th><th>Lytis</th><th>Diržas</th><th>Rungtys</th><th>Nuotraukos</th><th>Tėvų tel.</th><th>Kontaktas</th><th></th></tr></thead><tbody>' +
         Object.keys(byClub).sort().map(function (k) {
           return byClub[k].map(function (en) {
             return '<tr><td>' + esc(en.club) + '</td><td><b>' + esc(en.name) + '</b></td><td class="num">' + (en.birth_year || '') + '</td><td>' + esc(en.gender || '') + '</td><td>' + beltDot(+en.belt) + esc(beltName(+en.belt)) + '</td>' +
+              '<td class="small">' + esc(entryDiscs(en).map(function (d) { return DISC[d] || d; }).join(', ')) + '</td>' +
               '<td>' + (en.photo_ok === null || en.photo_ok === undefined ? '<span class="muted">?</span>' : +en.photo_ok ? '✓ sutinka' : '<span class="nophoto">be nuotraukų</span>') + '</td>' +
               '<td class="small">' + esc(en.parent_phone || '') + '</td><td class="small">' + esc(en.contact || '') + '</td>' +
               '<td><button type="button" class="btn btn-xs" data-en-add="' + en.id + '">Pridėti</button> <button type="button" class="btn btn-danger btn-xs" data-en-rej="' + en.id + '" title="Atmesti">✕</button></td></tr>';
@@ -3346,6 +3349,7 @@
       var dup = Object.keys(S.people).some(function (id) { var p = S.people[id]; return p.name === en.name && p.club === en.club && (+p.birth || 0) === (+en.birth_year || 0); });
       if (!dup) S.people[entryPersonId(en)] = { id: entryPersonId(en), name: en.name, club: en.club, birth: +en.birth_year || null, gender: en.gender || null, belt: en.belt === null || en.belt === undefined || en.belt === '' ? null : +en.belt, member: null,
         noPhoto: en.photo_ok !== null && en.photo_ok !== undefined && !+en.photo_ok };
+      if (!dup && entryDiscs(en).length) S.people[entryPersonId(en)].discs = entryDiscs(en);   // registruojantis pasirinktos rungtys
     });
     markEntries(list.map(function (en) { return +en.id; }), 'added');
     toastPlaced(list.map(entryPersonId).filter(function (id) { return S.people[id]; }));
