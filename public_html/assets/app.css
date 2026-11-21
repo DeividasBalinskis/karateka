@@ -2097,3 +2097,13 @@ a.kid-mini:hover{border-color:var(--accent);}
 .ob-list li{display:flex; flex-wrap:wrap; align-items:center; gap:4px 10px; padding:8px 10px; border:1px solid rgba(23,20,15,0.1); border-radius:10px;}
 .ob-who{flex:1 1 240px; min-width:0; overflow-wrap:anywhere;}
 .warn-t{color:#a3302a;}
+
+/* v1.79 C10: Duomenų priežiūra */
+.care-list, .care-auto{list-style:none; margin:8px 0 0; padding:0; display:grid; gap:8px;}
+.care-item{padding:10px 12px; border:1px solid rgba(23,20,15,0.1); border-radius:12px;}
+.care-names{margin:6px 0 0; padding-left:18px; max-height:240px; overflow:auto; overflow-wrap:anywhere;}
+.care-auto li{gap:10px; padding:6px 0; border-bottom:1px dashed rgba(23,20,15,0.1);}
+.care-auto li:last-child{border-bottom:0;}
+.care-auto li > span:first-child{min-width:0;}
+.cookie-list{padding-left:18px;}
+.cookie-list li{margin:3px 0; overflow-wrap:anywhere;}

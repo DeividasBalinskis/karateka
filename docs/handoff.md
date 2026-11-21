@@ -1,5 +1,5 @@
 # Handoff
-Updated: 2026-11-21 · version v1.78 · branch claude/festive-curie-01jgx2
+Updated: 2026-11-21 · version v1.79 · branch claude/festive-curie-01jgx2
 
 ## Pending asks (answer these first)
 | Asked | By | What | Status |
@@ -34,6 +34,7 @@ Updated: 2026-11-21 · version v1.78 · branch claude/festive-curie-01jgx2
 - v1.76: A1 done (unsaved Budo changes kept on the device, merged after reopening); #109 / decision 38 left hand (shield = 2 blocks, second weapon = 2 strikes, second strike 75 %).
 - v1.77: #160 LTKF registers (members, clubs, judges) in Valdymas → Federacijos registrai; LTKF pages read clubs and judges from them; db/048.
 - v1.78: Budo club registration with events per athlete + „Jūsų užregistruoti“ (decision 12); C2 language on the account; C8 e-mail templates in the reader's language, outbox with per-person result (admin/siuntimas.php); db/049.
+- v1.79: C10 Duomenų priežiūra (list first, delete only on button + confirm), photo .zip backup, cookie list on the privacy page. Nothing deleted on the test site by me.
 - Committed and pushed to the claude branch after each stage; `main` untouched.
 
 ## Open

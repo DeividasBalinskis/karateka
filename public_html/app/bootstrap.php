@@ -80,6 +80,7 @@ require APP_DIR . '/feedback.php';
 require APP_DIR . '/tournaments.php';
 require APP_DIR . '/member_profile.php';
 require APP_DIR . '/cleanup.php';
+require APP_DIR . '/data_care.php';
 require APP_DIR . '/backup.php';
 require APP_DIR . '/db_update.php';
 require APP_DIR . '/layout.php';

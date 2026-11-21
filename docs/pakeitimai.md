@@ -4,6 +4,13 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.79 - 2026-11-21 (duomenų priežiūra, nuotraukų kopija, slapukų sąrašas - C10)
+- Valdymas → Nustatymai → **Duomenų priežiūra**: kas trinama automatiškai ir po kiek laiko; ką **galima** ištrinti -
+  buvę nariai (neaktyvūs > 1 m.), nepatvirtinti nariai (> 90 d.), išjungtos paskyros (> 1 m.), failai be įrašo.
+  Pirmiausia parodomas sąrašas („Peržiūrėti sąrašą“); trinama tik paspaudus „Ištrinti“ ir patvirtinus.
+- Valdymas → Nustatymai → Atsarginės kopijos: **Nuotraukos ir failai → Atsisiųsti .zip** (visas `uploads` be DB kopijų).
+- Privatumo politika: visų slapukų sąrašas ir kas laikoma tik naršyklėje.
+
 ## v1.78 - 2026-11-21 (Budo registracija klubams su rungtimis; kalba paskyroje; laiškai gavėjo kalba ir per eilę - C2, C8)
 - Budo registracija klubams (sprendimas 12): kiekvienam dalyviui pažymima, kur varžosi (**Kata / Kumite / ...** - tik tos rungtys, kurioms varžybose yra grupių).
   Klubo vadovas po registracijos mato **„Jūsų užregistruoti“** su būsena (laukia / įtrauktas / neįtrauktas) ir gali atšaukti dar nepatvirtintą;
