@@ -151,3 +151,26 @@ test('quick fixes: stopwatch starts at 0:00, theme picker closes, coach has no S
   check('explicit all → game open', c.url().includes('dojo.php'));
   noJsErrors(a, c);
 });
+
+test('A1: tab closed while saving fails - the change is kept on the device and saved after reopening', async ({ browser }) => {
+  const { a, tid, st } = await testTournament(browser);
+  const ki = st.categories.findIndex(c => c.discipline === 'kata' && !c.team && c.competitors.length >= 4 && c.draw && c.draw.slots);
+  const kata = st.categories[ki];
+  await openCat(a, tid, kata.id);
+  const draw = () => JSON.stringify(stateOf(tid).categories[ki].draw.results || {});
+  const before = draw();
+  // Ryšys nutrūksta: išsaugojimas nepavyksta, ir puslapis uždaromas
+  await a.route(/varzybu-sistema\.php/, r => r.request().method() === 'POST' ? r.abort() : r.continue());
+  await a.locator('#draw-view [data-flag]').first().click();
+  await a.waitForTimeout(1500);
+  check('server did not get it', draw() === before);
+  check('kept on this device', await a.evaluate(id => !!localStorage.getItem('taika-pend-' + id), tid));
+  await a.unroute(/varzybu-sistema\.php/);
+  const p2 = await a.context().newPage();
+  await a.close();
+  await p2.goto(`admin/varzybu-sistema.php?id=${tid}`);
+  await p2.waitForFunction(() => /Išsaugota/.test((document.querySelector('.save-state') || {}).textContent || ''), null, { timeout: 15000 });
+  await p2.waitForTimeout(1000);
+  check('change restored and saved after reopening', draw() !== before, draw());
+  check('device copy cleared', !(await p2.evaluate(id => localStorage.getItem('taika-pend-' + id), tid)));
+});
