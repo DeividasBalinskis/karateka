@@ -1,7 +1,7 @@
 // v1.78: C2 kalba paskyroje (prisijungus kitur - ta pati, laiškai ta kalba); C8 laiškų šablonai ir siuntimo eilė (Pranešimas nariams → Laiškų siuntimas).
 // Laiškai lokaliai keliauja į SMTP 127.0.0.1:1025 (Mailpit ar testinis priėmėjas); be jo laiškas pažymimas „Nepavyko“ - testas tikrina abu atvejus.
 const { test } = require('@playwright/test');
-const { sql, login, nav, check, noJsErrors } = require('./helpers');
+const { sql, login, nav, check, noJsErrors, PASSWORD } = require('./helpers');
 
 test('C2: chosen language is saved on the account and used after the next login', async ({ browser }) => {
   sql("UPDATE accounts SET lang = NULL WHERE email = 'narys@karateka.test'");
@@ -9,7 +9,12 @@ test('C2: chosen language is saved on the account and used after the next login'
   check('first login saves the current language', sql("SELECT lang FROM accounts WHERE email = 'narys@karateka.test'") === 'lt');
   await m.goto('kalba.php?l=en&b=/paskyra.php');
   check('language switch saved on the account', sql("SELECT lang FROM accounts WHERE email = 'narys@karateka.test'") === 'en');
-  const m2 = await login(browser, 'narys@karateka.test', 1280, 900);   // kitas „įrenginys“ - be slapuko
+  // Kitas „įrenginys“ - be slapuko; prisijungiama ranka (helpers.login kalbą paskyroje nustato iš naujo)
+  const m2 = await login(browser, null, 1280, 900);
+  await m2.goto('prisijungti.php');
+  await m2.fill('input[name=email]', 'narys@karateka.test');
+  await m2.fill('input[name=password]', PASSWORD);
+  await Promise.all([m2.waitForNavigation(), m2.click('button[type=submit]')]);
   check('next login opens in the saved language', await m2.evaluate(() => document.documentElement.lang) === 'en');
   await m2.goto('kalba.php?l=lt&b=/paskyra.php');
   check('back to Lithuanian', sql("SELECT lang FROM accounts WHERE email = 'narys@karateka.test'") === 'lt');

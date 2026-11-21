@@ -254,6 +254,17 @@ varz_html_head(t('Varžybos'), 'vz-home');
       </fieldset>
       <?php if (!$demo): ?><label class="small"><input type="checkbox" name="event" value="1" checked> <?= te('Rodyti nariams Renginiuose (sukurti renginį)') ?></label><?php endif; ?>
       <button class="btn btn-primary" type="submit"><?= te('Sukurti varžybas →') ?></button>
+      <script>
+      // B2: greitos varžybos per treniruotę (pažymėta Kata / Kumite) - renginys nariams nekuriamas, nebent pažymėsite patys
+      (function (f) {
+        var ev = f.querySelector('input[name=event]'); if (!ev) return;
+        var touched = false;
+        ev.addEventListener('change', function () { touched = true; });
+        f.querySelectorAll('input[name="quick[]"]').forEach(function (q) {
+          q.addEventListener('change', function () { if (!touched) ev.checked = !f.querySelector('input[name="quick[]"]:checked'); });
+        });
+      })(document.currentScript.closest('form'));
+      </script>
     </form>
   </details>
   <?php endif; ?>

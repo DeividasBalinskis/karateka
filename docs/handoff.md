@@ -1,5 +1,5 @@
 # Handoff
-Updated: 2026-11-21 · version v1.82 · branch claude/festive-curie-01jgx2
+Updated: 2026-11-21 · version v1.83 · branch claude/festive-curie-01jgx2
 
 ## Pending asks (answer these first)
 | Asked | By | What | Status |
@@ -38,10 +38,11 @@ Updated: 2026-11-21 · version v1.82 · branch claude/festive-curie-01jgx2
 - v1.80: D6 parts 1-3 - repeated texts edited one by one, page versions with restore + multi-step undo, LTKF news and documents as records, LTKF state off/draft/public (noindex unless public); db/050. Tests: login() resets the account language (C2 keeps language on the account).
 - v1.81: C2 - settings registry (`app/settings.php`, checked by checks.sh), „Visi nustatymai“ map, change log with restore (db/051). Old `reg_off` name kept (renaming = data change, ask first).
 - v1.82: C4 - `assets/tokens.css` (loaded first, same values, 55/55 screenshots identical) + `tests/visual.sh` (baseline / compare; PW_CHROMIUM for a custom browser path).
+- v1.83: B2 - quick competition (Kata/Kumite ticked) no longer creates a member event by default. B8 closed by decision (Nustatymai = Paskyra page). Full suite on v1.82: 154 passed, 1 skipped, 1 failed (07s - test login reset the language it checks; fixed, passes).
 - Committed and pushed to the claude branch after each stage; `main` untouched.
 
 ## Open
-- B8 rest: separate Paskyra page (Nustatymai covers it for now - confirm); C4-C6; D5 page polish; D7 shield / second weapon in the arena.
+- C1 permissions, C3 secret links, C5 CSS cleanup (safe now with tests/visual.sh), C6 engine unit tests, D3 split varzybos.js, D4 same group on two tablets, D5 Budo live polish, D7 arena left hand UI, D8 pixel characters (PC + LibreSprite).
 - Parent payments for Budo registration need a payment provider (later).
 
 ## Next
