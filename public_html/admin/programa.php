@@ -74,7 +74,7 @@ page_start(t('Egzaminų programa'), ['admin' => true]);
 <div class="page-head" style="margin-top:8px;">
   <h1 class="styled"><?= te('Egzaminų programa') ?></h1>
   <p class="muted" style="margin:0;"><?= te('Ko reikia norint gauti diržą. Nariai mato savo kito diržo programą skiltyje „Egzaminas“ ir žymi „Moku“ -
-    jūs patvirtinate pranešime (Treneriams → pradžia), ir narys gauna to punkto aktyvumo taškus. Jie kelia paskyros lygį, diržo nesuteikia.') ?></p>
+    jūs patvirtinate pranešime (Valdymas → Šiandien), ir narys gauna to punkto aktyvumo taškus. Jie kelia paskyros lygį, diržo nesuteikia.') ?></p>
 </div>
 <div class="top-tabs belt-tabs">
   <?php foreach (BELTS as $lvl => [$kyu, $name, $color]): if ($lvl === 1 || $lvl > 12) { continue; } ?>

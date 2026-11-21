@@ -8,7 +8,6 @@ function page_start(string $title, array $opt = []): void
     if ($admin && is_staff($a) && !admin_mode() && !headers_sent()) {
         admin_mode_set(true);   // atidarius valdymo puslapį - admin režimas įsijungia
     }
-    menu_variant_preview();
     $flashes = take_flashes();
     $css = url('assets/app.css') . '?v=' . @filemtime(PUBLIC_DIR . '/assets/app.css');
     ?>
@@ -44,7 +43,7 @@ function page_start(string $title, array $opt = []): void
 <?php
     // Renginiai, Naujienos, Pamokos - viena vieta visiems (ir treneriui su redagavimo mygtukais), be trenerio skirtukų juostos
     $section = $opt['section'] ?? null;
-    site_header(false, $admin && !$section ? 'admin' : (!empty($opt['account']) ? 'account' : null), $opt['account'] ?? null, $section); ?>
+    site_header(false, $admin ? 'admin' : (!empty($opt['account']) ? 'account' : null), $opt['account'] ?? null, $section); ?>
 <main class="page <?= !empty($opt['narrow']) ? 'narrow' : '' ?><?= !empty($opt['wide']) ? ' wide' : '' ?><?= !empty($GLOBALS['adm_side']) ? ' has-side' : '' ?>">
 <?php if (!empty($GLOBALS['adm_side'])): ?><div class="adm-shell"><?= $GLOBALS['adm_side'] ?><div class="adm-main"><?php endif; ?>
 <?php foreach ($flashes as $f): ?>
@@ -272,68 +271,17 @@ function render_app_install_card(): string
         . ('<li><strong>' . t('Jei rodo „Nesaugi programa užblokuota“:') . '</strong> ' . t('tai Google apsauga (Play Protect) taip įvertina svetainės ženkliuką. Spauskite „Supratau“, tada naršyklės meniu ⋮ → „Pridėti prie pradžios ekrano“ → „Sukurti nuorodą“ - veiks taip pat.') . '</li></ul></div>');
 }
 
-// ---------- Valdymo meniu išdėstymas (#106): ne daugiau 2 lygių; variantą renkasi adminas (Nustatymai), peržiūrai - ?meniu=... ----------
-const MENU_VARIANTS = [
-    'abu'     => ['Šoninis + eilutė telefone', 'Kompiuteryje - meniu kairėje (Kasdien, Klubas, Tvarkyti), telefone ir planšetėje - viena eilutė su „Daugiau ▾“.'],
-    'eilute'  => ['Viena eilutė + „Daugiau“', 'Kasdieniai darbai vienoje eilutėje, reti - „⚙ Daugiau ▾“ sąraše.'],
-    'sonas'   => ['Šoninis meniu', 'Valdyme - meniu kairėje su grupėmis: Kasdien, Klubas, Tvarkyti. Viršuje - tik svetainė.'],
-];
-
-// Telefono meniu (treneriams): vienas aiškus būdas vietoj ☰ + valdymo eilutės kartu; numatytas - apatinė juosta (v1.46)
-const PHONE_MENU_VARIANTS = [
-    'apacia' => ['Apatinė juosta (kaip programėlė)', 'Apačioje: Pradžia, Treniruotė, Egzaminai, Nariai, ⋯ Daugiau. ☰ nebėra.'],
-    'dabar'  => ['Senasis', '☰ meniu viršuje ir valdymo eilutė po juo.'],
-    'burger' => ['Viskas viename ☰', 'Valdymo eilutės nėra - ☰ meniu viršuje: valdymas grupėmis ir svetainė.'],
-    'eilute' => ['Eilutė + 🌐', 'Lieka valdymo eilutė, ☰ nebėra - svetainės skiltys po 🌐 viršuje.'],
-    'lapas'  => ['Didelis meniu lapas', '☰ atidaro visą ekraną su didelėmis plytelėmis: Kasdien, Klubas, Tvarkyti, Svetainė.'],
-];
-
+// ---------- Valdymo meniu išdėstymas (#106): ne daugiau 2 lygių ----------
+// B9 (sprendimas 2026-11-21): bandomieji meniu variantai išimti - vienas išdėstymas visiems:
+// kompiuteryje šoninis meniu (planšetėje - eilutė su „Daugiau“), telefone - apatinė juosta.
 function phone_menu_variant(): string
 {
-    static $v = null;
-    if ($v === null) {
-        $c = (string) ($_COOKIE['tmeniu'] ?? '');
-        $sv = (string) site_setting('phone_menu', 'apacia');
-        $v = isset(PHONE_MENU_VARIANTS[$c]) ? $c : (isset(PHONE_MENU_VARIANTS[$sv]) ? $sv : 'apacia');
-    }
-    return $v;
+    return 'apacia';
 }
 
 function menu_variant(): string
 {
-    static $v = null;
-    if ($v === null) {
-        $c = (string) ($_COOKIE['meniu'] ?? '');
-        $sv = (string) site_setting('menu_variant', 'abu');
-        $v = isset(MENU_VARIANTS[$c]) ? $c : (isset(MENU_VARIANTS[$sv]) ? $sv : 'abu');
-    }
-    return $v;
-}
-
-/** Peržiūra: ?meniu=X - tik šiai naršyklei (slapukas), ?meniu=visiems - grįžti prie pasirinkto visiems */
-function menu_variant_preview(): void
-{
-    $g = (string) ($_GET['meniu'] ?? '');
-    $tg = (string) ($_GET['tmeniu'] ?? '');
-    if ($tg !== '' && !headers_sent() && is_staff(current_account())) {
-        if (isset(PHONE_MENU_VARIANTS[$tg])) {
-            setcookie('tmeniu', $tg, ['expires' => time() + 30 * 86400, 'path' => '/', 'samesite' => 'Lax', 'secure' => !empty($_SERVER['HTTPS'])]);
-            $_COOKIE['tmeniu'] = $tg;
-        } elseif ($tg === 'visiems') {
-            setcookie('tmeniu', '', ['expires' => time() - 3600, 'path' => '/']);
-            unset($_COOKIE['tmeniu']);
-        }
-    }
-    if ($g === '' || headers_sent() || !is_staff(current_account())) {
-        return;
-    }
-    if (isset(MENU_VARIANTS[$g])) {
-        setcookie('meniu', $g, ['expires' => time() + 30 * 86400, 'path' => '/', 'samesite' => 'Lax', 'secure' => !empty($_SERVER['HTTPS'])]);
-        $_COOKIE['meniu'] = $g;
-    } elseif ($g === 'visiems') {
-        setcookie('meniu', '', ['expires' => time() - 3600, 'path' => '/']);
-        unset($_COOKIE['meniu']);
-    }
+    return 'abu';
 }
 
 /** Visi valdymo skyriai trimis grupėmis: [grupė => [pavadinimas, [raktas => [ikona, pavadinimas, kelias, skaičiukas, paaiškinimas]]]] */
@@ -343,6 +291,7 @@ function admin_menu_groups(): array
         'siandien'   => ['🏠', t('Šiandien'), 'admin/', 0, t('Darbai, pranešimai, šiandienos grupės')],
         'treniruote' => ['🥋', t('Treniruotė'), 'admin/treniruote.php', 0, t('Lankomumas, pastabos, taškai')],
         'egzaminai'  => ['📋', t('Egzaminai'), 'admin/egzaminai.php', 0, t('Protokolai, registracija, kainos')],
+        'renginiai'  => ['📅', t('Renginiai'), 'admin/renginiai.php', 0, t('Renginiai, kvietimai, dalyviai, rezultatai')],
     ];
     $club = [
         'nariai'  => ['👥', t('Nariai'), 'admin/nariai.php', 0, t('Visi nariai, diržai, kontaktai')],
@@ -356,6 +305,9 @@ function admin_menu_groups(): array
     if (is_admin()) {   // #121: Pranešimai - apačioje, „Tvarkyti“
         $more['pranesimai'] = ['✉️', t('Pranešimai'), 'admin/pranesimai.php', 0, t('Laiškai ir SMS nariams')];
     }
+    if (is_admin() && function_exists('ltkf_url') && ltkf_url() !== '') {   // B9: LTKF svetainė - ir iš Valdymo
+        $more['ltkf'] = ['🏛️', t('LTKF svetainė'), 'ltkf/', 0, t('Federacijos svetainės turinys')];
+    }
     $more['nustatymai'] = ['⚙️', t('Nustatymai'), 'admin/nustatymai.php', 0, t('Grupės, tvarkaraštis, vertimai, paskyra')];
     return ['kasdien' => [t('Kasdien'), $day], 'klubas' => [t('Klubas'), $club], 'tvarkyti' => [t('Tvarkyti'), $more]];
 }
@@ -366,7 +318,8 @@ function admin_menu_key(): string
     $file = basename($_SERVER['SCRIPT_NAME'] ?? '', '.php');
     $map = ['index' => 'siandien', 'pirmas-adminas' => 'siandien', 'treniruote' => 'treniruote', 'egzaminai' => 'egzaminai', 'egzamino-protokolas' => 'egzaminai', 'federacija' => 'egzaminai',
             'programa' => 'egzaminai', 'pranesimai' => 'pranesimai', 'sms' => 'pranesimai', 'nariai' => 'nariai', 'taskai' => 'xp', 'testai' => 'testai',
-            'patvirtinimai' => 'patvirtinimai', 'atsiliepimai' => 'atsiliepimai'];
+            'patvirtinimai' => 'patvirtinimai', 'atsiliepimai' => 'atsiliepimai',
+            'renginiai' => 'renginiai', 'renginio-dalyviai' => 'renginiai', 'renginio-rezultatai' => 'renginiai'];
     if (isset($map[$file])) {
         return $map[$file];
     }

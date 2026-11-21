@@ -46,33 +46,15 @@ test('news and events on one page, one menu item', async ({ browser }) => {
   noJsErrors(v);
 });
 
-test('phone menu variants for staff: one menu at a time', async ({ browser }) => {
-  sql("DELETE FROM site_settings WHERE name = 'phone_menu'");
+test('phone menu for staff (B9): bottom bar only, More has the rest; nothing of it on a computer', async ({ browser }) => {
   const p = await login(browser, 'info@karateka.lt', 390, 844);
   await p.goto('admin/treniruote.php');
-  check('default: bottom bar, no burger, no admin row', await p.locator('.m-tabbar').isVisible() && !(await p.locator('#burgerBtn').isVisible()) && !(await p.locator('.am-line').isVisible()));
+  check('bottom bar, no burger, no admin row', await p.locator('.m-tabbar').isVisible() && !(await p.locator('#burgerBtn').isVisible()) && !(await p.locator('.am-line').isVisible()));
   await p.click('.m-more > summary');
-  check('More: rest of admin and the website', await p.locator('.m-sheet a[href*="testai.php"]').isVisible() && await p.locator('.m-sheet a[href*="naujienos.php"]').isVisible());
-  await p.goto('admin/treniruote.php?tmeniu=burger');
-  check('burger: no admin row', !(await p.locator('.am-line').isVisible()));
-  await p.click('#burgerBtn');
-  check('burger has admin groups', await p.locator('.pm-admin a[href*="nariai.php"]').isVisible());
-  await p.goto('admin/treniruote.php?tmeniu=eilute');
-  check('row + globe, no burger', await p.locator('.am-line').isVisible() && await p.locator('.pm-site').isVisible() && !(await p.locator('#burgerBtn').isVisible()));
-  await p.goto('admin/treniruote.php?tmeniu=lapas');
-  await p.click('#burgerBtn');
-  check('sheet with tiles', await p.locator('.pm-admin .am-row').count() >= 8);
-  // Visiems: nustatymuose
-  await p.goto('admin/nustatymai.php?tmeniu=visiems');
-  check('bottom bar is the default for everyone', await p.locator('#tmeniu .mp-row', { hasText: 'Apatinė juosta' }).locator('.badge', { hasText: 'visiems' }).count() === 1);
-  await nav(p, () => p.locator('#tmeniu .mp-row', { hasText: 'Viskas viename' }).locator('button').click());
-  check('saved for everyone', sql("SELECT value FROM site_settings WHERE name = 'phone_menu'") === 'burger');
-  sql("DELETE FROM site_settings WHERE name = 'phone_menu'");
-  // Kompiuteryje - nieko iš telefono meniu
+  check('More: rest of admin (Renginiai too) and the website', await p.locator('.m-sheet a[href*="testai.php"]').isVisible() && await p.locator('.m-sheet a[href$="admin/renginiai.php"]').isVisible() && await p.locator('.m-sheet a[href*="naujienos.php"]').isVisible());
   const c = await login(browser, 'info@karateka.lt', 1366, 900);
-  await c.goto('admin/?tmeniu=apacia');
+  await c.goto('admin/');
   check('computer: no bottom bar', !(await c.locator('.m-tabbar').isVisible()) && await c.locator('.adm-side').isVisible());
-  await c.goto('admin/?tmeniu=visiems');
   noJsErrors(p, c);
 });
 
