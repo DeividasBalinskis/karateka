@@ -3535,4 +3535,10 @@ Nuo 2013 m. treniravosi Tradicinio karate-do klubo „Sanrei“ komandoje, o 201
     'Įkelti arba atsisiųsti klausimus (failas)' => 'Загрузить или скачать вопросы (файл)',
     'įkelti: .txt, .csv, .json, paveikslėliai ar vienas ZIP (pvz. iš ChatGPT); atsisiųsti - visi klausimai su atsakymais' => 'загрузить: .txt, .csv, .json, картинки или один ZIP (напр. из ChatGPT); скачать - все вопросы с ответами',
     'Reikia padaryti: užduotys, pastabos, kvietimai' => 'Нужно сделать: задания, заметки, приглашения',
+    'dar {xp} XP iki {n} lygio' => 'ещё {xp} XP до {n} уровня',
+    'Rytoj' => 'Завтра',
+    'Artimiausių treniruočių nėra' => 'Ближайших тренировок нет',
+    'Užduočių nėra' => 'Заданий нет',
+    'Visos užduotys →' => 'Все задания →',
+    'Kas toliau' => 'Что дальше',
 ];

@@ -4,6 +4,13 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.71 - 2026-11-21 (vaiko „Mano diena“ - B8, variantas B)
+- 7-10 m. vaikas, prisijungęs savo vardu ir PIN: viršuje didelė kortelė „Labas, Jonas!“ su lygiu (ratas), XP ir kiek liko iki kito lygio,
+  diržas. Po ja 2 kortelės: artimiausia treniruotė (diena, laikas, vieta) ir viena trenerio užduotis su dideliu „✓ Atlikau“.
+  Žemiau „Kas toliau“ - artimiausi renginiai. Visa tai telpa į pirmą telefono ekraną.
+- Vaiko pirmame ekrane nėra „Atsijungti“ (jis meniu ☰ ir Nustatymuose) ir kainų. Užduotis kortelėje nebekartojama „Svarbu“ sąraše.
+- Tėvai ir vyresni nariai mato apžvalgą kaip anksčiau.
+
 ## v1.70 - 2026-11-21 (nariams raudonas skaičius - tik darbai, B5)
 - Nariams ir tėvams raudonas skaičius prie „Mano paskyra“, „Apžvalga“ ir vaiko vardo skaičiuoja tik tai, ką reikia padaryti:
   užduotys, neperskaitytos trenerio pastabos ir atsakymai, kvietimai, laukiantys atsakymo „Dalyvausiu / Negalėsiu“.
