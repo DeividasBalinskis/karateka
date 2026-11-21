@@ -7,6 +7,7 @@ Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar
 ## v1.75 - 2026-11-21 (trenerio atsakymas - laiškas tik pažymėjus, C8 dalis)
 - Treneriui atsakius nariui (žinučių langelis ir Valdymas → žinutės) el. laiškas automatiškai nebesiunčiamas.
   Jei reikia - pažymėkite „✉ Siųsti ir el. paštu“ (langelyje) arba „ir laiškas“ (žinučių puslapyje). Nauja pastaba ar užduotis - kaip anksčiau.
+- Kol atidarytas pokalbio langelis, pranešimų burbulas „🔔“ nebeuždengia „Siųsti“ mygtuko.
 
 ## v1.74 - 2026-11-21 (Valdymas: vienas išdėstymas, Renginiai meniu - B9)
 - Meniu bandomieji variantai išimti: kompiuteryje - šoninis meniu, telefone - apatinė juosta. Nustatymuose meniu pasirinkimo nebėra.
