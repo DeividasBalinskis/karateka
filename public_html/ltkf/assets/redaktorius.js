@@ -17,6 +17,7 @@
   bar.innerHTML = '<span class="ed-who">✏️ ' + esc(C.who) + '</span>' +
     '<button type="button" class="ed-b ed-save" data-a="save">💾 Išsaugoti</button>' +
     '<button type="button" class="ed-b" data-a="undo" title="Grąžinti, kaip buvo prieš paskutinį išsaugojimą">↶ Atšaukti</button>' +
+    '<button type="button" class="ed-b" data-a="versions" title="Visi šio puslapio išsaugojimai - galima atkurti bet kurį">🕘 Versijos</button>' +
     '<span class="ed-sep"></span>' +
     '<button type="button" class="ed-b" data-a="menu">☰ Meniu</button>' +
     '<button type="button" class="ed-b" data-a="look">🎨 Išvaizda ir kontaktai</button>' +
@@ -433,11 +434,60 @@
     m.querySelector('.np-t').focus();
   }
 
+  // D6 2 dalis: naujienos ir dokumentai kaip įrašai - „+ Nauja“, „✏ Keisti“, „🗑“
+  function itemModal(it) {
+    if (dirty && !confirm('Yra neišsaugotų teksto pakeitimų - jie bus prarasti. Tęsti?')) return;
+    var news = it.kind === 'news', box = document.querySelector('.ed-items[data-kind="' + it.kind + '"]');
+    var groups = box && box.dataset.groups ? JSON.parse(box.dataset.groups) : [];
+    var html = '<label class="ed-f">Pavadinimas<input type="text" class="it-title" maxlength="200" value="' + esc(it.title || '') + '"></label>' + (news
+      ? '<label class="ed-f">Data<input type="date" class="it-date" value="' + esc(it.date || new Date().toISOString().slice(0, 10)) + '"></label>' +
+        '<label class="ed-f">Trumpai (sąraše)<input type="text" class="it-sum" maxlength="400" value="' + esc(it.summary || '') + '"></label>' +
+        '<label class="ed-f">Tekstas <small>(pastraipos - tuščia eilutė tarp jų)</small><textarea class="it-body" rows="8">' + esc(it.body || '') + '</textarea></label>'
+      : '<label class="ed-f">Grupė<input type="text" class="it-grp" list="itGroups" value="' + esc(it.grp || groups[0] || '') + '"></label><datalist id="itGroups">' + groups.map(function (g) { return '<option value="' + esc(g) + '">'; }).join('') + '</datalist>' +
+        '<div class="ed-f">Failas: <span class="it-fname">' + (it.file ? esc(it.file.split('/').pop()) : 'neįkeltas') + '</span> <button type="button" class="ed-b it-up">📎 Įkelti failą</button><input type="hidden" class="it-file" value="' + esc(it.file || '') + '"></div>');
+    var m = modal(it.id ? (news ? 'Keisti naujieną' : 'Keisti dokumentą') : (news ? 'Nauja naujiena' : 'Naujas dokumentas'), html, function (mm) {
+      var q = function (c) { var x = mm.querySelector(c); return x ? x.value : ''; };
+      post({ action: 'item_save', kind: it.kind, id: it.id || '', title: q('.it-title'), date: q('.it-date'), summary: q('.it-sum'), body: q('.it-body'), grp: q('.it-grp'), file: q('.it-file') })
+        .then(function (d) { if (d.ok) { dirty = false; location.reload(); } else alert(d.error); });
+    });
+    var up = m.querySelector('.it-up');
+    if (up) up.addEventListener('click', function () {
+      picker('', false, function (fs) { if (fs[0]) upload('file', fs[0]).then(function (d) { if (d.ok) { m.querySelector('.it-file').value = d.url; m.querySelector('.it-fname').textContent = fs[0].name; if (!m.querySelector('.it-title').value) m.querySelector('.it-title').value = d.name; } }); });
+    });
+    m.querySelector('.it-title').focus();
+  }
+  document.querySelectorAll('.ed-items').forEach(function (box) {
+    box.addEventListener('click', function (e) {
+      var b = e.target.closest('button'); if (!b) return;
+      if (b.dataset.itemNew) return itemModal({ kind: b.dataset.itemNew });
+      var li = b.closest('[data-item]'); if (!li) return;
+      var it = JSON.parse(li.dataset.item);
+      if (b.hasAttribute('data-item-edit')) itemModal(it);
+      if (b.hasAttribute('data-item-del') && confirm('Ištrinti „' + it.title + '“?')) post({ action: 'item_delete', id: it.id }).then(function (d) { if (d.ok) location.reload(); else alert(d.error); });
+    });
+  });
+
+  // D6: puslapio istorija - kiekvienas išsaugojimas; „Atkurti“ (dabartinė irgi lieka istorijoje)
+  function versionsModal() {
+    post({ action: 'versions', slug: C.slug }).then(function (d) {
+      var list = (d && d.list) || [];
+      var m = modal('🕘 Puslapio versijos', '<p class="ed-hint">Dabar: ' + esc(d.now || '-') + '</p>' +
+        (list.length ? '<ul class="ed-vers">' + list.map(function (v) { return '<li><span>' + esc(v.at) + (v.by ? ' · ' + esc(v.by) : '') + '</span><button type="button" class="ed-b" data-ver="' + v.id + '">Atkurti</button></li>'; }).join('') + '</ul>'
+          : '<p>Ankstesnių versijų dar nėra - jos atsiras po kito išsaugojimo.</p>'));
+      m.addEventListener('click', function (e) {
+        var b = e.target.closest('[data-ver]'); if (!b) return;
+        if (dirty && !confirm('Neišsaugoti pakeitimai bus prarasti. Atkurti?')) return;
+        post({ action: 'restore', slug: C.slug, id: b.dataset.ver }).then(function (r) { if (r.ok) { dirty = false; location.reload(); } else say(r.error, true); });
+      });
+    });
+  }
+
   bar.addEventListener('click', function (e) {
     var b = e.target.closest('[data-a]'); if (!b) return;
     var a = b.dataset.a;
     if (a === 'save') save();
     if (a === 'undo') { if (confirm('Grąžinti šį puslapį, koks buvo prieš paskutinį išsaugojimą?')) post({ action: 'undo', slug: C.slug }).then(function (d) { if (d.ok) { dirty = false; location.reload(); } else say(d.error, true); }); }
+    if (a === 'versions') versionsModal();
     if (a === 'menu') menuModal();
     if (a === 'look') lookModal();
     if (a === 'newpage') newPageModal();

@@ -28,6 +28,9 @@ function turinys(string $name): array
     if ($name === 'klubai' && !isset($cache[$name]) && ($db = registro_klubai())) {
         return $cache[$name] = $db;   // #160: klubų registras (Valdymas → Federacijos registrai), jei jau užpildytas
     }
+    if (in_array($name, ['naujienos', 'dokumentai'], true) && !isset($cache[$name]) && ($db = registro_irasai($name)) !== null) {
+        return $cache[$name] = $db;   // D6: naujienos ir dokumentai - įrašai (db/050), redaguojami svetainėje
+    }
     return $cache[$name] = $cache[$name] ?? require dirname(__DIR__) . '/turinys/' . $name . '.php';
 }
 
@@ -49,6 +52,54 @@ function registro_klubai(): array
             'nuo' => $r['since'] ? (int) $r['since'] : null, 'lat' => $r['lat'] !== null ? (float) $r['lat'] : null, 'lng' => $r['lng'] !== null ? (float) $r['lng'] : null,
             'pavyzdys' => !$r['city'] || !$r['coach'], 'kandidatas' => $r['status'] === 'candidate'], function ($v) { return $v !== null; });
     }, $rows);
+}
+
+/**
+ * D6 2 dalis: naujienos ir dokumentai iš ltkf_items (db/050) ta pačia forma kaip turinys/*.php; null - jei lentelės dar nėra.
+ * Pirmą kartą (lentelė tuščia tai rūšiai) užpildoma iš turinys/naujienos.php ar dokumentai.php.
+ */
+function registro_irasai(string $name): ?array
+{
+    $db = function_exists('karateka_db') ? karateka_db() : null;
+    $kind = $name === 'naujienos' ? 'news' : 'doc';
+    if (!$db) {
+        return null;
+    }
+    try {
+        $n = (int) $db->query("SELECT COUNT(*) FROM ltkf_items WHERE kind = '$kind'")->fetchColumn();
+        if (!$n && !$db->query("SELECT 1 FROM ltkf_items WHERE kind = '{$kind}_seeded' LIMIT 1")->fetchColumn()) {
+            $ins = $db->prepare('INSERT IGNORE INTO ltkf_items (kind, slug, title, summary, body, item_date, grp, file, is_example, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+            $file = require dirname(__DIR__) . '/turinys/' . $name . '.php';
+            $i = 0;
+            if ($kind === 'news') {
+                foreach ($file as $a) {
+                    $ins->execute(['news', $a['id'], $a['pavadinimas'], $a['santrauka'] ?? '', implode("\n\n", (array) ($a['tekstas'] ?? [])), $a['data'] ?? null, null, null, !empty($a['pavyzdys']) ? 1 : 0, $i++]);
+                }
+            } else {
+                foreach ($file as $grp => $docs) {
+                    foreach ($docs as $d) {
+                        $ins->execute(['doc', null, $d['pavadinimas'], null, null, null, $grp, $d['failas'] ?: null, 0, $i++]);
+                    }
+                }
+            }
+            $db->exec("INSERT INTO ltkf_items (kind, title) VALUES ('{$kind}_seeded', '-')");   // ištrynus visus - nebeužpildoma iš naujo
+        }
+        $rows = $db->query("SELECT * FROM ltkf_items WHERE kind = '$kind' ORDER BY " . ($kind === 'news' ? 'item_date DESC, id DESC' : 'sort_order, id'))->fetchAll();
+    } catch (Throwable $ex) {
+        return null;   // dar neimportuotas db/050
+    }
+    if ($kind === 'news') {
+        return array_map(function ($r) {
+            return ['id' => (string) ($r['slug'] ?: 'n' . $r['id']), 'db_id' => (int) $r['id'], 'pavadinimas' => (string) $r['title'], 'data' => (string) $r['item_date'],
+                'santrauka' => (string) $r['summary'], 'tekstas' => array_values(array_filter(array_map('trim', preg_split('/\n\s*\n/', (string) $r['body'])), 'strlen')),
+                'pavyzdys' => (bool) $r['is_example']];
+        }, $rows);
+    }
+    $out = [];
+    foreach ($rows as $r) {
+        $out[(string) ($r['grp'] ?: 'Kiti')][] = ['db_id' => (int) $r['id'], 'pavadinimas' => (string) $r['title'], 'failas' => (string) $r['file']];
+    }
+    return $out;
 }
 
 /** #160: kitų klubų teisėjai iš registro (vardas, klubas, kategorija, galioja iki) - viešai (sprendimas 32) */
@@ -393,6 +444,40 @@ function karateka_sesija(): array
         }
     }
     return $s;
+}
+
+/**
+ * D6: svetainės būsena (site_settings.ltkf_mode, keičia adminas Valdyme): 'off' - išjungta, 'draft' - juodraštis, 'public' - vieša.
+ * Nenustatyta - kaip anksčiau: test svetainėje ir kompiuteryje juodraštis, oficialioje - išjungta.
+ */
+function ltkf_mode(): string
+{
+    static $m = null;
+    if ($m === null) {
+        $m = ltkf_setting('ltkf_mode', '');
+        if (!in_array($m, ['off', 'draft', 'public'], true)) {
+            $m = (karateka_config()['env'] ?? 'live') === 'live' ? 'off' : 'draft';
+        }
+    }
+    return $m;
+}
+
+/** Ar šis lankytojas gali matyti svetainę: vieša - visi; juodraštis - test svetainėje visi, oficialioje - adminas, redaktoriai,
+ *  peržiūros nuoroda; išjungta - tik adminas ir redaktoriai */
+function ltkf_can_view(string $mode): bool
+{
+    if ($mode === 'public') {
+        return true;
+    }
+    $insider = karateka_adminas() || ltkf_redaktorius() !== null;
+    if ($mode === 'off') {
+        return $insider;
+    }
+    if ((karateka_config()['env'] ?? 'live') !== 'live' || $insider) {
+        return true;
+    }
+    $tok = ltkf_setting('ltkf_review_token', '');
+    return $tok !== '' && hash_equals(hash('sha256', $tok), (string) (karateka_sesija()['ltkf_review'] ?? ''));
 }
 
 /** Ar prisijungęs karateka.lt administratorius (tik jis mato nuorodą atgal į karateka.lt) */

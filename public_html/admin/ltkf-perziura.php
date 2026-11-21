@@ -5,6 +5,18 @@ require dirname(__DIR__) . '/app/bootstrap.php';
 require_admin();
 
 $editors = array_values(array_filter((array) json_decode((string) site_setting('ltkf_editors', '[]'), true), 'is_array'));
+// D6 3 dalis: svetainės būsena (visai svetainei - klausiama prieš išsaugant)
+const LTKF_MODES = ['off' => 'Išjungta', 'draft' => 'Juodraštis', 'public' => 'Vieša'];
+if (is_post() && post('action') === 'mode' && isset(LTKF_MODES[post('mode')])) {
+    csrf_check();
+    set_site_setting('ltkf_mode', post('mode'));
+    flash('ok', t('LTKF svetainės būsena:') . ' ' . t(LTKF_MODES[post('mode')]));
+    redirect('admin/ltkf-perziura.php#busena');
+}
+$ltkfMode = (string) site_setting('ltkf_mode', '');
+if (!isset(LTKF_MODES[$ltkfMode])) {
+    $ltkfMode = config('env') === 'live' ? 'off' : 'draft';
+}
 if (is_post() && in_array(post('action'), ['ed_add', 'ed_toggle', 'ed_del'], true)) {
     csrf_check();
     if (post('action') === 'ed_add' && trim(post('name')) !== '') {
@@ -38,6 +50,16 @@ page_start(t('LTKF peržiūra'), ['admin' => true]);
 <div class="page-head">
   <h1 class="styled"><?= te('LTKF svetainė: peržiūra ir redaktoriai') ?></h1>
   <p><?= te('Nuoroda federacijos nariams: atsidarę jie mato LTKF svetainę ir gali palikti atsiliepimus (💡, galima įklijuoti nuotrauką). Nuorodos į karateka.lt nemato - ją mato tik adminas.') ?></p>
+</div>
+<div class="panel card form" id="busena">
+  <div class="kicker"><?= te('Svetainės būsena') ?></div>
+  <form method="post" class="ltkf-modes" onsubmit="return confirm(this.dataset.q)" data-q="<?= te('Pakeisti LTKF svetainės būseną visiems lankytojams?') ?>"><?= csrf_field() ?>
+    <input type="hidden" name="action" value="mode">
+    <?php foreach (['off' => t('niekas nemato, išskyrus jus ir redaktorius'), 'draft' => t('mato redaktoriai ir turintys peržiūros nuorodą (test svetainėje - visi); paieškose nerodoma'), 'public' => t('mato visi, rodoma paieškose; nuoroda karateka.lt apačioje')] as $m => $hint): ?>
+      <label class="check"><input type="radio" name="mode" value="<?= $m ?>"<?= $ltkfMode === $m ? ' checked' : '' ?>><span><b><?= te(LTKF_MODES[$m]) ?></b> <span class="hint">- <?= e($hint) ?></span></span></label>
+    <?php endforeach; ?>
+    <div><button class="btn btn-primary btn-sm" type="submit"><?= te('Išsaugoti būseną') ?></button> <a class="btn btn-ghost btn-sm" href="<?= url('ltkf/') ?>"><?= te('Atidaryti LTKF svetainę →') ?></a></div>
+  </form>
 </div>
 <div class="panel card form">
   <?php if ($link): ?>

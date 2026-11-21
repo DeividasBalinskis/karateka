@@ -54,6 +54,8 @@ async function login(browser, email, width = 1280, height = 900, password = PASS
   page.on('pageerror', e => page.jsErrors.push(e.message));
   page.on('dialog', d => d.accept());
   if (email) {
+    // C2 (v1.78): kalba saugoma paskyroje - kiekvienas testas prisijungia ta kalba, kurią nurodo (kitas testas galėjo perjungti į RU)
+    try { sql(`UPDATE accounts SET lang = NULL WHERE email = '${email.replace(/'/g, "''")}'`); } catch (e) {}
     await page.goto('prisijungti.php');
     await page.fill('input[name=email]', email);
     await page.fill('input[name=password]', password);

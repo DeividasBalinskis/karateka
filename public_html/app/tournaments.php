@@ -594,7 +594,14 @@ function tournament_results_to_points(array $t, int $by): array
 function ltkf_url(): string
 {
     $u = trim((string) config('ltkf_url', ''));
-    return $u !== '' ? $u : (config('env') !== 'live' ? url('ltkf/') : '');
+    if ($u !== '') {
+        return $u;
+    }
+    $mode = (string) site_setting('ltkf_mode', '');   // D6: vieša LTKF - nuoroda ir oficialioje svetainėje; išjungta - niekur
+    if ($mode === 'off') {
+        return is_admin() ? url('ltkf/') : '';
+    }
+    return $mode === 'public' || config('env') !== 'live' ? url('ltkf/') : '';
 }
 
 /** Apačios nuorodos visuose puslapiuose: federacija ir varžybų rezultatai (jei yra paskelbtų) */

@@ -166,34 +166,55 @@ function ltkf_apply(string $html, array $page, bool $edit, bool $zones): string
     if (!$root) {
         return $html;
     }
-    // Tekstai: giliausias elementas, kurio visas tekstas sutampa su pradiniu
-    if ($texts) {
+    // Tekstai: giliausias elementas, kurio visas tekstas sutampa su pradiniu.
+    // D6: jei toks pat tekstas puslapyje kelis kartus (pvz. 5 valdybos narių „[Vardas Pavardė]“), kiekvienas turi savo raktą „tekstas #n“
+    // (n - eilės numeris puslapyje), todėl juos galima pakeisti atskirai. Senas bendras raktas („tekstas“) tinka visiems, kol nėra savo.
+    if ($texts || $edit) {
         $xp = new DOMXPath($doc);
+        $cand = [];
         foreach ($xp->query('.//*[not(self::script or self::style or self::svg)]', $root) as $el) {
             $t = ltkf_norm($el->textContent);
-            if ($t === '' || !array_key_exists($t, $texts)) {
+            if ($t === '' || mb_strlen($t) > 5000) {
                 continue;
             }
             $deeper = false;
             foreach ($el->childNodes as $ch) {
                 if ($ch instanceof DOMElement && ltkf_norm($ch->textContent) === $t) {
                     $deeper = true;
+                    break;
                 }
             }
-            if ($deeper) {
+            if (!$deeper) {
+                $cand[] = [$el, $t];
+            }
+        }
+        $total = [];
+        foreach ($cand as $c) {
+            $total[$c[1]] = ($total[$c[1]] ?? 0) + 1;
+        }
+        $seen = [];
+        foreach ($cand as [$el, $t]) {
+            $seen[$t] = ($seen[$t] ?? 0) + 1;
+            $many = $total[$t] > 1;
+            $key = $many ? $t . ' #' . $seen[$t] : $t;
+            if ($edit && $many) {
+                $el->setAttribute('data-o', $key);
+            }
+            $val = $texts[$key] ?? ($texts[$t] ?? null);
+            if ($val === null) {
                 continue;
             }
             while ($el->firstChild) {
                 $el->removeChild($el->firstChild);
             }
-            foreach (explode("\n", (string) $texts[$t]) as $i => $line) {
+            foreach (explode("\n", (string) $val) as $i => $line) {
                 if ($i) {
                     $el->appendChild($doc->createElement('br'));
                 }
                 $el->appendChild($doc->createTextNode($line));
             }
             if ($edit) {
-                $el->setAttribute('data-o', $t);
+                $el->setAttribute('data-o', $key);
             }
         }
     }

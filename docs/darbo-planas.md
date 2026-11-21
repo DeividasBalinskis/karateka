@@ -75,7 +75,7 @@ Status: ☐ not started · ◐ partly done · ☑ done
 | **D3** | Split `assets/varzybos.js` into modules (old step 8) | Deividas | L | plan first | ☐ |
 | **D4** | Multi-tablet saving (old step 9) | secretariat, judges | L | plan first, Fable | ◐ v1.52 (conflict = automatic merge by group, idle tablets pull every 8 s; same group on two tablets: last one wins) |
 | **D5** | Polish one page (old step 7, repeat) | everyone | S each | — | ◐ v1.61 index, v1.62 renginiai/renginys, v1.63 prisijungti/registracija, v1.64 paskyra + all small buttons on touch, v1.65 naujienos + treniruotė, v1.66 egzaminas/mano-egzaminas, v1.67 admin index/nariai/taškai, v1.68 LTKF; next: Budo live (needs a competition with live data) |
-| **D6** | LTKF: real content model, own domain | federation | L | plan first | ☐ |
+| **D6** | LTKF: real content model, own domain | federation | L | plan first | ◐ v1.77 registers; v1.80 parts 1-3 (own key per repeated text, versions + restore, news/documents as records, off/draft/public with noindex); part 4 domain move waits for the hosting setup |
 | **D7** | Dojo: one fight model, ranking, fair rewards | kids (later), Denis | L | plan first | ◐ v1.49 (calm look, #128 ranking); v1.50 hidden from menus until opened (#140) |
 | **D8** | New pixel characters | kids (later) | L | plan first | ☐ |
 | **E1** | Go live (old step 12) | everyone | M | waits for your GO | ◐ checklist ready: `docs/paleidimo-patikra.md` (old URLs: karateka.lt blocked in cloud) |
