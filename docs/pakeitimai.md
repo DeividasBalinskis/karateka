@@ -4,6 +4,12 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.82 - 2026-11-21 (dizaino žetonai ir vaizdinė apsauga - C4; vaizdas nesikeičia)
+- `assets/tokens.css`: viena vieta spalvoms, tarpams, kampams, šriftams, šešėliams ir pločiams (480 / 768 / 1100 / 1440).
+  Patikrinta: 55 puslapių nuotraukos su ir be žetonų sutampa.
+- `bash tests/visual.sh update` / `bash tests/visual.sh`: 15 puslapių nuotraukos 375 / 768 / 1440 (Valdymas ir Budo - dar 1280 / 2560),
+  palyginimas prieš ir po CSS pakeitimų (C5).
+
 ## v1.81 - 2026-11-21 (Visi nustatymai: žemėlapis ir pakeitimų žurnalas - C2)
 - Valdymas → Nustatymai → **Visi nustatymai**: kiekvienas jungiklis su dabartine reikšme ir nuoroda „Keisti →“ (svetainė, klubas, žaidimas,
   Budo, LTKF), serverio nustatymai (tik skaityti) ir **pakeitimų žurnalas** - kas ir kada keitė; visai svetainei skirtus galima **„Atkurti“**.

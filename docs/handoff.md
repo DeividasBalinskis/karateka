@@ -1,5 +1,5 @@
 # Handoff
-Updated: 2026-11-21 · version v1.81 · branch claude/festive-curie-01jgx2
+Updated: 2026-11-21 · version v1.82 · branch claude/festive-curie-01jgx2
 
 ## Pending asks (answer these first)
 | Asked | By | What | Status |
@@ -37,6 +37,7 @@ Updated: 2026-11-21 · version v1.81 · branch claude/festive-curie-01jgx2
 - v1.79: C10 Duomenų priežiūra (list first, delete only on button + confirm), photo .zip backup, cookie list on the privacy page. Nothing deleted on the test site by me.
 - v1.80: D6 parts 1-3 - repeated texts edited one by one, page versions with restore + multi-step undo, LTKF news and documents as records, LTKF state off/draft/public (noindex unless public); db/050. Tests: login() resets the account language (C2 keeps language on the account).
 - v1.81: C2 - settings registry (`app/settings.php`, checked by checks.sh), „Visi nustatymai“ map, change log with restore (db/051). Old `reg_off` name kept (renaming = data change, ask first).
+- v1.82: C4 - `assets/tokens.css` (loaded first, same values, 55/55 screenshots identical) + `tests/visual.sh` (baseline / compare; PW_CHROMIUM for a custom browser path).
 - Committed and pushed to the claude branch after each stage; `main` untouched.
 
 ## Open
