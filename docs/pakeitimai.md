@@ -4,6 +4,9 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.68 - 2026-11-21 (LTKF telefone - D5)
+- LTKF: kalendoriaus ir klubų filtrų mygtukai, apačios nuorodos ir „English“ - bent 40 px aukščio (telefone ir planšetėje).
+
 ## v1.67 - 2026-11-21 (Valdymas telefone: Nariai, Aktyvumo taškai, Šiandien - D5)
 - Telefone vardai narių ir reitingų sąrašuose, „+ Taškai“, „← Visi nariai“, „+ Susieti su paskyra“, „Ištrinti narį“,
   grupių ▸ ir vaikų eilutės kvietime - bent 40 px aukščio (lengviau pataikyti pirštu).

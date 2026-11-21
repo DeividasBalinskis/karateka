@@ -327,3 +327,11 @@ section.lb-bg{border-radius:0;}
 .lb-sec h2{margin-top:0;}
 .lb-sec.lb-light{text-shadow:0 1px 3px rgba(0,0,0,.45);}
 @media (max-width:640px){ .lb-sec{padding:28px 18px;} }
+
+/* D5 (LTKF telefone): filtrų mygtukai, apačios nuorodos, „English“ ir „Visi renginiai →“ - patogūs pirštui (40 px) */
+@media (max-width: 1099px), (pointer: coarse) {
+  .fchip { min-height: 40px; display: inline-flex; align-items: center; }
+  .footer-grid a { display: flex; align-items: center; min-height: 40px; }
+  .footer-bottom a { display: inline-flex; align-items: center; min-height: 40px; }
+  .section-head a, .more-link, a.more { display: inline-flex; align-items: center; min-height: 40px; }
+}
