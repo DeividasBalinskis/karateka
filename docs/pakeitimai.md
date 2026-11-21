@@ -4,6 +4,13 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.76 - 2026-11-21 (Budo rezultatai neprapuola uždarius skirtuką; Dojo kairė ranka - #109)
+- Budo (A1): kiekvienas pakeitimas iš karto išsaugomas ir šiame įrenginyje. Jei skirtukas uždaromas ar dingsta ryšys, kol saugoma,
+  atidarius varžybas iš naujo pakeitimai sujungiami su kitų planšečių darbu ir išsaugomi („Atkurti neišsaugoti pakeitimai - saugoma…“).
+- Dojo (#109, sprendimas 38): naujas lizdas **Kairė ranka**. Skydas (bambukinis, medinis, plieninis) - kovoje galima blokuoti 2 lygius;
+  antras ginklas (tonfa, sai, šešėlių kama) - galima smūgiuoti 2 kartus (antras smūgis 25 % silpnesnis). Gudrumo kovoje visi lygūs - po 1.
+  Kovos lentelėje parašyta, ką leidžia kairė ranka. Daiktai gaunami dovanų dėžėse kaip kiti.
+
 ## v1.75 - 2026-11-21 (trenerio atsakymas - laiškas tik pažymėjus, C8 dalis)
 - Treneriui atsakius nariui (žinučių langelis ir Valdymas → žinutės) el. laiškas automatiškai nebesiunčiamas.
   Jei reikia - pažymėkite „✉ Siųsti ir el. paštu“ (langelyje) arba „ir laiškas“ (žinučių puslapyje). Nauja pastaba ar užduotis - kaip anksčiau.

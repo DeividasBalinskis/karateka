@@ -235,12 +235,14 @@
     var DA = { kizami: T('smūgis į galvą'), gyaku: T('smūgis į pilvą'), maegeri: T('spyris į pilvą'), mawashi: T('spyris į galvą'), barai: T('pakirtimas į kojas') };
     var DD = { age: T('blokas nuo smūgio į galvą'), soto: T('blokas nuo smūgio į pilvą'), gedan: T('blokas nuo smūgio į kojas'), sabaki: T('išsisukimas nuo bet kurio smūgio') };
     var full = function (n, z) { return z && n.toLowerCase().indexOf(z) < 0 ? n + ' ' + z : n; };
+    var hands = (st.sides[side] && st.sides[side].hands) || { att: 1, def: 1 };
     var chk = function (kind, k, name, desc, extra, key) {
-      var on = pick[kind] === k;
+      var on = pick[kind] === k || pick[kind + '2'] === k;
       return '<button type="button" class="fa-chk ' + kind + (on ? ' sel' : '') + '" data-' + kind + '="' + k + '" aria-pressed="' + on + '"><i class="seal" aria-hidden="true"></i>' +
         '<span class="tx"><b>' + esc(name) + '</b><small>[' + esc(desc) + ']' + (extra ? ' <em>' + extra + '</em>' : '') + '</small></span><kbd>' + key + '</kbd></button>';
     };
-    var html = '<div class="fa-board"><div class="fb-h h-def">' + A.icon('blokas') + ' ' + T('Ką blokuoti?') + '</div><div class="fb-h h-zone"></div><div class="fb-h h-att">' + T('Kur smūgiuoti?') + ' ' + A.icon('smugis') + '</div>';
+    var html = (hands.att > 1 || hands.def > 1) ? '<div class="fa-hands">' + (hands.def > 1 ? '🛡️ ' + T('Skydas: gali blokuoti 2 lygius') : '⚔️ ' + T('Du ginklai: gali smūgiuoti 2 kartus')) + (hands.item ? ' <small>(' + esc(hands.item) + ')</small>' : '') + '</div>' : '';
+    html += '<div class="fa-board"><div class="fb-h h-def">' + A.icon('blokas') + ' ' + T('Ką blokuoti?') + '</div><div class="fb-h h-zone"></div><div class="fb-h h-att">' + T('Kur smūgiuoti?') + ' ' + A.icon('smugis') + '</div>';
     ['jodan', 'chudan', 'gedan', ''].forEach(function (z) {
       html += '<div class="fb-cell def">';
       defs.forEach(function (k, i) { var d = R.defenses[k]; if (d.z === z) html += chk('def', k, full(d.n, d.z), DD[k] || ZN[d.z], '', 'QWER'[i]); });
@@ -256,13 +258,23 @@
   }
   function fightClick(e) {
     var t = e.target.closest('button'); if (!t || t.disabled) return;
-    if (t.dataset.att) { pick.att = t.dataset.att; return drawPanel(); }
-    if (t.dataset.def) { pick.def = t.dataset.def; return drawPanel(); }
+    if (t.dataset.att) { pickHand('att', t.dataset.att); return drawPanel(); }
+    if (t.dataset.def) { pickHand('def', t.dataset.def); return drawPanel(); }
     if (t.dataset.card) { pick.card = pick.card === t.dataset.card ? '' : t.dataset.card; return drawPanel(); }
     if (t.dataset.go) return submit();
     if (t.dataset.react) { api({ action: 'react', match: M.id, e: t.dataset.react }); floatEmoji(t.dataset.react, side); return; }
     if (t.dataset.again) return api({ action: 'bot', level: t.dataset.again, mode: M.mode, game: 'kova' }).then(function (d) { if (d.ok) go(matchUrl(d.id)); });
     if (t.dataset.forfeit) { if (confirm(T('Tikrai pasiduoti?'))) api({ action: 'forfeit', match: M.id }).then(function (d) { if (d.ok) apply(d.match); }); }
+  }
+  // #109: kairė ranka - antras smūgis (du ginklai) ar antra gynyba (skydas); kitaip - vienas pasirinkimas
+  function pickHand(kind, k) {
+    var h = (M && M.state.sides[side] && M.state.sides[side].hands) || { att: 1, def: 1 }, k2 = kind + '2';
+    if (h[kind] < 2) { pick[kind] = k; pick[k2] = ''; return; }
+    if (pick[kind] === k) { pick[kind] = pick[k2] || ''; pick[k2] = ''; }
+    else if (pick[k2] === k) pick[k2] = '';
+    else if (!pick[kind]) pick[kind] = k;
+    else if (!pick[k2]) pick[k2] = k;
+    else { pick[kind] = pick[k2]; pick[k2] = k; }
   }
   function fightKey(e) {
     if (!M || M.status !== 'active' || e.target.matches('input,textarea')) return;
@@ -277,7 +289,7 @@
     $('#fa-panel').innerHTML = '<div class="fa-wait">⚔️ ' + T('Kovojama…') + '</div>'; $('#fa-panel').dataset.state = '';
     api({ action: 'turn', match: M.id, pick: pick }).then(function (d) {
       busy = false;
-      if (d.ok) { pick = { att: '', def: '', card: '' }; apply(d.match); }
+      if (d.ok) { pick = { att: '', def: '', card: '', att2: '', def2: '' }; apply(d.match); }
     });
   }
   setInterval(function () {

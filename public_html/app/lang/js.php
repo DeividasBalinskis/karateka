@@ -310,4 +310,6 @@ return [
     'Sudėk 4 vienoje eilėje',
     'Realiu laiku - blokuok laiku',
     'Daryk techniką pagal būgnus',
+    'Skydas: gali blokuoti 2 lygius',
+    'Du ginklai: gali smūgiuoti 2 kartus',
 ];

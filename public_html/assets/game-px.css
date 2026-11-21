@@ -680,3 +680,6 @@
   /* Atidarytas langas (aplinka, inventorius ir kt.) baigiasi virš mygtukų juostos - juosta lieka paspaudžiama */
   .dojo.calm .dw-scroll{top:16px; bottom:72px;}
 }
+/* #109: kairė ranka - užuomina virš lentelės */
+.fa-hands{margin:0 0 6px; padding:6px 10px; background:rgba(20,22,46,.86); color:#FFE9A8; font:700 .82rem/1.3 inherit; box-shadow:0 0 0 2px #5A66A8 inset;}
+.fa-hands small{color:#C9CFEA; font-weight:500;}

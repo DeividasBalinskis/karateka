@@ -46,6 +46,7 @@ function fight_side(array $hero, string $mode): array
     }
     return ['hero' => (int) $hero['id'], 'name' => game_public_name($hero), 'art' => ['species' => $hero['species'], 'gender' => $hero['gender'], 'look' => $hero['look'],
             'equipped' => $hero['equipped'], 'belt' => game_belt($hero), 'name' => $hero['name']], 'level' => game_level($hero), 's' => $s, 'pet' => $pet, 'pets' => $pets,
+            'hands' => game_hands($hero, $mode),
             'skill' => $mode === 'fair' ? null : ['code' => $sk['code'], 'n' => $sk['n'], 'p' => $sk['p']]];
 }
 
@@ -155,10 +156,22 @@ function fight_resolve(array $st): array
     };
     $card = function ($x) use ($picks, $st) { $c = $picks[$x]['card'] ?? ''; return $c && !empty($st['cards'][$x][$c]) ? $c : ''; };
     $newOff = ['a' => 0, 'b' => 0];   // po Ashi barai - kitą ėjimą be pusiausvyros (smūgis silpnesnis)
+    // #109: kiekvienas smūgis atskirai (du ginklai - 2 smūgiai, antras 25 % silpnesnis); gynybos - 1 ar 2 (skydas)
+    $blows = [];
     foreach ($sides as $x) {
+        $blows[] = [$x, $picks[$x]['att'], 1.0];
+        if (!empty($picks[$x]['att2'])) {
+            $blows[] = [$x, $picks[$x]['att2'], 0.75];
+        }
+    }
+    foreach ($blows as [$x, $attKey, $mult]) {
         $y = $x === 'a' ? 'b' : 'a';
-        $A = FIGHT_ATTACKS[$picks[$x]['att']];
+        $A = FIGHT_ATTACKS[$attKey];
         $D = FIGHT_DEFENSES[$picks[$y]['def']];
+        $D2 = !empty($picks[$y]['def2']) ? FIGHT_DEFENSES[$picks[$y]['def2']] : null;
+        if ($D2 && $D2[1] !== '' && $D2[1] === $A[1] && !($D[1] !== '' && $D[1] === $A[1])) {
+            $D = $D2;   // šį smūgį užblokavo antra gynyba (skydas)
+        }
         $sx = $st['sides'][$x]['s'];
         $sy = $st['sides'][$y]['s'];
         $cx = $card($x);
@@ -188,7 +201,7 @@ function fight_resolve(array $st): array
             continue;
         }
         $dodge = $fair ? 5 : max(0, min(22, 3 + ($sy['agi'] - $sx['int']) * 2));
-        if ($picks[$y]['def'] === 'sabaki') {
+        if ($picks[$y]['def'] === 'sabaki' || ($picks[$y]['def2'] ?? '') === 'sabaki') {
             $dodge = $fair ? 33 : max(15, min(55, 30 + ($sy['agi'] - $sx['int']) * 2));
         }
         if ($has($y, 'dodge')) {
@@ -199,10 +212,10 @@ function fight_resolve(array $st): array
             $dodge = 0;
         }
         if (random_int(1, 100) <= max(0, $dodge)) {
-            $log[] = ['s' => $y, 'k' => 'miss', 't' => $name($y) . ' ' . ($picks[$y]['def'] === 'sabaki' ? t('išsisuko (Tai sabaki) nuo') : t('išvengė')) . ' ' . $tech];
+            $log[] = ['s' => $y, 'k' => 'miss', 't' => $name($y) . ' ' . ($picks[$y]['def'] === 'sabaki' || ($picks[$y]['def2'] ?? '') === 'sabaki' ? t('išsisuko (Tai sabaki) nuo') : t('išvengė')) . ' ' . $tech];
             continue;
         }
-        $dmg = fight_rand($sx['dmg'][0], $sx['dmg'][1]) * $A[2];
+        $dmg = fight_rand($sx['dmg'][0], $sx['dmg'][1]) * $A[2] * $mult;
         if (!empty($st['off'][$x])) {
             $dmg *= 0.6;   // po Ashi barai - be pusiausvyros
         }
@@ -392,7 +405,11 @@ function fight_turn(array $m, string $side, array $pick): array
     $att = isset(FIGHT_ATTACKS[$pick['att'] ?? '']) ? $pick['att'] : 'gyaku';
     $def = isset(FIGHT_DEFENSES[$pick['def'] ?? '']) ? $pick['def'] : 'soto';
     $card = isset(FIGHT_CARDS[$pick['card'] ?? '']) && !empty($st['cards'][$side][$pick['card']]) ? $pick['card'] : '';
-    $st['picks'][$side] = ['att' => $att, 'def' => $def, 'card' => $card];
+    // #109: antras smūgis (du ginklai) ar antra gynyba (skydas) - tik jei kairė ranka leidžia
+    $hands = $st['sides'][$side]['hands'] ?? ['att' => 1, 'def' => 1];
+    $att2 = (int) $hands['att'] > 1 && isset(FIGHT_ATTACKS[$pick['att2'] ?? '']) && $pick['att2'] !== $att ? $pick['att2'] : '';
+    $def2 = (int) $hands['def'] > 1 && isset(FIGHT_DEFENSES[$pick['def2'] ?? '']) && $pick['def2'] !== $def ? $pick['def2'] : '';
+    $st['picks'][$side] = ['att' => $att, 'def' => $def, 'card' => $card, 'att2' => $att2, 'def2' => $def2];
     if (!empty($st['bot']) && $side === 'a') {
         $st['picks']['b'] = fight_auto_pick($st, 'b', $st['bot'] !== 'easy');
     }

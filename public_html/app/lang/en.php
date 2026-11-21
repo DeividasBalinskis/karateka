@@ -3566,4 +3566,13 @@ From 2013 he trained with the team of the traditional karate-do club "Sanrei", a
     'Treneris - tai paskyros rolė: Valdymas → Nustatymai → Paskyros.' => 'Coach is an account role: Management → Settings → Accounts.',
     'Siųsti ir el. paštu' => 'Also send by e-mail',
     'Laiškas nariui ir tėvams su šiuo atsakymu' => 'An e-mail to the member and parents with this reply',
+    'Kairė ranka' => 'Left hand',
+    'Bambukinis skydas' => 'Bamboo shield',
+    'Antra tonfa' => 'Second tonfa',
+    'Medinis skydas' => 'Wooden shield',
+    'Antras sai' => 'Second sai',
+    'Plieninis skydas' => 'Steel shield',
+    'Antra šešėlių kama' => 'Second shadow kama',
+    'Skydas: gali blokuoti 2 lygius' => 'Shield: you can block 2 levels',
+    'Du ginklai: gali smūgiuoti 2 kartus' => 'Two weapons: you can strike twice',
 ];

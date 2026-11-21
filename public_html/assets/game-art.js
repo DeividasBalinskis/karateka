@@ -520,6 +520,9 @@
     var c = function (eq, crop, only) { var x = JSON.parse(JSON.stringify(base)); Object.assign(x.equipped, eq); return hero(x, { crop: crop, only: only, ghost: true }); };
     switch (it.slot) {
       case 'weapon': var wid = uid(); return '<svg viewBox="58 25 210 210" xmlns="http://www.w3.org/2000/svg"><defs><filter id="' + wid + 'gl" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="4"/></filter></defs><g transform="rotate(' + (it.a.t === 'bo' || it.a.t === 'jo' ? 38 : 20) + ' 163 130)">' + weapon(it.a, wid, 'behind') + weapon(it.a, wid, 'front') + '</g></svg>';
+      case 'offhand':   // #109: skydas (2 gynybos) arba antras ginklas (2 smūgiai)
+        if (it.a.t === 'shield') { var sc = it.a.c || '#9C6A3C'; return '<svg viewBox="0 0 40 46"><path d="M20 3 L36 9 V22 C36 33 28 40 20 43 C12 40 4 33 4 22 V9 Z" fill="' + sc + '" stroke="' + shade(sc, -0.4) + '" stroke-width="2"/><path d="M20 8 V38 M9 20 H31" stroke="' + shade(sc, -0.25) + '" stroke-width="2.5"/>' + (it.a.m ? '<circle cx="20" cy="20" r="4" fill="' + shade(sc, 0.4) + '"/>' : '') + '</svg>'; }
+        var oid = uid(); return '<svg viewBox="58 25 210 210" xmlns="http://www.w3.org/2000/svg"><defs><filter id="' + oid + 'gl" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="4"/></filter></defs><g transform="rotate(-20 163 130)">' + weapon(it.a, oid, 'behind') + weapon(it.a, oid, 'front') + '</g></svg>';
       case 'kimono': var k = JSON.parse(JSON.stringify(base)); k.equipped.kimono = key; return hero(k, { crop: [50, 108, 100, 100], only: 'kimono', ghost: true });
       case 'belt': var bb = JSON.parse(JSON.stringify(base)); bb.equipped.belt = key; bb.belt = 10; return hero(bb, { crop: [60, 150, 80, 60], only: 'belt', ghost: true });
       case 'head': case 'face': case 'hair': var e = {}; e[it.slot] = key; return c(e, [36, -10, 128, 140], it.slot);

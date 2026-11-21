@@ -63,7 +63,7 @@ const GAME_EYES = ['#5B3A1E', '#2F6FA8', '#3E8E5A', '#7A5BA6', '#C88A1E', '#2B2B
 const GAME_HAIR = ['#2B1D14', '#5A3A22', '#8C5A2B', '#D9A441', '#E8D9B0', '#B8432F', '#1F2A44', '#F2F2F2'];
 const GAME_STATS = ['str' => 'Jėga', 'agi' => 'Vikrumas', 'int' => 'Nuojauta', 'end' => 'Ištvermė'];
 const GAME_RARITY = [1 => 'Paprastas', 2 => 'Retas', 3 => 'Epinis', 4 => 'Legendinis'];
-const GAME_SLOTS = ['weapon' => 'Ginklas', 'kimono' => 'Kimono', 'belt' => 'Diržo puošmena', 'head' => 'Galva', 'face' => 'Veidas', 'neck' => 'Kaklas',
+const GAME_SLOTS = ['weapon' => 'Ginklas', 'offhand' => 'Kairė ranka', 'kimono' => 'Kimono', 'belt' => 'Diržo puošmena', 'head' => 'Galva', 'face' => 'Veidas', 'neck' => 'Kaklas',
                     'hands' => 'Rankos', 'back' => 'Nugara', 'aura' => 'Aura', 'hair' => 'Šukuosena', 'paint' => 'Spalva', 'bg' => 'Aplinka', 'house' => 'Namas',
                     'decor' => 'Dekoracija', 'egg' => 'Kiaušinis', 'species' => 'Personažas'];
 // Personažų gebėjimai (tik jėgos kovose): kiekvienas personažas turi savo. Tikimybė suveikti per ėjimą - 10 %,
@@ -157,6 +157,13 @@ function game_items(): array
     $add('w_sai_ice', 'weapon', 'Ledo sai', 3, 0, [0, 0, 2], ['t' => 'sai', 'c' => '#9BD8F2', 'fx' => 'ice'], [5, 9]);
     $add('w_kama_shadow', 'weapon', 'Šešėlių kama', 3, 0, [1, 1, 1], ['t' => 'kama', 'c' => '#5B3F8C', 'fx' => 'shadow'], [5, 10]);
     $add('w_katana_gold', 'weapon', 'Auksinė katana', 4, 0, [2, 0, 1], ['t' => 'katana', 'c' => '#E5B53A', 'fx' => 'gold'], [7, 11]);
+    // ---------- Kairė ranka (#109, sprendimas 38): skydas - kovoje 2 gynybos; antras ginklas - 2 smūgiai ----------
+    $add('o_shield_bamboo', 'offhand', 'Bambukinis skydas', 1, 3, [0, 0, 0, 1, 1], ['t' => 'shield', 'c' => '#C9A45C']);
+    $add('o_tonfa', 'offhand', 'Antra tonfa', 1, 4, [0, 1], ['t' => 'tonfa', 'c' => '#8A5A33', 'off' => 'weapon']);
+    $add('o_shield_wood', 'offhand', 'Medinis skydas', 2, 6, [0, 0, 0, 2, 2], ['t' => 'shield', 'c' => '#9C6A3C']);
+    $add('o_sai', 'offhand', 'Antras sai', 2, 7, [0, 1, 1], ['t' => 'sai', 'c' => '#B9C2CC', 'off' => 'weapon']);
+    $add('o_shield_iron', 'offhand', 'Plieninis skydas', 3, 0, [0, 0, 0, 3, 3], ['t' => 'shield', 'c' => '#7D8894', 'm' => 1]);
+    $add('o_kama_shadow', 'offhand', 'Antra šešėlių kama', 3, 0, [1, 1, 1], ['t' => 'kama', 'c' => '#5B3F8C', 'fx' => 'shadow', 'off' => 'weapon']);
     $add('w_dragon_staff', 'weapon', 'Drakono lazda', 4, 0, [1, 1, 1, 1], ['t' => 'bo', 'c' => '#2E8B57', 'fx' => 'dragon'], [6, 12]);
     // ---------- Kimono (spalva, kraštas, raštas; apsauga) ----------
     $add('k_white', 'kimono', 'Baltas kimono', 1, 1, [], ['c' => '#F7F5EF', 'tr' => '#E4DFD3']);
@@ -355,6 +362,22 @@ function game_hero_decode(array $h): array
     return $h;
 }
 
+/** #109: kiek smūgių ir gynybų per ėjimą: skydas kairėje - 2 gynybos, antras ginklas - 2 smūgiai (gudrumo kovoje - visi lygūs, po 1) */
+function game_hands(array $hero, string $mode = 'power'): array
+{
+    $oh = $hero['equipped']['offhand'] ?? null;
+    if ($mode === 'fair' || !$oh) {
+        return ['att' => 1, 'def' => 1, 'item' => null];
+    }
+    $it = game_items()[$oh] ?? null;
+    $owned = $it ? (bool) q_value('SELECT 1 FROM game_items WHERE hero_id = ? AND item_key = ?', [(int) $hero['id'], $oh]) : false;
+    if (!$it || !$owned || ($it['slot'] ?? '') !== 'offhand') {
+        return ['att' => 1, 'def' => 1, 'item' => null];
+    }
+    $shield = ($it['a']['t'] ?? '') === 'shield';
+    return ['att' => $shield ? 1 : 2, 'def' => $shield ? 2 : 1, 'item' => $it['n']];
+}
+
 /** Nario personažas (sukuriamas pirmą kartą) */
 function game_hero_for_member(int $memberId): ?array
 {
@@ -528,7 +551,7 @@ function game_stats(array $hero): array
         }
         $arm += $cat[$key]['s'][4];
     };
-    foreach (['weapon', 'kimono', 'belt', 'head', 'face', 'neck', 'hands', 'back', 'aura'] as $slot) {
+    foreach (['weapon', 'offhand', 'kimono', 'belt', 'head', 'face', 'neck', 'hands', 'back', 'aura'] as $slot) {
         $add($hero['equipped'][$slot] ?? null);
     }
     $w = $hero['equipped']['weapon'] ?? null;
@@ -784,7 +807,7 @@ function game_save_hero(array $hero, array $in): array
     }
     if (isset($in['equipped']) && is_array($in['equipped'])) {
         $eq = $hero['equipped'];
-        foreach (['weapon', 'kimono', 'belt', 'head', 'face', 'neck', 'hands', 'back', 'aura', 'hair'] as $slot) {
+        foreach (['weapon', 'offhand', 'kimono', 'belt', 'head', 'face', 'neck', 'hands', 'back', 'aura', 'hair'] as $slot) {
             if (!array_key_exists($slot, $in['equipped'])) {
                 continue;
             }
