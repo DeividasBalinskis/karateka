@@ -4,6 +4,10 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.67 - 2026-11-21 (Valdymas telefone: Nariai, Aktyvumo taškai, Šiandien - D5)
+- Telefone vardai narių ir reitingų sąrašuose, „+ Taškai“, „← Visi nariai“, „+ Susieti su paskyra“, „Ištrinti narį“,
+  grupių ▸ ir vaikų eilutės kvietime - bent 40 px aukščio (lengviau pataikyti pirštu).
+
 ## v1.66 - 2026-11-21 (egzamino puslapiai telefone - D5)
 - Mano egzaminas (nuoroda be paskyros): „Kokį diržą laikysi?“ pasirinkimas ir asmeninės nuorodos laukelis - normalaus dydžio (44 px), anksčiau buvo mažyčiai.
 - Mano paskyra → Egzaminas: diržo programos pasirinkimas telefone - 40 px.

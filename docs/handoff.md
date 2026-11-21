@@ -1,5 +1,5 @@
 # Handoff
-Updated: 2026-11-21 · version v1.66 · branch claude/festive-curie-01jgx2
+Updated: 2026-11-21 · version v1.67 · branch claude/festive-curie-01jgx2
 
 ## Pending asks (answer these first)
 | Asked | By | What | Status |
@@ -20,7 +20,7 @@ Updated: 2026-11-21 · version v1.66 · branch claude/festive-curie-01jgx2
 - v1.57: C7 one polling request (pulsas.php + assets/pulse.js; chat.js, notify-popup.js, game-invites.js listen to „karateka:pulse“).
 - v1.58: B1 done (LTKF EN/RU keys fixed, „karatė“ rule in checks.sh).
 - v1.59–v1.60: B6 done (exam list counts + import, protocol on a tablet, new event „Kita“ + „Bus pakviesta: N“).
-- v1.61-v1.66: D5 polish of index, events, login, Paskyra, news, Treniruotė, exam pages (tap targets; small buttons 40 px on touch); protocol fits 1100-1366 px again. C6 smoke set `tests/smoke.sh`.
+- v1.61-v1.66: D5 polish of index, events, login, Paskyra, news, Treniruotė, exam pages, Valdymas lists (tap targets; small buttons 40 px on touch); protocol fits 1100-1366 px again. C6 smoke set `tests/smoke.sh`.
 - Committed and pushed to the claude branch after each stage; `main` untouched.
 
 ## Open
