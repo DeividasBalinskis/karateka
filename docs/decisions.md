@@ -4,6 +4,7 @@ Answers given by Deividas on 2026-11-20 (questions from `docs/darbo-planas.md`, 
 
 | Date | Area | Decision | Who decided | Source |
 |---|---|---|---|---|
+| 2026-11-21 | LTKF | Registers (Claude's call, #160): members, clubs and judges are kept by the federation admin in Valdymas → Federacijos registrai; members' personal data are not public (only clubs and judges with category and validity are shown). Can be changed: per-club accounts so club leaders enter their own members. | Claude (asked to decide) | chat |
 | 2026-11-21 | Dojo | Left hand (Claude's call, #109): shield = 2 blocks per turn, second weapon = 2 strikes with the second at 75 % damage; „fair“ mode stays 1+1. Can be changed: e.g. second strike 100 % or shield also cutting damage. | Claude (asked to decide) | chat |
 | 2026-11-21 | Workflow | „į main“ given: `main` = v1.72 (A6). | Deividas | questionnaire |
 | 2026-11-21 | Valdymas | Remove the menu test variants: desktop side menu + phone bottom bar only (B9). | Deividas | questionnaire |

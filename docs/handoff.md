@@ -1,11 +1,10 @@
 # Handoff
-Updated: 2026-11-21 · version v1.76 · branch claude/festive-curie-01jgx2
+Updated: 2026-11-21 · version v1.77 · branch claude/festive-curie-01jgx2
 
 ## Pending asks (answer these first)
 | Asked | By | What | Status |
 |---|---|---|---|
 | 2026-11-20 | Denis | #30 and #147: messages cut off - ask Denis to write them again | waiting |
-| 2026-11-21 | Claude | #160: LTKF club members entered by club reps (own account per club) or only federation editors? | asked |
 | 2026-11-21 | Claude | Answers for not-started steps | answered 2026-11-21 (see decisions.md); waiting: Varžybos code on branch `varzybos-kodas` (D1), LibreSprite on PC (D8) |
 
 ## Last session
@@ -33,6 +32,7 @@ Updated: 2026-11-21 · version v1.76 · branch claude/festive-curie-01jgx2
 - E1 checklist: `docs/paleidimo-patikra.md` (old karateka.lt addresses: host blocked in the cloud session). Full suite v1.75: 143/145 passed, 1 skipped, 1 flaky (06k Budo pin drag - passes alone on a clean DB, Budo code unchanged).
 - Feedback #160 (LTKF clubs, members and judges registers) - planned as D6 part 2; asked who enters club members.
 - v1.76: A1 done (unsaved Budo changes kept on the device, merged after reopening); #109 / decision 38 left hand (shield = 2 blocks, second weapon = 2 strikes, second strike 75 %).
+- v1.77: #160 LTKF registers (members, clubs, judges) in Valdymas → Federacijos registrai; LTKF pages read clubs and judges from them; db/048.
 - Committed and pushed to the claude branch after each stage; `main` untouched.
 
 ## Open

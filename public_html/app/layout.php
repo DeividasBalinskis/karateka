@@ -308,6 +308,9 @@ function admin_menu_groups(): array
     if (is_admin() && function_exists('ltkf_url') && ltkf_url() !== '') {   // B9: LTKF svetainė - ir iš Valdymo
         $more['ltkf'] = ['🏛️', t('LTKF svetainė'), 'ltkf/', 0, t('Federacijos svetainės turinys')];
     }
+    if (is_admin()) {   // #160: federacijos registrai - nariai, klubai, teisėjai
+        $more['federacija'] = ['📒', t('Federacijos registrai'), 'admin/federacija.php', 0, t('Nariai, klubai, teisėjai')];
+    }
     $more['nustatymai'] = ['⚙️', t('Nustatymai'), 'admin/nustatymai.php', 0, t('Grupės, tvarkaraštis, vertimai, paskyra')];
     return ['kasdien' => [t('Kasdien'), $day], 'klubas' => [t('Klubas'), $club], 'tvarkyti' => [t('Tvarkyti'), $more]];
 }
@@ -316,7 +319,7 @@ function admin_menu_groups(): array
 function admin_menu_key(): string
 {
     $file = basename($_SERVER['SCRIPT_NAME'] ?? '', '.php');
-    $map = ['index' => 'siandien', 'pirmas-adminas' => 'siandien', 'treniruote' => 'treniruote', 'egzaminai' => 'egzaminai', 'egzamino-protokolas' => 'egzaminai', 'federacija' => 'egzaminai',
+    $map = ['index' => 'siandien', 'pirmas-adminas' => 'siandien', 'treniruote' => 'treniruote', 'egzaminai' => 'egzaminai', 'egzamino-protokolas' => 'egzaminai', 'federacija' => 'federacija',
             'programa' => 'egzaminai', 'pranesimai' => 'pranesimai', 'sms' => 'pranesimai', 'nariai' => 'nariai', 'taskai' => 'xp', 'testai' => 'testai',
             'patvirtinimai' => 'patvirtinimai', 'atsiliepimai' => 'atsiliepimai',
             'renginiai' => 'renginiai', 'renginio-dalyviai' => 'renginiai', 'renginio-rezultatai' => 'renginiai'];
