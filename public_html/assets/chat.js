@@ -281,9 +281,10 @@
       var ta = form.querySelector('textarea'), text = ta.value.trim();
       if (!text || !current) return;
       ta.disabled = true;
-      post(cfg.api, { action: 'reply', member_id: current, body: text, ctx: replyCtx })
+      var mail = form.querySelector('input[name=email]');
+      post(cfg.api, { action: 'reply', member_id: current, body: text, ctx: replyCtx, email: mail && mail.checked ? '1' : '' })
         .then(function (d) {
-          if (d.ok) { ta.value = ''; ta.style.height = ''; setReplyCtx('general'); lastKey = ''; staffRefresh(); } else { alert(d.error || 'Nepavyko išsiųsti.'); }
+          if (d.ok) { ta.value = ''; ta.style.height = ''; if (mail) mail.checked = false; setReplyCtx('general'); lastKey = ''; staffRefresh(); } else { alert(d.error || 'Nepavyko išsiųsti.'); }
         })
         .catch(function () { alert('Nepavyko išsiųsti - patikrinkite ryšį.'); })
         .then(function () { ta.disabled = false; ta.focus(); });

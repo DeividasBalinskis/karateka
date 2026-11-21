@@ -3564,4 +3564,6 @@ Nuo 2013 m. treniravosi Tradicinio karate-do klubo „Sanrei“ komandoje, o 201
     'Praėję (60 d.)' => 'Прошедшие (60 дн.)',
     'Praėjusių renginių nėra.' => 'Прошедших мероприятий нет.',
     'Treneris - tai paskyros rolė: Valdymas → Nustatymai → Paskyros.' => 'Тренер - это роль аккаунта: Управление → Настройки → Аккаунты.',
+    'Siųsti ir el. paštu' => 'Отправить и по эл. почте',
+    'Laiškas nariui ir tėvams su šiuo atsakymu' => 'Письмо участнику и родителям с этим ответом',
 ];

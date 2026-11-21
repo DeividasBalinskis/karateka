@@ -345,3 +345,7 @@ body.m-more-open .fb, body.m-more-open .chat-fab, body.m-more-open .ntf-pop{disp
   body:has(:is(input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=range]), textarea, select):focus) .fab-hub{display:none;}
   body:has(.m-tabbar) .ntf-pop{bottom:150px;}
 }
+/* C8: trenerio atsakymas - laiškas tik pažymėjus */
+.chat-form:has(.chat-mail){flex-wrap:wrap;}
+.chat-mail{flex-basis:100%; display:flex; align-items:center; gap:6px; font-size:12px; color:#6B6458; min-height:28px; cursor:pointer;}
+.chat-mail input{width:16px; height:16px;}

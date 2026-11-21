@@ -144,7 +144,7 @@ function chat_member_info(int $memberId): array
 }
 
 /** Trenerio atsakymas: į bendrą pokalbį arba toje pačioje vietoje (renginys, naujiena, pamoka, pastaba) */
-function chat_staff_reply(int $memberId, array $coach, string $body, string $ctx): int
+function chat_staff_reply(int $memberId, array $coach, string $body, string $ctx, bool $email = false): int
 {
     $ids = ['note_id' => null, 'lesson_id' => null, 'event_id' => null, 'news_id' => null];
     if (preg_match('/^([nlew])(\d+)$/', $ctx, $m)) {
@@ -153,12 +153,11 @@ function chat_staff_reply(int $memberId, array $coach, string $body, string $ctx
     if ($ids['note_id'] && !q_value('SELECT 1 FROM coach_notes WHERE id = ? AND member_id = ?', [$ids['note_id'], $memberId])) {
         $ids['note_id'] = null;
     }
-    // Ar narys gavo kitą atsakymą per pastarąsias 20 min. - tada laiško nebesiunčiame (pokalbyje rašoma po kelias žinutes)
-    $recent = (int) q_value('SELECT COUNT(*) FROM member_messages WHERE member_id = ? AND from_staff = 1 AND created_at >= DATE_SUB(NOW(), INTERVAL 20 MINUTE)', [$memberId]);
     $id = add_member_message($memberId, (int) $coach['id'], true, $body, $ids['note_id'], $ids['lesson_id'], $ids['event_id'], $ids['news_id']);
     mark_member_messages_read($memberId);
     comment_notifications_done($memberId);
-    if (!$recent) {
+    // C8 (sprendimas 2026-11-21): laiškas automatiškai nesiunčiamas - tik jei treneris pažymėjo „Siųsti ir el. paštu“
+    if ($email) {
         $member = q_one('SELECT * FROM members WHERE id = ?', [$memberId]);
         if ($member) {
             notify_member_reply($member, $coach, $body);
@@ -230,7 +229,7 @@ function chat_widget_html(): string
             . ('<button type="button" class="chat-card" hidden>' . t('Profilis') . '</button><button type="button" class="chat-close" aria-label="' . e(t('Uždaryti')) . '">×</button></header>')
             . ('<div class="chat-thread" aria-live="polite"><p class="chat-empty">' . t('Kairėje pasirinkite žmogų arba suraskite paieškoje.') . '</p></div>')
             . '<div class="chat-reply-ctx" hidden><span></span><button type="button" aria-label="' . e(t('Atsakyti bendrai')) . '">×</button></div>'
-            . $form . '</section></div></div>';
+            . str_replace('<form class="chat-form">', '<form class="chat-form"><label class="chat-mail" title="' . e(t('Laiškas nariui ir tėvams su šiuo atsakymu')) . '"><input type="checkbox" name="email" value="1"> ✉ ' . te('Siųsti ir el. paštu') . '</label>', $form) . '</section></div></div>';
     }
 
     $members = array_values(array_filter(account_members((int) $a['id']), function ($m) { return $m['status'] === 'active'; }));
