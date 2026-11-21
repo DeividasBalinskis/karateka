@@ -4,6 +4,23 @@ Answers given by Deividas on 2026-11-20 (questions from `docs/darbo-planas.md`, 
 
 | Date | Area | Decision | Who decided | Source |
 |---|---|---|---|---|
+| 2026-11-21 | Workflow | „į main“ given: `main` = v1.72 (A6). | Deividas | questionnaire |
+| 2026-11-21 | Valdymas | Remove the menu test variants: desktop side menu + phone bottom bar only (B9). | Deividas | questionnaire |
+| 2026-11-21 | Valdymas | Add „Renginiai“ to the Valdymas side menu; event editing opens inside Valdymas (B9). | Deividas | questionnaire |
+| 2026-11-21 | Permissions | Keep the permission table in `docs/standartai.md` as it is (C1). | Deividas | questionnaire |
+| 2026-11-21 | Settings | Save the chosen language (LT/EN/RU) on the account; e-mails and notifications use it (C2). | Deividas | questionnaire |
+| 2026-11-21 | Links | One table for secret links + „Visos nuorodos“ page; old links keep working (C3, new table allowed). | Deividas | questionnaire |
+| 2026-11-21 | E-mail | No automatic e-mail on a coach reply; the coach may tick „Siųsti ir el. paštu“ when needed (C8). | Deividas | questionnaire |
+| 2026-11-21 | E-mail | Bulk e-mail through an outbox table, sent in batches, result per person (C8, new table allowed). | Deividas | questionnaire |
+| 2026-11-21 | Data | Start data care: show the delete list first, delete only after OK (C10). | Deividas | questionnaire |
+| 2026-11-21 | Data | Backups also include uploaded photos and files (C10). | Deividas | questionnaire |
+| 2026-11-21 | Budo | D1: Deividas uploads the external Varžybos code to a private GitHub repo for the comparison. | Deividas | questionnaire |
+| 2026-11-21 | LTKF | ltkf.lt = an extra domain on the karateka hosting (D6). | Deividas | questionnaire |
+| 2026-11-21 | LTKF | D6 order: 1 text versions + restore → 2 lists (clubs, news, documents) → 3 off/draft/public; 4 domain move later. | Deividas | questionnaire |
+| 2026-11-21 | LTKF | Real LTKF data (board, details, clubs, documents, contacts) is entered by the federation editors themselves. | Deividas | questionnaire |
+| 2026-11-21 | Game | D8 pixel characters: Deividas installs LibreSprite (+ libresprite-mcp); work happens in a PC session after D7. | Deividas | questionnaire |
+| 2026-11-21 | Launch | E1: not yet - prepare the checklist and wait for „GO“. | Deividas | questionnaire |
+| 2026-11-21 | Launch | E1: Claude collects the old karateka.lt addresses itself (read only) for 301 redirects. | Deividas | questionnaire |
 | 2026-11-21 | Dojo | „🏯 Dojo“ in the top menu for real admins only (Denis, Deividas) while the game is hidden from members; testers and members do not see it. (Replaces the menu part of #140.) | Deividas | chat |
 | 2026-11-21 | Kids | Kid home (7-10, own login): variant B - level and XP on top, 2 small cards (training, task), „Kas toliau“ strip. | Deividas | chat |
 | 2026-11-21 | Kids | A child with a username + PIN login may answer „Dalyvausiu / Negalėsiu“ like teens. | Deividas | chat |
