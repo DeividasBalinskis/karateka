@@ -1418,7 +1418,7 @@ body.vz.vz-public:not(.scr) .vz-top-row, body.vz.vz-public:not(.scr) .tabs { max
 .bt-more > .bt-tbtns { margin-top: 4px; }
 /* Telefone ir planšetėje kovos metu plaukiojantys 💡 / 💬 mygtukai neuždengia „+2“ ir vardų */
 @media (max-width: 1099px) {
-  body.bout-open-body .fb, body.bout-open-body .fab-hub, body.bout-open-body .chat-fab, body.bout-open-body .ntf-pop { display: none !important; }
+  body.bout-open-body .fb, body.bout-open-body .chat-fab, body.bout-open-body .ntf-pop { display: none !important; }
 }
 @media (max-width: 600px) {
   .bout { padding: 0; place-items: start stretch; }

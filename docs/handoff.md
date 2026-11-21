@@ -1,5 +1,5 @@
 # Handoff
-Updated: 2026-11-21 · version v1.83 · branch claude/festive-curie-01jgx2
+Updated: 2026-11-21 · version v1.84 · branch claude/festive-curie-01jgx2
 
 ## Pending asks (answer these first)
 | Asked | By | What | Status |
@@ -39,7 +39,8 @@ Updated: 2026-11-21 · version v1.83 · branch claude/festive-curie-01jgx2
 - v1.81: C2 - settings registry (`app/settings.php`, checked by checks.sh), „Visi nustatymai“ map, change log with restore (db/051). Old `reg_off` name kept (renaming = data change, ask first).
 - v1.82: C4 - `assets/tokens.css` (loaded first, same values, 55/55 screenshots identical) + `tests/visual.sh` (baseline / compare; PW_CHROMIUM for a custom browser path).
 - v1.83: B2 - quick competition (Kata/Kumite ticked) no longer creates a member event by default. B8 closed by decision (Nustatymai = Paskyra page). Full suite on v1.82: 154 passed, 1 skipped, 1 failed (07s - test login reset the language it checks; fixed, passes).
-- Committed and pushed to the claude branch after each stage; `main` untouched.
+- v1.84: Deividas - on a phone 💡 is its own button again (left), 💬 stays messages (right); the B4 combined button is removed. „į main“ given 2026-11-21: main = v1.84.
+- Committed and pushed to the claude branch after each stage.
 
 ## Open
 - C1 permissions, C3 secret links, C5 CSS cleanup (safe now with tests/visual.sh), C6 engine unit tests, D3 split varzybos.js, D4 same group on two tablets, D5 Budo live polish, D7 arena left hand UI, D8 pixel characters (PC + LibreSprite).

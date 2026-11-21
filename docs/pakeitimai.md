@@ -4,6 +4,10 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.84 - 2026-11-21 (telefone 💡 ir 💬 - atskiri mygtukai)
+- Telefone ir planšetėje 💡 atsiliepimų mygtukas nebeslepiamas po 💬: 💡 - kairėje apačioje, 💬 žinutės - dešinėje (kaip kompiuteryje).
+  Abu pasislepia, kai rašote tekstą, atidarytas „⋯ Daugiau“ ar vyksta kova Budo.
+
 ## v1.83 - 2026-11-21 (greitos varžybos be renginio nariams - B2; testai)
 - Budo → „+ Naujos varžybos“: pažymėjus „Iškart sudaryti po vieną grupę“ (Kata / Kumite), renginys nariams nebekuriamas savaime
   (varžybos per treniruotę nesimato Renginiuose). Jei reikia - pažymėkite „Rodyti nariams Renginiuose“.

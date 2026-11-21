@@ -21,7 +21,7 @@ test('B3: phone bout - pair and score buttons fit on 375×812, time section fold
     const vh = innerHeight, r = s => [...document.querySelectorAll(s)].filter(x => x.offsetParent).map(x => x.getBoundingClientRect());
     const btns = r('.bout [data-pt]'), names = r('.bout .bt-name');
     return { vh, maxBtn: Math.max(...btns.map(b => b.bottom)), minSize: Math.min(...btns.map(b => Math.min(b.width, b.height))), names: names.length, nameBottom: Math.max(...names.map(n => n.bottom)),
-      more: !!document.querySelector('.bt-more:not([open])'), fb: [...document.querySelectorAll('.fb, .fab-hub')].filter(x => getComputedStyle(x).display !== 'none').length,
+      more: !!document.querySelector('.bt-more:not([open])'), fb: [...document.querySelectorAll('.fb, .chat-fab')].filter(x => getComputedStyle(x).display !== 'none').length,
       overflow: document.documentElement.scrollWidth - innerWidth };
   });
   check('pair and all score buttons visible without scrolling', g.names === 2 && g.maxBtn <= g.vh && g.nameBottom <= g.vh, JSON.stringify(g));

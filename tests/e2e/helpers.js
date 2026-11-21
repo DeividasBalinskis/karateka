@@ -84,14 +84,9 @@ async function flashes(page) {
   return (await page.locator('.flash').allTextContents()).join(' | ');
 }
 
-/** 💡 atsiliepimo langas: telefone ir planšetėje - per bendrą 💡/💬 mygtuką (B4), kompiuteryje - tiesiai */
+/** 💡 atsiliepimo langas - savas mygtukas visuose ekranuose (v1.84: nebe per bendrą 💡/💬 meniu) */
 async function openFeedback(page) {
-  if (await page.locator('.fab-hub .fh-btn').isVisible().catch(() => false)) {
-    await page.click('.fab-hub .fh-btn');
-    await page.click('.fh-item[data-fh="fb"]');
-  } else {
-    await page.click('#fbFab');
-  }
+  await page.click('#fbFab');
 }
 
 module.exports = { openFeedback, sql, day, ids, login, nav, check, noJsErrors, flashes, PASSWORD, DEMO_PASSWORD, BASE_URL };

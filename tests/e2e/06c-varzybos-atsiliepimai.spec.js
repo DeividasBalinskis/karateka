@@ -21,7 +21,10 @@ test('feedback: visitor and member write, admin answers', async ({ browser }) =>
   // Narys mato savo atsiliepimą lange
   const m = await login(browser, 'narys@karateka.test', 390, 800);
   await m.goto('paskyra.php');
-  // Telefone 💡 ir 💬 - vienas mygtukas su meniu (B4)
+  // Telefone 💡 ir 💬 - du atskiri mygtukai (v1.84)
+  check('phone: feedback and messages are separate buttons', await m.locator('#fbFab').isVisible() && await m.locator('#chatFab').isVisible() && await m.locator('.fab-hub').count() === 0);
+  const [fbBox, chatBox] = [await m.locator('#fbFab').boundingBox(), await m.locator('#chatFab').boundingBox()];
+  check('phone: 💡 on the left, 💬 on the right, not overlapping', fbBox.x + fbBox.width < chatBox.x, JSON.stringify([fbBox, chatBox]));
   await openFeedback(m);
   await m.fill('#fbText', 'Telefone mygtukas per mažas');
   await m.click('#fbSend');
