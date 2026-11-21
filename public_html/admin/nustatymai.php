@@ -7,19 +7,6 @@ $me = require_staff();
 $errors = [];
 if (is_post()) {
     csrf_check();
-    if (post('action') === 'menu_variant' && is_admin($me) && isset(MENU_VARIANTS[post('v')])) {
-        // Meniu išdėstymas visiems (#106); savo naršyklės peržiūra išvaloma
-        set_site_setting('menu_variant', post('v'));
-        setcookie('meniu', '', ['expires' => time() - 3600, 'path' => '/']);
-        flash('ok', t('Meniu išdėstymas pakeistas visiems.'));
-        redirect('admin/nustatymai.php#meniu');
-    }
-    if (post('action') === 'phone_menu' && is_admin($me) && isset(PHONE_MENU_VARIANTS[post('v')])) {
-        set_site_setting('phone_menu', post('v'));
-        setcookie('tmeniu', '', ['expires' => time() - 3600, 'path' => '/']);
-        flash('ok', t('Telefono meniu pakeistas visiems.'));
-        redirect('admin/nustatymai.php#tmeniu');
-    }
     if (post('action') === 'reg_toggles' && is_admin($me)) {
         // Registracijos mygtukai: pažymėta = rodomas; nepažymėtos vietos išjungiamos
         $on = array_map('strval', (array) ($_POST['reg'] ?? []));
@@ -86,27 +73,9 @@ page_start(t('Nustatymai'), ['admin' => true]);
         <?php endforeach; ?>
       </section>
     <?php endforeach; ?>
-    <?php if (is_admin($me) || is_tester($me)): $ro = !is_admin($me); $mvAll = (string) site_setting('menu_variant', 'abu'); $mvAll = isset(MENU_VARIANTS[$mvAll]) ? $mvAll : 'abu'; ?>
+    <?php if (is_admin($me) || is_tester($me)): $ro = !is_admin($me); ?>
       <?php if ($ro): ?><p class="panel card ro-note">🧪 <?= te('Jūs - testuotojas: nustatymus matote, bet keisti gali tik administratorius.') ?></p><fieldset disabled class="ro-set"><?php endif; ?>
-      <section class="panel card settings-group menu-pick" id="meniu">
-        <div class="kicker"><?= te('Meniu išdėstymas') ?></div>
-        <p class="small muted" style="margin:0 0 8px;"><?= te('„Peržiūrėti“ - tik jums (šioje naršyklėje), „Visiems“ - visiems treneriams.') ?></p>
-        <?php foreach (MENU_VARIANTS as $k => [$label, $desc]): $on = menu_variant() === $k; ?>
-          <div class="mp-row<?= $on ? ' on' : '' ?>"><span><b><?= e(t($label)) ?></b><?= $mvAll === $k ? ' <span class="badge ok">' . te('visiems') . '</span>' : '' ?><small><?= e(t($desc)) ?></small></span>
-            <span class="mp-acts"><a class="btn btn-ghost btn-sm" href="<?= url('admin/nustatymai.php?meniu=' . $k . '#meniu') ?>"><?= $on ? '✓ ' . te('Dabar matote') : te('Peržiūrėti') ?></a>
-              <?php if ($mvAll !== $k): ?><form method="post"><?= csrf_field() ?><input type="hidden" name="action" value="menu_variant"><input type="hidden" name="v" value="<?= e($k) ?>"><button class="btn btn-sm" type="submit"><?= te('Visiems') ?></button></form><?php endif; ?></span></div>
-        <?php endforeach; ?>
-      </section>
-      <?php $pmAll = (string) site_setting('phone_menu', 'apacia'); $pmAll = isset(PHONE_MENU_VARIANTS[$pmAll]) ? $pmAll : 'apacia'; ?>
-      <section class="panel card settings-group menu-pick" id="tmeniu">
-        <div class="kicker"><?= te('Telefono meniu') ?></div>
-        <p class="small muted" style="margin:0 0 8px;"><?= te('Kaip meniu atrodo telefone ir planšetėje. „Peržiūrėti“ - tik jums, „Visiems“ - visiems treneriams.') ?></p>
-        <?php foreach (PHONE_MENU_VARIANTS as $k => [$label, $desc]): $on = phone_menu_variant() === $k; ?>
-          <div class="mp-row<?= $on ? ' on' : '' ?>"><span><b><?= e(t($label)) ?></b><?= $pmAll === $k ? ' <span class="badge ok">' . te('visiems') . '</span>' : '' ?><small><?= e(t($desc)) ?></small></span>
-            <span class="mp-acts"><a class="btn btn-ghost btn-sm" href="<?= url('admin/nustatymai.php?tmeniu=' . $k . '#tmeniu') ?>"><?= $on ? '✓ ' . te('Dabar matote') : te('Peržiūrėti') ?></a>
-              <?php if ($pmAll !== $k): ?><form method="post"><?= csrf_field() ?><input type="hidden" name="action" value="phone_menu"><input type="hidden" name="v" value="<?= e($k) ?>"><button class="btn btn-sm" type="submit"><?= te('Visiems') ?></button></form><?php endif; ?></span></div>
-        <?php endforeach; ?>
-      </section>
+      <?php /* B9 (2026-11-21): meniu variantų pasirinkimas išimtas - vienas išdėstymas visiems */ ?>
       <?php /* „🏯 Žaidimas“ skiltis išimta (#145): mato administratoriai, testuotojai - ne; Dojo - Testavimas puslapyje */ ?>
       <section class="panel card settings-group reg-toggles" id="registracija">
         <div class="kicker"><?= te('Registracija') ?></div>

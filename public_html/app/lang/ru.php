@@ -3553,4 +3553,15 @@ Nuo 2013 m. treniravosi Tradicinio karate-do klubo „Sanrei“ komandoje, o 201
     'Sudėk 4 vienoje eilėje' => 'Собери 4 в ряд',
     'Realiu laiku - blokuok laiku' => 'В реальном времени - блокируй вовремя',
     'Daryk techniką pagal būgnus' => 'Делай технику под барабаны',
+    'Ko reikia norint gauti diržą. Nariai mato savo kito diržo programą skiltyje „Egzaminas“ ir žymi „Moku“ -
+    jūs patvirtinate pranešime (Valdymas → Šiandien), ir narys gauna to punkto aktyvumo taškus. Jie kelia paskyros lygį, diržo nesuteikia.' => 'Что нужно для получения пояса. Участники видят программу своего следующего пояса в разделе «Экзамен» и отмечают «Умею» - вы подтверждаете в уведомлении (Управление → Сегодня), и участник получает XP за этот пункт. XP повышает уровень аккаунта, пояс он не даёт.',
+    'Renginiai, kvietimai, dalyviai, rezultatai' => 'Мероприятия, приглашения, участники, результаты',
+    'Federacijos svetainės turinys' => 'Содержимое сайта федерации',
+    'dalyvauja {n}' => 'участвуют {n}',
+    'laukia atsakymo {n}' => 'ждут ответа {n}',
+    'Kaip mato nariai' => 'Как видят участники',
+    'Artėjantys' => 'Предстоящие',
+    'Praėję (60 d.)' => 'Прошедшие (60 дн.)',
+    'Praėjusių renginių nėra.' => 'Прошедших мероприятий нет.',
+    'Treneris - tai paskyros rolė: Valdymas → Nustatymai → Paskyros.' => 'Тренер - это роль аккаунта: Управление → Настройки → Аккаунты.',
 ];

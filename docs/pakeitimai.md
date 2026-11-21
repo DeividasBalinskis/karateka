@@ -4,6 +4,14 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.74 - 2026-11-21 (Valdymas: vienas išdėstymas, Renginiai meniu - B9)
+- Meniu bandomieji variantai išimti: kompiuteryje - šoninis meniu, telefone - apatinė juosta. Nustatymuose meniu pasirinkimo nebėra.
+- Valdymo meniu „Kasdien“ grupėje - **📅 Renginiai**: visi artėjantys ir praėję (60 d.) renginiai su „Redaguoti“, „Dalyviai“,
+  „Rezultatai“ / „Kas buvo“ ir „+ Naujas renginys“. Mygtukas „Kaip mato nariai“ atidaro viešą puslapį.
+- Renginio, naujienos ir pamokų redaktoriai atsidaro Valdyme - su šoniniu meniu (nebe viešame puslapyje).
+- „Tvarkyti“ grupėje - **🏛️ LTKF svetainė** (administratoriams, kol LTKF juodraštis matomas test svetainėje).
+- Pasenę patarimai („Treneriams → …“) pakeisti į tikrus kelius („Valdymas → Nustatymai → Paskyros“, „Valdymas → Šiandien“).
+
 ## v1.73 - 2026-11-21 (atsiliepimai #157-#159)
 - #157: varžybos, vykusios per Budo, nebeprašo „Įvesk rezultatus“ - kitą dieną po varžybų mūsų narių vietos ir taškai persikelia patys.
   Varžyboms ne per Budo (kitų organizatorių) - „Įrašyk mūsų narių vietas“, o rezultatų puslapyje paaiškinta, iš kur jie.

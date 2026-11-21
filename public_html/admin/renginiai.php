@@ -7,7 +7,7 @@ $edit = get('edit') ?: post('edit');
 $errors = [];
 // Iš kur atėjo redaguoti (viešas renginių puslapis ar pagrindinis) - ten ir grąžinama
 $back = get('back') ?: post('back');
-$backPages = ['renginiai' => 'renginiai.php', 'index' => 'index.php#renginiai', 'egzaminai' => 'admin/egzaminai.php'];
+$backPages = ['renginiai' => 'renginiai.php', 'index' => 'index.php#renginiai', 'egzaminai' => 'admin/egzaminai.php', 'admin' => 'admin/renginiai.php'];
 $back = isset($backPages[$back]) ? $back : '';
 function back_after_save(string $back, array $backPages, int $id = 0): void
 {
@@ -258,5 +258,36 @@ if ($edit !== '') {
     exit;
 }
 
-// Renginių sąrašas - pačiuose Renginiuose (renginiai.php), su trenerio mygtukais
-redirect('renginiai.php');
+// B9: renginių sąrašas Valdyme (su šoniniu meniu): artėjantys ir praėję 60 d., kiekvienam - Redaguoti, Dalyviai, Rezultatai / Kas buvo
+$upcoming = q_all('SELECT e.*, (SELECT COUNT(*) FROM event_participants ep WHERE ep.event_id = e.id AND ep.status IN ("going", "late")) AS going,
+                          (SELECT COUNT(*) FROM event_participants ep WHERE ep.event_id = e.id AND ep.status = "invited") AS invited
+                     FROM events e WHERE COALESCE(e.ends_on, e.starts_on) >= CURDATE() ORDER BY e.starts_on, e.start_time');
+$past = q_all('SELECT e.*, (SELECT COUNT(*) FROM event_participants ep WHERE ep.event_id = e.id AND ep.status IN ("going", "late")) AS going, 0 AS invited
+                 FROM events e WHERE COALESCE(e.ends_on, e.starts_on) < CURDATE() AND e.starts_on >= DATE_SUB(CURDATE(), INTERVAL 60 DAY) ORDER BY e.starts_on DESC');
+$row = function (array $ev, bool $isPast): string {
+    $id = (int) $ev['id'];
+    $res = in_array($ev['type'], ['exam', 'competition'], true) ? ['admin/renginio-rezultatai.php?id=' . $id, t('Rezultatai')] : ['admin/treniruote.php?e=' . $id, t('Kas buvo')];
+    return '<li class="aev-row"><span class="aev-date"><b>' . e(fmt_date($ev['starts_on'])) . '</b>' . ($ev['start_time'] ? '<small>' . e(fmt_time($ev['start_time'])) . '</small>' : '') . '</span>'
+        . '<span class="aev-main"><span class="badge badge-pink">' . e(t(EVENT_TYPES[$ev['type']] ?? $ev['type'])) . '</span> <a href="' . e(url('renginys.php?id=' . $id)) . '"><b>' . e($ev['title']) . '</b></a>'
+        . '<small class="muted">' . ($ev['location'] ? e($ev['location']) . ' · ' : '') . e(t('dalyvauja {n}', ['n' => (int) $ev['going']])) . ((int) $ev['invited'] ? ' · ' . e(t('laukia atsakymo {n}', ['n' => (int) $ev['invited']])) : '') . '</small></span>'
+        . '<span class="aev-acts"><a class="btn btn-ghost btn-sm" href="' . e(url('admin/renginiai.php?edit=' . $id . '&back=admin')) . '">' . e(t('Redaguoti')) . '</a>'
+        . '<a class="btn btn-ghost btn-sm" href="' . e(url('admin/renginio-dalyviai.php?id=' . $id)) . '">' . e(t('Dalyviai')) . '</a>'
+        . ($isPast || $ev['starts_on'] <= date('Y-m-d') ? '<a class="btn btn-ghost btn-sm" href="' . e(url($res[0])) . '">' . e($res[1]) . '</a>' : '') . '</span></li>';
+};
+page_start(t('Renginiai'), ['admin' => true]);
+?>
+<div class="page-head row between" style="flex-wrap:wrap; gap:10px;">
+  <h1 class="styled"><?= te('Renginiai') ?></h1>
+  <div class="row" style="gap:8px;"><a class="btn btn-ghost btn-sm" href="<?= url('renginiai.php') ?>"><?= te('Kaip mato nariai') ?></a><a class="btn btn-primary btn-sm" href="<?= url('admin/renginiai.php?edit=new&back=admin') ?>"><?= te('+ Naujas renginys') ?></a></div>
+</div>
+<section class="panel card">
+  <div class="kicker"><?= te('Artėjantys') ?> (<?= count($upcoming) ?>)</div>
+  <?php if ($upcoming): ?><ul class="aev-list"><?php foreach ($upcoming as $ev) { echo $row($ev, false); } ?></ul>
+  <?php else: ?><p class="muted"><?= te('Artėjančių renginių nėra.') ?></p><?php endif; ?>
+</section>
+<section class="panel card" style="margin-top:16px;">
+  <div class="kicker"><?= te('Praėję (60 d.)') ?> (<?= count($past) ?>)</div>
+  <?php if ($past): ?><ul class="aev-list"><?php foreach ($past as $ev) { echo $row($ev, true); } ?></ul>
+  <?php else: ?><p class="muted"><?= te('Praėjusių renginių nėra.') ?></p><?php endif; ?>
+</section>
+<?php page_end();

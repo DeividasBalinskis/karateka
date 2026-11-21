@@ -1,5 +1,5 @@
 # Handoff
-Updated: 2026-11-21 · version v1.73 · branch claude/festive-curie-01jgx2
+Updated: 2026-11-21 · version v1.74 · branch claude/festive-curie-01jgx2
 
 ## Pending asks (answer these first)
 | Asked | By | What | Status |
@@ -27,6 +27,7 @@ Updated: 2026-11-21 · version v1.73 · branch claude/festive-curie-01jgx2
 - v1.72: member bottom tab bar on a phone (Apžvalga/Mano diena, Renginiai, Užduotys, Egzaminas, ⋯ Daugiau), 🏯 Dojo as a corner button for members, feedback #154-#156 (LTKF list site tags, compact to-do rows, side menu aligned with the first card).
 - Feedback #153-#156 answered on the test site (#153 = test DB was behind, db/045). Exam protocol fits 1175 px with 4+ score columns. Tests: login() closes earlier tests' windows - full suite 140/140 in 13.7 min.
 - v1.73: feedback #157 (Budo results transfer by themselves), #158 (name follows to member card and Dojo), #159 (arena chooser).
+- v1.74: B9 done - one menu layout (variants removed), Renginiai list inside Valdymas, editors keep the side menu, LTKF row, stale hints fixed. A6 done (zip keeps old packages, deploy guide).
 - Committed and pushed to the claude branch after each stage; `main` untouched.
 
 ## Open

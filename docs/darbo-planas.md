@@ -59,7 +59,7 @@ Status: ☐ not started · ◐ partly done · ☑ done
 | **B6** | Exams: counts, tablet, 10 kyu, test bank export/import | Denis, examiners | M | — | ☑ v1.49 (10 kyu, #133, #137), v1.50 (question review with ✕, comments, pictures, ChatGPT notes), v1.51 (editor redesign, file with a new quiz); v1.59 (list: registered · in protocol + import button; protocol controls ≥ 40 px on a tablet, names not cut); v1.60 (new event type „Kita“, „Bus pakviesta: N“) |
 | **B7** | Family accounts: parent trains too, child login in one button | parents, kids | M | plan first | ☑ v1.53 (child login: username + PIN by parents, from 7, no coach approval; parent trains too; adult member adds a child; parent switches child chat) |
 | **B8** | Kid and member home; Dojo in the corner; Paskyra page | kids, members | M | plan first | ◐ v1.71 kid home variant B (fits 375x812); v1.72 member tab bar on a phone, 🏯 Dojo corner button; open: separate Paskyra page (Nustatymai for now) |
-| **B9** | Valdymas: one shell, one start page, final names | Denis, coaches | M | reikia leidimo | ☐ |
+| **B9** | Valdymas: one shell, one start page, final names | Denis, coaches | M | reikia leidimo | ☑ v1.74 (one layout, variants removed, Renginiai list in Valdymas, editors with side menu, LTKF row, hints) |
 | **C1** | Permissions: one `can()` and one table | everyone | M | plan first, Fable | ☐ |
 | **C2** | Settings: one registry, one map, a change log | Denis, Deividas | M | plan first | ☐ |
 | **C3** | Secret links: one model, one "Visos nuorodos" page | Denis, secretariat | L | plan first, Fable | ☐ |

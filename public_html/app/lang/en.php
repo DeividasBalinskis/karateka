@@ -3553,4 +3553,15 @@ From 2013 he trained with the team of the traditional karate-do club "Sanrei", a
     'Sudėk 4 vienoje eilėje' => 'Get 4 in a row',
     'Realiu laiku - blokuok laiku' => 'Real time - block in time',
     'Daryk techniką pagal būgnus' => 'Do the technique to the drums',
+    'Ko reikia norint gauti diržą. Nariai mato savo kito diržo programą skiltyje „Egzaminas“ ir žymi „Moku“ -
+    jūs patvirtinate pranešime (Valdymas → Šiandien), ir narys gauna to punkto aktyvumo taškus. Jie kelia paskyros lygį, diržo nesuteikia.' => 'What is needed to get a belt. Members see the programme for their next belt in "Exam" and mark "I can do it" - you approve it in the notification (Management → Today), and the member gets the XP for that item. XP raises the account level; it does not give a belt.',
+    'Renginiai, kvietimai, dalyviai, rezultatai' => 'Events, invitations, participants, results',
+    'Federacijos svetainės turinys' => 'Federation website content',
+    'dalyvauja {n}' => '{n} going',
+    'laukia atsakymo {n}' => '{n} not answered',
+    'Kaip mato nariai' => 'As members see it',
+    'Artėjantys' => 'Upcoming',
+    'Praėję (60 d.)' => 'Past (60 days)',
+    'Praėjusių renginių nėra.' => 'No past events.',
+    'Treneris - tai paskyros rolė: Valdymas → Nustatymai → Paskyros.' => 'Coach is an account role: Management → Settings → Accounts.',
 ];

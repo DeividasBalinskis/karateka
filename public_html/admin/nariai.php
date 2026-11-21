@@ -287,7 +287,7 @@ if ($id) {
             <?php $qt = in_array($k, $mTags, true) ? tag_qualification_text($id, $k) : ''; ?>
             <label class="check"><input type="checkbox" name="tags[]" value="<?= $k ?>" <?= in_array($k, $mTags, true) ? 'checked' : '' ?>><span><?= e($label) ?><?= $qt ? ' <span class="small ' . (strpos($qt, '✓') === 0 ? 'test-ok' : 'muted') . '">' . e($qt) . '</span>' : '' ?></span></label>
           <?php endforeach; ?>
-          <p class="hint"><?= te('Treneris - tai paskyros rolė: Treneriams → Paskyros.') ?></p>
+          <p class="hint"><?= te('Treneris - tai paskyros rolė: Valdymas → Nustatymai → Paskyros.') ?></p>
         </fieldset>
         <div><button class="btn btn-primary" type="submit"><?= te('Išsaugoti') ?></button></div>
       </form>

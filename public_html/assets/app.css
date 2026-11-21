@@ -2062,3 +2062,18 @@ a.kid-mini:hover{border-color:var(--accent);}
   .prot-table.many-sc .sc-box > .sc-b:last-child{grid-area:p; width:auto;}
   .prot-table.many-sc .sc-box > .pi-score{grid-area:v; width:100%; min-width:0;}
 }
+
+/* B9: renginių sąrašas Valdyme */
+.aev-list{list-style:none; margin:0; padding:0;}
+.aev-row{display:grid; grid-template-columns:130px 1fr auto; gap:12px; align-items:center; padding:10px 0; border-bottom:1px solid rgba(23,20,15,0.08);}
+.aev-row:last-child{border-bottom:none;}
+.aev-date{display:flex; flex-direction:column; font-size:.9rem;}
+.aev-date small{color:var(--muted);}
+.aev-main{display:flex; flex-direction:column; align-items:flex-start; gap:2px; min-width:0;}
+.aev-main a{color:var(--ink);}
+.aev-acts{display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end;}
+@media (max-width: 700px){
+  .aev-row{grid-template-columns:1fr; gap:6px;}
+  .aev-date{flex-direction:row; gap:8px;}
+  .aev-acts{justify-content:flex-start;}
+}
