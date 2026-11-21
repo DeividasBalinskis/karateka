@@ -733,6 +733,21 @@ function tournament_award_set(int $id, string $catId, string $status): bool
     }
 }
 
+const VARZ_REG_DISC = ['kata' => 'Kata', 'kumite' => 'Kumite', 'fukugo' => 'Fukugo', 'kihon' => 'Kihon'];
+
+/** Rungtys registracijos formoje: tos, kurioms varžybose jau yra individualių grupių; jei grupių dar nėra - visos keturios */
+function tournament_reg_disciplines(array $t): array
+{
+    $have = [];
+    foreach ((array) (tournament_state($t)['categories'] ?? []) as $c) {
+        $d = (string) ($c['discipline'] ?? '');
+        if (empty($c['team']) && isset(VARZ_REG_DISC[$d])) {
+            $have[$d] = true;
+        }
+    }
+    return array_intersect_key(VARZ_REG_DISC, $have ?: VARZ_REG_DISC);
+}
+
 /** Nauji (dar nepridėti) užsiregistravę per nuorodą */
 function tournament_new_entries(int $id): array
 {

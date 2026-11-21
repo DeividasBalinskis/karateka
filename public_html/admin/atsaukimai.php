@@ -57,18 +57,22 @@ if (is_post()) {
                                 WHERE a.status = "active" AND m.status = "active"' . ($all ? '' : ' AND m.group_id IN (' . implode(',', $picked) . ')') . ' AND a.id <> ?
                                 GROUP BY a.id', [(int) $me['id']]);
             $title = (t('Treniruočių nebus:') . ' ') . cancellation_dates($c);
+            $batch = post('email') === '1' ? outbox_new_batch() : null;
+            $queued = 0;
             foreach ($accounts as $acc) {
                 if (post('notify') === '1') {
                     notify_account((int) $acc['id'], 'cancelled', $title, $reason . ($acc['kids'] ? ' (' . $acc['kids'] . ')' : ''), 'paskyra.php', null, $id);
                 }
-                if (post('email') === '1') {
-                    send_mail($acc['email'], $title . ' — Karateka', "Sveiki, {$acc['first_name']},\n\n" . $title . ".\n" . $reason . "\n\nTvarkaraštis: " . abs_url('paskyra.php'));
+                if ($batch) {
+                    $lang = account_lang($acc);
+                    $queued += outbox_add($batch, $title, $acc['email'], mail_tpl('cancelled', ['name' => $acc['first_name'], 'reason' => $reason, 'link' => abs_url('paskyra.php'),
+                        'title' => function () use ($c) { return t('Treniruočių nebus:') . ' ' . cancellation_dates($c); }], $lang), (int) $acc['id'], (int) $me['id']) ? 1 : 0;
                 }
                 $sent++;
             }
         }
         flash('ok', (t('Išsaugota:') . ' ') . cancellation_dates($c) . ($sent ? (' ' . t('· pranešta') . ' ') . $sent . ($sent === 1 ? ' paskyrai' : ' paskyroms') : ''));
-        redirect('admin/atsaukimai.php');
+        redirect(!empty($queued) ? 'admin/siuntimas.php?b=' . $batch : 'admin/atsaukimai.php');
     }
 }
 

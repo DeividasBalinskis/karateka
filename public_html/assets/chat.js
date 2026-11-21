@@ -345,4 +345,9 @@
     setTimeout(function () { hint.hidden = true; }, 15000);
   }
   hint.querySelector('.chat-hint-x').addEventListener('click', hintSeen);
+  // Nuoroda iš laiško „Treneris atsakė“ (paskyra.php?pokalbis=ID) - nariui iš karto atidaro pokalbį
+  if (!cfg.staff) {
+    var mLinked = new URLSearchParams(location.search).get('pokalbis');
+    if (mLinked) { selectMember(mLinked); open(); }
+  }
 })();

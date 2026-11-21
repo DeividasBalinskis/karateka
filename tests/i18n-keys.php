@@ -37,6 +37,19 @@ foreach ($it as $f) {
         }
     }
 }
+// Laiškų šablonai (app/mail_templates.php, C8): antraštės ir pastraipos irgi verčiamos
+if (is_file($dir . '/app/mail_templates.php')) {
+    if (!defined('MAIL_TPL')) {
+        require_once $dir . '/app/mail_templates.php';
+    }
+    foreach (MAIL_TPL as $tk => $tpl) {
+        foreach (array_merge([$tpl[0]], $tpl[1]) as $line) {
+            if (preg_match('/\p{L}{3,}/u', preg_replace('/\{\w+\}/', '', $line))) {   // ne vien {vieta}
+                $keys[$line] = $dir . '/app/mail_templates.php';
+            }
+        }
+    }
+}
 $missing = [];
 foreach (['en', 'ru'] as $l) {
     $dict = require $dir . '/app/lang/' . $l . '.php';

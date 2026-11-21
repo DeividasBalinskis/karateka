@@ -46,10 +46,7 @@ function login_code_send(array $a, string $purpose, bool $resend = false): ?stri
     if (config('env') === 'local') {
         $_SESSION['dev_login_code'] = $code;
     }
-    $what = $purpose === 'enable' ? t('prisijungimo su kodu įjungimo') : 'prisijungimo';
-    $sent = send_mail($a['email'], "Kodas: $code — Karateka",
-        "Sveiki, {$a['first_name']},\n\njūsų karateka.lt $what kodas:\n\n    $code\n\nKodas galioja " . LOGIN_CODE_MINUTES . " minučių.\n"
-        . "Jei prisijungti bandote ne jūs - nedelsdami pakeiskite slaptažodį.");
+    $sent = mail_send_tpl($a['email'], $purpose === 'enable' ? 'login_code_enable' : 'login_code', ['name' => $a['first_name'], 'code' => $code, 'min' => LOGIN_CODE_MINUTES], account_lang($a));
     if (!$sent && config('env') !== 'local') {
         return t('Nepavyko išsiųsti kodo. Pabandykite po minutės arba parašykite info@karateka.lt.');
     }

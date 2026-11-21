@@ -320,7 +320,7 @@ function admin_menu_key(): string
 {
     $file = basename($_SERVER['SCRIPT_NAME'] ?? '', '.php');
     $map = ['index' => 'siandien', 'pirmas-adminas' => 'siandien', 'treniruote' => 'treniruote', 'egzaminai' => 'egzaminai', 'egzamino-protokolas' => 'egzaminai', 'federacija' => 'federacija',
-            'programa' => 'egzaminai', 'pranesimai' => 'pranesimai', 'sms' => 'pranesimai', 'nariai' => 'nariai', 'taskai' => 'xp', 'testai' => 'testai',
+            'programa' => 'egzaminai', 'pranesimai' => 'pranesimai', 'sms' => 'pranesimai', 'siuntimas' => 'pranesimai', 'nariai' => 'nariai', 'taskai' => 'xp', 'testai' => 'testai',
             'patvirtinimai' => 'patvirtinimai', 'atsiliepimai' => 'atsiliepimai',
             'renginiai' => 'renginiai', 'renginio-dalyviai' => 'renginiai', 'renginio-rezultatai' => 'renginiai'];
     if (isset($map[$file])) {

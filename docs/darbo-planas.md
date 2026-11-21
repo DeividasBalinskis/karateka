@@ -61,13 +61,13 @@ Status: ☐ not started · ◐ partly done · ☑ done
 | **B8** | Kid and member home; Dojo in the corner; Paskyra page | kids, members | M | plan first | ◐ v1.71 kid home variant B (fits 375x812); v1.72 member tab bar on a phone, 🏯 Dojo corner button; open: separate Paskyra page (Nustatymai for now) |
 | **B9** | Valdymas: one shell, one start page, final names | Denis, coaches | M | reikia leidimo | ☑ v1.74 (one layout, variants removed, Renginiai list in Valdymas, editors with side menu, LTKF row, hints) |
 | **C1** | Permissions: one `can()` and one table | everyone | M | plan first, Fable | ☐ |
-| **C2** | Settings: one registry, one map, a change log | Denis, Deividas | M | plan first | ☐ |
+| **C2** | Settings: one registry, one map, a change log | Denis, Deividas | M | plan first | ◐ v1.78 (language saved on the account, used after login and for e-mails) |
 | **C3** | Secret links: one model, one "Visos nuorodos" page | Denis, secretariat | L | plan first, Fable | ☐ |
 | **C4** | Design tokens + visual safety net (old step 4) | everyone | M | plan first | ☐ |
 | **C5** | CSS cleanup, zero visual change (old step 5) | Deividas | L | plan first | ☐ |
 | **C6** | Tests: faster, independent, engine unit tests (old step 10) | Deividas | M | — | ◐ v1.60 (smoke set `tests/smoke.sh` ~2 min; flaky Budo specs pick groups robustly; tests clean their own IP limits) |
 | **C7** | One polling request (old step 11) | everyone (speed) | M | — | ☑ v1.57 (pulsas.php: chat count + staff pop-ups + game invites, ETag/304, one poller every 30 s paused when hidden; live/TV pause when hidden; open chat stays fast) |
-| **C8** | E-mail: templates, outbox, the reader's language | parents | M | plan first | ☐ |
+| **C8** | E-mail: templates, outbox, the reader's language | parents | M | plan first | ☑ v1.75 + v1.78 (coach reply e-mail only when ticked; one template file in the reader's language, one footer; outbox with result per person; chat link fixed; no game mention) |
 | **C9** | Project memory: CLAUDE.md, handoff, decisions, "Kas naujo" | Deividas, Denis | S | — | ☑ v1.52–v1.53 (CLAUDE.md, handoff, decisions, „Kas naujo“ from the version number) |
 | **C10** | Data care: retention, orphans, backups of uploads | parents, Deividas | M | reikia leidimo | ☐ |
 | **D1** | Compare Budo with the external Varžybos app (old step 3a) | Deividas, Denis | M | plan first | ☐ |

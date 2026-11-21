@@ -1,5 +1,5 @@
 # Handoff
-Updated: 2026-11-21 · version v1.77 · branch claude/festive-curie-01jgx2
+Updated: 2026-11-21 · version v1.78 · branch claude/festive-curie-01jgx2
 
 ## Pending asks (answer these first)
 | Asked | By | What | Status |
@@ -33,11 +33,12 @@ Updated: 2026-11-21 · version v1.77 · branch claude/festive-curie-01jgx2
 - Feedback #160 (LTKF clubs, members and judges registers) - planned as D6 part 2; asked who enters club members.
 - v1.76: A1 done (unsaved Budo changes kept on the device, merged after reopening); #109 / decision 38 left hand (shield = 2 blocks, second weapon = 2 strikes, second strike 75 %).
 - v1.77: #160 LTKF registers (members, clubs, judges) in Valdymas → Federacijos registrai; LTKF pages read clubs and judges from them; db/048.
+- v1.78: Budo club registration with events per athlete + „Jūsų užregistruoti“ (decision 12); C2 language on the account; C8 e-mail templates in the reader's language, outbox with per-person result (admin/siuntimas.php); db/049.
 - Committed and pushed to the claude branch after each stage; `main` untouched.
 
 ## Open
 - B8 rest: separate Paskyra page (Nustatymai covers it for now - confirm); C4-C6; D5 page polish; D7 shield / second weapon in the arena.
-- Budo registration by club leaders (add own kids, choose events); parent payments need a payment provider (later).
+- Parent payments for Budo registration need a payment provider (later).
 
 ## Next
 - B8: confirm that Nustatymai is enough as the „Paskyra“ page. Then C4 design tokens (plan first) or D5 Budo live page.

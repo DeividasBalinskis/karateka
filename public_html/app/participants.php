@@ -188,14 +188,13 @@ function invite_members(array $ev, array $memberIds, int $by, bool $sendEmail, b
                           FROM account_members am JOIN accounts a ON a.id = am.account_id JOIN members m ON m.id = am.member_id
                          WHERE a.status = "active" AND am.member_id IN (' . implode(',', $new) . ')') as $r) {
             $byAccount[$r['email']]['first_name'] = $r['first_name'];
+            $byAccount[$r['email']]['lang'] = account_lang(['id' => (int) $r['id']]);
             $byAccount[$r['email']]['members'][] = $r['member_name'];
         }
-        $when = fmt_date($ev['starts_on'], true) . ($ev['start_time'] ? ', ' . fmt_time($ev['start_time']) : '');
         foreach ($byAccount as $email => $info) {
-            send_mail($email, 'Kvietimas: ' . $ev['title'],
-                "Sveiki, {$info['first_name']},\n\ntreneris kviečia " . implode(', ', array_unique($info['members'])) . " į renginį:\n\n"
-                . $ev['title'] . "\n" . $when . ($ev['location'] ? "\n" . $ev['location'] : '') . "\n\n"
-                . 'Atsakykite „Dalyvausiu“ arba „Negalėsiu“ iki ' . fmt_date(event_deadline($ev), true) . ': ' . abs_url('renginys.php?id=' . (int) $ev['id']));
+            mail_send_tpl($email, 'event_invite', ['name' => $info['first_name'], 'kids' => implode(', ', array_unique($info['members'])), 'title' => $ev['title'],
+                'event' => function () use ($ev) { return $ev['title'] . "\n" . fmt_date($ev['starts_on'], true) . ($ev['start_time'] ? ', ' . fmt_time($ev['start_time']) : '') . ($ev['location'] ? "\n" . $ev['location'] : ''); },
+                'deadline' => function () use ($ev) { return fmt_date(event_deadline($ev), true); }, 'link' => abs_url('renginys.php?id=' . (int) $ev['id'])], $info['lang']);
         }
     }
     if ($sendSms && $new) {
