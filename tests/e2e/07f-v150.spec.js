@@ -165,11 +165,15 @@ test('accounts: name change, repeat password, tester badge for any role, log out
   noJsErrors(a);
 });
 
-test('game hidden: no Dojo in menus while closed to members; admins open it from Testavimas (#140)', async ({ browser }) => {
+test('game hidden: Dojo in the menu only for real admins while closed to members (#140, decision 2026-11-21)', async ({ browser }) => {
   sql("INSERT INTO site_settings (name, value) VALUES ('game_access', '[]') ON DUPLICATE KEY UPDATE value = '[]'");
   const a = await login(browser, 'info@karateka.lt', 1440, 900);
   await a.goto('admin/');
-  check('no Dojo link in the menu', await a.locator('.site-header a[href*="dojo.php"]').count() === 0);
+  check('real admin sees Dojo in the menu', await a.locator('.site-header a[href*="dojo.php"]').count() >= 1);
+  const m = await login(browser, 'narys@karateka.test', 1440, 900);
+  await m.goto('paskyra.php');
+  check('member: no Dojo link in the menu', await m.locator('.site-header a[href*="dojo.php"]').count() === 0);
+  await m.context().close();
   await a.goto('admin/testavimas.php');
   check('admin link to try it', await a.locator('a:has-text("Atidaryti Dojo")').count() === 1);
   sql("UPDATE site_settings SET value = 'all' WHERE name = 'game_access'");

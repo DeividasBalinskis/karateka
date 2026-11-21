@@ -142,7 +142,7 @@ test('game hidden: nobody sees Dojo in menus until it is open to all; real admin
   const a = await login(browser, 'info@karateka.lt', 1280, 900);
   await a.goto('dojo.php');
   check('Denis can open the game', a.url().includes('dojo.php'));
-  check('but no Dojo in the menu while hidden', await a.locator('.nav-game').count() === 0);
+  check('real admin sees Dojo in the menu while hidden (decision 2026-11-21)', await a.locator('.nav-game').count() >= 1);
   await a.goto('admin/nustatymai.php');
   check('no game section in settings (#145)', await a.locator('#zaidimas').count() === 0);
   await a.goto('admin/testavimas.php');

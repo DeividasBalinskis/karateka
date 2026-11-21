@@ -4,6 +4,10 @@ Answers given by Deividas on 2026-11-20 (questions from `docs/darbo-planas.md`, 
 
 | Date | Area | Decision | Who decided | Source |
 |---|---|---|---|---|
+| 2026-11-21 | Dojo | „🏯 Dojo“ in the top menu for real admins only (Denis, Deividas) while the game is hidden from members; testers and members do not see it. (Replaces the menu part of #140.) | Deividas | chat |
+| 2026-11-21 | Kids | Kid home (7-10, own login): variant B - level and XP on top, 2 small cards (training, task), „Kas toliau“ strip. | Deividas | chat |
+| 2026-11-21 | Kids | A child with a username + PIN login may answer „Dalyvausiu / Negalėsiu“ like teens. | Deividas | chat |
+| 2026-11-21 | Notifications | Members and parents: the red number counts only things to do (tasks, unread coach notes and replies, invitations waiting for an answer); news is listed but not counted. | Deividas | chat |
 | 2026-11-20 | Workflow | Cloud session saves to `claude/…` branch after every finished stage; `main` only on „į main“; no PRs unless asked. | Deividas | chat |
 | 2026-11-20 | Workflow | "Plan first" steps: do them straight away and show the result (screenshots); change later if needed. | Deividas | chat |
 | 2026-11-20 | Workflow | Plan decisions accepted: 1a testers without dangerous buttons, 3b Budo vs external Varžybos decided after D1, 6a bottom tab bar for members and kids (variants first), 7b automatic feedback review stays off, C9 CLAUDE.md as proposed. | Deividas | chat |
