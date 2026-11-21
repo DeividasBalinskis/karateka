@@ -1983,3 +1983,19 @@ h1 .badge-tester{font:600 .8rem/1.6 'Inter', sans-serif; letter-spacing:0; paddi
 @media (max-width: 1099px), (pointer: coarse) {
   .small-select{min-height:40px;}
 }
+/* D5 (Valdymas: Nariai, Aktyvumo taškai, Šiandien): telefone vardai sąrašuose, ▸, atgal nuorodos ir „+ Susieti“ - patogūs pirštui */
+@media (max-width: 1099px), (pointer: coarse) {
+  .table.cards td > a:first-child{display:inline-flex; align-items:center; min-height:40px;}
+  a.small[href$="admin/nariai.php"], .page-head a.small, .dash a.small{display:inline-flex; align-items:center; min-height:40px;}
+  .summary-link{display:flex; align-items:center; min-height:40px;}
+  .mt-toggle{min-width:40px; min-height:40px;}
+  .mt-member{min-height:40px; display:flex; align-items:center;}
+  .linklike[data-open-chat]{min-height:40px;}
+}
+@media (max-width: 1099px), (pointer: coarse) {
+  .top5 a, .top5 .xp-btn{min-height:40px; display:inline-flex; align-items:center;}
+  .danger-zone > summary{min-height:44px; display:flex; align-items:center;}
+}
+@media (max-width: 1099px), (pointer: coarse) {
+  .ranking li > a, .ranking .xp-btn{min-height:40px; display:inline-flex; align-items:center;}
+}
