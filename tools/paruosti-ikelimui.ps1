@@ -45,8 +45,10 @@ Copy-Item (Join-Path $root 'docs\pakeitimai.md') (Join-Path $stage 'app\pakeitim
 $version = (Get-Content -Raw (Join-Path $root 'public_html\app\VERSION')).Trim()
 
 # tar.exe rašo ZIP su "/" - serveris teisingai sukuria aplankus
-Get-ChildItem $out -Filter 'svetaine*.zip' | Remove-Item -Force    # seni paketai
+# A6: seni paketai paliekami; jei šios versijos paketas jau yra - naujas gauna priesagą (-2, -3...), niekas neperrašoma
 $zip = Join-Path $out "svetaine-v$version.zip"
+$n = 2
+while (Test-Path $zip) { $zip = Join-Path $out "svetaine-v$version-$n.zip"; $n++ }
 Push-Location $stage
 & "$env:WINDIR\System32\tar.exe" -a -c -f $zip *
 Pop-Location
@@ -60,5 +62,5 @@ Get-ChildItem (Join-Path $root 'db') -Filter '0*.sql' | Sort-Object Name |
     Set-Content -Encoding UTF8 (Join-Path $out 'duomenu-baze.sql')
 
 Write-Host "OK: $out  (versija v$version)"
-Write-Host "Paruošta: ikelimui\svetaine-v$version.zip ir aplankas ikelimui\svetaine" -ForegroundColor Green
+Write-Host "Paruošta: ikelimui\$(Split-Path -Leaf $zip) ir aplankas ikelimui\svetaine (seni paketai palikti)" -ForegroundColor Green
 if (-not $NoPause) { Read-Host 'Spauskite Enter' }
