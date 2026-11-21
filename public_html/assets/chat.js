@@ -103,6 +103,7 @@
     panel.hidden = false;
     fab.setAttribute('aria-expanded', 'true');
     root.classList.add('open');
+    document.body.classList.add('chat-is-open');   // pranešimų burbulas neuždengia „Siųsti“
     if (hint) hintSeen();
     refresh();
     clearInterval(timer);
@@ -112,6 +113,7 @@
     panel.hidden = true;
     fab.setAttribute('aria-expanded', 'false');
     root.classList.remove('open');
+    document.body.classList.remove('chat-is-open');
     clearInterval(timer);
     timer = null;
     if (window.karatekaPulse) window.karatekaPulse();   // C7: skaičiukas - iš bendro pulso

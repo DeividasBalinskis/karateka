@@ -262,6 +262,7 @@ span.chat-ctx{text-decoration:none;}
 .ntf-more{pointer-events:auto; justify-self:end; border:0; border-radius:999px; background:#17140F; color:#fff; font:inherit; font-size:.8rem; font-weight:700; padding:5px 12px; cursor:pointer;}
 .ntf-pill{pointer-events:auto; justify-self:end; border:0; border-radius:999px; background:#E8772E; color:#fff; font:inherit; font-size:.85rem; font-weight:800; padding:7px 13px; cursor:pointer; box-shadow:0 6px 18px rgba(232,119,46,.35);}
 @media print{.ntf-pop{display:none;}}
+body.chat-is-open .ntf-pop{display:none;}   /* kol atidarytas pokalbis - pranešimų burbulas neuždengia „Siųsti“ */
 
 /* ---------- Temos pasirinkimas (assets/theme-pick.js) - karateka.lt ir Taika ---------- */
 .theme-pick{position:relative; display:inline-block;}
