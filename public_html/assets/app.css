@@ -1999,3 +1999,46 @@ h1 .badge-tester{font:600 .8rem/1.6 'Inter', sans-serif; letter-spacing:0; paddi
 @media (max-width: 1099px), (pointer: coarse) {
   .ranking li > a, .ranking .xp-btn{min-height:40px; display:inline-flex; align-items:center;}
 }
+
+/* B8: mažo vaiko (7-10 m.) „Mano diena“ - lygis ir XP viršuje, 2 kortelės, „Kas toliau“ (sprendimas 2026-11-21, variantas B) */
+.kid-day{display:grid; grid-template-columns:minmax(0,1fr); gap:12px; margin:-6px 0 22px;}
+.kid-day > *, .kid-two > *{min-width:0;}
+.kid-hero{display:grid; grid-template-columns:auto 1fr; gap:16px; align-items:center; padding:18px; border-radius:22px;
+  background:linear-gradient(135deg,#17140F,#3A2A55); color:#fff; box-shadow:0 10px 30px rgba(23,20,15,0.18);}
+.kid-ring{--p:0; width:92px; height:92px; border-radius:50%; display:grid; place-items:center; align-content:center;
+  background:radial-gradient(closest-side,#2A2140 79%,transparent 80%), conic-gradient(#FFB020 calc(var(--p)*1%), rgba(255,255,255,0.18) 0);}
+.kid-ring b{font:700 2rem/1 'Space Grotesk',sans-serif;}
+.kid-ring small{font-size:.72rem; color:#D9D2EA; margin-top:2px;}
+.kid-hi h1{margin:0; color:#fff; font-size:1.6rem; line-height:1.15;}
+.kid-hi p{margin:6px 0 0; color:#E4DDF2; font-size:1rem;}
+.kid-belt{display:inline-flex; align-items:center; gap:6px; margin-top:8px; font-size:.86rem; color:#E4DDF2;}
+.kid-belt svg{width:22px; height:22px;}
+.kid-two{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:12px;}
+.kid-mini{display:flex; flex-direction:column; gap:6px; padding:16px; border-radius:20px; background:rgba(255,255,255,0.82);
+  border:1px solid rgba(23,20,15,0.08); color:var(--ink); text-decoration:none; min-height:150px;}
+a.kid-mini:hover{border-color:var(--accent);}
+.kid-mini .kid-ic{font-size:1.9rem; line-height:1;}
+.kid-mini b{font:700 1.15rem/1.25 'Space Grotesk',sans-serif;}
+.kid-mini b.kid-task{font-size:1.02rem; overflow-wrap:anywhere;}
+.kid-mini > span:not(.kid-ic){color:var(--muted); font-size:.9rem;}
+.kid-mini form{margin-top:auto;}
+.kid-done{width:100%; min-height:44px; justify-content:center;}
+.kid-next{padding:14px 16px; border-radius:20px; background:rgba(255,255,255,0.82); border:1px solid rgba(23,20,15,0.08);}
+.kid-next .kicker{margin:0 0 10px;}
+.kid-row{display:flex; gap:10px; overflow-x:auto; padding-bottom:2px; scrollbar-width:thin;}
+.kid-chip{flex:0 0 auto; min-width:140px; max-width:220px; padding:10px 12px; border-radius:14px; background:#fff; border:1px solid rgba(23,20,15,0.10);
+  color:var(--ink); text-decoration:none; display:flex; flex-direction:column; gap:2px; min-height:44px;}
+.kid-chip, .kid-chip *, .kid-mini, .kid-mini *{text-decoration:none;}
+.kid-chip b{font-size:.95rem;}
+.kid-chip span{font-size:.84rem; color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+@media (min-width: 900px){
+  .kid-day{grid-template-columns:minmax(0,1.1fr) minmax(0,1fr); align-items:stretch;}
+  .kid-next{grid-column:1 / -1;}
+}
+@media (max-width: 400px){
+  .kid-hero{padding:14px; gap:12px;}
+  .kid-ring{width:78px; height:78px;}
+  .kid-ring b{font-size:1.7rem;}
+  .kid-hi h1{font-size:1.35rem;}
+  .kid-mini{padding:12px; min-height:128px;}
+}

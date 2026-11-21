@@ -191,7 +191,7 @@ if (is_post()) {
             q('UPDATE coach_notes SET done_at = ' . ($action === 'task_done' ? 'NOW()' : 'NULL') . ', read_at = COALESCE(read_at, NOW()) WHERE id = ?', [$note['id']]);
             flash('ok', $action === 'task_done' ? t('Puiku! Užduotis pažymėta kaip atlikta.') : t('Užduotis grąžinta į neatliktas.'));
         }
-        redirect(preg_match('~^(pamokos\.php\?id=\d+|uzduotys\.php\?m=\d+(&f=\w+)?)$~', post('back')) ? post('back') : 'paskyra.php?m=' . (int) ($note['member_id'] ?? 0) . (post('back') === 'svarbu' ? '#svarbu' : '#pastabos'));
+        redirect(preg_match('~^(pamokos\.php\?id=\d+|uzduotys\.php\?m=\d+(&f=\w+)?)$~', post('back')) ? post('back') : 'paskyra.php?m=' . (int) ($note['member_id'] ?? 0) . (post('back') === 'svarbu' ? '#svarbu' : (post('back') === 'diena' ? '' : '#pastabos')));
     }
 
     handle_account_settings($a, 'paskyra.php?skiltis=nustatymai', $errors);
@@ -299,8 +299,10 @@ page_start($tab === 'nustatymai' ? t('Nustatymai') : t('Mano paskyra'), ['noinde
 <div class="account-top">
   <div>
     <div class="eyebrow"><?= $tab === 'nustatymai' ? t('Nustatymai') : ($little ? t('Mano diena') : t('Apžvalga')) ?></div>
-    <div class="hello"><?= te('Sveiki,') ?> <?= e($a['first_name']) ?>!</div>
-    <?= $selected && $active && $tab === 'apzvalga' ? belt_strip_html($selected) : '' ?>
+    <?php if (!($kidHome = $little && $active && $tab === 'apzvalga')): // B8: mažam vaikui pasisveikinimas ir diržas - kortelėje žemiau ?>
+      <div class="hello"><?= te('Sveiki,') ?> <?= e($a['first_name']) ?>!</div>
+      <?= $selected && $active && $tab === 'apzvalga' ? belt_strip_html($selected) : '' ?>
+    <?php endif; ?>
   </div>
   <?php if (count($members) > 1): ?>
     <div class="member-tabs">
@@ -311,14 +313,69 @@ page_start($tab === 'nustatymai' ? t('Nustatymai') : t('Mano paskyra'), ['noinde
       <?php endforeach; ?>
     </div>
   <?php endif; ?>
-  <form method="post" action="<?= url('atsijungti.php') ?>" class="inline-form logout"><?= csrf_field() ?><button type="submit" class="btn btn-ghost btn-sm"><?= te('Atsijungti') ?></button></form>
+  <?php if (!$kidHome): // B8: vaikui „Atsijungti“ - ne pirmame ekrane (meniu ir Nustatymuose) ?>
+    <form method="post" action="<?= url('atsijungti.php') ?>" class="inline-form logout"><?= csrf_field() ?><button type="submit" class="btn btn-ghost btn-sm"><?= te('Atsijungti') ?></button></form>
+  <?php endif; ?>
 </div>
+<?php if ($kidHome):
+    // B8 (sprendimas 2026-11-21, variantas B): 7-10 m. vaikas savo paskyroje - viršuje lygis ir XP, 2 mažos kortelės
+    // (artimiausia treniruotė, viena užduotis su „✓ Atlikau“), „Kas toliau“ juosta. Be kainų; visa kita - žemiau.
+    $kl = xp_level(member_points_total((int) $selected['id']));
+    $kBelt = current_belt($selected['belt_level'] !== null ? (int) $selected['belt_level'] : null);
+    $kNext = member_next_training($selected);
+    $kTask = array_values(array_filter($todoNotes, function ($n) { return $n['is_task'] && !$n['done_at']; }))[0] ?? null;
+    $kSoon = array_slice(upcoming_events($selected['group_id'] ? (int) $selected['group_id'] : null, 3), 0, 3); ?>
+  <section class="kid-day" aria-label="<?= te('Mano diena') ?>">
+    <div class="kid-hero">
+      <div class="kid-ring" style="--p:<?= (int) $kl['pct'] ?>;" role="img" aria-label="<?= te('Lygis') ?> <?= (int) $kl['level'] ?>"><b><?= (int) $kl['level'] ?></b><small><?= te('lygis') ?></small></div>
+      <div class="kid-hi">
+        <h1><?= te('Labas,') ?> <?= e($selected['first_name']) ?>!</h1>
+        <p><?= (int) $kl['xp'] ?> XP · <?= te('dar {xp} XP iki {n} lygio', ['xp' => $kl['need'], 'n' => $kl['level'] + 1]) ?><?= xp_card_gift() ? ' 🎁' : '' ?></p>
+        <div class="kid-belt"><?= belt_icon_svg($kBelt) ?> <?= e(BELTS[$kBelt][0] . ' · ' . t(BELTS[$kBelt][1])) ?></div>
+      </div>
+    </div>
+    <div class="kid-two">
+      <a class="kid-mini" href="#tvarkarastis">
+        <span class="kid-ic" aria-hidden="true">🥋</span>
+        <?php if ($kNext): ?>
+          <b><?= e(day_word($kNext['date'])) ?><?= $kNext['start'] !== '' ? ' ' . e($kNext['start']) : '' ?></b>
+          <span><?= e($kNext['date'] !== date('Y-m-d') && $kNext['date'] !== date('Y-m-d', strtotime('+1 day')) ? fmt_date($kNext['date']) . ' · ' : '') ?><?= e(preg_replace('~\s*\(.*\)$~u', '', $kNext['location'])) ?></span>
+        <?php else: ?>
+          <b><?= te('Treniruotė') ?></b><span><?= te('Artimiausių treniruočių nėra') ?></span>
+        <?php endif; ?>
+      </a>
+      <div class="kid-mini">
+        <span class="kid-ic" aria-hidden="true"><?= $kTask ? '📋' : '🎉' ?></span>
+        <?php if ($kTask): ?>
+          <b class="kid-task"><?= e(mb_strimwidth(trim(preg_replace('~\s+~u', ' ', $kTask['body'])), 0, 70, '…')) ?></b>
+          <span><?= te('Užduotis nuo trenerio') ?></span>
+          <form method="post" class="inline-form"><?= csrf_field() ?><input type="hidden" name="member_id" value="<?= (int) $selected['id'] ?>"><input type="hidden" name="note_id" value="<?= (int) $kTask['id'] ?>"><input type="hidden" name="back" value="diena">
+            <button class="btn btn-primary kid-done" name="action" value="task_done"><?= te('✓ Atlikau') ?></button></form>
+        <?php else: ?>
+          <b><?= te('Užduočių nėra') ?></b>
+          <a class="small" href="<?= url('uzduotys.php?m=' . (int) $selected['id']) ?>"><?= te('Visos užduotys →') ?></a>
+        <?php endif; ?>
+      </div>
+    </div>
+    <?php if ($kSoon): ?>
+      <div class="kid-next">
+        <div class="kicker"><?= te('Kas toliau') ?></div>
+        <div class="kid-row">
+          <?php foreach ($kSoon as $ev): ?>
+            <a class="kid-chip" href="<?= url('renginys.php?id=' . (int) $ev['id']) ?>"><b><?= e(fmt_date($ev['starts_on'])) ?></b><span><?= e($ev['title']) ?></span></a>
+          <?php endforeach; ?>
+        </div>
+      </div>
+    <?php endif; ?>
+  </section>
+<?php endif; ?>
 
 <?php if ($a['status'] === 'pending_approval'): ?>
   <div class="flash flash-info"><?= te('Paskyra laukia trenerio patvirtinimo. Kai treneris patvirtins ir priskirs grupę, čia matysite tvarkaraštį, renginius ir taškus.') ?></div>
 <?php endif; ?>
 <?= form_errors($errors) ?>
-<?php if ($active && $tab === 'apzvalga' && ($invites || ($examTest && !$examTest['passed']) || $todoNotes || $newReplies || $notifs)):
+<?php $svNotes = !empty($kTask) ? array_values(array_filter($todoNotes, function ($n) use ($kTask) { return (int) $n['id'] !== (int) $kTask['id']; })) : ($todoNotes ?? []); ?>
+<?php if ($active && $tab === 'apzvalga' && ($invites || ($examTest && !$examTest['passed']) || $svNotes || $newReplies || $notifs)):
     $back = 'paskyra.php?m=' . (int) $selected['id']; ?>
   <!-- Svarbu: kas laukia atsakymo ar dėmesio. Pažymėjus „Supratau“ / „Perskaičiau“ - dingsta. -->
   <section class="panel card important" id="svarbu">
@@ -355,7 +412,7 @@ page_start($tab === 'nustatymai' ? t('Nustatymai') : t('Mano paskyra'), ['noinde
           </div>
         </li>
       <?php endif; ?>
-      <?php foreach ($todoNotes as $n): $isLesson = $n['lesson_id'] && $n['lesson_title']; ?>
+      <?php foreach ($svNotes as $n): $isLesson = $n['lesson_id'] && $n['lesson_title']; ?>
         <li class="notif is-new t-note">
           <span class="notif-icon" aria-hidden="true"><?= $isLesson ? '📘' : ($n['is_task'] ? '✏️' : '💬') ?></span>
           <div class="notif-body">
@@ -470,7 +527,7 @@ page_start($tab === 'nustatymai' ? t('Nustatymai') : t('Mano paskyra'), ['noinde
 
     <!-- Dešinė: tvarkaraštis (kompaktiškas - vienodo laiko dienos sujungtos) ir artėjantys renginiai -->
     <div class="stack">
-      <div class="panel card">
+      <div class="panel card" id="tvarkarastis">
         <div class="kicker"><?= te('Tvarkaraštis') ?> <?= $selected['group_id'] ? staff_link('admin/grupes.php?id=' . (int) $selected['group_id'], t('✎ Keisti')) : '' ?></div>
         <?php if ($active && $selected['group_id']): ?>
           <h2><?= e($selected['group_name']) ?></h2>

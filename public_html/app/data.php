@@ -6,6 +6,50 @@ function group_schedule(int $groupId): array
     return q_all('SELECT * FROM schedule WHERE group_id = ? ORDER BY weekday, start_time', [$groupId]);
 }
 
+/**
+ * Artimiausia nario grupės treniruotė per 14 dienų (atšauktos praleidžiamos; šiandien - jei dar neprasidėjo).
+ * ['date' => Y-m-d, 'start' => '17:30', 'end' => '18:30', 'location' => ..., 'group' => ...] arba null.
+ */
+function member_next_training(array $member): ?array
+{
+    if (empty($member['group_id'])) {
+        return null;
+    }
+    $gid = (int) $member['group_id'];
+    $rows = group_schedule($gid);
+    if (!$rows) {
+        return null;
+    }
+    $g = q_one('SELECT name, location FROM training_groups WHERE id = ?', [$gid]);
+    for ($i = 0; $i < 14; $i++) {
+        $date = date('Y-m-d', strtotime('+' . $i . ' day'));
+        $wd = (int) date('N', strtotime($date));
+        foreach ($rows as $r) {
+            if ((int) $r['weekday'] !== $wd || ($i === 0 && $r['start_time'] && substr($r['start_time'], 0, 5) <= date('H:i'))) {
+                continue;
+            }
+            if (function_exists('training_cancelled') && training_cancelled($gid, $date)) {
+                continue;
+            }
+            return ['date' => $date, 'start' => $r['start_time'] ? substr($r['start_time'], 0, 5) : '', 'end' => $r['end_time'] ? substr($r['end_time'], 0, 5) : '',
+                    'location' => (string) ($g['location'] ?? ''), 'group' => (string) ($g['name'] ?? '')];
+        }
+    }
+    return null;
+}
+
+/** „Šiandien“, „Rytoj“ arba savaitės diena (trumpai vaikui) */
+function day_word(string $date): string
+{
+    if ($date === date('Y-m-d')) {
+        return t('Šiandien');
+    }
+    if ($date === date('Y-m-d', strtotime('+1 day'))) {
+        return t('Rytoj');
+    }
+    return weekday_names()[(int) date('N', strtotime($date))];
+}
+
 /** Artėjantys (ar dar vykstantys) renginiai: skirti visiems arba nurodytai grupei. $groupId = null - visi renginiai. */
 function upcoming_events(?int $groupId, int $limit = 20): array
 {
