@@ -73,9 +73,50 @@ function ltkf_load(string $slug): array
 
 function ltkf_store(string $slug, array $data, string $who): void
 {
-    $old = q_value('SELECT data FROM ltkf_pages WHERE slug = ?', [$slug]);
+    $old = q_one('SELECT data, updated_by FROM ltkf_pages WHERE slug = ?', [$slug]);
+    $empty = '{"texts":{},"hidden":[],"blocks":{}}';
     q('INSERT INTO ltkf_pages (slug, data, prev, updated_by) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE prev = data, data = VALUES(data), updated_by = VALUES(updated_by)',
-        [$slug, json_encode($data, JSON_UNESCAPED_UNICODE), $old === false ? '{"texts":{},"hidden":[],"blocks":{}}' : $old, mb_substr($who, 0, 120)]);
+        [$slug, json_encode($data, JSON_UNESCAPED_UNICODE), $old ? $old['data'] : $empty, mb_substr($who, 0, 120)]);
+    ltkf_version_push($slug, $old ? (string) $old['data'] : $empty, $old ? (string) $old['updated_by'] : '');
+}
+
+/** D6: ankstesnė puslapio būsena - į istoriją (paskutinės 30); be db/050 - tik ltkf_pages.prev, kaip anksčiau */
+function ltkf_versions_ready(): bool
+{
+    static $ok = null;
+    if ($ok === null) {
+        try {
+            q_value('SELECT 1 FROM ltkf_page_versions LIMIT 1');
+            $ok = true;
+        } catch (PDOException $ex) {
+            $ok = false;
+        }
+    }
+    return $ok;
+}
+
+function ltkf_version_push(string $slug, string $data, string $by): void
+{
+    if (!ltkf_versions_ready()) {
+        return;
+    }
+    q('INSERT INTO ltkf_page_versions (slug, data, saved_by) VALUES (?, ?, ?)', [$slug, $data, mb_substr($by, 0, 120)]);
+    $keep = q_value('SELECT id FROM ltkf_page_versions WHERE slug = ? ORDER BY id DESC LIMIT 1 OFFSET 29', [$slug]);
+    if ($keep) {
+        q('DELETE FROM ltkf_page_versions WHERE slug = ? AND id < ?', [$slug, (int) $keep]);
+    }
+}
+
+/** Naujienos adresas iš pavadinimo (unikalus) */
+function ltkf_item_slug(string $title): string
+{
+    $s = strtr(mb_strtolower($title), ['ą' => 'a', 'č' => 'c', 'ę' => 'e', 'ė' => 'e', 'į' => 'i', 'š' => 's', 'ų' => 'u', 'ū' => 'u', 'ž' => 'z']);
+    $s = substr(trim((string) preg_replace('/[^a-z0-9]+/', '-', $s), '-'), 0, 60) ?: 'naujiena';
+    $base = $s;
+    for ($i = 2; q_value('SELECT 1 FROM ltkf_items WHERE kind = "news" AND slug = ?', [$s]); $i++) {
+        $s = $base . '-' . $i;
+    }
+    return $s;
 }
 
 /** Saugus failo vardas iš originalo */
@@ -154,13 +195,78 @@ switch ($action) {
         }
         out(['ok' => true]);
 
+    case 'versions':
+        // D6: puslapio istorija (naujausios viršuje) - „🕘 Versijos“
+        $slug = (string) post('slug');
+        if (!ltkf_slug_ok($slug) || !ltkf_versions_ready()) {
+            out(['ok' => true, 'list' => []]);
+        }
+        $list = array_map(function ($r) { return ['id' => (int) $r['id'], 'at' => substr((string) $r['saved_at'], 0, 16), 'by' => (string) $r['saved_by']]; },
+            q_all('SELECT id, saved_at, saved_by FROM ltkf_page_versions WHERE slug = ? ORDER BY id DESC', [$slug]));
+        out(['ok' => true, 'list' => $list, 'now' => (string) q_value('SELECT CONCAT(LEFT(updated_at, 16), " · ", COALESCE(updated_by, "")) FROM ltkf_pages WHERE slug = ?', [$slug])]);
+
+    case 'restore':
+        // Atkurti pasirinktą versiją; dabartinė lieka istorijoje (atkūrimą irgi galima atšaukti)
+        $slug = (string) post('slug');
+        $v = ltkf_slug_ok($slug) && ltkf_versions_ready() ? q_one('SELECT * FROM ltkf_page_versions WHERE id = ? AND slug = ?', [(int) post('id'), $slug]) : null;
+        if (!$v) {
+            out(['ok' => false, 'error' => 'Tokios versijos nėra.']);
+        }
+        $d = json_decode((string) $v['data'], true);
+        ltkf_store($slug, is_array($d) ? $d : ['texts' => [], 'hidden' => [], 'blocks' => []], $who);
+        out(['ok' => true]);
+
     case 'undo':
         $slug = (string) post('slug');
+        if (ltkf_slug_ok($slug) && ltkf_versions_ready()) {
+            // Kiekvienas „Atšaukti“ - vienu išsaugojimu atgal (galima kelis kartus)
+            $v = q_one('SELECT * FROM ltkf_page_versions WHERE slug = ? ORDER BY id DESC LIMIT 1', [$slug]);
+            if (!$v) {
+                out(['ok' => false, 'error' => 'Ankstesnės versijos nėra.']);
+            }
+            q('UPDATE ltkf_pages SET prev = data, data = ?, updated_by = ? WHERE slug = ?', [$v['data'], mb_substr($who, 0, 120), $slug]);
+            q('DELETE FROM ltkf_page_versions WHERE id = ?', [(int) $v['id']]);
+            out(['ok' => true]);
+        }
         $row = ltkf_slug_ok($slug) ? q_one('SELECT data, prev FROM ltkf_pages WHERE slug = ?', [$slug]) : null;
         if (!$row || $row['prev'] === null) {
             out(['ok' => false, 'error' => 'Ankstesnės versijos nėra.']);
         }
         q('UPDATE ltkf_pages SET data = ?, prev = ?, updated_by = ? WHERE slug = ?', [$row['prev'], $row['data'], mb_substr($who, 0, 120), $slug]);
+        out(['ok' => true]);
+
+    // ---------- D6: naujienos ir dokumentai (ltkf_items) ----------
+    case 'item_save':
+        $kind = post('kind') === 'doc' ? 'doc' : 'news';
+        $id = (int) post('id');
+        $title = mb_substr(trim(post('title')), 0, 200);
+        if ($title === '') {
+            out(['ok' => false, 'error' => 'Įrašykite pavadinimą.']);
+        }
+        $date = preg_match('/^\d{4}-\d{2}-\d{2}$/', post('date')) ? post('date') : date('Y-m-d');
+        $body = trim(preg_replace("/\n{3,}/", "\n\n", str_replace("\r", '', (string) ($_POST['body'] ?? ''))));
+        $file = preg_match('~^(\.\./uploads/ltkf/[A-Za-z0-9._/-]+|https://[^\s"\'<>]+)$~', post('file')) ? post('file') : null;
+        $grp = mb_substr(trim(post('grp')), 0, 80) ?: 'Kiti';
+        $fields = $kind === 'news'
+            ? ['title' => $title, 'summary' => mb_substr(trim(post('summary')), 0, 400), 'body' => mb_substr($body, 0, 20000), 'item_date' => $date]
+            : ['title' => $title, 'grp' => $grp, 'file' => $file];
+        $fields['updated_by'] = mb_substr($who, 0, 120);
+        if ($id) {
+            $sets = implode(', ', array_map(function ($k) { return "$k = ?"; }, array_keys($fields)));
+            q("UPDATE ltkf_items SET $sets, is_example = 0 WHERE id = ? AND kind = ?", array_merge(array_values($fields), [$id, $kind]));
+        } else {
+            if ($kind === 'news') {
+                $fields['slug'] = ltkf_item_slug($title);
+            } else {
+                $fields['sort_order'] = (int) q_value('SELECT COALESCE(MAX(sort_order), 0) + 1 FROM ltkf_items WHERE kind = "doc"');
+            }
+            $fields['kind'] = $kind;
+            q('INSERT INTO ltkf_items (' . implode(', ', array_keys($fields)) . ') VALUES (' . implode(', ', array_fill(0, count($fields), '?')) . ')', array_values($fields));
+        }
+        out(['ok' => true]);
+
+    case 'item_delete':
+        q('DELETE FROM ltkf_items WHERE id = ? AND kind IN ("news", "doc")', [(int) post('id')]);
         out(['ok' => true]);
 
     // ---------- Įkėlimai ----------

@@ -1,5 +1,5 @@
 # Handoff
-Updated: 2026-11-21 · version v1.79 · branch claude/festive-curie-01jgx2
+Updated: 2026-11-21 · version v1.80 · branch claude/festive-curie-01jgx2
 
 ## Pending asks (answer these first)
 | Asked | By | What | Status |
@@ -35,6 +35,7 @@ Updated: 2026-11-21 · version v1.79 · branch claude/festive-curie-01jgx2
 - v1.77: #160 LTKF registers (members, clubs, judges) in Valdymas → Federacijos registrai; LTKF pages read clubs and judges from them; db/048.
 - v1.78: Budo club registration with events per athlete + „Jūsų užregistruoti“ (decision 12); C2 language on the account; C8 e-mail templates in the reader's language, outbox with per-person result (admin/siuntimas.php); db/049.
 - v1.79: C10 Duomenų priežiūra (list first, delete only on button + confirm), photo .zip backup, cookie list on the privacy page. Nothing deleted on the test site by me.
+- v1.80: D6 parts 1-3 - repeated texts edited one by one, page versions with restore + multi-step undo, LTKF news and documents as records, LTKF state off/draft/public (noindex unless public); db/050. Tests: login() resets the account language (C2 keeps language on the account).
 - Committed and pushed to the claude branch after each stage; `main` untouched.
 
 ## Open

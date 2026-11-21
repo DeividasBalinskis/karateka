@@ -2,7 +2,7 @@
 // Duomenų bazė (PDO, tik paruošti užklausos sakiniai)
 
 // Naujausias db/ failas, kurio reikia šiai svetainės versijai (pridėjus naują - pakeisti; tai tikrina ir testai)
-const DB_REQUIRED = '049_kalba_rungtys.sql';
+const DB_REQUIRED = '050_ltkf_versijos.sql';
 
 function db(): PDO
 {

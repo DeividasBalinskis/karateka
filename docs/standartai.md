@@ -133,7 +133,7 @@ Paths are relative to `public_html/` unless they start with `db/`, `tools/`, `te
 |---|---|---|---|
 | Who sees the game | setting `game_access` (Nustatymai → „🏯 Žaidimas“) | missing = everyone | missing = nobody |
 | Everything unlocked in the game | constant in `app/game.php` | on | a setting, off at launch |
-| LTKF draft | constant in `ltkf/inc/nustatymai.php` | on | a setting: off / draft / public |
+| LTKF draft | setting `ltkf_mode` (Valdymas → LTKF svetainė → Būsena, v1.80) | missing = draft on test, off on live | off / draft / public |
 | Registration open (accounts, events, exams, Budo) | setting `reg_off` | all open | same, positive names |
 | Feedback button visible to | setting `feedback_button` | staff | same |
 | External Varžybos | `config.php` block | hidden unless set | decided in D2 |

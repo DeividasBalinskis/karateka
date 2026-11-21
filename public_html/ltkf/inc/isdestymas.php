@@ -1,14 +1,17 @@
 <?php
-// Juodraščiai matomi tik test svetainėje ir kompiuteryje (karateka config.php: env), oficialioje - ne
-$karatekaConfig = @include dirname(__DIR__, 2) . '/config.php';
-if (!is_array($karatekaConfig) || ($karatekaConfig['env'] ?? 'live') === 'live') {
-    http_response_code(404);
-    exit('Puslapis nerastas.');
-}
 // Puslapio rėmas: viršus su meniu ir apačia. puslapis_pradzia('Klubai', 'klubai') ... puslapis_pabaiga()
 
 require_once __DIR__ . '/pagalbines.php';
 require_once __DIR__ . '/redagavimas.php';
+
+// D6 3 dalis: svetainės būsena (Valdymas → LTKF svetainė → Būsena): išjungta / juodraštis / vieša (ltkf_mode, inc/pagalbines.php)
+if (!ltkf_can_view(ltkf_mode())) {
+    http_response_code(404);
+    exit('Puslapis nerastas.');
+}
+if (ltkf_mode() !== 'public') {
+    header('X-Robots-Tag: noindex, nofollow');   // juodraštis ir išjungta - paieškose nerodoma
+}
 
 const MENIU = [
     'index'       => ['Pradžia', 'index.php'],
@@ -76,6 +79,7 @@ function puslapis_pradzia(string $title, string $active = '', array $opt = []): 
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title><?= e($full) ?></title>
+<?php if (ltkf_mode() !== 'public'): ?><meta name="robots" content="noindex, nofollow"><?php endif; ?>
 <meta name="description" content="<?= e($opt['description'] ?? 'Lietuvos tradicinio karate federacija: klubai, varžybų kalendorius, rezultatai, teisėjai ir dokumentai.') ?>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
@@ -93,7 +97,9 @@ function puslapis_pradzia(string $title, string $active = '', array $opt = []): 
 .karateka-bar span{opacity:.75; font-weight:500;}
 </style>
 <?php $karatekaAdminas = karateka_adminas(); ?>
-<div class="karateka-bar"><?php if ($karatekaAdminas): ?><a href="../index.php">← karateka.lt</a><span>LTKF svetainė - juodraštis, matomas tik test svetainėje</span><a href="../admin/ltkf-perziura.php" title="Nuoroda federacijos nariams: mato svetainę ir palieka atsiliepimus, karateka.lt nemato">🔗 Peržiūros nuoroda</a><?php else: ?><span>LTKF svetainės juodraštis peržiūrai. Pastabas palikite per 💡 apačioje kairėje.</span><?php endif; ?></div>
+<?php $ltkfModeText = ['off' => 'LTKF svetainė išjungta - mato tik administratorius ir redaktoriai', 'draft' => 'LTKF svetainė - juodraštis (paieškose nerodomas)', 'public' => 'LTKF svetainė - vieša'][ltkf_mode()]; ?>
+<?php if ($karatekaAdminas): ?><div class="karateka-bar"><a href="../index.php">← karateka.lt</a><span><?= e($ltkfModeText) ?></span><a href="../admin/ltkf-perziura.php" title="Būsena (išjungta / juodraštis / vieša), peržiūros ir redaktorių nuorodos">⚙ Būsena ir nuorodos</a></div>
+<?php elseif (ltkf_mode() !== 'public'): ?><div class="karateka-bar"><span><?= ltkf_mode() === 'off' ? e($ltkfModeText) : 'LTKF svetainės juodraštis peržiūrai. Pastabas palikite per 💡 apačioje kairėje.' ?></span></div><?php endif; ?>
 <div class="tricolor" aria-hidden="true"><span></span><span></span><span></span></div>
 <?php if (n('demo')): ?>
 <div class="demo-bar">Juodraštis susitikimui. Vietos, pažymėtos <span class="chip chip-demo">Pavyzdys</span> ar [laužtiniuose skliaustuose], laukia tikrų duomenų.</div>

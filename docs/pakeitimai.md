@@ -4,6 +4,16 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.80 - 2026-11-21 (LTKF: atskiri vienodi tekstai, versijos, naujienos ir dokumentai kaip įrašai, būsena - D6 1-3 dalys)
+- LTKF redagavimas: vienodi tekstai (pvz. 5 valdybos narių „[vardas, pavardė]“) keičiami **kiekvienas atskirai**.
+- **🕘 Versijos**: kiekvienas išsaugojimas lieka istorijoje (30 paskutinių kiekvienam puslapiui), bet kurią galima **atkurti**;
+  „↶ Atšaukti“ veikia kelis kartus iš eilės (anksčiau - tik vieną).
+- **Naujienos ir Dokumentai** - įrašai: redaguojant puslapyje „+ Nauja naujiena“ / „+ Naujas dokumentas“ (su failo įkėlimu ir grupe),
+  „✏ Keisti“, „🗑“. Pirmą kartą užpildoma iš juodraščio.
+- **LTKF svetainės būsena** (Valdymas → LTKF svetainė → Būsena): *Išjungta* (mato tik adminas ir redaktoriai), *Juodraštis* (paieškose nerodoma),
+  *Vieša* (mato visi, nuoroda karateka.lt apačioje - ir oficialioje svetainėje). Keičiant klausiama patvirtinimo.
+- Duomenų bazė: naujas failas `db/050_ltkf_versijos.sql`.
+
 ## v1.79 - 2026-11-21 (duomenų priežiūra, nuotraukų kopija, slapukų sąrašas - C10)
 - Valdymas → Nustatymai → **Duomenų priežiūra**: kas trinama automatiškai ir po kiek laiko; ką **galima** ištrinti -
   buvę nariai (neaktyvūs > 1 m.), nepatvirtinti nariai (> 90 d.), išjungtos paskyros (> 1 m.), failai be įrašo.
