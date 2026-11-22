@@ -4,6 +4,23 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.86 - 2026-11-22 (testas iš failo veikia iškart, viršutinė juosta, planšetė = kompiuteris, teisėjų registras, tatamių vaizdas)
+- **Testai (Denis):** testas, sukurtas su klausimų failu (pvz. 244 klausimai iš .txt), **laikomas iš karto** - klausimai nebelaukia peržiūros.
+  Jei reikia pirmiau peržiūrėti - pažymėkite „Pirmiau peržiūrėti klausimus“. Jei klausimai laukia peržiūros, testo puslapyje
+  personalas mato „Įtraukti visus ir pradėti“.
+- **Treniruotės režimas (#161):** paspaudus atsakymą jis tik pažymimas, teisingas rodomas paspaudus **„Patvirtinti“** - galima persigalvoti.
+- **Atsiliepimų langas (#162, #163):** antraštė su „Atsiliepimas“ ir ✕ visada matoma, slenka tik vidus (ir žemame ekrane).
+- **Telefone skirtukų juosta (Šiandien, Treniruotė…) - viršuje**, po logotipu, ne apačioje. „⋯ Daugiau“ atsidaro po juosta.
+- **Spalvota slinkimo juosta pačiame viršuje išimta.**
+- **Planšetė rodo kaip kompiuteris** (1280 px pločio vaizdas, sumažintas). Telefonas - savo vaizdas. Egzamino protokolas planšetėje lieka natūralaus dydžio.
+- **LTKF teisėjai:** Valdymas → Federacijos registrai → Teisėjai → teisėjas: **Lankomumas** (seminarai, varžybos, egzaminai su data)
+  ir **Diplomai** (failų įkėlimas, mato tik personalas). Sąraše - lankomumo ir diplomų skaičius. Licencijos nr. ir galiojimas - kaip buvo.
+- **Budo - tatamio vaizdas:** Tvarkaraštis → prie tatamio 📹 įklijuokite YouTube Live nuorodą (telefonas filmuoja tatamį per YouTube programėlę).
+  Žiūrovų puslapyje (Gyvai) rodomas vaizdas su dabartine kova, balais ir laiku ant viršaus.
+- **Smulkūs patobulinimai:** narių filtrai telefone kompaktiški; renginyje ilgas grupių sąrašas suskleistas („+N grupės“);
+  plaukiojantys mygtukai neužstoja meniu ir pranešimų.
+- Duomenų bazė: naujas failas `db/052_teiseju_registras.sql`.
+
 ## v1.85 - 2026-11-21 (Dojo vardas = paskyros vardas ir anksčiau pakeistiems - #158)
 - Jei vardą paskyroje pakeitėte dar iki v1.73, nario kortelė ir Dojo personažas buvo likę su senu vardu (pvz. „Tomas B.“).
   Dabar atidarius Mano paskyrą ar Dojo (ir prisijungus) jie gauna paskyros vardą. Nauji pakeitimai - kaip nuo v1.73, iškart visur.

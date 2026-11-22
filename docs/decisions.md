@@ -4,6 +4,11 @@ Answers given by Deividas on 2026-11-20 (questions from `docs/darbo-planas.md`, 
 
 | Date | Area | Decision | Who decided | Source |
 |---|---|---|---|---|
+| 2026-11-22 | Tests | A quiz created with a question file is live at once (Claude's call, Denis's 244 questions); review first only when „Pirmiau peržiūrėti“ is ticked. Can be changed: review by default again. | Claude | chat |
+| 2026-11-22 | Layout | Tablet (touch screen 600-1100 px) shows the computer layout at 1280 px width, scaled; phone keeps its own; exam protocol keeps native size (Claude's call on Deividas's ask). Can be changed: other width or native tablet layout. | Claude | chat |
+| 2026-11-22 | Phone | The tab bar (Šiandien, Treniruotė…) sits at the top under the logo; the scroll progress bar is removed. | Deividas | chat |
+| 2026-11-22 | Budo | Tatami video = YouTube Live link per tatami, shown to viewers with the live bout over it (Claude's call). Can be changed: own streaming server (costs), or video also on the secretariat tablet (variant C2). | Claude | chat |
+| 2026-11-22 | LTKF | Judges' attendance and diplomas (Claude's call, Denis's ask): attendance = date + type (seminar / competition / exam / other) + title; diplomas are files seen by staff only (not public). | Claude | chat |
 | 2026-11-21 | LTKF | Registers (Claude's call, #160): members, clubs and judges are kept by the federation admin in Valdymas → Federacijos registrai; members' personal data are not public (only clubs and judges with category and validity are shown). Can be changed: per-club accounts so club leaders enter their own members. | Claude (asked to decide) | chat |
 | 2026-11-21 | Dojo | Left hand (Claude's call, #109): shield = 2 blocks per turn, second weapon = 2 strikes with the second at 75 % damage; „fair“ mode stays 1+1. Can be changed: e.g. second strike 100 % or shield also cutting damage. | Claude (asked to decide) | chat |
 | 2026-11-21 | Budo | Club registration (Claude's call, decision 12): each athlete must tick at least one event; the events offered are the individual disciplines that already have groups in that competition (all four if none yet); teams are still made by the organizer. A club leader sees and can cancel what was registered from the same device (no club accounts). Can be changed: club accounts with a login, or events optional. | Claude (asked to decide) | chat |
@@ -82,3 +87,4 @@ Groups: Workflow · Names · Accounts · Navigation · Budo rules · Exams and t
 ## Picks from variants
 | Date | Question | Variants shown | Picked | Why |
 |---|---|---|---|---|
+| 2026-11-22 | Menu on a computer / phone menu / Budo video | A1 now, A2 clean bar, A3 side menu always · B1 now, B2 one row, B3 tiles · C1 viewers (done), C2 secretariat tablet, C3 hall TV | waiting | screenshots in chat |

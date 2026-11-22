@@ -1,10 +1,12 @@
 # Handoff
-Updated: 2026-11-21 · version v1.85 · branch claude/festive-curie-01jgx2
+Updated: 2026-11-22 · version v1.86 · branch claude/festive-curie-01jgx2
 
 ## Pending asks (answer these first)
 | Asked | By | What | Status |
 |---|---|---|---|
 | 2026-11-20 | Denis | #30 and #147: messages cut off - ask Denis to write them again | waiting |
+| 2026-11-22 | Claude | Pick variants: menu on a computer A1/A2/A3, phone menu B1/B2/B3, Budo video C1 (done) + C2 tablet / C3 hall TV (screenshots sent in chat) | waiting |
+| 2026-11-22 | Claude | „į main“ for v1.85-v1.86 (main = v1.84) | waiting |
 | 2026-11-21 | Claude | Answers for not-started steps | answered 2026-11-21 (see decisions.md); waiting: Varžybos code on branch `varzybos-kodas` (D1), LibreSprite on PC (D8) |
 
 ## Last session
@@ -41,6 +43,12 @@ Updated: 2026-11-21 · version v1.85 · branch claude/festive-curie-01jgx2
 - v1.83: B2 - quick competition (Kata/Kumite ticked) no longer creates a member event by default. B8 closed by decision (Nustatymai = Paskyra page). Full suite on v1.82: 154 passed, 1 skipped, 1 failed (07s - test login reset the language it checks; fixed, passes).
 - v1.84: Deividas - on a phone 💡 is its own button again (left), 💬 stays messages (right); the B4 combined button is removed. „į main“ given 2026-11-21: main = v1.84.
 - v1.85: #158 rest - an old account/member name mismatch (name changed before v1.73) heals on Paskyra, Dojo or login: the „self“ member and its hero take the account name (account_self_name_sync in app/auth.php). main is still v1.84 - v1.85 waits for „į main“.
+- v1.86: Denis's 244-question quiz (file imports live at once, „Pirmiau peržiūrėti“ to hold them), #161 answer confirm step in practice mode,
+  #162/#163 feedback panel header always visible; phone tab bar moved to the top (inside the header), scroll progress bar removed;
+  tablet = computer layout at 1280 px (viewport script in layout.php and index.php, `native` page option for the exam protocol);
+  LTKF judges attendance + diplomas (db/052, files in uploads/teisejai, staff only); Budo tatami video (YouTube Live link per tatami,
+  viewers see it with the live bout overlay - varzybos-gyvai.js renderVideos); review quick wins (compact member filters on a phone,
+  „+N grupės“ fold on events, floating buttons do not cover menus). Variant screenshots for menus and video sent for a pick.
 - Committed and pushed to the claude branch after each stage.
 
 ## Open
@@ -48,4 +56,5 @@ Updated: 2026-11-21 · version v1.85 · branch claude/festive-curie-01jgx2
 - Parent payments for Budo registration need a payment provider (later).
 
 ## Next
+- Apply the picked variants (A, B, C). Kumite Technology style (video replay + marking scores on the video) only after a pick: it needs a streaming server or phone-to-browser upload (costs, plan first).
 - B8: confirm that Nustatymai is enough as the „Paskyra“ page. Then C4 design tokens (plan first) or D5 Budo live page.

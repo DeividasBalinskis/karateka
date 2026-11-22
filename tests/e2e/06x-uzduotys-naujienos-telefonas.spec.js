@@ -70,7 +70,8 @@ test('dojo: ranking and invite a friend; arena without wood', async ({ browser }
   const k = await login(browser, 'jaunuolis@karateka.test', 1280, 900);
   await k.goto('dojo.php');
   await k.waitForSelector('.dojo-social');
-  check('ranking and players', await k.locator('.ds-top h2').count() === 1 && await k.locator('.ds-players li').count() >= 3);
+  // švarioje bazėje: Jonas (tėvų vaikas) ir Tomas (narys) - 2 kiti žaidėjai
+  check('ranking and players', await k.locator('.ds-top h2').count() === 1 && await k.locator('.ds-players li').count() >= 2);
   await k.fill('.ds-q', 'zzzz');
   check('search filters players', await k.locator('.ds-players li:not([hidden])').count() === 0);
   await k.fill('.ds-q', '');

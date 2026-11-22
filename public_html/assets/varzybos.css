@@ -1512,5 +1512,5 @@ body.vz.vz-public:not(.scr) .vz-top-row, body.vz.vz-public:not(.scr) .tabs { max
 .gv-ovl .ov-s.aka { color: #FF8A8A; }
 .gv-ovl .ov-t { font-variant-numeric: tabular-nums; opacity: .9; }
 .gv-ovl .ov-win { flex-basis: 100%; color: #FFD27A; }
-.area-vid { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; }
-.area-vid input { width: 150px; font-size: 12px; padding: 4px 6px; }
+.area-vid { display: flex; align-items: center; gap: 4px; font-size: 12px; flex: 1 1 100%; min-width: 0; }
+.area-vid input { flex: 1; min-width: 0; width: auto; font-size: 12px; padding: 4px 6px; }
