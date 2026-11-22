@@ -487,6 +487,10 @@ page_start(t('Egzamino protokolas') . ': ' . $event['title'], ['admin' => true, 
     document.getElementById('sumPassed').textContent = t.querySelectorAll('tr.res-passed').length;
     document.getElementById('sumFailed').textContent = t.querySelectorAll('tr.res-failed').length;
   });
+  // #166: balai iš karto 6.4 - paspaudus langelį visas skaičius pažymimas, rašant jis pakeičiamas (nereikia trinti)
+  var scFocus = 0;
+  t.addEventListener('focusin', function (e) { if (e.target.classList.contains('pi-score')) { scFocus = Date.now(); setTimeout(function () { try { e.target.select(); } catch (x) {} }, 0); } });
+  t.addEventListener('mouseup', function (e) { if (e.target.classList.contains('pi-score') && Date.now() - scFocus < 600) { e.preventDefault(); e.target.select(); } });
   t.addEventListener('keydown', function (e) {
     if (e.target.classList.contains('pi-score') && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) { e.preventDefault(); bump(e.target, e.key === 'ArrowUp' ? 1 : -1); return; }
     if (e.key !== 'Enter' || e.target.tagName === 'TEXTAREA' || !e.target.dataset.f) return;

@@ -42,6 +42,9 @@ test('feedback widget: autosave, paste many images, Enter for next, edit earlier
   await a.waitForFunction(() => document.querySelectorAll('#fbImgs .fb-img img').length === 1 && !document.querySelector('#fbImgs [data-tmp]'), null, { timeout: 15000 });
   await a.fill('#fbText', 'Antras: mygtukas per mažas');
   await a.press('#fbText', 'Enter');
+  // v1.89 (#164): matomas tik paskutinis, kiti - „Rodyti visus (2)“
+  await a.waitForFunction(() => /\(2\)/.test((document.querySelector('#fbList [data-mine-all]') || {}).textContent || ''));
+  await a.click('#fbList [data-mine-all]');
   await a.waitForFunction(() => document.querySelectorAll('#fbList .fb-item').length === 2);
   check('image-first then text = one item', sql("SELECT COUNT(*) FROM feedback WHERE body = 'Antras: mygtukas per mažas'") === '1' && sql('SELECT COUNT(*) FROM feedback') === '2');
 

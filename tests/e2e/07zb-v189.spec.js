@@ -30,7 +30,7 @@ test('feedback: bigger box, one latest own item, author likes or asks to undo; C
   await b.locator('#fbList [data-verdict="revert"]').first().click();
   await b.waitForTimeout(800);
   check('verdicts saved', sql("SELECT GROUP_CONCAT(verdict ORDER BY verdict) FROM feedback WHERE body LIKE 'E2E v189%'") === 'ok,revert');
-  check('cannot judge twice', await b.locator('#fbList [data-verdict]').count() === 0);
+  check('cannot judge twice', await b.locator('#fbList .fb-item', { hasText: 'E2E v189' }).locator('[data-verdict]').count() === 0);
   // Valdymas → Atsiliepimai rodo įvertinimą
   await b.goto('admin/atsiliepimai.php?b=visi&q=E2E+v189');
   check('admin page shows verdicts', await b.locator('.fb-card .badge', { hasText: 'Patinka' }).count() === 1 && await b.locator('.fb-card .badge', { hasText: 'Prašo grąžinti' }).count() === 1);

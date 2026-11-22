@@ -10,6 +10,7 @@ Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar
 - **Pataisyta - ar patinka?** Prie atsiliepimo, pažymėto „Pataisyta“, autorius mato **👍 Patinka** ir **↩ Grąžinti kaip buvo**
   (ir kitame savo įrenginyje). Valdymas → Atsiliepimai rodo įvertinimą. „Grąžinti“ - Claude atšaukia tą pakeitimą.
 - **Egzamino protokolas (#166):** naujas dalyvis iš karto gauna balus 6.4 (Kihon, Kata, Kumite) - keičiama − / +.
+  Paspaudus balo langelį skaičius pažymimas - rašant jis pakeičiamas (nereikia trinti).
 - **Budo:** išimti ilgi aprašymai (sekretoriato nuoroda, Tinklai; aprašymas - užvedus pelę ant pavadinimo) (#169);
   „Tinkluose“ kategorijos pavadinimas atidaro valdymą, kaip „Valdyti →“ (#170); antraštėje šalia BUDO - „⌄“ į Karateka ir LTKF (#171).
 - **Budo → Transliacija ir registracija → 🎬 OBS juosta:** kiekvienam tatamiui nuoroda permatomai juostai (kova, balai, laikas)

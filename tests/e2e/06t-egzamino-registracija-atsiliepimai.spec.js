@@ -88,7 +88,8 @@ test('exam signup link for people without an account, invitations, exam list for
   await pr.locator('td.sc').first().locator('.sc-b[data-d="1"]').click();
   await pr.locator('td.sc').nth(1).locator('.sc-b[data-d="-1"]').click();
   await a.waitForTimeout(900);
-  check('plus/minus by 0.1', sql(`SELECT CONCAT(kihon, '|', kata) FROM exam_protocol_rows WHERE event_id = ${eid}`) === '5.1|5', sql(`SELECT CONCAT(kihon, '|', kata) FROM exam_protocol_rows WHERE event_id = ${eid}`));
+  // v1.89 (#166): naujas dalyvis pradeda nuo 6.4 → +0,1 +0,1 = 6.6, −0,1 = 6.3
+  check('plus/minus by 0.1', sql(`SELECT CONCAT(kihon, '|', kata) FROM exam_protocol_rows WHERE event_id = ${eid}`) === '6.6|6.3', sql(`SELECT CONCAT(kihon, '|', kata) FROM exam_protocol_rows WHERE event_id = ${eid}`));
   check('no average column (#124)', await a.locator('#protTable .col-avg, #protTable .avg').count() === 0);
   await pr.locator('[data-pay]').click(); await a.waitForTimeout(500);
   check('paid marked', sql(`SELECT paid_at IS NOT NULL FROM exam_protocol_rows WHERE event_id = ${eid}`) === '1');
