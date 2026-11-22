@@ -706,6 +706,10 @@ function admin_todo_items(): array
     } catch (PDOException $ex) {
         // dar neimportuotas db/021
     }
+    // v1.90: klausimai apie jūsų atsiliepimus - viršuje, kad nepasimestų
+    if (($n = feedback_questions_count(current_account()))) {
+        array_unshift($todo, ['❓ ' . t('Atsakykite į klausimus apie jūsų atsiliepimus:') . ' ' . $n, 'admin/#atsiliepimas', t('Atsakyti')]);
+    }
     if (is_admin() && ($n = feedback_new_count())) {
         $todo[] = [(t('Nauji atsiliepimai apie svetainę:') . ' ') . $n, 'admin/atsiliepimai.php', t('Peržiūrėti')];
     }

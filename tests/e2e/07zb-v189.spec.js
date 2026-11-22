@@ -16,7 +16,7 @@ test('feedback: bigger box, one latest own item, author likes or asks to undo; C
   }
   await a.waitForTimeout(500);
   check('#164 bigger box', (await a.locator('#fbPanel').boundingBox()).width >= 500 && (await a.locator('#fbText').boundingBox()).height >= 140);
-  check('#164 only the latest own item, the rest behind „Rodyti visus“', await a.locator('#fbList .fb-item').count() === 1 && await a.locator('#fbList [data-mine-all]').count() === 1);
+  check('#164 only the latest own item, the rest behind „Rodyti visus“', await a.locator('#fbList .fb-item:not(.fb-qitem)').count() === 1 && await a.locator('#fbList [data-mine-all]').count() === 1);
   // Pataisyta - autorius mato „Patinka“ / „Grąžinti kaip buvo“ (ir kitame įrenginyje)
   sql("UPDATE feedback SET status = 'done', reply = 'Padaryta' WHERE body LIKE 'E2E v189%'");
   const b = await login(browser, 'info@karateka.lt', 1440, 900);   // kita naršyklė - tas pats Denis
@@ -47,7 +47,7 @@ test('feedback: bigger box, one latest own item, author likes or asks to undo; C
   const dep = await b.request.get('diegimas-api.php', { headers: { 'X-Api-Key': 'e2e-claude-key' } });
   const dj = await dep.json();
   check('deploy API needs the key', noKey.status() === 401);
-  check('deploy API shows version and database state', dj.ok && /^\d+\.\d+$/.test(dj.version) && Array.isArray(dj.pending) && dj.db_required === '053_atsiliepimu_ivertinimas.sql', JSON.stringify(dj));
+  check('deploy API shows version and database state', dj.ok && /^\d+\.\d+$/.test(dj.version) && Array.isArray(dj.pending) && /^0\d\d_\w+\.sql$/.test(dj.db_required), JSON.stringify(dj));
   const upd = await (await b.request.post('diegimas-api.php', { headers: { 'X-Api-Key': 'e2e-claude-key', 'Content-Type': 'application/json' }, data: { action: 'dbupdate' } })).json();
   check('deploy API runs the database update', upd.ok && upd.pending.length === 0, JSON.stringify(upd));
   sql("DELETE FROM site_settings WHERE name = 'feedback_api_key'");

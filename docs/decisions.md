@@ -4,6 +4,8 @@ Answers given by Deividas on 2026-11-20 (questions from `docs/darbo-planas.md`, 
 
 | Date | Area | Decision | Who decided | Source |
 |---|---|---|---|---|
+| 2026-11-22 | Workflow | Questions first: Claude's reply starts with a numbered „❓ Klausimai“ block; in 💡 feedback a question = status „Reikia atsakymo“ (highlighted, answer field, ❓N on the button, top of „Reikia padaryti“). | Deividas | chat |
+| 2026-11-22 | Exams | #165: one waiting list for all exams; an exam (date) has separate protocols per belt group; the e-mail price follows the belt; for now everyone (club members too) goes through the waiting list. | Denis | feedback |
 | 2026-11-22 | Exams | A new protocol row starts with 6.4 in Kihon, Kata and Kumite. (#166) | Denis | feedback |
 | 2026-11-22 | Feedback | A fixed item gets „👍 Patinka“ / „↩ Grąžinti kaip buvo“ for its author (any device of the account); „Grąžinti“ = Claude reverts that fix (Claude's call on Deividas's ask). | Deividas + Claude | chat |
 | 2026-11-22 | Budo | Long help texts out of the screen (tooltip on the title instead); category name opens control; „⌄“ next to BUDO for Karateka / LTKF. (#169-#171) | Denis | feedback |

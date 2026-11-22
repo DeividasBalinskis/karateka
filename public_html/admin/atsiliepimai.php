@@ -27,8 +27,8 @@ if (is_post()) {
                 $reply = trim(str_replace("\r\n", "\n", (string) post('reply')));
                 q('UPDATE feedback SET status = ?, reply = ?, updated_at = NOW() WHERE id = ?', [$status, $reply !== '' ? $reply : null, $id]);
                 if ($f['account_id'] && (int) $f['account_id'] !== (int) $me['id'] && ($status !== $f['status'] || $reply !== (string) $f['reply'])) {
-                    notify_account((int) $f['account_id'], 'feedback', t('Jūsų atsiliepimas:') . ' ' . mb_strtolower(t(FEEDBACK_STATUS[$status][0])),
-                        $reply !== '' ? $reply : mb_strimwidth($f['body'], 0, 200, '…'), ltrim((string) $f['page'], '/') ?: null, null, $id, false);
+                    notify_account((int) $f['account_id'], 'feedback', ($status === 'question' ? '❓ ' : '') . t('Jūsų atsiliepimas:') . ' ' . mb_strtolower(t(FEEDBACK_STATUS[$status][0])),
+                        $reply !== '' ? $reply : mb_strimwidth($f['body'], 0, 200, '…'), (ltrim((string) $f['page'], '/') ?: 'index.php') . ($status === 'question' ? '#atsiliepimas' : ''), null, $id, false);
                 }
                 flash('ok', t('Išsaugota.'));
             }
@@ -70,7 +70,7 @@ foreach ($every as $i => $f) {
     }
 }
 $stOk = function (array $f, string $b): bool {
-    return $b === 'visi' || ($b === 'atviri' ? in_array($f['status'], ['new', 'planned'], true) : $f['status'] === $b);
+    return $b === 'visi' || ($b === 'atviri' ? in_array($f['status'], ['new', 'planned', 'question'], true) : $f['status'] === $b);
 };
 $qOk = function (array $f) use ($fq): bool {
     if ($fq === '') {
@@ -138,7 +138,7 @@ page_start(t('Atsiliepimai'), ['admin' => true]);
 <?php endif; ?>
 
 <?php
-$tabs = ['atviri' => [t('Neišspręsti'), (int) ($counts['new'] ?? 0) + (int) ($counts['planned'] ?? 0)]];
+$tabs = ['atviri' => [t('Neišspręsti'), (int) ($counts['new'] ?? 0) + (int) ($counts['planned'] ?? 0) + (int) ($counts['question'] ?? 0)]];
 foreach (FEEDBACK_STATUS as $k => $s) {
     $tabs[$k] = [t($s[0]), (int) ($counts[$k] ?? 0)];
 }
@@ -185,6 +185,7 @@ $tabs['visi'] = [t('Visi'), array_sum(array_map('intval', $counts))];
         <?php if (!empty($f['verdict'])): ?><span class="badge <?= $f['verdict'] === 'ok' ? 'badge-ok' : 'badge-warn' ?>"><?= e(['ok' => t('👍 Patinka'), 'revert' => t('↩ Prašo grąžinti'), 'reverted' => t('↩ Grąžinta')][$f['verdict']] ?? $f['verdict']) ?></span><?php endif; ?></span>
     </div>
     <div class="fb-card-body"><?= $f['body'] !== '' ? nl2br(e($f['body'])) : '<span class="muted">' . te('(tik nuotraukos)') . '</span>' ?></div>
+    <?php if (!empty($f['answer'])): ?><div class="fb-card-answer"><b><?= te('Autoriaus atsakymas į klausimą:') ?></b> <?= nl2br(e((string) $f['answer'])) ?></div><?php endif; ?>
     <?php $imgs = feedback_images((int) $f['id']); if ($imgs): ?>
       <div class="fb-card-imgs"><?php foreach ($imgs as $im): ?><a href="<?= e(feedback_image_url($im)) ?>" target="_blank" rel="noopener"><img src="<?= e(feedback_image_url($im, true)) ?>" alt="" loading="lazy"></a><?php endforeach; ?></div>
     <?php endif; ?>
@@ -231,7 +232,7 @@ $tabs['visi'] = [t('Visi'), array_sum(array_map('intval', $counts))];
 <?php if ($open): ?>
 <textarea id="fbCopyText" hidden><?= e("Atsiliepimai iš karateka.lt (" . count($open) . "):\n\n" . implode("\n\n", array_map(function ($f) {
     $n = count(feedback_images((int) $f['id']));
-    return '#' . $f['id'] . ' · ' . substr($f['created_at'], 0, 16) . ' · ' . fb_author($f) . ' · ' . $f['area']['gl'] . ' › ' . $f['area']['s'] . ($f['page'] ? ' · ' . $f['page'] : '') . ($n ? ' · nuotraukų: ' . $n : '') . ($f['status'] === 'planned' ? ' · [bus pataisyta]' : '') . "\n" . $f['body'];
+    return '#' . $f['id'] . ' · ' . substr($f['created_at'], 0, 16) . ' · ' . fb_author($f) . ' · ' . $f['area']['gl'] . ' › ' . $f['area']['s'] . ($f['page'] ? ' · ' . $f['page'] : '') . ($n ? ' · nuotraukų: ' . $n : '') . ($f['status'] === 'planned' ? ' · [bus pataisyta]' : '') . "\n" . $f['body'] . (!empty($f['answer']) ? "\n[atsakymas] " . $f['answer'] : '');
 }, $open))) ?></textarea>
 <script>
   document.getElementById('fbCopy').addEventListener('click', function () {

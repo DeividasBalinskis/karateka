@@ -340,6 +340,16 @@ body.chat-is-open .ntf-pop{display:none;}   /* kol atidarytas pokalbis - praneš
 .fb-vbtn.ok{background:#EBFBEE; border-color:#8CE99A; color:#2B8A3E;}
 .fb-vbtn.back{background:#FFF4E6; border-color:#FFC078; color:#B35C00;}
 .fb-verdict.done{color:#2B8A3E;}
+/* v1.90: klausimas jums - ryškiai, su atsakymo laukeliu; ant 💡 - ❓ skaičius */
+.fb-item.fb-qitem{cursor:default; border:2px solid #F59F00; background:#FFF9DB; box-shadow:0 0 0 3px rgba(245,159,0,.15); display:grid; gap:6px;}
+.fb-qhead{font:800 13px/1.2 'Inter',sans-serif; color:#B35C00; text-transform:uppercase; letter-spacing:.04em;}
+.fb-qtext{font-size:14px; line-height:1.45;}
+.fb-qans{width:100%; box-sizing:border-box; border:2px solid #FFD8A8; border-radius:10px; padding:8px 10px; font:inherit; background:#fff; resize:vertical;}
+.fb-qans:focus{outline:none; border-color:var(--f-accent);}
+.fb-qsend{justify-self:end; background:var(--f-accent) !important; border-color:var(--f-accent) !important;}
+.fb-myanswer{margin-top:6px; padding:6px 8px; border-radius:8px; background:#FFF4DB; font-size:13px;}
+.fb-fab-n.q{background:#F59F00; color:#17140F; min-width:28px; padding:0 5px; box-sizing:border-box;}
+.fb.has-q .fb-fab, .fb-fab.has-q{animation:fbglow 1.6s ease-in-out infinite;}
 .fb-where{font-weight:600;}
 .fb-where.here{color:var(--f-accent2);}
 .fb-go{display:inline-block; margin-top:6px; font-weight:800; font-size:13px; color:var(--f-accent2);}

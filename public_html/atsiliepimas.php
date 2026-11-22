@@ -121,6 +121,18 @@ switch ($action) {
         q('UPDATE feedback SET verdict = ?, verdict_at = NOW(), updated_at = NOW() WHERE id = ?', [$v, (int) $f['id']]);
         $json(['ok' => true, 'item' => feedback_json(q_one('SELECT * FROM feedback WHERE id = ?', [(int) $f['id']]))]);
 
+    case 'answer':   // v1.90: autorius atsako į klausimą - atsiliepimas vėl „Naujas“ (Claude tęsia)
+        $f = q_one('SELECT * FROM feedback WHERE id = ?', [(int) post('id')]);
+        $ans = trim(str_replace("\r\n", "\n", (string) post('answer')));
+        if (!$f || !feedback_can_answer($a, $f)) {
+            $json(['ok' => false, 'error' => t('Atsiliepimas nerastas.')], 404);
+        }
+        if ($ans === '') {
+            $json(['ok' => false, 'error' => t('Parašykite atsakymą.')], 422);
+        }
+        q('UPDATE feedback SET answer = ?, answered_at = NOW(), status = "new", updated_at = NOW() WHERE id = ?', [mb_substr($ans, 0, 2000), (int) $f['id']]);
+        $json(['ok' => true, 'item' => feedback_json(q_one('SELECT * FROM feedback WHERE id = ?', [(int) $f['id']]))]);
+
     case 'image_delete':
         $f = $own((int) post('id'));
         feedback_delete_images((int) $f['id'], (int) post('image'));

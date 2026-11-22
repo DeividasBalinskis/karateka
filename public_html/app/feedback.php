@@ -7,6 +7,7 @@
 const FEEDBACK_STATUS = [
     'new'      => ['Naujas', 'badge-pink'],
     'planned'  => ['Bus pataisyta', 'badge-warn'],
+    'question' => ['Reikia atsakymo', 'badge-warn'],   // v1.90: klausimas autoriui (db/054) - lange paryškinta, atsakoma iš karto
     'done'     => ['Pataisyta', 'badge-ok'],
     'declined' => ['Nedarysime', ''],
 ];
@@ -150,6 +151,37 @@ function feedback_can_verdict(?array $a, array $f): bool
 {
     return feedback_verdict_ready() && ($f['status'] ?? '') === 'done' && empty($f['verdict'])
         && (($a && (int) $f['account_id'] === (int) $a['id']) || feedback_can_edit($a, $f));
+}
+
+/** db/054: klausimai autoriui („Reikia atsakymo“) ir jo atsakymas */
+function feedback_question_ready(): bool
+{
+    static $ok = null;
+    if ($ok === null) {
+        try {
+            q_value('SELECT answer FROM feedback LIMIT 1');
+            $ok = true;
+        } catch (PDOException $ex) {
+            $ok = false;
+        }
+    }
+    return $ok;
+}
+
+/** Ar šis žmogus turi atsakyti į klausimą: atsiliepimo autorius (paskyra - bet kuriame įrenginyje) */
+function feedback_can_answer(?array $a, array $f): bool
+{
+    return feedback_question_ready() && ($f['status'] ?? '') === 'question'
+        && (($a && (int) $f['account_id'] === (int) $a['id']) || feedback_can_edit($a, $f));
+}
+
+/** Kiek klausimų laukia šio žmogaus atsakymo (💡 mygtuko skaičius, „Reikia padaryti“) */
+function feedback_questions_count(?array $a): int
+{
+    if (!$a || !feedback_ready() || !feedback_question_ready()) {
+        return 0;
+    }
+    return (int) q_value('SELECT COUNT(*) FROM feedback WHERE account_id = ? AND status = "question"', [(int) $a['id']]);
 }
 
 /** Ar šis žmogus mato atsiliepimą apie šią vietą (testuotojai Dojo atsiliepimų nemato - žaidimas jiems paslėptas) */
@@ -331,6 +363,7 @@ function feedback_json(array $f): array
     return ['g' => $ar['g'], 'gl' => $ar['gl'], 's' => $ar['s'], 'sl' => $ar['sl'], 'sec' => $ar['sec'],
             'href' => ($viewer && is_staff($viewer)) || feedback_can_edit($viewer, $f) ? feedback_page_href($f) : '',
             'verdict' => (string) ($f['verdict'] ?? ''), 'canVerdict' => feedback_can_verdict($viewer, $f),
+            'answer' => (string) ($f['answer'] ?? ''), 'canAnswer' => feedback_can_answer($viewer, $f),
             'id' => (int) $f['id'], 'title' => feedback_title($f), 'body' => (string) $f['body'], 'status' => $f['status'], 'statusLabel' => t(FEEDBACK_STATUS[$f['status']][0] ?? ''),
             'reply' => (string) $f['reply'], 'page' => (string) $f['page'], 'site' => (string) ($f['site'] ?? ''), 'siteLabel' => FEEDBACK_SITES[$f['site'] ?? ''] ?? '', 'date' => fmt_date(substr($f['created_at'], 0, 10)),
             'images' => array_map(function ($i) { return ['id' => (int) $i['id'], 'thumb' => feedback_image_url($i, true), 'full' => feedback_image_url($i)]; }, feedback_images((int) $f['id'])),
@@ -343,7 +376,7 @@ function feedback_mine(?array $a, int $limit = 100): array
     if ($a) {
         // + paskyros pataisyti, dar neįvertinti (iš kito įrenginio) - kad „Patinka“ / „Grąžinti“ būtų matomi visur
         return feedback_writer_ready()
-            ? q_all('SELECT * FROM feedback WHERE account_id = ? AND (writer = ?' . (feedback_verdict_ready() ? ' OR (status = "done" AND verdict IS NULL)' : '') . ') ORDER BY id DESC LIMIT ' . $limit, [(int) $a['id'], feedback_writer()])
+            ? q_all('SELECT * FROM feedback WHERE account_id = ? AND (writer = ?' . (feedback_verdict_ready() ? ' OR (status = "done" AND verdict IS NULL)' : '') . (feedback_question_ready() ? ' OR status = "question"' : '') . ') ORDER BY id DESC LIMIT ' . $limit, [(int) $a['id'], feedback_writer()])
             : q_all('SELECT * FROM feedback WHERE account_id = ? ORDER BY id DESC LIMIT ' . $limit, [(int) $a['id']]);
     }
     $ids = array_map('intval', (array) ($_SESSION['fb_own'] ?? []));
@@ -454,7 +487,7 @@ function feedback_widget_html(?string $site = null): string
     $site = $site ?? feedback_site_now();
     $icon = '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M12 2a7 7 0 0 0-4 12.74V17a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-2.26A7 7 0 0 0 12 2Zm-3 18a1 1 0 0 0 1 1h4a1 1 0 0 0 0-2h-4a1 1 0 0 0-1 1Z"/></svg>';
     $cfg = ['api' => url('atsiliepimas.php'), 'csrf' => csrf_token(), 'site' => $site, 'page' => $remote ? '' : feedback_current_page(), 'guest' => !$a,
-            'admin' => is_admin($a) ? url('admin/atsiliepimai.php') : '', 'images' => feedback_images_ready()];
+            'admin' => is_admin($a) ? url('admin/atsiliepimai.php') : '', 'images' => feedback_images_ready(), 'questions' => feedback_questions_count($a)];
     $staff = $a && is_staff($a);
     return '<div class="fb" id="fb" data-cfg="' . e(json_encode($cfg, JSON_UNESCAPED_UNICODE)) . '">'
         . '<button type="button" class="fb-fab" id="fbFab" aria-expanded="false" aria-controls="fbPanel" title="' . e(t('Palikite komentarą ar ekrano nuotrauką - pataisysime')) . '">' . $icon

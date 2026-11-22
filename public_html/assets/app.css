@@ -2147,3 +2147,4 @@ a.kid-mini:hover{border-color:var(--accent);}
 .fb-admin-filters input{flex:1 1 220px;}
 .fb-place{text-decoration:none;}
 @media (max-width:700px){ .fb-admin-filters select{flex:1 1 45%;} .fb-admin-filters input{flex:1 1 60%;} }
+.fb-card-answer{margin:8px 0 0; padding:8px 12px; border-radius:10px; background:#FFF4DB; border-left:3px solid #F59F00;}

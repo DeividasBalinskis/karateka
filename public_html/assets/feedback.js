@@ -59,7 +59,16 @@
     // ---------- Išlieka pereinant į kitą puslapį: atidarytas langas, vaizdas, filtrai, tekstas ----------
     function remember() {
       try { sessionStorage.setItem(SKEY, JSON.stringify({ open: !panel.hidden, view: view, flt: flt, id: cur.id, text: text.value, at: Date.now() })); } catch (e) {}
-      if (fabN) { var d = panel.hidden && text.value.trim() !== ''; fabN.hidden = !d; fabN.textContent = d ? '✎' : ''; fab.classList.toggle('has-draft', d); }
+      badge();
+    }
+    // Ant 💡: ❓N - klausimai, laukiantys jūsų atsakymo (v1.90); ✎ - nebaigtas tekstas
+    var qCount = +cfg.questions || 0;
+    function badge() {
+      if (!fabN) return;
+      var d = panel.hidden && text.value.trim() !== '', q = qCount > 0;
+      fabN.hidden = !q && !d; fabN.textContent = q ? '❓' + qCount : (d ? '✎' : '');
+      fabN.classList.toggle('q', q); fab.classList.toggle('has-draft', d); fab.classList.toggle('has-q', q);
+      if (q) fab.title = T('Laukia jūsų atsakymo: {n}', { n: qCount });
     }
     function recall() {
       try { var s = JSON.parse(sessionStorage.getItem(SKEY) || 'null'); return s && Date.now() - (s.at || 0) < KEEP ? s : null; } catch (e) { return null; }
@@ -95,22 +104,49 @@
       }).catch(function () { b.disabled = false; setState(T('Nėra ryšio - neišsaugota'), 'err'); });
     }, true);
 
+    // ---------- v1.90: klausimas jums - paryškinta, atsakoma čia pat ----------
+    function questionHtml(it) {
+      return '<li class="fb-item fb-qitem" data-qid="' + it.id + '"><div class="fb-qhead">❓ ' + esc(T('Reikia jūsų atsakymo')) + '</div>' +
+        '<div class="fb-item-title">' + esc(it.title) + '</div>' +
+        '<div class="fb-qtext"><b>' + esc(T('Klausimas:')) + '</b> ' + esc(it.reply || '').replace(/\n/g, '<br>') + '</div>' +
+        '<textarea class="fb-qans" rows="3" maxlength="2000" placeholder="' + esc(T('Jūsų atsakymas…')) + '" aria-label="' + esc(T('Jūsų atsakymas')) + '"></textarea>' +
+        '<button type="button" class="btn btn-primary btn-sm fb-qsend" data-answer="' + it.id + '">' + esc(T('Atsakyti')) + '</button></li>';
+    }
+    list.addEventListener('click', function (e) {
+      if (e.target.closest('.fb-qitem')) e.stopPropagation();   // klausimo kortelė - ne taisymui
+      var b = e.target.closest('[data-answer]'); if (!b) return;
+      var li = b.closest('.fb-qitem'), ta = li.querySelector('.fb-qans'), ans = ta.value.trim();
+      if (!ans) { ta.focus(); return; }
+      b.disabled = true;
+      send({ action: 'answer', id: b.getAttribute('data-answer'), answer: ans }).then(function (d) {
+        if (d.item) { upsert(d.item); setState(T('Ačiū! Atsakymas išsiųstas.'), 'ok'); }
+        else { b.disabled = false; setState(d.error || T('Neišsaugota'), 'err'); }
+      }).catch(function () { b.disabled = false; setState(T('Nėra ryšio - neišsaugota'), 'err'); });
+    }, true);
+    list.addEventListener('keydown', function (e) { if (e.target.classList && e.target.classList.contains('fb-qans')) e.stopPropagation(); }, true);
+
     // ---------- Jūsų atsiliepimai (rašymo vaizde): 3 naujausi, pirmiausia - šios vietos ----------
     function renderList() {
       mine.hidden = !items.length;
-      var list0 = items.slice().sort(function (a, b) { return (b.canVerdict - a.canVerdict) || byHere(a, b); }), view0 = mineAll ? list0 : list0.slice(0, 1);   // #164: matomas tik paskutinis, kiti - „Rodyti visus“
+      // v1.90: klausimai jums - visada pirmi ir visi matomi; toliau - laukiantys įvertinimo; #164: kitų - tik paskutinis
+      var qs = items.filter(function (it) { return it.canAnswer; });
+      var rest = items.filter(function (it) { return !it.canAnswer; }).sort(function (a, b) { return (b.canVerdict - a.canVerdict) || byHere(a, b); });
+      var list0 = qs.concat(rest), view0 = mineAll ? list0 : qs.concat(rest.slice(0, 1));
+      qCount = qs.length; badge();
       list.innerHTML = view0.map(function (it) {
+        if (it.canAnswer) return questionHtml(it);
         return '<li class="fb-item' + (it.id === cur.id ? ' on' : '') + '" data-id="' + it.id + '" tabindex="0" role="button" title="' + esc(T('Paspauskite - taisyti')) + '">' +
           '<div class="fb-item-top"><span class="fb-item-title">' + esc(it.title) + '</span>' + (it.images.length ? '<span class="fb-item-img" title="' + esc(T('Nuotraukos')) + '">🖼 ' + it.images.length + '</span>' : '') + '</div>' +
           '<div class="fb-item-meta"><span>' + where(it, here && it.g !== here.g) + ' · ' + esc(it.date) + '</span><span class="fb-st st-' + esc(it.status) + '">' + esc(it.statusLabel) + '</span></div>' +
-          (it.reply ? '<div class="fb-reply"><b>' + esc(T('Atsakymas:')) + '</b> ' + esc(it.reply) + '</div>' : '') + verdictHtml(it) + '</li>';
+          (it.reply ? '<div class="fb-reply"><b>' + esc(T('Atsakymas:')) + '</b> ' + esc(it.reply) + '</div>' : '') +
+          (it.answer ? '<div class="fb-myanswer"><b>' + esc(T('Jūsų atsakymas:')) + '</b> ' + esc(it.answer) + '</div>' : '') + verdictHtml(it) + '</li>';
       }).join('') + more(list0.length, view0.length, 'data-mine-all', T('Rodyti visus ({n})', { n: list0.length }));
       fit();
     }
 
     // ---------- Visi atsiliepimai (personalui): vieta, būsena, paieška - išskleidžiami sąrašai ----------
     function stOk(it) {
-      if (flt.st === 'open') return it.status === 'new' || it.status === 'planned';
+      if (flt.st === 'open') return it.status === 'new' || it.status === 'planned' || it.status === 'question';
       if (flt.st === 'done') return it.status === 'done' || it.status === 'declined';
       return true;
     }
@@ -384,8 +420,13 @@
     window.addEventListener('pagehide', function () { if (timer) save(true); remember(); });
 
     // Grįžimas iš kito puslapio: tas pats langas, filtrai ir tekstas (telefone langas neatsidaro pats - užimtų visą ekraną; ✎ ant mygtuko)
+    badge();
+    // Nuoroda su #atsiliepimas (pranešimas „Reikia atsakymo“, „Reikia padaryti“) - langas atsidaro iš karto
+    function openFromHash() { if (location.hash === '#atsiliepimas' && panel.hidden) { mineAll = false; setView('write', true); toggle(true, true); } }
+    openFromHash();
+    window.addEventListener('hashchange', openFromHash);   // ta pati puslapio nuoroda („Reikia padaryti“ → #atsiliepimas) puslapio neperkrauna
     var saved = recall();
-    if (saved) {
+    if (saved && location.hash !== '#atsiliepimas') {
       if (saved.flt) flt = { p: String(saved.flt.p || ''), st: saved.flt.st || 'open', q: String(saved.flt.q || '') };
       cur.id = saved.id || 0; text.value = saved.text || '';
       restoring = !!(cur.id || text.value.trim());

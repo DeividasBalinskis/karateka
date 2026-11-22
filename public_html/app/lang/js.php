@@ -355,4 +355,12 @@ return [
     'Grąžinta kaip buvo',
     'Ačiū! Paliekame.',
     'Gerai - grąžinsime kaip buvo.',
+    'Laukia jūsų atsakymo: {n}',
+    'Jūsų atsakymas:',
+    'Reikia jūsų atsakymo',
+    'Klausimas:',
+    'Jūsų atsakymas…',
+    'Jūsų atsakymas',
+    'Atsakyti',
+    'Ačiū! Atsakymas išsiųstas.',
 ];

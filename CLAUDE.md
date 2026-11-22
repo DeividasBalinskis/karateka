@@ -24,6 +24,8 @@ site and the Dojo game. One repo, one database.
 8. If something is impossible here, say so in one line and offer the nearest thing that works.
 9. When Deividas must do something himself: numbered steps, exact clicks or PowerShell lines.
 10. Follow `docs/standartai.md`. If it and `docs/decisions.md` disagree, the decision wins.
+11. **Questions first.** When I need answers, my reply starts with a numbered „❓ Klausimai“ block, before anything else.
+    A question in the 💡 feedback = status „Reikia atsakymo“ (shown highlighted with an answer field), never a plain reply.
 
 ## Where things are
 - Repo on Deividas's PC: `C:\Users\deivi\Documents\IT Projektai\Karateka`
