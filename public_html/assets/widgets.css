@@ -368,6 +368,8 @@ body.m-more-open .fb, body.m-more-open .chat-fab, body.m-more-open .ntf-pop{disp
   body:has(.adm-side) .ntf-pop{bottom:146px;}
   /* atidarytas 💬 pokalbis užima tą pačią vietą - 💡 tuo metu pasislepia (kitaip uždengtų „Siųsti“) */
   body:has(.adm-side):has(.chat-panel:not([hidden])) .fb:not(.open){display:none;}
+  /* v1.87: atidarius 💡 langą 🔔 burbulas neužlenda ant jo kampo (pranešimai lieka varpelyje) */
+  body:has(.adm-side):has(.fb.open) .ntf-pop{display:none;}
 }
 /* Telefone (juosta viršuje) 🔔 pranešimai - po antrašte dešinėje, ne apačioje tarp 💡 ir 💬 */
 @media (max-width:1100px){
