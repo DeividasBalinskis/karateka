@@ -12,10 +12,12 @@ function page_start(string $title, array $opt = []): void
     $css = url('assets/app.css') . '?v=' . @filemtime(PUBLIC_DIR . '/assets/app.css');
     ?>
 <!DOCTYPE html>
-<html lang="<?= current_lang() ?>">
+<html lang="<?= current_lang() ?>"<?= !empty($opt['native']) ? ' data-native' : '' ?>>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" id="vp">
+<script>/* Planšetėje - toks pat vaizdas kaip kompiuteryje (Deividas, 2026-11-22): jutiklinis 600-1100 px ekranas rodo 1280 px puslapį, sumažintą */
+(function () { var s = screen, m = Math.min(s.width, s.height); if (m >= 600 && m <= 1100 && window.matchMedia && matchMedia('(pointer: coarse)').matches && !document.documentElement.hasAttribute('data-native')) document.getElementById('vp').setAttribute('content', 'width=1280'); })();</script>
 <title><?= e(t($title)) ?> <?= te('— Karateka') ?></title>
 <?php if (!empty($opt['description'])): ?><meta name="description" content="<?= e($opt['description']) ?>">
 <?php endif; ?>
@@ -509,7 +511,6 @@ function site_header(bool $home = false, ?string $area = null, ?string $tab = nu
         $subNav = render_sub_nav(t('Mano paskyra'), account_nav_items($a), (string) $tab);
     }
     ?>
-<div class="progress-wrap"><div class="progress-bar" id="progressBar"></div></div>
 <?php $pm = $a && is_staff($a) && admin_mode() ? phone_menu_variant() : '';
 // B8 (sprendimas 6a): nariams, tėvams ir vaikams telefone - apatinė juosta kaip programėlėje (be žaidimų ir testo langų)
 $mt = !$pm && $a && !is_staff($a) && is_active_account($a) && $a['status'] === 'active'
@@ -598,9 +599,8 @@ $mt = !$pm && $a && !is_staff($a) && is_active_account($a) && $a['status'] === '
     <button class="burger" id="burgerBtn" type="button" aria-label="<?= te('Meniu') ?>"><span></span><span></span><span></span><?php if ($a && (is_staff($a) ? staff_attention_count((int) $a['id']) : account_attention_count((int) $a['id']))): ?><i class="burger-dot"></i><?php endif; ?></button>
   </nav>
   <?= $subNav ?>
-</header>
 <?php if ($pm === 'apacia'): $tflat = admin_menu_flat(); $tkeys = ['siandien', 'treniruote', 'egzaminai', 'nariai']; ?>
-  <!-- Telefone: apatinė juosta kaip programėlėje; ⋯ Daugiau - visa kita (valdymas ir svetainė) -->
+  <!-- Telefone: juosta antraštės apačioje (v1.86 - viršuje); ⋯ Daugiau - visa kita (valdymas ir svetainė) -->
   <nav class="m-tabbar" aria-label="<?= te('Valdymas') ?>">
     <?php foreach ($tkeys as $k): if (isset($tflat[$k])): $it = $tflat[$k]; ?>
       <a href="<?= url($it[2]) ?>" class="<?= $k === $mk ? 'active' : '' ?>"><span class="mt-ic" aria-hidden="true"><?= $it[0] ?></span><span><?= e($it[1]) ?></span></a>
@@ -617,7 +617,7 @@ $mt = !$pm && $a && !is_staff($a) && is_active_account($a) && $a['status'] === '
   </nav>
 <?php endif; ?>
 <?php if ($mt): $mi = member_tab_items($a, $area, (string) $tab, $section); ?>
-  <!-- B8: nario apatinė juosta (telefone ir planšetėje): 4 skirtukai + ⋯ Daugiau (nustatymai, svetainė, atsijungti) -->
+  <!-- B8: nario juosta telefone (v1.86 - viršuje, antraštėje): 4 skirtukai + ⋯ Daugiau (nustatymai, svetainė, atsijungti) -->
   <nav class="m-tabbar mt-member" aria-label="<?= te('Mano paskyra') ?>">
     <?php foreach ($mi as $it): ?>
       <a href="<?= url($it[2]) ?>" class="<?= $it[4] ? 'active' : '' ?>"<?= $it[4] ? ' aria-current="page"' : '' ?>><span class="mt-ic" aria-hidden="true"><?= $it[0] ?></span><span><?= e($it[1]) ?></span><?= $it[3] ? '<em class="count-badge">' . (int) $it[3] . '</em>' : '' ?></a>
@@ -634,6 +634,7 @@ $mt = !$pm && $a && !is_staff($a) && is_active_account($a) && $a['status'] === '
       </div></details>
   </nav>
 <?php endif; ?>
+</header>
 <?php
     // Pranešimai ir darbai - tik raudonas skaičiukas ant „Valdymas“ (be juostos per ekraną)
 }

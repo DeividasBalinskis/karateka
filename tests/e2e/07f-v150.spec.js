@@ -233,7 +233,7 @@ test('trial form (plan A5): CSRF, robot trap, too fast, server checks, 3 per hou
   await ctx.close();
 });
 
-test('v1.51: new quiz with a questions file goes straight to review; no bare file inputs, download button has an icon', async ({ browser }) => {
+test('v1.51: new quiz with a questions file and „review first“ goes to review; no bare file inputs, download button has an icon', async ({ browser }) => {
   sql("DELETE FROM quizzes WHERE title = 'E2E naujas su failu'");
   const a = await login(browser, 'info@karateka.lt', 1440, 900);
   await a.goto('admin/testai.php?new=1');
@@ -241,6 +241,7 @@ test('v1.51: new quiz with a questions file goes straight to review; no bare fil
   await a.setInputFiles('input[name="import_files[]"]', { name: 'klausimai.txt', mimeType: 'text/plain',
     buffer: Buffer.from('1. E2E-N Kas yra kiai?\nA) Šūksnis\nB) Smūgis\nAtsakymas: A\n\n2. E2E-N Be teisingo?\nA) x\nB) y\n') });
   check('chosen file name shown', /klausimai\.txt/.test(await a.textContent('.file-drop .fd-name')));
+  await a.check('input[name=review_first]');   // v1.86: peržiūra pirmiau - tik pažymėjus
   await Promise.all([a.waitForNavigation(), a.click('form:has(input[name=title]) button[type=submit].btn-primary')]);
   const qz = +sql("SELECT id FROM quizzes WHERE title = 'E2E naujas su failu'");
   check('opens the review page', a.url().includes(`testo-perziura.php?id=${qz}`), a.url());

@@ -95,8 +95,18 @@ if ($practice) {
       <div class="eyebrow"><?= te('Treniruotė · rezultatas nesaugomas') ?></div>
       <h1 class="styled"><?= e($quiz['title']) ?></h1>
     </div>
-    <?php if (!$data): ?>
-      <div class="panel card"><p class="muted"><?= te('Šiame teste dar nėra klausimų.') ?></p></div>
+    <?php if (!$data): $waiting = $isStaff ? (int) q_value('SELECT COUNT(*) FROM quiz_questions WHERE quiz_id = ? AND is_draft = 1', [(int) $quiz['id']]) : 0; ?>
+      <div class="panel card">
+        <p class="muted"><?= $waiting ? te('Klausimai įkelti, bet dar laukia peržiūros: {n}. Nariams ir treniruotėje jie dar nerodomi.', ['n' => $waiting]) : te('Šiame teste dar nėra klausimų.') ?></p>
+        <?php if ($waiting): ?>
+          <div class="row" style="gap:8px; flex-wrap:wrap;">
+            <form method="post" action="<?= url('admin/testo-perziura.php') ?>"><?= csrf_field() ?><input type="hidden" name="id" value="<?= (int) $quiz['id'] ?>">
+              <input type="hidden" name="action" value="approve_all"><input type="hidden" name="back" value="try">
+              <button class="btn btn-primary" type="submit"><?= te('Įtraukti visus ir pradėti') ?> (<?= $waiting ?>)</button></form>
+            <a class="btn btn-ghost" href="<?= url('admin/testo-perziura.php?id=' . (int) $quiz['id']) ?>"><?= te('Pirmiau peržiūrėti →') ?></a>
+          </div>
+        <?php endif; ?>
+      </div>
     <?php else: ?>
       <div class="panel card quiz-box <?= $kid ? 'kid' : '' ?>" id="practice">
         <div class="quiz-progress"><span id="pNum">1</span> / <?= count($data) ?> <?= te('· teisingai') ?> <span id="pOk">0</span></div>
@@ -104,30 +114,38 @@ if ($practice) {
         <p class="q-body" id="pBody"></p>
         <div class="q-answers" id="pAnswers"></div>
         <p class="q-feedback" id="pFeedback" hidden></p>
+        <button class="btn btn-primary" id="pConfirm" hidden type="button"><?= te('Patvirtinti') ?></button>
         <button class="btn btn-primary" id="pNext" hidden type="button"><?= te('Toliau →') ?></button>
       </div>
       <script>
       (function () {
-        var data = <?= json_encode($data, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP) ?>, i = 0, ok = 0, kid = <?= $kid ? 'true' : 'false' ?>;
+        var data = <?= json_encode($data, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP) ?>, i = 0, ok = 0, kid = <?= $kid ? 'true' : 'false' ?>, chosen = null;
         var $ = function (id) { return document.getElementById(id); };
         function show() {
           var q = data[i];
           $('pNum').textContent = i + 1;
           $('pBody').textContent = q.body;
           if (q.image) { $('pImg').src = q.image; $('pImg').hidden = false; } else { $('pImg').hidden = true; }
-          $('pFeedback').hidden = true; $('pNext').hidden = true;
+          $('pFeedback').hidden = true; $('pNext').hidden = true; $('pConfirm').hidden = true; chosen = null;
           var box = $('pAnswers'); box.innerHTML = '';
           q.answers.forEach(function (an) {
             var b = document.createElement('button');
             b.type = 'button'; b.className = 'q-answer'; b.textContent = an.t;
-            b.addEventListener('click', function () { pick(b, an); });
+            b.addEventListener('click', function () { choose(b, an); });
             box.appendChild(b);
           });
         }
+        // #161: paspaudus atsakymas tik pažymimas (galima pakeisti), teisingas parodomas tik paspaudus „Patvirtinti“
+        function choose(btn, an) {
+          Array.prototype.forEach.call($('pAnswers').children, function (b) { b.classList.toggle('chosen', b === btn); b.setAttribute('aria-pressed', b === btn ? 'true' : 'false'); });
+          chosen = [btn, an];
+          $('pConfirm').hidden = false;
+        }
+        $('pConfirm').addEventListener('click', function () { if (chosen) { $('pConfirm').hidden = true; pick(chosen[0], chosen[1]); } });
         function pick(btn, an) {
           var q = data[i];
           Array.prototype.forEach.call($('pAnswers').children, function (b, k) {
-            b.disabled = true;
+            b.disabled = true; b.classList.remove('chosen');
             if (q.answers[k].ok) b.classList.add('correct');
           });
           if (an.ok) { ok++; } else { btn.classList.add('wrong'); }

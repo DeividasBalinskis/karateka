@@ -636,6 +636,9 @@ label.q-answer:has(input:checked){border-color:var(--accent); background:rgba(47
 .q-answer.correct{border-color:var(--accent); background:#DDF0E6; color:#1F4D40; font-weight:600;}
 .q-answer.correct::after{content:"✓"; margin-left:auto; font-weight:700;}
 .q-answer.wrong{border-color:#D9534F; background:#FBE4E2;}
+.q-answer.chosen{border-color:var(--accent); border-width:2px; background:rgba(47,107,90,0.10); font-weight:600;}
+.q-answer.chosen::after{content:"●"; margin-left:auto; color:var(--accent);}
+#pConfirm{margin-top:12px;}
 .q-answer.wrong::after{content:"✕"; margin-left:auto; font-weight:700; color:#B03A35;}
 .q-answer:disabled{cursor:default; color:var(--ink);}
 .q-feedback{margin:14px 0 10px; padding:12px 14px; border-radius:12px; font-weight:600;}

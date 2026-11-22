@@ -12,7 +12,9 @@ $page = home_page();
 <html lang="<?= current_lang() ?>">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" id="vp">
+<script>/* Planšetėje - toks pat vaizdas kaip kompiuteryje (Deividas, 2026-11-22): jutiklinis 600-1100 px ekranas rodo 1280 px puslapį, sumažintą */
+(function () { var s = screen, m = Math.min(s.width, s.height); if (m >= 600 && m <= 1100 && window.matchMedia && matchMedia('(pointer: coarse)').matches && !document.documentElement.hasAttribute('data-native')) document.getElementById('vp').setAttribute('content', 'width=1280'); })();</script>
 <meta name="description" content="<?= te('VšĮ Karate Ateitis — tradicinio karate-do klubas Vilniuje. Treniruotės vaikams, jaunimui ir suaugusiems: kainos, tvarkaraščiai, vietos ir registracija. Pirmos dvi treniruotės nemokamos.') ?>">
 <title><?= te('Karateka — VšĮ Karate Ateitis') ?></title>
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=2">

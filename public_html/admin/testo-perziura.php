@@ -69,7 +69,7 @@ if (is_post()) {
     if ($action === 'approve_all') {
         $n = q('UPDATE quiz_questions SET is_draft = 0 WHERE quiz_id = ? AND is_draft = 1', [$id])->rowCount();
         flash('ok', t('Į testą įtraukta klausimų: {n}.', ['n' => $n]));
-        redirect('admin/testo-perziura.php?id=' . $id);
+        redirect(post('back') === 'try' ? 'testas.php?q=' . $id . '&rezimas=treniruote' : 'admin/testo-perziura.php?id=' . $id);   // #244: iš „Išbandyti“ - iškart pradėti
     }
     if ($action === 'clear') {
         q('DELETE r FROM quiz_review r JOIN quiz_questions q ON q.id = r.question_id WHERE q.quiz_id = ?', [$id]);

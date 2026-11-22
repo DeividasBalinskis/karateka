@@ -190,12 +190,12 @@ span.chat-ctx{text-decoration:none;}
   background:var(--f-bg); border:1px solid var(--f-line); border-radius:18px; box-shadow:0 24px 60px rgba(23,20,15,0.3); overflow:hidden;}
 .fb-panel[hidden]{display:none;}
 .fb-panel.drop{outline:3px dashed var(--f-accent); outline-offset:-6px;}
-.fb-head{display:flex; align-items:center; gap:10px; padding:12px 14px 10px 16px; background:linear-gradient(135deg, #FFF1E6, #FFE3EC); border-bottom:1px solid var(--f-line);}
+.fb-head{flex-shrink:0; display:flex; align-items:center; gap:10px; padding:12px 14px 10px 16px; background:linear-gradient(135deg, #FFF1E6, #FFE3EC); border-bottom:1px solid var(--f-line);}
 .fb-head strong{font:800 16px/1.2 'Inter',sans-serif; flex:1;}
 .fb-state{font-size:12px; font-weight:700; color:var(--f-muted); white-space:nowrap;}
 .fb-state.ok{color:#2B8A3E;} .fb-state.busy{color:#B26A00;} .fb-state.err{color:#C92A2A;}
 .fb-close{border:none; background:none; font-size:26px; line-height:1; color:var(--f-muted); cursor:pointer; padding:0 4px;}
-.fb-scroll{overflow-y:auto; overflow-x:hidden; padding:12px 14px 14px;}
+.fb-scroll{flex:1 1 auto; min-height:0; overflow-y:auto; overflow-x:hidden; padding:12px 14px 14px;}
 /* minmax(0,1fr): ilgas tekstas (redaguojamo atsiliepimo juosta) nebeišplečia lango */
 .fb-compose{display:grid; grid-template-columns:minmax(0, 1fr); gap:8px;}
 .fb-more{border:0; background:none; color:var(--f-accent2); font-weight:800; font-size:13px; cursor:pointer; padding:6px 2px 0;}
@@ -238,11 +238,14 @@ span.chat-ctx{text-decoration:none;}
   .fb{left:10px; bottom:10px;}
   .fb-fab{height:52px; width:52px; padding:0; justify-content:center; border-radius:50%;}
   .fb-fab-label{display:none;}
-  .fb-panel{position:fixed; left:0; right:0; bottom:0; width:100%; max-height:90vh; border-radius:20px 20px 0 0;}
+  .fb-panel{position:fixed; left:0; right:0; bottom:0; width:100%; max-height:90vh; max-height:calc(100dvh - 12px); border-radius:20px 20px 0 0;}
   .fb.open .fb-fab{display:none;}
   .fb-hint{display:none;}
 }
 @media print{ .fb-fab, .fb-panel{display:none !important;} }
+/* #163: planšetėje (naršyklės juosta užima dalį ekrano) lango viršus su „Atsiliepimas“ ir × visada matomas */
+.fb-panel{max-height:min(720px, calc(100dvh - 96px));}
+@media (max-width:640px){ .fb-panel{max-height:calc(100dvh - 12px);} }
 
 /* ---------- Iššokantys pranešimai treneriui (assets/notify-popup.js) ---------- */
 .ntf-pop{position:fixed; bottom:92px; right:16px; z-index:9500; display:grid; gap:10px; width:min(360px, calc(100vw - 32px)); pointer-events:none;}
@@ -325,12 +328,12 @@ body.chat-is-open .ntf-pop{display:none;}   /* kol atidarytas pokalbis - praneš
 body.m-more-open .fb, body.m-more-open .chat-fab, body.m-more-open .ntf-pop{display:none;}
 @media (max-width:1099px){
   body:has(:is(input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=range]), textarea, select):focus) :is(.fb:not(.open), .chat:not(.open) .chat-fab, .ntf-pop){display:none;}
-  body:has(.m-tabbar) .ntf-pop{bottom:150px;}
+
 }
 
 /* v1.84: 💡 ir 💬 - visada du atskiri mygtukai (💡 kairėje apačioje, 💬 dešinėje); telefone su apatine juosta - virš jos */
 @media (max-width:1099px){
-  body:has(.m-tabbar) .ntf-pop{bottom:150px;}
+
 }
 /* C8: trenerio atsakymas - laiškas tik pažymėjus */
 .chat-form:has(.chat-mail){flex-wrap:wrap;}

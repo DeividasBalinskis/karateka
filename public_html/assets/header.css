@@ -6,15 +6,8 @@
 /* Vieta slinkties juostai visada palikta - kitaip trumpuose puslapiuose meniu pasislenka keliais px */
 html{scrollbar-gutter:stable;}
 /* Slinkimo juosta pačiame viršuje */
-.progress-wrap{position:fixed; top:0; left:0; right:0; z-index:999; height:10px; overflow:hidden; background-color:#F7F4EC;}
-.progress-bar{
-  position:relative; height:100%; width:0%;
-  background:linear-gradient(90deg, #F7F4EC, #F0CB4E, #E6842B, #4C8353, #2E6FA8, #6B4A34, #15110D);
-  background-size:100vw 100%; background-repeat:no-repeat;
-  transition:width 0.1s linear;
-}
-
-.site-header{position:sticky; top:10px; z-index:100; background:#F7F4EC; border-bottom:1px solid rgba(23,20,15,0.08); margin-top:10px; font-family:'Inter', sans-serif;
+/* v1.86: spalvota slinkimo juosta viršuje pašalinta (Deividas) - antraštė prilimpa prie pat viršaus */
+.site-header{position:sticky; top:0; z-index:100; background:#F7F4EC; border-bottom:1px solid rgba(23,20,15,0.08); margin-top:0; font-family:'Inter', sans-serif;
   --nav-w:1200px; --nav-pad:32px;}
 .site-header nav{display:flex; align-items:center; gap:20px; max-width:var(--nav-w); margin:0 auto; padding:9px var(--nav-pad); position:relative;}
 .site-header ul{list-style:none; margin:0; padding:0;}
@@ -306,7 +299,7 @@ body.theme-dark .am-gh{color:#A9A2B8;}
 .site-header .adm-li .view-switch > summary, body.theme-dark .site-header .adm-li .view-switch > summary{background:linear-gradient(135deg, #5B5FDA 0%, #8A4FC9 100%); color:#fff; border-color:transparent; box-shadow:0 4px 12px rgba(98,74,200,.3);}
 .site-header .adm-li .view-switch > summary:hover{filter:brightness(1.08);}
 /* ---------- Telefono meniu variantai (treneriams) ---------- */
-.pm-admin, .m-tabbar, .pm-site{display:none;}
+.pm-admin, .m-tabbar, .pm-site, .site-header nav.m-tabbar{display:none;}
 .pm-h{font:700 11px/1 'Inter', sans-serif; letter-spacing:.12em; text-transform:uppercase; color:#8A8273; padding:12px 10px 6px;}
 .am-logout{width:100%; border:0; background:none; cursor:pointer; font:inherit; text-align:left;}
 @media (max-width:1100px){
@@ -318,18 +311,16 @@ body.theme-dark .am-gh{color:#A9A2B8;}
   .site-header.pm-burger .pm-admin .am-group{margin-bottom:4px;}
   /* 2) Apatinė juosta */
   .site-header.pm-apacia .burger{display:none !important;}
-  .m-tabbar{display:flex; position:fixed; left:0; right:0; bottom:0; z-index:300; justify-content:space-around; align-items:stretch; padding:6px 6px calc(6px + env(safe-area-inset-bottom)); background:rgba(251,249,244,.97); border-top:1px solid rgba(23,20,15,.1); box-shadow:0 -6px 20px rgba(23,20,15,.1); backdrop-filter:blur(10px);}
+  /* v1.86 (Deividas): juosta - viršuje, antraštės apačioje (prilimpa kartu su antrašte), ne ekrano apačioje */
+  .site-header nav.m-tabbar{display:flex; max-width:none; margin:0; gap:0; justify-content:space-around; align-items:stretch; padding:4px 6px 6px; background:rgba(251,249,244,.97); border-top:1px solid rgba(23,20,15,.08);}
   .m-tabbar > a, .m-more > summary{flex:1; display:flex; flex-direction:column; align-items:center; gap:2px; padding:6px 2px; border-radius:12px; font:600 11px/1.1 'Inter', sans-serif; color:#4A453A; text-decoration:none; list-style:none; cursor:pointer; position:relative;}
   .m-more{flex:1; display:flex;}
   .m-more > summary::-webkit-details-marker{display:none;}
   .m-tabbar .mt-ic{font-size:20px; line-height:1;}
   .m-tabbar > a.active, .m-more > summary.active{color:#6E4A86; background:rgba(110,74,134,.1);}
   .m-more > summary .count-badge{position:absolute; top:2px; right:18%;}
-  .m-sheet{position:fixed; left:8px; right:8px; bottom:72px; max-height:70vh; overflow:auto; padding:8px; border-radius:18px; background:#FBF9F4; border:1px solid rgba(23,20,15,.08); box-shadow:0 -10px 40px rgba(23,20,15,.25);}
-  body:has(.m-tabbar) .fb, body:has(.m-tabbar) .chat-fab, body:has(.m-tabbar) #chatFab, body:has(.m-tabbar) .fb-fab{bottom:84px !important;}
-  body:has(.m-tabbar) .site-footer{padding-bottom:80px;}
-  html:has(.m-tabbar){scroll-padding-bottom:88px;}   /* laukelis, į kurį slenkama, nelieka po apatine juosta */
-  body.m-more-open::after{content:""; position:fixed; inset:0; z-index:250; background:rgba(23,20,15,.32);}
+  .m-sheet{position:fixed; left:8px; right:8px; top:calc(var(--hdr-b, 120px) + 6px); max-height:calc(100dvh - var(--hdr-b, 120px) - 16px); overflow:auto; padding:8px; border-radius:18px; background:#FBF9F4; border:1px solid rgba(23,20,15,.08); box-shadow:0 14px 40px rgba(23,20,15,.25);}
+  body.m-more-open::after{content:""; position:fixed; inset:0; z-index:90; background:rgba(23,20,15,.32);}   /* po antrašte - lapas (antraštėje) lieka viršuje */
   /* B8: nario apatinė juosta - ☰ ir paskyros skirtukų eilutė nebereikalingi (viskas juostoje ir ⋯ Daugiau) */
   .site-header.pm-nariams .burger{display:none !important;}
   .site-header.pm-nariams .sub-nav{display:none;}
@@ -351,6 +342,7 @@ body.theme-dark .am-gh{color:#A9A2B8;}
   .site-header.pm-lapas .pm-admin .am-row{position:relative;}
 }
 body.theme-dark .m-tabbar{background:rgba(20,18,28,.96); border-top-color:rgba(255,255,255,.08);}
+body.theme-dark .m-sheet{background:#24212E; border-color:rgba(255,255,255,.08);}
 body.theme-dark .m-tabbar > a, body.theme-dark .m-more > summary{color:#D9D4E4;}
 body.theme-dark .pm-site > summary{background:rgba(255,255,255,.1);}
 .site-header .fold-btn{padding:10px 12px; font-size:14px; font-weight:600; line-height:1; color:#2B2620; border-radius:10px;}

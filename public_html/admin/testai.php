@@ -219,12 +219,18 @@ if (is_post()) {
                 // Kartu su nauju testu - klausimų failas (įkeliami peržiūrai: nariams nerodomi, kol nepatvirtinsite)
                 [$qText, $qImages, $qErrors] = quiz_collect_upload('');
                 if ($qText !== '') {
+                    // Denis: įkėlus failą testas turi veikti iš karto; peržiūra pirmiau - tik pažymėjus
+                    $review = !empty($_POST['review_first']);
                     $items = array_slice(quiz_import_parse($qText), 0, 1000);
                     $bad = count(array_filter($items, function ($x) { return $x['error']; }));
-                    $n = quiz_import_save($id, $items, $upd, true, $qImages);
-                    flash('ok', t('Testas sukurtas. Įkelta peržiūrai: {n}.', ['n' => $n]) . ($bad ? ' ' . t('Praleista dėl klaidų: {n}.', ['n' => $bad]) : '')
-                        . ($qErrors ? ' ' . implode(' ', $qErrors) : ''));
-                    redirect('admin/testo-perziura.php?id=' . $id);
+                    $n = quiz_import_save($id, $items, $upd, $review, $qImages);
+                    $tail = ($bad ? ' ' . t('Praleista dėl klaidų: {n}.', ['n' => $bad]) : '') . ($qErrors ? ' ' . implode(' ', $qErrors) : '');
+                    if ($review) {
+                        flash('ok', t('Testas sukurtas. Įkelta peržiūrai: {n}.', ['n' => $n]) . $tail);
+                        redirect('admin/testo-perziura.php?id=' . $id);
+                    }
+                    flash('ok', t('Testas sukurtas. Įkelta klausimų: {n} - testą galima laikyti iš karto.', ['n' => $n]) . $tail);
+                    redirect('admin/testai.php?id=' . $id . '#klausimai');
                 }
                 if ($qErrors) {
                     flash('err', implode(' ', $qErrors));
@@ -363,8 +369,9 @@ if ($id || get('id') === 'new' || get('new')) {
       <label><?= te('Aprašymas') ?> <span class="hint"><?= te('nebūtina') ?></span><input type="text" name="description" value="<?= e($quiz['description']) ?>"></label>
       <?php if (!$id): ?>
         <div class="qf-field">
-          <span class="qf-label"><?= te('Klausimai') ?> <span class="hint"><?= te('nebūtina - galima ir vėliau; įkelti klausimai laukia jūsų peržiūros') ?></span></span>
+          <span class="qf-label"><?= te('Klausimai') ?> <span class="hint"><?= te('nebūtina - galima ir vėliau') ?></span></span>
           <?= file_drop('import_files[]', '.txt,.csv,.json,.md,.zip,.png,.jpg,.jpeg,.webp,text/plain,text/csv,application/json,application/zip,image/*', t('Įkelti klausimų failą'), t('pvz. iš ChatGPT: .txt, .csv, .json, paveikslėliai ar vienas ZIP - galima nutempti čia'), true) ?>
+          <label class="check small"><input type="checkbox" name="review_first" value="1"><span><?= te('Pirmiau peržiūrėti klausimus (nariams nerodomi, kol patvirtinsiu)') ?></span></label>
         </div>
       <?php endif; ?>
       <div class="row">

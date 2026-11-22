@@ -3786,4 +3786,10 @@ From 2013 he trained with the team of the traditional karate-do club "Sanrei", a
     'įraš.' => 'entries',
     'visi nariai' => 'all members',
     'Senas reakcijų sąrašas (nebenaudojamas, db/011)' => 'Old reactions list (not used, db/011)',
+    'Klausimai įkelti, bet dar laukia peržiūros: {n}. Nariams ir treniruotėje jie dar nerodomi.' => 'Questions are uploaded but still waiting for review: {n}. Members and practice do not see them yet.',
+    'Įtraukti visus ir pradėti' => 'Add all and start',
+    'Pirmiau peržiūrėti →' => 'Review first →',
+    'Testas sukurtas. Įkelta klausimų: {n} - testą galima laikyti iš karto.' => 'Test created. Questions uploaded: {n} - the test can be taken right away.',
+    'nebūtina - galima ir vėliau' => 'optional - can be done later',
+    'Pirmiau peržiūrėti klausimus (nariams nerodomi, kol patvirtinsiu)' => 'Review the questions first (members do not see them until I approve)',
 ];

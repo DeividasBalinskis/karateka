@@ -204,7 +204,7 @@ $passed = count(array_filter($rows, function ($r) { return $r['result'] === 'pas
 $failed = count(array_filter($rows, function ($r) { return $r['result'] === 'failed'; }));
 $signed = count(array_filter($suList, function ($x) { return $x['signed_at']; }));
 $fmtBase = rtrim(rtrim(number_format($base, 1, '.', ''), '0'), '.');
-page_start(t('Egzamino protokolas') . ': ' . $event['title'], ['admin' => true, 'wide' => true]);
+page_start(t('Egzamino protokolas') . ': ' . $event['title'], ['admin' => true, 'wide' => true, 'native' => true]);   // planšetėje - savas vaizdas su dideliais mygtukais
 ?>
 <div class="no-print prot-crumbs small">
   <a href="<?= url('admin/egzaminai.php') ?>"><?= te('← Egzaminai') ?></a> · <a href="<?= url('renginys.php?id=' . $id) ?>"><?= te('Renginys') ?></a>

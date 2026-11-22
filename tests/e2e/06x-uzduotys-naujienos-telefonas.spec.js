@@ -46,7 +46,7 @@ test('news and events on one page, one menu item', async ({ browser }) => {
   noJsErrors(v);
 });
 
-test('phone menu for staff (B9): bottom bar only, More has the rest; nothing of it on a computer', async ({ browser }) => {
+test('phone menu for staff (B9, v1.86 top bar): bar only, More has the rest; nothing of it on a computer', async ({ browser }) => {
   const p = await login(browser, 'info@karateka.lt', 390, 844);
   await p.goto('admin/treniruote.php');
   check('bottom bar, no burger, no admin row', await p.locator('.m-tabbar').isVisible() && !(await p.locator('#burgerBtn').isVisible()) && !(await p.locator('.am-line').isVisible()));
@@ -54,7 +54,7 @@ test('phone menu for staff (B9): bottom bar only, More has the rest; nothing of 
   check('More: rest of admin (Renginiai too) and the website', await p.locator('.m-sheet a[href*="testai.php"]').isVisible() && await p.locator('.m-sheet a[href$="admin/renginiai.php"]').isVisible() && await p.locator('.m-sheet a[href*="naujienos.php"]').isVisible());
   const c = await login(browser, 'info@karateka.lt', 1366, 900);
   await c.goto('admin/');
-  check('computer: no bottom bar', !(await c.locator('.m-tabbar').isVisible()) && await c.locator('.adm-side').isVisible());
+  check('computer: no phone bar', !(await c.locator('.m-tabbar').isVisible()) && await c.locator('.adm-side').isVisible());
   noJsErrors(p, c);
 });
 

@@ -3786,4 +3786,10 @@ Nuo 2013 m. treniravosi Tradicinio karate-do klubo „Sanrei“ komandoje, o 201
     'įraš.' => 'записей',
     'visi nariai' => 'все члены клуба',
     'Senas reakcijų sąrašas (nebenaudojamas, db/011)' => 'Старый список реакций (не используется, db/011)',
+    'Klausimai įkelti, bet dar laukia peržiūros: {n}. Nariams ir treniruotėje jie dar nerodomi.' => 'Вопросы загружены, но ещё ждут проверки: {n}. Участникам и в тренировке они пока не показываются.',
+    'Įtraukti visus ir pradėti' => 'Добавить все и начать',
+    'Pirmiau peržiūrėti →' => 'Сначала проверить →',
+    'Testas sukurtas. Įkelta klausimų: {n} - testą galima laikyti iš karto.' => 'Тест создан. Загружено вопросов: {n} - тест можно проходить сразу.',
+    'nebūtina - galima ir vėliau' => 'необязательно - можно и позже',
+    'Pirmiau peržiūrėti klausimus (nariams nerodomi, kol patvirtinsiu)' => 'Сначала проверить вопросы (участникам не показываются, пока не подтвержу)',
 ];
