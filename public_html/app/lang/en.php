@@ -3943,4 +3943,8 @@ From 2013 he trained with the team of the traditional karate-do club "Sanrei", a
     'Kaip sumokėti' => 'How to pay',
     'Jūsų egzamino puslapis (programa, testas, rezultatas):' => 'Your exam page (programme, test, result):',
     'Atnaujinti' => 'Update',
+    'Nauja trumpa nuoroda sukurta. Sena nebeveikia.' => 'New short link created. The old one no longer works.',
+    'Sukurti trumpą nuorodą? Sena (ilga) nebeveiks.' => 'Create a short link? The old (long) one will stop working.',
+    '↻ Trumpa nuoroda' => '↻ Short link',
+    '🔗 Kopijuoti nuorodą' => '🔗 Copy link',
 ];

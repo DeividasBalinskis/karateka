@@ -4,6 +4,7 @@ Answers given by Deividas on 2026-11-20 (questions from `docs/darbo-planas.md`, 
 
 | Date | Area | Decision | Who decided | Source |
 |---|---|---|---|---|
+| 2026-11-22 | Exams | Exam registration links are short: /e/?code, 6 characters without look-alikes (Claude's call: query form works on any server without rewrite rules; with Apache rewrite it could be /e/code). Old long links keep working until „↻ Trumpa nuoroda“. | Deividas + Claude | chat |
 | 2026-11-22 | Exams | Exam registration links (waiting list and per exam), the guest exam page, guest test and the privacy page opened from them show no site menu or links („bare“ layout) - the link allows only registering. | Deividas | chat |
 | 2026-11-22 | Workflow | Questions first: Claude's reply starts with a numbered „❓ Klausimai“ block; in 💡 feedback a question = status „Reikia atsakymo“ (highlighted, answer field, ❓N on the button, top of „Reikia padaryti“). | Deividas | chat |
 | 2026-11-22 | Exams | #165: one waiting list for all exams; an exam (date) has separate protocols per belt group; the e-mail price follows the belt; for now everyone (club members too) goes through the waiting list. | Denis | feedback |

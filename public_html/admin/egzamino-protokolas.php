@@ -154,6 +154,12 @@ if (is_post()) {
         case 'su_create':
             flash(exam_signup_link($id, true) ? 'ok' : 'err', exam_signup_ready() ? t('Registracijos nuoroda sukurta - nukopijuokite ir išsiųskite.') : t('Atnaujinkite duomenų bazę (Šiandien → „Atnaujinkite duomenų bazę“).'));
             break;
+        case 'su_short':   // v1.92: ilgą (seną) nuorodą pakeisti trumpa - sena nebeveiks
+            if (exam_signup_link($id)) {
+                q('UPDATE exam_signup_links SET token = ? WHERE event_id = ?', [exam_short_code(), $id]);
+                flash('ok', t('Nauja trumpa nuoroda sukurta. Sena nebeveikia.'));
+            }
+            break;
         case 'su_toggle':
             if ($l = exam_signup_link($id)) {
                 q('UPDATE exam_signup_links SET is_open = ? WHERE event_id = ?', [(int) $l['is_open'] ? 0 : 1, $id]);
@@ -345,6 +351,8 @@ page_start(t('Egzamino protokolas') . ': ' . $event['title'], ['admin' => true, 
             <a class="btn btn-ghost btn-sm" href="<?= e($suUrl) ?>" target="_blank" rel="noopener"><?= te('Atidaryti ↗') ?></a>
             <form method="post"><?= csrf_field() ?><input type="hidden" name="id" value="<?= $id ?>"><input type="hidden" name="action" value="su_toggle">
               <button class="btn btn-ghost btn-sm" type="submit"><?= (int) $suLink['is_open'] ? te('Uždaryti registraciją') : te('Atidaryti registraciją') ?></button></form>
+            <?php if (strlen((string) $suLink['token']) > 6): ?><form method="post"><?= csrf_field() ?><input type="hidden" name="id" value="<?= $id ?>"><input type="hidden" name="action" value="su_short">
+              <button class="btn btn-ghost btn-sm" type="submit" onclick="return confirm('<?= e(t('Sukurti trumpą nuorodą? Sena (ilga) nebeveiks.')) ?>')"><?= te('↻ Trumpa nuoroda') ?></button></form><?php endif; ?>
           </div>
           <?php if (!$suOpen && (int) $suLink['is_open']): ?><p class="small muted"><?= reg_on('exam') ? te('Registracija nevyksta: praėjo registracijos terminas arba egzaminas jau įvyko.') : te('Egzaminų registracija išjungta: Nustatymai → Registracija.') ?></p><?php endif; ?>
           <?php if ($suList): ?>

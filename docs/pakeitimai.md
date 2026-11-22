@@ -4,6 +4,13 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.92 - 2026-11-22 (trumpa egzamino registracijos nuoroda)
+- **Egzamino registracijos nuoroda - trumpa:** `karateka.lt/e/?k7m2xq` (6 simboliai, be painių raidžių 0/o, 1/l/i)
+  vietoj `karateka.lt/egzamino-registracija.php?k=` + 24 simboliai. Taip ir „⏳ Laukiantieji“ nuoroda, ir kiekvieno egzamino nuoroda.
+- Egzaminai → ⏳ Laukiantieji: nuoroda matoma tekstu šalia „🔗 Kopijuoti nuorodą“.
+- Jau sukurtos ilgos nuorodos veikia toliau; pakeisti trumpa - „↻ Trumpa nuoroda“ (Laukiantieji ir egzamino protokole; sena tada nebeveikia).
+- Atsiliepimuose trumpos nuorodos kodas nesaugomas (kaip ir ilgos); slapti raktai nuvalomi ir iš naršyklės adreso konteksto.
+
 ## v1.91 - 2026-11-22 (egzamino registracijos nuoroda - tik registracija)
 - **Egzamino registracijos nuoroda** (ir bendra „Laukiantieji“, ir kiekvieno egzamino) atsidaro **be svetainės meniu**:
   tik logotipas (nepaspaudžiamas), kalba ir forma. Jokio meniu, „2 treniruotės nemokamai“, ☰ ar poraštės nuorodų - iš nuorodos galima tik užsiregistruoti.

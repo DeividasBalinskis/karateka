@@ -16,7 +16,7 @@ test('A3: exam links - no name-only match, coach-added person gets no link, find
   sql(`INSERT INTO exam_protocol_rows (event_id, number, num_date, seq, name) VALUES (${eid}, 'E2E-902', CURDATE(), 902, 'Be Datos')`);
   sql(`INSERT IGNORE INTO exam_signup_links (event_id, token, is_open) VALUES (${eid}, LOWER(LEFT(REPLACE(UUID(), '-', ''), 24)), 1)`);
   const token = sql(`SELECT token FROM exam_signup_links WHERE event_id = ${eid}`);
-  check('sign-up link exists', /^[a-f0-9]{24}$/.test(token), token);
+  check('sign-up link exists', /^[a-z0-9]{6,24}$/.test(token), token);
 
   const v = await login(browser, null, 375, 812);
   const signup = async (first, last, birth, phone) => {
@@ -63,7 +63,15 @@ test('A3: exam links - no name-only match, coach-added person gets no link, find
   await a.fill('#fbText', 'E2E A3 testas');
   await a.waitForFunction(() => /Išsaugota/.test(document.getElementById('fbState').textContent), null, { timeout: 8000 });
   const page = sql("SELECT page FROM feedback WHERE body LIKE 'E2E A3%' ORDER BY id DESC LIMIT 1");
-  check('feedback does not store the secret key', page.includes('egzamino-registracija.php') && !page.includes(token), page);
+  check('feedback does not store the secret key', page.includes('egzamino-registracija.php') && !page.includes(token) && !sql("SELECT context FROM feedback WHERE body LIKE 'E2E A3%' ORDER BY id DESC LIMIT 1").includes(token), page);
+  // v1.92: ir trumpu adresu /e/?kodas - kodas nesaugomas
+  sql("DELETE FROM feedback WHERE body LIKE 'E2E A3%'");
+  await a.goto(`e/?${token}`);
+  await openFeedback(a);
+  await a.fill('#fbText', 'E2E A3 trumpas');
+  await a.waitForFunction(() => /Išsaugota/.test(document.getElementById('fbState').textContent), null, { timeout: 8000 });
+  const sp = sql("SELECT CONCAT(page, ' ', context) FROM feedback WHERE body LIKE 'E2E A3%' ORDER BY id DESC LIMIT 1");
+  check('short link: code not stored either', sp.startsWith('/e/?') && !sp.includes(token), sp);
   sql("DELETE FROM feedback WHERE body LIKE 'E2E A3%'");
   sql("DELETE FROM login_attempts WHERE email = '#exam-find'");   // kad kiti testai iš to paties IP nebūtų užrakinti
   sql(`DELETE FROM exam_protocol_rows WHERE event_id = ${eid}`);

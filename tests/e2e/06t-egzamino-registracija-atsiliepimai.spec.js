@@ -23,9 +23,9 @@ test('exam signup link for people without an account, invitations, exam list for
   await more();
   await nav(a, () => a.click('button:has-text("Sukurti registracijos nuorodą")'));
   const token = sql(`SELECT token FROM exam_signup_links WHERE event_id = ${eid}`);
-  check('link created', /^[a-f0-9]{24}$/.test(token), token);
+  check('short link code created', /^[a-z2-9]{6}$/.test(token), token);
   await more();
-  check('link shown with copy', (await a.inputValue('#registracija .su-url')).includes('egzamino-registracija.php?k=' + token));
+  check('link shown with copy', (await a.inputValue('#registracija .su-url')).endsWith('/e/?' + token));
 
   // Kvietimai el. paštu: eilutė be el. pašto praleidžiama
   await a.locator('.su-invite > summary').click();

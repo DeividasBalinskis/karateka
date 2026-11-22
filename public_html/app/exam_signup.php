@@ -25,7 +25,7 @@ function exam_signup_link(int $eventId, bool $create = false): ?array
     }
     $l = q_one('SELECT * FROM exam_signup_links WHERE event_id = ?', [$eventId]);
     if (!$l && $create) {
-        q('INSERT IGNORE INTO exam_signup_links (event_id, token, is_open) VALUES (?, ?, 1)', [$eventId, bin2hex(random_bytes(12))]);
+        q('INSERT IGNORE INTO exam_signup_links (event_id, token, is_open) VALUES (?, ?, 1)', [$eventId, exam_short_code()]);
         $l = q_one('SELECT * FROM exam_signup_links WHERE event_id = ?', [$eventId]);
     }
     return $l ?: null;
@@ -33,7 +33,30 @@ function exam_signup_link(int $eventId, bool $create = false): ?array
 
 function exam_signup_url(array $link): string
 {
-    return abs_url('egzamino-registracija.php?k=' . $link['token']);
+    return abs_url('e/?' . $link['token']);   // v1.92: trumpas adresas (e/index.php)
+}
+
+/** v1.92: trumpas registracijos kodas - 6 simboliai be painių (0/o, 1/l/i); nesikartoja su esamais */
+function exam_short_code(): string
+{
+    $abc = 'abcdefghjkmnpqrstuvwxyz23456789';
+    for ($try = 0; $try < 20; $try++) {
+        $c = '';
+        for ($i = 0; $i < 6; $i++) {
+            $c .= $abc[random_int(0, strlen($abc) - 1)];
+        }
+        $used = (exam_signup_ready() && q_value('SELECT 1 FROM exam_signup_links WHERE token = ?', [$c])) || (string) site_setting('exam_waitlist_token', '') === $c;
+        if (!$used) {
+            return $c;
+        }
+    }
+    return bin2hex(random_bytes(12));
+}
+
+/** Registracijos kodas iš adreso: trumpas (6) ar senas ilgas (24) */
+function exam_code_ok(string $k): bool
+{
+    return (bool) preg_match('/^[a-z0-9]{4,32}$/', $k);
 }
 
 /** Ar dar galima registruotis: nuoroda atidaryta, egzaminas neįvyko, registracijos terminas nepraėjo */
@@ -307,11 +330,11 @@ function exam_waitlist_ready(): bool
 function exam_waitlist_token(bool $new = false): string
 {
     $t = (string) site_setting('exam_waitlist_token', '');
-    if ($new || !preg_match('/^[a-f0-9]{24}$/', $t)) {
+    if ($new || !exam_code_ok($t)) {
         if (!$new && $t === '') {
             return '';
         }
-        $t = bin2hex(random_bytes(12));
+        $t = exam_short_code();
         set_site_setting('exam_waitlist_token', $t);
     }
     return $t;
@@ -320,7 +343,7 @@ function exam_waitlist_token(bool $new = false): string
 function exam_waitlist_url(): string
 {
     $t = exam_waitlist_token();
-    return $t !== '' ? abs_url('egzamino-registracija.php?k=' . $t) : '';
+    return $t !== '' ? abs_url('e/?' . $t) : '';
 }
 
 function exam_waitlist_is_open(): bool

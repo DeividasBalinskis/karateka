@@ -210,12 +210,18 @@ const FEEDBACK_MAX_IMAGES = 40;
 /** A3: slapti adreso parametrai (k, t, e, key) atsiliepimuose nesaugomi - pakeičiami „…“ */
 function feedback_safe_page(string $page): string
 {
+    $page = (string) preg_replace('~(/e/?\?)[^&#]*~i', '$1…', $page);   // v1.92: trumpa egzamino nuoroda /e/?kodas
     return (string) preg_replace('/([?&](?:k|t|e|key|token)=)[^&#]*/i', '$1…', $page);
 }
 
 function feedback_add(?array $a, string $body, string $page, string $name = '', string $site = 'karateka', ?string $context = null, bool $allowEmpty = false)
 {
     $page = feedback_safe_page($page);
+    // A3: ir kontekste (naršyklės adresas) slapti raktai nesaugomi
+    if ($context !== null && ($cj = json_decode($context, true)) && isset($cj['url'])) {
+        $cj['url'] = feedback_safe_page((string) $cj['url']);
+        $context = json_encode($cj, JSON_UNESCAPED_UNICODE);
+    }
     $body = trim(str_replace("\r\n", "\n", $body));
     if (!$allowEmpty && mb_strlen($body) < 3) {
         return t('Parašykite bent kelis žodžius.');

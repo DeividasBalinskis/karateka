@@ -1,12 +1,12 @@
 # Handoff
-Updated: 2026-11-22 · version v1.91 · branch claude/festive-curie-01jgx2
+Updated: 2026-11-22 · version v1.92 · branch claude/festive-curie-01jgx2
 
 ## Pending asks (answer these first)
 | Asked | By | What | Status |
 |---|---|---|---|
 | 2026-11-20 | Denis | #30 and #147: messages cut off - ask Denis to write them again | waiting |
 | 2026-11-22 | Claude | Pick variants: menu on a computer A1/A2/A3, phone menu B1/B2/B3, Budo video C1 (done) + C2 tablet / C3 hall TV (screenshots sent in chat) | waiting |
-| 2026-11-22 | Claude | „į main“ for v1.85-v1.91 (main = v1.84) | waiting |
+| 2026-11-22 | Claude | „į main“ for v1.85-v1.92 (main = v1.84) | waiting |
 | 2026-11-22 | Claude | Auto-fix loop: FTP account for the test folder + 3 GitHub secrets + „darom“ + answers 1-3 (docs/planai/auto-taisymas.md) | waiting |
 | 2026-11-22 | Claude → Denis | #165 exams waiting list: 4 questions | answered 2026-11-22, done in v1.90 |
 | 2026-11-21 | Claude | Answers for not-started steps | answered 2026-11-21 (see decisions.md); waiting: Varžybos code on branch `varzybos-kodas` (D1), LibreSprite on PC (D8) |
@@ -66,6 +66,8 @@ Updated: 2026-11-22 · version v1.91 · branch claude/festive-curie-01jgx2
   admin/egzaminai.php #laukiantieji: assign = exam_protocol_add + e-mail with price by belt; „+ Protokolas šiai datai“ copies the exam event). Tests 07zc, 07zd.
 - v1.91: page_start option 'bare' (logo + language only, footer without links, only the 💡 widget) on egzamino-registracija.php (both modes),
   mano-egzaminas.php and testas-svecias.php for guests, privatumas.php?be_meniu=1. Test 07zd checks the registration link has no site links.
+- v1.92: short exam links - public_html/e/index.php (code = query string), exam_short_code() (6 chars), exam_code_ok() accepts 4-32;
+  exam_signup_url / exam_waitlist_url → e/?code; „↻ Trumpa nuoroda“ (su_short, wl_link); feedback_safe_page scrubs /e/?code, feedback_add scrubs context url.
 - Committed and pushed to the claude branch after each stage.
 
 ## Open

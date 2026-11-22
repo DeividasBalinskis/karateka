@@ -3943,4 +3943,8 @@ Nuo 2013 m. treniravosi Tradicinio karate-do klubo „Sanrei“ komandoje, o 201
     'Kaip sumokėti' => 'Как оплатить',
     'Jūsų egzamino puslapis (programa, testas, rezultatas):' => 'Страница вашего экзамена (программа, тест, результат):',
     'Atnaujinti' => 'Обновить',
+    'Nauja trumpa nuoroda sukurta. Sena nebeveikia.' => 'Новая короткая ссылка создана. Старая больше не работает.',
+    'Sukurti trumpą nuorodą? Sena (ilga) nebeveiks.' => 'Создать короткую ссылку? Старая (длинная) перестанет работать.',
+    '↻ Trumpa nuoroda' => '↻ Короткая ссылка',
+    '🔗 Kopijuoti nuorodą' => '🔗 Копировать ссылку',
 ];

@@ -147,7 +147,7 @@ page_start(t('Mano egzaminas') . ': ' . tr_text($event['title']), ['noindex' => 
       <input type="text" readonly value="<?= e(abs_url($self)) ?>" class="su-url" onclick="this.select()" aria-label="<?= te('Asmeninė nuoroda') ?>">
       <button type="button" class="btn btn-sm" data-copy="<?= e(abs_url($self)) ?>"><?= te('Kopijuoti') ?></button>
     </div>
-    <?php if ($suLink && !$past): ?><a class="small" href="<?= e(url('egzamino-registracija.php?k=' . $suLink['token'])) ?>"><?= te('Registruoti brolį, sesę ar draugą →') ?></a><?php endif; ?>
+    <?php if ($suLink && !$past): ?><a class="small" href="<?= e(exam_signup_url($suLink)) ?>"><?= te('Registruoti brolį, sesę ar draugą →') ?></a><?php endif; ?>
   </section>
 </div>
 <script>

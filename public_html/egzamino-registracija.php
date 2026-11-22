@@ -5,7 +5,7 @@
 require __DIR__ . '/app/bootstrap.php';
 
 // #165: bendra nuoroda visiems egzaminams - registracija į laukiančiųjų sąrašą (treneris vėliau priskiria egzaminą ir protokolą)
-if (exam_waitlist_ready() && preg_match('/^[a-f0-9]{24}$/', (string) get('k')) && exam_waitlist_token() !== '' && hash_equals(exam_waitlist_token(), (string) get('k'))) {
+if (exam_waitlist_ready() && exam_code_ok((string) get('k')) && exam_waitlist_token() !== '' && hash_equals(exam_waitlist_token(), (string) get('k'))) {
     $wOpen = exam_waitlist_is_open();
     $wErr = [];
     $wDone = null;
@@ -51,7 +51,7 @@ if (exam_waitlist_ready() && preg_match('/^[a-f0-9]{24}$/', (string) get('k')) &
     <div class="panel card exam-su-ok" role="status">
       <h2>✓ <?= !empty($wDone['already']) ? te('Jūs jau sąraše') : te('Užregistruota!') ?></h2>
       <p><?= te('{n}, jūs laukiančiųjų sąraše. Kai treneris priskirs egzaminą, į {e} atsiųsime datą, vietą ir kainą.', ['n' => $wDone['first_name'], 'e' => $wDone['email']]) ?></p>
-      <p><a class="btn btn-ghost btn-sm" href="<?= e(url('egzamino-registracija.php?k=' . exam_waitlist_token())) ?>"><?= te('Registruoti kitą žmogų') ?></a></p>
+      <p><a class="btn btn-ghost btn-sm" href="<?= e(exam_waitlist_url()) ?>"><?= te('Registruoti kitą žmogų') ?></a></p>
     </div>
   <?php elseif (!$wOpen): ?>
     <div class="panel card"><h2><?= te('Registracija uždaryta') ?></h2><p class="muted"><?= te('Šiuo metu registracija į egzaminus nevyksta.') ?></p></div>
@@ -86,7 +86,7 @@ if (exam_waitlist_ready() && preg_match('/^[a-f0-9]{24}$/', (string) get('k')) &
     exit;
 }
 
-$link = exam_signup_ready() && preg_match('/^[a-f0-9]{24}$/', (string) get('k')) ? q_one('SELECT * FROM exam_signup_links WHERE token = ?', [(string) get('k')]) : null;
+$link = exam_signup_ready() && exam_code_ok((string) get('k')) ? q_one('SELECT * FROM exam_signup_links WHERE token = ?', [(string) get('k')]) : null;
 $event = $link ? q_one('SELECT * FROM events WHERE id = ? AND type = "exam"', [(int) $link['event_id']]) : null;
 if (!$event) {
     not_found();
@@ -163,7 +163,7 @@ page_start(t('Registracija į egzaminą') . ': ' . tr_text($event['title']), ['n
       <h2>✓ <?= te('Jūs jau užregistruotas (-a)') ?></h2>
       <p><?= te('{n} jau yra šio egzamino sąraše - dar kartą registruotis nereikia. Treneriui pranešėme.', ['n' => $done['first_name']]) ?></p>
       <p class="small muted"><?= te('Savo egzamino puslapio nuorodą rasite registracijos metu gautoje žinutėje arba „Jau užsiregistravai?“ žemiau. Jei nepavyksta - parašykite treneriui.') ?></p>
-      <p><a class="btn btn-ghost btn-sm" href="<?= e(url('egzamino-registracija.php?k=' . $link['token'])) ?>"><?= te('Registruoti kitą žmogų') ?></a></p>
+      <p><a class="btn btn-ghost btn-sm" href="<?= e(exam_signup_url($link)) ?>"><?= te('Registruoti kitą žmogų') ?></a></p>
     </div>
   <?php elseif ($done): ?>
     <div class="panel card exam-su-ok" role="status">
@@ -181,7 +181,7 @@ page_start(t('Registracija į egzaminą') . ': ' . tr_text($event['title']), ['n
         </div>
       <?php endif; ?>
       <p class="small muted"><?= te('Pamiršai nuorodą? Šiame puslapyje įrašyk vardą, pavardę ir gimimo datą - „Jau užsiregistravai?“.') ?></p>
-      <p><a class="btn btn-ghost btn-sm" href="<?= e(url('egzamino-registracija.php?k=' . $link['token'])) ?>"><?= te('Registruoti kitą žmogų') ?></a></p>
+      <p><a class="btn btn-ghost btn-sm" href="<?= e(exam_signup_url($link)) ?>"><?= te('Registruoti kitą žmogų') ?></a></p>
     </div>
   <?php elseif (!$open): ?>
     <div class="panel card"><h2><?= te('Registracija uždaryta') ?></h2><p class="muted"><?= te('Registracija į šį egzaminą nebevyksta. Jei turite klausimų - parašykite info@karateka.lt.') ?></p></div>

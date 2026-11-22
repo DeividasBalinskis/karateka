@@ -2155,3 +2155,4 @@ a.kid-mini:hover{border-color:var(--accent);}
 .exam-wl-go select{max-width:100%;}
 .exam-copy{display:flex; gap:6px; flex-wrap:wrap; align-items:center; padding:6px 0 12px 0; margin-left:auto; justify-content:flex-end; border-bottom:1px dashed rgba(23,20,15,.12);}
 .exam-copy input{height:34px; max-width:180px;}
+.exam-wl-url{font-size:.9rem; padding:6px 10px; border-radius:8px; background:rgba(23,20,15,.06); user-select:all;}

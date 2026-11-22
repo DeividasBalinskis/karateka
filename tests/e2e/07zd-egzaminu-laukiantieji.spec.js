@@ -12,7 +12,7 @@ test('exam waiting list: one link, separate protocols per belt, add to protocol 
   await a.goto('admin/egzaminai.php');
   await nav(a, () => a.click('#laukiantieji button:has-text("Sukurti registracijos nuorodą")'));
   const url = await a.getAttribute('#laukiantieji [data-copy]', 'data-copy');
-  check('one registration link', /egzamino-registracija\.php\?k=[a-f0-9]{24}$/.test(url), url);
+  check('one short registration link', /\/e\/\?[a-z2-9]{6}$/.test(url) && url.length <= 40, url);
   // Ta pati diena - kitas protokolas kitiems diržams
   await a.locator('.exam-copy input[name=label]').last().fill('9–7 kyu');
   await nav(a, () => a.locator('.exam-copy button').last().click());
