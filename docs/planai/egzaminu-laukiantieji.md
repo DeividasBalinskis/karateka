@@ -1,6 +1,6 @@
 # Planas: egzaminų laukiančiųjų sąrašas ir atskiri protokolai (#165, Denis)
 
-Būsena: **tik planas** (2026-11-22), laukia Denio atsakymų. Duomenų bazės struktūra keičiasi - be atsakymų nedaroma.
+Būsena: **padaryta v1.90** (pirmas variantas). Denio atsakymai: 1) vienas sąrašas; 2) egzamino data ir atskiri protokolai diržams; 3) kaina pagal diržą; 4) kol kas visi per laukiančiuosius, vėliau - patogiau.
 
 ## Ko prašo Denis
 1. Užsiregistravę žmonės patenka į **laukiančiųjų sąrašą** (ne iš karto į protokolą).

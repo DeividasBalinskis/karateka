@@ -4,6 +4,19 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.90 - 2026-11-22 (klausimai atsiliepimuose išsiskiria; egzaminų laukiantieji - #165)
+- **❓ Klausimas atsiliepime:** kai reikia jūsų atsakymo, atsiliepimas gauna būseną **„Reikia atsakymo“**: lange jis pirmas,
+  geltonai paryškintas, su laukeliu „Jūsų atsakymas…“ ir mygtuku „Atsakyti“; ant 💡 mygtuko - **❓1**;
+  Valdymas → Šiandien → „Reikia padaryti“ viršuje - „Atsakykite į klausimus apie jūsų atsiliepimus“ (paspaudus atsidaro langas).
+  Atsakius atsiliepimas vėl „Naujas“; Valdymas → Atsiliepimai rodo autoriaus atsakymą.
+- **Egzaminai → ⏳ Laukiantieji (#165, Denis):** viena registracijos nuoroda visiems egzaminams („🔗 Registracijos nuoroda“).
+  Forma: vardas, pavardė, gimimo data, **kokio diržo egzaminą laikys**, el. paštas, telefonas, klubas. Užsiregistravę - sąraše su kaina pagal diržą.
+  Pažymėkite ir „Įtraukti ir išsiųsti laišką“ - žmogus atsiranda pasirinktame protokole (su 6.4) ir gauna laišką: data, laikas, vieta, kaina, kaip sumokėti, asmeninis puslapis.
+  „Atidaryti / Uždaryti registraciją“; ✕ - išimti iš sąrašo.
+- **Egzamino dienai - keli protokolai:** po paskutiniu tos dienos egzaminu - „+ Protokolas šiai datai“ (pvz. „10–7 kyu“), sukuriamas toks pat egzaminas tai pačiai datai.
+- Kol kas ir klubo nariai registruojasi per tą pačią nuorodą (Denis: „paskui padarysim patogiau“). Senos nuorodos kiekvienam egzaminui veikia kaip anksčiau.
+- Duomenų bazė: nauji failai iš eilės `db/054_atsiliepimu_klausimai.sql`, `db/055_egzaminu_laukiantieji.sql`.
+
 ## v1.89 - 2026-11-22 (atsiliepimai #164-#171; „Patinka“ / „Grąžinti“; OBS juosta)
 - **💡 Atsiliepimas (#164):** langas didesnis, rašymo laukas aukštesnis; „Jūsų atsiliepimai“ rodo tik paskutinį - kiti per „Rodyti visus“.
 - **Planšetėje (#167):** lango viršus su „Atsiliepimas“ ir × visada matomas - ir kai atsidaro klaviatūra.

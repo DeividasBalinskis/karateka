@@ -1,14 +1,14 @@
 # Handoff
-Updated: 2026-11-22 · version v1.89 · branch claude/festive-curie-01jgx2
+Updated: 2026-11-22 · version v1.90 · branch claude/festive-curie-01jgx2
 
 ## Pending asks (answer these first)
 | Asked | By | What | Status |
 |---|---|---|---|
 | 2026-11-20 | Denis | #30 and #147: messages cut off - ask Denis to write them again | waiting |
 | 2026-11-22 | Claude | Pick variants: menu on a computer A1/A2/A3, phone menu B1/B2/B3, Budo video C1 (done) + C2 tablet / C3 hall TV (screenshots sent in chat) | waiting |
-| 2026-11-22 | Claude | „į main“ for v1.85-v1.89 (main = v1.84) | waiting |
+| 2026-11-22 | Claude | „į main“ for v1.85-v1.90 (main = v1.84) | waiting |
 | 2026-11-22 | Claude | Auto-fix loop: FTP account for the test folder + 3 GitHub secrets + „darom“ + answers 1-3 (docs/planai/auto-taisymas.md) | waiting |
-| 2026-11-22 | Claude → Denis | #165 exams waiting list: 4 questions (docs/planai/egzaminu-laukiantieji.md) | waiting |
+| 2026-11-22 | Claude → Denis | #165 exams waiting list: 4 questions | answered 2026-11-22, done in v1.90 |
 | 2026-11-21 | Claude | Answers for not-started steps | answered 2026-11-21 (see decisions.md); waiting: Varžybos code on branch `varzybos-kodas` (D1), LibreSprite on PC (D8) |
 
 ## Last session
@@ -61,6 +61,9 @@ Updated: 2026-11-22 · version v1.89 · branch claude/festive-curie-01jgx2
   #168 (LTKF editor: nav click renames, ↗ opens), #169-#171 (Budo: texts out, category name opens run, site_switch_html('budo') in the header);
   verdict buttons (db/053 feedback.verdict ok|revert|reverted; API ?status=revert, POST verdict), diegimas-api.php (GET state / POST dbupdate, Claude key),
   .github/workflows/ikelti-i-test.yml (FTP to test on „[į test]“ commit or manual run; needs TEST_FTP_* secrets), OBS bar (varzybos-gyvai.php?juosta=1&tatami=N). Test 07zb.
+- v1.90: feedback status „question“ (db/054: feedback.answer, answered_at) - highlighted card with answer field, ❓N on 💡 (cfg.questions), top of „Reikia padaryti“, #atsiliepimas opens the box;
+  CLAUDE.md rule 11 „Questions first“. #165 exam waiting list (db/055 exam_waitlist; settings exam_waitlist_token / exam_waitlist_open; egzamino-registracija.php?k=<waitlist token>;
+  admin/egzaminai.php #laukiantieji: assign = exam_protocol_add + e-mail with price by belt; „+ Protokolas šiai datai“ copies the exam event). Tests 07zc, 07zd.
 - Committed and pushed to the claude branch after each stage.
 
 ## Open
