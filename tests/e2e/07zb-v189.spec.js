@@ -16,7 +16,7 @@ test('feedback: bigger box, one latest own item, author likes or asks to undo; C
   }
   await a.waitForTimeout(500);
   check('#164 bigger box', (await a.locator('#fbPanel').boundingBox()).width >= 500 && (await a.locator('#fbText').boundingBox()).height >= 140);
-  check('#164 only the latest own item, the rest behind „Rodyti visus“', await a.locator('#fbList .fb-item:not(.fb-qitem)').count() === 1 && await a.locator('#fbList [data-mine-all]').count() === 1);
+  check('#164 only the latest own item, the rest behind „Rodyti visus“', await a.locator('#fbList .fb-item:not(.fb-qitem):not(:has([data-verdict]))').count() === 1 && await a.locator('#fbList [data-mine-all]').count() === 1);
   // Pataisyta - autorius mato „Patinka“ / „Grąžinti kaip buvo“ (ir kitame įrenginyje)
   sql("UPDATE feedback SET status = 'done', reply = 'Padaryta' WHERE body LIKE 'E2E v189%'");
   const b = await login(browser, 'info@karateka.lt', 1440, 900);   // kita naršyklė - tas pats Denis
@@ -24,10 +24,10 @@ test('feedback: bigger box, one latest own item, author likes or asks to undo; C
   await openFeedback(b);
   await b.waitForSelector('#fbList [data-verdict]');
   check('buttons on another device too', await b.locator('#fbList [data-verdict="ok"]').count() >= 1 && await b.locator('#fbList [data-verdict="revert"]').count() >= 1);
-  await b.locator('#fbList [data-verdict="ok"]').first().click();
+  await b.locator('#fbList .fb-item', { hasText: 'E2E v189' }).locator('[data-verdict="ok"]').first().click();
   await b.waitForFunction(() => /Paliekame/.test(document.getElementById('fbState').textContent));
-  await b.click('#fbList [data-mine-all]');
-  await b.locator('#fbList [data-verdict="revert"]').first().click();
+  if (await b.locator('#fbList [data-mine-all]').count()) await b.click('#fbList [data-mine-all]');   // v1.90: laukiantys įvertinimo matomi visi
+  await b.locator('#fbList .fb-item', { hasText: 'E2E v189' }).locator('[data-verdict="revert"]').first().click();
   await b.waitForTimeout(800);
   check('verdicts saved', sql("SELECT GROUP_CONCAT(verdict ORDER BY verdict) FROM feedback WHERE body LIKE 'E2E v189%'") === 'ok,revert');
   check('cannot judge twice', await b.locator('#fbList .fb-item', { hasText: 'E2E v189' }).locator('[data-verdict]').count() === 0);

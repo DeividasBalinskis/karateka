@@ -129,9 +129,11 @@
     function renderList() {
       mine.hidden = !items.length;
       // v1.90: klausimai jums - visada pirmi ir visi matomi; toliau - laukiantys įvertinimo; #164: kitų - tik paskutinis
+      // + laukiantys įvertinimo („Patinka“ / „Grąžinti“) - irgi visi; iš kitų - tik paskutinis parašytas
       var qs = items.filter(function (it) { return it.canAnswer; });
-      var rest = items.filter(function (it) { return !it.canAnswer; }).sort(function (a, b) { return (b.canVerdict - a.canVerdict) || byHere(a, b); });
-      var list0 = qs.concat(rest), view0 = mineAll ? list0 : qs.concat(rest.slice(0, 1));
+      var vs = items.filter(function (it) { return !it.canAnswer && it.canVerdict; }).sort(byHere);
+      var rest = items.filter(function (it) { return !it.canAnswer && !it.canVerdict; }).sort(function (a, b) { return ((b.id === cur.id) - (a.id === cur.id)) || (b.id - a.id); });
+      var list0 = qs.concat(vs, rest), view0 = mineAll ? list0 : qs.concat(vs, rest.slice(0, 1));
       qCount = qs.length; badge();
       list.innerHTML = view0.map(function (it) {
         if (it.canAnswer) return questionHtml(it);
