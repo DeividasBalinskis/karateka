@@ -19,6 +19,8 @@ const SETTINGS = [
     'xp_per_level'     => ['label' => 'XP vienam lygiui', 'group' => 'Klubas', 'type' => 'number', 'where' => 'admin/taskai.php', 'owner' => 'admin', 'restore' => true],
     'exam_prices'      => ['label' => 'Egzaminų kainos', 'group' => 'Klubas', 'type' => 'json', 'where' => 'admin/egzaminai.php', 'owner' => 'admin', 'restore' => true],
     'exam_pay_info'    => ['label' => 'Egzamino mokėjimo informacija', 'group' => 'Klubas', 'type' => 'text', 'where' => 'admin/egzaminai.php', 'owner' => 'admin', 'restore' => true],
+    'exam_waitlist_token' => ['label' => 'Egzaminų registracijos nuoroda (laukiantieji)', 'group' => 'Klubas', 'type' => 'secret', 'where' => 'admin/egzaminai.php', 'owner' => 'coach', 'restore' => false],
+    'exam_waitlist_open' => ['label' => 'Egzaminų registracija (laukiantieji) atidaryta', 'group' => 'Klubas', 'type' => 'choice', 'where' => 'admin/egzaminai.php', 'owner' => 'coach', 'restore' => true],
     'exam_protocol_defaults' => ['label' => 'Egzamino protokolo numatytieji (komisija, vieta)', 'group' => 'Klubas', 'type' => 'json', 'where' => 'admin/egzaminai.php', 'owner' => 'coach', 'restore' => false],
     // Žaidimas
     'game_access'      => ['label' => 'Kas mato žaidimą (Dojo)', 'group' => 'Žaidimas', 'type' => 'choice', 'where' => 'admin/testavimas.php', 'owner' => 'admin', 'restore' => true],

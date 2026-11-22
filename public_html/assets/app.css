@@ -2148,3 +2148,10 @@ a.kid-mini:hover{border-color:var(--accent);}
 .fb-place{text-decoration:none;}
 @media (max-width:700px){ .fb-admin-filters select{flex:1 1 45%;} .fb-admin-filters input{flex:1 1 60%;} }
 .fb-card-answer{margin:8px 0 0; padding:8px 12px; border-radius:10px; background:#FFF4DB; border-left:3px solid #F59F00;}
+/* #165 Egzaminai → Laukiantieji ir „+ Protokolas šiai datai“ */
+.exam-wl{margin-bottom:16px; border:2px solid rgba(245,159,0,.35);}
+.exam-wl-table td, .exam-wl-table th{vertical-align:top;}
+.exam-wl-go{margin-top:10px;}
+.exam-wl-go select{max-width:100%;}
+.exam-copy{display:flex; gap:6px; flex-wrap:wrap; align-items:center; padding:6px 0 12px 0; margin-left:auto; justify-content:flex-end; border-bottom:1px dashed rgba(23,20,15,.12);}
+.exam-copy input{height:34px; max-width:180px;}

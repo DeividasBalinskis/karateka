@@ -20,6 +20,52 @@ if (is_post() && post('action') === 'prices' && is_admin($me)) {
     redirect('admin/egzaminai.php#kainos');
 }
 
+// #165: laukiančiųjų sąrašas - nuoroda, atidaryta / uždaryta, įtraukimas į protokolą (su laišku), išėmimas; kitas protokolas tai pačiai datai
+if (is_post() && in_array(post('action'), ['wl_link', 'wl_open', 'wl_assign', 'wl_remove', 'copy_exam'], true) && exam_waitlist_ready()) {
+    csrf_check();
+    switch (post('action')) {
+        case 'wl_link':
+            exam_waitlist_token(true);
+            flash('ok', t('Registracijos nuoroda sukurta. Sena (jei buvo) nebeveikia.'));
+            break;
+        case 'wl_open':
+            set_site_setting('exam_waitlist_open', post('open') === '1' ? '1' : '0');
+            flash('ok', post('open') === '1' ? t('Registracija atidaryta.') : t('Registracija uždaryta.'));
+            break;
+        case 'wl_assign':
+            $ev = q_one('SELECT * FROM events WHERE id = ? AND type = "exam"', [(int) post('event_id')]);
+            $ids = array_map('intval', (array) ($_POST['ids'] ?? []));
+            if (!$ev || !$ids) {
+                flash('err', t('Pažymėkite žmones ir pasirinkite protokolą.'));
+                break;
+            }
+            $n = $m = 0;
+            foreach ($ids as $wid) {
+                $r = exam_waitlist_assign($wid, $ev, trim($me['first_name'] . ' ' . $me['last_name']) . ', ' . VARZ_HOME_CLUB);
+                $n += $r['ok'] ? 1 : 0;
+                $m += $r['mailed'] ? 1 : 0;
+            }
+            flash('ok', t('Įtraukta į protokolą: {n}. Laiškų išsiųsta: {m}.', ['n' => $n, 'm' => $m]));
+            redirect('admin/egzaminai.php#laukiantieji');
+        case 'wl_remove':
+            q('UPDATE exam_waitlist SET removed_at = NOW() WHERE id = ? AND event_id IS NULL', [(int) post('id')]);
+            flash('ok', t('Išimta iš laukiančiųjų sąrašo.'));
+            redirect('admin/egzaminai.php#laukiantieji');
+        case 'copy_exam':   // tai pačiai egzamino dienai - kitas protokolas (pvz. kitiems diržams)
+            $src = q_one('SELECT * FROM events WHERE id = ? AND type = "exam"', [(int) post('id')]);
+            $label = mb_substr(trim((string) post('label')), 0, 60);
+            if ($src && $label !== '' && is_admin($me)) {
+                $title = mb_substr(preg_replace('/\s+·\s+[^·]*$/u', '', $src['title']) . ' · ' . $label, 0, 190);
+                q('INSERT INTO events (type, title, starts_on, ends_on, start_time, location, is_abroad, members_only, registration, registration_until, invited_only, description, summary, cover)
+                   SELECT type, ?, starts_on, ends_on, start_time, location, is_abroad, members_only, registration, registration_until, invited_only, description, summary, cover FROM events WHERE id = ?',
+                    [$title, (int) $src['id']]);
+                flash('ok', t('Protokolas sukurtas: {t}', ['t' => $title]));
+            }
+            break;
+    }
+    redirect('admin/egzaminai.php#laukiantieji');
+}
+
 $ready = exam_protocol_ready();
 $exams = q_all('SELECT * FROM events WHERE type = "exam" ORDER BY (COALESCE(ends_on, starts_on) < CURDATE()), IF(COALESCE(ends_on, starts_on) < CURDATE(), -TO_DAYS(starts_on), TO_DAYS(starts_on)) LIMIT 60');
 $rowsBy = $signBy = [];
@@ -37,6 +83,8 @@ if ($ready && $exams) {
 $upcoming = array_values(array_filter($exams, function ($ev) { return event_last_day($ev) >= date('Y-m-d'); }));
 $past = array_values(array_filter($exams, function ($ev) { return event_last_day($ev) < date('Y-m-d'); }));
 $prices = exam_prices();
+$waiting = exam_waitlist_pending();
+$wlUrl = exam_waitlist_ready() ? exam_waitlist_url() : '';
 
 $item = function (array $ev, bool $isPast) use ($rowsBy, $signBy): string {
     $id = (int) $ev['id'];
@@ -82,9 +130,67 @@ page_start(t('Egzaminai'), ['admin' => true]);
 <?php elseif (!$exams): ?>
   <p class="panel card muted"><?= te('Egzaminų dar nėra. Sukurkite renginį, kurio tipas „Egzaminas“.') ?></p>
 <?php else: ?>
+  <?php if (exam_waitlist_ready()): ?>
+  <section class="panel card exam-wl" id="laukiantieji">
+    <div class="row between" style="gap:8px; flex-wrap:wrap; align-items:center;">
+      <h2 style="margin:0;">⏳ <?= te('Laukiantieji') ?> <span class="badge<?= $waiting ? ' badge-warn' : '' ?>"><?= count($waiting) ?></span></h2>
+      <div class="row" style="gap:6px; flex-wrap:wrap;">
+        <?php if ($wlUrl): ?>
+          <button type="button" class="btn btn-ghost btn-sm" data-copy="<?= e($wlUrl) ?>" title="<?= te('Kopijuoti registracijos nuorodą') ?>"><?= te('🔗 Registracijos nuoroda') ?></button>
+          <form method="post" class="inline-form"><?= csrf_field() ?><input type="hidden" name="action" value="wl_open"><input type="hidden" name="open" value="<?= exam_waitlist_is_open() ? '0' : '1' ?>">
+            <button class="btn btn-ghost btn-sm" type="submit"><?= exam_waitlist_is_open() ? te('Uždaryti registraciją') : te('Atidaryti registraciją') ?></button></form>
+        <?php else: ?>
+          <form method="post" class="inline-form"><?= csrf_field() ?><input type="hidden" name="action" value="wl_link"><button class="btn btn-primary btn-sm" type="submit"><?= te('Sukurti registracijos nuorodą') ?></button></form>
+        <?php endif; ?>
+      </div>
+    </div>
+    <?php if ($wlUrl): ?><p class="small muted" style="margin:6px 0 0;"><?= exam_waitlist_is_open() ? te('Viena nuoroda visiems egzaminams. Užsiregistravę atsiranda čia; pažymėkite ir įtraukite į protokolą - žmogus gaus laišką su data, vieta ir kaina.') : te('Registracija uždaryta - nuoroda rodo „Registracija uždaryta“.') ?></p><?php endif; ?>
+    <?php if ($waiting): ?>
+      <form method="post" class="exam-wl-form">
+        <?= csrf_field() ?><input type="hidden" name="action" value="wl_assign">
+        <div class="table-wrap"><table class="table exam-wl-table">
+          <thead><tr><th><input type="checkbox" data-wl-all aria-label="<?= te('Pažymėti visus') ?>"></th><th><?= te('Vardas Pavardė') ?></th><th><?= te('Laikys') ?></th><th><?= te('Kaina') ?></th><th><?= te('Klubas') ?></th><th><?= te('Kontaktai') ?></th><th><?= te('Užsiregistravo') ?></th><th></th></tr></thead>
+          <tbody>
+          <?php foreach ($waiting as $w): $pr = exam_price_for($w['kyu']); ?>
+            <tr>
+              <td><input type="checkbox" name="ids[]" value="<?= (int) $w['id'] ?>" aria-label="<?= e($w['first_name'] . ' ' . $w['last_name']) ?>"></td>
+              <td><b><?= e($w['first_name'] . ' ' . $w['last_name']) ?></b><?= $w['birth_date'] ? '<div class="small muted">' . e(fmt_date($w['birth_date'], true)) . '</div>' : '' ?><?= $w['note'] ? '<div class="small">' . e($w['note']) . '</div>' : '' ?></td>
+              <td><?= e((string) $w['kyu']) ?></td>
+              <td><?= $pr !== null ? e(number_format($pr, 2, ',', '')) . ' €' : '<span class="muted">-</span>' ?></td>
+              <td><?= e((string) $w['club']) ?></td>
+              <td class="small"><?= e((string) $w['email']) ?><br><?= e((string) $w['phone']) ?></td>
+              <td class="small"><?= e(fmt_date(substr($w['created_at'], 0, 10), true)) ?></td>
+              <td><button class="btn btn-ghost btn-xs" type="submit" form="wl-rm-<?= (int) $w['id'] ?>" title="<?= te('Išimti iš sąrašo') ?>" onclick="return confirm('<?= e(t('Išimti iš laukiančiųjų sąrašo?')) ?>')">✕</button></td>
+            </tr>
+          <?php endforeach; ?>
+          </tbody>
+        </table></div>
+        <div class="row exam-wl-go" style="gap:8px; flex-wrap:wrap; align-items:center;">
+          <label class="small"><?= te('Pažymėtus įtraukti į protokolą:') ?>
+            <select name="event_id" required><option value=""><?= te('- pasirinkite egzaminą -') ?></option>
+              <?php foreach ($upcoming as $ev): ?><option value="<?= (int) $ev['id'] ?>"><?= e(fmt_date($ev['starts_on'], true) . ($ev['start_time'] ? ' ' . fmt_time($ev['start_time']) : '') . ' · ' . tr_text($ev['title'])) ?></option><?php endforeach; ?>
+            </select></label>
+          <button class="btn btn-primary btn-sm" type="submit"><?= te('Įtraukti ir išsiųsti laišką') ?></button>
+        </div>
+      </form>
+      <?php foreach ($waiting as $w): ?><form method="post" id="wl-rm-<?= (int) $w['id'] ?>" hidden><?= csrf_field() ?><input type="hidden" name="action" value="wl_remove"><input type="hidden" name="id" value="<?= (int) $w['id'] ?>"></form><?php endforeach; ?>
+    <?php elseif ($wlUrl): ?>
+      <p class="muted" style="margin:8px 0 0;"><?= te('Laukiančiųjų nėra.') ?></p>
+    <?php endif; ?>
+  </section>
+  <?php endif; ?>
   <div class="panel card exam-rows">
     <?php if (!$upcoming): ?><p class="muted" style="margin:0;"><?= te('Artimiausių egzaminų nėra.') ?></p><?php endif; ?>
-    <?php foreach ($upcoming as $ev) { echo $item($ev, false); } ?>
+    <?php $lastDate = null; foreach ($upcoming as $ev) {
+        // #165: viena egzamino diena - keli protokolai (skirtingiems diržams); po paskutiniu tos dienos - „+ Protokolas šiai datai“
+        echo $item($ev, false);
+        $next = $upcoming[array_search($ev, $upcoming, true) + 1] ?? null;
+        if (is_admin($me) && exam_waitlist_ready() && (!$next || $next['starts_on'] !== $ev['starts_on'])) {
+            echo '<form method="post" class="exam-copy">' . csrf_field() . '<input type="hidden" name="action" value="copy_exam"><input type="hidden" name="id" value="' . (int) $ev['id'] . '">'
+                . '<input type="text" name="label" maxlength="60" required placeholder="' . e(t('pvz. 10–7 kyu')) . '" aria-label="' . e(t('Kokiems diržams')) . '">'
+                . '<button class="btn btn-ghost btn-sm" type="submit">' . te('+ Protokolas šiai datai') . '</button></form>';
+        }
+    } ?>
   </div>
   <?php if ($past): ?>
     <details class="exam-past">
@@ -132,6 +238,8 @@ document.querySelectorAll('[data-copy]').forEach(function (b) {
   });
 });
 if (location.hash === '#kainos') { var k = document.getElementById('kainos'); if (k) k.open = true; }
+var wlAll = document.querySelector('[data-wl-all]');
+if (wlAll) wlAll.addEventListener('change', function () { document.querySelectorAll('.exam-wl-table tbody input[type=checkbox]').forEach(function (c) { c.checked = wlAll.checked; }); });
 </script>
 <?php
 page_end();

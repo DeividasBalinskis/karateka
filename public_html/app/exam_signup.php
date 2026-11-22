@@ -284,3 +284,117 @@ function exam_signup_invite(array $event, array $link, string $lines, string $no
     }
     return [$sent, $fail, $bad];
 }
+
+// ---------- #165 (Denis): laukiančiųjų sąrašas - viena registracijos nuoroda visiems egzaminams (db/055) ----------
+// Užsiregistravęs patenka į Egzaminai → „⏳ Laukiantieji“; treneris pažymi ir įtraukia į egzamino protokolą
+// (vienai egzamino dienai gali būti keli protokolai - skirtingiems diržams); žmogus gauna laišką su data, vieta ir kaina pagal diržą.
+
+function exam_waitlist_ready(): bool
+{
+    static $ok = null;
+    if ($ok === null) {
+        try {
+            q_value('SELECT 1 FROM exam_waitlist LIMIT 1');
+            $ok = exam_protocol_ready();
+        } catch (PDOException $ex) {
+            $ok = false;
+        }
+    }
+    return $ok;
+}
+
+/** Registracijos nuorodos raktas (24 simboliai, kaip egzamino nuorodų); $new - sukurti naują (sena nebeveiks) */
+function exam_waitlist_token(bool $new = false): string
+{
+    $t = (string) site_setting('exam_waitlist_token', '');
+    if ($new || !preg_match('/^[a-f0-9]{24}$/', $t)) {
+        if (!$new && $t === '') {
+            return '';
+        }
+        $t = bin2hex(random_bytes(12));
+        set_site_setting('exam_waitlist_token', $t);
+    }
+    return $t;
+}
+
+function exam_waitlist_url(): string
+{
+    $t = exam_waitlist_token();
+    return $t !== '' ? abs_url('egzamino-registracija.php?k=' . $t) : '';
+}
+
+function exam_waitlist_is_open(): bool
+{
+    return site_setting('exam_waitlist_open', '1') !== '0' && reg_on('exam');
+}
+
+/** Laukiantys (dar neįtraukti į protokolą), seniausi viršuje */
+function exam_waitlist_pending(): array
+{
+    return exam_waitlist_ready() ? q_all('SELECT * FROM exam_waitlist WHERE event_id IS NULL AND removed_at IS NULL ORDER BY created_at, id') : [];
+}
+
+/**
+ * Registracija į laukiančiuosius. Tas pats žmogus (vardas + gimimo data), dar laukiantis - neįrašomas antrą kartą.
+ * Grąžina ['already' => bool, 'id' => int].
+ */
+function exam_waitlist_add(array $d): array
+{
+    $first = mb_substr(trim((string) $d['first_name']), 0, 80);
+    $last = mb_substr(trim((string) $d['last_name']), 0, 80);
+    $birth = preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) ($d['birth_date'] ?? '')) ? $d['birth_date'] : null;
+    $old = q_one('SELECT id FROM exam_waitlist WHERE event_id IS NULL AND removed_at IS NULL AND LOWER(first_name) = LOWER(?) AND LOWER(last_name) = LOWER(?) AND birth_date <=> ?',
+        [$first, $last, $birth]);
+    if ($old) {
+        return ['already' => true, 'id' => (int) $old['id']];
+    }
+    q('INSERT INTO exam_waitlist (first_name, last_name, birth_date, club, kyu, phone, email, note) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+        [$first, $last, $birth, mb_substr(trim((string) ($d['club'] ?? '')), 0, 120) ?: null, mb_substr(trim((string) ($d['kyu'] ?? '')), 0, 30) ?: null,
+         mb_substr(trim((string) ($d['phone'] ?? '')), 0, 40) ?: null, mb_strtolower(mb_substr(trim((string) ($d['email'] ?? '')), 0, 190)) ?: null,
+         mb_substr(trim((string) ($d['note'] ?? '')), 0, 500) ?: null]);
+    $id = (int) db()->lastInsertId();
+    notify_staff('exam_registration', t('Užsiregistravo į egzaminą (laukiantieji)') . ': ' . $first . ' ' . $last,
+        trim(($d['kyu'] ?? '') . ' · ' . ($d['club'] ?? ''), ' ·'), url('admin/egzaminai.php#laukiantieji'));
+    return ['already' => false, 'id' => $id];
+}
+
+/**
+ * Įtraukti laukiantįjį į egzamino protokolą ir išsiųsti laišką (data, laikas, vieta, kaina pagal diržą, mokėjimas, asmeninė nuoroda).
+ * Grąžina ['ok' => bool, 'mailed' => bool].
+ */
+function exam_waitlist_assign(int $id, array $event, string $from): array
+{
+    $w = q_one('SELECT * FROM exam_waitlist WHERE id = ? AND event_id IS NULL AND removed_at IS NULL', [$id]);
+    if (!$w) {
+        return ['ok' => false, 'mailed' => false];
+    }
+    exam_protocol($event);
+    $name = trim($w['first_name'] . ' ' . $w['last_name']);
+    $rid = exam_protocol_add($event, ['name' => $name, 'birth_date' => $w['birth_date'], 'kyu' => $w['kyu'], 'club' => $w['club']]);
+    if (exam_v40_ready() && $w['phone']) {
+        q('UPDATE exam_protocol_rows SET phone = ? WHERE id = ?', [$w['phone'], $rid]);
+    }
+    q('UPDATE exam_waitlist SET event_id = ?, row_id = ?, assigned_at = NOW() WHERE id = ?', [(int) $event['id'], $rid, $id]);
+    $mailed = false;
+    if ($w['email'] && filter_var($w['email'], FILTER_VALIDATE_EMAIL)) {
+        $row = q_one('SELECT * FROM exam_protocol_rows WHERE id = ?', [$rid]);
+        $link = $row ? exam_row_url($row) : null;
+        $price = exam_price_for($w['kyu']);
+        $when = fmt_date($event['starts_on'], true) . ($event['start_time'] ? ', ' . fmt_time($event['start_time']) : '');
+        $body = t('Sveiki, {n}!', ['n' => $w['first_name']]) . "\n\n"
+            . t('Jūs įtraukti į egzaminą') . ': ' . $event['title'] . "\n"
+            . t('Kada') . ': ' . $when . "\n"
+            . ($event['location'] ? t('Kur') . ': ' . $event['location'] . "\n" : '')
+            . ($w['kyu'] ? t('Laikomas') . ': ' . $w['kyu'] . "\n" : '')
+            . t('Kaina') . ': ' . ($price !== null ? number_format($price, 2, ',', '') . ' €' : t('pasakys treneris')) . "\n"
+            . (exam_pay_info() !== '' ? "\n" . t('Kaip sumokėti') . ":\n" . exam_pay_info() . "\n" : '')
+            . ($link ? "\n" . t('Jūsų egzamino puslapis (programa, testas, rezultatas):') . "\n" . $link . "\n" : '')
+            . "\n" . $from;
+        $mailed = send_mail($w['email'], t('Egzaminas') . ': ' . $event['title'] . ' · ' . fmt_date($event['starts_on'], true), $body);
+        if ($mailed) {
+            q('UPDATE exam_waitlist SET mailed_at = NOW() WHERE id = ?', [$id]);
+        }
+    }
+    return ['ok' => true, 'mailed' => $mailed];
+}
+

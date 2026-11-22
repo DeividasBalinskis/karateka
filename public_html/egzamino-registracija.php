@@ -4,6 +4,88 @@
 // programa, testas, kaina, rezultatas. Nuorodą pamiršus - „Jau užsiregistravai?“: vardas pavardė + gimimo data.
 require __DIR__ . '/app/bootstrap.php';
 
+// #165: bendra nuoroda visiems egzaminams - registracija į laukiančiųjų sąrašą (treneris vėliau priskiria egzaminą ir protokolą)
+if (exam_waitlist_ready() && preg_match('/^[a-f0-9]{24}$/', (string) get('k')) && exam_waitlist_token() !== '' && hash_equals(exam_waitlist_token(), (string) get('k'))) {
+    $wOpen = exam_waitlist_is_open();
+    $wErr = [];
+    $wDone = null;
+    $w = ['first_name' => '', 'last_name' => '', 'birth_date' => '', 'phone' => '', 'email' => '', 'club' => '', 'kyu' => '', 'note' => ''];
+    $_SESSION['exam_su_posts'] = array_values(array_filter((array) ($_SESSION['exam_su_posts'] ?? []), function ($t) { return $t > time() - 3600; }));
+    if (is_post() && $wOpen) {
+        csrf_check();
+        foreach ($w as $k => $_) {
+            $w[$k] = trim((string) post($k));
+        }
+        if (post('website') !== '' || count($_SESSION['exam_su_posts']) >= 15) {
+            $wErr[] = t('Per daug bandymų. Pabandykite vėliau.');
+        }
+        if ($w['first_name'] === '' || $w['last_name'] === '') {
+            $wErr[] = t('Įrašykite vardą ir pavardę.');
+        }
+        if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $w['birth_date']) || $w['birth_date'] > date('Y-m-d') || $w['birth_date'] < '1920-01-01') {
+            $wErr[] = t('Įrašykite gimimo datą.');
+        }
+        if (!filter_var($w['email'], FILTER_VALIDATE_EMAIL)) {
+            $wErr[] = t('Įrašykite el. paštą - juo atsiųsime egzamino datą, vietą ir kainą.');
+        }
+        if (strlen(preg_replace('/\D/', '', $w['phone'])) < 8) {
+            $wErr[] = t('Įrašykite kontaktinį telefono numerį.');
+        }
+        if ($w['kyu'] === '' || exam_kyu_level($w['kyu']) === null) {
+            $wErr[] = t('Pasirinkite, kokio diržo egzaminą laikysite.');
+        }
+        if (!$wErr) {
+            $_SESSION['exam_su_posts'][] = time();
+            $wDone = exam_waitlist_add($w) + $w;
+        }
+    }
+    page_start(t('Registracija į egzaminą'), ['noindex' => true]);
+    ?>
+<div class="exam-su">
+  <header class="panel card">
+    <div class="kicker"><?= te('Registracija į egzaminą') ?></div>
+    <h1><?= te('Karate egzaminas (kyu)') ?></h1>
+    <p class="muted"><?= te('Užsiregistravę patenkate į laukiančiųjų sąrašą. Kai treneris priskirs egzaminą, gausite laišką su data, vieta ir kaina.') ?></p>
+  </header>
+  <?php if ($wDone): ?>
+    <div class="panel card exam-su-ok" role="status">
+      <h2>✓ <?= !empty($wDone['already']) ? te('Jūs jau sąraše') : te('Užregistruota!') ?></h2>
+      <p><?= te('{n}, jūs laukiančiųjų sąraše. Kai treneris priskirs egzaminą, į {e} atsiųsime datą, vietą ir kainą.', ['n' => $wDone['first_name'], 'e' => $wDone['email']]) ?></p>
+      <p><a class="btn btn-ghost btn-sm" href="<?= e(url('egzamino-registracija.php?k=' . exam_waitlist_token())) ?>"><?= te('Registruoti kitą žmogų') ?></a></p>
+    </div>
+  <?php elseif (!$wOpen): ?>
+    <div class="panel card"><h2><?= te('Registracija uždaryta') ?></h2><p class="muted"><?= te('Šiuo metu registracija į egzaminus nevyksta.') ?></p></div>
+  <?php else: ?>
+    <form method="post" class="panel card form exam-su-form" novalidate>
+      <?= csrf_field() ?>
+      <?php if ($wErr): ?><div class="flash flash-err" role="alert"><?= implode('<br>', array_map('e', $wErr)) ?></div><?php endif; ?>
+      <div class="form-row">
+        <label><?= te('Vardas') ?> *<input type="text" name="first_name" value="<?= e($w['first_name']) ?>" required maxlength="80" autocomplete="given-name"></label>
+        <label><?= te('Pavardė') ?> *<input type="text" name="last_name" value="<?= e($w['last_name']) ?>" required maxlength="80" autocomplete="family-name"></label>
+      </div>
+      <div class="form-row">
+        <label><?= te('Gimimo data') ?> *<input type="date" name="birth_date" value="<?= e($w['birth_date']) ?>" required max="<?= date('Y-m-d') ?>"></label>
+        <label><?= te('Kokio diržo egzaminą laikysite?') ?> *<select name="kyu" required><option value=""><?= te('- pasirinkite -') ?></option>
+          <?php foreach (exam_grades() as $lvl => [$kyu, $bname, $color]): ?><option value="<?= e($kyu) ?>"<?= $w['kyu'] === $kyu ? ' selected' : '' ?>><?= e($kyu . ' · ' . t($bname)) ?></option><?php endforeach; ?>
+        </select></label>
+      </div>
+      <div class="form-row">
+        <label><?= te('El. paštas') ?> *<input type="email" name="email" value="<?= e($w['email']) ?>" required maxlength="190" autocomplete="email"></label>
+        <label><?= te('Kontaktinis telefonas') ?> *<input type="tel" name="phone" value="<?= e($w['phone']) ?>" required maxlength="40" autocomplete="tel" placeholder="+370 6xx xxxxx"></label>
+      </div>
+      <label><?= te('Klubas') ?><input type="text" name="club" value="<?= e($w['club']) ?>" maxlength="120" placeholder="<?= e(t('pvz. Karateka')) ?>"></label>
+      <label><?= te('Pastaba treneriui (nebūtina)') ?><input type="text" name="note" value="<?= e($w['note']) ?>" maxlength="500"></label>
+      <div style="position:absolute; left:-9999px;" aria-hidden="true"><input type="text" name="website" tabindex="-1" autocomplete="off"></div>
+      <button class="btn btn-primary" type="submit"><?= te('Registruotis') ?></button>
+      <p class="small muted" style="margin:0;"><?= te('Registruodamiesi sutinkate, kad šie duomenys būtų naudojami egzamino protokolui ir susisiekti dėl egzamino.') ?> <a href="<?= url('privatumas.php') ?>" target="_blank"><?= te('Privatumo politika') ?></a></p>
+    </form>
+  <?php endif; ?>
+</div>
+<?php
+    page_end();
+    exit;
+}
+
 $link = exam_signup_ready() && preg_match('/^[a-f0-9]{24}$/', (string) get('k')) ? q_one('SELECT * FROM exam_signup_links WHERE token = ?', [(string) get('k')]) : null;
 $event = $link ? q_one('SELECT * FROM events WHERE id = ? AND type = "exam"', [(int) $link['event_id']]) : null;
 if (!$event) {
