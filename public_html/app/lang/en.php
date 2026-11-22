@@ -3814,4 +3814,5 @@ From 2013 he trained with the team of the traditional karate-do club "Sanrei", a
     'Failas' => 'File',
     'Pasirinkti diplomą' => 'Choose a diploma',
     'PDF, nuotrauka ar Word - galima nutempti čia' => 'PDF, photo or Word - you can drag it here',
+    '+{n} grupės' => '+{n} groups',
 ];

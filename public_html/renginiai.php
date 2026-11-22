@@ -150,7 +150,7 @@ $n = 0;   // eilės nr. animacijai (laipteliai)
     <?php foreach ($events as $ev): $groups = event_group_names((int) $ev['id']); ?>
       <div class="panel card rise" id="e<?= (int) $ev['id'] ?>" style="--i:<?= min($n++, 8) ?>;">
         <?= render_event($ev) ?>
-        <div class="events-for small muted"><?= $groups ? (t('Grupėms:') . ' ') . e(implode(', ', $groups)) : (!empty($ev['invited_only']) ? t('Pakviestiems') : t('Visiems')) ?><?= members_only_badge($ev) ?></div>
+        <div class="events-for small muted"><?php if ($groups && count($groups) > 3): /* v1.86: ilgas sąrašas - suskleistas */ ?><?= te('Grupėms:') ?> <?= e(implode(', ', array_slice($groups, 0, 3))) ?><span class="eg-rest" hidden>, <?= e(implode(', ', array_slice($groups, 3))) ?></span> <button type="button" class="eg-more" onclick="this.previousElementSibling.hidden=false; this.remove();"><?= te('+{n} grupės', ['n' => count($groups) - 3]) ?></button><?php else: ?><?= $groups ? (t('Grupėms:') . ' ') . e(implode(', ', $groups)) : (!empty($ev['invited_only']) ? t('Pakviestiems') : t('Visiems')) ?><?php endif; ?><?= members_only_badge($ev) ?></div>
         <?= $rsvpMembers ? render_event_rsvp($ev, $rsvpMembers, 'renginiai.php' . ($filter ? '?tipas=' . $filter : '') . '#e' . (int) $ev['id']) : '' ?>
         <?php if ($rsvpMembers && $ev['type'] === 'competition' && varzybos_enabled()): ?>
           <p class="small" style="margin-top:8px;"><a href="<?= url('varzybos.php') ?>"><?= te('Varžybų kategorijos ir registracija varžybų sistemoje →') ?></a></p>

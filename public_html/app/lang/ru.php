@@ -3814,4 +3814,5 @@ Nuo 2013 m. treniravosi Tradicinio karate-do klubo „Sanrei“ komandoje, o 201
     'Failas' => 'Файл',
     'Pasirinkti diplomą' => 'Выбрать диплом',
     'PDF, nuotrauka ar Word - galima nutempti čia' => 'PDF, фото или Word - можно перетащить сюда',
+    '+{n} grupės' => '+{n} групп',
 ];

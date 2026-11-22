@@ -2128,3 +2128,14 @@ a.kid-mini:hover{border-color:var(--accent);}
 .jd-add{display:flex; flex-wrap:wrap; gap:8px 12px; align-items:flex-end;}
 .jd-add label{flex:0 1 auto; margin:0;}
 .jd-add .jd-wide{flex:1 1 220px;}
+
+/* v1.86 peržiūra: telefone ir planšetėje filtrų forma (Nariai ir kt.) - kompaktiška: be antraščių, laukai šalia vienas kito */
+@media (max-width:700px){
+  .filters.form{display:grid; grid-template-columns:1fr 1fr; gap:8px; padding:12px;}
+  .filters.form > label{font-size:0; gap:0; margin:0;}
+  .filters.form > label > input, .filters.form > label > select{font-size:15px; min-height:44px;}
+  .filters.form > label:first-child{grid-column:1 / -1;}
+  .filters.form > button{grid-column:1 / -1; min-height:40px;}
+}
+/* Renginio kortelė: ilgas grupių sąrašas - suskleistas („+N“) */
+.events-for .eg-more{border:0; background:none; padding:0; font:inherit; color:var(--accent); cursor:pointer; text-decoration:underline;}
