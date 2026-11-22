@@ -345,4 +345,6 @@ return [
     'Nėra ryšio - nuotrauka neįkelta',
     'Ištrinti šį atsiliepimą su nuotraukomis?',
     'Ištrinta',
+    'Visa {g}',
+    'Rodyti visus ({n})',
 ];

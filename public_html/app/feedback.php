@@ -431,13 +431,15 @@ function feedback_widget_html(?string $site = null): string
     $icon = '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M12 2a7 7 0 0 0-4 12.74V17a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-2.26A7 7 0 0 0 12 2Zm-3 18a1 1 0 0 0 1 1h4a1 1 0 0 0 0-2h-4a1 1 0 0 0-1 1Z"/></svg>';
     $cfg = ['api' => url('atsiliepimas.php'), 'csrf' => csrf_token(), 'site' => $site, 'page' => $remote ? '' : feedback_current_page(), 'guest' => !$a,
             'admin' => is_admin($a) ? url('admin/atsiliepimai.php') : '', 'images' => feedback_images_ready()];
+    $staff = $a && is_staff($a);
     return '<div class="fb" id="fb" data-cfg="' . e(json_encode($cfg, JSON_UNESCAPED_UNICODE)) . '">'
         . '<button type="button" class="fb-fab" id="fbFab" aria-expanded="false" aria-controls="fbPanel" title="' . e(t('Palikite komentarą ar ekrano nuotrauką - pataisysime')) . '">' . $icon
         . '<span class="fb-fab-label">' . te('Atsiliepimas') . '</span><span class="fb-fab-n" hidden></span></button>'
         . '<div class="fb-panel" id="fbPanel" role="dialog" aria-labelledby="fbTitle" hidden>'
-        . '<div class="fb-head"><strong id="fbTitle">' . te('💡 Atsiliepimas') . '</strong><span class="fb-state" id="fbState" role="status"></span>'
+        . '<div class="fb-head"><strong id="fbTitle" data-all="' . e(t('📋 Visi atsiliepimai')) . '">' . te('💡 Atsiliepimas') . '</strong><span class="fb-state" id="fbState" role="status"></span>'
         . '<button type="button" class="fb-close" aria-label="' . e(t('Uždaryti')) . '">×</button></div>'
         . '<div class="fb-scroll">'
+        . '<div class="fb-write" id="fbWrite">'
         . '<div class="fb-compose" id="fbCompose">'
         . '<div class="fb-editing" id="fbEditing" hidden><span></span><button type="button" class="fb-link fb-del" title="' . e(t('Ištrinti šį atsiliepimą')) . '">🗑</button><button type="button" class="fb-link" id="fbNew">' . te('+ Naujas') . '</button></div>'
         . '<textarea id="fbText" rows="4" maxlength="' . FEEDBACK_MAX . '" placeholder="' . e(t('Kas negerai arba ką pakeisti? Ctrl+V - įklijuokite ekrano nuotrauką.')) . '" aria-label="' . e(t('Atsiliepimas')) . '"></textarea>'
@@ -448,14 +450,17 @@ function feedback_widget_html(?string $site = null): string
         . '<span class="fb-hint">' . te('Enter - išsaugoti ir naujas · Shift+Enter - nauja eilutė') . '</span>'
         . '<button class="btn btn-primary btn-sm fb-send" type="button" id="fbSend">' . te('Išsaugoti') . '</button></div>'
         . '</div>'
-        . '<div class="fb-mine" id="fbMine"><div class="fb-mine-title">' . ($a ? '<div class="fb-tabs" role="tablist"><button type="button" class="on" data-fb-tab="mine">' . te('Mano') . '</button><button type="button" data-fb-tab="all">' . te('Visi') . '</button></div>'
-            : te('Jūsų atsiliepimai'))
-        // v1.87: paieška, būsena, grupės (Budo / Karateka / LTKF) ir jų skiltys - pirmiausia ten, kur esate
-        . '<input type="search" class="fb-q" id="fbQ" placeholder="' . e(t('🔎 Ieškoti')) . '" aria-label="' . e(t('Ieškoti atsiliepimų')) . '">'
-        . '<select class="fb-stf" id="fbSt" aria-label="' . e(t('Būsena')) . '"><option value="all">' . te('Visos būsenos') . '</option><option value="open">' . te('Neišspręsti') . '</option><option value="done">' . te('Išspręsti') . '</option></select></div>'
-        . '<div class="fb-chips fb-groups" id="fbGroups" role="group" aria-label="' . e(t('Kur paliktas')) . '"></div>'
-        . '<div class="fb-chips fb-subs" id="fbSubs" role="group" aria-label="' . e(t('Skiltis')) . '"></div>'
-        . '<ul class="fb-list" id="fbList"></ul></div>'
-        . ($cfg['admin'] ? '<a class="fb-admin" href="' . e($cfg['admin']) . '">' . te('Visi atsiliepimai →') . '</a>' : '')
+        . '<div class="fb-mine" id="fbMine"><div class="fb-mine-title">' . te('Jūsų atsiliepimai') . '</div><ul class="fb-list" id="fbList"></ul></div>'
+        // v1.87: personalui - atskiras vaizdas „Visi atsiliepimai“ (vieta, būsena, paieška - išskleidžiami sąrašai); rašymo vaizdas lieka paprastas
+        . ($staff ? '<button type="button" class="fb-all-btn" id="fbAllBtn">' . te('📋 Visi atsiliepimai') . ' <span class="fb-all-n" id="fbAllN" hidden></span><span aria-hidden="true">→</span></button>' : '')
+        . '</div>'
+        . ($staff ? '<div class="fb-all" id="fbAll" hidden>'
+            . '<button type="button" class="fb-back" id="fbBack">' . te('← Rašyti atsiliepimą') . '</button>'
+            . '<div class="fb-filters"><select id="fbPlace" aria-label="' . e(t('Kur paliktas')) . '"></select>'
+            . '<select id="fbSt" aria-label="' . e(t('Būsena')) . '"><option value="open">' . te('Neišspręsti') . '</option><option value="done">' . te('Išspręsti') . '</option><option value="all">' . te('Visos būsenos') . '</option></select>'
+            . '<input type="search" id="fbQ" placeholder="' . e(t('🔎 Ieškoti')) . '" aria-label="' . e(t('Ieškoti atsiliepimų')) . '"></div>'
+            . '<ul class="fb-list" id="fbAllList"></ul>'
+            . ($cfg['admin'] ? '<a class="fb-admin" href="' . e($cfg['admin']) . '">' . te('Atsiliepimų puslapis Valdyme →') . '</a>' : '')
+            . '</div>' : '')
         . '</div></div></div><script src="' . e(asset_url('assets/feedback.js')) . '" defer></script>';
 }

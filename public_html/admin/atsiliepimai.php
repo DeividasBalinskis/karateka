@@ -6,8 +6,10 @@ $me = require_admin();
 
 $filter = isset(FEEDBACK_STATUS[get('b')]) || get('b') === 'visi' ? get('b') : 'atviri';
 // v1.87: kur paliktas - grupė (Budo / Karateka / LTKF) ir jos skiltis; paieška tekste
-$fg = isset(FEEDBACK_GROUPS[get('g')]) ? (string) get('g') : '';
-$fs = $fg !== '' ? mb_substr((string) get('s'), 0, 80) : '';
+// vieta: ?p=grupė|skiltis (išskleidžiamas sąrašas) arba ?g=…&s=… (nuorodos iš lango ir kortelių)
+[$pg, $ps] = array_pad(explode('|', (string) get('p'), 2), 2, '');
+$fg = isset(FEEDBACK_GROUPS[get('g')]) ? (string) get('g') : (isset(FEEDBACK_GROUPS[$pg]) ? $pg : '');
+$fs = $fg !== '' ? mb_substr((string) (get('g') !== '' ? get('s') : $ps), 0, 80) : '';
 $fq = trim(mb_substr((string) get('q'), 0, 80));
 $qs = function (array $over = []) use ($filter, $fg, $fs, $fq): string {
     $p = array_filter(array_merge(['b' => $filter, 'g' => $fg, 's' => $fs, 'q' => $fq], $over), function ($v) { return $v !== '' && $v !== null; });
@@ -99,12 +101,13 @@ foreach ($every as $f) {
     }
     if ($stOk($f, $filter)) {
         $gCounts[$f['area']['g']] = ($gCounts[$f['area']['g']] ?? 0) + 1;
-        if ($fg !== '' && $f['area']['g'] === $fg) {
-            $sCounts[$f['area']['s']] = ($sCounts[$f['area']['s']] ?? 0) + 1;
-        }
+        $sCounts[$f['area']['g']][$f['area']['s']] = ($sCounts[$f['area']['g']][$f['area']['s']] ?? 0) + 1;
     }
 }
-arsort($sCounts);
+foreach ($sCounts as &$sc) {
+    arsort($sc);
+}
+unset($sc);
 $rows = array_slice(array_values(array_filter($every, function ($f) use ($stOk, $qOk, $inPlace, $filter) { return $stOk($f, $filter) && $qOk($f) && $inPlace($f); })), 0, 300);
 $open = array_values(array_filter($every, function ($f) use ($stOk, $inPlace) { return $stOk($f, 'atviri') && $inPlace($f); }));
 usort($open, function ($a, $b) { return strcmp($a['created_at'], $b['created_at']); });
@@ -126,15 +129,9 @@ page_start(t('Atsiliepimai'), ['admin' => true]);
     <h1 class="styled"><?= te('Atsiliepimai') ?></h1>
     <p class="muted" style="margin:0;"><?= te('Ką pastebėjo nariai, treneriai ir lankytojai (mygtukas „💡 Atsiliepimas“ apačioje kairėje). Pakeitus būseną ar atsakius, autorius gauna pranešimą.') ?></p>
   </div>
-  <div class="row fb-admin-tools" style="gap:8px; flex-wrap:wrap; align-items:center;">
-    <form method="get" class="fb-admin-q" role="search">
-      <input type="hidden" name="b" value="<?= e($filter) ?>"><?php if ($fg !== ''): ?><input type="hidden" name="g" value="<?= e($fg) ?>"><?php endif; ?><?php if ($fs !== ''): ?><input type="hidden" name="s" value="<?= e($fs) ?>"><?php endif; ?>
-      <input type="search" name="q" value="<?= e($fq) ?>" placeholder="<?= e(t('🔎 Ieškoti')) ?>" aria-label="<?= e(t('Ieškoti atsiliepimų')) ?>">
-    </form>
-    <?php if ($open): ?>
-      <button type="button" class="btn btn-ghost" id="fbCopy"><?= te('📋 Kopijuoti neišspręstus') ?> (<?= count($open) ?>)</button>
-    <?php endif; ?>
-  </div>
+  <?php if ($open): ?>
+    <button type="button" class="btn btn-ghost" id="fbCopy"><?= te('📋 Kopijuoti neišspręstus') ?> (<?= count($open) ?>)</button>
+  <?php endif; ?>
 </div>
 <?php if (!$ready): ?>
   <div class="flash flash-err"><?= te('Duomenų bazė neatnaujinta - importuokite') ?> <code>db/025_varzybos_atsiliepimai.sql</code>.</div>
@@ -147,25 +144,24 @@ foreach (FEEDBACK_STATUS as $k => $s) {
 }
 $tabs['visi'] = [t('Visi'), array_sum(array_map('intval', $counts))];
 ?>
-<nav class="chip-tabs fb-st-tabs" aria-label="<?= e(t('Filtras')) ?>">
-  <?php foreach ($tabs as $key => [$label, $n]): ?>
-    <a class="chip-tab<?= $filter === $key ? ' active' : '' ?>" href="<?= url($qs(['b' => $key])) ?>"><?= e($label) ?> <span class="chip-n"><?= $n ?></span></a>
-  <?php endforeach; ?>
-</nav>
-<nav class="chip-tabs fb-place-tabs" aria-label="<?= e(t('Kur paliktas')) ?>">
-  <a class="chip-tab<?= $fg === '' ? ' active' : '' ?>" href="<?= url($qs(['g' => '', 's' => ''])) ?>"><?= te('Visur') ?> <span class="chip-n"><?= array_sum($gCounts) ?></span></a>
-  <?php foreach (FEEDBACK_GROUPS as $gk => $gl): ?>
-    <a class="chip-tab<?= $fg === $gk ? ' active' : '' ?>" href="<?= url($qs(['g' => $gk, 's' => ''])) ?>"><?= e($gl) ?> <span class="chip-n"><?= (int) ($gCounts[$gk] ?? 0) ?></span></a>
-  <?php endforeach; ?>
-</nav>
-<?php if ($fg !== '' && $sCounts): ?>
-<nav class="chip-tabs fb-sub-tabs" aria-label="<?= e(t('Skiltis')) ?>">
-  <a class="chip-tab<?= $fs === '' ? ' active' : '' ?>" href="<?= url($qs(['s' => ''])) ?>"><?= te('Visos skiltys') ?> <span class="chip-n"><?= array_sum($sCounts) ?></span></a>
-  <?php foreach ($sCounts as $sk => $n): ?>
-    <a class="chip-tab<?= $fs === (string) $sk ? ' active' : '' ?>" href="<?= url($qs(['s' => (string) $sk])) ?>"><?= e(t((string) $sk)) ?> <span class="chip-n"><?= (int) $n ?></span></a>
-  <?php endforeach; ?>
-</nav>
-<?php endif; ?>
+<?php /* v1.87: filtrai - išskleidžiami sąrašai (būsena, vieta su skiltimis) ir paieška vienoje eilutėje; pakeitus - iškart rodoma */ ?>
+<form method="get" class="fb-admin-filters" role="search">
+  <select name="b" aria-label="<?= e(t('Būsena')) ?>" onchange="this.form.submit()">
+    <?php foreach ($tabs as $key => [$label, $n]): ?><option value="<?= e($key) ?>"<?= $filter === $key ? ' selected' : '' ?>><?= e($label) ?> (<?= (int) $n ?>)</option><?php endforeach; ?>
+  </select>
+  <select name="p" aria-label="<?= e(t('Kur paliktas')) ?>" onchange="this.form.submit()">
+    <option value=""><?= te('Visur') ?> (<?= array_sum($gCounts) ?>)</option>
+    <?php foreach (FEEDBACK_GROUPS as $gk => $gl): if (empty($gCounts[$gk]) && $fg !== $gk) { continue; } ?>
+      <optgroup label="<?= e($gl) ?>">
+        <option value="<?= e($gk) ?>|"<?= $fg === $gk && $fs === '' ? ' selected' : '' ?>><?= e(t('Visa {g}', ['g' => $gl])) ?> (<?= (int) ($gCounts[$gk] ?? 0) ?>)</option>
+        <?php foreach ((array) ($sCounts[$gk] ?? []) as $sk => $n): ?><option value="<?= e($gk . '|' . $sk) ?>"<?= $fg === $gk && $fs === (string) $sk ? ' selected' : '' ?>>&nbsp;&nbsp;<?= e(t((string) $sk)) ?> (<?= (int) $n ?>)</option><?php endforeach; ?>
+        <?php if ($fg === $gk && $fs !== '' && !isset($sCounts[$gk][$fs])): ?><option value="<?= e($gk . '|' . $fs) ?>" selected>&nbsp;&nbsp;<?= e(t($fs)) ?> (0)</option><?php endif; ?>
+      </optgroup>
+    <?php endforeach; ?>
+  </select>
+  <input type="search" name="q" value="<?= e($fq) ?>" placeholder="<?= e(t('🔎 Ieškoti')) ?>" aria-label="<?= e(t('Ieškoti atsiliepimų')) ?>">
+  <button class="btn btn-ghost btn-sm" type="submit"><?= te('Rodyti') ?></button>
+</form>
 
 <?php if (!$rows): ?>
   <div class="panel card"><p class="muted" style="margin:0;"><?= $filter === 'atviri' && $fg === '' && $fq === '' ? te('Neišspręstų atsiliepimų nėra. 🎉') : te('Atsiliepimų nėra.') ?>

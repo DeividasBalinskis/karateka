@@ -3876,4 +3876,9 @@ Nuo 2013 m. treniravosi Tradicinio karate-do klubo „Sanrei“ komandoje, o 201
     'Nėra ryšio - nuotrauka neįkelta' => 'Нет связи - фото не загружено',
     'Ištrinti šį atsiliepimą su nuotraukomis?' => 'Удалить этот отзыв вместе с фото?',
     'Ištrinta' => 'Удалено',
+    'Visa {g}' => 'Весь {g}',
+    '📋 Visi atsiliepimai' => '📋 Все отзывы',
+    '← Rašyti atsiliepimą' => '← Написать отзыв',
+    'Atsiliepimų puslapis Valdyme →' => 'Страница отзывов в управлении →',
+    'Rodyti visus ({n})' => 'Показать все ({n})',
 ];

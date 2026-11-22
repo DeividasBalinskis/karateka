@@ -4,6 +4,7 @@ Answers given by Deividas on 2026-11-20 (questions from `docs/darbo-planas.md`, 
 
 | Date | Area | Decision | Who decided | Source |
 |---|---|---|---|---|
+| 2026-11-22 | Feedback | The 💡 box is for writing: text, photos, save and „Jūsų atsiliepimai“ only. Staff get „📋 Visi atsiliepimai“ - a separate view with dropdowns (place, status) and search. Many buttons → dropdowns (also on Valdymas → Atsiliepimai). Replaces the v1.87 chip rows. | Deividas | chat |
 | 2026-11-22 | Feedback | Feedback is grouped by the place it was left: Budo / Karateka / LTKF + sections (Budo sections = app tabs, Karateka admin = Valdymas menu items); the current place first. | Deividas | chat |
 | 2026-11-22 | Feedback | The 💡 box keeps open state, text and filters across page changes in the same browser tab (3 h); on a phone it does not reopen by itself, ✎ on the button instead (Claude's call). Can be changed: reopen on phones too. | Deividas + Claude | chat |
 | 2026-11-22 | Feedback | Place is computed from the page (no new database column), so old items are grouped too (Claude's call). | Claude | chat |

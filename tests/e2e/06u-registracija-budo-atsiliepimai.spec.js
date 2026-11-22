@@ -72,9 +72,9 @@ test('feedback: own list per browser even on a shared account, all list is read 
   await openFeedback(b);
   await b.waitForTimeout(800);
   check('not in the other person\'s own list', await b.locator('#fbList .fb-item', { hasText: 'pirmo žmogaus' }).count() === 0);
-  await b.click('[data-fb-tab="all"]');
+  await b.click('#fbAllBtn');   // v1.87: personalui - atskiras vaizdas „Visi atsiliepimai“
   await b.waitForTimeout(800);
-  const ro = b.locator('#fbList .fb-ro', { hasText: 'pirmo žmogaus' });
+  const ro = b.locator('#fbAllList .fb-ro', { hasText: 'pirmo žmogaus' });
   check('visible in Visi', await ro.count() === 1);
   await ro.click();
   check('read only: text not loaded for editing', (await b.inputValue('#fbText')) === '' && await b.locator('#fbEditing').isHidden());

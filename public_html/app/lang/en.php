@@ -3876,4 +3876,9 @@ From 2013 he trained with the team of the traditional karate-do club "Sanrei", a
     'Nėra ryšio - nuotrauka neįkelta' => 'No connection - photo not uploaded',
     'Ištrinti šį atsiliepimą su nuotraukomis?' => 'Delete this feedback with its photos?',
     'Ištrinta' => 'Deleted',
+    'Visa {g}' => 'All {g}',
+    '📋 Visi atsiliepimai' => '📋 All feedback',
+    '← Rašyti atsiliepimą' => '← Write feedback',
+    'Atsiliepimų puslapis Valdyme →' => 'Feedback page in Management →',
+    'Rodyti visus ({n})' => 'Show all ({n})',
 ];

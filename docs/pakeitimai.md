@@ -4,6 +4,16 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.88 - 2026-11-22 (atsiliepimų langas paprastesnis - Deividas)
+- **💡 lange - tik rašymas:** tekstas, 📎 nuotraukos, „Išsaugoti“ ir trumpas „Jūsų atsiliepimai“ (3 naujausi, pirmiausia - iš šios vietos;
+  „Rodyti visus“). Mygtukų ir filtrų eilių nebėra.
+- **Treneriams ir adminui - „📋 Visi atsiliepimai“** (su neišspręstų skaičiumi): atskiras vaizdas su trimis išskleidžiamais sąrašais -
+  **vieta** (Visur / Visa Budo, Tvarkaraštis… / Visa Karateka, Valdymas · Nariai… / Visa LTKF…; 📍 - kur esate), **būsena** ir **paieška**.
+  „← Rašyti atsiliepimą“ grįžta atgal; adminui apačioje - „Atsiliepimų puslapis Valdyme →“. Pasirinktas vaizdas ir filtrai išlieka pereinant per puslapius.
+- **Valdymas → Atsiliepimai:** būsena ir vieta - išskleidžiami sąrašai vienoje eilutėje su paieška (vietoj trijų mygtukų eilių).
+- Pataisyta: paspaudus „+ Naujas“ ir iškart rašant, tekstas nebedingsta (naujas pradedamas iš karto, senasis išsisaugo fone).
+- Duomenų bazė: naujų failų nėra.
+
 ## v1.87 - 2026-11-22 (atsiliepimai pagal vietą; langas išlieka pereinant per puslapius)
 - **💡 Atsiliepimų lange sąrašas sugrupuotas pagal vietą, kur paliktas:** Budo / Karateka / LTKF ir jų skiltys
   (pvz. Budo → Tvarkaraštis, Rezultatai, Administracija, Kova; Karateka → Valdymas · Nariai, Treniruotė…; LTKF → Klubai, Teisėjai…).

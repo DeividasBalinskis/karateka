@@ -13,12 +13,13 @@
     var $ = function (id) { return document.getElementById(id); };
     var fab = $('fbFab'), panel = $('fbPanel'), text = $('fbText'), imgs = $('fbImgs'), state = $('fbState');
     var list = $('fbList'), mine = $('fbMine'), editing = $('fbEditing'), fileIn = $('fbFile'), nameIn = $('fbName');
-    var qIn = $('fbQ'), stSel = $('fbSt'), gBox = $('fbGroups'), sBox = $('fbSubs'), adminLink = box.querySelector('.fb-admin');
+    var qIn = $('fbQ'), stSel = $('fbSt'), placeSel = $('fbPlace'), allList = $('fbAllList'), allBtn = $('fbAllBtn'), allN = $('fbAllN');
+    var write = $('fbWrite'), allView = $('fbAll'), title = $('fbTitle'), titleWrite = title.textContent;
     var fabN = fab.querySelector('.fb-fab-n');
     var cur = { id: 0, images: [] }, items = [], timer = null, chain = Promise.resolve();
-    // „Mano“ - tik savo (taisyti), „Visi“ - kitų irgi, bet tik skaityti
-    var tab = 'mine', allItems = [], openAll = {}, here = null, groups = {}, shown = 8, restoring = false;
-    var flt = { g: '', s: '', st: 'all', stSet: false, q: '' };
+    // Rašymo vaizdas: tekstas + „Jūsų atsiliepimai“ (paspaudus - taisyti). Personalui - vaizdas „Visi atsiliepimai“ (tik skaityti) su filtrais.
+    var view = 'write', allLoaded = false, allItems = [], openAll = {}, here = null, groups = {}, shown = 20, mineAll = false, restoring = false;
+    var flt = { p: '', st: 'open', q: '' };   // p: „*“ - visur, „budo|“ - visa grupė, „budo|Tvarkaraštis“ - skiltis
 
     function setState(t, cls) { state.textContent = t; state.className = 'fb-state ' + (cls || ''); }
     function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
@@ -55,16 +56,39 @@
         .then(function (r) { return r.json().catch(function () { return { ok: false, error: T('Serverio klaida') + ' (' + r.status + ')' }; }); });
     }
 
-    // ---------- Išlieka pereinant į kitą puslapį: atidarytas langas, skirtukas, filtrai, tekstas ----------
+    // ---------- Išlieka pereinant į kitą puslapį: atidarytas langas, vaizdas, filtrai, tekstas ----------
     function remember() {
-      try { sessionStorage.setItem(SKEY, JSON.stringify({ open: !panel.hidden, tab: tab, flt: flt, id: cur.id, text: text.value, at: Date.now() })); } catch (e) {}
+      try { sessionStorage.setItem(SKEY, JSON.stringify({ open: !panel.hidden, view: view, flt: flt, id: cur.id, text: text.value, at: Date.now() })); } catch (e) {}
       if (fabN) { var d = panel.hidden && text.value.trim() !== ''; fabN.hidden = !d; fabN.textContent = d ? '✎' : ''; fab.classList.toggle('has-draft', d); }
     }
     function recall() {
       try { var s = JSON.parse(sessionStorage.getItem(SKEY) || 'null'); return s && Date.now() - (s.at || 0) < KEEP ? s : null; } catch (e) { return null; }
     }
 
-    // ---------- Sąrašas: grupės ir skiltys, pirmiausia - kur esate ----------
+    // ---------- Bendra: vieta, eilutė ----------
+    function isHere(it) { return !!here && it.g === here.g && it.s === here.s; }
+    function byHere(a, b) { return ((b.id === cur.id) - (a.id === cur.id)) || (isHere(b) - isHere(a)) || ((!!here && b.g === here.g) - (!!here && a.g === here.g)) || (b.id - a.id); }
+    function where(it, full) {
+      var w = (full ? it.gl + ' › ' : '') + (it.sec && it.sec.indexOf(it.sl) === 0 ? it.sec : it.sl);
+      return '<span class="fb-where' + (isHere(it) ? ' here' : '') + '">' + (isHere(it) ? '📍 ' : '') + esc(w) + '</span>';
+    }
+    function more(total, n, attr, label) {
+      return total > n ? '<li><button type="button" class="fb-more" ' + attr + '>' + esc(label) + ' ↓</button></li>' : '';
+    }
+
+    // ---------- Jūsų atsiliepimai (rašymo vaizde): 3 naujausi, pirmiausia - šios vietos ----------
+    function renderList() {
+      mine.hidden = !items.length;
+      var list0 = items.slice().sort(byHere), view0 = mineAll ? list0 : list0.slice(0, 3);
+      list.innerHTML = view0.map(function (it) {
+        return '<li class="fb-item' + (it.id === cur.id ? ' on' : '') + '" data-id="' + it.id + '" tabindex="0" role="button" title="' + esc(T('Paspauskite - taisyti')) + '">' +
+          '<div class="fb-item-top"><span class="fb-item-title">' + esc(it.title) + '</span>' + (it.images.length ? '<span class="fb-item-img" title="' + esc(T('Nuotraukos')) + '">🖼 ' + it.images.length + '</span>' : '') + '</div>' +
+          '<div class="fb-item-meta"><span>' + where(it, here && it.g !== here.g) + ' · ' + esc(it.date) + '</span><span class="fb-st st-' + esc(it.status) + '">' + esc(it.statusLabel) + '</span></div>' +
+          (it.reply ? '<div class="fb-reply"><b>' + esc(T('Atsakymas:')) + '</b> ' + esc(it.reply) + '</div>' : '') + '</li>';
+      }).join('') + more(list0.length, view0.length, 'data-mine-all', T('Rodyti visus ({n})', { n: list0.length }));
+    }
+
+    // ---------- Visi atsiliepimai (personalui): vieta, būsena, paieška - išskleidžiami sąrašai ----------
     function stOk(it) {
       if (flt.st === 'open') return it.status === 'new' || it.status === 'planned';
       if (flt.st === 'done') return it.status === 'done' || it.status === 'declined';
@@ -75,83 +99,61 @@
       var h = fold([it.title, it.body, it.author, it.reply, it.gl, it.sl, it.sec, '#' + it.id].join(' '));
       return fold(flt.q).split(/\s+/).every(function (w) { return !w || h.indexOf(w) !== -1; });
     }
-    function isHere(it) { return !!here && it.g === here.g && it.s === here.s; }
-    function chip(attr, val, label, n, on, pin) {
-      return '<button type="button" class="fb-chip' + (on ? ' on' : '') + (pin ? ' here' : '') + '" ' + attr + '="' + esc(val) + '" aria-pressed="' + (on ? 'true' : 'false') + '"' +
-        (pin ? ' title="' + esc(T('Čia, kur esate dabar')) + '"' : '') + '>' + (pin ? '📍 ' : '') + esc(label) + ' <span class="fb-chip-n">' + n + '</span></button>';
+    function inPlace(it) {
+      if (flt.p === '*' || !flt.p) return true;
+      var i = flt.p.indexOf('|'), g = flt.p.slice(0, i), s = flt.p.slice(i + 1);
+      return it.g === g && (!s || it.s === s);
     }
-    function renderChips(base) {
-      var gc = {}, keys = Object.keys(groups);
-      base.forEach(function (it) { gc[it.g] = (gc[it.g] || 0) + 1; });
+    function renderPlaces(base) {
+      if (!placeSel) return;
+      var gc = {}, sc = {}, sl = {}, keys = Object.keys(groups);
+      base.forEach(function (it) { gc[it.g] = (gc[it.g] || 0) + 1; sc[it.g] = sc[it.g] || {}; sc[it.g][it.s] = (sc[it.g][it.s] || 0) + 1; sl[it.g + '|' + it.s] = it.sl; });
+      if (here) { sc[here.g] = sc[here.g] || {}; if (!sc[here.g][here.s]) sc[here.g][here.s] = 0; sl[here.g + '|' + here.s] = here.sl; }
       if (here) keys.sort(function (a, b) { return (b === here.g) - (a === here.g); });
-      keys = keys.filter(function (k) { return gc[k] || (here && k === here.g); });
-      gBox.innerHTML = keys.map(function (k) { return chip('data-g', k, groups[k], gc[k] || 0, flt.g === k, !!here && here.g === k); }).join('') +
-        chip('data-g', '*', T('Visur'), base.length, flt.g === '*', false);
-      gBox.hidden = !base.length && !flt.q;
-      var inG = flt.g === '*' ? [] : base.filter(function (it) { return it.g === flt.g; });
-      var sc = {}, sl = {}, hereG = !!here && here.g === flt.g;
-      inG.forEach(function (it) { sc[it.s] = (sc[it.s] || 0) + 1; sl[it.s] = it.sl; });
-      if (hereG && !sc[here.s]) { sc[here.s] = 0; sl[here.s] = here.sl; }
-      var sk = Object.keys(sc).sort(function (a, b) {
-        return ((hereG && b === here.s) - (hereG && a === here.s)) || (sc[b] - sc[a]) || a.localeCompare(b);
+      var opt = function (v, label, n, pin) { return '<option value="' + esc(v) + '"' + (flt.p === v ? ' selected' : '') + '>' + (pin ? '📍 ' : '') + esc(label) + ' (' + n + ')</option>'; };
+      var html = opt('*', T('Visur'), base.length, false);
+      keys.forEach(function (g) {
+        if (!gc[g] && !(here && here.g === g)) return;
+        var subs = Object.keys(sc[g] || {}).sort(function (a, b) {
+          var ha = here && here.g === g && here.s === a, hb = here && here.g === g && here.s === b;
+          return (hb - ha) || (sc[g][b] - sc[g][a]) || a.localeCompare(b);
+        });
+        html += '<optgroup label="' + esc(groups[g]) + '">' + opt(g + '|', T('Visa {g}', { g: groups[g] }), gc[g] || 0, !!here && here.g === g) +
+          subs.map(function (s) { return opt(g + '|' + s, '   ' + sl[g + '|' + s], sc[g][s], !!here && here.g === g && here.s === s); }).join('') + '</optgroup>';
       });
-      if (flt.s && !(flt.s in sc)) flt.s = '';
-      sBox.hidden = flt.g === '*' || !sk.length;
-      sBox.innerHTML = chip('data-s', '', T('Visos skiltys'), inG.length, flt.s === '', false) +
-        sk.map(function (k) { return chip('data-s', k, sl[k], sc[k], flt.s === k, hereG && here.s === k); }).join('');
-      if (adminLink && cfg.admin) adminLink.href = cfg.admin + (flt.g && flt.g !== '*' ? '?g=' + encodeURIComponent(flt.g) + (flt.s ? '&s=' + encodeURIComponent(flt.s) : '') : '');
+      placeSel.innerHTML = html;
+      if (placeSel.value !== flt.p) placeSel.value = flt.p;
     }
-    function where(it) {
-      var w = (flt.g === '*' ? it.gl + ' › ' : '') + (it.sec && it.sec.indexOf(it.sl) === 0 ? it.sec : it.sl);
-      return '<span class="fb-where' + (isHere(it) ? ' here' : '') + '">' + (isHere(it) ? '📍 ' : '') + esc(w) + '</span>';
-    }
-    function filtered() {
-      var base = (tab === 'all' ? allItems : items).filter(function (it) { return stOk(it) && qOk(it); });
-      renderChips(base);
-      var out = base.filter(function (it) { return flt.g === '*' || (it.g === flt.g && (!flt.s || it.s === flt.s)); });
-      out.sort(function (a, b) {
-        return ((b.id === cur.id) - (a.id === cur.id)) || (isHere(b) - isHere(a)) || (b.id - a.id);
-      });
-      return { base: base, out: out };
-    }
-    function more(total, n) {
-      return total > n ? '<li><button type="button" class="fb-more" data-fb-more>' + esc(T('Rodyti dar ({n})', { n: total - n })) + ' ↓</button></li>' : '';
-    }
-    function empty(base) {
-      if (!(tab === 'all' ? allItems : items).length) {
-        return '<li class="muted small">' + esc(tab === 'all' ? T('Atsiliepimų dar nėra.') : T('Čia bus tik jūsų atsiliepimai. Kitų - „Visi“.')) + '</li>';
-      }
-      return '<li class="muted small">' + esc(base.length ? T('Šioje vietoje atsiliepimų nėra.') : T('Nieko nerasta.')) +
-        (flt.g !== '*' || flt.q || flt.st !== 'all' ? ' <button type="button" class="fb-link" data-fb-reset>' + esc(T('Rodyti visus')) + ' →</button>' : '') + '</li>';
-    }
-    function renderList() {
-      var r = filtered(), view = r.out.slice(0, shown);
-      if (tab === 'mine') mine.hidden = !items.length && !mine.querySelector('.fb-tabs');
-      if (!r.out.length) { list.innerHTML = empty(r.base); return; }
-      if (tab === 'all') {
-        list.innerHTML = view.map(function (it) {
-          var o = !!openAll[it.id];
-          return '<li class="fb-item fb-ro' + (o ? ' open' : '') + (isHere(it) ? ' is-here' : '') + '" data-all-id="' + it.id + '" tabindex="0" role="button" title="' + esc(T('Paspauskite - visas tekstas')) + '">' +
-            '<div class="fb-item-top"><span class="fb-item-title">' + esc(it.title) + '</span>' + (it.images.length ? '<span class="fb-item-img">🖼 ' + it.images.length + '</span>' : '') + '</div>' +
-            '<div class="fb-item-meta"><span>' + where(it) + ' · ' + esc(it.author || '') + (it.mine ? ' · ' + esc(T('jūsų')) : '') + ' · ' + esc(it.date) + '</span><span class="fb-st st-' + esc(it.status) + '">' + esc(it.statusLabel) + '</span></div>' +
-            (o ? '<div class="fb-ro-body">' + esc(it.body).replace(/\n/g, '<br>') + '</div>' +
-              (it.images.length ? '<div class="fb-ro-imgs">' + it.images.map(function (im) { return '<a href="' + esc(im.full) + '" target="_blank" rel="noopener"><img src="' + esc(im.thumb) + '" alt=""></a>'; }).join('') + '</div>' : '') +
-              (it.href ? '<a class="fb-go" href="' + esc(it.href) + '">' + esc(T('Atidaryti vietą')) + ' →</a>' : '') : '') +
-            (it.reply ? '<div class="fb-reply"><b>' + esc(T('Atsakymas:')) + '</b> ' + esc(it.reply) + '</div>' : '') + '</li>';
-        }).join('') + more(r.out.length, view.length);
+    function renderAll() {
+      if (!allList) return;
+      if (!allLoaded) { allList.innerHTML = '<li class="muted small">' + esc(T('Kraunama…')) + '</li>'; return; }
+      var base = allItems.filter(function (it) { return stOk(it) && qOk(it); });
+      renderPlaces(base);
+      var out = base.filter(inPlace).sort(byHere), v = out.slice(0, shown);
+      if (allN) { var n = allItems.filter(function (it) { return it.status === 'new' || it.status === 'planned'; }).length; allN.hidden = !n; allN.textContent = n; }
+      if (!out.length) {
+        allList.innerHTML = '<li class="muted small">' + esc(allItems.length ? T('Nieko nerasta.') : T('Atsiliepimų dar nėra.')) +
+          (allItems.length && (flt.p !== '*' || flt.q || flt.st !== 'all') ? ' <button type="button" class="fb-link" data-fb-reset>' + esc(T('Rodyti visus')) + ' →</button>' : '') + '</li>';
         return;
       }
-      list.innerHTML = view.map(function (it) {
-        return '<li class="fb-item' + (it.id === cur.id ? ' on' : '') + (isHere(it) ? ' is-here' : '') + '" data-id="' + it.id + '" tabindex="0" role="button" title="' + esc(T('Paspauskite - taisyti')) + '">' +
-          '<div class="fb-item-top"><span class="fb-item-title">' + esc(it.title) + '</span>' + (it.images.length ? '<span class="fb-item-img" title="' + esc(T('Nuotraukos')) + '">🖼 ' + it.images.length + '</span>' : '') + '</div>' +
-          '<div class="fb-item-meta"><span>' + where(it) + ' · ' + esc(it.date) + '</span><span class="fb-st st-' + esc(it.status) + '">' + esc(it.statusLabel) + '</span></div>' +
+      allList.innerHTML = v.map(function (it) {
+        var o = !!openAll[it.id];
+        return '<li class="fb-item fb-ro' + (o ? ' open' : '') + '" data-all-id="' + it.id + '" tabindex="0" role="button" title="' + esc(T('Paspauskite - visas tekstas')) + '">' +
+          '<div class="fb-item-top"><span class="fb-item-title">' + esc(it.title) + '</span>' + (it.images.length ? '<span class="fb-item-img">🖼 ' + it.images.length + '</span>' : '') + '</div>' +
+          '<div class="fb-item-meta"><span>' + where(it, flt.p === '*' || !flt.p) + ' · ' + esc(it.author || '') + (it.mine ? ' · ' + esc(T('jūsų')) : '') + ' · ' + esc(it.date) + '</span><span class="fb-st st-' + esc(it.status) + '">' + esc(it.statusLabel) + '</span></div>' +
+          (o ? '<div class="fb-ro-body">' + esc(it.body).replace(/\n/g, '<br>') + '</div>' +
+            (it.images.length ? '<div class="fb-ro-imgs">' + it.images.map(function (im) { return '<a href="' + esc(im.full) + '" target="_blank" rel="noopener"><img src="' + esc(im.thumb) + '" alt=""></a>'; }).join('') + '</div>' : '') +
+            (it.href ? '<a class="fb-go" href="' + esc(it.href) + '">' + esc(T('Atidaryti vietą')) + ' →</a>' : '') : '') +
           (it.reply ? '<div class="fb-reply"><b>' + esc(T('Atsakymas:')) + '</b> ' + esc(it.reply) + '</div>' : '') + '</li>';
-      }).join('') + more(r.out.length, view.length);
+      }).join('') + more(out.length, v.length, 'data-fb-more', T('Rodyti dar ({n})', { n: out.length - v.length }));
     }
-    function syncControls() {
-      mine.querySelectorAll('[data-fb-tab]').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-fb-tab') === tab); });
-      if (qIn && qIn.value !== flt.q) qIn.value = flt.q;
-      if (stSel) stSel.value = flt.st;
+    function setView(v, quiet) {
+      if (!allView) v = 'write';
+      view = v;
+      write.hidden = v === 'all'; allView && (allView.hidden = v !== 'all');
+      title.textContent = v === 'all' ? title.getAttribute('data-all') : titleWrite;
+      if (v === 'all') { if (!flt.p && here) flt.p = here.g + '|'; if (stSel) stSel.value = flt.st; if (qIn) qIn.value = flt.q; renderAll(); }
+      remember();
     }
     function listUrl(all) {
       var tn = tabsNow();
@@ -161,39 +163,36 @@
     function fetchList(all) {
       return fetch(listUrl(all), { credentials: 'same-origin', headers: { Accept: 'application/json' } }).then(function (r) { return r.json(); }).then(function (d) {
         here = d.here || here; groups = d.groups || groups;
-        if (!flt.g) flt.g = here ? here.g : '*';
         return d.items || [];
       });
     }
     function load() {
-      return fetchList(false).then(function (d) { items = d; afterRestore(); renderList(); })
-        .then(function () { if (tab === 'all') return loadAll(); }).catch(function () {});
-    }
-    function loadAll() {
-      list.innerHTML = '<li class="muted small">' + esc(T('Kraunama…')) + '</li>';
-      return fetchList(true).then(function (d) { allItems = d; renderList(); }).catch(function () {});
-    }
-    mine.addEventListener('click', function (e) {
-      var tb = e.target.closest('[data-fb-tab]');
-      if (tb) {
-        tab = tb.getAttribute('data-fb-tab'); shown = 8;
-        if (!flt.stSet) flt.st = tab === 'all' ? 'open' : 'all';
-        syncControls(); remember();
-        if (tab === 'all') loadAll(); else renderList();
-        return;
+      var p = fetchList(false).then(function (d) { items = d; afterRestore(); renderList(); }).catch(function () {});
+      if (allView) {
+        fetchList(true).then(function (d) { allItems = d; allLoaded = true; if (!flt.p && here) flt.p = here.g + '|'; renderAll(); }).catch(function () {});
       }
-      var g = e.target.closest('[data-g]');
-      if (g) { flt.g = g.getAttribute('data-g'); flt.s = ''; shown = 8; remember(); renderList(); return; }
-      var s = e.target.closest('[data-s]');
-      if (s) { flt.s = s.getAttribute('data-s'); shown = 8; remember(); renderList(); return; }
-      if (e.target.closest('[data-fb-reset]')) { flt.g = '*'; flt.s = ''; flt.q = ''; flt.st = 'all'; flt.stSet = true; shown = 8; syncControls(); remember(); renderList(); }
-    });
-    if (qIn) qIn.addEventListener('input', function () { flt.q = qIn.value; shown = 8; remember(); renderList(); });
-    if (stSel) stSel.addEventListener('change', function () { flt.st = stSel.value; flt.stSet = true; shown = 8; remember(); renderList(); });
+      return p;
+    }
+    if (allBtn) allBtn.addEventListener('click', function () { flt.p = here ? here.g + '|' : ''; shown = 20; setView('all'); });
+    if ($('fbBack')) $('fbBack').addEventListener('click', function () { setView('write'); text.focus(); });
+    if (placeSel) placeSel.addEventListener('change', function () { flt.p = placeSel.value; shown = 20; remember(); renderAll(); });
+    if (stSel) stSel.addEventListener('change', function () { flt.st = stSel.value; shown = 20; remember(); renderAll(); });
+    if (qIn) qIn.addEventListener('input', function () { flt.q = qIn.value; shown = 20; remember(); renderAll(); });
+    if (allList) {
+      allList.addEventListener('click', function (e) {
+        if (e.target.closest('[data-fb-more]')) { shown += 20; renderAll(); return; }
+        if (e.target.closest('[data-fb-reset]')) { flt.p = '*'; flt.q = ''; flt.st = 'all'; if (qIn) qIn.value = ''; if (stSel) stSel.value = 'all'; remember(); renderAll(); return; }
+        var ro = e.target.closest('[data-all-id]');
+        if (ro && !e.target.closest('a')) { var id = +ro.getAttribute('data-all-id'); openAll[id] = !openAll[id]; renderAll(); }
+      });
+      allList.addEventListener('keydown', function (e) {
+        var ro = e.target.closest('[data-all-id]');
+        if (!ro || (e.key !== 'Enter' && e.key !== ' ')) return;
+        e.preventDefault(); var id = +ro.getAttribute('data-all-id'); openAll[id] = !openAll[id]; renderAll();
+      });
+    }
     list.addEventListener('click', function (e) {
-      if (e.target.closest('[data-fb-more]')) { e.stopPropagation(); shown += 20; renderList(); return; }
-      var ro = e.target.closest('[data-all-id]');
-      if (ro) { if (!e.target.closest('a')) { var id = +ro.getAttribute('data-all-id'); openAll[id] = !openAll[id]; renderList(); } e.stopPropagation(); }
+      if (e.target.closest('[data-mine-all]')) { e.stopPropagation(); mineAll = true; renderList(); }
     }, true);
     function upsert(it) {
       if (!it) return;
@@ -221,24 +220,26 @@
     }
     function save(keepalive) {
       clearTimeout(timer); timer = null;
-      var body = text.value;
-      if (!cur.id && !body.trim()) return chain;
+      var body = text.value, target = cur;   // kuriam atsiliepimui (jei tuo metu pradedamas naujas - senasis vis tiek išsisaugo)
+      if (!target.id && !body.trim()) return chain;
       chain = chain.then(function () {
         setState(T('Saugoma…'), 'busy');
-        return send({ action: 'save', id: cur.id || '', body: body }, keepalive).then(function (d) {
+        return send({ action: 'save', id: target.id || '', body: body }, keepalive).then(function (d) {
           if (!d.ok) { setState(d.error || T('Neišsaugota'), 'err'); return; }
-          if (d.item) { if (!cur.id) cur.id = d.item.id; upsert(d.item); showEditing(); remember(); }
+          if (d.item) { if (!target.id) target.id = d.item.id; upsert(d.item); if (target === cur) { showEditing(); remember(); } }
           setState(T('Išsaugota ✓'), 'ok');
         }).catch(function () { setState(T('Nėra ryšio - neišsaugota'), 'err'); });
       });
       return chain;
     }
     function startNew() {
+      restoring = false;   // žmogus jau pats pradėjo naują - atkūrimas nebereikalingas
       cur = { id: 0, images: [] }; text.value = ''; renderImgs(); showEditing(); remember(); text.focus();
     }
     function commit() {
+      var t = cur, body = text.value;
       save().then(function () {
-        if (!cur.id) return;
+        if (!t.id || cur !== t || text.value !== body) return;   // neišsaugota arba jau rašoma toliau - tekstas lieka
         setState(T('Išsaugota ✓ - galite rašyti kitą'), 'ok');
         startNew();
       });
@@ -249,7 +250,8 @@
       if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); commit(); }
     });
     $('fbSend').addEventListener('click', commit);
-    $('fbNew').addEventListener('click', function () { save().then(startNew); });
+    // „+ Naujas“: taisomas (jau išsaugotas) atsiliepimas išsisaugo fone, naujas pradedamas iš karto - spėtas rašyti tekstas nedingsta
+    $('fbNew').addEventListener('click', function () { if (cur.id) { save(); startNew(); } else save().then(startNew); });
 
     // Grįžus iš kito puslapio: tęsiamas tas pats atsiliepimas (jei tekstas nespėjo išsisaugoti - išsaugomas dabar, be dublikato)
     function afterRestore() {
@@ -312,20 +314,16 @@
     // ---------- Ankstesni: paspaudus - taisyti ----------
     function edit(id) {
       var it = items.find(function (x) { return x.id === id; }); if (!it) return;
-      save().then(function () {
+      restoring = false;
+      var open = function () {
         cur = { id: it.id, images: it.images.slice() }; text.value = it.body; renderImgs(); showEditing(); remember();
         text.focus(); text.setSelectionRange(text.value.length, text.value.length);
         setState('', '');
-      });
+      };
+      if (cur.id || !text.value.trim()) { save(); open(); } else save().then(open);
     }
     list.addEventListener('click', function (e) { var li = e.target.closest('[data-id]'); if (li) edit(+li.getAttribute('data-id')); });
-    list.addEventListener('keydown', function (e) {
-      var li = e.target.closest('[data-id], [data-all-id]');
-      if (!li || (e.key !== 'Enter' && e.key !== ' ')) return;
-      e.preventDefault();
-      if (li.hasAttribute('data-id')) edit(+li.getAttribute('data-id'));
-      else { var id = +li.getAttribute('data-all-id'); openAll[id] = !openAll[id]; renderList(); }
-    });
+    list.addEventListener('keydown', function (e) { var li = e.target.closest('[data-id]'); if (li && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); edit(+li.getAttribute('data-id')); } });
     editing.addEventListener('click', function (e) {
       if (!e.target.closest('.fb-del') || !cur.id) return;
       if (!confirm(T('Ištrinti šį atsiliepimą su nuotraukomis?'))) return;
@@ -342,12 +340,12 @@
       panel.hidden = !open;
       box.classList.toggle('open', open);
       fab.setAttribute('aria-expanded', open ? 'true' : 'false');
-      if (open) { load(); if (!quiet) text.focus(); }
+      if (open) { load(); if (!quiet && view === 'write') text.focus(); }
       else if (timer) save();
       remember();
     }
     fab.addEventListener('click', function () {
-      if (panel.hidden && !restoring) { flt.g = ''; flt.s = ''; flt.q = ''; shown = 8; syncControls(); }   // naujai atidarius - pirmiausia ten, kur esate
+      if (panel.hidden && !restoring) { mineAll = false; setView('write', true); }   // naujai atidarius - rašymas; „Visi“ - vėl nuo šios vietos
       toggle(panel.hidden);
     });
     panel.querySelector('.fb-close').addEventListener('click', function () { toggle(false); fab.focus(); });
@@ -357,11 +355,10 @@
     // Grįžimas iš kito puslapio: tas pats langas, filtrai ir tekstas (telefone langas neatsidaro pats - užimtų visą ekraną; ✎ ant mygtuko)
     var saved = recall();
     if (saved) {
-      tab = saved.tab === 'all' && mine.querySelector('[data-fb-tab="all"]') ? 'all' : 'mine';
-      if (saved.flt) flt = { g: saved.flt.g || '', s: saved.flt.s || '', st: saved.flt.st || 'all', stSet: !!saved.flt.stSet, q: saved.flt.q || '' };
+      if (saved.flt) flt = { p: String(saved.flt.p || ''), st: saved.flt.st || 'open', q: String(saved.flt.q || '') };
       cur.id = saved.id || 0; text.value = saved.text || '';
       restoring = !!(cur.id || text.value.trim());
-      syncControls();
+      setView(saved.view === 'all' ? 'all' : 'write', true);
       if (saved.open && window.matchMedia('(min-width: 641px)').matches) toggle(true, true);
       else if (restoring) { remember(); load(); }
     }

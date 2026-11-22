@@ -1,12 +1,12 @@
 # Handoff
-Updated: 2026-11-22 · version v1.87 · branch claude/festive-curie-01jgx2
+Updated: 2026-11-22 · version v1.88 · branch claude/festive-curie-01jgx2
 
 ## Pending asks (answer these first)
 | Asked | By | What | Status |
 |---|---|---|---|
 | 2026-11-20 | Denis | #30 and #147: messages cut off - ask Denis to write them again | waiting |
 | 2026-11-22 | Claude | Pick variants: menu on a computer A1/A2/A3, phone menu B1/B2/B3, Budo video C1 (done) + C2 tablet / C3 hall TV (screenshots sent in chat) | waiting |
-| 2026-11-22 | Claude | „į main“ for v1.85-v1.87 (main = v1.84) | waiting |
+| 2026-11-22 | Claude | „į main“ for v1.85-v1.88 (main = v1.84) | waiting |
 | 2026-11-21 | Claude | Answers for not-started steps | answered 2026-11-21 (see decisions.md); waiting: Varžybos code on branch `varzybos-kodas` (D1), LibreSprite on PC (D8) |
 
 ## Last session
@@ -52,6 +52,9 @@ Updated: 2026-11-22 · version v1.87 · branch claude/festive-curie-01jgx2
 - v1.87: feedback by place - `feedback_area()` in app/feedback.php (page + Budo tab → Budo / Karateka / LTKF + section; FEEDBACK_PLACES map),
   box: group/section chips with 📍 current place, search, status; state in sessionStorage `fb-state-v1` (open, tab, filters, text, editing id);
   admin page: place chips, search, place badge; API: `group`, `area`, `?group=`. Testers do not see Dojo items. Tests: 07za, 06h updated, helpers.openFeedback opens only when closed.
+- v1.88: Deividas did not like the chip rows - the box is for writing (+ „Jūsų atsiliepimai“, 3 newest); staff open „📋 Visi atsiliepimai“
+  (#fbAllBtn → #fbAll: #fbPlace grouped dropdown g|s, #fbSt, #fbQ, #fbAllList). Admin page: status + place dropdowns (?b=, ?p=g|s; ?g=&s= still work).
+  Fixed a race: „+ Naujas“ / opening another item no longer waits for the save (typed text was lost). Tests 06u, 07za updated.
 - Committed and pushed to the claude branch after each stage.
 
 ## Open
