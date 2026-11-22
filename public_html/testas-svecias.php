@@ -103,7 +103,7 @@ if (get('naujas') !== '' && !is_post()) {
     $state = null;
 }
 
-page_start($quiz['title'], ['noindex' => true, 'narrow' => true]);
+page_start($quiz['title'], ['noindex' => true, 'narrow' => true, 'bare' => !current_account()]);   // svečias - be svetainės meniu
 
 // ---------- Rezultatas ----------
 if ($result):

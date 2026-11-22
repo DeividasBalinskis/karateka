@@ -4,6 +4,12 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.91 - 2026-11-22 (egzamino registracijos nuoroda - tik registracija)
+- **Egzamino registracijos nuoroda** (ir bendra „Laukiantieji“, ir kiekvieno egzamino) atsidaro **be svetainės meniu**:
+  tik logotipas (nepaspaudžiamas), kalba ir forma. Jokio meniu, „2 treniruotės nemokamai“, ☰ ar poraštės nuorodų - iš nuorodos galima tik užsiregistruoti.
+- „Privatumo politika“ iš formos atsidaro irgi be meniu. Asmeninis egzamino puslapis ir teorijos testas svečiui (be paskyros) - taip pat be meniu.
+- Personalui 💡 Atsiliepimas šiuose puslapiuose lieka (pastaboms apie juos).
+
 ## v1.90 - 2026-11-22 (klausimai atsiliepimuose išsiskiria; egzaminų laukiantieji - #165)
 - **❓ Klausimas atsiliepime:** kai reikia jūsų atsakymo, atsiliepimas gauna būseną **„Reikia atsakymo“**: lange jis pirmas,
   geltonai paryškintas, su laukeliu „Jūsų atsakymas…“ ir mygtuku „Atsakyti“; ant 💡 mygtuko - **❓1**;

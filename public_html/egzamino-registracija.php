@@ -39,7 +39,7 @@ if (exam_waitlist_ready() && preg_match('/^[a-f0-9]{24}$/', (string) get('k')) &
             $wDone = exam_waitlist_add($w) + $w;
         }
     }
-    page_start(t('Registracija į egzaminą'), ['noindex' => true]);
+    page_start(t('Registracija į egzaminą'), ['noindex' => true, 'bare' => true]);
     ?>
 <div class="exam-su">
   <header class="panel card">
@@ -77,7 +77,7 @@ if (exam_waitlist_ready() && preg_match('/^[a-f0-9]{24}$/', (string) get('k')) &
       <label><?= te('Pastaba treneriui (nebūtina)') ?><input type="text" name="note" value="<?= e($w['note']) ?>" maxlength="500"></label>
       <div style="position:absolute; left:-9999px;" aria-hidden="true"><input type="text" name="website" tabindex="-1" autocomplete="off"></div>
       <button class="btn btn-primary" type="submit"><?= te('Registruotis') ?></button>
-      <p class="small muted" style="margin:0;"><?= te('Registruodamiesi sutinkate, kad šie duomenys būtų naudojami egzamino protokolui ir susisiekti dėl egzamino.') ?> <a href="<?= url('privatumas.php') ?>" target="_blank"><?= te('Privatumo politika') ?></a></p>
+      <p class="small muted" style="margin:0;"><?= te('Registruodamiesi sutinkate, kad šie duomenys būtų naudojami egzamino protokolui ir susisiekti dėl egzamino.') ?> <a href="<?= url('privatumas.php?be_meniu=1') ?>" target="_blank" rel="noopener"><?= te('Privatumo politika') ?></a></p>
     </form>
   <?php endif; ?>
 </div>
@@ -147,7 +147,7 @@ if (is_post()) {
 
 $when = fmt_date($event['starts_on'], true) . ($event['ends_on'] && $event['ends_on'] !== $event['starts_on'] ? ' – ' . fmt_date($event['ends_on'], true) : '')
     . ($event['start_time'] ? ', ' . fmt_time($event['start_time']) : '');
-page_start(t('Registracija į egzaminą') . ': ' . tr_text($event['title']), ['noindex' => true]);
+page_start(t('Registracija į egzaminą') . ': ' . tr_text($event['title']), ['noindex' => true, 'bare' => true]);
 ?>
 <div class="exam-su">
   <header class="panel card">
@@ -200,7 +200,7 @@ page_start(t('Registracija į egzaminą') . ': ' . tr_text($event['title']), ['n
       </div>
       <div style="position:absolute; left:-9999px;" aria-hidden="true"><input type="text" name="website" tabindex="-1" autocomplete="off"></div>
       <button class="btn btn-primary" type="submit"><?= te('Registruotis į egzaminą') ?></button>
-      <p class="small muted" style="margin:0;"><?= te('Registruodamiesi sutinkate, kad šie duomenys būtų naudojami egzamino protokolui ir susisiekti dėl egzamino.') ?> <a href="<?= url('privatumas.php') ?>" target="_blank"><?= te('Privatumo politika') ?></a></p>
+      <p class="small muted" style="margin:0;"><?= te('Registruodamiesi sutinkate, kad šie duomenys būtų naudojami egzamino protokolui ir susisiekti dėl egzamino.') ?> <a href="<?= url('privatumas.php?be_meniu=1') ?>" target="_blank" rel="noopener"><?= te('Privatumo politika') ?></a></p>
     </form>
   <?php endif; ?>
 

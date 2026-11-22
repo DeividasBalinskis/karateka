@@ -382,3 +382,8 @@ body.theme-dark .site-header .fold-btn{color:#ECE8F4;}
   .site-header.pm-nariams .m-dojo{display:inline-flex; align-items:center; justify-content:center; width:44px; height:44px; margin-left:auto; border-radius:14px; font-size:22px; text-decoration:none;
     background:linear-gradient(135deg,#1F1A2E,#3A2A55); box-shadow:0 4px 12px rgba(31,26,46,.25);}
 }
+/* Egzamino registracijos nuoroda ir svečio puslapiai - be meniu: tik logotipas (nepaspaudžiamas) ir kalba */
+header.site-header.is-bare > nav{display:flex; align-items:center; justify-content:space-between; gap:12px;}
+header.site-header.is-bare .nav-prefs{margin-left:auto;}
+.site-header.is-bare .logo{cursor:default;}
+.site-footer.is-bare .footer-bottom{justify-content:center;}

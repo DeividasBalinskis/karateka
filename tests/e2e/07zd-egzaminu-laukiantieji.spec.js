@@ -22,6 +22,10 @@ test('exam waiting list: one link, separate protocols per belt, add to protocol 
   // Žmogus be paskyros registruojasi
   const v = await login(browser, null, 390, 844);
   await v.goto(url.replace(/^https?:\/\/[^/]+\//, ''));
+  // Nuoroda leidžia tik užsiregistruoti: jokio svetainės meniu ir nuorodų (tik kalba ir privatumo politika be meniu)
+  const links = await v.evaluate(() => [...document.querySelectorAll('a[href]')].map(a => a.getAttribute('href')));
+  check('registration link: no site menu or links', await v.locator('.nav-list, #burgerBtn, .m-tabbar').count() === 0
+    && links.every(h => /kalba\.php|privatumas\.php\?be_meniu=1/.test(h)), JSON.stringify(links));
   await v.fill('input[name=first_name]', 'Laukiantis'); await v.fill('input[name=last_name]', 'Testinis');
   await v.fill('input[name=birth_date]', '2014-05-06'); await v.selectOption('select[name=kyu]', '9 kyu');
   await v.fill('input[name=email]', 'laukiantis@example.test'); await v.fill('input[name=phone]', '+37060000000'); await v.fill('input[name=club]', 'Sanrei');

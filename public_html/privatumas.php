@@ -2,7 +2,7 @@
 // Privatumo politika. Pakeitus - atnaujinti datą viršuje (ir, jei pakeitimas esminis, pranešti nariams).
 require __DIR__ . '/app/bootstrap.php';
 
-page_start(t('Privatumo politika'), ['description' => t('Kaip VšĮ Karate Ateitis tvarko asmens duomenis.')]);
+page_start(t('Privatumo politika'), ['description' => t('Kaip VšĮ Karate Ateitis tvarko asmens duomenis.'), 'bare' => get('be_meniu') === '1']);   // iš egzamino registracijos - be meniu
 ?>
 <article class="panel card legal">
   <div class="eyebrow"><?= te('Asmens duomenų apsauga') ?></div>

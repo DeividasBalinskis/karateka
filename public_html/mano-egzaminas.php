@@ -15,7 +15,7 @@ $past = event_last_day($event) < date('Y-m-d');
 // Asmeninė nuoroda galioja 30 dienų po egzamino (sprendimas 2026-11-20): vėliau - tik paaiškinimas, be asmens duomenų
 if (event_last_day($event) < date('Y-m-d', strtotime('-30 days'))) {
     http_response_code(410);
-    page_start(t('Mano egzaminas'), ['noindex' => true]);
+    page_start(t('Mano egzaminas'), ['noindex' => true, 'bare' => !current_account()]);
     echo '<div class="panel card" style="max-width:560px; margin:40px auto;"><h1 class="styled">' . te('Nuoroda nebegalioja') . '</h1><p>'
         . te('Asmeninė egzamino nuoroda galioja 30 dienų po egzamino. Rezultatą ir sertifikatą rasite paskyroje arba paklauskite trenerio.') . '</p></div>';
     page_end();
@@ -45,7 +45,7 @@ $when = fmt_date($event['starts_on'], true) . ($event['ends_on'] && $event['ends
 $days = (int) floor((strtotime($event['starts_on']) - strtotime(date('Y-m-d'))) / 86400);
 $first = explode(' ', trim((string) $row['name']))[0];
 
-page_start(t('Mano egzaminas') . ': ' . tr_text($event['title']), ['noindex' => true]);
+page_start(t('Mano egzaminas') . ': ' . tr_text($event['title']), ['noindex' => true, 'bare' => !current_account()]);   // be paskyros - be svetainės meniu
 ?>
 <div class="my-exam">
   <header class="panel card my-exam-hero">

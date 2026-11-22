@@ -46,7 +46,14 @@ function page_start(string $title, array $opt = []): void
 <?php
     // Renginiai, Naujienos, Pamokos - viena vieta visiems (ir treneriui su redagavimo mygtukais), be trenerio skirtukų juostos
     $section = $opt['section'] ?? null;
-    site_header(false, $admin ? 'admin' : (!empty($opt['account']) ? 'account' : null), $opt['account'] ?? null, $section); ?>
+    // 'bare' (egzamino registracijos nuoroda, asmeninis egzamino puslapis be paskyros): tik logotipas ir kalba - jokio meniu, kad nuoroda leistų tik užsiregistruoti
+    $GLOBALS['page_bare'] = !empty($opt['bare']);
+    if ($GLOBALS['page_bare']) {
+        echo '<header class="site-header is-bare"><nav><span class="logo"><img src="' . e(url('img/logo.png')) . '" alt="' . e(t('Karateka logotipas')) . '"></span>'
+            . '<div class="nav-prefs">' . render_lang_switch() . '</div></nav></header>';
+    } else {
+        site_header(false, $admin ? 'admin' : (!empty($opt['account']) ? 'account' : null), $opt['account'] ?? null, $section);
+    } ?>
 <main class="page <?= !empty($opt['narrow']) ? 'narrow' : '' ?><?= !empty($opt['wide']) ? ' wide' : '' ?><?= !empty($GLOBALS['adm_side']) ? ' has-side' : '' ?>">
 <?php if (!empty($GLOBALS['adm_side'])): ?><div class="adm-shell"><?= $GLOBALS['adm_side'] ?><div class="adm-main"><?php endif; ?>
 <?php foreach ($flashes as $f): ?>
@@ -74,6 +81,13 @@ function page_end(): void
     ?>
 <?php if (!empty($GLOBALS['adm_side'])): ?></div></div><?php endif; ?>
 </main>
+<?php if (!empty($GLOBALS['page_bare'])): ?>
+<footer class="site-footer is-bare"><div class="footer-bottom"><span>© <?= date('Y') ?> <?= te('VšĮ Karate Ateitis') ?></span></div></footer>
+<?= feedback_widget_html() /* tik 💡 (personalui - pastaboms apie šį puslapį), be žinučių ir kitų mygtukų */ ?>
+<script src="<?= e(asset_url('assets/header.js')) ?>"></script>
+</body>
+</html>
+<?php return; endif; ?>
 <footer class="site-footer">
   <div class="footer-bottom">
     <span>© <?= date('Y') ?> <?= te('VšĮ Karate Ateitis ·') ?> <a href="<?= url('privatumas.php') ?>"><?= te('Privatumo politika') ?></a><?= current_account() ? ' · <a href="' . url('klausimai.php') . '">' . te('Klausimai ir atsakymai') . '</a>' : '' ?><?= footer_links_html() ?></span>
