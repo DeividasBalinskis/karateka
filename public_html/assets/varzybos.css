@@ -1493,3 +1493,24 @@ body.vz.vz-public:not(.scr) .vz-top-row, body.vz.vz-public:not(.scr) .tabs { max
 .vz-flash-err { background: var(--accent-soft, #FDE8EB); color: var(--accent, #B5281F); border-color: rgba(181, 40, 31, .2); }
 .vz-flash-x { border: 0; background: transparent; color: inherit; font: inherit; min-width: 40px; min-height: 40px; border-radius: 10px; cursor: pointer; }
 .vz-flash-x:hover { background: rgba(0, 0, 0, .06); }
+
+/* v1.86: 📹 tatamių vaizdas (YouTube Live, filmuoja telefonas) su kovos rezultatu ant vaizdo - žiūrovų puslapyje */
+.gv-vids { max-width: 1100px; margin: 14px auto 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap: 12px; padding: 0 0; }
+.gv-vids[hidden] { display: none; }
+.gv-vid { background: var(--panel, #fff); border-radius: 14px; padding: 8px; box-shadow: 0 6px 18px rgba(0,0,0,.08); }
+.gv-vid-h { font-weight: 800; font-size: 15px; padding: 2px 4px 8px; }
+.gv-vid-frame { position: relative; aspect-ratio: 16 / 9; border-radius: 10px; overflow: hidden; background: #000; }
+.gv-vid-frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.gv-ovl { position: absolute; left: 8px; right: 8px; bottom: 8px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 6px 10px; border-radius: 10px;
+  background: rgba(10, 12, 20, .78); color: #fff; font-weight: 700; font-size: 14px; line-height: 1.2; pointer-events: none; backdrop-filter: blur(4px); }
+.gv-ovl[hidden] { display: none; }
+.gv-ovl .ov-cat { flex-basis: 100%; font-size: 11px; font-weight: 600; opacity: .8; }
+.gv-ovl .ov-n { flex: 1 1 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gv-ovl .ov-n.aka { color: #FF8A8A; }
+.gv-ovl .ov-n.shiro { text-align: right; }
+.gv-ovl .ov-s { font-size: 22px; min-width: 1.4em; text-align: center; }
+.gv-ovl .ov-s.aka { color: #FF8A8A; }
+.gv-ovl .ov-t { font-variant-numeric: tabular-nums; opacity: .9; }
+.gv-ovl .ov-win { flex-basis: 100%; color: #FFD27A; }
+.area-vid { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; }
+.area-vid input { width: 150px; font-size: 12px; padding: 4px 6px; }

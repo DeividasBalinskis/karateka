@@ -259,11 +259,46 @@
     fbox.addEventListener('click', function (e) { var b = e.target.closest('[data-cat]'); if (b) openSheet(b.dataset.cat, b.dataset.title); });
   }
 
-  function render() { if (!data && !Object.keys(local).length) return; if (CFG.screen) renderScreen(); else renderViewer(); }
+  // 📹 Tatamių vaizdas (YouTube Live) su kovos rezultatu ant vaizdo. Vaizdas kuriamas vieną kartą (kitaip persikrautų kas kelias sekundes),
+  // atnaujinama tik juosta su vardais, balais ir laiku.
+  var vidBox = null;
+  function renderVideos() {
+    var areas = ((data && data.areas) || []).filter(function (a) { return a.video; });
+    if (!vidBox) {
+      if (!areas.length) return;
+      vidBox = document.createElement('section'); vidBox.className = 'gv-vids'; vidBox.id = 'gv-vids';
+      root.parentNode.insertBefore(vidBox, root);
+    }
+    var keep = {};
+    areas.forEach(function (a) {
+      keep[a.id] = true;
+      var card = vidBox.querySelector('[data-vid="' + a.id + '"]');
+      if (!card || card.dataset.src !== a.video) {
+        if (card) card.remove();
+        card = document.createElement('div'); card.className = 'gv-vid'; card.dataset.vid = a.id; card.dataset.src = a.video;
+        card.innerHTML = '<div class="gv-vid-h">📹 ' + esc(a.name) + '</div><div class="gv-vid-frame"><iframe src="' + esc(a.video) + '" title="' + esc(a.name) + '" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>' +
+          '<div class="gv-ovl" hidden></div></div>';
+        vidBox.appendChild(card);
+      }
+      var ov = card.querySelector('.gv-ovl'), pick = liveFor(a.id), d = pick && pick.d, html = '';
+      if (d && d.mode === 'score') html = '<span class="ov-cat">' + esc(d.cat) + '</span><span class="ov-n aka">' + esc(d.aka.name) + '</span><b class="ov-s">' + esc(d.perf && d.perf.total != null ? d.perf.total : '–') + '</b>';
+      else if (d) {
+        var left = timeLeft(pick), sa = d.mode === 'score2' ? (d.parts.a.tk != null && d.parts.a.tp != null ? (d.parts.a.tk + d.parts.a.tp).toFixed(1) : '–') : d.sa,
+          sb = d.mode === 'score2' ? (d.parts.b.tk != null && d.parts.b.tp != null ? (d.parts.b.tk + d.parts.b.tp).toFixed(1) : '–') : d.sb;
+        html = '<span class="ov-cat">' + esc(d.cat) + (d.bout ? ' · ' + esc(d.bout) : '') + '</span><span class="ov-n aka">' + esc(d.aka.name) + '</span><b class="ov-s aka">' + esc(sa) + '</b>' +
+          (left !== null && d.mode !== 'score2' ? '<span class="ov-t" data-timer="' + a.id + '">' + fmt(left, d.timer && d.timer.up) + '</span>' : '<span class="ov-t">:</span>') +
+          '<b class="ov-s shiro">' + esc(sb) + '</b><span class="ov-n shiro">' + esc(d.shiro.name) + '</span>' + (d.winner ? '<span class="ov-win">🏆 ' + esc(d.winner === 'a' ? d.aka.name : d.shiro.name) + '</span>' : '');
+      }
+      if (ov.dataset.h !== html) { ov.dataset.h = html; ov.innerHTML = html; ov.hidden = !html; }
+    });
+    vidBox.querySelectorAll('[data-vid]').forEach(function (c) { if (!keep[c.dataset.vid]) c.remove(); });
+    vidBox.hidden = !areas.length;
+  }
+  function render() { if (!data && !Object.keys(local).length) return; if (CFG.screen) renderScreen(); else { renderViewer(); renderVideos(); } }
   // Laikrodis tiksi tarp atnaujinimų
   setInterval(function () {
     if (CFG.screen) { var el = document.getElementById('scr-timer'), p = liveFor(CFG.area); if (el && p) { var l = timeLeft(p); el.textContent = fmt(l, p.d.timer && p.d.timer.up); el.className = 'scr-timer' + (p.d.timer && p.d.timer.up ? '' : l <= 0 ? ' over' : l <= 15000 ? ' last' : ''); } return; }
-    root.querySelectorAll('[data-timer]').forEach(function (el) { var p = liveFor(el.dataset.timer); if (p) el.textContent = fmt(timeLeft(p), p.d.timer && p.d.timer.up); });
+    document.querySelectorAll('#gyvai [data-timer], #gv-vids [data-timer]').forEach(function (el) { var p = liveFor(el.dataset.timer); if (p) el.textContent = fmt(timeLeft(p), p.d.timer && p.d.timer.up); });
   }, 250);
   // C7: paslėptame skirtuke (ir žiūrovų telefone, ir ekrane) netikrinama; grįžus - iš karto
   var pollT = null;

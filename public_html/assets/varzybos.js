@@ -2363,7 +2363,8 @@
           '<button class="btn" type="button" data-up="' + c.id + '"' + (idx === 0 ? ' disabled' : '') + ' aria-label="Aukštyn" title="Aukštyn">↑</button><button class="btn" type="button" data-down="' + c.id + '"' + (idx === list.length - 1 ? ' disabled' : '') + ' aria-label="Žemyn" title="Žemyn">↓</button>' + moveOpts + '</span></div></li>';
       }).join('');
       return '<div class="area' + (plan.delay !== null && plan.delay > 5 ? ' late' : '') + '" data-area="' + a.id + '"><div class="area-head"><input class="name" value="' + esc(a.name) + '" data-rename="' + a.id + '" aria-label="Tatamio pavadinimas">' +
-        '<div class="area-meta"><label>Pradžia <input type="time" value="' + esc(a.start) + '" data-start="' + a.id + '"></label>' + delayChip(plan.delay) + '</div>' +
+        '<div class="area-meta"><label>Pradžia <input type="time" value="' + esc(a.start) + '" data-start="' + a.id + '"></label>' + delayChip(plan.delay) +
+          (CFG.admin ? '<label class="area-vid" title="Telefonu filmuojamas tatamis: YouTube programėlėje „Transliuoti“ ir čia įklijuokite nuorodą - žiūrovai matys vaizdą su kovos rezultatu">📹 <input type="url" value="' + esc(a.stream || '') + '" data-stream="' + a.id + '" placeholder="YouTube Live nuoroda" aria-label="Tatamio vaizdo nuoroda (YouTube Live)"></label>' : '') + '</div>' +
         (plan.items.length ? '<button type="button" class="btn btn-primary area-go" data-start-run="' + a.id + '">▶ ' + (plan.cur ? 'Dabar: ' + esc(plan.cur.c.name) : 'Visos grupės baigtos') + '</button>' : '') + '</div>' +
         '<ul class="area-list" data-drop="' + a.id + '">' + (items || '<li class="muted small">Tempkite kategoriją čia</li>') + '</ul>' +
         '<div class="area-foot">Pabaiga apie <b>' + hhmm(t) + '</b> · ' + list.length + ' kateg.' + (S.areas.length > 1 && CFG.admin ? ' · <button class="area-del" type="button" data-del-area="' + a.id + '" title="Pašalinti šį tatamį (jo rungtys pereis į kitus)">Pašalinti tatamį</button>' : '') + '</div></div>';
@@ -2699,6 +2700,11 @@
     var t = e.target;
     if (t.dataset.start) { S.areas.find(function (a) { return a.id === +t.dataset.start; }).start = t.value || '09:00'; }
     else if (t.dataset.rename) { S.areas.find(function (a) { return a.id === +t.dataset.rename; }).name = t.value.trim() || 'TATAMIS'; }
+    else if (t.dataset.stream) {   // 📹 tatamio vaizdas (YouTube Live) - žiūrovų puslapyje su kovos rezultatu ant vaizdo
+      var v = t.value.trim();
+      if (v && !ytEmbed(v)) { toast('Įklijuokite YouTube nuorodą (pvz. https://youtube.com/live/…)'); return; }
+      S.areas.find(function (a) { return a.id === +t.dataset.stream; }).stream = v;
+    }
     else return;
     save(); render();
   });
@@ -2904,6 +2910,14 @@
     var list = c.draw.system === 'rr' ? rrMatches(c) : allMatches(bracket(c));
     return list.filter(function (m) { return m.a && m.b && !m.winner; }).sort(function (x, y) { return (x.no || 0) - (y.no || 0); });
   }
+  // 📹 YouTube nuoroda → įterpimo adresas (vaizdo įrašas / transliacija arba kanalo tiesioginė transliacija); kita - ''
+  function ytEmbed(u) {
+    u = String(u || '').trim(); if (!u) return '';
+    var m = u.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?(?:.*&)?v=|live\/|embed\/|shorts\/))([A-Za-z0-9_-]{11})/);
+    if (m) return 'https://www.youtube-nocookie.com/embed/' + m[1] + '?autoplay=1&mute=1&playsinline=1';
+    m = u.match(/youtube\.com\/channel\/(UC[A-Za-z0-9_-]{22})/);
+    return m ? 'https://www.youtube.com/embed/live_stream?channel=' + m[1] + '&autoplay=1&mute=1' : '';
+  }
   function areasSummary() {
     return S.areas.map(function (a) {
       var t = toMin(a.start), cats = [], next = [], cur = false;
@@ -2918,7 +2932,7 @@
             b: m.b ? pubName(m.b) : '', bc: m.b ? (person(c, m.b) || {}).club || '' : '' });
         });
       });
-      return { id: a.id, name: a.name, end: hhmm(t), cats: cats, next: next };
+      return { id: a.id, name: a.name, end: hhmm(t), cats: cats, next: next, video: ytEmbed(a.stream) };
     });
   }
   function medalTable(rs) {
