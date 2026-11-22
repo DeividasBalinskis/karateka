@@ -1,12 +1,14 @@
 # Handoff
-Updated: 2026-11-22 · version v1.88 · branch claude/festive-curie-01jgx2
+Updated: 2026-11-22 · version v1.89 · branch claude/festive-curie-01jgx2
 
 ## Pending asks (answer these first)
 | Asked | By | What | Status |
 |---|---|---|---|
 | 2026-11-20 | Denis | #30 and #147: messages cut off - ask Denis to write them again | waiting |
 | 2026-11-22 | Claude | Pick variants: menu on a computer A1/A2/A3, phone menu B1/B2/B3, Budo video C1 (done) + C2 tablet / C3 hall TV (screenshots sent in chat) | waiting |
-| 2026-11-22 | Claude | „į main“ for v1.85-v1.88 (main = v1.84) | waiting |
+| 2026-11-22 | Claude | „į main“ for v1.85-v1.89 (main = v1.84) | waiting |
+| 2026-11-22 | Claude | Auto-fix loop: FTP account for the test folder + 3 GitHub secrets + „darom“ + answers 1-3 (docs/planai/auto-taisymas.md) | waiting |
+| 2026-11-22 | Claude → Denis | #165 exams waiting list: 4 questions (docs/planai/egzaminu-laukiantieji.md) | waiting |
 | 2026-11-21 | Claude | Answers for not-started steps | answered 2026-11-21 (see decisions.md); waiting: Varžybos code on branch `varzybos-kodas` (D1), LibreSprite on PC (D8) |
 
 ## Last session
@@ -55,6 +57,10 @@ Updated: 2026-11-22 · version v1.88 · branch claude/festive-curie-01jgx2
 - v1.88: Deividas did not like the chip rows - the box is for writing (+ „Jūsų atsiliepimai“, 3 newest); staff open „📋 Visi atsiliepimai“
   (#fbAllBtn → #fbAll: #fbPlace grouped dropdown g|s, #fbSt, #fbQ, #fbAllList). Admin page: status + place dropdowns (?b=, ?p=g|s; ?g=&s= still work).
   Fixed a race: „+ Naujas“ / opening another item no longer waits for the save (typed text was lost). Tests 06u, 07za updated.
+- v1.89: feedback #164 (bigger box, 1 latest own), #166 (protocol rows start 6.4 - EXAM_SCORE_START), #167 (box fits the visual viewport - fit() in feedback.js),
+  #168 (LTKF editor: nav click renames, ↗ opens), #169-#171 (Budo: texts out, category name opens run, site_switch_html('budo') in the header);
+  verdict buttons (db/053 feedback.verdict ok|revert|reverted; API ?status=revert, POST verdict), diegimas-api.php (GET state / POST dbupdate, Claude key),
+  .github/workflows/ikelti-i-test.yml (FTP to test on „[į test]“ commit or manual run; needs TEST_FTP_* secrets), OBS bar (varzybos-gyvai.php?juosta=1&tatami=N). Test 07zb.
 - Committed and pushed to the claude branch after each stage.
 
 ## Open

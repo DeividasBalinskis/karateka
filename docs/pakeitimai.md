@@ -4,6 +4,21 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.89 - 2026-11-22 (atsiliepimai #164-#171; „Patinka“ / „Grąžinti“; OBS juosta)
+- **💡 Atsiliepimas (#164):** langas didesnis, rašymo laukas aukštesnis; „Jūsų atsiliepimai“ rodo tik paskutinį - kiti per „Rodyti visus“.
+- **Planšetėje (#167):** lango viršus su „Atsiliepimas“ ir × visada matomas - ir kai atsidaro klaviatūra.
+- **Pataisyta - ar patinka?** Prie atsiliepimo, pažymėto „Pataisyta“, autorius mato **👍 Patinka** ir **↩ Grąžinti kaip buvo**
+  (ir kitame savo įrenginyje). Valdymas → Atsiliepimai rodo įvertinimą. „Grąžinti“ - Claude atšaukia tą pakeitimą.
+- **Egzamino protokolas (#166):** naujas dalyvis iš karto gauna balus 6.4 (Kihon, Kata, Kumite) - keičiama − / +.
+- **Budo:** išimti ilgi aprašymai (sekretoriato nuoroda, Tinklai; aprašymas - užvedus pelę ant pavadinimo) (#169);
+  „Tinkluose“ kategorijos pavadinimas atidaro valdymą, kaip „Valdyti →“ (#170); antraštėje šalia BUDO - „⌄“ į Karateka ir LTKF (#171).
+- **Budo → Transliacija ir registracija → 🎬 OBS juosta:** kiekvienam tatamiui nuoroda permatomai juostai (kova, balai, laikas)
+  OBS programai - ją uždedate ant telefono vaizdo ir transliuojate (YouTube ar kt.).
+- **LTKF redagavimas (#168):** paspaudus meniu punktą keičiamas jo pavadinimas, puslapis neatidaromas; atidaryti - ↗ prie punkto.
+- **Įkėlimui be rankų paruošta** (dar neįjungta): GitHub įkėlimas į test (`.github/workflows/ikelti-i-test.yml`) ir
+  `diegimas-api.php` (versija ir duomenų bazės atnaujinimas su „Claude prieigos“ raktu). Įjungimas - `docs/planai/auto-taisymas.md`.
+- Duomenų bazė: naujas failas `db/053_atsiliepimu_ivertinimas.sql`.
+
 ## v1.88 - 2026-11-22 (atsiliepimų langas paprastesnis - Deividas)
 - **💡 lange - tik rašymas:** tekstas, 📎 nuotraukos, „Išsaugoti“ ir trumpas „Jūsų atsiliepimai“ (3 naujausi, pirmiausia - iš šios vietos;
   „Rodyti visus“). Mygtukų ir filtrų eilių nebėra.

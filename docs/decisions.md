@@ -4,6 +4,10 @@ Answers given by Deividas on 2026-11-20 (questions from `docs/darbo-planas.md`, 
 
 | Date | Area | Decision | Who decided | Source |
 |---|---|---|---|---|
+| 2026-11-22 | Exams | A new protocol row starts with 6.4 in Kihon, Kata and Kumite. (#166) | Denis | feedback |
+| 2026-11-22 | Feedback | A fixed item gets „👍 Patinka“ / „↩ Grąžinti kaip buvo“ for its author (any device of the account); „Grąžinti“ = Claude reverts that fix (Claude's call on Deividas's ask). | Deividas + Claude | chat |
+| 2026-11-22 | Budo | Long help texts out of the screen (tooltip on the title instead); category name opens control; „⌄“ next to BUDO for Karateka / LTKF. (#169-#171) | Denis | feedback |
+| 2026-11-22 | Budo | Phone streaming: OBS on a computer + phone camera (e.g. VDO.Ninja) + our transparent score bar per tatami (?juosta=1&tatami=N). Kept: YouTube link per tatami for viewers. | Deividas + Claude | chat |
 | 2026-11-22 | Feedback | The 💡 box is for writing: text, photos, save and „Jūsų atsiliepimai“ only. Staff get „📋 Visi atsiliepimai“ - a separate view with dropdowns (place, status) and search. Many buttons → dropdowns (also on Valdymas → Atsiliepimai). Replaces the v1.87 chip rows. | Deividas | chat |
 | 2026-11-22 | Feedback | Feedback is grouped by the place it was left: Budo / Karateka / LTKF + sections (Budo sections = app tabs, Karateka admin = Valdymas menu items); the current place first. | Deividas | chat |
 | 2026-11-22 | Feedback | The 💡 box keeps open state, text and filters across page changes in the same browser tab (3 h); on a phone it does not reopen by itself, ✎ on the button instead (Claude's call). Can be changed: reopen on phones too. | Deividas + Claude | chat |

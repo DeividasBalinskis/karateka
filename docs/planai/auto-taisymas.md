@@ -1,6 +1,6 @@
 # Planas: atsiliepimas → Claude pataiso → test atsinaujina pats → Denis „Patinka“ / „Grąžinti“
 
-Būsena: **tik planas** (2026-11-22). Kodas nepritaikytas. Juodraštis (3 ir 4 dalys) - `auto-taisymas-juodrastis.patch`.
+Būsena (v1.89): **1-3 dalys padarytos** (įkėlimo workflow, `diegimas-api.php`, Denio mygtukai). Trūksta: FTP paskyros ir GitHub paslapčių, tada - 4 dalis (suplanuota užduotis).
 Gyva svetainė karateka.lt šiame plane **neliečiama niekada**. `main` juda tik po „į main“.
 
 ## Kaip veiks (Denio akimis)
