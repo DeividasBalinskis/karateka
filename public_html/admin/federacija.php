@@ -8,6 +8,21 @@ $me = require_staff();
 $tab = in_array(get('skiltis'), ['klubai', 'teisejai'], true) ? get('skiltis') : 'nariai';
 $canEdit = is_admin($me);
 
+// v1.86: teisėjo diplomo atsisiuntimas (tik personalui; failai užrakinti naršyklei)
+if (($fid = (int) get('failas')) && ltkf_judge_extra_ready()) {
+    $f = q_one('SELECT * FROM ltkf_judge_files WHERE id = ?', [$fid]);
+    $path = $f ? LTKF_JUDGE_DIR . '/' . basename((string) $f['file']) : '';
+    if (!$f || !is_file($path)) {
+        not_found();
+    }
+    header('Content-Type: application/octet-stream');
+    header('Content-Length: ' . filesize($path));
+    header("Content-Disposition: attachment; filename*=UTF-8''" . rawurlencode((string) ($f['orig'] ?: $f['file'])));
+    header('Cache-Control: no-store');
+    readfile($path);
+    exit;
+}
+
 // #160: klubų, teisėjų ir narių registrai - keičia administratorius
 if (is_post() && $canEdit && ltkf_reg_ready()) {
     csrf_check();
@@ -44,7 +59,48 @@ if (is_post() && $canEdit && ltkf_reg_ready()) {
         }
         redirect('admin/federacija.php?skiltis=teisejai');
     }
+    // v1.86 (Denis): lankomumas (seminarai, teisėjavimas varžybose, egzaminai) ir diplomai
+    $jid = (int) post('judge_id');
+    if ($act === 'judge_event_add' && $jid && ltkf_judge_extra_ready()) {
+        $date = preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) post('on_date')) ? post('on_date') : date('Y-m-d');
+        $title = $txt('title', 190);
+        if ($title) {
+            q('INSERT INTO ltkf_judge_events (judge_id, on_date, kind, title, note) VALUES (?, ?, ?, ?, ?)',
+                [$jid, $date, isset(LTKF_JUDGE_EVENT_KINDS[post('kind')]) ? post('kind') : 'other', $title, $txt('note', 255)]);
+            flash('ok', t('Įrašas pridėtas.'));
+        } else {
+            flash('err', t('Įrašykite, koks tai renginys.'));
+        }
+        redirect('admin/federacija.php?skiltis=teisejai&j=' . $jid . '#lankomumas');
+    }
+    if ($act === 'judge_event_delete' && $jid && ltkf_judge_extra_ready()) {
+        q('DELETE FROM ltkf_judge_events WHERE id = ? AND judge_id = ?', [(int) post('event_id'), $jid]);
+        redirect('admin/federacija.php?skiltis=teisejai&j=' . $jid . '#lankomumas');
+    }
+    if ($act === 'judge_file_add' && $jid && ltkf_judge_extra_ready()) {
+        [$file, $err] = ltkf_judge_file_store($_FILES['file'] ?? []);
+        if ($file) {
+            $orig = mb_substr((string) ($_FILES['file']['name'] ?? ''), 0, 190);
+            q('INSERT INTO ltkf_judge_files (judge_id, title, file, orig, size) VALUES (?, ?, ?, ?, ?)',
+                [$jid, $txt('title', 190) ?: pathinfo($orig, PATHINFO_FILENAME), $file, $orig, (int) ($_FILES['file']['size'] ?? 0)]);
+            flash('ok', t('Diplomas įkeltas.'));
+        } else {
+            flash('err', $err);
+        }
+        redirect('admin/federacija.php?skiltis=teisejai&j=' . $jid . '#diplomai');
+    }
+    if ($act === 'judge_file_delete' && $jid && ltkf_judge_extra_ready()) {
+        $f = q_one('SELECT * FROM ltkf_judge_files WHERE id = ? AND judge_id = ?', [(int) post('file_id'), $jid]);
+        if ($f) {
+            @unlink(LTKF_JUDGE_DIR . '/' . basename((string) $f['file']));
+            q('DELETE FROM ltkf_judge_files WHERE id = ?', [(int) $f['id']]);
+        }
+        redirect('admin/federacija.php?skiltis=teisejai&j=' . $jid . '#diplomai');
+    }
     if ($act === 'judge_delete') {
+        foreach (ltkf_judge_files((int) post('id')) as $f) {
+            @unlink(LTKF_JUDGE_DIR . '/' . basename((string) $f['file']));   // diplomai - kartu
+        }
         q('DELETE FROM ltkf_judges WHERE id = ?', [(int) post('id')]);
         flash('ok', t('Teisėjas pašalintas iš registro.'));
         redirect('admin/federacija.php?skiltis=teisejai');
@@ -148,11 +204,12 @@ page_start(t('Federacijos registras'), ['admin' => true]);
     <p class="small muted" style="margin-top:0;"><?= te('LTKF svetainės „Teisėjai“ puslapis rodo šiuos teisėjus kartu su Karateka teisėjais (nariai su žyme „teisėjas“ ir išlaikytu teisėjų testu).') ?></p>
     <?php if (!$judges): ?><p class="muted"><?= te('Registre dar nėra teisėjų.') ?></p><?php endif; ?>
     <table class="table cards">
-      <thead><tr><th><?= te('Vardas, pavardė') ?></th><th><?= te('Klubas') ?></th><th><?= te('Kategorija') ?></th><th><?= te('Licencijos Nr.') ?></th><th><?= te('Galioja iki') ?></th><th></th></tr></thead>
+      <thead><tr><th><?= te('Vardas, pavardė') ?></th><th><?= te('Klubas') ?></th><th><?= te('Kategorija') ?></th><th><?= te('Licencijos Nr.') ?></th><th><?= te('Galioja iki') ?></th><th><?= te('Lankomumas') ?></th><th><?= te('Diplomai') ?></th><th></th></tr></thead>
       <tbody>
       <?php foreach ($judges as $j): $exp = $j['valid_until'] && $j['valid_until'] < date('Y-m-d'); ?>
         <tr><td><b><?= e($j['name']) ?></b><?= $j['note'] ? '<br><span class="small muted">' . e($j['note']) . '</span>' : '' ?></td><td><?= e((string) $j['club']) ?></td><td><?= e((string) $j['category']) ?></td>
           <td><?= e((string) $j['license_no']) ?></td><td<?= $exp ? ' class="danger-text"' : '' ?>><?= $j['valid_until'] ? e(fmt_date($j['valid_until'], true)) . ($exp ? ' · ' . te('baigėsi') : '') : '—' ?></td>
+          <td><?= (int) $j['events_n'] ?><?= $j['last_event'] ? ' <span class="small muted">· ' . te('paskutinis') . ' ' . e(fmt_date($j['last_event'], true)) . '</span>' : '' ?></td><td><?= (int) $j['files_n'] ?: '—' ?></td>
           <td><?php if ($canEdit): ?><a class="btn btn-ghost btn-sm" href="?skiltis=teisejai&amp;j=<?= (int) $j['id'] ?>#forma"><?= te('Keisti') ?></a><?php endif; ?></td></tr>
       <?php endforeach; ?>
       </tbody>
@@ -177,6 +234,40 @@ page_start(t('Federacijos registras'), ['admin' => true]);
       <?php if ($j): ?><a class="btn btn-ghost" href="?skiltis=teisejai"><?= te('Atšaukti') ?></a>
         <button class="btn btn-danger" type="submit" name="action" value="judge_delete" formnovalidate onclick="return confirm('<?= e(t('Pašalinti teisėją iš registro?')) ?>')"><?= te('Pašalinti') ?></button><?php endif; ?>
     </form>
+    <?php if ($j && ltkf_judge_extra_ready()): $jid = (int) $j['id']; $evs = ltkf_judge_events($jid); $files = ltkf_judge_files($jid); ?>
+      <div class="panel card form" id="lankomumas" style="margin-top:16px;">
+        <div class="kicker"><?= te('Lankomumas') ?> <span class="hint"><?= te('seminarai, teisėjavimas varžybose, egzaminai') ?></span></div>
+        <?php if (!$evs): ?><p class="muted small"><?= te('Įrašų dar nėra.') ?></p><?php endif; ?>
+        <ul class="jd-list">
+          <?php foreach ($evs as $ev): ?>
+            <li><span><b><?= e(fmt_date($ev['on_date'], true)) ?></b> · <?= te(LTKF_JUDGE_EVENT_KINDS[$ev['kind']] ?? $ev['kind']) ?> · <?= e($ev['title']) ?><?= $ev['note'] ? ' <span class="small muted">(' . e($ev['note']) . ')</span>' : '' ?></span>
+              <form method="post" class="inline" onsubmit="return confirm(this.dataset.q)" data-q="<?= te('Ištrinti šį įrašą?') ?>"><?= csrf_field() ?><input type="hidden" name="action" value="judge_event_delete"><input type="hidden" name="judge_id" value="<?= $jid ?>"><input type="hidden" name="event_id" value="<?= (int) $ev['id'] ?>"><button class="btn btn-ghost btn-xs" aria-label="<?= te('Ištrinti') ?>">🗑</button></form></li>
+          <?php endforeach; ?>
+        </ul>
+        <form method="post" class="jd-add"><?= csrf_field() ?><input type="hidden" name="action" value="judge_event_add"><input type="hidden" name="judge_id" value="<?= $jid ?>">
+          <label><?= te('Data') ?> <input type="date" name="on_date" value="<?= date('Y-m-d') ?>" required></label>
+          <label><?= te('Kas') ?> <select name="kind"><?php foreach (LTKF_JUDGE_EVENT_KINDS as $k => $l): ?><option value="<?= $k ?>"><?= te($l) ?></option><?php endforeach; ?></select></label>
+          <label class="jd-wide"><?= te('Renginys') ?> <input name="title" maxlength="190" required placeholder="<?= te('pvz. LTKF teisėjų seminaras, Vilnius') ?>"></label>
+          <label class="jd-wide"><?= te('Pastaba') ?> <input name="note" maxlength="255"></label>
+          <button class="btn btn-primary btn-sm" type="submit"><?= te('+ Pridėti') ?></button>
+        </form>
+      </div>
+      <div class="panel card form" id="diplomai" style="margin-top:16px;">
+        <div class="kicker"><?= te('Diplomai ir pažymėjimai') ?> <span class="hint"><?= te('mato tik personalas') ?></span></div>
+        <?php if (!$files): ?><p class="muted small"><?= te('Diplomų dar nėra.') ?></p><?php endif; ?>
+        <ul class="jd-list">
+          <?php foreach ($files as $f): ?>
+            <li><a href="?failas=<?= (int) $f['id'] ?>">📄 <?= e($f['title']) ?></a> <span class="small muted"><?= e(fmt_date(substr((string) $f['created_at'], 0, 10), true)) ?></span>
+              <form method="post" class="inline" onsubmit="return confirm(this.dataset.q)" data-q="<?= te('Ištrinti šį failą?') ?>"><?= csrf_field() ?><input type="hidden" name="action" value="judge_file_delete"><input type="hidden" name="judge_id" value="<?= $jid ?>"><input type="hidden" name="file_id" value="<?= (int) $f['id'] ?>"><button class="btn btn-ghost btn-xs" aria-label="<?= te('Ištrinti') ?>">🗑</button></form></li>
+          <?php endforeach; ?>
+        </ul>
+        <form method="post" enctype="multipart/form-data" class="jd-add"><?= csrf_field() ?><input type="hidden" name="action" value="judge_file_add"><input type="hidden" name="judge_id" value="<?= $jid ?>">
+          <label class="jd-wide"><?= te('Pavadinimas') ?> <input name="title" maxlength="190" placeholder="<?= te('pvz. Teisėjo diplomas, 2025') ?>"></label>
+          <div class="jd-wide"><?= file_drop('file', '.pdf,.jpg,.jpeg,.png,.webp,.heic,.doc,.docx', t('Pasirinkti diplomą'), t('PDF, nuotrauka ar Word - galima nutempti čia')) ?></div>
+          <button class="btn btn-primary btn-sm" type="submit"><?= te('Įkelti') ?></button>
+        </form>
+      </div>
+    <?php endif; ?>
   <?php endif; ?>
 <?php page_end(); exit; endif; ?>
 <form method="get" class="panel card form inline-fields">

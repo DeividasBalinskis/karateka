@@ -48,7 +48,70 @@ function ltkf_clubs(): array
 
 function ltkf_judges(): array
 {
-    return ltkf_reg_ready() ? q_all('SELECT * FROM ltkf_judges ORDER BY name') : [];
+    if (!ltkf_reg_ready()) {
+        return [];
+    }
+    if (ltkf_judge_extra_ready()) {
+        return q_all('SELECT j.*, (SELECT COUNT(*) FROM ltkf_judge_events e WHERE e.judge_id = j.id) AS events_n,
+                             (SELECT MAX(on_date) FROM ltkf_judge_events e WHERE e.judge_id = j.id) AS last_event,
+                             (SELECT COUNT(*) FROM ltkf_judge_files f WHERE f.judge_id = j.id) AS files_n
+                        FROM ltkf_judges j ORDER BY j.name');
+    }
+    return q_all('SELECT *, 0 AS events_n, NULL AS last_event, 0 AS files_n FROM ltkf_judges ORDER BY name');
+}
+
+// ---------- Denis (v1.86): teisėjų lankomumas ir diplomai (db/052) ----------
+
+const LTKF_JUDGE_EVENT_KINDS = ['seminar' => 'Seminaras', 'competition' => 'Teisėjavo varžybose', 'exam' => 'Kvalifikacijos egzaminas', 'other' => 'Kita'];
+const LTKF_JUDGE_DIR = PUBLIC_DIR . '/uploads/teisejai';
+const LTKF_JUDGE_FILE_EXT = ['pdf', 'jpg', 'jpeg', 'png', 'webp', 'heic', 'doc', 'docx'];
+
+function ltkf_judge_extra_ready(): bool
+{
+    static $ok = null;
+    if ($ok === null) {
+        try {
+            q_value('SELECT 1 FROM ltkf_judge_events LIMIT 1');
+            q_value('SELECT 1 FROM ltkf_judge_files LIMIT 1');
+            $ok = true;
+        } catch (PDOException $ex) {
+            $ok = false;   // dar neimportuotas db/052
+        }
+    }
+    return $ok;
+}
+
+function ltkf_judge_events(int $judgeId): array
+{
+    return ltkf_judge_extra_ready() ? q_all('SELECT * FROM ltkf_judge_events WHERE judge_id = ? ORDER BY on_date DESC, id DESC', [$judgeId]) : [];
+}
+
+function ltkf_judge_files(int $judgeId): array
+{
+    return ltkf_judge_extra_ready() ? q_all('SELECT * FROM ltkf_judge_files WHERE judge_id = ? ORDER BY created_at DESC, id DESC', [$judgeId]) : [];
+}
+
+/** Diplomo failas - į užrakintą aplanką (naršyklė tiesiogiai neatsiųs), grąžina [failas, klaida] */
+function ltkf_judge_file_store(array $f): array
+{
+    if (($f['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK || !is_uploaded_file((string) $f['tmp_name'])) {
+        return [null, t('Pasirinkite failą.')];
+    }
+    $ext = strtolower(pathinfo((string) $f['name'], PATHINFO_EXTENSION));
+    if (!in_array($ext, LTKF_JUDGE_FILE_EXT, true) || (int) $f['size'] > 20 * 1024 * 1024) {
+        return [null, t('Tinka PDF, nuotrauka ar Word failas iki 20 MB.')];
+    }
+    if (!is_dir(LTKF_JUDGE_DIR)) {
+        @mkdir(LTKF_JUDGE_DIR, 0755, true);
+    }
+    if (!is_file(LTKF_JUDGE_DIR . '/.htaccess')) {
+        @file_put_contents(LTKF_JUDGE_DIR . '/.htaccess', "Require all denied\n");
+    }
+    $name = bin2hex(random_bytes(12)) . '.' . $ext;
+    if (!move_uploaded_file((string) $f['tmp_name'], LTKF_JUDGE_DIR . '/' . $name)) {
+        return [null, t('Nepavyko išsaugoti failo.')];
+    }
+    return [$name, null];
 }
 
 /** Slug iš pavadinimo: „Vilniaus karate mokykla“ → vilniaus-karate-mokykla */

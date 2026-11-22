@@ -2120,3 +2120,11 @@ a.kid-mini:hover{border-color:var(--accent);}
 .set-log li{display:flex; justify-content:space-between; align-items:center; gap:8px 12px; padding:8px 0; border-bottom:1px dashed rgba(23,20,15,0.1); overflow-wrap:anywhere;}
 .set-log form.inline{margin:0; flex:none;}
 @media (max-width:600px){ .set-map li{grid-template-columns:minmax(0, 1fr) auto;} .set-map .set-v{grid-column:1; grid-row:2; font-weight:500;} .set-map .set-w{grid-row:1 / 3; grid-column:2;} }
+
+/* v1.86: LTKF teisėjų lankomumas ir diplomai (Valdymas → Federacijos registrai → Teisėjai) */
+.jd-list{list-style:none; margin:6px 0 10px; padding:0; display:grid; gap:4px;}
+.jd-list li{display:flex; justify-content:space-between; align-items:center; gap:8px; padding:6px 0; border-bottom:1px dashed var(--border, rgba(23,20,15,0.12)); overflow-wrap:anywhere;}
+.jd-list form.inline{margin:0; flex:none;}
+.jd-add{display:flex; flex-wrap:wrap; gap:8px 12px; align-items:flex-end;}
+.jd-add label{flex:0 1 auto; margin:0;}
+.jd-add .jd-wide{flex:1 1 220px;}
