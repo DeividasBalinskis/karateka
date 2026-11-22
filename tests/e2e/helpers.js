@@ -86,7 +86,9 @@ async function flashes(page) {
 
 /** 💡 atsiliepimo langas - savas mygtukas visuose ekranuose (v1.84: nebe per bendrą 💡/💬 meniu) */
 async function openFeedback(page) {
-  await page.click('#fbFab');
+  // v1.87: langas gali būti jau atidarytas (išlieka pereinant į kitą puslapį) - tada nespaudžiama, kad neužsidarytų
+  await page.waitForSelector('#fbFab');
+  if (await page.locator('#fbPanel').isHidden()) await page.click('#fbFab');
 }
 
 module.exports = { openFeedback, sql, day, ids, login, nav, check, noJsErrors, flashes, PASSWORD, DEMO_PASSWORD, BASE_URL };

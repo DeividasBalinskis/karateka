@@ -5,6 +5,14 @@ require dirname(__DIR__) . '/app/bootstrap.php';
 $me = require_admin();
 
 $filter = isset(FEEDBACK_STATUS[get('b')]) || get('b') === 'visi' ? get('b') : 'atviri';
+// v1.87: kur paliktas - grupė (Budo / Karateka / LTKF) ir jos skiltis; paieška tekste
+$fg = isset(FEEDBACK_GROUPS[get('g')]) ? (string) get('g') : '';
+$fs = $fg !== '' ? mb_substr((string) get('s'), 0, 80) : '';
+$fq = trim(mb_substr((string) get('q'), 0, 80));
+$qs = function (array $over = []) use ($filter, $fg, $fs, $fq): string {
+    $p = array_filter(array_merge(['b' => $filter, 'g' => $fg, 's' => $fs, 'q' => $fq], $over), function ($v) { return $v !== '' && $v !== null; });
+    return 'admin/atsiliepimai.php' . ($p ? '?' . http_build_query($p) : '');
+};
 
 if (is_post()) {
     csrf_check();
@@ -46,15 +54,61 @@ if (is_post()) {
             }
             break;
     }
-    redirect('admin/atsiliepimai.php?b=' . $filter . ($id && post('action') === 'save' ? '#f' . $id : ''));
+    redirect($qs() . ($id && post('action') === 'save' ? '#f' . $id : ''));
 }
 
 $ready = feedback_ready();
-$counts = $ready ? q('SELECT status, COUNT(*) FROM feedback GROUP BY status')->fetchAll(PDO::FETCH_KEY_PAIR) : [];
-$where = ['atviri' => 'f.status IN ("new", "planned")', 'visi' => '1'][$filter] ?? 'f.status = ' . db()->quote($filter);
-$rows = $ready ? q_all("SELECT f.*, a.first_name, a.last_name, a.email, a.role FROM feedback f LEFT JOIN accounts a ON a.id = f.account_id
-                        WHERE $where ORDER BY f.status = 'new' DESC, f.created_at DESC LIMIT 300") : [];
-$open = $ready ? q_all("SELECT f.*, a.first_name, a.last_name FROM feedback f LEFT JOIN accounts a ON a.id = f.account_id WHERE f.status IN ('new', 'planned') ORDER BY f.created_at") : [];
+// Visi atsiliepimai vienu kartu (klubui - šimtai, ne tūkstančiai): vieta apskaičiuojama čia, filtrai ir skaičiai - iš to paties sąrašo
+$every = $ready ? q_all("SELECT f.*, a.first_name, a.last_name, a.email, a.role FROM feedback f LEFT JOIN accounts a ON a.id = f.account_id
+                         ORDER BY f.status = 'new' DESC, f.created_at DESC LIMIT 2000") : [];
+foreach ($every as $i => $f) {
+    $every[$i]['area'] = feedback_row_area($f);
+    if (!feedback_area_visible($every[$i]['area'], $me)) {
+        unset($every[$i]);   // testuotojai Dojo atsiliepimų nemato
+    }
+}
+$stOk = function (array $f, string $b): bool {
+    return $b === 'visi' || ($b === 'atviri' ? in_array($f['status'], ['new', 'planned'], true) : $f['status'] === $b);
+};
+$qOk = function (array $f) use ($fq): bool {
+    if ($fq === '') {
+        return true;
+    }
+    // visi žodžiai, bet kuria tvarka; be lietuviškų raidžių skirtumo („zinute“ randa „žinutė“)
+    $fold = function (string $x): string { return strtr(mb_strtolower($x), ['ą' => 'a', 'č' => 'c', 'ę' => 'e', 'ė' => 'e', 'į' => 'i', 'š' => 's', 'ų' => 'u', 'ū' => 'u', 'ž' => 'z']); };
+    $hay = $fold($f['body'] . ' ' . $f['reply'] . ' ' . $f['first_name'] . ' ' . $f['last_name'] . ' ' . $f['name'] . ' ' . $f['page'] . ' ' . $f['area']['gl'] . ' ' . $f['area']['s'] . ' ' . $f['area']['sec'] . ' #' . $f['id']);
+    foreach (preg_split('/\s+/u', $fold($fq)) as $w) {
+        if ($w !== '' && mb_strpos($hay, $w) === false) {
+            return false;
+        }
+    }
+    return true;
+};
+$inPlace = function (array $f) use ($fg, $fs): bool {
+    return $fg === '' || ($f['area']['g'] === $fg && ($fs === '' || $f['area']['s'] === $fs));
+};
+$counts = [];
+$gCounts = [];
+$sCounts = [];
+foreach ($every as $f) {
+    if (!$qOk($f)) {
+        continue;
+    }
+    if ($inPlace($f)) {
+        $counts[$f['status']] = ($counts[$f['status']] ?? 0) + 1;
+    }
+    if ($stOk($f, $filter)) {
+        $gCounts[$f['area']['g']] = ($gCounts[$f['area']['g']] ?? 0) + 1;
+        if ($fg !== '' && $f['area']['g'] === $fg) {
+            $sCounts[$f['area']['s']] = ($sCounts[$f['area']['s']] ?? 0) + 1;
+        }
+    }
+}
+arsort($sCounts);
+$rows = array_slice(array_values(array_filter($every, function ($f) use ($stOk, $qOk, $inPlace, $filter) { return $stOk($f, $filter) && $qOk($f) && $inPlace($f); })), 0, 300);
+$open = array_values(array_filter($every, function ($f) use ($stOk, $inPlace) { return $stOk($f, 'atviri') && $inPlace($f); }));
+usort($open, function ($a, $b) { return strcmp($a['created_at'], $b['created_at']); });
+feedback_images_prefetch(array_merge(array_column($rows, 'id'), array_column($open, 'id')));
 
 /** Kas parašė */
 function fb_author(array $f): string
@@ -72,9 +126,15 @@ page_start(t('Atsiliepimai'), ['admin' => true]);
     <h1 class="styled"><?= te('Atsiliepimai') ?></h1>
     <p class="muted" style="margin:0;"><?= te('Ką pastebėjo nariai, treneriai ir lankytojai (mygtukas „💡 Atsiliepimas“ apačioje kairėje). Pakeitus būseną ar atsakius, autorius gauna pranešimą.') ?></p>
   </div>
-  <?php if ($open): ?>
-    <button type="button" class="btn btn-ghost" id="fbCopy"><?= te('📋 Kopijuoti neišspręstus') ?> (<?= count($open) ?>)</button>
-  <?php endif; ?>
+  <div class="row fb-admin-tools" style="gap:8px; flex-wrap:wrap; align-items:center;">
+    <form method="get" class="fb-admin-q" role="search">
+      <input type="hidden" name="b" value="<?= e($filter) ?>"><?php if ($fg !== ''): ?><input type="hidden" name="g" value="<?= e($fg) ?>"><?php endif; ?><?php if ($fs !== ''): ?><input type="hidden" name="s" value="<?= e($fs) ?>"><?php endif; ?>
+      <input type="search" name="q" value="<?= e($fq) ?>" placeholder="<?= e(t('🔎 Ieškoti')) ?>" aria-label="<?= e(t('Ieškoti atsiliepimų')) ?>">
+    </form>
+    <?php if ($open): ?>
+      <button type="button" class="btn btn-ghost" id="fbCopy"><?= te('📋 Kopijuoti neišspręstus') ?> (<?= count($open) ?>)</button>
+    <?php endif; ?>
+  </div>
 </div>
 <?php if (!$ready): ?>
   <div class="flash flash-err"><?= te('Duomenų bazė neatnaujinta - importuokite') ?> <code>db/025_varzybos_atsiliepimai.sql</code>.</div>
@@ -87,27 +147,43 @@ foreach (FEEDBACK_STATUS as $k => $s) {
 }
 $tabs['visi'] = [t('Visi'), array_sum(array_map('intval', $counts))];
 ?>
-<nav class="chip-tabs" aria-label="<?= e(t('Filtras')) ?>">
+<nav class="chip-tabs fb-st-tabs" aria-label="<?= e(t('Filtras')) ?>">
   <?php foreach ($tabs as $key => [$label, $n]): ?>
-    <a class="chip-tab<?= $filter === $key ? ' active' : '' ?>" href="<?= url('admin/atsiliepimai.php?b=' . $key) ?>"><?= e($label) ?> <span class="chip-n"><?= $n ?></span></a>
+    <a class="chip-tab<?= $filter === $key ? ' active' : '' ?>" href="<?= url($qs(['b' => $key])) ?>"><?= e($label) ?> <span class="chip-n"><?= $n ?></span></a>
   <?php endforeach; ?>
 </nav>
+<nav class="chip-tabs fb-place-tabs" aria-label="<?= e(t('Kur paliktas')) ?>">
+  <a class="chip-tab<?= $fg === '' ? ' active' : '' ?>" href="<?= url($qs(['g' => '', 's' => ''])) ?>"><?= te('Visur') ?> <span class="chip-n"><?= array_sum($gCounts) ?></span></a>
+  <?php foreach (FEEDBACK_GROUPS as $gk => $gl): ?>
+    <a class="chip-tab<?= $fg === $gk ? ' active' : '' ?>" href="<?= url($qs(['g' => $gk, 's' => ''])) ?>"><?= e($gl) ?> <span class="chip-n"><?= (int) ($gCounts[$gk] ?? 0) ?></span></a>
+  <?php endforeach; ?>
+</nav>
+<?php if ($fg !== '' && $sCounts): ?>
+<nav class="chip-tabs fb-sub-tabs" aria-label="<?= e(t('Skiltis')) ?>">
+  <a class="chip-tab<?= $fs === '' ? ' active' : '' ?>" href="<?= url($qs(['s' => ''])) ?>"><?= te('Visos skiltys') ?> <span class="chip-n"><?= array_sum($sCounts) ?></span></a>
+  <?php foreach ($sCounts as $sk => $n): ?>
+    <a class="chip-tab<?= $fs === (string) $sk ? ' active' : '' ?>" href="<?= url($qs(['s' => (string) $sk])) ?>"><?= e(t((string) $sk)) ?> <span class="chip-n"><?= (int) $n ?></span></a>
+  <?php endforeach; ?>
+</nav>
+<?php endif; ?>
 
 <?php if (!$rows): ?>
-  <div class="panel card"><p class="muted" style="margin:0;"><?= $filter === 'atviri' ? te('Neišspręstų atsiliepimų nėra. 🎉') : te('Atsiliepimų nėra.') ?></p></div>
+  <div class="panel card"><p class="muted" style="margin:0;"><?= $filter === 'atviri' && $fg === '' && $fq === '' ? te('Neišspręstų atsiliepimų nėra. 🎉') : te('Atsiliepimų nėra.') ?>
+    <?php if ($fg !== '' || $fq !== ''): ?> <a href="<?= url($qs(['g' => '', 's' => '', 'q' => ''])) ?>"><?= te('Rodyti visus') ?> →</a><?php endif; ?></p></div>
 <?php endif; ?>
 
 <div class="fb-admin-list">
 <?php foreach ($rows as $f): ?>
-  <form method="post" class="panel card fb-card<?= $f['status'] === 'new' ? ' is-new' : '' ?>" id="f<?= (int) $f['id'] ?>" action="<?= url('admin/atsiliepimai.php?b=' . $filter) ?>">
+  <form method="post" class="panel card fb-card<?= $f['status'] === 'new' ? ' is-new' : '' ?>" id="f<?= (int) $f['id'] ?>" action="<?= url($qs()) ?>">
     <?= csrf_field() ?><input type="hidden" name="id" value="<?= (int) $f['id'] ?>">
     <div class="fb-card-top">
       <div>
         <strong><?= e(fb_author($f)) ?></strong>
         <?php if ($f['role'] && $f['role'] !== 'member'): ?><span class="badge badge-tag"><?= e(t($f['role'] === 'admin' ? 'adminas' : 'treneris')) ?></span><?php endif; ?>
         <span class="muted small"> · <?= e(fmt_date(substr($f['created_at'], 0, 10))) ?> <?= e(substr($f['created_at'], 11, 5)) ?></span>
-        <?php if (!empty($f['site'])): ?><span class="badge"><?= e(FEEDBACK_SITES[$f['site']] ?? $f['site']) ?></span><?php endif; ?>
-        <?php if ($f['page']): ?><span class="small"> · <a href="<?= e(strpos((string) $f['page'], '/ltkf/') !== false ? (string) $f['page'] : url(ltrim($f['page'], '/'))) ?>" target="_blank" rel="noopener"><?= e(mb_strimwidth($f['page'], 0, 60, '…')) ?> ↗</a></span><?php endif; ?>
+        <a class="badge fb-place" href="<?= url($qs(['g' => $f['area']['g'], 's' => $f['area']['s']])) ?>" title="<?= e(t('Rodyti visus iš šios vietos')) ?>"><?= e($f['area']['gl'] . ' › ' . ($f['area']['sec'] !== '' && mb_strpos($f['area']['sec'], $f['area']['sl']) === 0 ? $f['area']['sec'] : $f['area']['sl'])) ?></a>
+        <span class="muted small">#<?= (int) $f['id'] ?></span>
+        <?php if ($href = feedback_page_href($f)): ?><span class="small"> · <a href="<?= e($href) ?>" target="_blank" rel="noopener"><?= e(mb_strimwidth($f['page'], 0, 60, '…')) ?> ↗</a></span><?php endif; ?>
       </div>
       <?= feedback_status_badge($f['status']) ?>
     </div>
@@ -158,7 +234,7 @@ $tabs['visi'] = [t('Visi'), array_sum(array_map('intval', $counts))];
 <?php if ($open): ?>
 <textarea id="fbCopyText" hidden><?= e("Atsiliepimai iš karateka.lt (" . count($open) . "):\n\n" . implode("\n\n", array_map(function ($f) {
     $n = count(feedback_images((int) $f['id']));
-    return '#' . $f['id'] . ' · ' . substr($f['created_at'], 0, 16) . ' · ' . fb_author($f) . ($f['page'] ? ' · ' . $f['page'] : '') . ($n ? ' · nuotraukų: ' . $n : '') . ($f['status'] === 'planned' ? ' · [bus pataisyta]' : '') . "\n" . $f['body'];
+    return '#' . $f['id'] . ' · ' . substr($f['created_at'], 0, 16) . ' · ' . fb_author($f) . ' · ' . $f['area']['gl'] . ' › ' . $f['area']['s'] . ($f['page'] ? ' · ' . $f['page'] : '') . ($n ? ' · nuotraukų: ' . $n : '') . ($f['status'] === 'planned' ? ' · [bus pataisyta]' : '') . "\n" . $f['body'];
 }, $open))) ?></textarea>
 <script>
   document.getElementById('fbCopy').addEventListener('click', function () {

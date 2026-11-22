@@ -1,7 +1,7 @@
 <?php
 // Atsiliepimai Claude (be naršyklės): kas kelias valandas Claude perskaito naujus atsiliepimus su nuotraukomis,
 // padaro pakeitimus ir pažymi, kas padaryta. Prieiga - tik su raktu (Valdymas → Atsiliepimai → „Claude prieiga“), antraštė X-Api-Key.
-//   GET  ?since=ID&status=open|all  - atsiliepimai (naujausi paskutiniai), su nuotraukų nuorodomis
+//   GET  ?since=ID&status=open|all[&group=budo|karateka|ltkf]  - atsiliepimai (naujausi paskutiniai), su nuotraukų nuorodomis ir vieta (area)
 //   GET  ?img=ID                    - nuotrauka (JPEG)
 //   POST {"id":..,"status":"planned|done|declined","reply":"..."}  - būsena ir atsakymas autoriui (gauna pranešimą)
 require __DIR__ . '/app/bootstrap.php';
@@ -47,8 +47,15 @@ $where = get('status') === 'all' ? '1' : 'f.status IN ("new", "planned")';
 $rows = q_all("SELECT f.*, a.first_name, a.last_name, a.role FROM feedback f LEFT JOIN accounts a ON a.id = f.account_id
                 WHERE $where AND f.id > ? ORDER BY f.id LIMIT 200", [(int) get('since')]);
 $base = rtrim((string) config('site_url'), '/');
+$group = isset(FEEDBACK_GROUPS[get('group')]) ? (string) get('group') : '';
+if ($group !== '') {
+    $rows = array_values(array_filter($rows, function ($f) use ($group) { return feedback_row_area($f)['g'] === $group; }));
+}
+feedback_images_prefetch(array_column($rows, 'id'));
 exit(json_encode(['ok' => true, 'version' => trim((string) @file_get_contents(APP_DIR . '/VERSION')), 'items' => array_map(function ($f) use ($base) {
+    $ar = feedback_row_area($f);
     return ['id' => (int) $f['id'], 'created' => $f['created_at'], 'updated' => $f['updated_at'], 'status' => $f['status'], 'site' => $f['site'] ?? null,
+            'group' => $ar['g'], 'area' => $ar['gl'] . ' › ' . $ar['s'] . ($ar['sec'] !== '' && $ar['sec'] !== $ar['s'] ? ' (' . $ar['sec'] . ')' : ''),
             'page' => $f['page'], 'author' => $f['account_id'] ? trim($f['first_name'] . ' ' . $f['last_name']) . ' (' . $f['role'] . ')' : ($f['name'] ?: 'lankytojas'),
             'body' => $f['body'], 'reply' => $f['reply'], 'context' => json_decode((string) ($f['context'] ?? ''), true),
             'images' => array_map(function ($i) use ($base) { return $base . '/atsiliepimai-api.php?img=' . (int) $i['id']; }, feedback_images((int) $f['id']))];

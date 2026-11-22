@@ -47,6 +47,108 @@ function feedback_status_badge(string $status): string
 }
 
 const FEEDBACK_SITES = ['karateka' => 'karateka.lt', 'taika' => 'Budo', 'ltkf' => 'LTKF'];
+
+// ---------- Kur paliktas (v1.87): grupė Budo / Karateka / LTKF ir jos skiltis - pagal puslapį (seniems atsiliepimams irgi) ----------
+const FEEDBACK_GROUPS = ['budo' => 'Budo', 'karateka' => 'Karateka', 'ltkf' => 'LTKF'];
+/** Puslapis (be adreso pradžios) → [grupė, skiltis]. Budo valdyme skiltis - atidarytas skirtukas (assets/feedback.js įrašo jį į kontekstą). */
+const FEEDBACK_PLACES = [
+    'admin/varzybos.php' => ['budo', 'Varžybų sąrašas'], 'admin/varzybu-sistema.php' => ['budo', 'Varžybos'], 'varzybu-sistema.php' => ['budo', 'Varžybos'],
+    'varzybos.php' => ['budo', 'Varžybos'], 'admin/varzybu-dalyviai.php' => ['budo', 'Administracija'], 'admin/varzybu-rezultatai.php' => ['budo', 'Rezultatai'],
+    'admin/varzybos-isorine.php' => ['budo', 'Varžybų sąrašas'], 'admin/varzybos-sso.php' => ['budo', 'Varžybų sąrašas'],
+    'varzybos-gyvai.php' => ['budo', 'Gyvai (žiūrovams)'], 'varzybos-registracija.php' => ['budo', 'Registracija'], 'varzybu-rezultatai.php' => ['budo', 'Rezultatai'],
+    'varzybos-sekretoriatas.php' => ['budo', 'Sekretoriatas'], 'varzybos-apdovanojimai.php' => ['budo', 'Apdovanojimai'], 'varzybos-bandymas.php' => ['budo', 'Varžybos'],
+    'admin/federacija.php' => ['ltkf', 'Registrai'], 'admin/ltkf-perziura.php' => ['ltkf', 'Redagavimas'], 'ltkf-perziura.php' => ['ltkf', 'Redagavimas'], 'ltkf-redaktorius.php' => ['ltkf', 'Redagavimas'],
+    'admin/index.php' => ['karateka', 'Valdymas · Šiandien'], 'admin/treniruote.php' => ['karateka', 'Valdymas · Treniruotė'],
+    'admin/egzaminai.php' => ['karateka', 'Valdymas · Egzaminai'], 'admin/egzamino-protokolas.php' => ['karateka', 'Valdymas · Egzaminai'], 'admin/programa.php' => ['karateka', 'Valdymas · Egzaminai'],
+    'admin/renginiai.php' => ['karateka', 'Valdymas · Renginiai'], 'admin/renginio-dalyviai.php' => ['karateka', 'Valdymas · Renginiai'], 'admin/renginio-rezultatai.php' => ['karateka', 'Valdymas · Renginiai'],
+    'admin/nariai.php' => ['karateka', 'Valdymas · Nariai'], 'admin/paskyros.php' => ['karateka', 'Valdymas · Nariai'], 'admin/grupes.php' => ['karateka', 'Valdymas · Nariai'], 'admin/atsaukimai.php' => ['karateka', 'Valdymas · Nariai'],
+    'admin/taskai.php' => ['karateka', 'Valdymas · Aktyvumo taškai'], 'admin/testai.php' => ['karateka', 'Valdymas · Testai'], 'admin/testo-perziura.php' => ['karateka', 'Valdymas · Testai'],
+    'admin/patvirtinimai.php' => ['karateka', 'Valdymas · Patvirtinimai'], 'admin/zinutes.php' => ['karateka', 'Valdymas · Žinutės'],
+    'admin/pranesimai.php' => ['karateka', 'Valdymas · Pranešimai'], 'admin/siuntimas.php' => ['karateka', 'Valdymas · Pranešimai'], 'admin/sms.php' => ['karateka', 'Valdymas · Pranešimai'],
+    'admin/atsiliepimai.php' => ['karateka', 'Valdymas · Atsiliepimai'],
+    'admin/naujienos.php' => ['karateka', 'Valdymas · Svetainės turinys'], 'admin/puslapis.php' => ['karateka', 'Valdymas · Svetainės turinys'], 'admin/pamokos.php' => ['karateka', 'Valdymas · Svetainės turinys'], 'admin/tvarkarastis.php' => ['karateka', 'Valdymas · Svetainės turinys'],
+    'admin/nustatymai.php' => ['karateka', 'Valdymas · Nustatymai'], 'admin/nustatymai-visi.php' => ['karateka', 'Valdymas · Nustatymai'], 'admin/kopijos.php' => ['karateka', 'Valdymas · Nustatymai'],
+    'admin/duomenys.php' => ['karateka', 'Valdymas · Nustatymai'], 'admin/vertimai.php' => ['karateka', 'Valdymas · Nustatymai'], 'admin/testavimas.php' => ['karateka', 'Valdymas · Nustatymai'],
+    'admin/kitas-irenginys.php' => ['karateka', 'Valdymas · Nustatymai'], 'admin/kas-naujo.php' => ['karateka', 'Valdymas · Nustatymai'],
+    'index.php' => ['karateka', 'Pradžia'], 'naujienos.php' => ['karateka', 'Naujienos ir renginiai'], 'renginiai.php' => ['karateka', 'Naujienos ir renginiai'],
+    'renginys.php' => ['karateka', 'Naujienos ir renginiai'], 'renginys-dalyvavimas.php' => ['karateka', 'Naujienos ir renginiai'], 'mano-renginiai.php' => ['karateka', 'Naujienos ir renginiai'], 'kalendorius.php' => ['karateka', 'Naujienos ir renginiai'],
+    'pamokos.php' => ['karateka', 'Pamokos'], 'paskyra.php' => ['karateka', 'Mano paskyra'], 'uzduotys.php' => ['karateka', 'Mano paskyra'], 'mano-egzaminas.php' => ['karateka', 'Mano paskyra'],
+    'pranesimas.php' => ['karateka', 'Mano paskyra'], 'zinute.php' => ['karateka', 'Mano paskyra'], 'pokalbis.php' => ['karateka', 'Mano paskyra'],
+    'testas.php' => ['karateka', 'Testai'], 'testas-svecias.php' => ['karateka', 'Testai'], 'egzaminas.php' => ['karateka', 'Egzaminai'], 'egzamino-registracija.php' => ['karateka', 'Egzaminai'],
+    'dojo.php' => ['karateka', 'Dojo'], 'arena.php' => ['karateka', 'Dojo'], 'zaidimas.php' => ['karateka', 'Dojo'], 'zaidejas.php' => ['karateka', 'Dojo'], 'kova-bandymai.php' => ['karateka', 'Dojo'], 'ritmas.php' => ['karateka', 'Dojo'], 'keturi.php' => ['karateka', 'Dojo'],
+    'prisijungti.php' => ['karateka', 'Prisijungimas'], 'registracija.php' => ['karateka', 'Prisijungimas'], 'slaptazodis.php' => ['karateka', 'Prisijungimas'], 'kodas.php' => ['karateka', 'Prisijungimas'],
+    'jungtis.php' => ['karateka', 'Prisijungimas'], 'pakvietimas.php' => ['karateka', 'Prisijungimas'], 'tevu-sutikimas.php' => ['karateka', 'Prisijungimas'], 'irenginys.php' => ['karateka', 'Prisijungimas'],
+];
+/** LTKF svetainės puslapiai (ltkf/…) → skiltis */
+const FEEDBACK_LTKF_PLACES = ['index.php' => 'Pradžia', 'en.php' => 'Pradžia', 'apie.php' => 'Apie', 'klubai.php' => 'Klubai', 'klubams.php' => 'Klubai', 'teisejai.php' => 'Teisėjai',
+    'kalendorius.php' => 'Kalendorius ir rezultatai', 'renginys.php' => 'Kalendorius ir rezultatai', 'rezultatai.php' => 'Kalendorius ir rezultatai',
+    'naujienos.php' => 'Naujienos', 'naujiena.php' => 'Naujienos', 'dokumentai.php' => 'Dokumentai', 'failai.php' => 'Dokumentai', 'kontaktai.php' => 'Kontaktai',
+    'puslapis.php' => 'Kiti puslapiai', 'redaguoti.php' => 'Redagavimas'];
+/** Budo valdymo skirtukai (assets/varzybos.js: tab-live, tab-rezultatai, Administracijos poskirtukai; atidaryta kova) */
+const FEEDBACK_BUDO_TABS = ['live' => 'Tvarkaraštis', 'rezultatai' => 'Rezultatai', 'kova' => 'Kova'];
+
+/**
+ * Kur paliktas atsiliepimas: ['g' => 'budo', 'gl' => 'Budo', 's' => 'Tvarkaraštis' (raktas - lietuviškas pavadinimas), 'sl' => išverstas, 'sec' => smulkiau (pvz. „Administracija › Dalyviai“)].
+ * $context - JSON tekstas arba masyvas iš lango (url, title, sk - skirtukų raktai, sec - skirtukų pavadinimai).
+ */
+function feedback_area(string $site, string $page, $context = null): array
+{
+    $ctx = is_array($context) ? $context : (json_decode((string) $context, true) ?: []);
+    $path = (string) parse_url($page !== '' ? $page : (string) ($ctx['url'] ?? ''), PHP_URL_PATH);
+    $base = (string) (config('base_path') ?: '');
+    if ($base !== '' && strpos($path, $base . '/') === 0) {
+        $path = substr($path, strlen($base));
+    }
+    $path = ltrim($path, '/');
+    if ($path === '' || substr($path, -1) === '/') {
+        $path .= 'index.php';
+    }
+    $sec = trim((string) ($ctx['sec'] ?? ''));
+    if (strpos($path, 'ltkf/') === 0 || ($site === 'ltkf' && !isset(FEEDBACK_PLACES[$path]))) {
+        [$g, $s] = ['ltkf', FEEDBACK_LTKF_PLACES[basename($path)] ?? 'Kiti puslapiai'];
+    } elseif (isset(FEEDBACK_PLACES[$path])) {
+        [$g, $s] = FEEDBACK_PLACES[$path];
+    } else {
+        // nežinomas puslapis: grupė pagal svetainę, skiltis - puslapio pavadinimas (iki „ — Karateka“)
+        $g = $site === 'taika' ? 'budo' : ($site === 'ltkf' ? 'ltkf' : 'karateka');
+        $title = trim((string) preg_replace('/\s*[—·|-]\s*(Karateka|Budo|Taika|LTKF).*$/u', '', (string) ($ctx['title'] ?? '')));
+        $s = ($title !== '' ? mb_strimwidth($title, 0, 40, '…') : basename($path, '.php'));
+        $s = strpos($path, 'admin/') === 0 ? 'Valdymas · ' . $s : $s;
+    }
+    // Budo valdymas: skiltis - atidarytas skirtukas (seniems - #live adrese, kitaip „Varžybos“)
+    if ($s === 'Varžybos' && in_array($path, ['admin/varzybu-sistema.php', 'varzybu-sistema.php', 'varzybos-bandymas.php'], true)) {
+        $first = strtok((string) ($ctx['sk'] ?? ''), '/');
+        if ($first !== false && $first !== '') {
+            $s = FEEDBACK_BUDO_TABS[$first] ?? 'Administracija';
+        } elseif (strpos((string) ($ctx['url'] ?? $page), '#live') !== false) {
+            $s = 'Tvarkaraštis';
+        }
+    }
+    if ($path === 'varzybos-gyvai.php' && strpos((string) ($ctx['url'] ?? $page), 'ekranas=1') !== false) {
+        $s = 'Ekranas salėje';
+    }
+    return ['g' => $g, 'gl' => FEEDBACK_GROUPS[$g], 's' => $s, 'sl' => t($s), 'sec' => mb_substr($sec, 0, 80)];
+}
+
+/** Ar šis žmogus mato atsiliepimą apie šią vietą (testuotojai Dojo atsiliepimų nemato - žaidimas jiems paslėptas) */
+function feedback_area_visible(array $area, ?array $a): bool
+{
+    return $area['s'] !== 'Dojo' || !function_exists('game_allowed') || game_allowed($a);
+}
+
+/** Nuotraukos iš karto daugeliui atsiliepimų (sąrašui - viena užklausa vietoj N) */
+function feedback_images_prefetch(array $ids): void
+{
+    $ids = array_values(array_filter(array_map('intval', $ids)));
+    if (!$ids || !feedback_images_ready()) {
+        return;
+    }
+    $map = array_fill_keys($ids, []);
+    foreach (q_all('SELECT * FROM feedback_images WHERE feedback_id IN (' . implode(',', $ids) . ') ORDER BY id') as $r) {
+        $map[(int) $r['feedback_id']][] = $r;
+    }
+    $GLOBALS['fb_img_cache'] = $map + (array) ($GLOBALS['fb_img_cache'] ?? []);
+}
 const FEEDBACK_IMG_DIR = PUBLIC_DIR . '/uploads/feedback';
 const FEEDBACK_MAX_IMAGES = 40;
 
@@ -161,6 +263,9 @@ function feedback_title(array $f): string
 
 function feedback_images(int $id): array
 {
+    if (isset($GLOBALS['fb_img_cache'][$id])) {
+        return $GLOBALS['fb_img_cache'][$id];
+    }
     return feedback_images_ready() ? q_all('SELECT * FROM feedback_images WHERE feedback_id = ? ORDER BY id', [$id]) : [];
 }
 
@@ -170,26 +275,47 @@ function feedback_image_url(array $img, bool $thumb = false): string
 }
 
 /** „Visi“ (tik skaityti): treneriams ir adminui - visų, kitiems - visi savo paskyros. Su autoriumi. */
-function feedback_all(?array $a, int $limit = 60): array
+function feedback_all(?array $a, int $limit = 400): array
 {
     if (!$a) {
         return feedback_mine(null, $limit);
     }
-    return q_all('SELECT f.*, a.first_name, a.last_name FROM feedback f LEFT JOIN accounts a ON a.id = f.account_id'
+    $rows = q_all('SELECT f.*, a.first_name, a.last_name FROM feedback f LEFT JOIN accounts a ON a.id = f.account_id'
         . (is_staff($a) ? '' : ' WHERE f.account_id = ' . (int) $a['id']) . ' ORDER BY f.id DESC LIMIT ' . $limit);
+    return array_values(array_filter($rows, function ($f) use ($a) { return feedback_area_visible(feedback_row_area($f), $a); }));
+}
+
+/** Atsiliepimo vieta (eilutei iš DB) */
+function feedback_row_area(array $f): array
+{
+    return feedback_area((string) ($f['site'] ?? ''), (string) ($f['page'] ?? ''), $f['context'] ?? null);
+}
+
+/** Nuoroda į vietą, kur paliktas (jei adrese nėra paslėptų raktų „…“) */
+function feedback_page_href(array $f): string
+{
+    $p = (string) ($f['page'] ?? '');
+    if ($p === '' || strpos($p, '…') !== false || $p[0] !== '/') {
+        return '';
+    }
+    return strpos($p, '/ltkf/') !== false ? $p : url(ltrim($p, '/'));
 }
 
 /** Atsiliepimas JSON (langui): tekstas, pavadinimas, nuotraukos */
 function feedback_json(array $f): array
 {
-    return ['id' => (int) $f['id'], 'title' => feedback_title($f), 'body' => (string) $f['body'], 'status' => $f['status'], 'statusLabel' => t(FEEDBACK_STATUS[$f['status']][0] ?? ''),
+    $ar = feedback_row_area($f);
+    $viewer = current_account();
+    return ['g' => $ar['g'], 'gl' => $ar['gl'], 's' => $ar['s'], 'sl' => $ar['sl'], 'sec' => $ar['sec'],
+            'href' => ($viewer && is_staff($viewer)) || feedback_can_edit($viewer, $f) ? feedback_page_href($f) : '',
+            'id' => (int) $f['id'], 'title' => feedback_title($f), 'body' => (string) $f['body'], 'status' => $f['status'], 'statusLabel' => t(FEEDBACK_STATUS[$f['status']][0] ?? ''),
             'reply' => (string) $f['reply'], 'page' => (string) $f['page'], 'site' => (string) ($f['site'] ?? ''), 'siteLabel' => FEEDBACK_SITES[$f['site'] ?? ''] ?? '', 'date' => fmt_date(substr($f['created_at'], 0, 10)),
             'images' => array_map(function ($i) { return ['id' => (int) $i['id'], 'thumb' => feedback_image_url($i, true), 'full' => feedback_image_url($i)]; }, feedback_images((int) $f['id'])),
             'author' => trim((string) ($f['first_name'] ?? '') . ' ' . (string) ($f['last_name'] ?? '')) ?: (string) ($f['name'] ?? ''), 'mine' => feedback_can_edit(current_account(), $f)];
 }
 
 /** Paskutiniai šio žmogaus atsiliepimai (langui): paskyros ir šios naršyklės */
-function feedback_mine(?array $a, int $limit = 30): array
+function feedback_mine(?array $a, int $limit = 100): array
 {
     if ($a) {
         return feedback_writer_ready()
@@ -323,7 +449,13 @@ function feedback_widget_html(?string $site = null): string
         . '<button class="btn btn-primary btn-sm fb-send" type="button" id="fbSend">' . te('Išsaugoti') . '</button></div>'
         . '</div>'
         . '<div class="fb-mine" id="fbMine"><div class="fb-mine-title">' . ($a ? '<div class="fb-tabs" role="tablist"><button type="button" class="on" data-fb-tab="mine">' . te('Mano') . '</button><button type="button" data-fb-tab="all">' . te('Visi') . '</button></div>'
-            : te('Jūsų atsiliepimai')) . '</div><ul class="fb-list" id="fbList"></ul></div>'
+            : te('Jūsų atsiliepimai'))
+        // v1.87: paieška, būsena, grupės (Budo / Karateka / LTKF) ir jų skiltys - pirmiausia ten, kur esate
+        . '<input type="search" class="fb-q" id="fbQ" placeholder="' . e(t('🔎 Ieškoti')) . '" aria-label="' . e(t('Ieškoti atsiliepimų')) . '">'
+        . '<select class="fb-stf" id="fbSt" aria-label="' . e(t('Būsena')) . '"><option value="all">' . te('Visos būsenos') . '</option><option value="open">' . te('Neišspręsti') . '</option><option value="done">' . te('Išspręsti') . '</option></select></div>'
+        . '<div class="fb-chips fb-groups" id="fbGroups" role="group" aria-label="' . e(t('Kur paliktas')) . '"></div>'
+        . '<div class="fb-chips fb-subs" id="fbSubs" role="group" aria-label="' . e(t('Skiltis')) . '"></div>'
+        . '<ul class="fb-list" id="fbList"></ul></div>'
         . ($cfg['admin'] ? '<a class="fb-admin" href="' . e($cfg['admin']) . '">' . te('Visi atsiliepimai →') . '</a>' : '')
         . '</div></div></div><script src="' . e(asset_url('assets/feedback.js')) . '" defer></script>';
 }

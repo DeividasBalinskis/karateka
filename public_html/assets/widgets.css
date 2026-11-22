@@ -320,6 +320,27 @@ body.chat-is-open .ntf-pop{display:none;}   /* kol atidarytas pokalbis - praneš
 .fb-ro-body{margin-top:6px; padding-top:6px; border-top:1px dashed var(--f-line); white-space:normal; line-height:1.45;}
 .fb-ro-imgs{display:flex; flex-wrap:wrap; gap:6px; margin-top:6px;}
 .fb-ro-imgs img{width:64px; height:64px; object-fit:cover; border-radius:8px; border:1px solid var(--f-line);}
+/* v1.87: atsiliepimai pagal vietą - paieška, būsena, grupės (Budo / Karateka / LTKF) ir skiltys; 📍 - kur esate */
+.fb-mine-title{display:flex; align-items:center; gap:6px; flex-wrap:wrap; text-transform:none; letter-spacing:0;}
+.fb-mine-title .fb-tabs{text-transform:uppercase;}
+.fb-q{flex:1 1 110px; min-width:0; height:30px; box-sizing:border-box; border:1px solid var(--f-line); border-radius:999px; padding:0 10px; font:600 13px 'Inter',sans-serif; background:#fff; color:var(--f-ink);}
+.fb-stf{height:30px; border:1px solid var(--f-line); border-radius:999px; padding:0 6px; font:600 12px 'Inter',sans-serif; background:#fff; color:var(--f-ink); max-width:130px;}
+.fb-chips{display:flex; gap:6px; overflow-x:auto; padding:2px 0 6px; scrollbar-width:thin; -webkit-overflow-scrolling:touch;}
+.fb-chips[hidden]{display:none;}
+.fb-chip{flex:0 0 auto; display:inline-flex; align-items:center; gap:4px; height:28px; padding:0 10px; border-radius:999px; border:1px solid var(--f-line); background:#fff;
+  font:700 12.5px/1 'Inter',sans-serif; color:var(--f-ink); cursor:pointer; white-space:nowrap;}
+.fb-chip:hover{border-color:var(--f-accent);}
+.fb-chip.on{background:#17140F; border-color:#17140F; color:#fff;}
+.fb-chip.here:not(.on){border-color:#F3A26B; background:#FFF4EA;}
+.fb-chip-n{font-weight:600; opacity:.7;}
+.fb-subs .fb-chip{height:26px; font-size:12px; font-weight:600;}
+.fb-where{font-weight:600;}
+.fb-where.here{color:var(--f-accent2);}
+.fb-item.is-here{border-left:3px solid #F3A26B;}
+.fb-go{display:inline-block; margin-top:6px; font-weight:800; font-size:13px; color:var(--f-accent2);}
+.fb-fab{position:relative;}
+.fb-fab-n{position:absolute; top:-4px; right:-4px; min-width:20px; height:20px; border-radius:999px; background:#17140F; color:#fff; font:800 11px/20px 'Inter',sans-serif; text-align:center; box-shadow:0 0 0 2px #fff;}
+.fb-fab-n[hidden]{display:none;}
 
 /* B4: plaukiojantys mygtukai neuždengia turinio telefone ir planšetėje
    - kai atidarytas „⋯ Daugiau“ - jų nėra;

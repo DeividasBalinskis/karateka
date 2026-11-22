@@ -58,6 +58,9 @@ test('feedback widget: autosave, paste many images, Enter for next, edit earlier
   await a.goto('ltkf/klubai.php');
   await a.waitForSelector('#fbFab');
   await openFeedback(a);
+  // v1.87: pereinant į kitą puslapį langas ir taisomas atsiliepimas išlieka - naujam spaudžiama „+ Naujas“
+  check('editing continues on another page', /\(pataisyta\)/.test(await a.inputValue('#fbText')) && await a.locator('#fbEditing').isVisible());
+  await a.click('#fbNew');
   await a.fill('#fbText', 'LTKF klubų žemėlapis per mažas');
   await a.press('#fbText', 'Enter');
   await a.waitForFunction(() => /Išsaugota/.test(document.getElementById('fbState').textContent));

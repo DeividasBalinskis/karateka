@@ -41,7 +41,12 @@ if (get('list')) {
         $json(['ok' => true, 'items' => []]);
     }
     feedback_writer();   // žymė naršyklei (jei dar nėra)
-    $json(['ok' => true, 'items' => array_map('feedback_json', get('all') ? feedback_all($a) : feedback_mine($a))]);
+    $rows = get('all') ? feedback_all($a) : feedback_mine($a);
+    feedback_images_prefetch(array_column($rows, 'id'));
+    // v1.87: kur žmogus yra dabar (pirmiausia rodomi šios vietos atsiliepimai) - tas pats skirstymas kaip atsiliepimams
+    $hereSite = isset(FEEDBACK_SITES[get('site')]) ? (string) get('site') : 'karateka';
+    $here = feedback_area($hereSite, mb_substr((string) get('here'), 0, 255), ['url' => (string) get('here'), 'sk' => (string) get('sk'), 'sec' => (string) get('sec')]);
+    $json(['ok' => true, 'here' => $here, 'groups' => FEEDBACK_GROUPS, 'items' => array_map('feedback_json', $rows)]);
 }
 
 if (!is_post()) {
