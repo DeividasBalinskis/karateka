@@ -181,7 +181,8 @@ $tabs['visi'] = [t('Visi'), array_sum(array_map('intval', $counts))];
         <span class="muted small">#<?= (int) $f['id'] ?></span>
         <?php if ($href = feedback_page_href($f)): ?><span class="small"> · <a href="<?= e($href) ?>" target="_blank" rel="noopener"><?= e(mb_strimwidth($f['page'], 0, 60, '…')) ?> ↗</a></span><?php endif; ?>
       </div>
-      <?= feedback_status_badge($f['status']) ?>
+      <span><?= feedback_status_badge($f['status']) ?>
+        <?php if (!empty($f['verdict'])): ?><span class="badge <?= $f['verdict'] === 'ok' ? 'badge-ok' : 'badge-warn' ?>"><?= e(['ok' => t('👍 Patinka'), 'revert' => t('↩ Prašo grąžinti'), 'reverted' => t('↩ Grąžinta')][$f['verdict']] ?? $f['verdict']) ?></span><?php endif; ?></span>
     </div>
     <div class="fb-card-body"><?= $f['body'] !== '' ? nl2br(e($f['body'])) : '<span class="muted">' . te('(tik nuotraukos)') . '</span>' ?></div>
     <?php $imgs = feedback_images((int) $f['id']); if ($imgs): ?>

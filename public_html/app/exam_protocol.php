@@ -10,6 +10,9 @@ const EXAM_BUILTIN_COLS = ['kihon', 'kata', 'kumite', 'test'];
 // #133 (Denis): balas 6,3 ar mažesnis - tas langelis raudonas; neišlaikius - raudona visa eilutė
 const EXAM_LOW_SCORE = 6.3;
 
+/** #166: balai, kuriuos naujas protokolo dalyvis gauna iš karto (Denis, 2026-11-22) */
+const EXAM_SCORE_START = '6.4';
+
 function exam_protocol_ready(): bool
 {
     static $ok = null;
@@ -51,9 +54,10 @@ function exam_protocol_add(array $event, array $row): int
         $seq = (int) q_value('SELECT COALESCE(MAX(seq), 0) + 1 FROM exam_protocol_rows WHERE num_date = ?', [$date]);
         $number = date('y-m-d', strtotime($date)) . '-' . sprintf('%02d', $seq);
         try {
-            q('INSERT INTO exam_protocol_rows (event_id, number, num_date, seq, member_id, name, birth_date, kyu, test, seminars) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            // #166 (Denis): naujas dalyvis protokole iš karto gauna balus 6.4 (kihon, kata, kumite) - keičiama − / +
+            q('INSERT INTO exam_protocol_rows (event_id, number, num_date, seq, member_id, name, birth_date, kyu, kihon, kata, kumite, test, seminars) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
                 [(int) $event['id'], $number, $date, $seq, $row['member_id'] ?? null, mb_substr((string) $row['name'], 0, 160), $row['birth_date'] ?? null,
-                 $row['kyu'] ?? null, $row['test'] ?? null, $row['seminars'] ?? null]);
+                 $row['kyu'] ?? null, $row['kihon'] ?? EXAM_SCORE_START, $row['kata'] ?? EXAM_SCORE_START, $row['kumite'] ?? EXAM_SCORE_START, $row['test'] ?? null, $row['seminars'] ?? null]);
             $rid = (int) db()->lastInsertId();
             if (!empty($row['club'])) {
                 try {

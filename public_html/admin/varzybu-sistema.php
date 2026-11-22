@@ -255,6 +255,7 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
   <div class="vz-top-row">
     <?php if (!$asSekr): ?><a class="vz-back" href="<?= url('admin/varzybos.php') ?>" title="Visos varžybos">←</a><?php endif; ?>
     <a class="vz-brand" href="<?= url($asSekr ? 'admin/varzybu-sistema.php?id=' . (int) $t['id'] . ($preview ? '&kaip=sekretoriatas' : '') : 'admin/varzybos.php') ?>" title="<?= $asSekr ? 'Šios varžybos' : 'Visos varžybos' ?>"><span class="vz-logo" aria-hidden="true"></span><?= e(VARZ_NAME) ?></a>
+    <?php if (!$asSekr && !$demo && is_staff()): ?><?= site_switch_html('budo') ?><?php endif; /* #171 */ ?>
     <div class="vz-title">
       <div class="vz-switch">
         <h1 id="t-name"><?= e($t['title']) ?></h1>
@@ -319,9 +320,8 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
 <?php if (!$asSekr && !$demo): $sekrTok = varz_sekr_token((int) $t['id']); $sekrUrl = $sekrTok !== '' ? abs_url('varzybos-sekretoriatas.php?k=' . $sekrTok) : ''; ?>
 <div class="share-panel" id="sekr-panel"<?= get('sekr') ? '' : ' hidden' ?>>
   <div class="sp-block">
-    <b>🧑‍💼 Sekretoriato nuoroda (be paskyros)</b>
-    <p class="muted small">Atidaręs nuorodą žmogus įrašo savo vardą ir gali vesti šias varžybas: dalyviai, kategorijos, kovos, balai, apdovanojimai.
-      Kitų varžybų, klubo narių duomenų ir karateka.lt valdymo nemato. Išjungus ar pakeitus nuorodą - prieiga baigiasi.</p>
+    <?php /* #169: aprašymas - tik užvedus pelę ant pavadinimo */ ?>
+    <b title="Atidaręs nuorodą žmogus įrašo savo vardą ir gali vesti šias varžybas: dalyviai, kategorijos, kovos, balai, apdovanojimai. Kitų varžybų, klubo narių duomenų ir karateka.lt valdymo nemato. Išjungus ar pakeitus nuorodą - prieiga baigiasi.">🧑‍💼 Sekretoriato nuoroda (be paskyros)</b>
     <?php if ($sekrUrl): ?>
       <div class="sp-row"><input class="sel sp-url" readonly value="<?= e($sekrUrl) ?>" id="sekr-url" aria-label="Sekretoriato nuoroda" onclick="this.select()"><button type="button" class="btn" data-copy="<?= e($sekrUrl) ?>">Kopijuoti</button></div>
       <form method="post" class="sp-row"><?= csrf_field() ?>
@@ -352,6 +352,11 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
     <b>📺 Ekranai salėje</b>
     <p class="muted small">Atidarykite tatamio ekraną antrame monitoriuje ar televizoriuje (naršyklėje, F11 - visas ekranas). Rodoma kova, balai, laikrodis ir kas eina toliau.</p>
     <div class="sp-row" id="sp-screens"></div>
+  </div>
+  <div class="sp-block">
+    <b title="OBS → Šaltiniai → + → Naršyklė (Browser) → įklijuokite nuorodą; plotis 1920, aukštis 1080. Telefonas - kitas šaltinis po juosta.">🎬 OBS juosta ant telefono vaizdo</b>
+    <p class="muted small">OBS: + → Naršyklė (Browser), 1920 × 1080. Fonas permatomas - matosi tik kova, balai ir laikas.</p>
+    <div id="sp-bars"></div>
   </div>
   <?php if ($awardsUrl): ?>
   <div class="sp-block">
@@ -484,8 +489,6 @@ foreach (take_flashes() as $f): ?>
 
   <!-- TINKLAI (Draws): amžiaus grupės → kas su kuo kovoja visose tos grupės rungtyse; žiūrovams tas pats - transliacijos nuorodoje -->
   <section id="v-tinklai" role="tabpanel" aria-labelledby="tab-tinklai" hidden>
-    <p class="tk-explain"><b>🤼 Tinklai</b> - kiekvienos kategorijos burtų lentelė (medis): kas su kuo kovoja, kas laimėjo ir kas eina toliau.
-      Čia tik peržiūra ir spausdinimas - kovos vedamos <b>„Tvarkaraštyje“</b> (atidarius kategoriją).</p>
     <div class="tk-layout">
       <div class="panel tk-side"><h2>Amžiaus grupės</h2><div class="tk-groups" id="tk-groups"></div></div>
       <div class="tk-view" id="tk-view"></div>

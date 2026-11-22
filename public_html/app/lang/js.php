@@ -347,4 +347,12 @@ return [
     'Ištrinta',
     'Visa {g}',
     'Rodyti visus ({n})',
+    'Ar patinka pakeitimas?',
+    'Patinka',
+    'Grąžinti kaip buvo',
+    'Patiko - paliekama',
+    'Bus grąžinta kaip buvo',
+    'Grąžinta kaip buvo',
+    'Ačiū! Paliekame.',
+    'Gerai - grąžinsime kaip buvo.',
 ];

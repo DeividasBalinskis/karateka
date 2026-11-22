@@ -100,6 +100,9 @@ body.ltkf-edit{padding-bottom:104px;}
 .ltkf-edit .main-nav > a:hover .ed-navtools, .ltkf-edit .main-nav > a:focus-within .ed-navtools{display:inline-flex;}
 .ed-navtools button{width:24px; height:24px; border:0; border-radius:50%; background:#0F1B33; color:#fff; font:700 13px/1 sans-serif; cursor:pointer;}
 .ed-navtools button[data-nav=del]{background:#C1272D;}
+.ed-navtools button[data-nav=go]{background:#00704A;}
+/* #168: redaguojant meniu punktas - pervadinti (rodomas teksto žymeklis), atidaryti - ↗ */
+.ltkf-edit .main-nav > a:not(.lang-sw a){cursor:text;}
 .ed-navlab[contenteditable]{outline:2px solid #C1272D; outline-offset:2px; border-radius:3px; padding:0 2px;}
 .ed-navadd{border:2px dashed rgba(15,27,51,.3); background:transparent; border-radius:8px; padding:6px 10px; font:700 13px 'Source Sans 3',sans-serif; color:#3D4A66; cursor:pointer;}
 .ed-navadd:hover{border-color:#C1272D; color:#C1272D;}

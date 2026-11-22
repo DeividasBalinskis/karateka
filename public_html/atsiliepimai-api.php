@@ -1,9 +1,10 @@
 <?php
 // Atsiliepimai Claude (be naršyklės): kas kelias valandas Claude perskaito naujus atsiliepimus su nuotraukomis,
 // padaro pakeitimus ir pažymi, kas padaryta. Prieiga - tik su raktu (Valdymas → Atsiliepimai → „Claude prieiga“), antraštė X-Api-Key.
-//   GET  ?since=ID&status=open|all[&group=budo|karateka|ltkf]  - atsiliepimai (naujausi paskutiniai), su nuotraukų nuorodomis ir vieta (area)
+//   GET  ?since=ID&status=open|all|revert[&group=budo|karateka|ltkf]  (revert - autorius prašo grąžinti kaip buvo)  - atsiliepimai (naujausi paskutiniai), su nuotraukų nuorodomis ir vieta (area)
 //   GET  ?img=ID                    - nuotrauka (JPEG)
-//   POST {"id":..,"status":"planned|done|declined","reply":"..."}  - būsena ir atsakymas autoriui (gauna pranešimą)
+//   POST {"id":..,"status":"planned|done|declined","reply":"...","verdict":"reverted"|null}  - būsena ir atsakymas autoriui (gauna pranešimą);
+//        verdict - autoriaus įvertinimas: ok (patinka), revert (prašo grąžinti); Claude, atšaukęs pakeitimą, pažymi „reverted“ (null - išvalyti)
 require __DIR__ . '/app/bootstrap.php';
 
 header('Cache-Control: no-store');
@@ -36,6 +37,9 @@ if (is_post()) {
     $status = isset(FEEDBACK_STATUS[$in['status'] ?? '']) ? $in['status'] : $f['status'];
     $reply = array_key_exists('reply', $in) ? trim((string) $in['reply']) : (string) $f['reply'];
     q('UPDATE feedback SET status = ?, reply = ?, updated_at = NOW() WHERE id = ?', [$status, $reply !== '' ? mb_substr($reply, 0, 2000) : null, (int) $f['id']]);
+    if (array_key_exists('verdict', $in) && feedback_verdict_ready() && in_array($in['verdict'], [null, 'ok', 'revert', 'reverted'], true)) {
+        q('UPDATE feedback SET verdict = ?, verdict_at = ' . ($in['verdict'] === null ? 'NULL' : 'NOW()') . ' WHERE id = ?', [$in['verdict'], (int) $f['id']]);
+    }
     if ($f['account_id'] && ($status !== $f['status'] || $reply !== (string) $f['reply'])) {
         notify_account((int) $f['account_id'], 'feedback', t('Jūsų atsiliepimas:') . ' ' . mb_strtolower(t(FEEDBACK_STATUS[$status][0])),
             $reply !== '' ? $reply : mb_strimwidth($f['body'], 0, 200, '…'), ltrim((string) $f['page'], '/') ?: null, null, (int) $f['id'], false);
@@ -43,7 +47,7 @@ if (is_post()) {
     exit(json_encode(['ok' => true]));
 }
 
-$where = get('status') === 'all' ? '1' : 'f.status IN ("new", "planned")';
+$where = get('status') === 'all' ? '1' : (get('status') === 'revert' && feedback_verdict_ready() ? 'f.verdict = "revert"' : 'f.status IN ("new", "planned")');
 $rows = q_all("SELECT f.*, a.first_name, a.last_name, a.role FROM feedback f LEFT JOIN accounts a ON a.id = f.account_id
                 WHERE $where AND f.id > ? ORDER BY f.id LIMIT 200", [(int) get('since')]);
 $base = rtrim((string) config('site_url'), '/');
@@ -57,6 +61,6 @@ exit(json_encode(['ok' => true, 'version' => trim((string) @file_get_contents(AP
     return ['id' => (int) $f['id'], 'created' => $f['created_at'], 'updated' => $f['updated_at'], 'status' => $f['status'], 'site' => $f['site'] ?? null,
             'group' => $ar['g'], 'area' => $ar['gl'] . ' › ' . $ar['s'] . ($ar['sec'] !== '' && $ar['sec'] !== $ar['s'] ? ' (' . $ar['sec'] . ')' : ''),
             'page' => $f['page'], 'author' => $f['account_id'] ? trim($f['first_name'] . ' ' . $f['last_name']) . ' (' . $f['role'] . ')' : ($f['name'] ?: 'lankytojas'),
-            'body' => $f['body'], 'reply' => $f['reply'], 'context' => json_decode((string) ($f['context'] ?? ''), true),
+            'body' => $f['body'], 'reply' => $f['reply'], 'verdict' => $f['verdict'] ?? null, 'verdict_at' => $f['verdict_at'] ?? null, 'context' => json_decode((string) ($f['context'] ?? ''), true),
             'images' => array_map(function ($i) use ($base) { return $base . '/atsiliepimai-api.php?img=' . (int) $i['id']; }, feedback_images((int) $f['id']))];
 }, $rows)], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));

@@ -112,6 +112,15 @@ switch ($action) {
         }
         $json(['ok' => true, 'item' => feedback_json(q_one('SELECT * FROM feedback WHERE id = ?', [$id]))]);
 
+    case 'verdict':   // v1.89: autorius įvertina pataisymą - „ok“ (paliekama) arba „revert“ (Claude grąžins kaip buvo)
+        $f = q_one('SELECT * FROM feedback WHERE id = ?', [(int) post('id')]);
+        $v = (string) post('verdict');
+        if (!$f || !in_array($v, ['ok', 'revert'], true) || !feedback_can_verdict($a, $f)) {
+            $json(['ok' => false, 'error' => t('Atsiliepimas nerastas.')], 404);
+        }
+        q('UPDATE feedback SET verdict = ?, verdict_at = NOW(), updated_at = NOW() WHERE id = ?', [$v, (int) $f['id']]);
+        $json(['ok' => true, 'item' => feedback_json(q_one('SELECT * FROM feedback WHERE id = ?', [(int) $f['id']]))]);
+
     case 'image_delete':
         $f = $own((int) post('id'));
         feedback_delete_images((int) $f['id'], (int) post('image'));

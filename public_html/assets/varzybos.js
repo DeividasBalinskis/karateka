@@ -2851,7 +2851,9 @@
     }).join('') || '<p class="muted small">Kategorijų su dalyviais dar nėra.</p>';
     document.getElementById('tk-view').innerHTML = cur ? '<h2 class="tk-title">' + esc(cur.name) + ' <span class="muted small">' + cur.cats.length + ' rungt.</span></h2><div class="tk-cats">' + cur.cats.map(function (c) {
       var a = areaOf(c);
-      return '<section class="panel tk-cat"><div class="tk-cat-head"><span class="disc d-' + c.discipline + '"></span><b>' + esc(c.name) + '</b><span class="muted small">' + (a ? esc(a.name) + ' · ' : '') + c.competitors.length + ' dalyv.</span>' +
+      // #170: kategorijos pavadinimas irgi atidaro valdymą (kaip „Valdyti →“)
+      return '<section class="panel tk-cat"><div class="tk-cat-head"><span class="disc d-' + c.discipline + '"></span>' +
+        (CFG.readOnly ? '<b>' + esc(c.name) + '</b>' : '<button type="button" class="tk-cat-name" data-tk-open="' + c.id + '" title="Atidaryti Live tvarkaraštyje">' + esc(c.name) + '</button>') + '<span class="muted small">' + (a ? esc(a.name) + ' · ' : '') + c.competitors.length + ' dalyv.</span>' +
         '<span class="spacer"></span>' + stChip(catStatus(c)) + (CFG.readOnly ? '' : '<button type="button" class="btn btn-xs" data-tk-open="' + c.id + '" title="Atidaryti Live tvarkaraštyje">Valdyti →</button>') + '</div>' +
         '<div class="tk-body">' + treeHtml(catBracket(c, true)) + '</div></section>';
     }).join('') + '</div>' : '';
@@ -3298,6 +3300,13 @@
   function renderScreens() {
     var box = document.getElementById('sp-screens'); if (!box) return;
     box.innerHTML = S.areas.map(function (a) { return '<button type="button" class="btn" data-screen="' + a.id + '">📺 ' + esc(a.name) + '</button>'; }).join('');
+    // OBS juosta kiekvienam tatamiui: nuoroda kopijuoti į OBS (permatomas fonas)
+    var bars = document.getElementById('sp-bars');
+    if (bars && CFG.shareUrl) bars.innerHTML = S.areas.map(function (a) {
+      var u = CFG.shareUrl + '&juosta=1&tatami=' + a.id;
+      return '<div class="sp-row"><span class="sp-lbl">' + esc(a.name) + '</span><input class="sel sp-url" readonly value="' + esc(u) + '" aria-label="OBS juosta: ' + esc(a.name) + '" onclick="this.select()">' +
+        '<button type="button" class="btn" data-copy="' + esc(u) + '">Kopijuoti</button><a class="btn" href="' + esc(u) + '" target="_blank" rel="noopener">↗</a></div>';
+    }).join('');
   }
   if (shareBtn) {
     shareBtn.addEventListener('click', function () { sharePanel.hidden = !sharePanel.hidden; shareBtn.setAttribute('aria-expanded', sharePanel.hidden ? 'false' : 'true'); renderScreens(); if (!sharePanel.hidden) window.scrollTo({ top: 0, behavior: 'smooth' }); });

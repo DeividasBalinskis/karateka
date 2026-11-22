@@ -130,6 +130,28 @@ function feedback_area(string $site, string $page, $context = null): array
     return ['g' => $g, 'gl' => FEEDBACK_GROUPS[$g], 's' => $s, 'sl' => t($s), 'sec' => mb_substr($sec, 0, 80)];
 }
 
+/** db/053: autoriaus įvertinimas („Patinka“ / „Grąžinti kaip buvo“) */
+function feedback_verdict_ready(): bool
+{
+    static $ok = null;
+    if ($ok === null) {
+        try {
+            q_value('SELECT verdict FROM feedback LIMIT 1');
+            $ok = true;
+        } catch (PDOException $ex) {
+            $ok = false;
+        }
+    }
+    return $ok;
+}
+
+/** Ar šis žmogus gali įvertinti pataisymą: atsiliepimo autorius (paskyra - bet kuriame įrenginyje), kai pažymėta „Pataisyta“ ir dar neįvertinta */
+function feedback_can_verdict(?array $a, array $f): bool
+{
+    return feedback_verdict_ready() && ($f['status'] ?? '') === 'done' && empty($f['verdict'])
+        && (($a && (int) $f['account_id'] === (int) $a['id']) || feedback_can_edit($a, $f));
+}
+
 /** Ar šis žmogus mato atsiliepimą apie šią vietą (testuotojai Dojo atsiliepimų nemato - žaidimas jiems paslėptas) */
 function feedback_area_visible(array $area, ?array $a): bool
 {
@@ -308,6 +330,7 @@ function feedback_json(array $f): array
     $viewer = current_account();
     return ['g' => $ar['g'], 'gl' => $ar['gl'], 's' => $ar['s'], 'sl' => $ar['sl'], 'sec' => $ar['sec'],
             'href' => ($viewer && is_staff($viewer)) || feedback_can_edit($viewer, $f) ? feedback_page_href($f) : '',
+            'verdict' => (string) ($f['verdict'] ?? ''), 'canVerdict' => feedback_can_verdict($viewer, $f),
             'id' => (int) $f['id'], 'title' => feedback_title($f), 'body' => (string) $f['body'], 'status' => $f['status'], 'statusLabel' => t(FEEDBACK_STATUS[$f['status']][0] ?? ''),
             'reply' => (string) $f['reply'], 'page' => (string) $f['page'], 'site' => (string) ($f['site'] ?? ''), 'siteLabel' => FEEDBACK_SITES[$f['site'] ?? ''] ?? '', 'date' => fmt_date(substr($f['created_at'], 0, 10)),
             'images' => array_map(function ($i) { return ['id' => (int) $i['id'], 'thumb' => feedback_image_url($i, true), 'full' => feedback_image_url($i)]; }, feedback_images((int) $f['id'])),
@@ -318,8 +341,9 @@ function feedback_json(array $f): array
 function feedback_mine(?array $a, int $limit = 100): array
 {
     if ($a) {
+        // + paskyros pataisyti, dar neįvertinti (iš kito įrenginio) - kad „Patinka“ / „Grąžinti“ būtų matomi visur
         return feedback_writer_ready()
-            ? q_all('SELECT * FROM feedback WHERE account_id = ? AND writer = ? ORDER BY id DESC LIMIT ' . $limit, [(int) $a['id'], feedback_writer()])
+            ? q_all('SELECT * FROM feedback WHERE account_id = ? AND (writer = ?' . (feedback_verdict_ready() ? ' OR (status = "done" AND verdict IS NULL)' : '') . ') ORDER BY id DESC LIMIT ' . $limit, [(int) $a['id'], feedback_writer()])
             : q_all('SELECT * FROM feedback WHERE account_id = ? ORDER BY id DESC LIMIT ' . $limit, [(int) $a['id']]);
     }
     $ids = array_map('intval', (array) ($_SESSION['fb_own'] ?? []));
@@ -442,7 +466,7 @@ function feedback_widget_html(?string $site = null): string
         . '<div class="fb-write" id="fbWrite">'
         . '<div class="fb-compose" id="fbCompose">'
         . '<div class="fb-editing" id="fbEditing" hidden><span></span><button type="button" class="fb-link fb-del" title="' . e(t('Ištrinti šį atsiliepimą')) . '">🗑</button><button type="button" class="fb-link" id="fbNew">' . te('+ Naujas') . '</button></div>'
-        . '<textarea id="fbText" rows="4" maxlength="' . FEEDBACK_MAX . '" placeholder="' . e(t('Kas negerai arba ką pakeisti? Ctrl+V - įklijuokite ekrano nuotrauką.')) . '" aria-label="' . e(t('Atsiliepimas')) . '"></textarea>'
+        . '<textarea id="fbText" rows="6" maxlength="' . FEEDBACK_MAX . '" placeholder="' . e(t('Kas negerai arba ką pakeisti? Ctrl+V - įklijuokite ekrano nuotrauką.')) . '" aria-label="' . e(t('Atsiliepimas')) . '"></textarea>'
         . '<div class="fb-imgs" id="fbImgs"></div>'
         . ($a ? '' : '<input type="text" id="fbName" maxlength="120" value="' . e((string) (varz_demo()['name'] ?? (varz_sekr()['name'] ?? ''))) . '" placeholder="' . e(t('Vardas ar el. paštas (nebūtina)')) . '" aria-label="' . e(t('Vardas ar el. paštas (nebūtina)')) . '">')
         . '<div class="fb-actions">'

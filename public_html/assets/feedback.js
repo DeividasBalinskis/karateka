@@ -76,16 +76,36 @@
       return total > n ? '<li><button type="button" class="fb-more" ' + attr + '>' + esc(label) + ' ↓</button></li>' : '';
     }
 
+    // ---------- v1.89: pataisyta - autorius įvertina („Patinka“ - paliekama, „Grąžinti kaip buvo“ - Claude atšaukia ir vėl įkelia) ----------
+    function verdictHtml(it) {
+      if (it.canVerdict) {
+        return '<div class="fb-verdict"><span>' + esc(T('Ar patinka pakeitimas?')) + '</span>' +
+          '<button type="button" class="fb-vbtn ok" data-verdict="ok" data-vid="' + it.id + '">👍 ' + esc(T('Patinka')) + '</button>' +
+          '<button type="button" class="fb-vbtn back" data-verdict="revert" data-vid="' + it.id + '">↩ ' + esc(T('Grąžinti kaip buvo')) + '</button></div>';
+      }
+      var txt = { ok: '👍 ' + T('Patiko - paliekama'), revert: '↩ ' + T('Bus grąžinta kaip buvo'), reverted: '↩ ' + T('Grąžinta kaip buvo') }[it.verdict];
+      return txt ? '<div class="fb-verdict done">' + esc(txt) + '</div>' : '';
+    }
+    list.addEventListener('click', function (e) {
+      var b = e.target.closest('[data-verdict]'); if (!b) return;
+      e.stopPropagation(); b.disabled = true;
+      send({ action: 'verdict', id: b.getAttribute('data-vid'), verdict: b.getAttribute('data-verdict') }).then(function (d) {
+        if (d.item) { upsert(d.item); setState(d.item.verdict === 'ok' ? T('Ačiū! Paliekame.') : T('Gerai - grąžinsime kaip buvo.'), 'ok'); }
+        else { b.disabled = false; setState(d.error || T('Neišsaugota'), 'err'); }
+      }).catch(function () { b.disabled = false; setState(T('Nėra ryšio - neišsaugota'), 'err'); });
+    }, true);
+
     // ---------- Jūsų atsiliepimai (rašymo vaizde): 3 naujausi, pirmiausia - šios vietos ----------
     function renderList() {
       mine.hidden = !items.length;
-      var list0 = items.slice().sort(byHere), view0 = mineAll ? list0 : list0.slice(0, 3);
+      var list0 = items.slice().sort(function (a, b) { return (b.canVerdict - a.canVerdict) || byHere(a, b); }), view0 = mineAll ? list0 : list0.slice(0, 1);   // #164: matomas tik paskutinis, kiti - „Rodyti visus“
       list.innerHTML = view0.map(function (it) {
         return '<li class="fb-item' + (it.id === cur.id ? ' on' : '') + '" data-id="' + it.id + '" tabindex="0" role="button" title="' + esc(T('Paspauskite - taisyti')) + '">' +
           '<div class="fb-item-top"><span class="fb-item-title">' + esc(it.title) + '</span>' + (it.images.length ? '<span class="fb-item-img" title="' + esc(T('Nuotraukos')) + '">🖼 ' + it.images.length + '</span>' : '') + '</div>' +
           '<div class="fb-item-meta"><span>' + where(it, here && it.g !== here.g) + ' · ' + esc(it.date) + '</span><span class="fb-st st-' + esc(it.status) + '">' + esc(it.statusLabel) + '</span></div>' +
-          (it.reply ? '<div class="fb-reply"><b>' + esc(T('Atsakymas:')) + '</b> ' + esc(it.reply) + '</div>' : '') + '</li>';
+          (it.reply ? '<div class="fb-reply"><b>' + esc(T('Atsakymas:')) + '</b> ' + esc(it.reply) + '</div>' : '') + verdictHtml(it) + '</li>';
       }).join('') + more(list0.length, view0.length, 'data-mine-all', T('Rodyti visus ({n})', { n: list0.length }));
+      fit();
     }
 
     // ---------- Visi atsiliepimai (personalui): vieta, būsena, paieška - išskleidžiami sąrašai ----------
@@ -313,7 +333,7 @@
 
     // ---------- Ankstesni: paspaudus - taisyti ----------
     function edit(id) {
-      var it = items.find(function (x) { return x.id === id; }); if (!it) return;
+      var it = items.find(function (x) { return x.id === id; }); if (!it || !it.mine) return;   // iš kito įrenginio - tik įvertinti
       restoring = false;
       var open = function () {
         cur = { id: it.id, images: it.images.slice() }; text.value = it.body; renderImgs(); showEditing(); remember();
@@ -336,11 +356,22 @@
     });
 
     // ---------- Atidaryti / uždaryti ----------
+    // #167: langas visada telpa į matomą ekrano dalį (planšetėje su klaviatūra irgi) - viršus su „Atsiliepimas“ ir × lieka matomas
+    function fit() {
+      if (panel.hidden) return;
+      panel.style.maxHeight = '';
+      var vv = window.visualViewport, top = vv ? vv.offsetTop : 0, bottom = vv ? vv.offsetTop + vv.height : window.innerHeight;
+      var r = panel.getBoundingClientRect(), avail = Math.floor(Math.min(r.bottom, bottom) - top - 8);
+      if (avail > 120 && r.height > avail) panel.style.maxHeight = avail + 'px';
+    }
+    window.addEventListener('resize', fit);
+    if (window.visualViewport) { window.visualViewport.addEventListener('resize', fit); window.visualViewport.addEventListener('scroll', fit); }
+    text.addEventListener('focus', function () { setTimeout(fit, 350); });   // klaviatūra atsidaro šiek tiek vėliau
     function toggle(open, quiet) {
       panel.hidden = !open;
       box.classList.toggle('open', open);
       fab.setAttribute('aria-expanded', open ? 'true' : 'false');
-      if (open) { load(); if (!quiet && view === 'write') text.focus(); }
+      if (open) { load(); fit(); if (!quiet && view === 'write') text.focus(); }
       else if (timer) save();
       remember();
     }

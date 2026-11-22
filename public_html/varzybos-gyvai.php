@@ -117,8 +117,27 @@ if (get('json')) {
 }
 
 $screen = (bool) get('ekranas');
-$cfg = ['json' => url('varzybos-gyvai.php?k=' . $t['share_token'] . '&json=1'), 'id' => (int) $t['id'], 'screen' => $screen, 'area' => (int) get('tatami'),
+// OBS juosta (?juosta=1&tatami=N): permatomas fonas, apačioje - kova, balai ir laikas; OBS uždeda ją ant telefono vaizdo (Browser Source)
+$bar = !$screen && (bool) get('juosta');
+$cfg = ['json' => url('varzybos-gyvai.php?k=' . $t['share_token'] . '&json=1'), 'id' => (int) $t['id'], 'screen' => $screen, 'bar' => $bar, 'area' => (int) get('tatami'),
         'title' => $t['title']];
+if ($bar): ?><!doctype html>
+<html lang="lt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title><?= e($t['title']) ?> · OBS · <?= e(VARZ_NAME) ?></title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="<?= e(asset_url('assets/varzybos.css')) ?>">
+</head>
+<body class="gv-bar-body">
+<main id="gyvai" aria-live="polite"></main>
+<script>window.GYVAI = <?= json_encode($cfg, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP) ?>;</script>
+<script src="<?= e(asset_url('assets/varzybos-gyvai.js')) ?>"></script>
+</body>
+</html>
+<?php exit; endif;
 $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($t['ends_on'], true) : '');
 ?><!doctype html>
 <html lang="lt">

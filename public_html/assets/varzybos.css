@@ -451,6 +451,8 @@ button.bt-timer { border: 0; cursor: text; font-family: inherit; }
 .sp-block { display: grid; gap: 6px; align-content: start; }
 .sp-block p { margin: 0; }
 .sp-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+#sp-bars .sp-row { margin-top: 6px; }
+.sp-lbl { min-width: 90px; font-weight: 700; font-size: .85rem; }
 .sp-url { flex: 1; min-width: 160px; font-size: .8rem; }
 @media (max-width: 1000px) { .share-panel { grid-template-columns: 1fr; } }
 .entries-box { margin-bottom: 14px; border-color: #F0D9A0; }
@@ -1158,6 +1160,8 @@ body.vz[data-theme="nature"] .panel, body.vz[data-theme="mountains"] .panel, bod
 .tk-cats { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 12px; }
 .tk-cat { padding: 12px 14px; }
 .tk-cat-head { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; margin-bottom: 6px; }
+.tk-cat-name { border: 0; background: none; padding: 0; font: inherit; font-weight: 800; color: inherit; cursor: pointer; text-align: left; }
+.tk-cat-name:hover, .tk-cat-name:focus-visible { color: var(--accent); text-decoration: underline; }
 .tk-body h4 { margin: 10px 0 6px; font-size: .78rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
 @media (max-width: 900px) { .tk-layout { grid-template-columns: 1fr; } .tk-side { position: static; max-height: none; } .tk-cats { grid-template-columns: 1fr; } }
 /* Viešoje transliacijoje - amžiaus grupių mygtukai */
@@ -1512,5 +1516,28 @@ body.vz.vz-public:not(.scr) .vz-top-row, body.vz.vz-public:not(.scr) .tabs { max
 .gv-ovl .ov-s.aka { color: #FF8A8A; }
 .gv-ovl .ov-t { font-variant-numeric: tabular-nums; opacity: .9; }
 .gv-ovl .ov-win { flex-basis: 100%; color: #FFD27A; }
+/* OBS juosta (varzybos-gyvai.php?juosta=1&tatami=N): permatomas fonas, juosta apačioje; dydis pagal ekrano plotį (OBS - 1920×1080) */
+body.gv-bar-body { margin: 0; background: transparent !important; font-family: 'Inter', system-ui, sans-serif; overflow: hidden; }
+.gv-ovl.gv-bar { position: fixed; left: 3vw; right: 3vw; bottom: 4vh; gap: .6vw 1.2vw; padding: 1vw 1.6vw; border-radius: 1.2vw; font-size: 2.1vw; background: rgba(10, 12, 20, .86); backdrop-filter: none; }
+.gv-ovl.gv-bar .ov-cat { font-size: 1.2vw; }
+.gv-ovl.gv-bar .ov-s { font-size: 3.4vw; }
+.gv-ovl.gv-bar .ov-t { font-size: 2.4vw; }
 .area-vid { display: flex; align-items: center; gap: 4px; font-size: 12px; flex: 1 1 100%; min-width: 0; }
 .area-vid input { flex: 1; min-width: 0; width: auto; font-size: 12px; padding: 4px 6px; }
+
+/* #171: Budo antraštėje - kitos sistemos (Karateka, LTKF), kaip Karateka logotipo meniu „⌄“ */
+.vz-top .site-switch { position: relative; z-index: 60; margin-left: -4px; }
+.vz-top .site-switch > summary { list-style: none; cursor: pointer; width: 30px; height: 30px; display: grid; place-items: center; border-radius: 50%;
+  color: #fff; background: rgba(255,255,255,.12); border: 1.5px solid rgba(255,255,255,.28); }
+.vz-top .site-switch > summary::-webkit-details-marker { display: none; }
+.vz-top .site-switch > summary:hover { background: rgba(255,255,255,.22); }
+.vz-top .site-switch[open] > summary svg { transform: rotate(180deg); }
+.vz-top .ss-panel { position: absolute; left: 0; top: calc(100% + 8px); width: 250px; display: grid; gap: 4px; padding: 8px; background: #FBF9F4;
+  border-radius: 14px; box-shadow: 0 14px 36px rgba(0,0,0,.35); border: 1px solid rgba(23,20,15,.08); }
+.vz-top .ss-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 10px; color: #17140F; text-decoration: none; }
+.vz-top .ss-item:hover { background: rgba(23,20,15,.06); }
+.vz-top .ss-item.is-cur { background: rgba(215,38,61,.08); }
+.vz-top .ss-item img { width: 34px; height: 34px; object-fit: contain; }
+.vz-top .ss-item b { display: block; font-size: 15px; } .vz-top .ss-item small { display: block; font-size: 12px; color: #6b6457; }
+.vz-top .ss-budo { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 50%; background: #D7263D; color: #fff; font-weight: 800; font-size: 17px; }
+.vz-top .ss-ltkf { color: #14213D; }

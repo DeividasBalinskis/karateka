@@ -520,13 +520,7 @@ $mt = !$pm && $a && !is_staff($a) && is_active_account($a) && $a['status'] === '
     <a class="logo" href="<?= $home ? '#' : url('index.php') ?>"><img src="<?= url('img/logo.png') ?>" alt="<?= te('Karateka logotipas') ?>"><?php if (config('env') !== 'live'): ?><span class="ver-tag" title="<?= is_staff() ? te('Kas naujo šioje versijoje') : te('Svetainės versija (rodoma tik testuojant)') ?>"<?= is_staff() ? ' role="link" tabindex="0" onclick="event.preventDefault(); event.stopPropagation(); location.href=' . e(json_encode(url('admin/kas-naujo.php'))) . '"' : '' ?>>v<?= e(site_version()) ?><?= config('env') === 'local' ? (' ' . t('· local')) : '' ?></span><?php endif; ?></a>
     <?php if ($a && is_staff($a)): ?>
       <!-- Kitos sistemos: Budo varžybos ir LTKF - per logotipo meniu (#91/#92) -->
-      <details class="site-switch"><summary title="<?= te('Kitos sistemos: Budo varžybos, LTKF') ?>" aria-label="<?= te('Kitos sistemos') ?>"><svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
-        <div class="ss-panel">
-          <a href="<?= url('index.php') ?>" class="ss-item is-cur"><img src="<?= url('img/logo.png') ?>" alt=""><span><b>Karateka</b><small><?= te('klubo svetainė') ?></small></span></a>
-          <a href="<?= url('admin/varzybos.php') ?>" class="ss-item"><span class="ss-budo" aria-hidden="true">武</span><span><b>Budo</b><small><?= te('varžybų sistema') ?></small></span></a>
-          <a href="<?= url('ltkf/') ?>" class="ss-item"><svg class="ss-ltkf" width="34" height="34" viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="22.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M14 31 L24 13 L34 31" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/><path d="M18 26 H30" stroke="currentColor" stroke-width="2.4"/><rect x="11" y="34" width="8.6" height="2.6" fill="#F2B705"/><rect x="19.7" y="34" width="8.6" height="2.6" fill="#00704A"/><rect x="28.4" y="34" width="8.6" height="2.6" fill="#C1272D"/></svg><span><b>LTKF</b><small><?= te('federacijos svetainė') ?></small></span></a>
-        </div>
-      </details>
+      <?= site_switch_html('karateka') ?>
     <?php endif; ?>
     <!-- Kalba ir tema - kairėje, visada matomos (tema išsaugoma paskyrai) -->
     <div class="nav-prefs"><?= render_lang_switch() ?><?php if ($a): ?><span class="theme-li"><?= theme_picker_html('me', current_theme()) ?></span><?php endif; ?></div>
@@ -842,4 +836,19 @@ function render_account_settings(array $a, string $id = 'nustatymai', string $ti
 </div>
     <?php
     return ob_get_clean();
+}
+
+/** Kitos sistemos: Karateka, Budo varžybos, LTKF - logotipo meniu „⌄“ (#91/#92; Budo antraštėje - #171). $cur - kuri dabar atidaryta. */
+function site_switch_html(string $cur): string
+{
+    $items = [
+        'karateka' => [url('index.php'), '<img src="' . e(url('img/logo.png')) . '" alt="">', 'Karateka', t('klubo svetainė')],
+        'budo' => [url('admin/varzybos.php'), '<span class="ss-budo" aria-hidden="true">武</span>', 'Budo', t('varžybų sistema')],
+        'ltkf' => [url('ltkf/'), '<svg class="ss-ltkf" width="34" height="34" viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="22.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M14 31 L24 13 L34 31" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/><path d="M18 26 H30" stroke="currentColor" stroke-width="2.4"/><rect x="11" y="34" width="8.6" height="2.6" fill="#F2B705"/><rect x="19.7" y="34" width="8.6" height="2.6" fill="#00704A"/><rect x="28.4" y="34" width="8.6" height="2.6" fill="#C1272D"/></svg>', 'LTKF', t('federacijos svetainė')],
+    ];
+    $html = '<details class="site-switch"><summary title="' . e(t('Kitos sistemos: Budo varžybos, LTKF')) . '" aria-label="' . e(t('Kitos sistemos')) . '"><svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></summary><div class="ss-panel">';
+    foreach ($items as $k => [$href, $icon, $name, $sub]) {
+        $html .= '<a href="' . e($href) . '" class="ss-item' . ($k === $cur ? ' is-cur' : '') . '">' . $icon . '<span><b>' . e($name) . '</b><small>' . e($sub) . '</small></span></a>';
+    }
+    return $html . '</div></details>';
 }

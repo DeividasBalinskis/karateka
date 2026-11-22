@@ -190,6 +190,7 @@ varz_html_head(t('Varžybos'), 'vz-home');
   <div class="vz-top-row">
     <?php if (!$demo): ?><a class="vz-back" href="<?= url('admin/index.php') ?>" title="<?= te('Į Karateka valdymą') ?>">←</a><?php endif; ?>
     <a class="vz-brand" href="<?= url('admin/varzybos.php') ?>"><span class="vz-logo" aria-hidden="true"></span><?= e(VARZ_NAME) ?></a>
+    <?php if (!$demo && is_staff()): ?><?= site_switch_html('budo') ?><?php endif; /* #171: į Karateka ir LTKF - kaip Karateka logotipo meniu */ ?>
     <div class="vz-title">
       <h1><?= te('Varžybos') ?></h1>
       <div class="sub"><?= te('Visos varžybos vienoje vietoje: klubai, komandos, dalyviai, kategorijos, live tvarkaraštis ir rezultatai.') ?></div>

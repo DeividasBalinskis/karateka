@@ -262,6 +262,23 @@
   // 📹 Tatamių vaizdas (YouTube Live) su kovos rezultatu ant vaizdo. Vaizdas kuriamas vieną kartą (kitaip persikrautų kas kelias sekundes),
   // atnaujinama tik juosta su vardais, balais ir laiku.
   var vidBox = null;
+  // Kovos juosta ant vaizdo: kategorija, vardai, balai, laikas, laimėtojas (žiūrovų vaizde ir OBS juostoje)
+  function ovlHtml(areaId) {
+    var pick = liveFor(areaId), d = pick && pick.d;
+    if (d && d.mode === 'score') return '<span class="ov-cat">' + esc(d.cat) + '</span><span class="ov-n aka">' + esc(d.aka.name) + '</span><b class="ov-s">' + esc(d.perf && d.perf.total != null ? d.perf.total : '–') + '</b>';
+    if (!d) return '';
+    var left = timeLeft(pick), sa = d.mode === 'score2' ? (d.parts.a.tk != null && d.parts.a.tp != null ? (d.parts.a.tk + d.parts.a.tp).toFixed(1) : '–') : d.sa,
+      sb = d.mode === 'score2' ? (d.parts.b.tk != null && d.parts.b.tp != null ? (d.parts.b.tk + d.parts.b.tp).toFixed(1) : '–') : d.sb;
+    return '<span class="ov-cat">' + esc(d.cat) + (d.bout ? ' · ' + esc(d.bout) : '') + '</span><span class="ov-n aka">' + esc(d.aka.name) + '</span><b class="ov-s aka">' + esc(sa) + '</b>' +
+      (left !== null && d.mode !== 'score2' ? '<span class="ov-t" data-timer="' + areaId + '">' + fmt(left, d.timer && d.timer.up) + '</span>' : '<span class="ov-t">:</span>') +
+      '<b class="ov-s shiro">' + esc(sb) + '</b><span class="ov-n shiro">' + esc(d.shiro.name) + '</span>' + (d.winner ? '<span class="ov-win">🏆 ' + esc(d.winner === 'a' ? d.aka.name : d.shiro.name) + '</span>' : '');
+  }
+  // OBS juosta (?juosta=1&tatami=N): tik kovos juosta apačioje, fonas permatomas; kai kovos nėra - nieko nerodoma
+  function renderBar() {
+    var html = ovlHtml(CFG.area);
+    html = html ? '<div class="gv-ovl gv-bar">' + html + '</div>' : '';
+    if (root.dataset.h !== html) { root.dataset.h = html; root.innerHTML = html; }
+  }
   function renderVideos() {
     var areas = ((data && data.areas) || []).filter(function (a) { return a.video; });
     if (!vidBox) {
@@ -280,21 +297,13 @@
           '<div class="gv-ovl" hidden></div></div>';
         vidBox.appendChild(card);
       }
-      var ov = card.querySelector('.gv-ovl'), pick = liveFor(a.id), d = pick && pick.d, html = '';
-      if (d && d.mode === 'score') html = '<span class="ov-cat">' + esc(d.cat) + '</span><span class="ov-n aka">' + esc(d.aka.name) + '</span><b class="ov-s">' + esc(d.perf && d.perf.total != null ? d.perf.total : '–') + '</b>';
-      else if (d) {
-        var left = timeLeft(pick), sa = d.mode === 'score2' ? (d.parts.a.tk != null && d.parts.a.tp != null ? (d.parts.a.tk + d.parts.a.tp).toFixed(1) : '–') : d.sa,
-          sb = d.mode === 'score2' ? (d.parts.b.tk != null && d.parts.b.tp != null ? (d.parts.b.tk + d.parts.b.tp).toFixed(1) : '–') : d.sb;
-        html = '<span class="ov-cat">' + esc(d.cat) + (d.bout ? ' · ' + esc(d.bout) : '') + '</span><span class="ov-n aka">' + esc(d.aka.name) + '</span><b class="ov-s aka">' + esc(sa) + '</b>' +
-          (left !== null && d.mode !== 'score2' ? '<span class="ov-t" data-timer="' + a.id + '">' + fmt(left, d.timer && d.timer.up) + '</span>' : '<span class="ov-t">:</span>') +
-          '<b class="ov-s shiro">' + esc(sb) + '</b><span class="ov-n shiro">' + esc(d.shiro.name) + '</span>' + (d.winner ? '<span class="ov-win">🏆 ' + esc(d.winner === 'a' ? d.aka.name : d.shiro.name) + '</span>' : '');
-      }
+      var ov = card.querySelector('.gv-ovl'), html = ovlHtml(a.id);
       if (ov.dataset.h !== html) { ov.dataset.h = html; ov.innerHTML = html; ov.hidden = !html; }
     });
     vidBox.querySelectorAll('[data-vid]').forEach(function (c) { if (!keep[c.dataset.vid]) c.remove(); });
     vidBox.hidden = !areas.length;
   }
-  function render() { if (!data && !Object.keys(local).length) return; if (CFG.screen) renderScreen(); else { renderViewer(); renderVideos(); } }
+  function render() { if (!data && !Object.keys(local).length) return; if (CFG.bar) renderBar(); else if (CFG.screen) renderScreen(); else { renderViewer(); renderVideos(); } }
   // Laikrodis tiksi tarp atnaujinimų
   setInterval(function () {
     if (CFG.screen) { var el = document.getElementById('scr-timer'), p = liveFor(CFG.area); if (el && p) { var l = timeLeft(p); el.textContent = fmt(l, p.d.timer && p.d.timer.up); el.className = 'scr-timer' + (p.d.timer && p.d.timer.up ? '' : l <= 0 ? ' over' : l <= 15000 ? ' last' : ''); } return; }
@@ -311,7 +320,7 @@
       offset = d.now - Math.round((sent + Date.now()) / 2);
       data = d; render();
     }).catch(function () { failed++; render(); })
-      .then(function () { schedule(CFG.screen ? 1000 : 3000); });
+      .then(function () { schedule(CFG.screen || CFG.bar ? 1000 : 3000); });
   }
   document.addEventListener('visibilitychange', function () { if (!document.hidden) schedule(0); });
   poll();

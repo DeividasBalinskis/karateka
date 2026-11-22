@@ -243,9 +243,11 @@ span.chat-ctx{text-decoration:none;}
   .fb-hint{display:none;}
 }
 @media print{ .fb-fab, .fb-panel{display:none !important;} }
-/* #163: planšetėje (naršyklės juosta užima dalį ekrano) lango viršus su „Atsiliepimas“ ir × visada matomas */
-.fb-panel{max-height:min(720px, calc(100dvh - 96px));}
-@media (max-width:640px){ .fb-panel{max-height:calc(100dvh - 12px);} }
+/* #163: planšetėje (naršyklės juosta užima dalį ekrano) lango viršus su „Atsiliepimas“ ir × visada matomas;
+   #167: tiksliai pritaiko assets/feedback.js (fit) - ir kai atsidaro klaviatūra. #164: didesnis langas ir rašymo laukas. */
+.fb-panel{width:min(520px, calc(100vw - 32px)); max-height:min(860px, calc(100dvh - 96px));}
+#fbText{min-height:150px;}
+@media (max-width:640px){ .fb-panel{width:100%; max-height:calc(100dvh - 12px);} #fbText{min-height:110px;} }
 
 /* ---------- Iššokantys pranešimai treneriui (assets/notify-popup.js) ---------- */
 .ntf-pop{position:fixed; bottom:92px; right:16px; z-index:9500; display:grid; gap:10px; width:min(360px, calc(100vw - 32px)); pointer-events:none;}
@@ -332,6 +334,12 @@ body.chat-is-open .ntf-pop{display:none;}   /* kol atidarytas pokalbis - praneš
 .fb-filters{display:grid; grid-template-columns:minmax(0, 1.4fr) minmax(0, 1fr); gap:6px; margin-bottom:10px;}
 .fb-filters select, .fb-filters input{height:36px; box-sizing:border-box; border:1px solid var(--f-line); border-radius:10px; padding:0 8px; font:600 13px 'Inter',sans-serif; background:#fff; color:var(--f-ink); min-width:0;}
 .fb-filters input{grid-column:1 / -1;}
+.fb-verdict{display:flex; align-items:center; flex-wrap:wrap; gap:6px; margin-top:8px; font-size:12.5px; font-weight:700; color:var(--f-muted);}
+.fb-verdict > span{flex:1 1 100%;}
+.fb-vbtn{height:32px; padding:0 12px; border-radius:999px; border:1px solid var(--f-line); background:#fff; font:800 12.5px 'Inter',sans-serif; cursor:pointer;}
+.fb-vbtn.ok{background:#EBFBEE; border-color:#8CE99A; color:#2B8A3E;}
+.fb-vbtn.back{background:#FFF4E6; border-color:#FFC078; color:#B35C00;}
+.fb-verdict.done{color:#2B8A3E;}
 .fb-where{font-weight:600;}
 .fb-where.here{color:var(--f-accent2);}
 .fb-go{display:inline-block; margin-top:6px; font-weight:800; font-size:13px; color:var(--f-accent2);}

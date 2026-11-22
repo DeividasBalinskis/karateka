@@ -1,0 +1,71 @@
+# Įkėlimas į test.karateka.lt be rankų (docs/planai/auto-taisymas.md):
+# greitos patikros → paketas (kaip svetaine-vX.YY.zip: be config.php, be įkeltų failų) → FTP(S) į TEST aplanką, tik pasikeitę failai.
+# Gyva karateka.lt čia neliečiama: FTP paskyra turi matyti tik test svetainės aplanką.
+# Paleidžiama: Claude įrašas su „[į test]“ claude/… šakoje arba rankomis (Actions → „Įkelti į test.karateka.lt“ → Run workflow).
+# Po įkėlimo duomenų bazę atnaujina Claude per diegimas-api.php (raktas - „Claude prieiga“, Valdymas → Atsiliepimai).
+# Reikia GitHub paslapčių: TEST_FTP_SERVER, TEST_FTP_USER, TEST_FTP_PASSWORD (nebūtina: TEST_FTP_DIR, TEST_FTP_PROTOCOL).
+name: Įkelti į test.karateka.lt
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ['claude/**']
+
+concurrency:
+  group: ikelti-i-test
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[į test]')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Ar nustatyta FTP prieiga
+        env:
+          FTP_SERVER: ${{ secrets.TEST_FTP_SERVER }}
+        run: |
+          if [ -z "$FTP_SERVER" ]; then
+            echo "::error::Nėra GitHub paslapčių TEST_FTP_SERVER / TEST_FTP_USER / TEST_FTP_PASSWORD (žr. docs/planai/auto-taisymas.md)."
+            exit 1
+          fi
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: pdo_mysql, mbstring, gd, zlib
+          coverage: none
+
+      - name: Greitos patikros (PHP sintaksė, db failai, koduotė, vertimai)
+        run: bash tests/checks.sh
+
+      - name: Paketas (be config.php ir įkeltų failų)
+        run: |
+          mkdir -p build
+          git ls-files public_html | sed 's|^public_html/||' > /tmp/failai.txt
+          rsync -a --files-from=/tmp/failai.txt public_html/ build/
+          rm -f build/config.php
+          rm -rf build/app/cli build/uploads
+          mkdir -p build/app/db
+          cp db/0*.sql build/app/db/
+          cp docs/pakeitimai.md build/app/pakeitimai.md
+          echo "Versija: $(cat build/app/VERSION)"
+          test ! -e build/config.php
+
+      - name: Įkelti į test (tik pasikeitę failai)
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.TEST_FTP_SERVER }}
+          username: ${{ secrets.TEST_FTP_USER }}
+          password: ${{ secrets.TEST_FTP_PASSWORD }}
+          protocol: ${{ secrets.TEST_FTP_PROTOCOL || 'ftps' }}
+          local-dir: ./build/
+          server-dir: ${{ secrets.TEST_FTP_DIR || './' }}
+          exclude: |
+            **/.git*
+            **/.git*/**
+            config.php
+            uploads/**
+            backups/**

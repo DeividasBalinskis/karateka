@@ -67,7 +67,7 @@
   navLinks.forEach(function (a, i) {
     a.dataset.mi = i; a.dataset.cur = norm(a.innerText);
     var t = document.createElement('span'); t.className = 'ed-navtools ed-ui';
-    t.innerHTML = '<button type="button" data-nav="ren" title="Pervadinti">✎</button><button type="button" data-nav="del" title="Išimti iš meniu">×</button>';
+    t.innerHTML = '<button type="button" data-nav="ren" title="Pervadinti">✎</button><button type="button" data-nav="go" title="Atidaryti puslapį">↗</button><button type="button" data-nav="del" title="Išimti iš meniu">×</button>';
     a.appendChild(t);
   });
   if (header && header.querySelector('.main-nav')) {
@@ -76,18 +76,29 @@
     addNav.addEventListener('click', function () { menuModal(true); });
   }
   var navDel = [];
+  function renameNav(a) {
+    var span = a.querySelector('.ed-navlab');
+    if (!span) { span = document.createElement('span'); span.className = 'ed-navlab'; while (a.firstChild && a.firstChild !== a.querySelector('.ed-navtools')) span.appendChild(a.firstChild); a.insertBefore(span, a.firstChild); }
+    if (span.getAttribute('contenteditable') === 'true') return;   // jau rašoma - žymeklis lieka, kur paspausta
+    span.setAttribute('contenteditable', 'true'); span.focus();
+    var r = document.createRange(); r.selectNodeContents(span); var sl = getSelection(); sl.removeAllRanges(); sl.addRange(r);
+  }
   if (header) header.addEventListener('click', function (e) {
     var b = e.target.closest('[data-nav]');
     if (b) {
       e.preventDefault(); e.stopPropagation();
-      var a = b.closest('a'), lab = a.firstChild;
+      var a = b.closest('a');
       if (b.dataset.nav === 'del') { if (confirm('Išimti „' + norm(a.dataset.cur) + '“ iš meniu?')) { navDel.push(+a.dataset.mi); a.hidden = true; mark(); } return; }
-      var span = a.querySelector('.ed-navlab');
-      if (!span) { span = document.createElement('span'); span.className = 'ed-navlab'; while (a.firstChild && a.firstChild !== a.querySelector('.ed-navtools')) span.appendChild(a.firstChild); a.insertBefore(span, a.firstChild); }
-      span.setAttribute('contenteditable', 'true'); span.focus();
-      var r = document.createRange(); r.selectNodeContents(span); var sl = getSelection(); sl.removeAllRanges(); sl.addRange(r);
+      if (b.dataset.nav === 'go') {   // #168: puslapis atidaromas tik per ↗
+        if (dirty && !confirm('Yra neišsaugotų pakeitimų. Išeiti?')) return;
+        dirty = false; location.href = a.getAttribute('href'); return;
+      }
+      renameNav(a);
       return;
     }
+    // #168: redaguojant paspaudus meniu punktą - jo pavadinimas keičiamas, puslapis neatidaromas
+    var na = e.target.closest('.main-nav > a');
+    if (na && navLinks.indexOf(na) !== -1) { e.preventDefault(); e.stopPropagation(); renameNav(na); return; }
     if (e.target.closest('.ed-navlab[contenteditable], .ed-txt-h')) e.preventDefault();
   }, true);
   if (header) header.addEventListener('keydown', function (e) { if (e.key === 'Enter' && e.target.closest('.ed-navlab, .ed-txt-h')) { e.preventDefault(); e.target.blur(); } });
@@ -107,7 +118,7 @@
   document.addEventListener('click', function (e) {
     var a = e.target.closest && e.target.closest('main a[href], footer a[href], header a[href]');
     if (a && !e.target.closest('.ed-ui, .ed-modal')) {
-      if (a.closest('header') && (e.target.closest('.ed-navlab[contenteditable], .ed-txt-h, .ed-navtools'))) { e.preventDefault(); return; }
+      if (a.closest('header') && (e.target.closest('.ed-navlab[contenteditable], .ed-txt-h, .ed-navtools') || navLinks.indexOf(a) !== -1)) { e.preventDefault(); return; }
       if (a.closest('header') && !a.closest('.lang-sw')) { if (dirty && !confirm('Yra neišsaugotų pakeitimų. Išeiti?')) { e.preventDefault(); return; } dirty = false; return; }
       e.preventDefault();
     }
