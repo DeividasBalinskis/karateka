@@ -4,6 +4,9 @@ Answers given by Deividas on 2026-11-20 (questions from `docs/darbo-planas.md`, 
 
 | Date | Area | Decision | Who decided | Source |
 |---|---|---|---|---|
+| 2026-11-22 | Feedback | Feedback is grouped by the place it was left: Budo / Karateka / LTKF + sections (Budo sections = app tabs, Karateka admin = Valdymas menu items); the current place first. | Deividas | chat |
+| 2026-11-22 | Feedback | The 💡 box keeps open state, text and filters across page changes in the same browser tab (3 h); on a phone it does not reopen by itself, ✎ on the button instead (Claude's call). Can be changed: reopen on phones too. | Deividas + Claude | chat |
+| 2026-11-22 | Feedback | Place is computed from the page (no new database column), so old items are grouped too (Claude's call). | Claude | chat |
 | 2026-11-22 | Tests | A quiz created with a question file is live at once (Claude's call, Denis's 244 questions); review first only when „Pirmiau peržiūrėti“ is ticked. Can be changed: review by default again. | Claude | chat |
 | 2026-11-22 | Layout | Tablet (touch screen 600-1100 px) shows the computer layout at 1280 px width, scaled; phone keeps its own; exam protocol keeps native size (Claude's call on Deividas's ask). Can be changed: other width or native tablet layout. | Claude | chat |
 | 2026-11-22 | Phone | The tab bar (Šiandien, Treniruotė…) sits at the top under the logo; the scroll progress bar is removed. | Deividas | chat |

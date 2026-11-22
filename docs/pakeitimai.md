@@ -4,6 +4,21 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.87 - 2026-11-22 (atsiliepimai pagal vietą; langas išlieka pereinant per puslapius)
+- **💡 Atsiliepimų lange sąrašas sugrupuotas pagal vietą, kur paliktas:** Budo / Karateka / LTKF ir jų skiltys
+  (pvz. Budo → Tvarkaraštis, Rezultatai, Administracija, Kova; Karateka → Valdymas · Nariai, Treniruotė…; LTKF → Klubai, Teisėjai…).
+  Pirmiausia rodoma vieta, kur esate dabar (📍), kitas galima pasirinkti vienu paspaudimu („Visur“ - visi).
+  Yra paieška (be lietuviškų raidžių skirtumo) ir būsena (Neišspręsti / Išspręsti / Visos). Seniems atsiliepimams vieta nustatoma pagal puslapį.
+- Budo valdyme įrašoma, kuris skirtukas buvo atidarytas (pvz. „Administracija › Dalyviai“) arba kad buvo atidaryta kova.
+- **Langas nebeužsidaro ir tekstas nedingsta pereinant į kitą puslapį:** kompiuteryje ir planšetėje langas atsidaro ten pat su tuo pačiu tekstu,
+  filtrais ir taisomu atsiliepimu; telefone - neatsidaro pats (užimtų ekraną), ant 💡 rodomas ✎, paspaudus - tekstas vietoje.
+  Nespėjęs išsisaugoti tekstas išsaugomas išeinant iš puslapio (be dublikatų). Naujam atsiliepimui - „+ Naujas“.
+- Prie atsiliepimo (skirtuke „Visi“, atidarius) - „Atidaryti vietą →“.
+- **Valdymas → Atsiliepimai:** tos pačios grupės ir skiltys su skaičiais, paieška, vieta ir #numeris prie kiekvieno (paspaudus vietą - visi iš jos);
+  „Kopijuoti neišspręstus“ - tik pasirinktos vietos, su vieta tekste. Telefone filtrai - viena slenkama eilutė.
+- Lango tekstai išversti į EN ir RU. Testuotojai Dojo atsiliepimų nemato (žaidimas jiems paslėptas).
+- Duomenų bazė: naujų failų nėra.
+
 ## v1.86 - 2026-11-22 (testas iš failo veikia iškart, viršutinė juosta, planšetė = kompiuteris, teisėjų registras, tatamių vaizdas)
 - **Testai (Denis):** testas, sukurtas su klausimų failu (pvz. 244 klausimai iš .txt), **laikomas iš karto** - klausimai nebelaukia peržiūros.
   Jei reikia pirmiau peržiūrėti - pažymėkite „Pirmiau peržiūrėti klausimus“. Jei klausimai laukia peržiūros, testo puslapyje

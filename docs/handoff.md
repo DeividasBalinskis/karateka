@@ -1,12 +1,12 @@
 # Handoff
-Updated: 2026-11-22 · version v1.86 · branch claude/festive-curie-01jgx2
+Updated: 2026-11-22 · version v1.87 · branch claude/festive-curie-01jgx2
 
 ## Pending asks (answer these first)
 | Asked | By | What | Status |
 |---|---|---|---|
 | 2026-11-20 | Denis | #30 and #147: messages cut off - ask Denis to write them again | waiting |
 | 2026-11-22 | Claude | Pick variants: menu on a computer A1/A2/A3, phone menu B1/B2/B3, Budo video C1 (done) + C2 tablet / C3 hall TV (screenshots sent in chat) | waiting |
-| 2026-11-22 | Claude | „į main“ for v1.85-v1.86 (main = v1.84) | waiting |
+| 2026-11-22 | Claude | „į main“ for v1.85-v1.87 (main = v1.84) | waiting |
 | 2026-11-21 | Claude | Answers for not-started steps | answered 2026-11-21 (see decisions.md); waiting: Varžybos code on branch `varzybos-kodas` (D1), LibreSprite on PC (D8) |
 
 ## Last session
@@ -49,6 +49,9 @@ Updated: 2026-11-22 · version v1.86 · branch claude/festive-curie-01jgx2
   LTKF judges attendance + diplomas (db/052, files in uploads/teisejai, staff only); Budo tatami video (YouTube Live link per tatami,
   viewers see it with the live bout overlay - varzybos-gyvai.js renderVideos); review quick wins (compact member filters on a phone,
   „+N grupės“ fold on events, floating buttons do not cover menus). Variant screenshots for menus and video sent for a pick.
+- v1.87: feedback by place - `feedback_area()` in app/feedback.php (page + Budo tab → Budo / Karateka / LTKF + section; FEEDBACK_PLACES map),
+  box: group/section chips with 📍 current place, search, status; state in sessionStorage `fb-state-v1` (open, tab, filters, text, editing id);
+  admin page: place chips, search, place badge; API: `group`, `area`, `?group=`. Testers do not see Dojo items. Tests: 07za, 06h updated, helpers.openFeedback opens only when closed.
 - Committed and pushed to the claude branch after each stage.
 
 ## Open
