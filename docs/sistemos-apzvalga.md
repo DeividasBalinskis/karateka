@@ -371,7 +371,7 @@ This works. What is written down describes a different loop.
 | P-2 | The PC script takes only `main`, so it would build v1.18 | `tools/atnaujinti-is-github.ps1:27`–`32` | after P-1 it is right again | A6 |
 | P-3 | The deploy guide says "main ← dev"; there is no `dev` branch | `docs/ikelti-i-test.md:5` | rewrite to the real loop | A6 |
 | P-4 | The zip script deletes old zips; the rule is to keep them | `tools/paruosti-ikelimui.ps1:46` | keep; never overwrite | A6 |
-| P-5 | No `CLAUDE.md` in the repo: rules, names and decisions are re-explained each session | repo root | `docs/CLAUDE-pasiulymas.md` | C9 |
+| P-5 | No `CLAUDE.md` in the repo: rules, names and decisions are re-explained each session | repo root | proposed rules file (applied in v1.52) | C9 |
 | P-6 | No `docs/handoff.md` and no `docs/decisions.md`: asks resurface (your login was asked for twice), agreed designs come back wrong | `docs/` | create both | C9 |
 | P-7 | "Never commit unless I say" and "commit at 23:00" cannot hold in a cloud session: it is stopped from finishing while work is unsaved, and its machine is thrown away afterwards | observed in every cloud session | cloud saves to its own branch; `main` only on „į main“ | decision 5 |
 | P-8 | 87 of 155 commits carry "Co-Authored-By" lines, against your rule | `git log` | rule in `CLAUDE.md` | C9 |

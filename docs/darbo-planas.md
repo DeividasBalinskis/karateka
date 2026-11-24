@@ -511,12 +511,12 @@ Denis's answers: e-mail on every coach reply: ____ (always / at most once per 20
 
 ## C9 — Project memory: CLAUDE.md, handoff, decisions, "Kas naujo"
 
-- **What:** put `docs/CLAUDE-pasiulymas.md` into the repo root as `CLAUDE.md` (after your edits). Create `docs/handoff.md` and `docs/decisions.md` from the outlines in it. Add a staff-only "Kas naujo" page opened from the version number (3 newest versions, one line each with the click path). Feedback replies follow the account, not the browser. Fix the outdated `release-check` skill text ("Varžybos app", DirectAdmin).
+- **What:** put the proposed rules file into the repo root as `CLAUDE.md` (after your edits; done in v1.52). Create `docs/handoff.md` and `docs/decisions.md` from the outlines in it. Add a staff-only "Kas naujo" page opened from the version number (3 newest versions, one line each with the click path). Feedback replies follow the account, not the browser. Fix the outdated `release-check` skill text ("Varžybos app", DirectAdmin).
 - **Depends on:** nothing. **Model:** Opus 5.5, medium.
 
 ```
 Do step C9 from docs/darbo-planas.md. Do only that step.
-My edits to docs/CLAUDE-pasiulymas.md: ____ (or "use it as it is")
+My edits to the proposed rules file: ____ (or "use it as it is")
 ```
 
 ## C10 — Data care (reikia leidimo)
