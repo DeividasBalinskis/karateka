@@ -3,6 +3,8 @@
 // pateisinti praleistas pamokas (mokinys, mokykla, direktorius, klasė, laikotarpis, el. paštas). Administratoriai gauna laišką,
 // duomenys įrašomi į pateisinimo šabloną (įkeltas Word .docx su {vardas}, {mokykla}, {direktorius}, {klase}, {laikotarpis}, {data}
 // arba tekstas Valdyme). Adminas peržiūri ir patvirtina - pateisinimas (.docx) išsiunčiamas nurodytu el. paštu. Lentelė - db/056.
+// v1.94: prašymą galima pataisyti (duomenys ir tekstas) arba įkelti galutinį failą (Word arba PDF) - jis siunčiamas vietoj sugeneruoto (db/057);
+// apie naujus prašymus pranešama tik pasirinktiems administratoriams (nustatymas just_notify; numatyta - Denis).
 
 const JUST_DIR = PUBLIC_DIR . '/uploads/pateisinimai';
 const JUST_TEMPLATE = JUST_DIR . '/sablonas.docx';
@@ -22,6 +24,47 @@ function just_ready(): bool
         }
     }
     return $ok;
+}
+
+/** v1.94 stulpeliai (db/057): pataisytas tekstas ir įkeltas failas */
+function just_v94(): bool
+{
+    static $ok = null;
+    if ($ok === null) {
+        try {
+            q_value('SELECT custom_text FROM justifications LIMIT 1');
+            $ok = true;
+        } catch (PDOException $ex) {
+            $ok = false;
+        }
+    }
+    return $ok;
+}
+
+/** Kam pranešti apie naujus prašymus: pasirinkti administratoriai (numatyta - Denis; jei jo nėra - visi) */
+function just_recipients(): array
+{
+    $admins = q_all('SELECT id, first_name, last_name, email FROM accounts WHERE role = "admin" AND status = "active" ORDER BY first_name, last_name');
+    $ids = json_decode((string) site_setting('just_notify', ''), true);
+    if (is_array($ids)) {
+        $ids = array_map('intval', $ids);
+        return array_values(array_filter($admins, function ($a) use ($ids) { return in_array((int) $a['id'], $ids, true); }));
+    }
+    $denis = array_values(array_filter($admins, function ($a) { return mb_strtolower((string) $a['first_name']) === 'denis'; }));
+    return $denis ?: $admins;
+}
+
+function just_is_recipient(?array $acc): bool
+{
+    if (!$acc) {
+        return false;
+    }
+    foreach (just_recipients() as $a) {
+        if ((int) $a['id'] === (int) $acc['id']) {
+            return true;
+        }
+    }
+    return false;
 }
 
 /** Nuorodos kodas (trumpas, kaip egzaminų); $new - naujas (senas nebeveiks) */
@@ -190,10 +233,26 @@ function just_simple_docx(string $text): ?string
     return $data;
 }
 
-/** Užpildytas pateisinimas (.docx turinys): pagal įkeltą Word šabloną arba tekstą */
+/** Pataisytas šio prašymo tekstas (jei adminas jį keitė) arba null */
+function just_custom(array $r): ?string
+{
+    $t = trim((string) ($r['custom_text'] ?? ''));
+    return $t !== '' ? $t : null;
+}
+
+/** Užpildytas tekstas pagal bendrą tekstą (be Word šablono) */
+function just_auto_text(array $r): string
+{
+    return just_fill(just_text(), just_values($r));
+}
+
+/** Užpildytas pateisinimas (.docx turinys): pataisytas tekstas, įkeltas Word šablonas arba bendras tekstas */
 function just_docx(array $r): ?string
 {
     $v = just_values($r);
+    if (($c = just_custom($r)) !== null) {
+        return just_simple_docx($c);
+    }
     if (!just_template() || !class_exists('ZipArchive')) {
         return just_simple_docx(just_fill(just_text(), $v));
     }
@@ -222,6 +281,9 @@ function just_docx(array $r): ?string
 function just_preview(array $r): string
 {
     $v = just_values($r);
+    if (($c = just_custom($r)) !== null) {
+        return $c;
+    }
     if (!just_template() || !class_exists('ZipArchive')) {
         return just_fill(just_text(), $v);
     }
@@ -243,7 +305,91 @@ function just_filename(array $r): string
     return 'pateisinimas-' . ($slug !== '' ? $slug : (int) $r['id']) . '.docx';
 }
 
-/** Naujas prašymas: įrašomas, administratoriams - laiškas ir pranešimas. Grąžina id. */
+/** Įkeltas galutinis failas (Word arba PDF): kelias diske arba null */
+function just_file_path(array $r): ?string
+{
+    $name = (string) ($r['file_name'] ?? '');
+    if ($name === '' || !preg_match('/\.(docx|pdf)$/i', $name, $m)) {
+        return null;
+    }
+    $p = JUST_DIR . '/p' . (int) $r['id'] . '.' . strtolower($m[1]);
+    return is_file($p) ? $p : null;
+}
+
+function just_file_type(string $path): string
+{
+    return preg_match('/\.pdf$/i', $path) ? 'application/pdf' : 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+}
+
+/** Įkelti galutinį failą (Word .docx arba PDF), kuris bus išsiųstas vietoj sugeneruoto; grąžina klaidos tekstą arba '' */
+function just_file_save(array $r, array $file): string
+{
+    if (($file['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK || !is_uploaded_file($file['tmp_name'])) {
+        return t('Failas neįkeltas.');
+    }
+    if ($file['size'] > 10 * 1024 * 1024) {
+        return t('Failas per didelis (daugiausia 10 MB).');
+    }
+    if (!preg_match('/\.(docx|pdf)$/i', (string) $file['name'], $m)) {
+        return t('Reikia Word (.docx) arba PDF failo.');
+    }
+    $ext = strtolower($m[1]);
+    $head = (string) file_get_contents($file['tmp_name'], false, null, 0, 5);
+    if ($ext === 'pdf' ? strpos($head, '%PDF') !== 0 : strpos($head, 'PK') !== 0) {
+        return $ext === 'pdf' ? t('Tai ne PDF failas.') : t('Tai ne Word dokumentas (.docx).');
+    }
+    if (!is_dir(JUST_DIR)) {
+        @mkdir(JUST_DIR, 0755, true);
+        @file_put_contents(JUST_DIR . '/.htaccess', "Require all denied\n");
+    }
+    just_file_delete($r);
+    if (!move_uploaded_file($file['tmp_name'], JUST_DIR . '/p' . (int) $r['id'] . '.' . $ext)) {
+        return t('Nepavyko išsaugoti failo.');
+    }
+    q('UPDATE justifications SET file_name = ? WHERE id = ?', [mb_substr((string) $file['name'], 0, 190), (int) $r['id']]);
+    return '';
+}
+
+function just_file_delete(array $r): void
+{
+    foreach (['docx', 'pdf'] as $ext) {
+        @unlink(JUST_DIR . '/p' . (int) $r['id'] . '.' . $ext);
+    }
+    if (just_v94()) {
+        q('UPDATE justifications SET file_name = NULL WHERE id = ?', [(int) $r['id']]);
+    }
+}
+
+/** Kas bus išsiųsta: įkeltas failas arba sugeneruotas .docx - ['name', 'type', 'data'] arba null */
+function just_attachment(array $r): ?array
+{
+    if (($p = just_file_path($r)) !== null) {
+        $ext = strtolower(pathinfo($p, PATHINFO_EXTENSION));
+        return ['name' => preg_replace('/\.docx$/', '.' . $ext, just_filename($r)), 'type' => just_file_type($p), 'data' => (string) file_get_contents($p)];
+    }
+    $docx = just_docx($r);
+    return $docx === null ? null : ['name' => just_filename($r), 'type' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'data' => $docx];
+}
+
+/** Pataisyti prašymo duomenis ir tekstą ($text === tekstas pagal šabloną → pataisymas išvalomas) */
+function just_update(array $r, array $d, ?string $text): void
+{
+    q('UPDATE justifications SET student = ?, school = ?, director = ?, class_name = ?, date_from = ?, date_to = ?, email = ? WHERE id = ?',
+        [mb_substr($d['student'], 0, 160), mb_substr($d['school'], 0, 190), mb_substr($d['director'], 0, 160), mb_substr($d['class_name'], 0, 30),
+         $d['date_from'], $d['date_to'], mb_strtolower(mb_substr($d['email'], 0, 190)), (int) $r['id']]);
+    if ($text !== null && just_v94()) {
+        $r2 = q_one('SELECT * FROM justifications WHERE id = ?', [(int) $r['id']]);
+        $text = trim(str_replace("\r\n", "\n", $text));
+        $old = just_custom($r) ?? just_auto_text($r);   // ką adminas matė redaguodamas
+        $custom = ($text === '' || $text === trim($old) && just_custom($r) === null) ? null : mb_substr($text, 0, 8000);
+        if ($custom !== null && $custom === trim(just_auto_text($r2))) {
+            $custom = null;
+        }
+        q('UPDATE justifications SET custom_text = ? WHERE id = ?', [$custom, (int) $r['id']]);
+    }
+}
+
+/** Naujas prašymas: įrašomas, pasirinktiems administratoriams - laiškas ir pranešimas. Grąžina id. */
 function just_add(array $d): int
 {
     q('INSERT INTO justifications (student, school, director, class_name, date_from, date_to, email) VALUES (?, ?, ?, ?, ?, ?, ?)',
@@ -253,7 +399,7 @@ function just_add(array $d): int
     $r = q_one('SELECT * FROM justifications WHERE id = ?', [$id]);
     $title = t('Naujas pateisinimo prašymas') . ': ' . $r['student'];
     $body = $r['student'] . ', ' . $r['class_name'] . ' ' . t('klasė') . "\n" . $r['school'] . "\n" . just_period($r['date_from'], $r['date_to']) . "\n" . $r['email'];
-    foreach (q_all('SELECT id, email FROM accounts WHERE role = "admin" AND status = "active"') as $adm) {
+    foreach (just_recipients() as $adm) {
         notify_account((int) $adm['id'], 'justification', $title, $body, 'admin/pateisinimai.php#p' . $id, null, $id);
         if ($adm['email'] && filter_var($adm['email'], FILTER_VALIDATE_EMAIL)) {
             send_mail($adm['email'], $title, $body . "\n\n" . t('Peržiūrėti ir patvirtinti:') . ' ' . abs_url('admin/pateisinimai.php#p' . $id));
@@ -265,14 +411,13 @@ function just_add(array $d): int
 /** Patvirtinta - pateisinimas (.docx priede) išsiunčiamas prašyme nurodytu el. paštu */
 function just_send(array $r, array $me): bool
 {
-    $docx = just_docx($r);
-    if ($docx === null) {
+    $att = just_attachment($r);
+    if ($att === null) {
         return false;
     }
     $body = t('Sveiki,') . "\n\n" . t('siunčiame pamokų pateisinimą: {n}, {k} klasė, {p}.', ['n' => $r['student'], 'k' => $r['class_name'], 'p' => just_period($r['date_from'], $r['date_to'])])
         . "\n" . t('Pateisinimas - prisegtame faile.') . "\n\n" . t('Pagarbiai') . "\nVšĮ Karate Ateitis";
-    $ok = send_mail((string) $r['email'], t('Pamokų pateisinimas') . ': ' . $r['student'], $body,
-        [['name' => just_filename($r), 'type' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'data' => $docx]]);
+    $ok = send_mail((string) $r['email'], t('Pamokų pateisinimas') . ': ' . $r['student'], $body, [$att]);
     if ($ok) {
         q('UPDATE justifications SET status = "sent", sent_at = NOW(), sent_by = ? WHERE id = ?', [(int) $me['id'], (int) $r['id']]);
         q('UPDATE notifications SET done_at = NOW() WHERE type = "justification" AND ref_id = ? AND done_at IS NULL', [(int) $r['id']]);

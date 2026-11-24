@@ -44,12 +44,12 @@ page_start(t('Pamokų pateisinimas'), ['noindex' => true, 'bare' => true]);
   <header class="panel card">
     <div class="kicker"><?= te('Pateisinimų sistema') ?></div>
     <h1><?= te('Prašymas pateisinti praleistas pamokas') ?></h1>
-    <p class="muted"><?= te('Užpildykite formą. Kai administratorius patvirtins, pateisinimą atsiųsime nurodytu el. paštu.') ?></p>
+    <p class="muted"><?= te('Užpildykite formą. Kai patvirtinsime, pateisinimą atsiųsime nurodytu el. paštu.') ?></p>
   </header>
   <?php if ($done): ?>
     <div class="panel card exam-su-ok" role="status">
       <h2>✓ <?= te('Prašymas gautas') ?></h2>
-      <p><?= te('Kai administratorius patvirtins, pateisinimą atsiųsime adresu {e}.', ['e' => $done['email']]) ?></p>
+      <p><?= te('Kai patvirtinsime, pateisinimą atsiųsime adresu {e}.', ['e' => $done['email']]) ?></p>
       <p><a class="btn btn-ghost btn-sm" href="<?= e(just_url()) ?>"><?= te('Pateikti dar vieną prašymą') ?></a></p>
     </div>
   <?php elseif (!$open): ?>

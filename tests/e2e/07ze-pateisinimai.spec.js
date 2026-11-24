@@ -1,5 +1,6 @@
 // v1.93: pateisinimų sistema (nuoroda → prašymas → adminui laiškas ir pranešimas → peržiūra pagal šabloną → patvirtinti ir išsiųsti)
 // ir automatinis duomenų bazės atnaujinimas, kai administratorius atidaro puslapį.
+// v1.94: „Kai patvirtinsime“, pranešimas tik pasirinktiems (numatyta - Denis), redagavimas, savo failas (Word arba PDF).
 const { test } = require('@playwright/test');
 const { execFileSync } = require('child_process');
 const fs = require('fs');
@@ -9,17 +10,20 @@ const { sql, day, login, nav, check, noJsErrors } = require('./helpers');
 
 test('database updates itself when an admin opens a page', async ({ browser }) => {
   const a = await login(browser, 'info@karateka.lt', 1280, 900);
-  sql("DELETE FROM db_versija WHERE failas = '056_pateisinimai.sql'");   // tarsi įkelta nauja versija su nauju db failu
+  sql("DELETE FROM db_versija WHERE failas = '057_pateisinimu_failai.sql'");   // tarsi įkelta nauja versija su nauju db failu
   await a.goto('admin/');
-  check('auto update message', /Duomenų bazė atnaujinta automatiškai: 056_pateisinimai\.sql/.test(await a.locator('body').innerText()));
-  check('db file recorded again', sql("SELECT COUNT(*) FROM db_versija WHERE failas = '056_pateisinimai.sql'") === '1');
+  check('auto update message', /Duomenų bazė atnaujinta automatiškai: 057_pateisinimu_failai\.sql/.test(await a.locator('body').innerText()));
+  check('db file recorded again', sql("SELECT COUNT(*) FROM db_versija WHERE failas = '057_pateisinimu_failai.sql'") === '1');
   check('no update button left on Today', !/Atnaujinkite duomenų bazę naujai versijai/.test(await a.locator('body').innerText()));
   noJsErrors(a);
 });
 
 test('excuse system: link, request, admin preview with a Word template, approve and send', async ({ browser }) => {
   sql('DELETE FROM justifications');
-  sql("DELETE FROM site_settings WHERE name IN ('just_token', 'just_open', 'just_text', 'just_template')");
+  sql("DELETE FROM site_settings WHERE name IN ('just_token', 'just_open', 'just_text', 'just_template', 'just_notify')");
+  sql("DELETE FROM accounts WHERE email = 'antras.adminas@example.test'");
+  sql("INSERT INTO accounts (first_name, last_name, email, password_hash, role, status) VALUES ('Antras', 'Adminas', 'antras.adminas@example.test', 'x', 'admin', 'active')");
+  const other = sql("SELECT id FROM accounts WHERE email = 'antras.adminas@example.test'");
   fs.rmSync(path.join(__dirname, '..', '..', 'public_html', 'uploads', 'pateisinimai', 'sablonas.docx'), { force: true });   // ankstesnio paleidimo šablonas
   const a = await login(browser, 'info@karateka.lt', 1440, 900);
   await a.goto('admin/pateisinimai.php');
@@ -31,6 +35,7 @@ test('excuse system: link, request, admin preview with a Word template, approve 
   const v = await login(browser, null, 390, 844);
   const rel = url.replace(/^https?:\/\/[^/]+\//, '');
   await v.goto(rel);
+  check('we approve, not an administrator', /Kai patvirtinsime/.test(await v.locator('body').innerText()) && !/administratorius/i.test(await v.locator('body').innerText()));
   const links = await v.evaluate(() => [...document.querySelectorAll('a[href]')].map(x => x.getAttribute('href')));
   check('only the form, no site links', links.every(h => /kalba\.php|privatumas\.php\?be_meniu=1/.test(h)), JSON.stringify(links));
   await nav(v, () => v.click('button[type=submit]'));
@@ -45,8 +50,8 @@ test('excuse system: link, request, admin preview with a Word template, approve 
   await nav(v, () => v.click('button[type=submit]'));
   check('request received', /Prašymas gautas/.test(await v.locator('.exam-su-ok').innerText()));
   check('stored as new', sql("SELECT CONCAT(status, '|', class_name, '|', email) FROM justifications WHERE student = 'Jonas Jonaitis'") === 'new|5b|mokykla@example.test');
-  check('admin notified (to-do)', +sql("SELECT COUNT(*) FROM notifications WHERE type = 'justification' AND done_at IS NULL") >= 1);
   const id = sql("SELECT id FROM justifications WHERE student = 'Jonas Jonaitis'");
+  check('only Denis notified', sql(`SELECT GROUP_CONCAT(a.first_name) FROM notifications n JOIN accounts a ON a.id = n.account_id WHERE n.type = 'justification' AND n.ref_id = ${id}`) === 'Denis');
 
   // Adminas: peržiūra pagal tekstą (be Word šablono)
   await a.goto('admin/pateisinimai.php');
@@ -73,10 +78,47 @@ test('excuse system: link, request, admin preview with a Word template, approve 
   const xml = execFileSync('php', ['-r', `$z = new ZipArchive(); $z->open('${out}'); echo $z->getFromName('word/document.xml');`]).toString();
   check('downloaded .docx is filled and valid XML', /Jonas Jonaitis/.test(xml) && !/\{vard/.test(xml) && execFileSync('php', ['-r', `$z = new ZipArchive(); $z->open('${out}'); $d = new DOMDocument(); echo @$d->loadXML($z->getFromName('word/document.xml')) ? 'ok' : 'bad';`]).toString() === 'ok');
 
+  // ✎ Redaguoti: duomenys ir tekstas (be Word šablono - tekstas taisomas čia)
+  fs.rmSync(path.join(__dirname, '..', '..', 'public_html', 'uploads', 'pateisinimai', 'sablonas.docx'), { force: true });
+  await a.goto('admin/pateisinimai.php');
+  check('edit panel hidden at first', await a.locator(`#e${id}`).isHidden());
+  await a.click(`#p${id} button:has-text("Redaguoti")`);
+  await a.fill(`#e${id} input[name=class_name]`, '6a');
+  await nav(a, () => a.click(`#e${id} button:has-text("Išsaugoti")`));
+  check('data edited, text follows', sql(`SELECT CONCAT(class_name, '|', IFNULL(custom_text, '-')) FROM justifications WHERE id = ${id}`) === '6a|-' && /6a klasės/.test(await a.locator(`#p${id} .just-preview`).innerText()));
+  await a.click(`#p${id} button:has-text("Redaguoti")`);
+  const ta = a.locator(`#e${id} textarea[name=text]`);
+  await ta.fill((await ta.inputValue()).replace('Pagarbiai', 'Ačiū.\n\nPagarbiai'));
+  await nav(a, () => a.click(`#e${id} button:has-text("Išsaugoti")`));
+  check('own text saved', /Ačiū\./.test(await a.locator(`#p${id} .just-preview`).innerText()) && /tekstas pataisytas/.test(await a.locator(`#p${id}`).innerText()));
+  // Savo failas: PDF siunčiamas vietoj parengto
+  const pdf = path.join(dir, 'galutinis.pdf');
+  fs.writeFileSync(pdf, '%PDF-1.4\n1 0 obj<<>>endobj\ntrailer<<>>\n%%EOF\n');
+  await a.click(`#p${id} button:has-text("Redaguoti")`);
+  await a.setInputFiles(`#e${id} input[type=file]`, pdf);
+  await nav(a, () => a.click(`#e${id} button:has-text("Įkelti failą")`));
+  check('PDF uploaded', /Bus išsiųstas įkeltas failas:\s*galutinis\.pdf/.test(await a.locator(`#p${id}`).innerText()));
+  const txt = path.join(dir, 'ne.pdf');
+  fs.writeFileSync(txt, 'just text');
+  await a.click(`#p${id} button:has-text("Redaguoti")`);
+  await a.setInputFiles(`#e${id} input[type=file]`, txt);
+  await nav(a, () => a.click(`#e${id} button:has-text("Įkelti failą")`));
+  check('not a PDF refused', /Tai ne PDF failas/.test(await a.locator('.flash-err').innerText()));
+  const fdl = await a.request.get(`admin/pateisinimai.php?failas=${id}`);
+  check('uploaded file downloadable by admin', fdl.ok() && (await fdl.body()).toString().startsWith('%PDF'));
+  check('upload folder closed to the web', /Require all denied/.test(fs.readFileSync(path.join(__dirname, '..', '..', 'public_html', 'uploads', 'pateisinimai', '.htaccess'), 'utf8')));
+
   // Patvirtinti ir išsiųsti
   await nav(a, () => a.locator(`#p${id} button:has-text("Patvirtinti ir išsiųsti")`).click());
   check('sent', sql(`SELECT status FROM justifications WHERE id = ${id}`) === 'sent' && /Pateisinimas išsiųstas/.test(await a.locator('.flash').first().innerText()));
   check('to-do closed', sql(`SELECT COUNT(*) FROM notifications WHERE type = 'justification' AND ref_id = ${id} AND done_at IS NULL`) === '0');
+  await a.goto('admin/pateisinimai.php?b=sent');
+  check('sent again possible', await a.locator(`#p${id} button:has-text("Siųsti dar kartą")`).count() === 1);
+
+  // Kam pranešti: pažymėtas ir antras adminas - jis irgi gauna
+  await a.click('#pranesimai summary');
+  await a.check(`#pranesimai input[value="${other}"]`);
+  await nav(a, () => a.click('#pranesimai button:has-text("Išsaugoti")'));
 
   // Kitas prašymas - atmestas, laiškas nesiunčiamas
   sql(`INSERT INTO justifications (student, school, director, class_name, date_from, date_to, email) VALUES ('Petras Petraitis', 'Mokykla', 'Direktorius', '7a', '${day(1)}', '${day(1)}', 'x@example.test')`);
@@ -84,13 +126,27 @@ test('excuse system: link, request, admin preview with a Word template, approve 
   await a.goto('admin/pateisinimai.php');
   await nav(a, () => a.locator(`#p${id2} button:has-text("Atmesti")`).click());
   check('rejected', sql(`SELECT status FROM justifications WHERE id = ${id2}`) === 'rejected');
+  await v.goto(rel);
+  await v.fill('input[name=student]', 'Ona Onaitytė');
+  await v.fill('input[name=school]', 'Mokykla');
+  await v.fill('input[name=class_name]', '2c');
+  await v.fill('input[name=director]', 'Direktorius');
+  await v.fill('input[name=date_from]', day(2));
+  await v.fill('input[name=date_to]', day(2));
+  await v.fill('input[name=email]', 'tevai@example.test');
+  await nav(v, () => v.click('button[type=submit]'));
+  const id3 = sql("SELECT id FROM justifications WHERE student = 'Ona Onaitytė'");
+  check('both chosen admins notified', sql(`SELECT COUNT(*) FROM notifications WHERE type = 'justification' AND ref_id = ${id3}`) === '2');
 
   // Nebepriimant prašymų
   await nav(a, () => a.click('button:has-text("Nebepriimti prašymų")'));
   await v.goto(rel);
   check('closed form', /Prašymai nepriimami/.test(await v.locator('body').innerText()));
   fs.rmSync(path.join(__dirname, '..', '..', 'public_html', 'uploads', 'pateisinimai', 'sablonas.docx'), { force: true });
-  sql("DELETE FROM site_settings WHERE name IN ('just_token', 'just_open', 'just_text', 'just_template')");
+  sql("DELETE FROM site_settings WHERE name IN ('just_token', 'just_open', 'just_text', 'just_template', 'just_notify')");
   sql('DELETE FROM justifications');
+  sql(`DELETE FROM notifications WHERE account_id = ${other}`);
+  sql(`DELETE FROM accounts WHERE id = ${other}`);
+  fs.rmSync(path.join(__dirname, '..', '..', 'public_html', 'uploads', 'pateisinimai', `p${id}.pdf`), { force: true });
   noJsErrors(a, v);
 });

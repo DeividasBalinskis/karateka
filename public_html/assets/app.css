@@ -2163,7 +2163,22 @@ a.kid-mini:hover{border-color:var(--accent);}
 .just-card.is-new{border-left:4px solid #F59F00;}
 .just-meta{display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:4px 16px; font-size:.92rem;}
 .just-meta b{display:block; font-size:.75rem; text-transform:uppercase; letter-spacing:.04em; color:#6b6457; font-weight:700;}
+.just-meta > div{min-width:0; overflow-wrap:anywhere;}   /* v1.94 #177: ilgas el. paštas nebelenda į kitą stulpelį */
+.just-file{display:flex; gap:8px; flex-wrap:wrap; align-items:center; padding:8px 12px; border-radius:10px; background:rgba(47,158,68,.08); border:1px solid rgba(47,158,68,.25); font-size:.92rem;}
+.just-file a{overflow-wrap:anywhere;}
+.just-edit{display:grid; gap:12px; padding:12px; border-radius:12px; background:rgba(23,20,15,.03); border:1px solid rgba(23,20,15,.08);}
+.just-edit .form{margin:0;}
+.just-edit-grid{display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:4px 12px;}
+.just-edit-grid input{width:100%; min-width:0;}
+.just-edit textarea{font-family:'Times New Roman', serif; font-size:15px; line-height:1.45;}
+.just-upload{display:flex; gap:8px; flex-wrap:wrap; align-items:flex-end; border-top:1px dashed rgba(23,20,15,.15); padding-top:10px;}
+.just-upload label{flex:1 1 260px; margin:0;}
+.just-who{display:flex; gap:4px 18px; flex-wrap:wrap;}
+.just-who label.check{margin:0;}
+@media (max-width:560px){ .just-card{padding:14px;} .just-preview{padding:12px 14px; font-size:14px;} .just-acts .btn{flex:1 1 auto;} }
 .just-preview{white-space:pre-wrap; font-family:'Times New Roman', serif; font-size:15px; line-height:1.5; background:#fff; border:1px solid rgba(23,20,15,.12); border-radius:10px; padding:18px 22px; color:#17140F;}
 .just-acts{display:flex; gap:8px; flex-wrap:wrap; align-items:center;}
 .just-link-row{display:flex; gap:8px; flex-wrap:wrap; align-items:center;}
 .just-link-row code{font-size:.9rem; padding:6px 10px; border-radius:8px; background:rgba(23,20,15,.06); user-select:all;}
+.just-edit-grid .span2{grid-column:1 / -1;}
+.just-edit[hidden]{display:none;}

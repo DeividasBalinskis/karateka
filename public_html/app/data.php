@@ -710,7 +710,7 @@ function admin_todo_items(): array
     if (($n = feedback_questions_count(current_account()))) {
         array_unshift($todo, ['❓ ' . t('Atsakykite į klausimus apie jūsų atsiliepimus:') . ' ' . $n, 'admin/#atsiliepimas', t('Atsakyti')]);
     }
-    if (is_admin() && ($n = just_new_count())) {   // v1.93
+    if (is_admin() && ($n = just_new_count()) && just_is_recipient(current_account())) {   // v1.93; v1.94 - tik tiems, kam pranešama
         $todo[] = [t('Nauji pateisinimų prašymai:') . ' ' . $n, 'admin/pateisinimai.php', t('Peržiūrėti')];
     }
     if (is_admin() && ($n = feedback_new_count())) {
