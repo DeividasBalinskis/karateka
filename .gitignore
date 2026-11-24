@@ -36,3 +36,6 @@ desktop.ini
 tests/visual/__baseline__/
 tests/visual-results/
 tests/visual-report/
+
+# Vietinės įrankių jungtys (pvz. LibreSprite) - tik kompiuteryje, ne GitHub
+.mcp.json
