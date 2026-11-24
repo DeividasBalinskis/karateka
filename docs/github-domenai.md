@@ -1,5 +1,7 @@
 # GitHub → domenai.lt: pakeitimai į test.karateka.lt įkeliami automatiškai
 
+Būsena: **veikia nuo 2026-11-24** (FTP paskyra `ikelimas@karateka.lt`, pirmas įkėlimas pavyko).
+
 Kaip veikia: pakeitimai išsaugomi GitHub'e → GitHub (Actions) per FTP įkelia tik pasikeitusius failus į **test** aplanką →
 duomenų bazė atsinaujina pati (nuo v1.93: kai administratorius atidaro bet kurį Valdymo puslapį).
 Gyva karateka.lt **neliečiama**: FTP paskyra mato tik test aplanką. Slaptažodis lieka tik GitHub paslaptyse.
@@ -11,8 +13,8 @@ Gyva karateka.lt **neliečiama**: FTP paskyra mato tik test aplanką. Slaptažod
 3. Laukai:
    - *Log In*: `ikelimas`
    - *Password*: paspausti *Password Generator* → nukopijuoti slaptažodį (prireiks 6 žingsnyje).
-   - *Directory*: **test svetainės aplankas** (tas pats, į kurį dabar keli failus su FileZilla, pvz. `test.karateka.lt`).
-     Svarbu: ne `public_html` ir ne šakninis aplankas.
+   - *Directory*: **test svetainės aplankas**: `/domains/test.karateka.lt/public_html` (panelė pati prideda `/home/aus15792`).
+     Svarbu: ne `domains/karateka.lt` (gyva svetainė) ir ne šakninis aplankas.
    - *Quota*: *Unlimited* → **Create FTP Account**.
 4. Žemiau, prie naujos paskyros → *Configure FTP Client* → užsirašyti **FTP Server** (pvz. `ftp.karateka.lt`) ir pilną vartotojo vardą
    (pvz. `ikelimas@karateka.lt`).
