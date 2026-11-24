@@ -319,6 +319,9 @@ function admin_menu_groups(): array
     if (is_admin()) {
         $more['atsiliepimai'] = ['💡', t('Atsiliepimai'), 'admin/atsiliepimai.php', feedback_new_count(), t('Pastabos apie svetainę')];
     }
+    if (is_admin() && function_exists('just_ready') && just_ready()) {   // v1.93: pamokų pateisinimai
+        $more['pateisinimai'] = ['📄', t('Pateisinimai'), 'admin/pateisinimai.php', just_new_count(), t('Prašymai pateisinti praleistas pamokas')];
+    }
     if (is_admin()) {   // #121: Pranešimai - apačioje, „Tvarkyti“
         $more['pranesimai'] = ['✉️', t('Pranešimai'), 'admin/pranesimai.php', 0, t('Laiškai ir SMS nariams')];
     }
@@ -338,7 +341,7 @@ function admin_menu_key(): string
     $file = basename($_SERVER['SCRIPT_NAME'] ?? '', '.php');
     $map = ['index' => 'siandien', 'pirmas-adminas' => 'siandien', 'treniruote' => 'treniruote', 'egzaminai' => 'egzaminai', 'egzamino-protokolas' => 'egzaminai', 'federacija' => 'federacija',
             'programa' => 'egzaminai', 'pranesimai' => 'pranesimai', 'sms' => 'pranesimai', 'siuntimas' => 'pranesimai', 'nariai' => 'nariai', 'taskai' => 'xp', 'testai' => 'testai',
-            'patvirtinimai' => 'patvirtinimai', 'atsiliepimai' => 'atsiliepimai',
+            'patvirtinimai' => 'patvirtinimai', 'atsiliepimai' => 'atsiliepimai', 'pateisinimai' => 'pateisinimai',
             'renginiai' => 'renginiai', 'renginio-dalyviai' => 'renginiai', 'renginio-rezultatai' => 'renginiai'];
     if (isset($map[$file])) {
         return $map[$file];

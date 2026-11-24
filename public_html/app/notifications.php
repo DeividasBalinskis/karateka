@@ -24,6 +24,7 @@ const NOTIFY_TYPES = [
     'feedback'           => ['💡', 'notice'],
     'xp_award'           => ['✨', 'notice'],
     'tournament_entries' => ['🥋', 'notice'],
+    'justification'      => ['📄', 'action'],   // v1.93: naujas pamokų pateisinimo prašymas (adminui - kol patvirtins ar atmes)
 ];
 
 function notify_icon(string $type): string

@@ -101,3 +101,46 @@ function db_update_run(): array
     }
     return ['backup' => $backup, 'files' => $done];
 }
+
+/**
+ * v1.93 (Deividas): įkėlus naują versiją, trūkstami db failai importuojami patys, kai administratorius atidaro bet kurį puslapį
+ * (nereikia spausti „Atnaujinti duomenų bazę“). Prieš tai - kopija; vienu metu vykdo tik vienas (GET_LOCK).
+ * Nepavykus - pranešama, mygtukas lieka, kitas bandymas tik po valandos (kad kiekvienas puslapis nedarytų naujos kopijos).
+ */
+function db_auto_update(): void
+{
+    static $tried = false;
+    if ($tried || PHP_SAPI === 'cli' || !db_update_pending()) {
+        return;
+    }
+    $tried = true;
+    if ((int) ($_SESSION['db_auto_fail'] ?? 0) > time() - 3600) {
+        return;
+    }
+    try {
+        $lock = (int) q_value('SELECT GET_LOCK("karateka_db_update", 0)');
+    } catch (PDOException $ex) {
+        $lock = 0;
+    }
+    if (!$lock) {
+        return;   // kitas tuo metu jau atnaujina
+    }
+    try {
+        if (db_update_pending()) {
+            $res = db_update_run();
+            if ($res['files']) {
+                flash('ok', t('Duomenų bazė atnaujinta automatiškai:') . ' ' . implode(', ', $res['files']) . '. ' . t('Prieš tai padaryta kopija:') . ' ' . $res['backup']);
+            }
+        }
+    } catch (Throwable $ex) {
+        $_SESSION['db_auto_fail'] = time();
+        error_log('db auto update failed: ' . $ex->getMessage());
+        flash('err', t('Automatiškai atnaujinti duomenų bazės nepavyko:') . ' ' . $ex->getMessage());
+    } finally {
+        try {
+            q_value('SELECT RELEASE_LOCK("karateka_db_update")');
+        } catch (PDOException $ex) {
+        }
+    }
+}
+

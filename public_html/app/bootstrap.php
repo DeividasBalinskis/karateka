@@ -61,6 +61,7 @@ require APP_DIR . '/participants.php';
 require APP_DIR . '/exams.php';
 require APP_DIR . '/exam_protocol.php';
 require APP_DIR . '/exam_signup.php';
+require APP_DIR . '/justifications.php';
 require APP_DIR . '/xlsx.php';
 require APP_DIR . '/themes.php';
 require APP_DIR . '/tl.php';
@@ -115,3 +116,7 @@ session_start();
 
 maybe_run_cleanup();
 maybe_run_backup();
+// v1.93: nauja versija įkelta, o duomenų bazė dar sena - administratoriui atidarius bet kurį puslapį atnaujinama pati
+if (($autoAdm = current_account()) && is_admin($autoAdm)) {
+    db_auto_update();
+}

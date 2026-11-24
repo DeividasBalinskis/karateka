@@ -21,6 +21,10 @@ const SETTINGS = [
     'exam_pay_info'    => ['label' => 'Egzamino mokėjimo informacija', 'group' => 'Klubas', 'type' => 'text', 'where' => 'admin/egzaminai.php', 'owner' => 'admin', 'restore' => true],
     'exam_waitlist_token' => ['label' => 'Egzaminų registracijos nuoroda (laukiantieji)', 'group' => 'Klubas', 'type' => 'secret', 'where' => 'admin/egzaminai.php', 'owner' => 'coach', 'restore' => false],
     'exam_waitlist_open' => ['label' => 'Egzaminų registracija (laukiantieji) atidaryta', 'group' => 'Klubas', 'type' => 'choice', 'where' => 'admin/egzaminai.php', 'owner' => 'coach', 'restore' => true],
+    'just_token'       => ['label' => 'Pateisinimų nuoroda', 'group' => 'Klubas', 'type' => 'secret', 'where' => 'admin/pateisinimai.php', 'owner' => 'admin', 'restore' => false],
+    'just_open'        => ['label' => 'Pateisinimų prašymai priimami', 'group' => 'Klubas', 'type' => 'choice', 'where' => 'admin/pateisinimai.php', 'owner' => 'admin', 'restore' => true],
+    'just_text'        => ['label' => 'Pateisinimo tekstas (be Word šablono)', 'group' => 'Klubas', 'type' => 'text', 'where' => 'admin/pateisinimai.php', 'owner' => 'admin', 'restore' => true],
+    'just_template'    => ['label' => 'Pateisinimo Word šablonas', 'group' => 'Klubas', 'type' => 'json', 'where' => 'admin/pateisinimai.php', 'owner' => 'admin', 'restore' => false],
     'exam_protocol_defaults' => ['label' => 'Egzamino protokolo numatytieji (komisija, vieta)', 'group' => 'Klubas', 'type' => 'json', 'where' => 'admin/egzaminai.php', 'owner' => 'coach', 'restore' => false],
     // Žaidimas
     'game_access'      => ['label' => 'Kas mato žaidimą (Dojo)', 'group' => 'Žaidimas', 'type' => 'choice', 'where' => 'admin/testavimas.php', 'owner' => 'admin', 'restore' => true],

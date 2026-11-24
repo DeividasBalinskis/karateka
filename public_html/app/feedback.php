@@ -66,7 +66,8 @@ const FEEDBACK_PLACES = [
     'admin/taskai.php' => ['karateka', 'Valdymas · Aktyvumo taškai'], 'admin/testai.php' => ['karateka', 'Valdymas · Testai'], 'admin/testo-perziura.php' => ['karateka', 'Valdymas · Testai'],
     'admin/patvirtinimai.php' => ['karateka', 'Valdymas · Patvirtinimai'], 'admin/zinutes.php' => ['karateka', 'Valdymas · Žinutės'],
     'admin/pranesimai.php' => ['karateka', 'Valdymas · Pranešimai'], 'admin/siuntimas.php' => ['karateka', 'Valdymas · Pranešimai'], 'admin/sms.php' => ['karateka', 'Valdymas · Pranešimai'],
-    'admin/atsiliepimai.php' => ['karateka', 'Valdymas · Atsiliepimai'],
+    'admin/atsiliepimai.php' => ['karateka', 'Valdymas · Atsiliepimai'], 'admin/pateisinimai.php' => ['karateka', 'Valdymas · Pateisinimai'],
+    'pateisinimas.php' => ['karateka', 'Pateisinimai'], 'p/index.php' => ['karateka', 'Pateisinimai'], 'e/index.php' => ['karateka', 'Egzaminai'],
     'admin/naujienos.php' => ['karateka', 'Valdymas · Svetainės turinys'], 'admin/puslapis.php' => ['karateka', 'Valdymas · Svetainės turinys'], 'admin/pamokos.php' => ['karateka', 'Valdymas · Svetainės turinys'], 'admin/tvarkarastis.php' => ['karateka', 'Valdymas · Svetainės turinys'],
     'admin/nustatymai.php' => ['karateka', 'Valdymas · Nustatymai'], 'admin/nustatymai-visi.php' => ['karateka', 'Valdymas · Nustatymai'], 'admin/kopijos.php' => ['karateka', 'Valdymas · Nustatymai'],
     'admin/duomenys.php' => ['karateka', 'Valdymas · Nustatymai'], 'admin/vertimai.php' => ['karateka', 'Valdymas · Nustatymai'], 'admin/testavimas.php' => ['karateka', 'Valdymas · Nustatymai'],
@@ -210,7 +211,7 @@ const FEEDBACK_MAX_IMAGES = 40;
 /** A3: slapti adreso parametrai (k, t, e, key) atsiliepimuose nesaugomi - pakeičiami „…“ */
 function feedback_safe_page(string $page): string
 {
-    $page = (string) preg_replace('~(/e/?\?)[^&#]*~i', '$1…', $page);   // v1.92: trumpa egzamino nuoroda /e/?kodas
+    $page = (string) preg_replace('~(/[ep]/?\?)[^&#]*~i', '$1…', $page);   // v1.92-v1.93: trumpos nuorodos /e/?kodas, /p/?kodas
     return (string) preg_replace('/([?&](?:k|t|e|key|token)=)[^&#]*/i', '$1…', $page);
 }
 

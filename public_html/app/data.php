@@ -710,6 +710,9 @@ function admin_todo_items(): array
     if (($n = feedback_questions_count(current_account()))) {
         array_unshift($todo, ['❓ ' . t('Atsakykite į klausimus apie jūsų atsiliepimus:') . ' ' . $n, 'admin/#atsiliepimas', t('Atsakyti')]);
     }
+    if (is_admin() && ($n = just_new_count())) {   // v1.93
+        $todo[] = [t('Nauji pateisinimų prašymai:') . ' ' . $n, 'admin/pateisinimai.php', t('Peržiūrėti')];
+    }
     if (is_admin() && ($n = feedback_new_count())) {
         $todo[] = [(t('Nauji atsiliepimai apie svetainę:') . ' ') . $n, 'admin/atsiliepimai.php', t('Peržiūrėti')];
     }
