@@ -4,6 +4,19 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.93 - 2026-11-24 (pateisinimų sistema; duomenų bazė atsinaujina pati)
+- **Valdymas → 📄 Pateisinimai** (adminui): nuoroda prašymams `karateka.lt/p/?kodas` (be svetainės meniu).
+  Forma: mokinio vardas ir pavardė, mokyklos pavadinimas, direktoriaus vardas ir pavardė, klasė, laikotarpis (nuo-iki), el. paštas pateisinimui.
+- Pateikus prašymą - administratoriai gauna **el. laišką** ir pranešimą („Reikia padaryti“ ir skaičiukas meniu).
+- Prašymas įrašomas į **pateisinimo šabloną**: įkeltas Word (.docx) su žymėmis `{vardas}`, `{mokykla}`, `{direktorius}`, `{klase}`,
+  `{laikotarpis}`, `{nuo}`, `{iki}`, `{data}`, `{el_pastas}` (logotipas, parašas, antspaudas - Word'e) arba tekstas Valdyme.
+  Datos dokumente - visada lietuviškai. „⬇ Pavyzdinis šablonas (.docx)“ - pradžiai.
+- Administratorius mato **parengtą pateisinimą**, gali atsisiųsti Word, **„✓ Patvirtinti ir išsiųsti“** - pateisinimas (.docx priede)
+  išsiunčiamas prašyme nurodytu el. paštu; arba „✕ Atmesti“ (laiškas nesiunčiamas). „Nebepriimti prašymų“ / „↻ Nauja nuoroda“.
+- **Duomenų bazė atsinaujina pati:** įkėlus naują versiją, trūkstami db failai importuojami, kai administratorius atidaro bet kurį puslapį
+  (prieš tai - kopija). Mygtuko spausti nebereikia; nepavykus - pranešimas, mygtukas lieka.
+- Duomenų bazė: naujas failas `db/056_pateisinimai.sql`.
+
 ## v1.92 - 2026-11-22 (trumpa egzamino registracijos nuoroda)
 - **Egzamino registracijos nuoroda - trumpa:** `karateka.lt/e/?k7m2xq` (6 simboliai, be painių raidžių 0/o, 1/l/i)
   vietoj `karateka.lt/egzamino-registracija.php?k=` + 24 simboliai. Taip ir „⏳ Laukiantieji“ nuoroda, ir kiekvieno egzamino nuoroda.

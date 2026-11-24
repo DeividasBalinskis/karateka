@@ -14,7 +14,8 @@ Kai parašote **„į main“**, ta versija perkeliama į `main`. Skriptas ima t
 2. **Failai:** FileZilla → prisijungti prie serverio → atidaryti test svetainės aplanką →
    nutempti visą `ikelimui\svetaine` turinį ir pasirinkti „perrašyti“. Arba įkelti zip ir išarchyvuoti.
    Serverio `config.php` liks savo vietoje - jo įkėlimo pakete nėra.
-3. **Duomenų bazė - be phpMyAdmin:** atidaryti **test.karateka.lt/admin** → prisijungti → „Šiandien“ → **„Atnaujinkite duomenų bazę“**
+3. **Duomenų bazė - nuo v1.93 atsinaujina pati:** atidarius bet kurį puslapį administratoriumi viršuje pasirodo „Duomenų bazė atnaujinta automatiškai“.
+   Jei nepavyko - **test.karateka.lt/admin** → prisijungti → „Šiandien“ → **„Atnaujinkite duomenų bazę“**
    (arba Nustatymai → Atsarginės kopijos ir sistema → **„Atnaujinti duomenų bazę“**). Prieš tai automatiškai pasidaro kopija.
    (Jei kada prireiktų rankomis - phpMyAdmin → `aus15792_test` → Import → trūkstami `db\0xx` failai iš eilės.)
 4. Atidaryti **test.karateka.lt/admin** → prisijungti → „Šiandien“.

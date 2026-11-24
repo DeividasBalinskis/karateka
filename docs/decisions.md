@@ -4,6 +4,8 @@ Answers given by Deividas on 2026-11-20 (questions from `docs/darbo-planas.md`, 
 
 | Date | Area | Decision | Who decided | Source |
 |---|---|---|---|---|
+| 2026-11-24 | Excuses | Excuse letters (Claude's calls): one short link /p/?code; period = from-to dates; template = uploaded Word .docx with {tags} (or text until uploaded), sent as a .docx attachment (PDF would need a converter on the server); admins only; e-mail to every active admin. | Deividas + Claude | chat |
+| 2026-11-24 | Data | Pending db files run by themselves when an admin opens any page (backup first, one at a time, retry after 1 h on failure). | Deividas | chat |
 | 2026-11-22 | Exams | Exam registration links are short: /e/?code, 6 characters without look-alikes (Claude's call: query form works on any server without rewrite rules; with Apache rewrite it could be /e/code). Old long links keep working until „↻ Trumpa nuoroda“. | Deividas + Claude | chat |
 | 2026-11-22 | Exams | Exam registration links (waiting list and per exam), the guest exam page, guest test and the privacy page opened from them show no site menu or links („bare“ layout) - the link allows only registering. | Deividas | chat |
 | 2026-11-22 | Workflow | Questions first: Claude's reply starts with a numbered „❓ Klausimai“ block; in 💡 feedback a question = status „Reikia atsakymo“ (highlighted, answer field, ❓N on the button, top of „Reikia padaryti“). | Deividas | chat |

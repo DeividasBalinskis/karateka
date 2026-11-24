@@ -1,13 +1,14 @@
 # Handoff
-Updated: 2026-11-22 · version v1.92 · branch claude/festive-curie-01jgx2
+Updated: 2026-11-24 · version v1.93 · branch claude/festive-curie-01jgx2
 
 ## Pending asks (answer these first)
 | Asked | By | What | Status |
 |---|---|---|---|
 | 2026-11-20 | Denis | #30 and #147: messages cut off - ask Denis to write them again | waiting |
 | 2026-11-22 | Claude | Pick variants: menu on a computer A1/A2/A3, phone menu B1/B2/B3, Budo video C1 (done) + C2 tablet / C3 hall TV (screenshots sent in chat) | waiting |
-| 2026-11-22 | Claude | „į main“ for v1.85-v1.92 (main = v1.84) | waiting |
-| 2026-11-22 | Claude | Auto-fix loop: FTP account for the test folder + 3 GitHub secrets + „darom“ + answers 1-3 (docs/planai/auto-taisymas.md) | waiting |
+| 2026-11-22 | Claude | „į main“ for v1.85-v1.93 (main = v1.84) | waiting |
+| 2026-11-24 | Claude | Excuse letters: the club's Word template (upload in Valdymas → Pateisinimai); .docx attachment OK or PDF needed | waiting |
+| 2026-11-22 | Claude | GitHub → domenai.lt: FTP account for the test folder + 3 GitHub secrets (steps: docs/github-domenai.md) + answers 1-3 (docs/planai/auto-taisymas.md) | waiting |
 | 2026-11-22 | Claude → Denis | #165 exams waiting list: 4 questions | answered 2026-11-22, done in v1.90 |
 | 2026-11-21 | Claude | Answers for not-started steps | answered 2026-11-21 (see decisions.md); waiting: Varžybos code on branch `varzybos-kodas` (D1), LibreSprite on PC (D8) |
 
@@ -68,6 +69,9 @@ Updated: 2026-11-22 · version v1.92 · branch claude/festive-curie-01jgx2
   mano-egzaminas.php and testas-svecias.php for guests, privatumas.php?be_meniu=1. Test 07zd checks the registration link has no site links.
 - v1.92: short exam links - public_html/e/index.php (code = query string), exam_short_code() (6 chars), exam_code_ok() accepts 4-32;
   exam_signup_url / exam_waitlist_url → e/?code; „↻ Trumpa nuoroda“ (su_short, wl_link); feedback_safe_page scrubs /e/?code, feedback_add scrubs context url.
+- v1.93: excuse letters - app/justifications.php (docx fill via ZipArchive, split {tags} merged, LT dates), pateisinimas.php + p/index.php (bare),
+  admin/pateisinimai.php (link, list, preview, .docx download, approve and send / reject, Word template or text), db/056, notify type „justification“ (action),
+  menu + „Reikia padaryti“. db_auto_update() in db_update.php, called from bootstrap for admins. docs/github-domenai.md - FTP steps. Test 07ze.
 - Committed and pushed to the claude branch after each stage.
 
 ## Open
