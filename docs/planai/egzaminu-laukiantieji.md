@@ -13,7 +13,7 @@ Būsena: **padaryta v1.90** (pirmas variantas). Denio atsakymai: 1) vienas sąra
 - Registracijos nuoroda - kiekvienam egzaminui atskira; užsiregistravęs iš karto įrašomas į to egzamino protokolą.
 - Kainos - pagal diržą (Egzaminai → „Kainos“).
 
-## Siūlymas (Claude)
+## Siūlymas
 1. **Viena registracijos nuoroda visiems egzaminams** (Egzaminai → „🔗 Registracija“). Forma: vardas, pavardė, gimimo data, klubas, dabartinis diržas, el. paštas / telefonas.
 2. **Egzaminai → „⏳ Laukiantieji (N)“**: sąrašas su filtrais (klubas, diržas). Prie kiekvieno - „Į protokolą ▾“ (pasirinkti egzaminą) arba pažymėti kelis ir perkelti kartu.
 3. **Protokolas = egzaminas** kaip dabar (data, laikas, vieta, egzaminatorius); jų galima kurti kiek reikia („+ Naujas egzaminas“).

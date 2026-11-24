@@ -1,6 +1,6 @@
 # karateka.lt: project breakdown
 
-Written 2026-11-20 from the code on branch `claude/festive-curie-01jgx2` (site version 1.47, DB `043`).
+Written 2026-11-20 from the code on the work branch (site version 1.47, DB `043`).
 Anything not provable from the code is marked **unclear**.
 
 ## 1. Overview

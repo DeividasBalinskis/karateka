@@ -1,34 +1,35 @@
-# GitHub → domenai.lt: Claude pats įkelia pakeitimus į test.karateka.lt
+# GitHub → domenai.lt: pakeitimai į test.karateka.lt įkeliami automatiškai
 
-Kaip veikia: Claude išsaugo pakeitimus GitHub'e → GitHub (Actions) per FTP įkelia tik pasikeitusius failus į **test** aplanką →
-duomenų bazė atsinaujina pati (v1.93: kai administratorius atidaro bet kurį puslapį; arba Claude per `diegimas-api.php`).
-Gyva karateka.lt **neliečiama**: FTP paskyra mato tik test aplanką. Slaptažodis lieka GitHub paslaptyse - pokalbyje jo nėra.
+Kaip veikia: pakeitimai išsaugomi GitHub'e → GitHub (Actions) per FTP įkelia tik pasikeitusius failus į **test** aplanką →
+duomenų bazė atsinaujina pati (nuo v1.93: kai administratorius atidaro bet kurį Valdymo puslapį).
+Gyva karateka.lt **neliečiama**: FTP paskyra mato tik test aplanką. Slaptažodis lieka tik GitHub paslaptyse.
 
 ## Ką padaryti vieną kartą (Deividas)
 
 1. **domenai.lt** → prisijungti → *Paslaugos* / *Hostingas* → **Valdymo panelė (cPanel)**.
 2. cPanel → skiltis *Failai* → **FTP paskyros** (*FTP Accounts*).
 3. Laukai:
-   - *Log In*: `claude-test`
+   - *Log In*: `ikelimas`
    - *Password*: paspausti *Password Generator* → nukopijuoti slaptažodį (prireiks 6 žingsnyje).
    - *Directory*: **test svetainės aplankas** (tas pats, į kurį dabar keli failus su FileZilla, pvz. `test.karateka.lt`).
      Svarbu: ne `public_html` ir ne šakninis aplankas.
    - *Quota*: *Unlimited* → **Create FTP Account**.
 4. Žemiau, prie naujos paskyros → *Configure FTP Client* → užsirašyti **FTP Server** (pvz. `ftp.karateka.lt`) ir pilną vartotojo vardą
-   (pvz. `claude-test@karateka.lt`).
+   (pvz. `ikelimas@karateka.lt`).
 5. **github.com/DeividasBalinskis/karateka** → *Settings* → *Secrets and variables* → *Actions* → **New repository secret**.
 6. Sukurti 3 paslaptis (*Name* → *Secret* → *Add secret*):
    - `TEST_FTP_SERVER` - FTP serveris iš 4 žingsnio;
    - `TEST_FTP_USER` - pilnas vartotojo vardas iš 4 žingsnio;
    - `TEST_FTP_PASSWORD` - slaptažodis iš 3 žingsnio.
-7. Parašyti Claude: **„FTP paruoštas“**.
+7. Pokalbyje parašyti: **„FTP paruoštas“**.
 
-## Ką tada daro Claude
+## Kas vyksta toliau
 
-1. Išsaugo pakeitimą su žyme `[į test]` → GitHub *Actions* → „Įkelti į test.karateka.lt“ (patikros → paketas → FTP).
-2. Patikrina test svetainėje versiją ir duomenų bazę (`diegimas-api.php`), jei reikia - atnaujina.
-3. Jei FTPS neveikia (domenai.lt kartais leidžia tik paprastą FTP) - paprašys pridėti paslaptį `TEST_FTP_PROTOCOL` = `ftp`.
+1. Įrašas su žyme `[į test]` (bet kurioje šakoje, išskyrus `main`) → GitHub *Actions* → „Įkelti į test.karateka.lt“
+   (patikros → paketas → FTP). Rankomis: *Actions* → „Įkelti į test.karateka.lt“ → *Run workflow*.
+2. Test svetainėje patikrinama versija ir duomenų bazė (`diegimas-api.php`, raktas - Valdymas → Atsiliepimai → „API prieiga“).
+3. Jei FTPS neveikia (domenai.lt kartais leidžia tik paprastą FTP) - pridėti paslaptį `TEST_FTP_PROTOCOL` = `ftp`.
 
 ## Atšaukti prieigą bet kada
 
-cPanel → *FTP Accounts* → `claude-test` → *Delete* (arba GitHub → *Secrets* → ištrinti paslaptis).
+cPanel → *FTP Accounts* → `ikelimas` → *Delete* (arba GitHub → *Secrets* → ištrinti paslaptis).

@@ -357,7 +357,7 @@ Feedback about LTKF so far: five items in total, all handled — two from a Budo
 ## The real loop today
 
 1. Denis writes in the 💡 box on test.karateka.lt (the single inbox). Sometimes he writes to Deividas instead, and Deividas pastes it into the chat.
-2. A cloud session reads the feedback through the feedback API, changes code on the `claude/…` branch, runs tests, builds `svetaine-vX.YY.zip` and sends it in the chat.
+2. A cloud session reads the feedback through the feedback API, changes code on its work branch, runs tests, builds `svetaine-vX.YY.zip` and sends it in the chat.
 3. Deividas uploads the zip to test.karateka.lt and presses "Atnaujinti duomenų bazę" in Valdymas.
 4. The session answers each feedback item: "Padaryta (vX.YY)" with the click path.
 

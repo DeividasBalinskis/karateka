@@ -2688,13 +2688,12 @@ Nuo 2013 m. treniravosi Tradicinio karate-do klubo „Sanrei“ komandoje, o 201
     'stovyklos' => 'лагеря',
     // v1.27: atsiliepimai su nuotraukomis
     'Raktas sukurtas - nukopijuokite jį dabar, vėliau jo nebematysite.' => 'Ключ создан - скопируйте его сейчас, позже его не будет видно.',
-    'Claude prieiga išjungta.' => 'Доступ Claude отключён.',
+    'API prieiga išjungta.' => 'Доступ API отключён.',
     '(tik nuotraukos)' => '(только фото)',
-    'Claude prieiga' => 'Доступ Claude',
-    'Claude kas kelias valandas pats perskaito naujus atsiliepimus (su nuotraukomis), padaro pakeitimus ir praneša, kai yra ką peržiūrėti. Tam jam reikia rakto: sukurkite jį ir įklijuokite Claude lange, kai jis paprašys.' => 'Каждые несколько часов Claude сам читает новые отзывы (с фото), вносит изменения и сообщает, когда есть что проверить. Для этого нужен ключ: создайте его и вставьте в окно Claude, когда он попросит.',
+    'API prieiga' => 'Доступ API',
+    'Raktas automatiniam atsiliepimų skaitymui (su nuotraukomis) ir įkėlimui į test svetainę (atsiliepimai-api.php, diegimas-api.php). Sukurkite jį ir nukopijuokite ten, kur jo prašoma.' => 'Ключ для автоматического чтения отзывов (с изображениями) и загрузки на тестовый сайт (atsiliepimai-api.php, diegimas-api.php). Создайте его и скопируйте туда, где его просят.',
     'Sukurti naują raktą? Senas nustos veikti.' => 'Создать новый ключ? Старый перестанет работать.',
     'Sukurti naują raktą' => 'Создать новый ключ',
-    'Sukurti raktą Claude' => 'Создать ключ для Claude',
     'įjungta' => 'включено',
     '(be teksto)' => '(без текста)',
     'Prie vieno atsiliepimo - daugiausia {n} nuotraukų.' => 'К одному отзыву - не более {n} фото.',
@@ -4027,4 +4026,5 @@ Nuo 2013 m. treniravosi Tradicinio karate-do klubo „Sanrei“ komandoje, o 201
     'Duomenų bazė atnaujinta automatiškai:' => 'База данных обновлена автоматически:',
     'Automatiškai atnaujinti duomenų bazės nepavyko:' => 'Автоматически обновить базу данных не удалось:',
     'Valdymas · Pateisinimai' => 'Управление · Оправдания',
+    'Sukurti raktą' => 'Создать ключ',
 ];

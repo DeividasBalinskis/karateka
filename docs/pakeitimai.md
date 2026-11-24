@@ -47,7 +47,7 @@ Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar
 - **💡 Atsiliepimas (#164):** langas didesnis, rašymo laukas aukštesnis; „Jūsų atsiliepimai“ rodo tik paskutinį - kiti per „Rodyti visus“.
 - **Planšetėje (#167):** lango viršus su „Atsiliepimas“ ir × visada matomas - ir kai atsidaro klaviatūra.
 - **Pataisyta - ar patinka?** Prie atsiliepimo, pažymėto „Pataisyta“, autorius mato **👍 Patinka** ir **↩ Grąžinti kaip buvo**
-  (ir kitame savo įrenginyje). Valdymas → Atsiliepimai rodo įvertinimą. „Grąžinti“ - Claude atšaukia tą pakeitimą.
+  (ir kitame savo įrenginyje). Valdymas → Atsiliepimai rodo įvertinimą. „Grąžinti“ - tas pakeitimas atšaukiamas.
 - **Egzamino protokolas (#166):** naujas dalyvis iš karto gauna balus 6.4 (Kihon, Kata, Kumite) - keičiama − / +.
   Paspaudus balo langelį skaičius pažymimas - rašant jis pakeičiamas (nereikia trinti).
 - **Budo:** išimti ilgi aprašymai (sekretoriato nuoroda, Tinklai; aprašymas - užvedus pelę ant pavadinimo) (#169);
@@ -56,7 +56,7 @@ Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar
   OBS programai - ją uždedate ant telefono vaizdo ir transliuojate (YouTube ar kt.).
 - **LTKF redagavimas (#168):** paspaudus meniu punktą keičiamas jo pavadinimas, puslapis neatidaromas; atidaryti - ↗ prie punkto.
 - **Įkėlimui be rankų paruošta** (dar neįjungta): GitHub įkėlimas į test (`.github/workflows/ikelti-i-test.yml`) ir
-  `diegimas-api.php` (versija ir duomenų bazės atnaujinimas su „Claude prieigos“ raktu). Įjungimas - `docs/planai/auto-taisymas.md`.
+  `diegimas-api.php` (versija ir duomenų bazės atnaujinimas su „API prieigos“ raktu). Įjungimas - `docs/planai/auto-taisymas.md`.
 - Duomenų bazė: naujas failas `db/053_atsiliepimu_ivertinimas.sql`.
 
 ## v1.88 - 2026-11-22 (atsiliepimų langas paprastesnis - Deividas)
@@ -397,7 +397,7 @@ Visi sprendimai surašyti `docs/decisions.md`.
 - 💡 atsiliepimas ir 💬 žinutės - **vienas plaukiojantis mygtukas** su mažu meniu (kompiuteryje - du, kaip anksčiau).
 - Prisijungus be nurodyto puslapio treneris ir administratorius patenka į „Šiandien“ (ir per 2 žingsnių prisijungimą su kodu).
 
-**📄 Projekto atmintis (C9)**: `CLAUDE.md`, `docs/handoff.md`, `docs/decisions.md`.
+**📄 Projekto atmintis (C9)**: taisyklių failas, `docs/handoff.md`, `docs/decisions.md`.
 
 ## v1.51 - 2026-11-20 (testų redaktorius pagal standartus, klausimų failas kuriant testą, bendri mygtukai ir failo laukai)
 **Duomenų bazės atnaujinti nereikia** (jei v1.50 dar neįkelta - db/045 iš v1.50). Zip'o turinį išpakuokite **tiesiai į svetainės aplanką**.
@@ -537,7 +537,7 @@ Visi sprendimai surašyti `docs/decisions.md`.
 
 **📄 Dokumentai (Deividui)**
 - `docs/sistemos-apzvalga.md` - visos sistemos apžvalga; `docs/darbo-planas.md` - naujas darbo planas su paruoštais tekstais kiekvienam žingsniui;
-  `docs/standartai.md` - taisyklės visoms sistemoms; `docs/CLAUDE-pasiulymas.md` - siūlomas `CLAUDE.md`.
+  `docs/standartai.md` - taisyklės visoms sistemoms; siūlomas taisyklių failas.
 
 ## v1.47 - 2026-11-19 (Budo telefone ir centre, apdovanojimai, renginiai su nuotraukomis, atsiliepimai #119-#125)
 **Reikia atnaujinti duomenų bazę: db/042 ir db/043** (Pradžia → „Atnaujinkite duomenų bazę“). Zip'o turinį išpakuokite **tiesiai į svetainės aplanką**.
@@ -1017,7 +1017,7 @@ v1.29 buvo išpakuota į `test.karateka.lt/public_html/...`, todėl svetainė li
 - Kalba - **LT | EN | RU visada matomi** viršuje (grįžti į lietuvių - vienu paspaudimu).
 - Privatumo politikoje: „Varžybų sistemą prižiūri administratorius Deividas Balinskis“.
 
-## v1.27 - 2026-11-15 (Atsiliepimai su nuotraukomis visose svetainėse + Claude juos skaito pats)
+## v1.27 - 2026-11-15 (Atsiliepimai su nuotraukomis visose svetainėse + automatinis skaitymas)
 **Duomenų bazė:** `db/032_atsiliepimai_nuotraukos.sql` - Valdymas → Šiandien → „Atnaujinkite duomenų bazę“.
 
 - **💡 Atsiliepimas** - ryškus oranžinis mygtukas apačioje kairėje **visose svetainėse: karateka.lt, Taika ir LTKF**.
@@ -1029,8 +1029,8 @@ v1.29 buvo išpakuota į `test.karateka.lt/public_html/...`, todėl svetainė li
 - Kartu išsaugoma, kurioje svetainėje ir puslapyje parašyta, ekrano dydis - kad būtų aišku, ką taisyti.
 - Valdymas → **Atsiliepimai**: nuotraukos prie kiekvieno atsiliepimo (paspaudus - didelė), svetainės žymė.
   Nuotraukas mato tik autorius, treneriai ir adminai.
-- **Claude prieiga** (Valdymas → Atsiliepimai, apačioje): „Sukurti raktą Claude“ - Claude pats skaito naujus atsiliepimus su nuotraukomis,
-  daro pakeitimus, pažymi „Pataisyta“ ir praneša, kai yra ką peržiūrėti. Nebereikia persiųsti per Messenger.
+- **API prieiga** (Valdymas → Atsiliepimai, apačioje): „Sukurti raktą“ - nauji atsiliepimai su nuotraukomis skaitomi automatiškai,
+  daromi pakeitimai, pažymi „Pataisyta“ ir praneša, kai yra ką peržiūrėti. Nebereikia persiųsti per Messenger.
 
 ## v1.26 - 2026-11-15 (Egzamino protokolas internete - pagal Denio failą)
 **Duomenų bazė:** `db/031_egzamino_protokolas.sql` - Valdymas → Šiandien → „Atnaujinkite duomenų bazę“.
@@ -1246,7 +1246,7 @@ Vertimai:
   Prie naujienos, renginio, pamokos ir pagrindinio puslapio redagavimo - mygtukas „🌐 Vertimai“.
 - **Automatiškai ir nemokamai (DeepL API Free, 500 000 simbolių per mėn.):** įrašius raktą į `config.php` (`'translate' => ['key' => '...']`),
   išsaugojus naujieną, renginį, pamoką ar pagrindinį puslapį vertimai atsiranda patys. Denis gali juos pataisyti.
-- Be rakto - vertimus galima įklijuoti ranka („📋 Kopijuoti tekstus vertimui“ → ChatGPT / Claude → įklijuoti). Kol vertimo nėra - rodoma lietuviškai.
+- Be rakto - vertimus galima įklijuoti ranka („📋 Kopijuoti tekstus vertimui“ → vertimo programa → įklijuoti). Kol vertimo nėra - rodoma lietuviškai.
 - Pakeitus lietuvišką tekstą, senas vertimas nebetinka (rodoma lietuviškai, kol išversite iš naujo).
 - Privatumo politikoje - DeepL kaip paslaugų teikėjas (tik viešas klubo tekstas).
 

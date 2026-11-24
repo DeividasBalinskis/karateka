@@ -2,12 +2,12 @@
 
 Reikia: Windows kompiuterio su projekto aplanku, FileZilla (arba hostingo failų tvarkyklės) ir phpMyAdmin prisijungimo.
 
-**Kaip versija keliauja:** Claude dirba šakoje `claude/…` ir ten išsaugo kiekvieną etapą (tai atsarginė kopija, ne leidimas).
+**Kaip versija keliauja:** Darbas vyksta atskiroje darbo šakoje, ten išsaugomas kiekvienas etapas (tai atsarginė kopija, ne leidimas).
 Kai parašote **„į main“**, ta versija perkeliama į `main`. Skriptas ima tik iš `main`.
 
 0. **Ar naujausia versija jau `main` šakoje?** Patikrinkite GitHub'e `public_html/app/VERSION` (main šakoje).
-   Jei ne - parašykite Claude „į main“.
-   - Arba ZIP iš Claude pokalbio (`svetaine-vX.YY.zip`) - tada 1 žingsnio nereikia, iškart 2.
+   Jei ne - parašykite „į main“.
+   - Arba ZIP iš pokalbio (`svetaine-vX.YY.zip`) - tada 1 žingsnio nereikia, iškart 2.
 1. Projekto aplanke: `tools\atnaujinti-is-github.ps1` → dešiniu pelės klavišu → **Run with PowerShell**.
    Skriptas atsisiunčia `main` ir paruošia aplanką `ikelimui\svetaine` ir `ikelimui\svetaine-v….zip`.
    Seni zip paketai paliekami; jei tos pačios versijos zip jau yra - naujas gauna priesagą `-2`, `-3`.

@@ -1,16 +1,16 @@
 # Handoff
-Updated: 2026-11-24 · version v1.93 · branch claude/festive-curie-01jgx2
+Updated: 2026-11-24 · version v1.93 · work branch
 
 ## Pending asks (answer these first)
 | Asked | By | What | Status |
 |---|---|---|---|
 | 2026-11-20 | Denis | #30 and #147: messages cut off - ask Denis to write them again | waiting |
-| 2026-11-22 | Claude | Pick variants: menu on a computer A1/A2/A3, phone menu B1/B2/B3, Budo video C1 (done) + C2 tablet / C3 hall TV (screenshots sent in chat) | waiting |
-| 2026-11-22 | Claude | „į main“ for v1.85-v1.93 (main = v1.84) | waiting |
-| 2026-11-24 | Claude | Excuse letters: the club's Word template (upload in Valdymas → Pateisinimai); .docx attachment OK or PDF needed | waiting |
-| 2026-11-22 | Claude | GitHub → domenai.lt: FTP account for the test folder + 3 GitHub secrets (steps: docs/github-domenai.md) + answers 1-3 (docs/planai/auto-taisymas.md) | waiting |
-| 2026-11-22 | Claude → Denis | #165 exams waiting list: 4 questions | answered 2026-11-22, done in v1.90 |
-| 2026-11-21 | Claude | Answers for not-started steps | answered 2026-11-21 (see decisions.md); waiting: Varžybos code on branch `varzybos-kodas` (D1), LibreSprite on PC (D8) |
+| 2026-11-22 | Dev | Pick variants: menu on a computer A1/A2/A3, phone menu B1/B2/B3, Budo video C1 (done) + C2 tablet / C3 hall TV (screenshots sent in chat) | waiting |
+| 2026-11-22 | Dev | „į main“ for v1.85-v1.93 (main = v1.84) | waiting |
+| 2026-11-24 | Dev | Excuse letters: the club's Word template (upload in Valdymas → Pateisinimai); .docx attachment OK or PDF needed | waiting |
+| 2026-11-22 | Dev | GitHub → domenai.lt: FTP account for the test folder + 3 GitHub secrets (steps: docs/github-domenai.md) + answers 1-3 (docs/planai/auto-taisymas.md) | waiting |
+| 2026-11-22 | Dev → Denis | #165 exams waiting list: 4 questions | answered 2026-11-22, done in v1.90 |
+| 2026-11-21 | Dev | Answers for not-started steps | answered 2026-11-21 (see decisions.md); waiting: Varžybos code on branch `varzybos-kodas` (D1), LibreSprite on PC (D8) |
 
 ## Last session
 - v1.52: the 43 answers applied (Šiandien start page, to-do red number, 1-year retention, exam page privacy, 10 kyu, secretariat 2 days,
@@ -60,10 +60,10 @@ Updated: 2026-11-24 · version v1.93 · branch claude/festive-curie-01jgx2
   Fixed a race: „+ Naujas“ / opening another item no longer waits for the save (typed text was lost). Tests 06u, 07za updated.
 - v1.89: feedback #164 (bigger box, 1 latest own), #166 (protocol rows start 6.4 - EXAM_SCORE_START), #167 (box fits the visual viewport - fit() in feedback.js),
   #168 (LTKF editor: nav click renames, ↗ opens), #169-#171 (Budo: texts out, category name opens run, site_switch_html('budo') in the header);
-  verdict buttons (db/053 feedback.verdict ok|revert|reverted; API ?status=revert, POST verdict), diegimas-api.php (GET state / POST dbupdate, Claude key),
+  verdict buttons (db/053 feedback.verdict ok|revert|reverted; API ?status=revert, POST verdict), diegimas-api.php (GET state / POST dbupdate, API key),
   .github/workflows/ikelti-i-test.yml (FTP to test on „[į test]“ commit or manual run; needs TEST_FTP_* secrets), OBS bar (varzybos-gyvai.php?juosta=1&tatami=N). Test 07zb.
 - v1.90: feedback status „question“ (db/054: feedback.answer, answered_at) - highlighted card with answer field, ❓N on 💡 (cfg.questions), top of „Reikia padaryti“, #atsiliepimas opens the box;
-  CLAUDE.md rule 11 „Questions first“. #165 exam waiting list (db/055 exam_waitlist; settings exam_waitlist_token / exam_waitlist_open; egzamino-registracija.php?k=<waitlist token>;
+  Rules file rule 11 „Questions first“. #165 exam waiting list (db/055 exam_waitlist; settings exam_waitlist_token / exam_waitlist_open; egzamino-registracija.php?k=<waitlist token>;
   admin/egzaminai.php #laukiantieji: assign = exam_protocol_add + e-mail with price by belt; „+ Protokolas šiai datai“ copies the exam event). Tests 07zc, 07zd.
 - v1.91: page_start option 'bare' (logo + language only, footer without links, only the 💡 widget) on egzamino-registracija.php (both modes),
   mano-egzaminas.php and testas-svecias.php for guests, privatumas.php?be_meniu=1. Test 07zd checks the registration link has no site links.
@@ -72,7 +72,7 @@ Updated: 2026-11-24 · version v1.93 · branch claude/festive-curie-01jgx2
 - v1.93: excuse letters - app/justifications.php (docx fill via ZipArchive, split {tags} merged, LT dates), pateisinimas.php + p/index.php (bare),
   admin/pateisinimai.php (link, list, preview, .docx download, approve and send / reject, Word template or text), db/056, notify type „justification“ (action),
   menu + „Reikia padaryti“. db_auto_update() in db_update.php, called from bootstrap for admins. docs/github-domenai.md - FTP steps. Test 07ze.
-- Committed and pushed to the claude branch after each stage.
+- Committed and pushed to the work branch after each stage.
 
 ## Open
 - C1 permissions, C3 secret links, C5 CSS cleanup (safe now with tests/visual.sh), C6 engine unit tests, D3 split varzybos.js, D4 same group on two tablets, D5 Budo live polish, D7 arena left hand UI, D8 pixel characters (PC + LibreSprite).

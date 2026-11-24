@@ -1,5 +1,5 @@
 // v1.27: atsiliepimų langas visose svetainėse (karateka.lt, Taika, LTKF): išsaugoma pati, Ctrl+V nuotraukos (daug),
-// Enter - išsaugoti ir naujas, ankstesni atsiliepimai (pavadinimas, nuotraukų skaičius) - paspaudus taisyti; Claude prieiga su raktu.
+// Enter - išsaugoti ir naujas, ankstesni atsiliepimai (pavadinimas, nuotraukų skaičius) - paspaudus taisyti; API prieiga su raktu.
 const { test } = require('@playwright/test');
 const { sql, login, nav, check, noJsErrors, flashes, openFeedback } = require('./helpers');
 
@@ -16,7 +16,7 @@ async function pasteImages(page, n) {
   }, n);
 }
 
-test('feedback widget: autosave, paste many images, Enter for next, edit earlier, Taika and LTKF, Claude API', async ({ browser }) => {
+test('feedback widget: autosave, paste many images, Enter for next, edit earlier, Taika and LTKF, API key', async ({ browser }) => {
   sql('DELETE FROM feedback');
   const a = await login(browser, 'info@karateka.lt', 1280, 860);
 
@@ -69,7 +69,7 @@ test('feedback widget: autosave, paste many images, Enter for next, edit earlier
   await a.waitForFunction(() => /Išsaugota/.test(document.getElementById('fbState').textContent));
   check('ltkf feedback', sql("SELECT CONCAT(site, '|', page) FROM feedback WHERE body LIKE 'LTKF%'") === 'ltkf|/ltkf/klubai.php');
 
-  // Adminas: nuotraukos sąraše; Claude raktas ir API
+  // Adminas: nuotraukos sąraše; API raktas
   await a.goto('admin/atsiliepimai.php');
   check('admin sees images', await a.locator('.fb-card-imgs img').count() === 3);
   await nav(a, () => a.click('button[value=api_key]'));

@@ -1,4 +1,4 @@
-# Karateka — rules for Claude
+# Karateka — project rules
 
 Club site karateka.lt (PHP 8, MariaDB, no framework), the Budo competition system, the LTKF federation
 site and the Dojo game. One repo, one database.
@@ -72,7 +72,7 @@ site and the Dojo game. One repo, one database.
 - **On Deividas's PC:** do not commit or push unless he says so. His habit: one commit at 23:00 on days
   with progress.
 - **In a cloud session:** the session's machine is thrown away afterwards and it cannot finish with
-  unsaved work, so it saves to its own `claude/…` branch as it goes. That is a backup, not a release.
+  unsaved work, so it saves to its own work branch as it goes. That is a backup, not a release.
 - `main` moves only when Deividas writes **„į main“**. No pull requests unless asked. No force push.
 
 ## Feedback

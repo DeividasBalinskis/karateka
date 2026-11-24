@@ -1,10 +1,10 @@
-// v1.89: atsiliepimai #164-#171 ir „gyvas taisymas“: autorius įvertina pataisymą (Patinka / Grąžinti), Claude prieiga diegimui,
+// v1.89: atsiliepimai #164-#171 ir „gyvas taisymas“: autorius įvertina pataisymą (Patinka / Grąžinti), API prieiga diegimui,
 // protokolo balai 6.4, Budo: aprašymai išimti, pavadinimas atidaro valdymą, kitos sistemos antraštėje, OBS juosta; LTKF meniu redagavimas.
 const { test } = require('@playwright/test');
 const { execFileSync } = require('child_process');
 const { sql, day, login, nav, check, noJsErrors, openFeedback } = require('./helpers');
 
-test('feedback: bigger box, one latest own item, author likes or asks to undo; Claude sees it', async ({ browser }) => {
+test('feedback: bigger box, one latest own item, author likes or asks to undo; API sees it', async ({ browser }) => {
   sql("REPLACE INTO site_settings (name, value) VALUES ('feedback_button', 'staff')");
   sql("DELETE FROM feedback WHERE body LIKE 'E2E v189%'");
   const a = await login(browser, 'info@karateka.lt', 1440, 900);
@@ -34,21 +34,21 @@ test('feedback: bigger box, one latest own item, author likes or asks to undo; C
   // Valdymas → Atsiliepimai rodo įvertinimą
   await b.goto('admin/atsiliepimai.php?b=visi&q=E2E+v189');
   check('admin page shows verdicts', await b.locator('.fb-card .badge', { hasText: 'Patinka' }).count() === 1 && await b.locator('.fb-card .badge', { hasText: 'Prašo grąžinti' }).count() === 1);
-  // Claude prieiga: atsiliepimai „grąžinti“ ir diegimo adresas (raktas - „Claude prieiga“)
-  const hash = execFileSync('php', ['-r', 'echo password_hash("e2e-claude-key", PASSWORD_DEFAULT);']).toString();
+  // API prieiga: atsiliepimai „grąžinti“ ir diegimo adresas (raktas - „API prieiga“)
+  const hash = execFileSync('php', ['-r', 'echo password_hash("e2e-api-key", PASSWORD_DEFAULT);']).toString();
   sql(`REPLACE INTO site_settings (name, value) VALUES ('feedback_api_key', '${hash}')`);
-  const api = await b.request.get('atsiliepimai-api.php?status=revert', { headers: { 'X-Api-Key': 'e2e-claude-key' } });
+  const api = await b.request.get('atsiliepimai-api.php?status=revert', { headers: { 'X-Api-Key': 'e2e-api-key' } });
   const items = (await api.json()).items || [];
   check('API lists items to undo', items.some(i => /E2E v189/.test(i.body) && i.verdict === 'revert'));
   const rid = items.find(i => /E2E v189/.test(i.body)).id;
-  await b.request.post('atsiliepimai-api.php', { headers: { 'X-Api-Key': 'e2e-claude-key', 'Content-Type': 'application/json' }, data: { id: rid, status: 'planned', reply: 'Grąžinta', verdict: 'reverted' } });
-  check('Claude marks it undone', sql(`SELECT verdict FROM feedback WHERE id = ${rid}`) === 'reverted');
+  await b.request.post('atsiliepimai-api.php', { headers: { 'X-Api-Key': 'e2e-api-key', 'Content-Type': 'application/json' }, data: { id: rid, status: 'planned', reply: 'Grąžinta', verdict: 'reverted' } });
+  check('API marks it undone', sql(`SELECT verdict FROM feedback WHERE id = ${rid}`) === 'reverted');
   const noKey = await b.request.get('diegimas-api.php');
-  const dep = await b.request.get('diegimas-api.php', { headers: { 'X-Api-Key': 'e2e-claude-key' } });
+  const dep = await b.request.get('diegimas-api.php', { headers: { 'X-Api-Key': 'e2e-api-key' } });
   const dj = await dep.json();
   check('deploy API needs the key', noKey.status() === 401);
   check('deploy API shows version and database state', dj.ok && /^\d+\.\d+$/.test(dj.version) && Array.isArray(dj.pending) && /^0\d\d_\w+\.sql$/.test(dj.db_required), JSON.stringify(dj));
-  const upd = await (await b.request.post('diegimas-api.php', { headers: { 'X-Api-Key': 'e2e-claude-key', 'Content-Type': 'application/json' }, data: { action: 'dbupdate' } })).json();
+  const upd = await (await b.request.post('diegimas-api.php', { headers: { 'X-Api-Key': 'e2e-api-key', 'Content-Type': 'application/json' }, data: { action: 'dbupdate' } })).json();
   check('deploy API runs the database update', upd.ok && upd.pending.length === 0, JSON.stringify(upd));
   sql("DELETE FROM site_settings WHERE name = 'feedback_api_key'");
   sql("DELETE FROM feedback WHERE body LIKE 'E2E v189%'");

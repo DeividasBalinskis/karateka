@@ -1,8 +1,8 @@
 <?php
-// Claude (be naršyklės) po automatinio įkėlimo į test svetainę (.github/workflows/ikelti-i-test.yml):
+// Be naršyklės, po automatinio įkėlimo į test svetainę (.github/workflows/ikelti-i-test.yml):
 //   GET                          - kokia versija įkelta ir ar trūksta duomenų bazės failų
 //   POST {"action":"dbupdate"}   - duomenų bazės atnaujinimas (kaip Valdymas → Nustatymai → „Atnaujinti duomenų bazę“; prieš tai - kopija)
-// Prieiga - tik su „Claude prieigos“ raktu (Valdymas → Atsiliepimai), antraštė X-Api-Key. Oficialioje svetainėje rakto nėra - neveikia.
+// Prieiga - tik su „API prieigos“ raktu (Valdymas → Atsiliepimai), antraštė X-Api-Key. Oficialioje svetainėje rakto nėra - neveikia.
 require __DIR__ . '/app/bootstrap.php';
 
 header('Content-Type: application/json; charset=utf-8');

@@ -39,16 +39,16 @@ if (is_post()) {
                 flash('ok', t('Atsiliepimas ištrintas.'));
             }
             break;
-        case 'api_key':   // Claude prieiga: naujas raktas (rodomas vieną kartą; saugomas tik hash)
+        case 'api_key':   // API prieiga: naujas raktas (rodomas vieną kartą; saugomas tik hash)
             $key = bin2hex(random_bytes(20));
             set_site_setting('feedback_api_key', password_hash($key, PASSWORD_DEFAULT));
             $_SESSION['fb_api_key_once'] = $key;
             flash('ok', t('Raktas sukurtas - nukopijuokite jį dabar, vėliau jo nebematysite.'));
-            redirect('admin/atsiliepimai.php#claude');
+            redirect('admin/atsiliepimai.php#api');
         case 'api_off':
             set_site_setting('feedback_api_key', '');
-            flash('ok', t('Claude prieiga išjungta.'));
-            redirect('admin/atsiliepimai.php#claude');
+            flash('ok', t('API prieiga išjungta.'));
+            redirect('admin/atsiliepimai.php#api');
         case 'mode':
             if (isset(FEEDBACK_SHOW[post('mode')])) {
                 set_site_setting('feedback_button', post('mode'));
@@ -205,15 +205,15 @@ $tabs['visi'] = [t('Visi'), array_sum(array_map('intval', $counts))];
 <?php endforeach; ?>
 </div>
 
-<div class="panel card fb-claude" id="claude">
-  <div class="kicker"><?= te('Claude prieiga') ?></div>
-  <p class="small" style="margin:4px 0 10px;"><?= te('Claude kas kelias valandas pats perskaito naujus atsiliepimus (su nuotraukomis), padaro pakeitimus ir praneša, kai yra ką peržiūrėti. Tam jam reikia rakto: sukurkite jį ir įklijuokite Claude lange, kai jis paprašys.') ?></p>
+<div class="panel card fb-api" id="api">
+  <div class="kicker"><?= te('API prieiga') ?></div>
+  <p class="small" style="margin:4px 0 10px;"><?= te('Raktas automatiniam atsiliepimų skaitymui (su nuotraukomis) ir įkėlimui į test svetainę (atsiliepimai-api.php, diegimas-api.php). Sukurkite jį ir nukopijuokite ten, kur jo prašoma.') ?></p>
   <?php if (!empty($_SESSION['fb_api_key_once'])): $once = (string) $_SESSION['fb_api_key_once']; unset($_SESSION['fb_api_key_once']); ?>
     <div class="row" style="gap:8px; flex-wrap:wrap; margin-bottom:8px;"><input type="text" readonly value="<?= e($once) ?>" id="fbKey" onclick="this.select()" style="flex:1; min-width:260px; font-family:monospace;">
       <button class="btn btn-primary btn-sm" type="button" onclick="var i=document.getElementById('fbKey'); i.select(); try { navigator.clipboard.writeText(i.value); } catch (e) {} this.textContent='✓ Nukopijuota';"><?= te('Kopijuoti') ?></button></div>
   <?php endif; ?>
   <form method="post" class="row" style="gap:8px; flex-wrap:wrap;"><?= csrf_field() ?>
-    <button class="btn btn-ghost btn-sm" type="submit" name="action" value="api_key" onclick="return <?= site_setting('feedback_api_key', '') ? "confirm('" . e(t('Sukurti naują raktą? Senas nustos veikti.')) . "')" : 'true' ?>"><?= site_setting('feedback_api_key', '') ? te('Sukurti naują raktą') : te('Sukurti raktą Claude') ?></button>
+    <button class="btn btn-ghost btn-sm" type="submit" name="action" value="api_key" onclick="return <?= site_setting('feedback_api_key', '') ? "confirm('" . e(t('Sukurti naują raktą? Senas nustos veikti.')) . "')" : 'true' ?>"><?= site_setting('feedback_api_key', '') ? te('Sukurti naują raktą') : te('Sukurti raktą') ?></button>
     <?php if (site_setting('feedback_api_key', '')): ?><span class="badge badge-ok"><?= te('įjungta') ?></span>
       <button class="btn btn-ghost btn-sm" type="submit" name="action" value="api_off"><?= te('Išjungti') ?></button><?php endif; ?>
   </form>

@@ -280,7 +280,7 @@ Gyva svetainė (karateka.lt): neliesta
 - Phone 375 and desktop 1440 for every change on screen; before and after when something changed.
 - Shown large, in the chat, not as links. Never a link to a nearly empty page.
 
-## 13. Working with Claude
+## 13. Working rules
 
 1. Answers are short and plain, in the language of the question. Yes or no first.
 2. One step per session. "(plan first)" means: show the plan and wait.

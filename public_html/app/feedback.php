@@ -2,7 +2,7 @@
 // Atsiliepimai apie svetainę (db/025, db/032): ryškus mygtukas „💡 Atsiliepimas“ apačioje kairėje visose svetainėse (karateka.lt, Taika, LTKF).
 // Lange: rašai - išsaugoma pati (be mygtuko), Ctrl+V - įklijuoja ekrano nuotrauką (galima daug), Enter - išsaugo ir pradeda naują;
 // apačioje - ankstesni atsiliepimai (pavadinimas, nuotraukų skaičius), paspaudus - galima pataisyti.
-// Adminas mato visus: Valdymas → Atsiliepimai. Claude juos skaito per atsiliepimai-api.php (raktas sukuriamas ten pat).
+// Adminas mato visus: Valdymas → Atsiliepimai. Automatiškai jie skaitomi per atsiliepimai-api.php (raktas sukuriamas ten pat).
 
 const FEEDBACK_STATUS = [
     'new'      => ['Naujas', 'badge-pink'],
@@ -422,7 +422,7 @@ function feedback_delete_images(int $feedbackId, ?int $imageId = null): void
     }
 }
 
-/** Claude prieiga (atsiliepimai-api.php): rakto patikra (saugomas tik hash) */
+/** API prieiga (atsiliepimai-api.php): rakto patikra (saugomas tik hash) */
 function feedback_api_check(string $key): bool
 {
     $hash = (string) site_setting('feedback_api_key', '');

@@ -17,7 +17,7 @@ Sutarta atidėti (klausimai ir atsakymai 2026-10-27). Kai imsimės - išbraukti 
 - **Buvusių narių duomenys po 1 metų** - privatumo politikoje pažadėta ištrinti praėjus 1 m. po narystės pabaigos.
   Dabar tai daroma ranka (Nariai → narys → „Ištrinti narį“). Galima pridėti: išėjimo data ir priminimas „Šiandien“.
 - **AI pagalbininkas svetainėje** (Denio klausimas, 2026-10-22) - kad adminas galėtų paklausti ar paprašyti pakeitimo pačiame puslapyje.
-  Tik idėja; dabar pakeitimai daromi per 💡 atsiliepimus, juos peržiūri Claude.
+  Tik idėja; dabar pakeitimai daromi per 💡 atsiliepimus, jie peržiūrimi reguliariai.
 - **Žaidimas: mainai** (daiktų ir gyvūnėlių keitimasis tarp vaikų, be pinigų) - tik klausimas, dar nenuspręsta, ar to reikia.
 - **Žaidimas: atskiri artefaktai** - dabar „artefaktai“ yra daiktai (ginklai, kimono ir kt.) su savybėmis; atskiros artefaktų rūšies nėra.
 - **Neaišku - paklausti Denio:** video su Esmilės trenerio kortele (be garso neaišku, ką rodo); atsiliepimas #30 „Kai b…“ nutrūko.

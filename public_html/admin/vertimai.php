@@ -65,7 +65,7 @@ page_start('Vertimai', ['admin' => true]);
     <div class="flash flash-ok">✓ Automatinis vertimas įjungtas (DeepL): išsaugojus naujieną, renginį, pamoką ar pagrindinį puslapį, vertimai į EN ir RU atsiranda patys.
       Čia galite juos peržiūrėti ir pataisyti.</div>
   <?php else: ?>
-    <div class="flash flash-info">Automatinis vertimas neįjungtas - vertimus įklijuokite patys (pvz. iš ChatGPT ar Claude). Kol vertimo nėra, rodoma lietuviškai.
+    <div class="flash flash-info">Automatinis vertimas neįjungtas - vertimus įklijuokite patys (pvz. iš vertimo programos). Kol vertimo nėra, rodoma lietuviškai.
       Įjungti nemokamai: DeepL API Free raktas į <code>config.php</code> (žr. <code>config.example.php</code>).</div>
   <?php endif; ?>
   <div class="grid-2 tr-lists">
@@ -108,7 +108,7 @@ page_start('Vertimai', ['admin' => true]);
       </form>
     <?php endif; ?>
     <div class="tr-ai panel card">
-      <strong>Su ChatGPT ar Claude:</strong> paspauskite „Kopijuoti“, įklijuokite į ChatGPT ar Claude, tada vertimus sudėkite į laukelius.
+      <strong>Su vertimo programa:</strong> paspauskite „Kopijuoti“, įklijuokite į vertimo programą, tada vertimus sudėkite į laukelius.
       <button type="button" class="btn btn-ghost btn-sm" id="trCopy">📋 Kopijuoti tekstus vertimui</button>
       <textarea id="trPrompt" hidden><?= e("Išversk šiuos karate klubo svetainės tekstus į anglų ir rusų kalbas. Išlaikyk numeraciją ir eilučių skaidymą; vardus, vietovardžius ir japoniškus terminus palik.\n\n"
           . implode("\n\n", array_map(function ($it, $i) { return '[' . ($i + 1) . '] ' . $it['text']; }, $items, array_keys($items)))) ?></textarea>

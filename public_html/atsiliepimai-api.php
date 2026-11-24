@@ -1,10 +1,10 @@
 <?php
-// Atsiliepimai Claude (be naršyklės): kas kelias valandas Claude perskaito naujus atsiliepimus su nuotraukomis,
-// padaro pakeitimus ir pažymi, kas padaryta. Prieiga - tik su raktu (Valdymas → Atsiliepimai → „Claude prieiga“), antraštė X-Api-Key.
+// Atsiliepimai be naršyklės: automatinis skaitymas - nauji atsiliepimai su nuotraukomis,
+// pažymima, kas padaryta. Prieiga - tik su raktu (Valdymas → Atsiliepimai → „API prieiga“), antraštė X-Api-Key.
 //   GET  ?since=ID&status=open|all|revert[&group=budo|karateka|ltkf]  (revert - autorius prašo grąžinti kaip buvo)  - atsiliepimai (naujausi paskutiniai), su nuotraukų nuorodomis ir vieta (area)
 //   GET  ?img=ID                    - nuotrauka (JPEG)
 //   POST {"id":..,"status":"planned|question|done|declined","reply":"...","verdict":"reverted"|null}  (question - klausimas autoriui, reply = klausimas)  - būsena ir atsakymas autoriui (gauna pranešimą);
-//        verdict - autoriaus įvertinimas: ok (patinka), revert (prašo grąžinti); Claude, atšaukęs pakeitimą, pažymi „reverted“ (null - išvalyti)
+//        verdict - autoriaus įvertinimas: ok (patinka), revert (prašo grąžinti); atšaukus pakeitimą pažymima „reverted“ (null - išvalyti)
 require __DIR__ . '/app/bootstrap.php';
 
 header('Cache-Control: no-store');

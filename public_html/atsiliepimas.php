@@ -12,7 +12,7 @@ $json = function (array $d, int $code = 200) {
     exit(json_encode($d, JSON_UNESCAPED_UNICODE));
 };
 
-// Nuotrauka: autoriui, adminui (ar treneriui) ir Claude (su raktu)
+// Nuotrauka: autoriui, adminui (ar treneriui) ir API (su raktu)
 if (get('img')) {
     $img = feedback_images_ready() ? q_one('SELECT i.*, f.account_id FROM feedback_images i JOIN feedback f ON f.id = i.feedback_id WHERE i.id = ?', [(int) get('img')]) : null;
     $f = $img ? q_one('SELECT * FROM feedback WHERE id = ?', [(int) $img['feedback_id']]) : null;
@@ -112,7 +112,7 @@ switch ($action) {
         }
         $json(['ok' => true, 'item' => feedback_json(q_one('SELECT * FROM feedback WHERE id = ?', [$id]))]);
 
-    case 'verdict':   // v1.89: autorius įvertina pataisymą - „ok“ (paliekama) arba „revert“ (Claude grąžins kaip buvo)
+    case 'verdict':   // v1.89: autorius įvertina pataisymą - „ok“ (paliekama) arba „revert“ (bus grąžinta kaip buvo)
         $f = q_one('SELECT * FROM feedback WHERE id = ?', [(int) post('id')]);
         $v = (string) post('verdict');
         if (!$f || !in_array($v, ['ok', 'revert'], true) || !feedback_can_verdict($a, $f)) {
@@ -121,7 +121,7 @@ switch ($action) {
         q('UPDATE feedback SET verdict = ?, verdict_at = NOW(), updated_at = NOW() WHERE id = ?', [$v, (int) $f['id']]);
         $json(['ok' => true, 'item' => feedback_json(q_one('SELECT * FROM feedback WHERE id = ?', [(int) $f['id']]))]);
 
-    case 'answer':   // v1.90: autorius atsako į klausimą - atsiliepimas vėl „Naujas“ (Claude tęsia)
+    case 'answer':   // v1.90: autorius atsako į klausimą - atsiliepimas vėl „Naujas“ (darbas tęsiamas)
         $f = q_one('SELECT * FROM feedback WHERE id = ?', [(int) post('id')]);
         $ans = trim(str_replace("\r\n", "\n", (string) post('answer')));
         if (!$f || !feedback_can_answer($a, $f)) {

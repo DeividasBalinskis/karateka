@@ -85,7 +85,7 @@
       return total > n ? '<li><button type="button" class="fb-more" ' + attr + '>' + esc(label) + ' ↓</button></li>' : '';
     }
 
-    // ---------- v1.89: pataisyta - autorius įvertina („Patinka“ - paliekama, „Grąžinti kaip buvo“ - Claude atšaukia ir vėl įkelia) ----------
+    // ---------- v1.89: pataisyta - autorius įvertina („Patinka“ - paliekama, „Grąžinti kaip buvo“ - pakeitimas atšaukiamas ir vėl įkeliama) ----------
     function verdictHtml(it) {
       if (it.canVerdict) {
         return '<div class="fb-verdict"><span>' + esc(T('Ar patinka pakeitimas?')) + '</span>' +

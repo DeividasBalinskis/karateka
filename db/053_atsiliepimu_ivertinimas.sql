@@ -1,5 +1,5 @@
 -- v1.89 (Deividas): atsiliepimo autorius įvertina pataisymą test svetainėje - „👍 Patinka“ (paliekama) arba „↩ Grąžinti kaip buvo“
--- (Claude atšaukia tą pakeitimą ir vėl įkelia į test). verdict: ok | revert | reverted (atšaukta). Failą galima importuoti ir antrą kartą.
+-- (pakeitimas atšaukiamas ir vėl įkeliamas į test). verdict: ok | revert | reverted (atšaukta). Failą galima importuoti ir antrą kartą.
 
 SET NAMES utf8mb4;
 

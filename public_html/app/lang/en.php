@@ -2688,13 +2688,12 @@ From 2013 he trained with the team of the traditional karate-do club "Sanrei", a
     'stovyklos' => 'camps',
     // v1.27: atsiliepimai su nuotraukomis
     'Raktas sukurtas - nukopijuokite jį dabar, vėliau jo nebematysite.' => 'Key created - copy it now, you will not see it again.',
-    'Claude prieiga išjungta.' => 'Claude access turned off.',
+    'API prieiga išjungta.' => 'API access turned off.',
     '(tik nuotraukos)' => '(images only)',
-    'Claude prieiga' => 'Claude access',
-    'Claude kas kelias valandas pats perskaito naujus atsiliepimus (su nuotraukomis), padaro pakeitimus ir praneša, kai yra ką peržiūrėti. Tam jam reikia rakto: sukurkite jį ir įklijuokite Claude lange, kai jis paprašys.' => 'Every few hours Claude reads new feedback (with images), makes the changes and lets you know when there is something to review. It needs a key: create it and paste it into the Claude window when asked.',
+    'API prieiga' => 'API access',
+    'Raktas automatiniam atsiliepimų skaitymui (su nuotraukomis) ir įkėlimui į test svetainę (atsiliepimai-api.php, diegimas-api.php). Sukurkite jį ir nukopijuokite ten, kur jo prašoma.' => 'Key for reading feedback automatically (with images) and uploading to the test site (atsiliepimai-api.php, diegimas-api.php). Create it and copy it where it is asked for.',
     'Sukurti naują raktą? Senas nustos veikti.' => 'Create a new key? The old one will stop working.',
     'Sukurti naują raktą' => 'Create a new key',
-    'Sukurti raktą Claude' => 'Create a key for Claude',
     'įjungta' => 'on',
     '(be teksto)' => '(no text)',
     'Prie vieno atsiliepimo - daugiausia {n} nuotraukų.' => 'Up to {n} images per feedback item.',
@@ -4027,4 +4026,5 @@ From 2013 he trained with the team of the traditional karate-do club "Sanrei", a
     'Duomenų bazė atnaujinta automatiškai:' => 'Database updated automatically:',
     'Automatiškai atnaujinti duomenų bazės nepavyko:' => 'Automatic database update failed:',
     'Valdymas · Pateisinimai' => 'Management · Excuses',
+    'Sukurti raktą' => 'Create a key',
 ];

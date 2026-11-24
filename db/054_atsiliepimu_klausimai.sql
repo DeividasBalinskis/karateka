@@ -1,5 +1,5 @@
 -- v1.90 (Deividas): atsiliepimas su klausimu autoriui - būsena „Reikia atsakymo“ (question); autorius atsako lange (answer),
--- tada atsiliepimas vėl tampa „Naujas“ ir Claude jį tęsia. Failą galima importuoti ir antrą kartą.
+-- tada atsiliepimas vėl tampa „Naujas“ ir darbas tęsiamas. Failą galima importuoti ir antrą kartą.
 
 SET NAMES utf8mb4;
 

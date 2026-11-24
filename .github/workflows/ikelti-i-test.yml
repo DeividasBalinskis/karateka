@@ -1,15 +1,15 @@
 # Įkėlimas į test.karateka.lt be rankų (docs/planai/auto-taisymas.md):
 # greitos patikros → paketas (kaip svetaine-vX.YY.zip: be config.php, be įkeltų failų) → FTP(S) į TEST aplanką, tik pasikeitę failai.
 # Gyva karateka.lt čia neliečiama: FTP paskyra turi matyti tik test svetainės aplanką.
-# Paleidžiama: Claude įrašas su „[į test]“ claude/… šakoje arba rankomis (Actions → „Įkelti į test.karateka.lt“ → Run workflow).
-# Po įkėlimo duomenų bazę atnaujina Claude per diegimas-api.php (raktas - „Claude prieiga“, Valdymas → Atsiliepimai).
+# Paleidžiama: įrašas su „[į test]“ bet kurioje šakoje, išskyrus main, arba rankomis (Actions → „Įkelti į test.karateka.lt“ → Run workflow).
+# Po įkėlimo duomenų bazė atsinaujina pati (kai administratorius atidaro puslapį) arba per diegimas-api.php (raktas - „API prieiga“, Valdymas → Atsiliepimai).
 # Reikia GitHub paslapčių: TEST_FTP_SERVER, TEST_FTP_USER, TEST_FTP_PASSWORD (nebūtina: TEST_FTP_DIR, TEST_FTP_PROTOCOL).
 name: Įkelti į test.karateka.lt
 
 on:
   workflow_dispatch:
   push:
-    branches: ['claude/**']
+    branches-ignore: ['main']
 
 concurrency:
   group: ikelti-i-test

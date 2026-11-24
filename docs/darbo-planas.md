@@ -607,7 +607,7 @@ other kids see ____ (real first name + initial / nickname only)
 ## D8 — New pixel characters (plan first)
 
 - **Finding:** only the fox is real pixel art that can change kimono and belt colour. The other 22 characters are flat pictures cut from one sheet: no gear is drawn on them and they have no animation frames.
-- **Tool (best fit):** **Aseprite** (about 20 USD once, or free if compiled from source) with the **aseprite-mcp** connector, so Claude can draw and export frames directly. Free alternative: **LibreSprite** with **libresprite-mcp**. For touch-ups by hand: Piskel or Pixelorama (free).
+- **Tool (best fit):** **Aseprite** (about 20 USD once, or free if compiled from source) with the **aseprite-mcp** connector, so frames can be drawn and exported directly. Free alternative: **LibreSprite** with **libresprite-mcp**. For touch-ups by hand: Piskel or Pixelorama (free).
 - **Rule:** show 2–3 sample characters large, get your OK on the style, then draw the rest. Characters are unique: not bound to one body shape or stance. One size grid and one outline colour for all (see `docs/standartai.md`, "Game art").
 - **Depends on:** D7 (so the art matches the fight model); the tool installed on your PC.
 
@@ -716,7 +716,7 @@ Do step E1 from docs/darbo-planas.md. Prepare everything, show me the checklist,
 | 2 | Names: (a) keep "Valdymas", call the start page "Šiandien"; (b) other names from Denis | **a** | wait for Denis (#114) |
 | 3 | Competition system: (a) Budo stays, the external Varžybos bridge is removed after D1; (b) decide after D1 | **b** | b |
 | 4 | Merge the working branch to `main` now (write „į main“): (a) yes; (b) after phase A | **b** | b |
-| 5 | Commits in cloud sessions: (a) the cloud saves to the `claude/…` branch as it works (the cloud forces this), `main` moves only on „į main“, your 23:00 rule applies on your PC; (b) something else | **a** | a |
+| 5 | Commits in cloud sessions: (a) the cloud saves to its work branch as it works (the cloud forces this), `main` moves only on „į main“, your 23:00 rule applies on your PC; (b) something else | **a** | a |
 | 6 | Members and kids on a phone get a bottom tab bar like admins: (a) yes, show variants first; (b) keep the burger menu | **a** | a |
 | 7 | Automatic feedback review (the scheduled check that reads new feedback): (a) switch it back on; (b) keep it off | **b** until phase A is done | b |
 | 8 | Does Deividas's account see the Dojo game? (a) yes; (b) only Denis | **a** | a |
