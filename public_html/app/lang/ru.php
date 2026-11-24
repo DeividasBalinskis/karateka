@@ -4048,4 +4048,12 @@ Nuo 2013 m. treniravosi Tradicinio karate-do klubo „Sanrei“ komandoje, o 201
     'Tai ne PDF failas.' => 'Это не файл PDF.',
     'Užpildykite formą. Kai patvirtinsime, pateisinimą atsiųsime nurodytu el. paštu.' => 'Заполните форму. Когда мы подтвердим, оправдание придёт на указанный e-mail.',
     'Kai patvirtinsime, pateisinimą atsiųsime adresu {e}.' => 'Когда мы подтвердим, оправдание придёт на {e}.',
+    'Šriftas (bandymui)' => 'Шрифт (для проверки)',
+    'Šriftas' => 'Шрифт',
+    'Šriftas - bandymui (tik šiame įrenginyje)' => 'Шрифт - для проверки (только на этом устройстве)',
+    'Inter visur' => 'Inter везде',
+    'Nunito (minkštas)' => 'Nunito (мягкий)',
+    'Exo 2 (sportinis)' => 'Exo 2 (спортивный)',
+    'Playfair + Lora (klasika)' => 'Playfair + Lora (классика)',
+    'Comfortaa + Nunito (vaikams)' => 'Comfortaa + Nunito (для детей)',
 ];

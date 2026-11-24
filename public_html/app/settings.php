@@ -10,6 +10,7 @@
 const SETTINGS = [
     // Svetainė
     'site_theme'       => ['label' => 'Svetainės tema (visiems lankytojams)', 'group' => 'Svetainė', 'type' => 'choice', 'where' => 'admin/nustatymai.php', 'owner' => 'admin', 'restore' => true],
+    'design_likes'     => ['label' => 'Temos ir šriftai, pažymėti „Patinka“', 'group' => 'Svetainė', 'type' => 'json', 'where' => '🎨 ir Aa viršuje', 'owner' => 'admin', 'restore' => true],
     'home_page'        => ['label' => 'Pagrindinio puslapio turinys', 'group' => 'Svetainė', 'type' => 'json', 'where' => 'admin/puslapis.php', 'owner' => 'admin', 'restore' => false],
     'home_page_prev'   => ['label' => 'Pagrindinis puslapis - ankstesnė versija („Atšaukti“)', 'group' => 'Svetainė', 'type' => 'mark', 'where' => 'admin/puslapis.php', 'owner' => 'admin', 'restore' => false],
     'reg_off'          => ['label' => 'Registracija išjungta (paskyros, renginiai, egzaminai, Budo)', 'group' => 'Svetainė', 'type' => 'json', 'where' => 'admin/nustatymai.php', 'owner' => 'admin', 'restore' => true],

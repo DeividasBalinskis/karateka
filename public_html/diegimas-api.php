@@ -1,6 +1,6 @@
 <?php
 // Be naršyklės, po automatinio įkėlimo į test svetainę (.github/workflows/ikelti-i-test.yml):
-//   GET                          - kokia versija įkelta ir ar trūksta duomenų bazės failų
+//   GET                          - kokia versija įkelta ir ar trūksta duomenų bazės failų; „👍“ temos ir šriftai
 //   POST {"action":"dbupdate"}   - duomenų bazės atnaujinimas (kaip Valdymas → Nustatymai → „Atnaujinti duomenų bazę“; prieš tai - kopija)
 // Prieiga - tik su „API prieigos“ raktu (Valdymas → Atsiliepimai), antraštė X-Api-Key. Oficialioje svetainėje rakto nėra - neveikia.
 require __DIR__ . '/app/bootstrap.php';
@@ -29,4 +29,5 @@ if (is_post()) {
     }
     exit(json_encode(['ok' => true, 'applied' => $res['files'], 'backup' => $res['backup'] ? basename((string) $res['backup']) : null] + $state(), JSON_UNESCAPED_UNICODE));
 }
-exit(json_encode(['ok' => true] + $state(), JSON_UNESCAPED_UNICODE));
+// v1.95: kurios temos ir šriftai pažymėti „👍 Patinka“ (kas pažymėjo)
+exit(json_encode(['ok' => true] + $state() + ['design_likes' => design_likes_named()], JSON_UNESCAPED_UNICODE));

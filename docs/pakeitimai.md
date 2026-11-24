@@ -4,6 +4,16 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.95 - 2026-11-24 (šriftų bandymas, „👍 Patinka“ temoms ir šriftams, gražesnės temos)
+- **„Aa“ šalia 🎨 (tik administratoriams):** 13 šriftų porų (antraštės + tekstas, visi su lietuviškomis ir rusiškomis raidėmis).
+  Paspaudus - visa svetainė šiame įrenginyje rodoma tuo šriftu (kitiems nesikeičia). „Dabartinis“ - grąžina kaip buvo.
+- **👍 Patinka** prie kiekvieno šrifto ir kiekvienos temos (administratoriams): pažymėkite, kurie tinka - matosi, kas pažymėjo.
+- **Temos gražesnės:** kiekviena tema turi savo paletę - kortelės su temos atspalviu ir spalvota juostele viršuje, švelnus švytėjimas,
+  antraštė ir jos pabraukimas, mygtukai, datų kvadratėliai ir Valdymo šoninis meniu temos spalvomis; tamsiose temose - spalvotas šoninis meniu.
+  Temų paveikslėliuose - temos spalvos juostelė. Šviesi (numatytoji) tema nepakeista.
+- Projekto žemėlapis: `docs/projekto-zemelapis.md` - kas veikia, kas dalinai, kas liko.
+- Duomenų bazė: naujų failų nėra.
+
 ## v1.94 - 2026-11-24 (pateisinimai - redagavimas ir Word/PDF; 💡 visur kairėje; 🔔 varpelis; atsiliepimai #172-#178)
 - **Pateisinimai (Valdymas → 📄 Pateisinimai):**
   - Formoje tėvams: „Kai **patvirtinsime**, pateisinimą atsiųsime…“ (be žodžio „administratorius“).

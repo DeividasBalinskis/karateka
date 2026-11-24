@@ -183,7 +183,7 @@ html{scrollbar-gutter:stable;}
 .tp-all{display:flex; align-items:center; gap:6px; margin-top:8px; padding-top:8px; border-top:1px solid rgba(23,20,15,.1);}
 @media (max-width: 900px){ .site-header .nav-prefs{margin-right:auto; margin-left:8px;} }
 .site-header .lang-dd > nav.lang-switch{position:absolute; top:calc(100% + 6px); left:0; display:flex; flex-direction:column; gap:2px; padding:6px; min-width:150px; background:#fff; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,.14); z-index:60;}
-.site-header .nav-prefs .tp-panel{left:0; right:auto; transform:none;}
+.site-header .nav-prefs .tp-panel, .site-header .nav-prefs .fp-panel{left:0; right:auto; transform:none;}
 @media (max-width:1400px){ .sub-nav a{padding:9px 10px;} }
 /* Prisijungus: Treniruotės, Apie klubą, Kontaktai - vienas „Apie klubą ‹“ (#78); paspaudus išsiskleidžia į kairę, dar kartą - susiskleidžia (#117) */
 .site-header .fold-btn{border:0; background:none; cursor:pointer; font:inherit; display:inline-flex; align-items:center; gap:4px; white-space:nowrap;}

@@ -1,5 +1,5 @@
 # Handoff
-Updated: 2026-11-24 · version v1.94 · work branch
+Updated: 2026-11-24 · version v1.95 · work branch
 
 ## Pending asks (answer these first)
 | Asked | By | What | Status |
@@ -7,6 +7,7 @@ Updated: 2026-11-24 · version v1.94 · work branch
 | 2026-11-20 | Denis | #30 and #147: messages cut off - ask Denis to write them again | waiting |
 | 2026-11-22 | Dev | Pick variants: menu on a computer A1/A2/A3, phone menu B1/B2/B3, Budo video C1 (done) + C2 tablet / C3 hall TV (screenshots sent in chat) | waiting |
 | 2026-11-22 | Dev | „į main“ for v1.85-v1.93 (main = v1.84) | answered 2026-11-24 („į main viską“) - main = v1.94 |
+| 2026-11-24 | Deividas | Pick fonts and themes with 👍 (Aa and 🎨 at the top) - read them from diegimas-api.php `design_likes` | waiting |
 | 2026-11-24 | Dev | Excuse letters: the club's Word template (upload in Valdymas → Pateisinimai) | waiting (answer: both Word and PDF - own final file upload done in v1.94; notify only Denis - done) |
 | 2026-11-24 | Dev | Old commit authors on GitHub | done 2026-11-24: history rewritten (all commits under Deividas's GitHub identity, files and dates unchanged), main force-pushed with his OK. The session branch could not be deleted from here (same history now) - Deividas deletes it in GitHub → Branches. PC: fetch + reset to origin/main. Rules file name stays; old proposal deleted. |
 | 2026-11-22 | Dev | GitHub → domenai.lt: FTP account for the test folder + 3 GitHub secrets (steps: docs/github-domenai.md) | done 2026-11-24: FTP `ikelimas@karateka.lt` → /domains/test.karateka.lt/public_html; first run (Actions → „Įkelti į test.karateka.lt“) OK, test = v1.94, db up to date |
@@ -78,6 +79,10 @@ Updated: 2026-11-24 · version v1.94 · work branch
   #172/#176 💡 bottom-left everywhere (the v1.86 right-side rule removed; .adm-side max-height so it ends above 💡), 🔔 = bell + dropdown (notify-popup.js rewritten, .ntf-bell/.ntf-menu/.ntf-row).
   #173 own list shows one latest (questions always). #174 events.parent_id (db/058) for extra protocols of one exam day; event_main_sql() hides them in public/member lists.
   #175 Budo score table updated in place (morphHtml in varzybos.js renderScore) and moveJ moves focus without blur. Repo wording neutral („API prieiga“). Tests: 07zf new; 06j, 07ze updated.
+- v1.95: font test - FONTS in app/themes.php (cookie `sriftas`, admins only), sriftas.php builds overrides from every CSS rule that names Space Grotesk / Inter;
+  likes - site_settings `design_likes` {theme|font: {id: [account ids]}}, tema.php action=like, shown in the pickers and in diegimas-api.php GET (`design_likes` with first names);
+  themes.css v1.95 block: per-theme --t-panel/--t-border/--t-shadow/--t-glow/--t-chip/--t-2, body::before glow, themed panels (3 px strip), h1, buttons, side menu.
+  docs/projekto-zemelapis.md = project map. Test 07zg.
 - Committed and pushed to the work branch after each stage.
 
 ## Open

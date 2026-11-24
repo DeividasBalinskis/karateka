@@ -7,6 +7,16 @@ if (!is_post()) {
     exit(json_encode(['ok' => false]));
 }
 csrf_check();
+if (post('action') === 'like') {   // v1.95: „👍 Patinka“ temai ar šriftui (administratoriai)
+    $kind = (string) post('kind');
+    $id = (string) post('id');
+    if (!is_admin() || !in_array($kind, ['theme', 'font'], true) || !($kind === 'theme' ? isset(THEMES[$id]) : isset(FONTS[$id]))) {
+        http_response_code(403);
+        exit(json_encode(['ok' => false]));
+    }
+    design_like_set($kind, $id, (int) current_account()['id'], post('on') === '1');
+    exit(json_encode(['ok' => true]));
+}
 $theme = (string) post('theme');
 if (!isset(THEMES[$theme])) {
     http_response_code(400);

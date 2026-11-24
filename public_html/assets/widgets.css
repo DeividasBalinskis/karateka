@@ -283,10 +283,10 @@ body.chat-is-open .ntf-pop{display:none;}   /* kol atidarytas pokalbis - praneš
 
 /* ---------- Temos pasirinkimas (assets/theme-pick.js) - karateka.lt ir Taika ---------- */
 .theme-pick{position:relative; display:inline-block;}
-.tp-btn{font:inherit; cursor:pointer; border:0; border-radius:10px; padding:7px 9px; background:rgba(23,20,15,0.06); line-height:1; display:inline-flex; gap:3px; align-items:center;}
-.tp-btn:hover{background:rgba(23,20,15,0.12);}
+.tp-btn, .fp-btn{font:inherit; cursor:pointer; border:0; border-radius:10px; padding:7px 9px; background:rgba(23,20,15,0.06); line-height:1; display:inline-flex; gap:3px; align-items:center;}
+.tp-btn:hover, .fp-btn:hover{background:rgba(23,20,15,0.12);}
 .tp-now{font-size:.8em;}
-.tp-panel{position:absolute; right:0; top:calc(100% + 8px); z-index:300; width:min(420px, calc(100vw - 24px)); padding:12px; border-radius:16px; background:#fff; color:#17140F;
+.tp-panel, .fp-panel{position:absolute; right:0; top:calc(100% + 8px); z-index:300; width:min(420px, calc(100vw - 24px)); padding:12px; border-radius:16px; background:#fff; color:#17140F;
   border:1px solid rgba(23,20,15,0.1); box-shadow:0 18px 44px rgba(23,20,15,0.22);}
 .tp-title{font-weight:700; font-size:.85rem; margin:0 2px 10px;}
 .tp-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(92px, 1fr)); gap:8px;}
@@ -393,3 +393,23 @@ body.m-more-open .fb, body.m-more-open .chat-fab, body.m-more-open .ntf-pop{disp
   body:has(.fb) .adm-side{max-height:calc(100vh - 320px); overflow-y:auto; scrollbar-width:thin;}
 }
 }
+/* v1.95: „Aa“ šriftų bandymas ir „👍 Patinka“ temoms bei šriftams (administratoriams) */
+.font-pick{position:relative; display:inline-block; margin-left:4px;}
+.fp-btn{font-weight:800; font-size:.9rem; letter-spacing:-.02em; min-width:36px; justify-content:center;}
+.fp-panel{width:min(440px, calc(100vw - 24px));}
+.fp-list{display:grid; gap:6px; max-height:min(62vh, 560px); overflow:auto; padding-right:2px;}
+.fp-item{display:flex; align-items:center; gap:8px; border-radius:12px; background:#F6F4F0; border:2px solid transparent; padding:2px 8px 2px 2px;}
+.fp-item.on{border-color:#E8772E; background:#FFF4EA;}
+.fp-sw{flex:1; min-width:0; text-align:left; border:0; background:none; cursor:pointer; padding:8px 10px; display:grid; gap:2px; color:#17140F; border-radius:10px;}
+.fp-sw:hover{background:rgba(23,20,15,.05);}
+.fp-name{font-size:1.02rem; font-weight:700; line-height:1.2;}
+.fp-sample{font-size:.84rem; color:#5A5448; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.tp-item{display:grid; gap:3px;}
+.tp-item .tp-sw{width:100%;}
+.dl-like{display:inline-flex; align-items:center; gap:4px; font-size:.78rem; font-weight:700; color:#6B6458; cursor:pointer; padding:3px 6px; border-radius:999px; white-space:nowrap; user-select:none;}
+.dl-like input{width:15px; height:15px; margin:0; accent-color:#2F9E44;}
+.dl-like.on{color:#2B8A3E; background:#EBFBEE;}
+.dl-who{font-weight:600; font-size:.72rem; max-width:110px; overflow:hidden; text-overflow:ellipsis;}
+.tp-item .dl-like{justify-content:center;}
+@media (max-width:1100px){ .fp-panel{right:auto; left:50%; transform:translateX(-50%);} }
+.nav-prefs .theme-li{display:inline-flex; align-items:center; gap:4px;}

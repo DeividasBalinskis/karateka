@@ -33,7 +33,7 @@ body.theme-dark .site-header .nav-group{background:rgba(255,255,255,0.08);}
 body.theme-dark .lang-switch{background:rgba(255,255,255,0.1);}
 body.theme-dark .lang-switch a{color:#C9C3D6;}
 body.theme-dark .lang-switch a.active{background:#ECE8F4; color:#3E2C55;}
-body.theme-dark .tp-btn{background:rgba(255,255,255,0.12);}
+body.theme-dark .tp-btn, body.theme-dark .fp-btn{background:rgba(255,255,255,0.12); color:#ECE8F4;}
 body.theme-dark h1.styled, body.theme-dark .section-head h2.styled, body.theme-dark h2.styled-dark, body.theme-dark .chooser-title, body.theme-dark .about-sub-head h3{
   background:linear-gradient(90deg, #FFFFFF 0%, #D9C9F2 100%); -webkit-background-clip:text; background-clip:text;}
 body.theme-dark .section-head p, body.theme-dark main > p, body.theme-dark main > .muted, body.theme-dark main > a, body.theme-dark main > .small,
@@ -82,3 +82,46 @@ body.theme-dark .site-header{background:linear-gradient(180deg, rgba(10,10,24,.5
 body.theme-dark .sub-nav{background:rgba(10,10,24,.30); border-top-color:rgba(255,255,255,.08);}
 body.theme-dark .sub-nav-2{background:rgba(10,10,24,.18);}
 body.theme-dark .progress-wrap{background-color:transparent;}
+
+/* ---------- v1.95: gražesnės temos - kiekviena tema turi savo paletę (Deividas: „per daug paprastos“) ----------
+   --accent / --accent-dark - mygtukai, nuorodos; --t-2 - antra spalva (antraštės pabraukimas, mygtukų gradientas);
+   --t-panel / --t-border / --t-shadow - kortelės su temos atspalviu; --t-glow - švelnus švytėjimas virš peizažo; --t-chip - datų kvadratėliai. */
+body[data-theme="nature"]   {--accent:#2F7D4F; --accent-dark:#1F5C38; --t-2:#8DBF5A; --t-panel:rgba(250,253,247,.84); --t-border:rgba(47,125,79,.18); --t-shadow:rgba(31,92,56,.16); --t-glow:rgba(255,236,160,.45); --t-chip:#1F5C38;}
+body[data-theme="mountains"]{--accent:#2F5D8A; --accent-dark:#1E4166; --t-2:#7FA7CF; --t-panel:rgba(248,251,255,.85); --t-border:rgba(47,93,138,.18); --t-shadow:rgba(30,65,102,.16); --t-glow:rgba(190,220,255,.45); --t-chip:#1E4166;}
+body[data-theme="sea"]      {--accent:#1E6F9E; --accent-dark:#145579; --t-2:#2EC4C4; --t-panel:rgba(245,252,255,.84); --t-border:rgba(30,111,158,.18); --t-shadow:rgba(20,85,121,.16); --t-glow:rgba(120,220,230,.4); --t-chip:#145579;}
+body[data-theme="dunes"]    {--accent:#B4572E; --accent-dark:#8E4220; --t-2:#E8A04A; --t-panel:rgba(255,250,243,.85); --t-border:rgba(180,87,46,.18); --t-shadow:rgba(142,66,32,.16); --t-glow:rgba(255,200,120,.45); --t-chip:#8E4220;}
+body[data-theme="sakura"]   {--accent:#B4436F; --accent-dark:#8E3357; --t-2:#F08DB0; --t-panel:rgba(255,248,250,.85); --t-border:rgba(180,67,111,.18); --t-shadow:rgba(142,51,87,.16); --t-glow:rgba(255,180,205,.45); --t-chip:#8E3357;}
+body[data-theme="autumn"]   {--accent:#B5541F; --accent-dark:#8A3B12; --t-2:#D9A13B; --t-panel:rgba(255,249,240,.85); --t-border:rgba(181,84,31,.18); --t-shadow:rgba(138,59,18,.16); --t-glow:rgba(255,190,110,.4); --t-chip:#8A3B12;}
+body[data-theme="winter"]   {--accent:#2F5263; --accent-dark:#1F3A47; --t-2:#7FB3D0; --t-panel:rgba(250,253,255,.87); --t-border:rgba(47,82,99,.18); --t-shadow:rgba(31,58,71,.16); --t-glow:rgba(210,235,255,.55); --t-chip:#1F3A47;}
+body[data-theme="dojo"]     {--accent:#7A4E2C; --accent-dark:#5A361C; --t-2:#B5281F; --t-panel:rgba(255,251,242,.88); --t-border:rgba(122,78,44,.22); --t-shadow:rgba(90,54,28,.18); --t-glow:rgba(255,215,150,.35); --t-chip:#5A361C;}
+body[data-theme="dark"]     {--accent:#7E6BC4; --accent-dark:#5D4C9E; --t-2:#E28BB5; --t-panel:rgba(246,244,252,.93); --t-border:rgba(160,140,220,.4); --t-shadow:rgba(0,0,0,.4); --t-glow:rgba(126,107,196,.28); --t-chip:#2A2440; --t-side:rgba(34,29,52,.86);}
+body[data-theme="aurora"]   {--accent:#2E9C7A; --accent-dark:#1F7A5E; --t-2:#7FE0C0; --t-panel:rgba(244,252,250,.93); --t-border:rgba(46,156,122,.42); --t-shadow:rgba(0,0,0,.4); --t-glow:rgba(80,230,180,.2); --t-chip:#0F3B3A; --t-side:rgba(8,36,44,.86);}
+body[data-theme="space"]    {--accent:#6B5BD6; --accent-dark:#4C3FB0; --t-2:#F2A541; --t-panel:rgba(244,242,255,.93); --t-border:rgba(140,120,255,.42); --t-shadow:rgba(0,0,0,.45); --t-glow:rgba(120,100,255,.22); --t-chip:#1E1A40; --t-side:rgba(20,18,48,.86);}
+body[data-theme="volcano"]  {--accent:#D9480F; --accent-dark:#A8370B; --t-2:#FFB347; --t-panel:rgba(255,246,240,.93); --t-border:rgba(217,72,15,.42); --t-shadow:rgba(0,0,0,.45); --t-glow:rgba(255,90,30,.22); --t-chip:#3A120A; --t-side:rgba(40,14,8,.86);}
+
+/* Švelnus švytėjimas virš peizažo (už turinio) */
+body[data-theme]:not([data-theme="light"])::before{content:""; position:fixed; inset:0; z-index:-1; pointer-events:none;
+  background:radial-gradient(ellipse 55% 40% at 12% 8%, var(--t-glow, transparent), transparent 70%),
+             radial-gradient(ellipse 45% 35% at 92% 92%, var(--t-glow, transparent), transparent 70%);}
+/* Kortelės - stiklas su temos atspalviu, plonas spalvotas kraštas ir šešėlis */
+body[data-theme]:not([data-theme="light"]) .panel{background:linear-gradient(90deg, var(--accent), var(--t-2, var(--accent))) top / 100% 3px no-repeat, var(--t-panel, rgba(255,255,255,.8));
+  border-color:var(--t-border, rgba(255,255,255,.55)); box-shadow:0 18px 42px var(--t-shadow, rgba(23,20,15,.1)), inset 0 1px 0 rgba(255,255,255,.7);}
+/* Antraštė ir jos pabraukimas - temos spalvomis */
+body[data-theme]:not([data-theme="light"]):not(.theme-dark) h1.styled{background-image:linear-gradient(90deg, var(--ink) 0%, var(--accent) 100%);}
+body[data-theme]:not([data-theme="light"]) h1.styled::after{background:linear-gradient(90deg, var(--accent), var(--t-2, var(--accent)));}
+body.theme-dark[data-theme]:not([data-theme="light"]) h1.styled{background-image:linear-gradient(90deg, #FFFFFF 0%, var(--t-2, #D9C9F2) 100%);}
+/* Mygtukai - gradientas su švelniu šešėliu */
+body[data-theme]:not([data-theme="light"]) .btn-primary{background:linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%); box-shadow:0 6px 16px var(--t-shadow, rgba(0,0,0,.15));}
+body[data-theme]:not([data-theme="light"]) .btn-primary:hover{background:linear-gradient(135deg, var(--accent-dark) 0%, var(--accent-dark) 100%);}
+/* Datų kvadratėliai ir Valdymo šoninis meniu */
+body[data-theme]:not([data-theme="light"]) .event-date{background:linear-gradient(160deg, var(--t-chip, var(--ink)) 0%, var(--accent-dark) 140%);}
+body[data-theme]:not([data-theme="light"]):not(.theme-dark) .adm-side{background:var(--t-panel, rgba(255,255,255,.72)); border-color:var(--t-border, rgba(23,20,15,.07)); box-shadow:0 10px 30px var(--t-shadow, rgba(23,20,15,.07));}
+body[data-theme]:not([data-theme="light"]):not(.theme-dark) .am-row.active{background:color-mix(in srgb, var(--accent) 14%, transparent); color:var(--accent-dark) !important;}
+body.theme-dark[data-theme]:not([data-theme="light"]) .adm-side{background:var(--t-side, rgba(26,23,34,.82)); border-color:var(--t-border, rgba(255,255,255,.08));}
+body.theme-dark[data-theme]:not([data-theme="light"]) .am-row.active{background:color-mix(in srgb, var(--t-2) 26%, transparent);}
+/* Dojo - raudonas antspaudo akcentas */
+body[data-theme="dojo"] h1.styled::after{height:5px; background:linear-gradient(90deg, #B5281F, #7A4E2C);}
+body[data-theme="dojo"] .panel{background:linear-gradient(90deg, #B5281F, #7A4E2C) top / 100% 4px no-repeat, var(--t-panel);}
+/* Temų paveikslėliai pasirinkime - su temos spalvos juostele */
+.tp-prev{position:relative; overflow:hidden;}
+.tp-prev::after{content:""; position:absolute; left:6px; right:6px; bottom:6px; height:8px; border-radius:4px; background:var(--sw, transparent); box-shadow:0 1px 3px rgba(0,0,0,.25);}

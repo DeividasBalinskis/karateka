@@ -40,6 +40,7 @@ function page_start(string $title, array $opt = []): void
 <link rel="stylesheet" href="<?= e($css) ?>">
 <link rel="stylesheet" href="<?= e(asset_url('assets/widgets.css')) ?>">
 <link rel="stylesheet" href="<?= e(asset_url('assets/themes.css')) ?>">
+<?= font_head_html() ?>
 <?= i18n_js() ?>
 </head>
 <body<?= theme_body_attrs(current_theme(), $admin ? 'is-admin' : '') ?>>
@@ -540,7 +541,7 @@ $mt = !$pm && $a && !is_staff($a) && is_active_account($a) && $a['status'] === '
       <?= site_switch_html('karateka') ?>
     <?php endif; ?>
     <!-- Kalba ir tema - kairėje, visada matomos (tema išsaugoma paskyrai) -->
-    <div class="nav-prefs"><?= render_lang_switch() ?><?php if ($a): ?><span class="theme-li"><?= theme_picker_html('me', current_theme()) ?></span><?php endif; ?></div>
+    <div class="nav-prefs"><?= render_lang_switch() ?><?php if ($a): ?><span class="theme-li"><?= theme_picker_html('me', current_theme()) ?><?= font_picker_html() ?></span><?php endif; ?></div>
     <ul class="nav-list" id="navList">
       <!-- Vienas meniu: kairėje - pagrindinio puslapio skiltys (blokai su meniu pavadinimu), po skirtuko - kiti puslapiai (su ›) -->
       <li class="nav-main">

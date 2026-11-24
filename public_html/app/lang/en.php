@@ -4048,4 +4048,12 @@ From 2013 he trained with the team of the traditional karate-do club "Sanrei", a
     'Tai ne PDF failas.' => 'This is not a PDF file.',
     'Užpildykite formą. Kai patvirtinsime, pateisinimą atsiųsime nurodytu el. paštu.' => 'Fill in the form. Once we approve it, we will send the excuse to the given e-mail.',
     'Kai patvirtinsime, pateisinimą atsiųsime adresu {e}.' => 'Once we approve it, we will send the excuse to {e}.',
+    'Šriftas (bandymui)' => 'Font (for testing)',
+    'Šriftas' => 'Font',
+    'Šriftas - bandymui (tik šiame įrenginyje)' => 'Font - for testing (this device only)',
+    'Inter visur' => 'Inter everywhere',
+    'Nunito (minkštas)' => 'Nunito (soft)',
+    'Exo 2 (sportinis)' => 'Exo 2 (sporty)',
+    'Playfair + Lora (klasika)' => 'Playfair + Lora (classic)',
+    'Comfortaa + Nunito (vaikams)' => 'Comfortaa + Nunito (for kids)',
 ];
