@@ -31,6 +31,7 @@ $page = home_page();
 <?= i18n_js() ?>
 <link rel="stylesheet" href="<?= e(asset_url('assets/home.css')) ?>">
 <link rel="stylesheet" href="<?= e(asset_url('assets/themes.css')) ?>">
+<?= font_head_html() ?>
 <?php if ($edit): ?><link rel="stylesheet" href="<?= e(asset_url('assets/home-edit.css')) ?>"><?php endif; ?>
 </head>
 <body<?= theme_body_attrs(current_theme(), $edit ? 'home-edit' : '') ?>>
