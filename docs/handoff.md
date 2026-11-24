@@ -6,7 +6,8 @@ Updated: 2026-11-24 · version v1.95 · work branch
 |---|---|---|---|
 | 2026-11-20 | Denis | #30 and #147: messages cut off - ask Denis to write them again | waiting |
 | 2026-11-22 | Dev | Pick variants: menu on a computer A1/A2/A3, phone menu B1/B2/B3, Budo video C1 (done) + C2 tablet / C3 hall TV (screenshots sent in chat) | waiting |
-| 2026-11-22 | Dev | „į main“ for v1.85-v1.93 (main = v1.84) | answered 2026-11-24 („į main viską“) - main = v1.94 |
+| 2026-11-22 | Dev | „į main“ | answered 2026-11-24 - main = v1.95 |
+| 2026-11-24 | Dev | LibreSprite: Deividas chose B (direct link via libresprite-mcp on his PC) - steps in docs/libresprite-prijungimas.md; used in D8 after D7 | waiting (setup on PC) |
 | 2026-11-24 | Deividas | Pick fonts and themes with 👍 (Aa and 🎨 at the top) - read them from diegimas-api.php `design_likes` | waiting |
 | 2026-11-24 | Dev | Excuse letters: the club's Word template (upload in Valdymas → Pateisinimai) | waiting (answer: both Word and PDF - own final file upload done in v1.94; notify only Denis - done) |
 | 2026-11-24 | Dev | Old commit authors on GitHub | done 2026-11-24: history rewritten (all commits under Deividas's GitHub identity, files and dates unchanged), main force-pushed with his OK. The session branch could not be deleted from here (same history now) - Deividas deletes it in GitHub → Branches. PC: fetch + reset to origin/main. Rules file name stays; old proposal deleted. |
