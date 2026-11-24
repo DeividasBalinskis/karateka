@@ -150,14 +150,12 @@ test('competition: kumite bout panel, live link and screen, club registration, D
   await scr.waitForSelector('.scr-stage .scr-area');
   check('screen: tatami name on top, no group list for spectators', await scr.locator('.scr-glist').count() === 0 && (await scr.locator('.scr-foot').innerText()).includes('Toliau'));
 
-  // DB atnaujinimas vienu mygtuku: trūkstamo failo nėra - mygtuko nėra; ištrynus žymą - mygtukas ir importas
+  // DB atnaujinimas: trūkstamo failo nėra - mygtuko nėra; ištrynus žymą - v1.93: administratoriui atidarius puslapį importuojama pati
   await a.goto('admin/kopijos.php');
   check('no update needed', await a.locator('.db-update-box').count() === 0);
   sql("DELETE FROM db_versija WHERE failas = '026_lankomumas_xp_varzybos.sql'");
   await a.goto('admin/kopijos.php');
-  check('update box shown', await a.locator('.db-update-box').count() === 1);
-  await nav(a, () => a.click('.db-update-box button'));
-  check('db updated flash', /Duomenų bazė atnaujinta/.test(await flashes(a)), await flashes(a));
+  check('db updated by itself', /Duomenų bazė atnaujinta automatiškai/.test(await flashes(a)) && await a.locator('.db-update-box').count() === 0, await flashes(a));
   check('026 recorded again', sql("SELECT COUNT(*) FROM db_versija WHERE failas = '026_lankomumas_xp_varzybos.sql'") === '1');
   sql('DELETE FROM tournaments WHERE is_test = 1');   // kiti testai tikisi švarių varžybų sąrašo
   noJsErrors(a, v, scr, c);
