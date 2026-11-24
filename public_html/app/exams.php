@@ -228,7 +228,7 @@ function member_upcoming_exam(array $m): ?array
     if ($ev) {
         return $ev;
     }
-    foreach (q_all('SELECT e.* FROM events e WHERE e.type = "exam" AND e.starts_on >= CURDATE() ORDER BY e.starts_on') as $e) {
+    foreach (q_all('SELECT e.* FROM events e WHERE e.type = "exam" AND e.starts_on >= CURDATE() AND ' . event_main_sql('e') . ' ORDER BY e.starts_on') as $e) {
         if (event_targets_member($e, $m) && !event_participant((int) $e['id'], (int) $m['id'])) {
             $e['p_status'] = null;
             return $e;

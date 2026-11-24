@@ -3,7 +3,7 @@
 // nuo 2 mėn. atgal iki 18 mėn. į priekį. Kalendoriaus programa atsinaujina pati. Renginiai „tik nariams“ čia nerodomi.
 require __DIR__ . '/app/bootstrap.php';
 
-$rows = q_all("SELECT * FROM events WHERE members_only = 0 AND COALESCE(ends_on, starts_on) >= DATE_SUB(CURDATE(), INTERVAL 2 MONTH)
+$rows = q_all("SELECT * FROM events WHERE members_only = 0 AND " . event_main_sql() . " AND COALESCE(ends_on, starts_on) >= DATE_SUB(CURDATE(), INTERVAL 2 MONTH)
                  AND starts_on <= DATE_ADD(CURDATE(), INTERVAL 18 MONTH) ORDER BY starts_on");
 
 $esc = function (string $s): string {

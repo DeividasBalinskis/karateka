@@ -16,7 +16,7 @@ $qs = function (array $p) use ($filter, $cal, $ym) {
 $allUpcoming = public_upcoming_events(200);
 $upcoming = $type ? array_values(array_filter($allUpcoming, function ($ev) use ($type) { return $ev['type'] === $type; })) : $allUpcoming;
 $past = q_all('SELECT e.* FROM events e WHERE COALESCE(e.ends_on, e.starts_on) < CURDATE()
-                 AND e.starts_on >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH) AND ' . visibility_sql('e')
+                 AND e.starts_on >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH) AND ' . event_main_sql('e') . ' AND ' . visibility_sql('e')
                . ($type ? ' AND e.type = ' . db()->quote($type) : '') . '
                ORDER BY e.starts_on DESC LIMIT 12');
 
@@ -93,7 +93,7 @@ $n = 0;   // eilės nr. animacijai (laipteliai)
     // ---------- Mėnesio kalendorius: visi to mėnesio renginiai (ir kelių dienų) langeliuose; apačioje - tie patys sąrašu ----------
     $first = $ym . '-01';
     $last = date('Y-m-t', strtotime($first));
-    $monthEvents = q_all('SELECT e.* FROM events e WHERE e.starts_on <= ? AND COALESCE(e.ends_on, e.starts_on) >= ? AND ' . visibility_sql('e')
+    $monthEvents = q_all('SELECT e.* FROM events e WHERE e.starts_on <= ? AND COALESCE(e.ends_on, e.starts_on) >= ? AND ' . event_main_sql('e') . ' AND ' . visibility_sql('e')
         . ($type ? ' AND e.type = ' . db()->quote($type) : '') . ' ORDER BY e.starts_on, e.start_time', [$last, $first]);
     $byDay = [];
     foreach ($monthEvents as $ev) {

@@ -24,6 +24,7 @@ const SETTINGS = [
     'just_token'       => ['label' => 'Pateisinimų nuoroda', 'group' => 'Klubas', 'type' => 'secret', 'where' => 'admin/pateisinimai.php', 'owner' => 'admin', 'restore' => false],
     'just_open'        => ['label' => 'Pateisinimų prašymai priimami', 'group' => 'Klubas', 'type' => 'choice', 'where' => 'admin/pateisinimai.php', 'owner' => 'admin', 'restore' => true],
     'just_text'        => ['label' => 'Pateisinimo tekstas (be Word šablono)', 'group' => 'Klubas', 'type' => 'text', 'where' => 'admin/pateisinimai.php', 'owner' => 'admin', 'restore' => true],
+    'just_notify'      => ['label' => 'Kam pranešti apie naujus pateisinimų prašymus', 'group' => 'Klubas', 'type' => 'json', 'where' => 'admin/pateisinimai.php#pranesimai', 'owner' => 'admin', 'restore' => true],
     'just_template'    => ['label' => 'Pateisinimo Word šablonas', 'group' => 'Klubas', 'type' => 'json', 'where' => 'admin/pateisinimai.php', 'owner' => 'admin', 'restore' => false],
     'exam_protocol_defaults' => ['label' => 'Egzamino protokolo numatytieji (komisija, vieta)', 'group' => 'Klubas', 'type' => 'json', 'where' => 'admin/egzaminai.php', 'owner' => 'coach', 'restore' => false],
     // Žaidimas

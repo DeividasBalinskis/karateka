@@ -59,6 +59,10 @@ if (is_post() && in_array(post('action'), ['wl_link', 'wl_open', 'wl_assign', 'w
                 q('INSERT INTO events (type, title, starts_on, ends_on, start_time, location, is_abroad, members_only, registration, registration_until, invited_only, description, summary, cover)
                    SELECT type, ?, starts_on, ends_on, start_time, location, is_abroad, members_only, registration, registration_until, invited_only, description, summary, cover FROM events WHERE id = ?',
                     [$title, (int) $src['id']]);
+                $newId = (int) db()->lastInsertId();
+                if (event_main_sql() !== '1') {   // v1.94 (#174): papildomas protokolas - viešuose sąrašuose rodomas tik pagrindinis renginys
+                    q('UPDATE events SET parent_id = ? WHERE id = ?', [(int) ($src['parent_id'] ?? 0) ?: (int) $src['id'], $newId]);
+                }
                 flash('ok', t('Protokolas sukurtas: {t}', ['t' => $title]));
             }
             break;

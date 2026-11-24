@@ -4,6 +4,10 @@ Answers given by Deividas on 2026-11-20 (questions from `docs/darbo-planas.md`, 
 
 | Date | Area | Decision | Who decided | Source |
 |---|---|---|---|---|
+| 2026-11-24 | Excuses | Excuses: admin can edit a request and its text, or upload the final file as Word or PDF (sent instead of the prepared one); new-request e-mail and to-do go only to chosen admins, default Denis. Replaces „e-mail to every active admin“. | Deividas | chat |
+| 2026-11-24 | Layout | 💡 is bottom-left on every page (Valdymas too); right side = 💬 and a small 🔔 bell that opens a list (no side cards). | Deividas | feedback #172, #176 |
+| 2026-11-24 | Events | Extra protocols of one exam day are parts of the main exam (events.parent_id): lists show only the main exam; protocols stay in Valdymas → Egzaminai. | Denis | feedback #174 |
+| 2026-11-24 | Git | No AI tool names in the repository or commits: neutral wording, commits under Deividas's GitHub identity. | Deividas | chat |
 | 2026-11-24 | Excuses | Excuse letters (developer's calls): one short link /p/?code; period = from-to dates; template = uploaded Word .docx with {tags} (or text until uploaded), sent as a .docx attachment (PDF would need a converter on the server); admins only; e-mail to every active admin. | Deividas | chat |
 | 2026-11-24 | Data | Pending db files run by themselves when an admin opens any page (backup first, one at a time, retry after 1 h on failure). | Deividas | chat |
 | 2026-11-22 | Exams | Exam registration links are short: /e/?code, 6 characters without look-alikes (developer's call: query form works on any server without rewrite rules; with Apache rewrite it could be /e/code). Old long links keep working until „↻ Trumpa nuoroda“. | Deividas | chat |

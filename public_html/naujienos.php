@@ -62,7 +62,7 @@ $drafts = is_staff() ? q_all('SELECT * FROM news WHERE is_published = 0 OR publi
 // Renginiai dešinėje - iki pat apačios kaip naujienos (#119): artimiausi, o jei jų mažiau - neseniai vykę
 $evN = max(6, 2 * count($items));
 $events = public_upcoming_events($evN);
-$pastEvents = count($events) < $evN ? q_all('SELECT e.* FROM events e WHERE COALESCE(e.ends_on, e.starts_on) < CURDATE() AND ' . visibility_sql('e')
+$pastEvents = count($events) < $evN ? q_all('SELECT e.* FROM events e WHERE COALESCE(e.ends_on, e.starts_on) < CURDATE() AND ' . event_main_sql('e') . ' AND ' . visibility_sql('e')
     . ' ORDER BY e.starts_on DESC LIMIT ' . ($evN - count($events))) : [];
 page_start(t('Naujienos ir renginiai'), ['description' => t('VšĮ Karate Ateitis klubo naujienos: varžybos, egzaminai, renginiai.'), 'section' => 'naujienos']);
 ?>

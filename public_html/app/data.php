@@ -53,7 +53,7 @@ function day_word(string $date): string
 /** Artėjantys (ar dar vykstantys) renginiai: skirti visiems arba nurodytai grupei. $groupId = null - visi renginiai. */
 function upcoming_events(?int $groupId, int $limit = 20): array
 {
-    $sql = 'SELECT e.* FROM events e WHERE COALESCE(e.ends_on, e.starts_on) >= CURDATE()';
+    $sql = 'SELECT e.* FROM events e WHERE COALESCE(e.ends_on, e.starts_on) >= CURDATE() AND ' . event_main_sql('e');
     $params = [];
     if ($groupId !== null) {
         $sql .= ' AND (NOT EXISTS (SELECT 1 FROM event_groups eg WHERE eg.event_id = e.id)
@@ -555,10 +555,25 @@ function visibility_sql(string $alias = ''): string
     return viewer_is_member() ? '1' : ($alias ? "$alias." : '') . 'members_only = 0';
 }
 
+/** v1.94 (#174): papildomas tos pačios dienos egzamino protokolas (events.parent_id) - sąrašuose rodomas tik pagrindinis renginys */
+function event_main_sql(string $alias = ''): string
+{
+    static $has = null;
+    if ($has === null) {
+        try {
+            q_value('SELECT parent_id FROM events LIMIT 1');
+            $has = true;
+        } catch (PDOException $ex) {
+            $has = false;   // dar neimportuotas db/058
+        }
+    }
+    return $has ? '(' . ($alias !== '' ? $alias . '.' : '') . 'parent_id IS NULL)' : '1';
+}
+
 /** Artėjantys renginiai viešam pagrindiniam puslapiui */
 function public_upcoming_events(int $limit = 4): array
 {
-    return q_all('SELECT e.* FROM events e WHERE COALESCE(e.ends_on, e.starts_on) >= CURDATE() AND ' . visibility_sql('e')
+    return q_all('SELECT e.* FROM events e WHERE COALESCE(e.ends_on, e.starts_on) >= CURDATE() AND ' . event_main_sql('e') . ' AND ' . visibility_sql('e')
         . ' ORDER BY e.starts_on, e.start_time LIMIT ' . (int) $limit);
 }
 

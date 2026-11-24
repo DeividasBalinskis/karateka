@@ -53,7 +53,7 @@ usort($fbNotifs, function ($x, $y) { return ((int) ($x['ref_id'] ?: 0) <=> (int)
 // Kitos naujienos (registracijos į egzaminą, komentarai, registracijos į varžybas...): 2 naujausios, kitos suskleistos
 $news = array_values(array_filter($allNews, function ($n) { return $n['type'] !== 'feedback'; }));
 
-$upcoming = q_all('SELECT * FROM events WHERE COALESCE(ends_on, starts_on) >= CURDATE() AND starts_on <= DATE_ADD(CURDATE(), INTERVAL 21 DAY) ORDER BY starts_on, start_time');
+$upcoming = q_all('SELECT * FROM events WHERE ' . event_main_sql() . ' AND COALESCE(ends_on, starts_on) >= CURDATE() AND starts_on <= DATE_ADD(CURDATE(), INTERVAL 21 DAY) ORDER BY starts_on, start_time');
 
 page_start(t('Šiandien'), ['admin' => true]);
 $todoCount = count($notifs) + count($todo);

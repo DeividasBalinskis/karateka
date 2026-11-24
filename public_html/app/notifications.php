@@ -105,8 +105,9 @@ function notify_popup_html(): string
         return '';
     }
     $cfg = ['api' => url('pranesimas.php'), 'csrf' => csrf_token(), 'items' => notifications_popup((int) $a['id']),
-            'l' => ['open' => t('Atidaryti'), 'ok' => t('Supratau'), 'close' => t('Uždaryti'), 'show' => t('Rodyti pranešimus')]];
-    return '<div class="ntf-pop" id="ntfPop" aria-live="polite" data-cfg="' . e(json_encode($cfg, JSON_UNESCAPED_UNICODE)) . '"></div>'
+            'l' => ['open' => t('Atidaryti'), 'ok' => t('Supratau'), 'close' => t('Uždaryti'), 'show' => t('Rodyti pranešimus'),
+                    'title' => t('Pranešimai'), 'all' => t('Supratau visus')]];
+    return '<div class="ntf-pop" id="ntfPop" hidden data-cfg="' . e(json_encode($cfg, JSON_UNESCAPED_UNICODE)) . '"></div>'
         . '<script src="' . e(asset_url('assets/notify-popup.js')) . '" defer></script>';
 }
 

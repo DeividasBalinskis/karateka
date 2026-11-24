@@ -145,6 +145,7 @@ test('excuse system: link, request, admin preview with a Word template, approve 
   fs.rmSync(path.join(__dirname, '..', '..', 'public_html', 'uploads', 'pateisinimai', 'sablonas.docx'), { force: true });
   sql("DELETE FROM site_settings WHERE name IN ('just_token', 'just_open', 'just_text', 'just_template', 'just_notify')");
   sql('DELETE FROM justifications');
+  sql("DELETE FROM notifications WHERE type = 'justification'");
   sql(`DELETE FROM notifications WHERE account_id = ${other}`);
   sql(`DELETE FROM accounts WHERE id = ${other}`);
   fs.rmSync(path.join(__dirname, '..', '..', 'public_html', 'uploads', 'pateisinimai', `p${id}.pdf`), { force: true });

@@ -4,6 +4,25 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.94 - 2026-11-24 (pateisinimai - redagavimas ir Word/PDF; 💡 visur kairėje; 🔔 varpelis; atsiliepimai #172-#178)
+- **Pateisinimai (Valdymas → 📄 Pateisinimai):**
+  - Formoje tėvams: „Kai **patvirtinsime**, pateisinimą atsiųsime…“ (be žodžio „administratorius“).
+  - **„✎ Redaguoti“** prie kiekvieno prašymo: mokinys, klasė, mokykla, direktorius, datos, el. paštas ir pateisinimo tekstas (tik šiam prašymui;
+    „↺ Tekstas pagal šabloną“ grąžina). Su Word šablonu - tekstą keisti Word'e ir įkelti.
+  - **Savo galutinis failas - Word (.docx) arba PDF**: įkėlus siunčiamas jis, vietoj parengto („Išimti“ - vėl parengtas).
+  - Išsiųstą galima **„↻ Siųsti dar kartą“**.
+  - **Kam pranešti apie naujus prašymus** - pažymimi administratoriai (numatyta - **tik Denis**); laiškas, pranešimas ir „Reikia padaryti“ - tik jiems.
+  - Ilgas el. paštas nebelenda į kitą stulpelį (#177).
+- **💡 Atsiliepimas - visur apačioje kairėje** (ir Valdyme); dešinėje - 💬 Žinutės ir 🔔 (#172, #176). Valdymo šoninis meniu baigiasi virš 💡.
+- **🔔 Pranešimai:** nebe kortelės iš šono - mažas varpelis su skaičiumi virš 💬; paspaudus - sąrašas („Atidaryti“, „✓“, „Supratau visus“).
+  Atsiradus naujam - varpelis sujuda (#176).
+- **Jūsų atsiliepimai:** rodomas tik vienas paskutinis, kiti - „Rodyti visus“; klausimai jums - visada viršuje (#173).
+- **Naujienos ir renginiai:** dešinėje - tik pagrindinis egzaminas, ne kiekvienas tos dienos protokolas (#174).
+  Papildomi protokolai matomi Valdymas → Egzaminai; renginių sąraše, pradžioje ir kalendoriuje jų irgi nebėra.
+- **Budo → Tvarkaraštis (balai):** rašant skaičius ekranas nebeperšoka į viršų - lentelė atnaujinama vietoje, planšetės klaviatūra neužsidaro (#175).
+- Valdymas → Atsiliepimai: „API prieiga“ (buvęs pavadinimas pakeistas), vertimų puslapyje - „vertimo programa“.
+- Duomenų bazė: nauji failai `db/057_pateisinimu_failai.sql`, `db/058_egzamino_protokolai.sql` (atsinaujina patys, kai administratorius atidaro puslapį).
+
 ## v1.93 - 2026-11-24 (pateisinimų sistema; duomenų bazė atsinaujina pati)
 - **Valdymas → 📄 Pateisinimai** (adminui): nuoroda prašymams `karateka.lt/p/?kodas` (be svetainės meniu).
   Forma: mokinio vardas ir pavardė, mokyklos pavadinimas, direktoriaus vardas ir pavardė, klasė, laikotarpis (nuo-iki), el. paštas pateisinimui.

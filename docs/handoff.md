@@ -1,13 +1,14 @@
 # Handoff
-Updated: 2026-11-24 · version v1.93 · work branch
+Updated: 2026-11-24 · version v1.94 · work branch
 
 ## Pending asks (answer these first)
 | Asked | By | What | Status |
 |---|---|---|---|
 | 2026-11-20 | Denis | #30 and #147: messages cut off - ask Denis to write them again | waiting |
 | 2026-11-22 | Dev | Pick variants: menu on a computer A1/A2/A3, phone menu B1/B2/B3, Budo video C1 (done) + C2 tablet / C3 hall TV (screenshots sent in chat) | waiting |
-| 2026-11-22 | Dev | „į main“ for v1.85-v1.93 (main = v1.84) | waiting |
-| 2026-11-24 | Dev | Excuse letters: the club's Word template (upload in Valdymas → Pateisinimai); .docx attachment OK or PDF needed | waiting |
+| 2026-11-22 | Dev | „į main“ for v1.85-v1.93 (main = v1.84) | answered 2026-11-24 („į main viską“) - main = v1.94 |
+| 2026-11-24 | Dev | Excuse letters: the club's Word template (upload in Valdymas → Pateisinimai) | waiting (answer: both Word and PDF - own final file upload done in v1.94; notify only Denis - done) |
+| 2026-11-24 | Dev | Old commit authors on GitHub (history rewrite needs a force push), branch name, the rules file name | waiting |
 | 2026-11-22 | Dev | GitHub → domenai.lt: FTP account for the test folder + 3 GitHub secrets (steps: docs/github-domenai.md) + answers 1-3 (docs/planai/auto-taisymas.md) | waiting |
 | 2026-11-22 | Dev → Denis | #165 exams waiting list: 4 questions | answered 2026-11-22, done in v1.90 |
 | 2026-11-21 | Dev | Answers for not-started steps | answered 2026-11-21 (see decisions.md); waiting: Varžybos code on branch `varzybos-kodas` (D1), LibreSprite on PC (D8) |
@@ -72,6 +73,11 @@ Updated: 2026-11-24 · version v1.93 · work branch
 - v1.93: excuse letters - app/justifications.php (docx fill via ZipArchive, split {tags} merged, LT dates), pateisinimas.php + p/index.php (bare),
   admin/pateisinimai.php (link, list, preview, .docx download, approve and send / reject, Word template or text), db/056, notify type „justification“ (action),
   menu + „Reikia padaryti“. db_auto_update() in db_update.php, called from bootstrap for admins. docs/github-domenai.md - FTP steps. Test 07ze.
+- v1.94: excuses - just_update / custom_text (db/057), own final file Word or PDF (uploads/pateisinimai/p{id}.docx|pdf, ?failas=id), „↻ Siųsti dar kartą“,
+  recipients setting `just_notify` (JSON ids; unset = admins named Denis, else all) - just_recipients(), to-do only for them; public text „Kai patvirtinsime“.
+  #172/#176 💡 bottom-left everywhere (the v1.86 right-side rule removed; .adm-side max-height so it ends above 💡), 🔔 = bell + dropdown (notify-popup.js rewritten, .ntf-bell/.ntf-menu/.ntf-row).
+  #173 own list shows one latest (questions always). #174 events.parent_id (db/058) for extra protocols of one exam day; event_main_sql() hides them in public/member lists.
+  #175 Budo score table updated in place (morphHtml in varzybos.js renderScore) and moveJ moves focus without blur. Repo wording neutral („API prieiga“). Tests: 07zf new; 06j, 07ze updated.
 - Committed and pushed to the work branch after each stage.
 
 ## Open

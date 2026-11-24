@@ -1458,8 +1458,36 @@
       (c.discipline === 'kata' ? 'Kata - pasirinkite iš sąrašo ar įrašykite. ' : '') + 'Eilės tvarka - burtų; „Burti iš naujo“ ją sumaišo.' +
       (f.rounds === 2 ? ' <b>Finale pasirodo nuo žemiausio pusfinalio balo iki aukščiausio.</b>' : '') + '</p></div>';
     var y = window.scrollY; view.style.minHeight = view.offsetHeight + 'px';
-    view.innerHTML = html;
+    // v1.94 (#175): lentelė atnaujinama vietoje - langelis, į kurį rašoma, nepakeičiamas nauju, todėl planšetėje
+    // klaviatūra neužsidaro ir ekranas nebeperšoka į viršų
+    if (view.querySelector('.score-panel')) morphHtml(view, html); else view.innerHTML = html;
     view.style.minHeight = ''; if (window.scrollY !== y) window.scrollTo(window.scrollX, y);
+  }
+  // Paprastas DOM atnaujinimas vietoje: tie patys elementai lieka (su fokusu), keičiami tik tekstai, atributai ir tai, kas skiriasi
+  function morphHtml(el, html) {
+    var tpl = document.createElement('div'); tpl.innerHTML = html;
+    morphKids(el, tpl);
+  }
+  function morphKids(a, b) {
+    var bn = Array.prototype.slice.call(b.childNodes);
+    for (var i = 0; i < bn.length; i++) {
+      var x = a.childNodes[i], y = bn[i];
+      if (!x) { a.appendChild(y); continue; }
+      if (x.nodeType !== y.nodeType || x.nodeName !== y.nodeName) { a.replaceChild(y, x); continue; }
+      if (x.nodeType !== 1) { if (x.nodeValue !== y.nodeValue) x.nodeValue = y.nodeValue; continue; }
+      var active = x === document.activeElement;
+      Array.prototype.slice.call(x.attributes).forEach(function (at) { if (!y.hasAttribute(at.name)) x.removeAttribute(at.name); });
+      Array.prototype.slice.call(y.attributes).forEach(function (at) { if (!(active && at.name === 'value') && x.getAttribute(at.name) !== at.value) x.setAttribute(at.name, at.value); });
+      if (x.tagName === 'INPUT') {
+        if (x.type === 'checkbox' || x.type === 'radio') x.checked = y.hasAttribute('checked');
+        else if (!active && x.value !== (y.getAttribute('value') || '')) x.value = y.getAttribute('value') || '';
+        continue;
+      }
+      if (x.tagName === 'SELECT' && !active) { x.innerHTML = y.innerHTML; continue; }
+      if (x.tagName === 'TEXTAREA') { if (!active) x.value = y.value; continue; }
+      morphKids(x, y);
+    }
+    while (a.childNodes.length > bn.length) a.removeChild(a.lastChild);
   }
   function renderDraw() {
     var sel = document.getElementById('draw-cat');
@@ -1654,6 +1682,9 @@
     var list = Array.prototype.slice.call(scope.querySelectorAll(sel)), nx = list[list.indexOf(t) + (back ? -1 : 1)];
     var key = !nx ? null : nx.dataset.part ? '[data-part="' + nx.dataset.part + '"]' : '[data-sp="' + nx.dataset.sp + '"][data-which="' + nx.dataset.which + '"][data-j="' + nx.dataset.j + '"]';
     var y = window.scrollY;
+    // v1.94 (#175): fokusas perkeliamas iškart, be blur() - planšetėje klaviatūra neužsidaro ir vaizdas nešokinėja
+    // (pasikeitęs balas išsaugomas „change“ įvykiu, kai langelis netenka fokuso)
+    if (nx) { focusNoScroll(nx); return; }
     t.blur();
     setTimeout(function () {
       var el = key && scope.querySelector(key);

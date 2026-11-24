@@ -133,7 +133,9 @@
       var qs = items.filter(function (it) { return it.canAnswer; });
       var vs = items.filter(function (it) { return !it.canAnswer && it.canVerdict; }).sort(byHere);
       var rest = items.filter(function (it) { return !it.canAnswer && !it.canVerdict; }).sort(function (a, b) { return ((b.id === cur.id) - (a.id === cur.id)) || (b.id - a.id); });
-      var list0 = qs.concat(vs, rest), view0 = mineAll ? list0 : qs.concat(vs, rest.slice(0, 1));
+      // v1.94 (#173): be „Rodyti visus“ - tik vienas paskutinis (laukiantys įvertinimo - irgi po „Rodyti visus“); klausimai - visada matomi
+      var others = vs.concat(rest).sort(function (a, b) { return ((b.id === cur.id) - (a.id === cur.id)) || (b.id - a.id); });
+      var list0 = qs.concat(vs, rest), view0 = mineAll ? list0 : qs.concat(others.slice(0, 1));
       qCount = qs.length; badge();
       list.innerHTML = view0.map(function (it) {
         if (it.canAnswer) return questionHtml(it);

@@ -71,16 +71,16 @@ test('exam registration pops up for coaches; contacts as Excel', async ({ browse
   check('coach also notified', +sql("SELECT COUNT(*) FROM notifications n JOIN accounts a ON a.id = n.account_id WHERE n.type = 'exam_registration' AND a.role = 'coach'") >= 1);
   const c = await login(browser, 'treneris@karateka.test');
   await c.goto('admin/');
-  // Jau matyti šioje sesijoje (po prisijungimo) - antrame puslapyje tik „🔔 N“; paspaudus išsiskleidžia
-  await c.waitForSelector('.ntf-card.in:not([hidden]), .ntf-pill');
-  if (await c.locator('.ntf-pill').count()) await c.click('.ntf-pill');
-  await c.waitForSelector('.ntf-card.in:not([hidden])');
-  check('pop-up shows registration', /Užsiregistravo į egzaminą: Jonas/.test(await c.textContent('.ntf-pop')));
-  await c.click('.ntf-card .ntf-ok');
+  // v1.94: tik 🔔 su skaičiumi (be kortelių iš šono); paspaudus - sąrašas
+  await c.waitForSelector('.ntf-bell');
+  check('only a bell, no cards', await c.locator('.ntf-card').count() === 0 && await c.locator('.ntf-menu').isHidden() && +(await c.textContent('.ntf-n')) >= 1);
+  await c.click('.ntf-bell');
+  check('pop-up shows registration', /Užsiregistravo į egzaminą: Jonas/.test(await c.textContent('.ntf-menu')));
+  await c.click('.ntf-row:has-text("Jonas Petrauskas") .ntf-ok');
   await c.waitForTimeout(500);
   check('marked read', +sql("SELECT COUNT(*) FROM notifications n JOIN accounts a ON a.id = n.account_id WHERE a.email = 'treneris@karateka.test' AND n.type = 'exam_registration' AND n.read_at IS NULL") === 0);
   await c.reload();
-  check('does not come back', await c.locator('.ntf-card').count() === 0);
+  check('does not come back', !/Jonas Petrauskas/.test(await c.locator('.ntf-pop').innerHTML()));
 
   // Narių kontaktai Excel
   const a = await login(browser, 'info@karateka.lt');
