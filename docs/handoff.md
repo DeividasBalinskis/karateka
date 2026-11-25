@@ -4,6 +4,7 @@ Updated: 2026-11-25 · version v2.11 · main
 ## Pending asks (answer these first)
 | Asked | By | What | Status |
 |---|---|---|---|
+| 2026-11-25 | Dev | Delete the unused setting `xp_per_level` (db/021, replaced in v1.96)? Only it makes 07v fail („Nežinomi nustatymai“) | waiting |
 | 2026-11-25 | Dev (C1) | Testers: give them the Atsiliepimai page and „Žiūrėti kaip“ (the standartai table says ✔, today they do not have them)? | waiting |
 | 2026-11-25 | Dev (C1) | Excuse letters: while `just_notify` is unset, recipients = admins named Denis (a choice by name). Keep, or one chosen account? | waiting |
 | 2026-11-25 | Dev (C5) | Extra CSS widths 1099, 860, 900, 1400, 520, 400, 1101-1280 → the standard four? (visible change at those widths) | waiting |
@@ -277,7 +278,15 @@ Updated: 2026-11-25 · version v2.11 · main
   ltkf_* → ltkf - same people as before). Open questions from the side sessions: see „Pending asks“.
   CI on the merge (run 45642955419): 164 passed, 20 failed - 18 fail on main too, 06z:155 flaky, links.spec fixed (sends the CSRF token; re-run 45650015534 ✓).
   Deployed (run 45651071881), checked on test: v2.11, db 061 + 062 imported with a backup, „Visos nuorodos“ at 1440 and 375 (no overflow), Budo loads main.js modules.
-  Main has 19 failing e2e tests from before (01, 06f, 06n ×4, 06x ×3, 06y, 07h, 07i, 07o, 07q, 07v, 07zd, 07ze, 07zf, 08; 06h and 06z:155 flaky) - not fixed yet.
+- 2026-11-25 e2e fixes (no site code changed; tests + CI only). Full run 45662657507: 187 passed, 1 failed (07v), 17.6 min instead of ~40 (no more 2-min timeouts).
+  Causes: (1) the „Naujas lygis“ celebration (#celebrate) covered buttons for kids/parents after XP - helpers.js login() adds a Playwright
+  locator handler that clicks „Valio!“ before any action; tests that check the celebration set `page.keepCelebration = true`; shared `closeCelebrate()`.
+  (2) CI had no SMTP - `.github/workflows/tests.yml` now runs a Mailpit service (axllent/mailpit:v1.33.1, 1025/8025) → 07zd, 07ze.
+  (3) Tests out of date after agreed changes: 06y menu groups Kasdien/Darbai/Nustatymai; 07zf side menu to the bottom (v2.09) - now checks the last
+  item stays above 💡 when scrolled; 07i Budo tabs two rows on a phone (v1.99) → header ≤ 200 px; 01 XP card and 06n HP use the v1.96 level formula
+  (`xpLevel()` in helpers.js; 06n sets test_level 1 for the HP check); 01 member exam celebration may come after a level-up celebration.
+  (4) 06f: the „Grupė baigta“ float card (#99) covered „↺ Atstatyti“ - the test folds it first. Flaky: 06z waits for the restored save; 06h closes the 💡 panel.
+  Open: 07v fails only on `xp_per_level` (db/021 row, replaced in v1.96, unused) - delete needs Deividas's OK (pending ask).
 ## Open
 - C5 CSS cleanup: header.css done (v2.11), next app.css (one file per session). D4 same group on two tablets, D5 Budo live polish, D7 arena left hand UI, D8 pixel characters (PC + LibreSprite).
 - Parent payments for Budo registration need a payment provider (later).
