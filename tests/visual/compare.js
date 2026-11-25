@@ -1,5 +1,6 @@
 // C5: griežtas palyginimas (0 pikselių leidžiama) - bazinės ir naujos šakos nuotraukos ir apskaičiuoti stiliai.
-//   node compare.js <nuotraukos-A> <nuotraukos-B> <stiliai-A> <stiliai-B> <rezultatų aplankas>
+//   node compare.js <nuotraukos-A> <nuotraukos-B> <stiliai-A> <stiliai-B> <rezultatų aplankas> [<nuotraukos-A2>]
+// A2 - ta pati bazinė versija, nufotografuota antrą kartą: kiek skiriasi be jokių pakeitimų (triukšmas).
 // Reikia pngjs ir pixelmatch (workflow įdiegia laikinai). Rašo <rez>/santrauka.md ir skirtumų nuotraukas; klaida, jei yra skirtumų.
 const fs = require('fs');
 const path = require('path');
@@ -7,7 +8,7 @@ const zlib = require('zlib');
 const { PNG } = require('pngjs');
 const pixelmatch = require('pixelmatch');
 
-const [shotsA, shotsB, stylesA, stylesB, out] = process.argv.slice(2);
+const [shotsA, shotsB, stylesA, stylesB, out, shotsA2] = process.argv.slice(2);
 fs.mkdirSync(out, { recursive: true });
 const md = [];
 let bad = 0;
@@ -16,6 +17,15 @@ let bad = 0;
 const pngs = d => (fs.existsSync(d) ? fs.readdirSync(d).filter(f => f.endsWith('.png')).sort() : []);
 const names = [...new Set(pngs(shotsA).concat(pngs(shotsB)))].sort();
 const rows = [];
+// Skirtingų pikselių skaičius (be nuotraukų įrašymo) - triukšmo stulpeliui
+function count(a, b) {
+  if (!fs.existsSync(a) || !fs.existsSync(b)) return '-';
+  if (fs.readFileSync(a).equals(fs.readFileSync(b))) return 0;
+  const A = PNG.sync.read(fs.readFileSync(a)), B = PNG.sync.read(fs.readFileSync(b));
+  if (A.width !== B.width || A.height !== B.height) return 'dydis';
+  return pixelmatch(A.data, B.data, null, A.width, A.height, { threshold: 0, includeAA: true });
+}
+const noise = f => (shotsA2 ? count(path.join(shotsA, f), path.join(shotsA2, f)) : '-');
 for (const f of names) {
   const a = path.join(shotsA, f), b = path.join(shotsB, f);
   if (!fs.existsSync(a) || !fs.existsSync(b)) { rows.push([f, 'trūksta ' + (fs.existsSync(a) ? 'B' : 'A')]); bad++; continue; }
@@ -38,7 +48,14 @@ for (const f of names) {
 const same = rows.filter(r => r[1] === 0).length;
 md.push(`## Nuotraukos: ${same} / ${rows.length} vienodos (0 px skirtumo)`, '');
 const diffRows = rows.filter(r => r[1] !== 0);
-if (diffRows.length) { md.push('| Nuotrauka | Skirtingi pikseliai |', '|---|---|'); diffRows.forEach(r => md.push(`| ${r[0]} | ${r[1]} |`)); md.push(''); }
+if (diffRows.length) {
+  md.push('| Nuotrauka | Skirtingi pikseliai (šaka - bazė) | Triukšmas (bazė - bazė) |', '|---|---|---|');
+  diffRows.forEach(r => md.push(`| ${r[0]} | ${r[1]} | ${noise(r[0])} |`)); md.push('');
+}
+if (shotsA2) {
+  const noisy = names.filter(f => noise(f) !== 0);
+  md.push(`Triukšmas: be jokių pakeitimų skiriasi ${noisy.length} / ${names.length}` + (noisy.length ? ' (' + noisy.join(', ') + ')' : ''), '');
+}
 
 // 2. Stiliai
 const gz = d => (fs.existsSync(d) ? fs.readdirSync(d).filter(f => f.endsWith('.json.gz')).sort() : []);

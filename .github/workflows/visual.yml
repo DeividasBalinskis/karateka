@@ -1,5 +1,6 @@
 # C5: vaizdo palyginimas - ar CSS tvarkymas nieko nepakeitė. Bazinė versija (main, iš kurio atsišakota) ir ši šaka:
-#   1) tests/visual nuotraukos (375 / 768 / 1440, Valdymas ir Budo dar 1280 / 2560) - griežtai, 0 pikselių leidžiama;
+#   1) tests/visual nuotraukos (375 / 768 / 1440, Valdymas ir Budo dar 1280 / 2560) - griežtai, 0 pikselių leidžiama
+#      (bazė nufotografuojama du kartus - stulpelis „triukšmas“ rodo, kiek skiriasi be jokių pakeitimų);
 #   2) apskaičiuoti stiliai kiekvienam elementui, kurį liečia pakeistas CSS (22 pločiai, atidaryti meniu, tamsi tema);
 #   3) tests/visual.sh palyginimas (įprastas, su HTML ataskaita).
 # Skirtumai - Actions → šis paleidimas → Summary ir priedas „vaizdo-skirtumai“.
@@ -113,6 +114,10 @@ jobs:
           bash visual.sh update || echo "::warning::bazinės nuotraukos - ne visos"
           cp -a visual/__baseline__ /tmp/shots-A
           STYLE_OUT=/tmp/styles-A npx playwright test -c visual/styles.config.js || echo "::warning::baziniai stiliai - ne visi"
+          # Triukšmo matas: ta pati bazinė versija dar kartą (kiek skiriasi be jokių pakeitimų)
+          rm -rf visual/__baseline__
+          bash visual.sh update || echo "::warning::bazinės nuotraukos (2) - ne visos"
+          cp -a visual/__baseline__ /tmp/shots-A2
           kill "$(cat /tmp/php.pid)"; sleep 1
 
       - name: Ši šaka - nuotraukos ir stiliai
@@ -138,7 +143,7 @@ jobs:
         run: |
           mkdir -p /tmp/cmp && (cd /tmp/cmp && npm init -y > /dev/null && npm i -s pngjs@7.0.0 pixelmatch@5.3.0)
           rc=0
-          NODE_PATH=/tmp/cmp/node_modules node tests/visual/compare.js /tmp/shots-A /tmp/shots-B /tmp/styles-A /tmp/styles-B /tmp/skirtumai || rc=$?
+          NODE_PATH=/tmp/cmp/node_modules node tests/visual/compare.js /tmp/shots-A /tmp/shots-B /tmp/styles-A /tmp/styles-B /tmp/skirtumai /tmp/shots-A2 || rc=$?
           [ -f /tmp/skirtumai/santrauka.md ] && cat /tmp/skirtumai/santrauka.md >> "$GITHUB_STEP_SUMMARY"
           exit $rc
 
