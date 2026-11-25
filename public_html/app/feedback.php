@@ -86,7 +86,7 @@ const FEEDBACK_LTKF_PLACES = ['index.php' => 'Pradžia', 'en.php' => 'Pradžia',
     'kalendorius.php' => 'Kalendorius ir rezultatai', 'renginys.php' => 'Kalendorius ir rezultatai', 'rezultatai.php' => 'Kalendorius ir rezultatai',
     'naujienos.php' => 'Naujienos', 'naujiena.php' => 'Naujienos', 'dokumentai.php' => 'Dokumentai', 'failai.php' => 'Dokumentai', 'kontaktai.php' => 'Kontaktai',
     'puslapis.php' => 'Kiti puslapiai', 'redaguoti.php' => 'Redagavimas'];
-/** Budo valdymo skirtukai (assets/varzybos.js: tab-live, tab-rezultatai, Administracijos poskirtukai; atidaryta kova) */
+/** Budo valdymo skirtukai (assets/varzybos/chrome.js: tab-live, tab-rezultatai, Administracijos poskirtukai; atidaryta kova) */
 const FEEDBACK_BUDO_TABS = ['live' => 'Tvarkaraštis', 'rezultatai' => 'Rezultatai', 'kova' => 'Kova'];
 
 /**

@@ -6,6 +6,7 @@
 set -e
 cd "$(dirname "$0")/.."
 bash tests/checks.sh
+node --experimental-vm-modules --test tests/engine/*.test.mjs   # Budo variklis be naršyklės (C6)
 bash tests/setup/reset-db.sh > /dev/null
 cd tests
 start=$(date +%s)

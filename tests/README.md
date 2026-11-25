@@ -6,6 +6,7 @@ Browser tests (Playwright) and quick static checks. They run on every push in Gi
 | File | What it covers |
 |---|---|
 | `checks.sh` | PHP syntax, migration order (`DB_REQUIRED`, `db_versija`), UTF-8 BOM in PowerShell scripts, no `config.php` in git |
+| `engine/*.test.mjs` | Budo engine without a browser (`node --experimental-vm-modules --test tests/engine/*.test.mjs`): seeded draw and club separation, elimination bracket with byes, bronze bout, WKF repechage, round robin, judge scores (1-2 rounds), places, finished, auto-lock (#182); `modules.test.mjs` - every `assets/varzybos/` module parses and links |
 | `e2e/01-scenarios.spec.js` | Main flows on demo data: parent → coach/admin → member → guest (notifications, invitations and deadlines, chat, comments, XP, attendance, broadcast, settings) |
 | `e2e/02-two-factor.spec.js` | Login with an e-mail code: enabling, trusted devices, attempt and resend limits |
 | `e2e/03-cancellations.spec.js` | Cancelled trainings and holidays: dashboard, attendance page, member notice, delete restores |
