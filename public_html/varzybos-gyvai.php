@@ -8,7 +8,7 @@ require __DIR__ . '/app/bootstrap.php';
 // v1.98: nuolatinė OBS juosta (?b=<klubo raktas>&juosta=1&tatami=N) - visada rodo tuo metu vykstančias varžybas,
 // todėl OBS nustatomas vieną kartą (varz_current_tournament: kur šiam tatamiui paskutinė kova, šiandienos, artimiausios).
 $perm = get('k') === '' && get('b') !== '' && hash_equals(varz_stream_key('bar'), (string) get('b'));
-$t = $perm ? varz_current_tournament(max(1, (int) get('tatami'))) : tournament_by_token((string) get('k'), 'share');
+$t = $perm ? varz_current_tournament(get('visi') ? 0 : max(1, (int) get('tatami'))) : tournament_by_token((string) get('k'), 'share');   // „Visi tatamiai“ - kur naujausia veikla ant bet kurio tatamio
 if (!$t && $perm) {
     exit('<!doctype html><meta charset="utf-8"><meta http-equiv="refresh" content="60"><title>OBS</title><body style="background:transparent"></body>');
 }

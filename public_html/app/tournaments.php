@@ -651,15 +651,15 @@ function varz_stream_key(string $kind, bool $renew = false): string
     return $mem[$name] = $k;
 }
 
-/** Kurios varžybos dabar rodomos nuolatinėje juostoje: kur šiam tatamiui naujausia kova (12 val.), šiandienos, artimiausios, paskutinės */
+/** Kurios varžybos dabar rodomos nuolatinėje juostoje: kur šiam tatamiui (0 - bet kuriam) naujausia kova (12 val.), šiandienos, artimiausios, paskutinės */
 function varz_current_tournament(int $area): ?array
 {
     $test = (config('env') === 'live' ? ' AND t.is_test = 0' : '') . ' AND t.is_demo = 0';   // bandymo nuorodos varžybos - niekada
     $id = 0;
     try {
         $id = (int) q_value('SELECT tl.tournament_id FROM tournament_live tl JOIN tournaments t ON t.id = tl.tournament_id
-                             WHERE tl.area_id = ? AND tl.updated_ms > ?' . $test . ' ORDER BY tl.updated_ms DESC LIMIT 1',
-            [$area, (int) round(microtime(true) * 1000) - 12 * 3600 * 1000]);
+                             WHERE (tl.area_id = ? OR ? = 0) AND tl.updated_ms > ?' . $test . ' ORDER BY tl.updated_ms DESC LIMIT 1',
+            [$area, $area, (int) round(microtime(true) * 1000) - 12 * 3600 * 1000]);
     } catch (PDOException $ex) {
         // dar neimportuotas db/026
     }
