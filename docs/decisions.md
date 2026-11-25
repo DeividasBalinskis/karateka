@@ -4,6 +4,7 @@ Answers given by Deividas on 2026-11-20 (questions from `docs/darbo-planas.md`, 
 
 | Date | Area | Decision | Who decided | Source |
 |---|---|---|---|---|
+| 2026-11-25 | Budo | D2: Budo stays, the external Varžybos app is removed (after D1 `docs/varzybos-palyginimas.md`). Removal goes step by step: save the Varžybos code (branch `varzybos-kodas`), Denis picks features to port, then the bridge links and files go (files only with a separate OK). | Deividas | chat |
 | 2026-11-25 | Feedback | Fixing agent: in the cloud every hour 07-23 AND on Deividas's PC every 15 min while the Claude app is open; one agent takes a job (the other gets „taken“). | Deividas | chat |
 | 2026-11-25 | Feedback | Release: when at least one of Deividas / Denis marks the gold changes and presses „Pateikti“ with no ✗, the agent merges into main and uploads by itself (unrated items count as accepted). | Deividas | chat |
 | 2026-11-25 | Exams | #179: an admin may delete any exam protocol; if it has participants, the page first shows how many and who and asks again („Taip, ištrinti su N dalyviais“). Other protocols of that day stay (the first becomes the main one). | Deividas | chat |
