@@ -1,29 +1,6 @@
 {
-  "rev": "2.09-1",
-  "version": "2.09",
-  "title": "Protokolų trynimas, meniu iki apačios, darbų uždarymas",
-  "items": [
-    {
-      "id": "egzaminai-trinti",
-      "page": "admin/egzaminai.php",
-      "sel": ".exam-del",
-      "title": "🗑 Protokolo trynimas (#179)",
-      "note": "Tuščias - po vieno klausimo. Jei yra dalyvių - parodoma kiek ir kas, tada „Taip, ištrinti su N dalyviais“. Kiti tos dienos protokolai lieka."
-    },
-    {
-      "id": "meniu-iki-apacios",
-      "page": "admin/*",
-      "href": "admin/",
-      "sel": ".adm-side",
-      "title": "Valdymo meniu - iki ekrano apačios",
-      "note": "Jūsų pastaba Peržiūroje: meniu dabar eina iki pat apačios; apačioje vieta 💡 mygtukui."
-    },
-    {
-      "id": "perziura-padaryta",
-      "page": "admin/perziura.php",
-      "sel": "#eile",
-      "title": "Darbų eilė: „✓“ - pažymėti padarytu",
-      "note": "Jei darbą padarėte patys ar jį padarė kita sesija - „✓“, parašote, kas padaryta, ir darbas uždaromas."
-    }
-  ]
+  "rev": "2.10-0",
+  "version": "2.10",
+  "title": "Viskas patvirtinta",
+  "items": []
 }

@@ -4253,4 +4253,9 @@ Nuo 2013 m. treniravosi Tradicinio karate-do klubo „Sanrei“ komandoje, o 201
     'Pateisinimų prašymai' => 'Запросы на оправдание',
     'LTKF redaktorius' => 'Редактор LTKF',
     'Senos slaptos nuorodos perkeltos į vieną sąrašą (C3)' => 'Старые секретные ссылки перенесены в один список (C3)',
+    'Peržiūra (auksinės žymos, darbų eilė, agentas) šiuo metu išjungta.' => 'Обзор (золотые отметки, очередь задач, агент) сейчас выключен.',
+    'Įjungti →' => 'Включить →',
+    'Peržiūra įjungta.' => 'Обзор включён.',
+    'Peržiūra išjungta.' => 'Обзор выключен.',
+    'auksinės žymos test svetainėje, darbų eilė ir taisymo agentas' => 'золотые отметки на тестовом сайте, очередь задач и агент исправлений',
 ];

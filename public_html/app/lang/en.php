@@ -4253,4 +4253,9 @@ From 2013 he trained with the team of the traditional karate-do club "Sanrei", a
     'Pateisinimų prašymai' => 'Excuse requests',
     'LTKF redaktorius' => 'LTKF editor',
     'Senos slaptos nuorodos perkeltos į vieną sąrašą (C3)' => 'Old secret links moved to one list (C3)',
+    'Peržiūra (auksinės žymos, darbų eilė, agentas) šiuo metu išjungta.' => 'Review (gold marks, job queue, agent) is switched off for now.',
+    'Įjungti →' => 'Switch on →',
+    'Peržiūra įjungta.' => 'Review switched on.',
+    'Peržiūra išjungta.' => 'Review switched off.',
+    'auksinės žymos test svetainėje, darbų eilė ir taisymo agentas' => 'gold marks on the test site, job queue and the fixing agent',
 ];

@@ -4,6 +4,13 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v2.10 - 2026-11-25 (Peržiūra kol kas išjungta)
+- **🔎 Peržiūra išjungta** (Deividas: „kol kas išjunk, bet neištrink“): nėra auksinių žymų, apačios juostos, 🎯 ir meniu punkto; agentai nieko nedaro.
+  Kodas lieka - įjungiama **Valdymas → Nustatymai → Testavimas → „🔎 Peržiūra: Įjungti“**.
+- Visi ankstesni pakeitimai patvirtinti. Nuo šiol pakeitimai keliami į main ir test, kai paprašote per pokalbį.
+- Varžybų programos kodas išsaugotas šakoje `varzybos-kodas` (prieš ją nuimant, D2).
+- Duomenų bazė: naujų failų nėra.
+
 ## v2.09 - 2026-11-25 (Peržiūra: jūsų pastaba - meniu iki apačios)
 - **Valdymo šoninis meniu** eina iki pat ekrano apačios (Deividas Peržiūroje: „gal padarom, kad šitas meniu eitų iki pat apačios“); apačioje vieta 💡 mygtukui.
 - **🔎 Peržiūra → Darbų eilė → „✓“**: darbą, kurį padarėte patys (ar kita sesija), galima pažymėti padarytu ir parašyti, kas padaryta.

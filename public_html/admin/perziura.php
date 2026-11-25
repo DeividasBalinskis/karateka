@@ -6,6 +6,13 @@
 require dirname(__DIR__) . '/app/bootstrap.php';
 $me = require_admin();
 $ready = review_ready() && feedback_ready();
+if (!review_enabled()) {   // v2.10: išjungta - nuoroda į jungiklį
+    page_start(t('Peržiūra'), ['admin' => true]);
+    echo '<h1 class="styled">🔎 ' . te('Peržiūra') . '</h1><p class="panel card">' . te('Peržiūra (auksinės žymos, darbų eilė, agentas) šiuo metu išjungta.')
+        . ' <a class="btn btn-sm" href="' . e(url('admin/testavimas.php#perziura')) . '">' . te('Įjungti →') . '</a></p>';
+    page_end();
+    exit;
+}
 
 if (is_post() && $ready) {
     csrf_check();

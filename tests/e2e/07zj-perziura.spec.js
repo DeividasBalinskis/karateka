@@ -15,8 +15,9 @@ const TEST_MANIFEST = { rev: 'e2e-1', version: 'e2e', title: 'E2E', items: [
   { id: 'perziura-eile', page: 'admin/perziura.php', sel: '#eile', title: 'Peržiūra: darbų eilė' },
 ] };
 let saved = null;
-test.beforeAll(() => { saved = fs.readFileSync(MANIFEST, 'utf8'); fs.writeFileSync(MANIFEST, JSON.stringify(TEST_MANIFEST)); });
-test.afterAll(() => { if (saved !== null) fs.writeFileSync(MANIFEST, saved); });
+// v2.10: Peržiūra numatytai išjungta - testui įjungiama ir pabaigoje išjungiama
+test.beforeAll(() => { saved = fs.readFileSync(MANIFEST, 'utf8'); fs.writeFileSync(MANIFEST, JSON.stringify(TEST_MANIFEST)); sql("REPLACE INTO site_settings (name, value) VALUES ('review_on', '1')"); });
+test.afterAll(() => { if (saved !== null) fs.writeFileSync(MANIFEST, saved); sql("DELETE FROM site_settings WHERE name = 'review_on'"); });
 
 test('Peržiūra: queue fixes, gold marks with ✓/✗ and comments, submit, element notes, agent API', async ({ browser }) => {
   sql('DELETE FROM review_marks'); sql('DELETE FROM review_jobs');
@@ -126,4 +127,26 @@ test('Peržiūra: queue fixes, gold marks with ✓/✗ and comments, submit, ele
   sql(`DELETE FROM feedback WHERE id = ${fid} OR body = 'E2E: antraštė per didelė'`);
   sql('DELETE FROM review_marks'); sql('DELETE FROM review_jobs');
   noJsErrors(a, p, c);
+});
+
+test('Peržiūra switched off: no menu item, no marks, the page and the agent API say it is off', async ({ browser }) => {
+  sql("DELETE FROM site_settings WHERE name = 'review_on'");
+  const a = await login(browser, 'info@karateka.lt', 1440, 900);
+  await a.goto('admin/');
+  check('no Peržiūra in the menu', await a.locator('.am-row[data-k="perziura"]').count() === 0);
+  check('no review bar', await a.locator('.pzr-bar').count() === 0);
+  await a.goto('admin/perziura.php');
+  check('page says it is off with a link to switch it on', /išjungta/.test(await a.textContent('main')) && await a.locator('a[href*="testavimas.php#perziura"]').count() === 1);
+  const api = await (await a.request.get('perziura-api.php', { headers: { 'X-Api-Key': 'e2e-api-key' } })).json();
+  check('agent API says off', api.ok === false && api.off === true, JSON.stringify(api));
+  // Įjungiama Testavimo puslapyje ir vėl išjungiama
+  await a.goto('admin/testavimas.php');
+  await nav(a, () => a.click('#review-toggle'));
+  check('switched on', sql("SELECT value FROM site_settings WHERE name = 'review_on'") === '1');
+  await a.goto('admin/');
+  check('menu item back when on', await a.locator('.am-row[data-k="perziura"]').count() === 1);
+  await a.goto('admin/testavimas.php');
+  await nav(a, () => a.click('#review-toggle'));
+  check('switched off again', sql("SELECT IFNULL(MAX(value), '') FROM site_settings WHERE name = 'review_on'") === '');
+  noJsErrors(a);
 });

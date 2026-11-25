@@ -13,6 +13,9 @@ if (!feedback_ready() || !feedback_api_check((string) ($_SERVER['HTTP_X_API_KEY'
     http_response_code(401);
     exit(json_encode(['ok' => false, 'error' => 'Netinkamas raktas.']));
 }
+if (!review_enabled()) {   // v2.10: Peržiūra išjungta - agentai nieko nedaro
+    exit(json_encode(['ok' => false, 'off' => true, 'error' => 'Peržiūra išjungta (Valdymas → Nustatymai → Testavimas).'], JSON_UNESCAPED_UNICODE));
+}
 if (!review_ready()) {
     exit(json_encode(['ok' => false, 'error' => 'Dar neimportuotas db/060 (POST diegimas-api.php {"action":"dbupdate"}).', 'db_required' => DB_REQUIRED]));
 }
