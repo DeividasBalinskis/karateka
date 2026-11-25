@@ -4,7 +4,7 @@
 // Pastabas galima atsisiųsti ChatGPT, o pataisytus klausimus įkelti atgal (Testai → „Įkelti klausimus“).
 require dirname(__DIR__) . '/app/bootstrap.php';
 require APP_DIR . '/images.php';
-$me = require_staff();
+$me = require_can('quizzes');
 
 const QUIZ_DIR = PUBLIC_DIR . '/uploads/quiz';
 

@@ -13,7 +13,7 @@ if (!$t) {
 
 // v1.98-v1.99: bandomoji kova (transliacijos peržiūrai ir žiūrovų vaizdui) - balus ± keičia treneris ar šių varžybų sekretoriatas.
 // Įrašoma kaip tatamio „gyva“ būsena su žyma test (žiūrovų puslapis ir salės ekranas jos nerodo). Kai vyksta tikra kova - neliečiama.
-$canTest = is_staff() || varz_sekr((int) $t['id']) !== null;
+$canTest = can('budo') || varz_sekr((int) $t['id']) !== null;
 if (is_post() && get('bandymas')) {
     header('Content-Type: application/json; charset=utf-8');
     if (!$canTest) {

@@ -2,7 +2,7 @@
 // Pranešimas nariams (tik adminas): kam (grupės ar konkretūs žmonės) ir kur siųsti - paskyroje, el. paštu, SMS (galima kelis).
 // Paskyroje pranešimas rodomas „Svarbu“, kol narys ar tėvai paspaudžia „Supratau“. Kiekviena paskyra gauna vieną kartą.
 require dirname(__DIR__) . '/app/bootstrap.php';
-$me = require_admin();
+$me = require_can('broadcast');
 
 const BROADCAST_CHANNELS = ['site' => 'Paskyroje', 'email' => 'El. paštu', 'sms' => 'SMS'];
 const BROADCAST_SMS_MAX = 600;

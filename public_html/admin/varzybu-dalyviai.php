@@ -1,7 +1,7 @@
 <?php
 // Dalyviai -> varžybų sistema: „Dalyvaus“ pažymėtus narius užregistruoti į tinkamas kategorijas; užsiregistravusius ten - pažymėti čia
 require dirname(__DIR__) . '/app/bootstrap.php';
-$me = require_staff();
+$me = require_can('events');
 
 $id = (int) (get('id') ?: post('id'));
 $event = q_one('SELECT * FROM events WHERE id = ? AND type = "competition"', [$id]);

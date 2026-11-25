@@ -1,7 +1,7 @@
 <?php
 // Treniruotė: pasirenki grupę ar renginį (bet kuriai dienai), pažymi, kas buvo, parašai pastabas, skiri XP
 require dirname(__DIR__) . '/app/bootstrap.php';
-$me = require_staff();
+$me = require_can('training');
 
 /** El. laiškas vaikui / tėvams apie naują pastabą */
 function notify_note(array $m, string $text, string $date, array $me): void
@@ -335,7 +335,7 @@ $evTile = function (array $ev, bool $showDate) use ($event, $evColors): string {
     <?php if ($date !== date('Y-m-d')): ?><a class="small" href="<?= url('admin/treniruote.php' . ($group ? '?g=' . (int) $group['id'] : '')) ?>"><?= te('Šiandien') ?></a><?php endif; ?>
     <a class="small" href="<?= url('admin/treniruote.php?' . ($group ? 'g=' . (int) $group['id'] . '&' : '') . 'd=' . date('Y-m-d', strtotime($date . ' -1 day'))) ?>"><?= te('← Diena atgal') ?></a>
     <a class="small gp-edit" href="<?= url('admin/grupes.php#nauja-grupe') ?>"><?= te('+ Nauja grupė') ?></a>
-    <?php if (is_admin()): ?><a class="small gp-edit" href="<?= url('admin/grupes.php') ?>"><?= te('✎ Grupių pavadinimai ir spalvos') ?></a><?php endif; ?>
+    <?php if (can('schedule')): ?><a class="small gp-edit" href="<?= url('admin/grupes.php') ?>"><?= te('✎ Grupių pavadinimai ir spalvos') ?></a><?php endif; ?>
   </form>
   <?php if ($dayEvents): ?>
     <div class="kicker"><?= $date === date('Y-m-d') ? t('Šiandien renginiai') : t('Renginiai šią dieną') ?></div>
@@ -376,7 +376,7 @@ $evTile = function (array $ev, bool $showDate) use ($event, $evColors): string {
       <a class="btn btn-ghost btn-sm" href="<?= url('admin/taskai.php?' . ($event ? 'e=' . $eventId : 'g=' . $groupId) . '&d=' . $date . '#skirti') ?>"><?= te('✨ Taškai keliems') ?></a>
       <?php if ($group && !$hasTraining && !training_cancelled($groupId, $date)): ?><span class="hint"><?= te('Pagal tvarkaraštį šią dieną šios grupės treniruotės nėra - patikrinkite datą.') ?></span><?php endif; ?>
       <?php if ($event): ?><a class="small" href="<?= url('admin/renginio-dalyviai.php?id=' . $eventId) ?>"><?= te('Dalyvių sąrašas →') ?></a><?php endif; ?>
-      <?php if ($group && !$event && is_admin() && $date >= date('Y-m-d') && !training_cancelled((int) $group['id'], $date)): ?><a class="small cancel-btn" href="<?= url('admin/atsaukimai.php?g=' . (int) $group['id'] . '&d=' . $date . '#naujas') ?>"><?= te('Atšaukti šią treniruotę') ?></a><?php endif; ?>
+      <?php if ($group && !$event && can('schedule') && $date >= date('Y-m-d') && !training_cancelled((int) $group['id'], $date)): ?><a class="small cancel-btn" href="<?= url('admin/atsaukimai.php?g=' . (int) $group['id'] . '&d=' . $date . '#naujas') ?>"><?= te('Atšaukti šią treniruotę') ?></a><?php endif; ?>
       <?php if ($visitPrice): ?><span class="fee-rule" title="<?= te('Nustatoma: Nustatymai → Grupės') ?>">💶 <?= e(money_fmt($visitPrice['price'])) ?> <?= te('už treniruotę') ?><?= $visitPrice['cap'] !== null ? ', ' . te('ne daugiau kaip {s} per mėn.', ['s' => money_fmt($visitPrice['cap'])]) : '' ?></span><?php endif; ?>
     </div>
     <p class="hint" style="margin-bottom:10px;"><?= te('Lankomumas išsaugomas iškart paspaudus „Nebuvo“ / „Buvo“ (paspaudus dar kartą - žyma nuimama). Pastaba: parašykite ir spauskite') ?> <strong><?= te('Enter') ?></strong> <?= te('-

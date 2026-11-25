@@ -38,7 +38,7 @@ if (is_post()) {
         }
         login_account($aid);
         $me = q_one('SELECT * FROM accounts WHERE id = ?', [$aid]);
-        redirect(!$askedFor && $me && is_staff($me) ? url('admin/') : $return);
+        redirect(!$askedFor && $me && can('valdymas', $me) ? url('admin/') : $return);
     }
     $error = $res === 'invalid'
         ? (t('Neteisingas kodas. Liko bandymų:') . ' ') . login_code_attempts_left($aid, 'login') . '.'

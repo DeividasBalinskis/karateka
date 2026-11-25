@@ -133,7 +133,7 @@ function varz_sekr_start(int $tid, string $name): void
 function varz_require_access(): array
 {
     $a = current_account();
-    if ($a && is_staff($a)) {
+    if ($a && can('budo', $a)) {
         return $a;
     }
     if ($d = varz_demo()) {
@@ -147,7 +147,7 @@ function varz_require_access(): array
         }
         return ['id' => 0, 'role' => 'sekr', 'sekr' => $mine['tid'], 'first_name' => $mine['name'], 'last_name' => '', 'email' => ''];
     }
-    return require_staff();
+    return require_can('budo');
 }
 
 function varz_is_demo(array $me): bool
@@ -599,7 +599,7 @@ function ltkf_url(): string
     }
     $mode = (string) site_setting('ltkf_mode', '');   // D6: vieša LTKF - nuoroda ir oficialioje svetainėje; išjungta - niekur
     if ($mode === 'off') {
-        return is_admin() ? url('ltkf/') : '';
+        return can('ltkf') ? url('ltkf/') : '';
     }
     return $mode === 'public' || config('env') !== 'live' ? url('ltkf/') : '';
 }

@@ -1,23 +1,24 @@
 <?php
 // Nustatymai: tik tai, ko nėra meniu ir kitose skiltyse (kiekvienas dalykas - vienoje vietoje), ir trenerio paskyra
 require dirname(__DIR__) . '/app/bootstrap.php';
-$me = require_staff();
+$me = require_can('valdymas');
 
 // Paskyros nustatymai (el. paštas, telefonas, slaptažodis, prisijungimas su kodu)
 $errors = [];
 if (is_post()) {
     csrf_check();
-    if (post('action') === 'reg_toggles' && is_admin($me)) {
+    if (post('action') === 'reg_toggles' && can('settings', $me)) {
         // Registracijos mygtukai: pažymėta = rodomas; nepažymėtos vietos išjungiamos
         $on = array_map('strval', (array) ($_POST['reg'] ?? []));
         set_site_setting('reg_off', json_encode(array_values(array_diff(array_keys(REG_PLACES), $on))));
         flash('ok', t('Registracijos nustatymai išsaugoti.'));
         redirect('admin/nustatymai.php#registracija');
     }
-    if (post('action') === 'game_access' && is_admin($me)) {
+    if (post('action') === 'game_access' && can('game_access', $me)) {
         // Kas mato žaidimą: visi arba tik pasirinktos paskyros (pagal nutylėjimą - Denio, db/043)
         require_once APP_DIR . '/game.php';
-        $ids = game_access_ids() ?? [];
+        $before = game_access_ids();
+        $ids = $before ?? [];
         $do = post('do');
         if ($do === 'all') {
             set_site_setting('game_access', 'all');
@@ -34,6 +35,9 @@ if (is_post()) {
                 redirect('admin/nustatymai.php#zaidimas');
             }
         }
+        $now = trim((string) q_value('SELECT value FROM site_settings WHERE name = "game_access"'));   // be site_setting() atminties
+        $after = $now === 'all' ? null : array_values(array_unique(array_map('intval', (array) (json_decode($now, true) ?: []))));
+        account_log_game_access($before, $after);   // C1: kam pasikeitė - į paskyrų žurnalą
         flash('ok', t('Išsaugota: kas mato žaidimą.'));
         redirect('admin/nustatymai.php#zaidimas');
     }
@@ -51,12 +55,12 @@ $settings = [
         [t('Vertimai (EN / RU)'), 'admin/vertimai.php', t('Jūsų tekstai anglų ir rusų kalbomis: naujienos, renginiai, pamokos, pagrindinis puslapis.'), true],
     ],
     'Sistema' => [
-        [t('Paskyros ir rolės'), 'admin/paskyros.php', t('Kas yra treneris, kas administratorius.'), is_admin()],
-        [t('Atsarginės kopijos ir sistema'), 'admin/kopijos.php', t('Duomenų bazės kopijos, nuotraukų kopija, versija, importuoti db failai.'), is_admin()],
-        [t('Visi nustatymai'), 'admin/nustatymai-visi.php', t('Kiekvienas jungiklis su reikšme ir vieta, kur keisti; kas ir kada keitė, „Atkurti“.'), is_admin()],
-        [t('Duomenų priežiūra'), 'admin/duomenys.php', t('Kas ir kiek laiko saugoma; ką galima ištrinti (pirmiau parodoma sąrašu).'), is_admin()],
-        [t('Kodas kitam įrenginiui'), 'admin/kitas-irenginys.php', t('Vienkartinis kodas planšetei ar kitam telefonui: dirbti jūsų teisėmis be slaptažodžio. Atjungti, žurnalas.'), is_admin()],
-        [t('Testavimas'), 'admin/testavimas.php', t('Testiniai nariai (tėvai, vaikas) ir ką jiems sukurti; peržiūra kaip tėvai ar vaikas.'), is_admin()],
+        [t('Paskyros ir rolės'), 'admin/paskyros.php', t('Kas yra treneris, kas administratorius.'), can('accounts')],
+        [t('Atsarginės kopijos ir sistema'), 'admin/kopijos.php', t('Duomenų bazės kopijos, nuotraukų kopija, versija, importuoti db failai.'), can('backups')],
+        [t('Visi nustatymai'), 'admin/nustatymai-visi.php', t('Kiekvienas jungiklis su reikšme ir vieta, kur keisti; kas ir kada keitė, „Atkurti“.'), can('settings')],
+        [t('Duomenų priežiūra'), 'admin/duomenys.php', t('Kas ir kiek laiko saugoma; ką galima ištrinti (pirmiau parodoma sąrašu).'), can('backups')],
+        [t('Kodas kitam įrenginiui'), 'admin/kitas-irenginys.php', t('Vienkartinis kodas planšetei ar kitam telefonui: dirbti jūsų teisėmis be slaptažodžio. Atjungti, žurnalas.'), can('device_codes')],
+        [t('Testavimas'), 'admin/testavimas.php', t('Testiniai nariai (tėvai, vaikas) ir ką jiems sukurti; peržiūra kaip tėvai ar vaikas.'), can('testing')],
     ],
     // LTKF ir Budo - per logotipo meniu ▾; Aktyvumo taškai, Nariai, Testai, Egzaminų programa (Egzaminai) ir kt. - meniu (#105, #120: be dublikatų)
 ];
@@ -75,7 +79,7 @@ page_start(t('Nustatymai'), ['admin' => true]);
         <?php endforeach; ?>
       </section>
     <?php endforeach; ?>
-    <?php if (is_admin($me) || is_tester($me)): $ro = !is_admin($me); ?>
+    <?php if (can('settings_view', $me)): $ro = !can('settings', $me); ?>
       <?php if ($ro): ?><p class="panel card ro-note">🧪 <?= te('Jūs - testuotojas: nustatymus matote, bet keisti gali tik administratorius.') ?></p><fieldset disabled class="ro-set"><?php endif; ?>
       <?php /* B9 (2026-11-21): meniu variantų pasirinkimas išimtas - vienas išdėstymas visiems */ ?>
       <?php /* „🏯 Žaidimas“ skiltis išimta (#145): mato administratoriai, testuotojai - ne; Dojo - Testavimas puslapyje */ ?>

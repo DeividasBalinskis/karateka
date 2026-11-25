@@ -2,7 +2,7 @@
 // Atsiliepimai (tik adminas): ką parašė nariai, treneriai ir lankytojai per mygtuką „💡 Atsiliepimas“.
 // Būsena (naujas → bus pataisyta → pataisyta / nedarysime) ir atsakymas - autorius mato savo atsiliepimų sąraše ir gauna pranešimą.
 require dirname(__DIR__) . '/app/bootstrap.php';
-$me = require_admin();
+$me = require_can('feedback');
 
 $filter = isset(FEEDBACK_STATUS[get('b')]) || get('b') === 'visi' ? get('b') : 'atviri';
 // v1.87: kur paliktas - grupė (Budo / Karateka / LTKF) ir jos skiltis; paieška tekste
@@ -175,7 +175,7 @@ $tabs['visi'] = [t('Visi'), array_sum(array_map('intval', $counts))];
     <div class="fb-card-top">
       <div>
         <strong><?= e(fb_author($f)) ?></strong>
-        <?php if ($f['role'] && $f['role'] !== 'member'): ?><span class="badge badge-tag"><?= e(t($f['role'] === 'admin' ? 'adminas' : 'treneris')) ?></span><?php endif; ?>
+        <?php if (role_label($f['role']) !== ''): ?><span class="badge badge-tag"><?= e(role_label($f['role'])) ?></span><?php endif; ?>
         <span class="muted small"> · <?= e(fmt_date(substr($f['created_at'], 0, 10))) ?> <?= e(substr($f['created_at'], 11, 5)) ?></span>
         <a class="badge fb-place" href="<?= url($qs(['g' => $f['area']['g'], 's' => $f['area']['s']])) ?>" title="<?= e(t('Rodyti visus iš šios vietos')) ?>"><?= e($f['area']['gl'] . ' › ' . ($f['area']['sec'] !== '' && mb_strpos($f['area']['sec'], $f['area']['sl']) === 0 ? $f['area']['sec'] : $f['area']['sl'])) ?></a>
         <span class="muted small">#<?= (int) $f['id'] ?></span>

@@ -2,7 +2,7 @@
 // LTKF svetainės peržiūra federacijos nariams: nuoroda, su kuria be paskyros galima palikti atsiliepimus LTKF svetainėje.
 // Su ja žmogus nemato nuorodos į karateka.lt ir negali atidaryti karateka.lt valdymo. Tik adminui.
 require dirname(__DIR__) . '/app/bootstrap.php';
-require_admin();
+require_can('ltkf');
 
 $editors = array_values(array_filter((array) json_decode((string) site_setting('ltkf_editors', '[]'), true), 'is_array'));
 // D6 3 dalis: svetainės būsena (visai svetainei - klausiama prieš išsaugant)

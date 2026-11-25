@@ -14,7 +14,7 @@ if (is_post()) {
     // B7: vaiką gali pridėti bet kuri suaugusio paskyra (ir pats treniruojantis suaugęs); vaiko PIN paskyra - ne
     $selfM = q_one('SELECT m.* FROM account_members am JOIN members m ON m.id = am.member_id WHERE am.account_id = ? AND am.relation = "self"', [$aid]);
     $adult = !$selfM || empty($selfM['birth_date']) || age_on((string) $selfM['birth_date']) >= 18;
-    if ($action === 'add_self' && !is_staff($a) && !is_kid_login($a)) {
+    if ($action === 'add_self' && can('member_self', $a)) {
         $birth = date_from_input($_POST['birth_date'] ?? '');
         if ($selfM) {
             $errors[] = t('Jūs jau esate narys.');
@@ -33,7 +33,7 @@ if (is_post()) {
         }
     }
 
-    if ($action === 'add_kid' && !is_staff($a) && !is_kid_login($a) && $adult) {
+    if ($action === 'add_kid' && can('member_self', $a) && $adult) {
         $first = post('first_name');
         $last = post('last_name');
         $birth = date_from_input($_POST['birth_date'] ?? '');
@@ -118,7 +118,7 @@ if (is_post()) {
             if (!valid_kid_pin($pin)) {
                 $errors[] = t('PIN: 4-6 skaitmenys.');
             } else {
-                q('UPDATE accounts SET password_hash = ? WHERE id = ?', [password_hash($pin, PASSWORD_DEFAULT), (int) $own['id']]);
+                account_password_set((int) $own['id'], $pin, 'pin');   // C1: vaiko kiti įrenginiai atjungiami
                 q('DELETE FROM login_attempts WHERE email = ? AND success = 0', [$own['email']]);   // užsirakinęs vaikas vėl gali jungtis
                 flash('ok', t('PIN pakeistas.'));
                 redirect($back);
@@ -129,7 +129,7 @@ if (is_post()) {
             redirect($back);
         } else {
             $on = $own['status'] !== 'active';
-            q('UPDATE accounts SET status = ? WHERE id = ?', [$on ? 'active' : 'disabled', (int) $own['id']]);
+            account_set((int) $own['id'], 'status', $on ? 'active' : 'disabled');
             flash('ok', $on ? t('Vaiko prisijungimas vėl įjungtas.') : t('Vaiko prisijungimas išjungtas - vaikas nebegali prisijungti.'));
             redirect($back);
         }
@@ -198,7 +198,7 @@ if (is_post()) {
 // Skirtukas: apžvalga (taškai, tvarkaraštis, pastabos) arba nustatymai (nario duomenys, vaikai, paskyra)
 $tab = get('skiltis') === 'nustatymai' || (is_post() && $errors && post('action') !== '') ? 'nustatymai' : 'apzvalga';
 
-$isStaff = is_staff($a);
+$isStaff = can('valdymas', $a);
 $members = account_members($aid);
 // Treneriui grupės ir patvirtinimo nereikia: rodomi tik aktyvūs nariai (pvz. savo vaikai, jei treniruojasi)
 if ($isStaff) {
@@ -780,7 +780,7 @@ page_start($tab === 'nustatymai' ? t('Nustatymai') : t('Mano paskyra'), ['noinde
 
 <?php if ($tab === 'nustatymai'): ?>
   <?php // Treneriui paskyros nustatymai - Treneriams → Nustatymai (kad nesikartotų) ?>
-  <?= is_staff($a) ? '' : render_account_settings($a) ?>
+  <?= can('valdymas', $a) ? '' : render_account_settings($a) ?>
   <?= render_app_install_card() ?>
 <?php endif; ?>
 <?php

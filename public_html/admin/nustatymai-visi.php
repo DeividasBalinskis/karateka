@@ -2,7 +2,7 @@
 // C2: Visi nustatymai - vienas žemėlapis: kiekvienas jungiklis su dabartine reikšme ir nuoroda, kur keisti; serverio nustatymai (tik skaityti);
 // pakeitimų žurnalas su „Atkurti“ (visai svetainei skirtiems). Tik adminui.
 require dirname(__DIR__) . '/app/bootstrap.php';
-$me = require_admin();
+$me = require_can('settings');
 
 if (is_post() && post('action') === 'restore') {
     csrf_check();

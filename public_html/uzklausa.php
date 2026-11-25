@@ -23,8 +23,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
 }
 
 // CSRF (be HTML klaidos puslapio - home.js laukia JSON)
-$sent = $_POST['_csrf'] ?? '';
-if (!is_string($sent) || empty($_SESSION['csrf']) || !hash_equals($_SESSION['csrf'], $sent)) {
+if (!csrf_ok($_POST['_csrf'] ?? '')) {
     trial_reply(400, t('Puslapis per ilgai buvo atidarytas. Atnaujinkite jį ir bandykite dar kartą.'));
 }
 

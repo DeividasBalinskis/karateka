@@ -7,7 +7,7 @@ require_once dirname(__DIR__) . '/app/diplomas.php';
 $me = varz_require_access();
 $demo = varz_is_demo($me);   // bandymo nuoroda: tik bandymo varžybos, be tikrų narių ir bendrų nustatymų
 $sekr = !empty($me['sekr']);   // sekretoriatas per nuorodą: tik šios varžybos, be klubo narių duomenų
-$preview = !$sekr && !$demo && is_staff() && get('kaip') === 'sekretoriatas';   // adminas žiūri, kaip mato sekretoriatas
+$preview = !$sekr && !$demo && can('budo') && get('kaip') === 'sekretoriatas';   // adminas žiūri, kaip mato sekretoriatas
 $asSekr = $sekr || $preview;
 current_lang('lt');   // varžybų valdymas kol kas lietuviškai
 
@@ -245,7 +245,7 @@ $cfg = [
     'popup' => get('langas') && get('cat') !== '' ? (string) get('cat') : null,   // atkabinta rungtis atskirame lange
     'homeClub' => VARZ_HOME_CLUB, 'belts' => $belts, 'members' => $demo || $asSekr ? [] : varz_club_members(), 'state' => varz_state_maps(varz_drop_example_clubs(tournament_state($t))),
     'clubContacts' => tournament_club_contacts((int) $t['id']), 'clubDirectory' => $demo || $asSekr ? [] : varz_club_directory(), 'demo' => $demo, 'sekr' => $asSekr,
-    'admin' => (is_admin() && !$preview) || $demo,
+    'admin' => (can('budo_admin') && !$preview) || $demo,
     'diplomaApi' => url('admin/varzybu-sistema.php?id=' . (int) $t['id'] . '&diplomai=1'), 'diplomaTpl' => diploma_template(),   // tatamio šalinimas - tik pagrindiniam adminui (ir bandymo nuorodai)
     'deskArea' => max(0, (int) get('tatamis')) ?: null,   // v2.01: ?tatamis=N - šiame įrenginyje atsidaro to tatamio sekretoriato darbastalis
 ];
@@ -268,7 +268,7 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
   <div class="vz-top-row">
     <?php if (!$asSekr): ?><a class="vz-back" href="<?= url('admin/varzybos.php') ?>" title="Visos varžybos">←</a><?php endif; ?>
     <a class="vz-brand" href="<?= url($asSekr ? 'admin/varzybu-sistema.php?id=' . (int) $t['id'] . ($preview ? '&kaip=sekretoriatas' : '') : 'admin/varzybos.php') ?>" title="<?= $asSekr ? 'Šios varžybos' : 'Visos varžybos' ?>"><span class="vz-logo" aria-hidden="true"></span><?= e(VARZ_NAME) ?></a>
-    <?php if (!$asSekr && !$demo && is_staff()): ?><?= site_switch_html('budo') ?><?php endif; /* #171 */ ?>
+    <?php if (!$asSekr && !$demo && can('valdymas')): ?><?= site_switch_html('budo') ?><?php endif; /* #171 */ ?>
     <div class="vz-title">
       <div class="vz-switch">
         <h1 id="t-name"><?= e($t['title']) ?></h1>

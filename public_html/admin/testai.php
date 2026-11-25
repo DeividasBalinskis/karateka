@@ -2,7 +2,7 @@
 // Testai: klausimų bankas (klausimas, 2-4 atsakymai, paveikslėlis ar video), nustatymai ir rezultatai
 require dirname(__DIR__) . '/app/bootstrap.php';
 require APP_DIR . '/images.php';
-$me = require_staff();
+$me = require_can('quizzes');
 
 const QUIZ_DIR = PUBLIC_DIR . '/uploads/quiz';
 

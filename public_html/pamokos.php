@@ -14,7 +14,7 @@ if (!can_see_lessons($a)) {
     page_end();
     exit;
 }
-$isStaff = is_staff($a);
+$isStaff = can('training', $a);
 lessons_belt_folders_setup();
 lessons_kata_seed();
 lessons_kata_update();

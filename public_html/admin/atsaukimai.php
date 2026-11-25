@@ -2,8 +2,8 @@
 // Atšauktos treniruotės ir atostogos: datos, priežastis, kurioms grupėms. Nariai mato tvarkaraštyje ir (jei pažymėta) „Svarbu“.
 // Kuria ir trina adminas, treneriai mato sąrašą.
 require dirname(__DIR__) . '/app/bootstrap.php';
-$me = require_staff();
-$canEdit = is_admin($me);
+$me = require_can('training');
+$canEdit = can('schedule', $me);
 $errors = [];
 
 $groups = q_all('SELECT * FROM training_groups WHERE is_active = 1 ORDER BY sort_order, name');

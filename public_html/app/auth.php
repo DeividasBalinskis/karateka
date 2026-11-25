@@ -3,6 +3,142 @@
 
 const MIN_PASSWORD = 8;
 
+// ---------- Teisės (C1): viena lentelė „veiksmas → rolės“ ----------
+// Puslapiai klausia tik can('veiksmas') / require_can('veiksmas'); rolių tiesiogiai niekur kitur netikrina (tikrina tests/checks.sh).
+// Ta pati lentelė - docs/standartai.md („Permission table“); pridėjus veiksmą čia, jį reikia įrašyti ir ten (tikrina checks.sh).
+// Rolės: guest - neprisijungęs arba paskyra dar neaktyvi; member - narys (ir vaikas su savo prisijungimu); parent - narys, kuris turi vaikų;
+// coach - treneris; tester - administratoriaus (ar trenerio) rolė su žyme is_tester (gali tiek, kiek treneris, nustatymus mato tik skaityti,
+// Dojo nemato); admin - tikras administratorius. „Admin režimas“ ir „Žiūrėti kaip“ - tik vaizdas, teisių nekeičia.
+
+const ROLES = ['guest', 'member', 'parent', 'coach', 'tester', 'admin'];
+
+const PERMISSIONS = [
+    // Nariai ir tėvai
+    'member_self'    => ['guest', 'member', 'parent'],           // prisijungus (ir dar nepatvirtintam) - Paskyra: „+ Aš pats treniruojuosi“, „+ Pridėti vaiką“ (vaiko prisijungimui - ne)
+    'dojo'           => ['member', 'parent', 'coach', 'admin'],  // Dojo, arena, žaidimai - kai paskyra yra „kas mato žaidimą“ sąraše (admin - visada)
+    'dojo_menu'      => ['member', 'parent', 'coach', 'admin'],  // „🏯 Dojo“ meniu: kaip dojo, bet kol žaidimas neatidarytas visiems - tik admin
+    // Treneriai (ir testuotojai)
+    'valdymas'       => ['coach', 'tester', 'admin'],            // Valdymas, trenerio antraštė ir meniu, trenerio puslapių vaizdas, admin režimas
+    'members'        => ['coach', 'tester', 'admin'],            // Nariai, patvirtinimai, grupės
+    'training'       => ['coach', 'tester', 'admin'],            // Treniruotė (lankomumas, pastabos), pamokos, programa, tvarkaraštis (skaityti)
+    'xp'             => ['coach', 'tester', 'admin'],            // skirti aktyvumo taškus
+    'events'         => ['coach', 'tester', 'admin'],            // renginiai, kvietimai, naujienos, dalyviai
+    'exam_protocols' => ['coach', 'tester', 'admin'],            // egzaminų sąrašas ir protokolai
+    'quizzes'        => ['coach', 'tester', 'admin'],            // teorijos testai
+    'budo'           => ['coach', 'tester', 'admin'],            // Budo varžybos
+    'messages'       => ['coach', 'tester', 'admin'],            // pokalbiai ir žinutės su nariais, laiškų siuntimas
+    'translations'   => ['coach', 'tester', 'admin'],            // vertimai (EN / RU)
+    'federation'     => ['coach', 'tester', 'admin'],            // federacijos registrai - skaityti
+    'feedback_box'   => ['coach', 'tester', 'admin'],            // 💡 lange - visi atsiliepimai
+    'settings_view'  => ['tester', 'admin'],                     // Nustatymų jungikliai - matyti (testuotojui - tik skaityti)
+    // Tik tikras administratorius
+    'accounts'       => ['admin'],                               // paskyros, rolės, testuotojai, pakeitimų žurnalas
+    'game_access'    => ['admin'],                               // kas mato žaidimą
+    'settings'       => ['admin'],                               // svetainės jungikliai, „Visi nustatymai“, Valdymo meniu
+    'backups'        => ['admin'],                               // atsarginės kopijos, duomenų priežiūra, db atnaujinimas
+    'device_codes'   => ['admin'],                               // kodas kitam įrenginiui
+    'testing'        => ['admin'],                               // testavimas, „Žiūrėti kaip“
+    'feedback'       => ['admin'],                               // Atsiliepimai (puslapis), atsakymai
+    'review'         => ['admin'],                               // 🔎 Peržiūra
+    'broadcast'      => ['admin'],                               // Pranešimai visiems (laiškai ir SMS)
+    'sms'            => ['admin'],                               // SMS siuntimas
+    'justifications' => ['admin'],                               // pateisinimai
+    'exams'          => ['admin'],                               // kurti egzaminus, kainos, laukiantieji
+    'schedule'       => ['admin'],                               // keisti tvarkaraštį, kainas, grupių pavadinimus; atšaukti treniruotes
+    'xp_settings'    => ['admin'],                               // taškų kategorijos, lygių kaina
+    'event_lists'    => ['admin'],                               // galutinis renginio dalyvių sąrašas ir rezultatai
+    'members_admin'  => ['admin'],                               // ištrinti narį; kas nesutinka dėl nuotraukų
+    'budo_admin'     => ['admin'],                               // Budo: ištrinti tikras varžybas, bandymo nuoroda, transliacijos raktas, tatamio šalinimas
+    'ltkf'           => ['admin'],                               // LTKF svetainė, registrų keitimas, federacijos patvirtinimas
+    'design'         => ['admin'],                               // svetainės tema, šriftų bandymas, „👍 Patinka“
+    'dojo_admin'     => ['admin'],                               // Dojo administravimas
+    'home_edit'      => ['admin'],                               // pagrindinio puslapio redagavimas (+ paskyros, pažymėtos Paskyrose „🏠 Redaguoja pradžią“)
+];
+
+/** Paskyros rolė lentelei (be „parent“ - ji nustatoma tik kai reikia, žr. can()) */
+function account_role(?array $a): string
+{
+    if ($a === null || ($a['status'] ?? '') !== 'active') {
+        return 'guest';
+    }
+    $r = (string) ($a['role'] ?? 'member');
+    if ($r === 'admin' || $r === 'coach') {
+        return !empty($a['is_tester']) ? 'tester' : $r;
+    }
+    return 'member';
+}
+
+/** Ar narys turi vaikų (paskyroje yra ne tik „aš“) */
+function account_is_parent(array $a): bool
+{
+    static $memo = [];
+    $id = (int) $a['id'];
+    if (!isset($memo[$id])) {
+        $memo[$id] = (bool) q_value('SELECT 1 FROM account_members WHERE account_id = ? AND relation <> "self" LIMIT 1', [$id]);
+    }
+    return $memo[$id];
+}
+
+/** Ar paskyra ($a; nenurodžius - prisijungusi) gali atlikti veiksmą. Nežinomas veiksmas - ne. */
+function can(string $action, ?array $a = null): bool
+{
+    $roles = PERMISSIONS[$action] ?? null;
+    if ($roles === null) {
+        error_log('can(): nežinomas veiksmas ' . $action);
+        return false;
+    }
+    $a = $a ?? current_account();
+    $role = account_role($a);
+    if ($role === 'member' && in_array('parent', $roles, true) !== in_array('member', $roles, true)) {
+        $role = account_is_parent($a) ? 'parent' : 'member';
+    }
+    $ok = in_array($role, $roles, true);
+    if ($action === 'member_self') {
+        $ok = $ok && $a !== null && !is_kid_login($a);   // tik prisijungus; vaiko vardą, PIN ir duomenis keičia tėvai
+    } elseif ($action === 'dojo' || $action === 'dojo_menu') {
+        $ok = $ok && can_see_game($a, $role, $action === 'dojo_menu');
+    } elseif ($action === 'home_edit' && !$ok && $role !== 'guest') {
+        $ok = in_array((int) $a['id'], home_editor_ids(), true);
+    }
+    return $ok;
+}
+
+/** Puslapio pradžioje: prisijungęs ir gali - grąžina paskyrą; kitaip - prisijungimas arba „Nėra prieigos“ */
+function require_can(string $action): array
+{
+    $a = require_login();
+    if (!can($action, $a)) {
+        forbidden();
+    }
+    return $a;
+}
+
+/** Dojo: žaidimo lentelės sukurtos, ne testuotojas (ir ne nario paskyra su žyme), sąraše „kas mato žaidimą“ */
+function can_see_game(array $a, string $role, bool $menu): bool
+{
+    require_once APP_DIR . '/game.php';
+    if (!game_ready() || !empty($a['is_tester'])) {
+        return false;   // testuotojai žaidimo nemato (kad nesugadintume staigmenos)
+    }
+    $ids = game_access_ids();
+    $open = $role === 'admin' || $ids === null || in_array((int) $a['id'], $ids, true);
+    // #140 + sprendimas 2026-11-21: kol žaidimas neatidarytas nariams - meniu jį mato tik tikri administratoriai
+    return $open && (!$menu || $role === 'admin' || $ids === null);
+}
+
+/** Kas, be administratoriaus, redaguoja pagrindinį puslapį: paskyrų id (Paskyros → „🏠 Redaguoja pradžią“; ne pagal vardą) */
+function home_editor_ids(): array
+{
+    $ids = json_decode((string) site_setting('home_editors', ''), true);
+    return is_array($ids) ? array_values(array_unique(array_map('intval', $ids))) : [];
+}
+
+/** Rolės pavadinimas ekranui (testuotojas - atskirai, tester_badge) */
+function role_label(?string $role): string
+{
+    return $role === 'admin' ? t('adminas') : ($role === 'coach' ? t('treneris') : '');
+}
+
 function current_account(): ?array
 {
     static $loaded = false, $account = null;
@@ -11,14 +147,124 @@ function current_account(): ?array
         if (!empty($_SESSION['account_id'])) {
             $account = q_one('SELECT * FROM accounts WHERE id = ?', [$_SESSION['account_id']]);
             if (!$account || !in_array($account['status'], ['active', 'pending_approval'], true)
+                || (int) ($account['session_ver'] ?? 0) !== (int) ($_SESSION['sv'] ?? 0)
                 || (!empty($_SESSION['device_code']) && !device_code_session_ok((int) $_SESSION['device_code'], (int) $account['id']))) {
-                // Prisijungimas su kodu kitam įrenginiui atjungtas arba baigėsi (app/device_codes.php)
+                // Prisijungimas su kodu kitam įrenginiui atjungtas arba baigėsi (app/device_codes.php);
+                // C1: pakeitus slaptažodį (session_ver padidėja) kiti įrenginiai atjungiami
                 $account = null;
-                unset($_SESSION['account_id'], $_SESSION['device_code']);
+                unset($_SESSION['account_id'], $_SESSION['device_code'], $_SESSION['sv'], $_SESSION['view_admin']);
             }
         }
     }
     return $account;
+}
+
+/** Sesija - šiai paskyrai (prisijungimas, „Žiūrėti kaip“): kartu įsimenama paskyros sesijų versija (db/061) */
+function session_account_set(int $accountId): void
+{
+    $_SESSION['account_id'] = $accountId;
+    try {
+        $_SESSION['sv'] = (int) q_value('SELECT session_ver FROM accounts WHERE id = ?', [$accountId]);
+    } catch (PDOException $ex) {
+        $_SESSION['sv'] = 0;   // dar neimportuotas db/061
+    }
+}
+
+/**
+ * Naujas slaptažodis (ar PIN): kiti tos paskyros įrenginiai atjungiami (session_ver + 1).
+ * Jei keičia pats prisijungęs žmogus - šis įrenginys lieka prisijungęs.
+ */
+function account_password_set(int $accountId, string $password, string $how = 'changed'): void
+{
+    $hash = password_hash($password, PASSWORD_DEFAULT);
+    try {
+        q('UPDATE accounts SET password_hash = ?, session_ver = session_ver + 1 WHERE id = ?', [$hash, $accountId]);
+    } catch (PDOException $ex) {
+        q('UPDATE accounts SET password_hash = ? WHERE id = ?', [$hash, $accountId]);   // dar neimportuotas db/061
+    }
+    if ((int) ($_SESSION['account_id'] ?? 0) === $accountId) {
+        session_regenerate_id(true);
+        session_account_set($accountId);
+    }
+    account_log_write($accountId, 'password', null, $how);
+}
+
+// ---------- Paskyrų pakeitimų žurnalas (C1, db/061): rolė, būsena, testuotojas, žaidimas, pradžios redagavimas, slaptažodis ----------
+
+const ACCOUNT_LOG_FIELDS = ['created', 'role', 'status', 'is_tester', 'game_access', 'home_editor', 'password'];
+
+function account_log_ready(): bool
+{
+    static $ok = null;
+    if ($ok === null) {
+        try {
+            q_value('SELECT 1 FROM account_log LIMIT 1');
+            $ok = true;
+        } catch (PDOException $ex) {
+            $ok = false;
+        }
+    }
+    return $ok;
+}
+
+/** Įrašas: kas (prisijungęs; null - sistema ar pats žmogus per nuorodą), kada, kuri paskyra, kas pasikeitė (sena → nauja) */
+function account_log_write(int $accountId, string $field, ?string $old, ?string $new): void
+{
+    if (!in_array($field, ACCOUNT_LOG_FIELDS, true) || ($old === $new && $field !== 'password') || !account_log_ready()) {
+        return;
+    }
+    $by = function_exists('current_account') ? current_account() : null;
+    try {
+        q('INSERT INTO account_log (account_id, field, old_value, new_value, changed_by, changed_by_name) VALUES (?, ?, ?, ?, ?, ?)',
+            [$accountId, $field, $old !== null ? mb_substr($old, 0, 255) : null, $new !== null ? mb_substr($new, 0, 255) : null,
+             $by ? (int) $by['id'] : null, $by ? mb_substr(trim($by['first_name'] . ' ' . $by['last_name']), 0, 120) : null]);
+        q('DELETE FROM account_log WHERE changed_at < NOW() - INTERVAL 1 YEAR');
+    } catch (PDOException $ex) {
+        // žurnalas - ne svarbiau už patį pakeitimą
+    }
+}
+
+/** Pakeisti paskyros rolę, būseną ar testuotojo žymę ir įrašyti į žurnalą. Grąžina, ar kas nors pasikeitė. */
+function account_set(int $accountId, string $field, string $value): bool
+{
+    $allowed = ['role' => ['member', 'coach', 'admin'], 'status' => ['pending_email', 'pending_parent', 'pending_approval', 'active', 'disabled'], 'is_tester' => ['0', '1']];
+    if (!isset($allowed[$field]) || !in_array($value, $allowed[$field], true)) {
+        return false;
+    }
+    $old = q_value('SELECT ' . $field . ' FROM accounts WHERE id = ?', [$accountId]);
+    if ($old === false || (string) $old === $value) {
+        return false;
+    }
+    q('UPDATE accounts SET ' . $field . ' = ? WHERE id = ?', [$field === 'is_tester' ? (int) $value : $value, $accountId]);
+    account_log_write($accountId, $field, (string) $old, $value);
+    return true;
+}
+
+/** Žurnalo įrašai (naujausi pirmi): visų arba vienos paskyros; kartu - „kas mato žaidimą“ pakeitimai iš nustatymų žurnalo */
+function account_log_rows(int $limit = 100, ?int $accountId = null): array
+{
+    if (!account_log_ready()) {
+        return [];
+    }
+    return q_all('SELECT l.*, a.first_name, a.last_name, a.email FROM account_log l LEFT JOIN accounts a ON a.id = l.account_id'
+        . ($accountId ? ' WHERE l.account_id = ' . (int) $accountId : '') . ' ORDER BY l.id DESC LIMIT ' . max(1, min(500, $limit)));
+}
+
+/** „Kas mato žaidimą“ (game_access) pakeitimas: į žurnalą - kiekvienai paskyrai, kuriai pasikeitė */
+function account_log_game_access(?array $oldIds, ?array $newIds): void
+{
+    if ($oldIds === null || $newIds === null) {   // „visi“ ↔ sąrašas - viena eilutė (paskyra 0 = visi)
+        if (($oldIds === null) !== ($newIds === null)) {
+            account_log_write(0, 'game_access', $oldIds === null ? 'all' : implode(',', $oldIds), $newIds === null ? 'all' : implode(',', $newIds));
+        }
+        return;
+    }
+    foreach (array_diff($newIds, $oldIds) as $id) {
+        account_log_write((int) $id, 'game_access', '0', '1');
+    }
+    foreach (array_diff($oldIds, $newIds) as $id) {
+        account_log_write((int) $id, 'game_access', '1', '0');
+    }
 }
 
 function is_active_account(?array $a = null): bool
@@ -27,20 +273,20 @@ function is_active_account(?array $a = null): bool
     return $a !== null && $a['status'] === 'active';
 }
 
+/** Treneris, testuotojas ar administratorius (tas pats, kas can('valdymas')) - naudojama tik šiame faile */
 function is_staff(?array $a = null): bool
 {
-    $a = $a ?? current_account();
-    return is_active_account($a) && in_array($a['role'], ['coach', 'admin'], true);
+    return can('valdymas', $a);
 }
 
 /**
  * Tikras administratorius (Denis, Deividas). Testuotojas (db/044, accounts.is_tester) turi administratoriaus rolę,
  * bet sistema jį laiko treneriu: gali tiek, kiek treneris, nustatymus mato tik skaityti, Dojo ir žaidimo nemato.
+ * Naudojama tik šiame faile; puslapiai klausia can().
  */
 function is_admin(?array $a = null): bool
 {
-    $a = $a ?? current_account();
-    return is_active_account($a) && $a['role'] === 'admin' && empty($a['is_tester']);
+    return account_role($a ?? current_account()) === 'admin';
 }
 
 /** Testuotojas: ženkliukas „🧪 Testuotojas“, už testavimą vėliau - bonusai */
@@ -75,6 +321,31 @@ function real_admin_sql(string $al = ''): string
 function real_admins_left(int $exceptId): int
 {
     return (int) q_value('SELECT COUNT(*) FROM accounts WHERE ' . real_admin_sql() . ' AND id <> ?', [$exceptId]);
+}
+
+/** Ar ši paskyra - paskutinis tikras administratorius (jo rolės, žymės ir būsenos keisti negalima) */
+function account_is_last_admin(array $acc): bool
+{
+    return is_admin($acc) && real_admins_left((int) $acc['id']) === 0;
+}
+
+/** Aktyvios administratoriaus rolės paskyros (su testuotojais) - sąrašams, kuriuose pasirenkami žmonės */
+function active_admins(): array
+{
+    return q_all('SELECT id, first_name, last_name, email FROM accounts WHERE role = "admin" AND status = "active" ORDER BY first_name, last_name');
+}
+
+/** Seniausia aktyvi administratoriaus paskyra (autorius automatiškai sukuriamam turiniui); nėra - null */
+function first_admin_id(): ?int
+{
+    $id = q_value('SELECT id FROM accounts WHERE role = "admin" AND status = "active" ORDER BY id LIMIT 1');
+    return $id === false || $id === null ? null : (int) $id;
+}
+
+/** Ar jau yra bent viena administratoriaus paskyra (pirmo administratoriaus puslapiui) */
+function any_admin_exists(): bool
+{
+    return (bool) q_value('SELECT 1 FROM accounts WHERE role = "admin" LIMIT 1');
 }
 
 /** Ženkliukas prie vardo */
@@ -123,22 +394,15 @@ function forbidden(): void
     exit;
 }
 
+/** Seni vardai (puslapiai naudoja require_can) */
 function require_staff(): array
 {
-    $a = require_login();
-    if (!is_staff($a)) {
-        forbidden();
-    }
-    return $a;
+    return require_can('valdymas');
 }
 
 function require_admin(): array
 {
-    $a = require_login();
-    if (!is_admin($a)) {
-        forbidden();
-    }
-    return $a;
+    return require_can('accounts');
 }
 
 function normalize_email(string $email): string
@@ -247,7 +511,7 @@ function attempt_login(string $email, string $password): array
 function login_account(int $accountId): void
 {
     session_regenerate_id(true);
-    $_SESSION['account_id'] = $accountId;
+    session_account_set($accountId);
     unset($_SESSION['csrf'], $_SESSION['tfa'], $_SESSION['dev_login_code'], $_SESSION['device_code']);
     q('UPDATE accounts SET last_login_at = NOW() WHERE id = ?', [$accountId]);
     if ($acc = q_one('SELECT * FROM accounts WHERE id = ?', [$accountId])) {
@@ -296,6 +560,7 @@ function create_account(string $email, string $password, string $first, string $
     } catch (PDOException $ex) {
         // dar neimportuotas db/049
     }
+    account_log_write($id, 'created', null, $status);
     return $id;
 }
 
@@ -404,7 +669,7 @@ function advance_account_status(int $accountId): void
         $new = 'pending_approval';
     }
     if ($new !== $a['status']) {
-        q('UPDATE accounts SET status = ? WHERE id = ?', [$new, $accountId]);
+        account_set($accountId, 'status', $new);
         if ($new === 'pending_approval') {
             notify_coach_pending($a);
         }
@@ -597,9 +862,8 @@ function handle_account_settings(array $a, string $back, array &$errors): void
         } elseif (isset($_POST['password2']) && $pw !== (string) $_POST['password2']) {
             $errors[] = t('Slaptažodžiai nesutampa.');
         } else {
-            q('UPDATE accounts SET password_hash = ? WHERE id = ?', [password_hash($pw, PASSWORD_DEFAULT), $aid]);
-            session_regenerate_id(true);
-            flash('ok', t('Slaptažodis pakeistas.'));
+            account_password_set($aid, $pw);   // C1: kiti įrenginiai atjungiami
+            flash('ok', t('Slaptažodis pakeistas. Kiti įrenginiai atjungti.'));
             redirect($back);
         }
     }

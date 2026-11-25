@@ -23,7 +23,7 @@ function set_member_tags(int $memberId, array $tags): void
 /** Ar paskyra turi žymą: per savo narį (relation = self). Treneriai mato viską. */
 function account_has_tag(array $a, string $tag): bool
 {
-    if (is_staff($a)) {
+    if (can('events', $a)) {
         return true;
     }
     return (bool) q_value('SELECT 1 FROM member_tags mt JOIN account_members am ON am.member_id = mt.member_id

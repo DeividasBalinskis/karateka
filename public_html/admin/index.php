@@ -1,7 +1,7 @@
 <?php
 // Trenerio „Šiandien“: tik tai, ką reikia padaryti (meniu skirtukai - viršuje)
 require dirname(__DIR__) . '/app/bootstrap.php';
-$me = require_staff();
+$me = require_can('valdymas');
 if ($msg = legacy_demo_autopurge($me)) {   // vieną kartą: seni pavyzdiniai duomenys (žr. app/test_data.php)
     flash('ok', $msg);
 }

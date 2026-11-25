@@ -169,7 +169,7 @@ function questions_box(string $kind, int $refId, string $back): string
         $html .= ('<div class="q-public"><div class="kicker">' . t('Klausimai ir atsakymai') . '</div>') . render_public_questions($public) . '</div>';
     }
 
-    if (is_staff($a)) {
+    if (can('messages', $a)) {
         // Treneriui: kiekvieno nario komentarai su atsakymo forma - atsakoma čia pat
         try {
             $rows = message_rows("mm.$column = ? AND mm.note_id IS NULL", [$refId]);

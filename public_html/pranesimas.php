@@ -7,10 +7,10 @@ $a = require_login();
 if (!is_post() && get('naujausi') !== '') {
     header('Content-Type: application/json; charset=utf-8');
     header('Cache-Control: no-store');
-    exit(json_encode(['ok' => true, 'items' => is_staff($a) ? notifications_popup((int) $a['id']) : []], JSON_UNESCAPED_UNICODE));
+    exit(json_encode(['ok' => true, 'items' => can('valdymas', $a) ? notifications_popup((int) $a['id']) : []], JSON_UNESCAPED_UNICODE));
 }
 if (!is_post()) {
-    redirect(is_staff($a) ? 'admin/' : 'paskyra.php');
+    redirect(can('valdymas', $a) ? 'admin/' : 'paskyra.php');
 }
 csrf_check();
 // „Supratau“ iš iššokusio langelio - be perkrovimo
@@ -22,7 +22,7 @@ if (post('ajax') === '1') {
 
 $back = post('back');
 if (!preg_match('~^(admin/)?[\w-]*(\.php)?(\?[\w=&%.\-]*)?(#[\w-]*)?$~', $back) || $back === '') {
-    $back = is_staff($a) ? 'admin/' : 'paskyra.php';
+    $back = can('valdymas', $a) ? 'admin/' : 'paskyra.php';
 }
 // Visi atsakymai į atsiliepimus - „Supratau“ vienu kartu
 if (post('action') === 'done_feedback') {
@@ -49,7 +49,7 @@ switch (post('action')) {
         break;
     case 'skill_approve':
     case 'skill_reject':
-        if (!is_staff($a) || !$n['member_id'] || !$n['ref_id']) {
+        if (!can('valdymas', $a) || !$n['member_id'] || !$n['ref_id']) {
             forbidden();
         }
         if (post('action') === 'skill_approve') {
@@ -60,7 +60,7 @@ switch (post('action')) {
         }
         break;
     case 'late_approve':
-        if (!is_staff($a) || !$n['member_id'] || !$n['ref_id']) {
+        if (!can('valdymas', $a) || !$n['member_id'] || !$n['ref_id']) {
             forbidden();
         }
         $ev = q_one('SELECT * FROM events WHERE id = ?', [(int) $n['ref_id']]);

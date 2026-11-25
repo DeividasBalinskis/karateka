@@ -1,7 +1,7 @@
 <?php
 // Narių sąrašas ir redagavimas
 require dirname(__DIR__) . '/app/bootstrap.php';
-$me = require_staff();
+$me = require_can('members');
 
 $id = (int) (get('id') ?: post('id'));
 
@@ -131,7 +131,7 @@ if ($id) {
     // Kartu dingsta jo lankomumas, taškai, pastabos, žinutės; paskyros, kuriose neliko narių (ne trenerių), ištrinamos irgi.
     if (is_post() && post('action') === 'delete_member') {
         csrf_check();
-        if (!is_admin($me)) {
+        if (!can('members_admin', $me)) {
             forbidden();
         }
         $accIds = array_map('intval', q('SELECT account_id FROM account_members WHERE member_id = ?', [$id])->fetchAll(PDO::FETCH_COLUMN));
@@ -437,7 +437,7 @@ if ($id) {
         <?php endforeach; ?>
       </div>
     </div>
-    <?php if (is_admin($me)): ?>
+    <?php if (can('members_admin', $me)): ?>
       <details class="panel card danger-zone">
         <summary><?= te('Ištrinti narį') ?></summary>
         <p class="small"><?= te('Narys ištrinamas visam laikui su lankomumu, taškais, pastabomis ir žinutėmis. Tėvų ar paties nario paskyra, kurioje neliks narių, ištrinama irgi.

@@ -342,7 +342,7 @@ function feedback_all(?array $a, int $limit = 400): array
         return feedback_mine(null, $limit);
     }
     $rows = q_all('SELECT f.*, a.first_name, a.last_name FROM feedback f LEFT JOIN accounts a ON a.id = f.account_id'
-        . (is_staff($a) ? '' : ' WHERE f.account_id = ' . (int) $a['id']) . ' ORDER BY f.id DESC LIMIT ' . $limit);
+        . (can('feedback_box', $a) ? '' : ' WHERE f.account_id = ' . (int) $a['id']) . ' ORDER BY f.id DESC LIMIT ' . $limit);
     return array_values(array_filter($rows, function ($f) use ($a) { return feedback_area_visible(feedback_row_area($f), $a); }));
 }
 
@@ -368,7 +368,7 @@ function feedback_json(array $f): array
     $ar = feedback_row_area($f);
     $viewer = current_account();
     return ['g' => $ar['g'], 'gl' => $ar['gl'], 's' => $ar['s'], 'sl' => $ar['sl'], 'sec' => $ar['sec'],
-            'href' => ($viewer && is_staff($viewer)) || feedback_can_edit($viewer, $f) ? feedback_page_href($f) : '',
+            'href' => ($viewer && can('feedback_box', $viewer)) || feedback_can_edit($viewer, $f) ? feedback_page_href($f) : '',
             'verdict' => (string) ($f['verdict'] ?? ''), 'canVerdict' => feedback_can_verdict($viewer, $f),
             'answer' => (string) ($f['answer'] ?? ''), 'canAnswer' => feedback_can_answer($viewer, $f),
             'id' => (int) $f['id'], 'title' => feedback_title($f), 'body' => (string) $f['body'], 'status' => $f['status'], 'statusLabel' => t(FEEDBACK_STATUS[$f['status']][0] ?? ''),
@@ -479,7 +479,7 @@ function feedback_visible(?array $a, ?string $site = null): bool
     $mode = feedback_mode();
     $script = basename($_SERVER['SCRIPT_NAME'] ?? '');
     // Taikos bandymo nuoroda (be paskyros) - atsiliepimus palikti galima ir tada
-    $who = $mode === 'all' || ($mode === 'members' && $a) || ($mode === 'staff' && $a && is_staff($a));
+    $who = $mode === 'all' || ($mode === 'members' && $a) || ($mode === 'staff' && $a && can('valdymas', $a));
     return feedback_ready() && $mode !== 'off' && ($who || varz_demo() || varz_sekr() || ($site === 'ltkf' && ltkf_review())) && !in_array($script, ['testas.php', 'egzaminas.php', 'testas-svecias.php'], true);
 }
 
@@ -495,8 +495,8 @@ function feedback_widget_html(?string $site = null): string
     $site = $site ?? feedback_site_now();
     $icon = '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M12 2a7 7 0 0 0-4 12.74V17a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-2.26A7 7 0 0 0 12 2Zm-3 18a1 1 0 0 0 1 1h4a1 1 0 0 0 0-2h-4a1 1 0 0 0-1 1Z"/></svg>';
     $cfg = ['api' => url('atsiliepimas.php'), 'csrf' => csrf_token(), 'site' => $site, 'page' => $remote ? '' : feedback_current_page(), 'guest' => !$a,
-            'admin' => is_admin($a) ? url('admin/atsiliepimai.php') : '', 'images' => feedback_images_ready(), 'questions' => feedback_questions_count($a)];
-    $staff = $a && is_staff($a);
+            'admin' => can('feedback', $a) ? url('admin/atsiliepimai.php') : '', 'images' => feedback_images_ready(), 'questions' => feedback_questions_count($a)];
+    $staff = $a && can('feedback_box', $a);
     return $rv . '<div class="fb" id="fb" data-cfg="' . e(json_encode($cfg, JSON_UNESCAPED_UNICODE)) . '">'
         . '<button type="button" class="fb-fab" id="fbFab" aria-expanded="false" aria-controls="fbPanel" title="' . e(t('Palikite komentarą ar ekrano nuotrauką - pataisysime')) . '">' . $icon
         . '<span class="fb-fab-label">' . te('Atsiliepimas') . '</span><span class="fb-fab-n" hidden></span></button>'

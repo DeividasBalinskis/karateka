@@ -3,7 +3,7 @@
 // ?e=news|event|lesson|home&id=N - vieno įrašo tekstai; be parametrų - sąrašas, kas išversta.
 require dirname(__DIR__) . '/app/bootstrap.php';
 current_lang('lt');   // originalai rodomi lietuviškai
-$me = require_staff();
+$me = require_can('translations');
 
 const TR_ENTITIES = ['home' => 'Pagrindinis puslapis', 'news' => 'Naujiena', 'event' => 'Renginys', 'lesson' => 'Pamoka'];
 $entity = isset(TR_ENTITIES[get('e')]) ? get('e') : (isset(TR_ENTITIES[post('e')]) ? post('e') : '');

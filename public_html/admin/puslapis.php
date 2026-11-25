@@ -3,10 +3,7 @@
 // Pats redagavimas - pagrindiniame puslapyje: index.php?redaguoti=1
 require dirname(__DIR__) . '/app/bootstrap.php';
 require_once APP_DIR . '/images.php';
-$me = require_login();
-if (!home_can_edit($me)) {
-    forbidden();   // adminas ir instruktoriai, kurių vardai yra instruktorių bloke
-}
+$me = require_can('home_edit');   // adminas ir paskyros, pažymėtos Paskyrose „🏠 Redaguoja pradžią“ (C1)
 
 if (!is_post()) {
     redirect('index.php?redaguoti=1');

@@ -3,9 +3,9 @@
 // (ten - lentelė su balais, registracijos nuoroda ir visa kita) ir „🔗“ registracijos nuorodai nukopijuoti. Įvykę - suskleisti.
 // Adminui: „💶 Kainos, mokėjimai, sertifikatai“ - egzamino kaina kiekvienam diržui (rodoma vaiko egzamino puslapyje); kas dar laukia info - pažymėta.
 require dirname(__DIR__) . '/app/bootstrap.php';
-$me = require_staff();
+$me = require_can('exam_protocols');
 
-if (is_post() && post('action') === 'prices' && is_admin($me)) {
+if (is_post() && post('action') === 'prices' && can('exams', $me)) {
     csrf_check();
     $out = [];
     foreach ((array) ($_POST['price'] ?? []) as $lvl => $v) {
@@ -54,7 +54,7 @@ if (is_post() && in_array(post('action'), ['wl_link', 'wl_open', 'wl_assign', 'w
         case 'copy_exam':   // tai pačiai egzamino dienai - kitas protokolas (pvz. kitiems diržams)
             $src = q_one('SELECT * FROM events WHERE id = ? AND type = "exam"', [(int) post('id')]);
             $label = mb_substr(trim((string) post('label')), 0, 60);
-            if ($src && $label !== '' && is_admin($me)) {
+            if ($src && $label !== '' && can('exams', $me)) {
                 $title = mb_substr(preg_replace('/\s+·\s+[^·]*$/u', '', $src['title']) . ' · ' . $label, 0, 190);
                 q('INSERT INTO events (type, title, starts_on, ends_on, start_time, location, is_abroad, members_only, registration, registration_until, invited_only, description, summary, cover)
                    SELECT type, ?, starts_on, ends_on, start_time, location, is_abroad, members_only, registration, registration_until, invited_only, description, summary, cover FROM events WHERE id = ?',
@@ -130,7 +130,7 @@ page_start(t('Egzaminai'), ['admin' => true]);
     <h1 class="styled"><?= te('Egzaminai') ?></h1>
     <p style="margin:0;"><?= te('Atidarykite protokolą - ten balai, registracijos nuoroda ir viskas kita.') ?></p>
   </div>
-  <?php if (is_admin($me)): ?><a class="btn btn-primary btn-sm" href="<?= url('admin/renginiai.php?edit=new&back=egzaminai') ?>"><?= te('+ Naujas egzaminas') ?></a><?php endif; ?>
+  <?php if (can('exams', $me)): ?><a class="btn btn-primary btn-sm" href="<?= url('admin/renginiai.php?edit=new&back=egzaminai') ?>"><?= te('+ Naujas egzaminas') ?></a><?php endif; ?>
 </div>
 
 <?php if (!$ready): ?>
@@ -196,7 +196,7 @@ page_start(t('Egzaminai'), ['admin' => true]);
         // #165: viena egzamino diena - keli protokolai (skirtingiems diržams); po paskutiniu tos dienos - „+ Protokolas šiai datai“
         echo $item($ev, false);
         $next = $upcoming[array_search($ev, $upcoming, true) + 1] ?? null;
-        if (is_admin($me) && exam_waitlist_ready() && (!$next || $next['starts_on'] !== $ev['starts_on'])) {
+        if (can('exams', $me) && exam_waitlist_ready() && (!$next || $next['starts_on'] !== $ev['starts_on'])) {
             echo '<form method="post" class="exam-copy">' . csrf_field() . '<input type="hidden" name="action" value="copy_exam"><input type="hidden" name="id" value="' . (int) $ev['id'] . '">'
                 . '<input type="text" name="label" maxlength="60" required placeholder="' . e(t('pvz. 10–7 kyu')) . '" aria-label="' . e(t('Kokiems diržams')) . '">'
                 . '<input type="time" name="start_time" value="' . e(fmt_time($ev['start_time'])) . '" aria-label="' . e(t('Pradžios laikas')) . '" title="' . e(t('Naujo protokolo pradžios laikas')) . '">'
@@ -213,7 +213,7 @@ page_start(t('Egzaminai'), ['admin' => true]);
 <?php endif; ?>
 
 <div class="exam-extra">
-  <?php if (is_admin($me)): ?>
+  <?php if (can('exams', $me)): ?>
     <details class="panel card exam-prices" id="kainos">
       <summary><b><?= te('💶 Kainos, mokėjimai, sertifikatai') ?></b> <span class="small muted"><?= $prices ? te('kainos nustatytos: {n}', ['n' => count($prices)]) : te('kainos dar nenustatytos') ?></span></summary>
       <form method="post" class="form">

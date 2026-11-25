@@ -2,7 +2,7 @@
 // C8: masinių laiškų siuntimas dalimis (app/mail_outbox.php). Atidarius - siunčiama po kelis, kol neliks; kiekvienam gavėjui - rezultatas.
 // Uždarius puslapį neišsiųsti laukia: Pranešimas nariams → „Laiškai“ → „Tęsti“.
 require dirname(__DIR__) . '/app/bootstrap.php';
-$me = require_staff();
+$me = require_can('messages');
 
 $b = preg_replace('/[^a-z0-9]/', '', (string) (get('b') ?: post('b')));
 if ($b === '' || !outbox_ready() || !(int) q_value('SELECT COUNT(*) FROM mail_outbox WHERE batch = ?', [$b])) {

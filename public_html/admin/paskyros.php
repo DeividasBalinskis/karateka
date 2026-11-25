@@ -1,7 +1,7 @@
 <?php
 // Paskyros ir rolės (tik administratoriui): kas yra treneris, išjungti/įjungti paskyrą
 require dirname(__DIR__) . '/app/bootstrap.php';
-$me = require_admin();
+$me = require_can('accounts');
 
 // Nauja paskyra (pvz. kitam adminui): iškart aktyvi, slaptažodį įrašo adminas; „be pokalbių lango“ - db/035
 if (is_post() && post('action') === 'create') {
@@ -16,7 +16,8 @@ if (is_post() && post('action') === 'create') {
         flash('err', t('Tokia paskyra jau yra:') . ' ' . $email);
     } else {
         $id = create_account($email, (string) post('password'), mb_substr(trim(post('first_name')), 0, 80), mb_substr(trim(post('last_name')), 0, 80), null, 'active');
-        q('UPDATE accounts SET role = ?, email_verified_at = NOW(), approved_at = NOW() WHERE id = ?', [$role, $id]);
+        q('UPDATE accounts SET email_verified_at = NOW(), approved_at = NOW() WHERE id = ?', [$id]);
+        account_set($id, 'role', $role);   // C1: į žurnalą
         if (!empty($_POST['chat_off'])) {
             try {
                 q('UPDATE accounts SET chat_off = 1 WHERE id = ?', [$id]);
@@ -35,12 +36,12 @@ if (is_post()) {
     $acc = q_one('SELECT * FROM accounts WHERE id = ?', [$id]);
     if ($acc && $id !== (int) $me['id']) {   // savo rolės nekeičiame, kad neliktume be administratoriaus
         // Bent vienas tikras administratorius (ne testuotojas) turi likti visada
-        $lastReal = is_admin($acc) && real_admins_left($id) === 0;
+        $lastReal = account_is_last_admin($acc);
         if (post('action') === 'role' && in_array(post('role'), ['member', 'coach', 'admin'], true)) {
             if ($lastReal && post('role') !== 'admin') {
                 flash('err', t('Tai paskutinis administratorius - rolės pakeisti negalima.'));
             } else {
-                q('UPDATE accounts SET role = ? WHERE id = ?', [post('role'), $id]);
+                account_set($id, 'role', post('role'));   // C1: rolės pakeitimas - į žurnalą
                 flash('ok', t('Rolė pakeista:') . " {$acc['first_name']} {$acc['last_name']}");
             }
         }
@@ -49,9 +50,17 @@ if (is_post()) {
             if ($on && $lastReal) {
                 flash('err', t('Tai paskutinis administratorius - testuotoju padaryti negalima.'));
             } else {
-                q('UPDATE accounts SET is_tester = ? WHERE id = ?', [$on ? 1 : 0, $id]);
+                account_set($id, 'is_tester', $on ? '1' : '0');
                 flash('ok', ($on ? t('Testuotojas:') : t('Nebe testuotojas:')) . " {$acc['first_name']} {$acc['last_name']}");
             }
+        }
+        if (post('action') === 'home_editor') {   // C1: kas (be administratorių) redaguoja pagrindinį puslapį - pagal paskyrą, ne pagal vardą
+            $ids = home_editor_ids();
+            $on = post('on') === '1';
+            $new = $on ? array_values(array_unique(array_merge($ids, [$id]))) : array_values(array_diff($ids, [$id]));
+            set_site_setting('home_editors', json_encode(array_map('intval', $new)));
+            account_log_write($id, 'home_editor', in_array($id, $ids, true) ? '1' : '0', $on ? '1' : '0');
+            flash('ok', ($on ? t('Redaguoja pagrindinį puslapį:') : t('Nebe redaguoja pagrindinio puslapio:')) . " {$acc['first_name']} {$acc['last_name']}");
         }
         if (post('action') === 'chat') {
             try {
@@ -63,13 +72,13 @@ if (is_post()) {
             if ($lastReal) {
                 flash('err', t('Tai paskutinis administratorius - išjungti negalima.'));
             } else {
-                q('UPDATE accounts SET status = "disabled" WHERE id = ?', [$id]);
-                flash('ok', "Paskyra išjungta: {$acc['email']}");
+                account_set($id, 'status', 'disabled');
+                flash('ok', t('Paskyra išjungta:') . ' ' . $acc['email']);
             }
         }
         if (post('action') === 'enable' && $acc['status'] === 'disabled') {
-            q('UPDATE accounts SET status = "active" WHERE id = ?', [$id]);
-            flash('ok', "Paskyra įjungta: {$acc['email']}");
+            account_set($id, 'status', 'active');
+            flash('ok', t('Paskyra įjungta:') . ' ' . $acc['email']);
         }
     }
     redirect('admin/paskyros.php' . (get('q') !== '' ? '?q=' . rawurlencode(get('q')) : ''));
@@ -85,10 +94,33 @@ if ($search !== '') {
 $rows = q_all($sql . ' ORDER BY role = "member", last_name, first_name LIMIT 300', $params);
 
 $statusLabel = [
-    'pending_email' => t('laukia el. pašto'), 'pending_parent' => t('laukia tėvų'), 'pending_approval' => 'laukia patvirtinimo',
-    'active' => 'aktyvi', 'disabled' => t('išjungta'),
+    'pending_email' => t('laukia el. pašto'), 'pending_parent' => t('laukia tėvų'), 'pending_approval' => t('laukia patvirtinimo'),
+    'active' => t('aktyvi'), 'disabled' => t('išjungta'),
 ];
 $roleLabel = ['member' => t('Narys / tėvai'), 'coach' => t('Treneris'), 'admin' => t('Administratorius')];
+$homeEditors = home_editor_ids();
+$insNames = home_instructor_names();   // tik pasiūlymui (rodoma „kortelė pradžioje“); teisę duoda tik mygtukas
+$logRows = account_log_rows(60);
+$fieldLabel = ['created' => t('Sukurta'), 'role' => t('Rolė'), 'status' => t('Būsena'), 'is_tester' => t('Testuotojas'), 'game_access' => t('Mato Dojo'),
+    'home_editor' => t('Redaguoja pradžią'), 'password' => t('Slaptažodis')];
+$valLabel = function (string $field, ?string $v) use ($roleLabel, $statusLabel): string {
+    if ($v === null || $v === '') {
+        return '–';
+    }
+    if ($field === 'role') {
+        return $roleLabel[$v] ?? $v;
+    }
+    if ($field === 'status' || $field === 'created') {
+        return $statusLabel[$v] ?? $v;
+    }
+    if ($field === 'password') {
+        return $v === 'reset' ? t('atkurtas per nuorodą') : ($v === 'pin' ? t('PIN pakeistas') : t('pakeistas'));
+    }
+    if ($field === 'game_access' && $v === 'all') {
+        return t('visi');
+    }
+    return in_array($v, ['0', '1'], true) ? ($v === '1' ? t('taip') : t('ne')) : $v;
+};
 
 page_start(t('Paskyros'), ['admin' => true]);
 ?>
@@ -138,6 +170,14 @@ page_start(t('Paskyros'), ['admin' => true]);
                   <button type="submit" class="btn btn-sm <?= !empty($r['is_tester']) ? 'on' : 'btn-ghost' ?>" aria-pressed="<?= !empty($r['is_tester']) ? 'true' : 'false' ?>" title="<?= te('Testuotojas: gali tiek, kiek treneris, nustatymus mato tik skaityti, Dojo nemato') ?>">🧪 <?= !empty($r['is_tester']) ? te('Testuotojas ✓') : te('Testuotojas') ?></button></form>
               <?php endif; ?>
             <?php endif; ?>
+            <?php $he = in_array((int) $r['id'], $homeEditors, true); if (!$self && !in_array(account_role($r), ['guest', 'admin'], true)):
+                $card = isset($insNames[preg_replace('/\s+/u', ' ', mb_strtolower(trim($r['first_name'] . ' ' . $r['last_name'])))]); ?>
+              <form method="post" class="home-ed-tg"><?= csrf_field() ?><input type="hidden" name="id" value="<?= (int) $r['id'] ?>"><input type="hidden" name="action" value="home_editor"><input type="hidden" name="on" value="<?= $he ? '0' : '1' ?>">
+                <button type="submit" class="btn btn-sm <?= $he ? 'on' : 'btn-ghost' ?>" aria-pressed="<?= $he ? 'true' : 'false' ?>"
+                  data-ask="<?= e(($he ? t('Nebeleisti redaguoti pagrindinio puslapio:') : t('Leisti redaguoti pagrindinį puslapį:')) . ' ' . trim($r['first_name'] . ' ' . $r['last_name']) . '?') ?>" onclick="return confirm(this.dataset.ask)"
+                  title="<?= te('Gali redaguoti pagrindinį puslapį (instruktorių korteles ir tekstus)') ?>">🏠 <?= $he ? te('Redaguoja pradžią ✓') : te('Redaguoja pradžią') ?></button></form>
+              <?php if ($card && !$he): ?><div class="muted small"><?= te('Yra kortelė tarp instruktorių - jei tai tas pats žmogus, galite leisti redaguoti.') ?></div><?php endif; ?>
+            <?php endif; ?>
           </td>
           <td>
             <?php if (!$self): ?>
@@ -156,5 +196,28 @@ page_start(t('Paskyros'), ['admin' => true]);
     </tbody>
   </table>
 </div>
+<section class="panel card" id="zurnalas">
+  <h2><?= te('Pakeitimų žurnalas') ?></h2>
+  <p class="muted small"><?= te('Kas ir kada pakeitė rolę, būseną, testuotojo žymę, kas mato Dojo, kas redaguoja pradžią, slaptažodį. Saugoma 1 metus.') ?></p>
+  <?php if (!account_log_ready()): ?>
+    <p class="flash flash-err"><?= te('Duomenų bazė neatnaujinta - importuokite') ?> <code>db/061_paskyru_zurnalas.sql</code>.</p>
+  <?php elseif (!$logRows): ?>
+    <p class="muted"><?= te('Pakeitimų dar nėra.') ?></p>
+  <?php else: ?>
+    <table class="table cards acc-log">
+      <thead><tr><th><?= te('Kada') ?></th><th><?= te('Paskyra') ?></th><th><?= te('Kas pasikeitė') ?></th><th><?= te('Kas pakeitė') ?></th></tr></thead>
+      <tbody>
+        <?php foreach ($logRows as $l): ?>
+          <tr>
+            <td class="small"><?= e(substr((string) $l['changed_at'], 0, 16)) ?></td>
+            <td><?= (int) $l['account_id'] === 0 ? te('visi') : e(trim($l['first_name'] . ' ' . $l['last_name']) ?: login_name((string) $l['email'])) ?></td>
+            <td><b><?= e($fieldLabel[$l['field']] ?? $l['field']) ?>:</b> <?= $l['field'] === 'password' || $l['field'] === 'created' ? '' : e($valLabel($l['field'], $l['old_value'])) . ' → ' ?><?= e($valLabel($l['field'], $l['new_value'])) ?></td>
+            <td class="small"><?= $l['changed_by_name'] !== null ? e($l['changed_by_name']) : te('pats / sistema') ?></td>
+          </tr>
+        <?php endforeach; ?>
+      </tbody>
+    </table>
+  <?php endif; ?>
+</section>
 <?php
 page_end();

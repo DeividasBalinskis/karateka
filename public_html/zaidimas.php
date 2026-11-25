@@ -22,8 +22,7 @@ if (!game_allowed($a)) {
 }
 $in = is_post() ? (json_decode((string) file_get_contents('php://input'), true) ?: $_POST) : $_GET;
 if (is_post()) {
-    $tok = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? ($in['_csrf'] ?? '');
-    if (!is_string($tok) || empty($_SESSION['csrf']) || !hash_equals($_SESSION['csrf'], $tok)) {
+    if (!csrf_ok($_SERVER['HTTP_X_CSRF_TOKEN'] ?? ($in['_csrf'] ?? ''))) {
         $out(['ok' => false, 'error' => t('Sesija pasibaigė - atnaujinkite puslapį.')], 400);
     }
 }
@@ -126,7 +125,7 @@ switch ($action) {
         $out(['ok' => true, 'hero' => game_hero_view(game_hero_row($hid))]);
     case 'test':
         // Testavimui (tik adminui): lygis, diržas, visi daiktai, dėžės, kiaušiniai
-        if (!is_admin($a)) {
+        if (!can('dojo_admin', $a)) {
             $out(['ok' => false, 'error' => t('Tik adminui.')], 403);
         }
         if (array_key_exists('level', $in)) {

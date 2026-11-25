@@ -2,7 +2,7 @@
 // Naujienų rašymas: tekstas, nuotraukos (automatiškai sumažinamos), YouTube nuorodos
 require dirname(__DIR__) . '/app/bootstrap.php';
 require APP_DIR . '/images.php';
-$me = require_staff();
+$me = require_can('events');
 
 const NEWS_DIR = PUBLIC_DIR . '/uploads/news';
 

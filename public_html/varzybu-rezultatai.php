@@ -5,7 +5,7 @@ require __DIR__ . '/app/bootstrap.php';
 
 $id = (int) get('id');
 $t = $id ? tournament_get($id) : null;
-$staff = is_staff(current_account());
+$staff = can('budo');
 if ($id && (!$t || (!tournament_is_visible($t) && !$staff))) {
     http_response_code(404);
 }

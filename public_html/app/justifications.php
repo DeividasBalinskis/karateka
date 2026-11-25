@@ -44,7 +44,7 @@ function just_v94(): bool
 /** Kam pranešti apie naujus prašymus: pasirinkti administratoriai (numatyta - Denis; jei jo nėra - visi) */
 function just_recipients(): array
 {
-    $admins = q_all('SELECT id, first_name, last_name, email FROM accounts WHERE role = "admin" AND status = "active" ORDER BY first_name, last_name');
+    $admins = active_admins();
     $ids = json_decode((string) site_setting('just_notify', ''), true);
     if (is_array($ids)) {
         $ids = array_map('intval', $ids);

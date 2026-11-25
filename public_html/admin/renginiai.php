@@ -1,7 +1,7 @@
 <?php
 // Renginiai: egzaminai, varžybos, seminarai, stovyklos
 require dirname(__DIR__) . '/app/bootstrap.php';
-$me = require_staff();
+$me = require_can('events');
 
 $edit = get('edit') ?: post('edit');
 $errors = [];
@@ -109,7 +109,7 @@ if (is_post()) {
             $inviteIds = array_merge($inviteIds, array_map('intval', q('SELECT id FROM members WHERE status = "active" AND group_id IN (' . implode(',', $picked['groups']) . ')')->fetchAll(PDO::FETCH_COLUMN)));
         }
         $sendEmail = !empty($_POST['invite_email']);
-        $sendSms = !empty($_POST['invite_sms']) && is_admin();
+        $sendSms = !empty($_POST['invite_sms']) && can('sms');
         $invited = $inviteIds ? invite_members(q_one('SELECT * FROM events WHERE id = ?', [$id]), $inviteIds, (int) $me['id'], $sendEmail, $sendSms) : 0;
         $how = array_filter([t('svetainėje'), $sendEmail ? t('el. paštu') : '', $sendSms ? 'SMS' : '']);
         tr_auto_entity('event', (int) $id);
@@ -210,7 +210,7 @@ if ($edit !== '') {
             <div class="kicker" style="margin-top:6px;"><?= te('Kaip pranešti pakviestiems') ?></div>
             <label class="check"><input type="checkbox" checked disabled><span><?= te('Svetainėje (Renginiai ir Mano paskyra) - visada') ?></span></label>
             <label class="check"><input type="checkbox" name="invite_email" value="1" <?= !empty($_POST['invite_email']) ? 'checked' : '' ?>><span><?= te('El. paštu') ?></span></label>
-            <?php if (is_admin()): ?><label class="check"><input type="checkbox" name="invite_sms" value="1" <?= !empty($_POST['invite_sms']) ? 'checked' : '' ?>><span><?= te('SMS tėvams') ?><?= sms_live() ? '' : (' <span class="hint">' . t('(bandomasis režimas - SMS nesiunčiamos)') . '</span>') ?></span></label><?php endif; ?>
+            <?php if (can('sms')): ?><label class="check"><input type="checkbox" name="invite_sms" value="1" <?= !empty($_POST['invite_sms']) ? 'checked' : '' ?>><span><?= te('SMS tėvams') ?><?= sms_live() ? '' : (' <span class="hint">' . t('(bandomasis režimas - SMS nesiunčiamos)') . '</span>') ?></span></label><?php endif; ?>
             <?php if ($ev['id']): ?><p class="hint"><a href="<?= url('admin/renginio-dalyviai.php?id=' . (int) $ev['id']) ?>"><?= te('Dalyvių sąrašas →') ?></a></p><?php endif; ?>
           </div>
         </div>

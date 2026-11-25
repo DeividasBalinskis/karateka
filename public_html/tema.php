@@ -10,7 +10,7 @@ csrf_check();
 if (post('action') === 'like') {   // v1.95: „👍 Patinka“ temai ar šriftui (administratoriai)
     $kind = (string) post('kind');
     $id = (string) post('id');
-    if (!is_admin() || !in_array($kind, ['theme', 'font'], true) || !($kind === 'theme' ? isset(THEMES[$id]) : isset(FONTS[$id]))) {
+    if (!can('design') || !in_array($kind, ['theme', 'font'], true) || !($kind === 'theme' ? isset(THEMES[$id]) : isset(FONTS[$id]))) {
         http_response_code(403);
         exit(json_encode(['ok' => false]));
     }
@@ -33,17 +33,17 @@ if (post('scope') === 'me') {
     } catch (PDOException $ex) {
         // dar neimportuotas db/037
     }
-    if (post('all') === '1' && is_admin()) {
+    if (post('all') === '1' && can('design')) {
         set_site_setting('site_theme', $theme);
     }
 } elseif (post('scope') === 'site') {
-    if (!is_admin()) {
+    if (!can('design')) {
         http_response_code(403);
         exit(json_encode(['ok' => false, 'error' => t('Temą keičia administratorius.')]));
     }
     set_site_setting('site_theme', $theme);
 } else {
-    if (!is_staff()) {
+    if (!can('budo')) {
         exit(json_encode(['ok' => true, 'local' => true]));   // bandantysis - tik savo lange
     }
     varz_ui_save(['theme' => $theme]);

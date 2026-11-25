@@ -2,7 +2,7 @@
 // Išorinė varžybų sistema (varzybos.karateka.lt, jei prijungta config.php „varzybos“): varžybos, susieti renginiai, dalyviai ir rezultatai.
 // Svetainės varžybų sistema - admin/varzybos.php.
 require dirname(__DIR__) . '/app/bootstrap.php';
-$me = require_staff();
+$me = require_can('budo');
 
 if (is_post()) {
     csrf_check();
@@ -63,7 +63,7 @@ page_start(t('Budo'), ['admin' => true]);
     <div class="kicker"><?= te('Varžybų sistema dar neprijungta') ?></div>
     <p><?= te('Varžybų sistema (kategorijos, lentelės, rezultatai gyvai) jau paruošta, bet dar neįkelta į serverį. Kai bus įkelta, čia matysite visas varžybas, o mygtukas „Atidaryti varžybų valdymą“ ją atidarys be atskiro slaptažodžio.') ?></p>
     <p class="small muted" style="margin:10px 0 0;"><?= te('Kol kas varžybas kurkite kaip įprastą renginį (Renginiai → „+ Naujas renginys“, tipas „Varžybos“), o rezultatus įrašykite renginio rezultatuose.') ?></p>
-    <?php if (is_admin()): ?><p class="small muted" style="margin:8px 0 0;"><?= te('Techniškai: serverio config.php trūksta „varzybos“ dalies (adresas ir raktas) - žr. config.example.php.') ?></p><?php endif; ?>
+    <?php if (can('budo_admin')): ?><p class="small muted" style="margin:8px 0 0;"><?= te('Techniškai: serverio config.php trūksta „varzybos“ dalies (adresas ir raktas) - žr. config.example.php.') ?></p><?php endif; ?>
   </div>
 <?php endif; ?>
 

@@ -48,7 +48,7 @@ require APP_DIR . '/db.php';
 require APP_DIR . '/csrf.php';
 require APP_DIR . '/mail.php';
 require APP_DIR . '/tokens.php';
-require APP_DIR . '/auth.php';
+require_once APP_DIR . '/auth.php';   // require_once: LTKF puslapiai jį įkelia patys (ltkf/inc/pagalbines.php)
 require APP_DIR . '/two_factor.php';
 require APP_DIR . '/device_codes.php';
 require APP_DIR . '/data.php';
@@ -118,6 +118,6 @@ session_start();
 maybe_run_cleanup();
 maybe_run_backup();
 // v1.93: nauja versija įkelta, o duomenų bazė dar sena - administratoriui atidarius bet kurį puslapį atnaujinama pati
-if (($autoAdm = current_account()) && is_admin($autoAdm)) {
+if (($autoAdm = current_account()) && can('backups', $autoAdm)) {
     db_auto_update();
 }

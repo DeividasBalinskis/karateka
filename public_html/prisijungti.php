@@ -29,7 +29,7 @@ if (is_post()) {
     $result = attempt_login($email, (string) ($_POST['password'] ?? ''));
     if ($result['ok']) {
         $me = q_one('SELECT * FROM accounts WHERE id = ?', [(int) ($_SESSION['account_id'] ?? 0)]);   // current_account() šioje užklausoje jau atsimena „neprisijungęs“
-        redirect(!$askedFor && $me && is_staff($me) ? url('admin/') : $return);
+        redirect(!$askedFor && $me && can('valdymas', $me) ? url('admin/') : $return);
     }
     if ($result['error'] === 'code') {
         if ($result['mail_error']) {

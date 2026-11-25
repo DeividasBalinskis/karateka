@@ -204,13 +204,17 @@ function view_admin(): ?array
     $id = $_SESSION['view_admin'] ?? null;
     if (!$id) {
         $a = current_account();
-        if (!$a || !is_admin($a)) {
+        if (!$a || !can('testing', $a)) {
             return null;
         }
         $id = $a['id'];
     }
-    $a = q_one('SELECT * FROM accounts WHERE id = ? AND status = "active" AND role = "admin"', [(int) $id]);
-    return $a ?: null;
+    $a = q_one('SELECT * FROM accounts WHERE id = ?', [(int) $id]);
+    // C1: tikras administratorius; jei peržiūros metu jo slaptažodis pakeistas kitur (session_ver) - grįžti nebegalima
+    if (!$a || !can('testing', $a) || (!empty($_SESSION['view_admin']) && (int) ($a['session_ver'] ?? 0) !== (int) ($_SESSION['view_admin_sv'] ?? 0))) {
+        return null;
+    }
+    return $a;
 }
 
 /** Dabartinė peržiūra: 'admin', 'parent' arba 'junior' */
@@ -231,13 +235,16 @@ function view_switch(string $mode): void
     }
     session_regenerate_id(true);
     if ($mode === 'admin') {
-        $_SESSION['account_id'] = (int) $admin['id'];
-        unset($_SESSION['view_admin']);
+        session_account_set((int) $admin['id']);
+        unset($_SESSION['view_admin'], $_SESSION['view_admin_sv']);
         return;
     }
     $base = test_people_base();
+    if (empty($_SESSION['view_admin'])) {
+        $_SESSION['view_admin_sv'] = (int) ($_SESSION['sv'] ?? 0);   // administratoriaus sesijos versija - grįžimui
+    }
     $_SESSION['view_admin'] = (int) $admin['id'];
-    $_SESSION['account_id'] = $mode === 'junior' ? $base['junior'] : $base['parent'];
+    session_account_set($mode === 'junior' ? $base['junior'] : $base['parent']);
 }
 
 /** Viršutinėje juostoje adminui: „Peržiūra: Adminas / Tėvai / Vaikas“, vaiko diržas */

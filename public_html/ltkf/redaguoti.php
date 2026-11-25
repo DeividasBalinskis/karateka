@@ -12,7 +12,7 @@ const LTKF_FILE_MAX = 60 * 1024 * 1024;
 /** Kas redaguoja: vardas arba null */
 function ltkf_who(): ?string
 {
-    if (is_admin()) {
+    if (can('ltkf')) {
         $a = current_account();
         return trim(($a['first_name'] ?? '') . ' ' . ($a['last_name'] ?? '')) ?: 'Adminas';
     }

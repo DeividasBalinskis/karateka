@@ -1,7 +1,7 @@
 <?php
 // Grupės ir jų savaitinis tvarkaraštis
 require dirname(__DIR__) . '/app/bootstrap.php';
-$me = require_staff();
+$me = require_can('members');
 
 $id = (int) (get('id') ?: post('id'));
 $errors = [];
@@ -154,7 +154,7 @@ if ($id) {
       <div class="panel card">
         <?php // Tvarkaraštis ir kainos keičiami vienoje vietoje - Nustatymai → Tvarkaraštis ir kainos ?>
         <div class="row between" style="flex-wrap:wrap; gap:8px;"><h2 style="margin:0;"><?= te('Tvarkaraštis') ?></h2>
-          <?php if (is_admin()): ?><a class="small" href="<?= url('admin/tvarkarastis.php#' . e($g['category'])) ?>"><?= te('✎ Keisti tvarkaraštį ir kainą') ?></a><?php endif; ?></div>
+          <?php if (can('schedule')): ?><a class="small" href="<?= url('admin/tvarkarastis.php#' . e($g['category'])) ?>"><?= te('✎ Keisti tvarkaraštį ir kainą') ?></a><?php endif; ?></div>
         <?php if (!$slots): ?><p class="muted small"><?= te('Laikų dar nėra.') ?></p><?php endif; ?>
         <?php foreach ($slots as $s): ?>
           <div class="schedule-line">
@@ -162,7 +162,7 @@ if ($id) {
             <span class="schedule-time"><?= $s['start_time'] ? e(fmt_time($s['start_time']) . '–' . fmt_time($s['end_time'])) : '' ?></span>
           </div>
         <?php endforeach; ?>
-        <?php if (!is_admin()): ?><p class="hint"><?= te('Tvarkaraštį keičia administratorius.') ?></p><?php endif; ?>
+        <?php if (!can('schedule')): ?><p class="hint"><?= te('Tvarkaraštį keičia administratorius.') ?></p><?php endif; ?>
       </div>
       <div class="stack">
         <form method="post" class="panel card form">

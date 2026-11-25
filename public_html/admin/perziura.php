@@ -4,7 +4,7 @@
 //   2. Pakeitimai test svetainėje (app/review.json) - kas ir kaip įvertino auksines žymas; „⬆ Įkelti į test“.
 //   3. Ką taisyti - atviri atsiliepimai trumpai: pažymėti, parašyti komentarą → „▶ Paleisti taisymą“.
 require dirname(__DIR__) . '/app/bootstrap.php';
-$me = require_admin();
+$me = require_can('review');
 $ready = review_ready() && feedback_ready();
 
 if (is_post() && $ready) {

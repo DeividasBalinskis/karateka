@@ -1,7 +1,7 @@
 <?php
 // Varžybų rezultatai iš varžybų sistemos: susieti renginį su varžybomis ir įkelti vietas (taškai skiriami automatiškai)
 require dirname(__DIR__) . '/app/bootstrap.php';
-$me = require_staff();
+$me = require_can('events');
 
 $id = (int) (get('id') ?: post('id'));
 $event = q_one('SELECT * FROM events WHERE id = ? AND type = "competition"', [$id]);

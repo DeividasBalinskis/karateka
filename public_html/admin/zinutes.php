@@ -1,7 +1,7 @@
 <?php
 // Žinutės su nariais: narių atsakymai į pastabas, klausimai prie pamokų, bendros žinutės. Trenerio atsakymą mato tik tas narys.
 require dirname(__DIR__) . '/app/bootstrap.php';
-$me = require_staff();
+$me = require_can('messages');
 
 $mid = (int) (get('m') ?: post('member_id'));
 $member = $mid ? q_one('SELECT m.*, g.name AS group_name FROM members m LEFT JOIN training_groups g ON g.id = m.group_id WHERE m.id = ?', [$mid]) : null;

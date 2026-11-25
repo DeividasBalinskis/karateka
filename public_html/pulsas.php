@@ -18,7 +18,7 @@ if (empty($a['chat_off'])) {
         // dar neimportuotas db/022
     }
 }
-if (is_staff($a)) {
+if (can('valdymas', $a)) {
     $out['ntf'] = notifications_popup((int) $a['id']);
 }
 require_once APP_DIR . '/game.php';

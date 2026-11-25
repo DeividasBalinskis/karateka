@@ -162,7 +162,10 @@ function home_edit_mode(): bool
     return $on;
 }
 
-/** Ar ši instruktoriaus kortelė - prisijungusio žmogaus (pagal paskyros vardą ir pavardę) */
+/**
+ * Ar ši instruktoriaus kortelė - prisijungusio žmogaus (pagal paskyros vardą ir pavardę). Tik užrašui „✎ Pasitaisyti savo informaciją“ -
+ * teisės redaguoti pagal vardą neduoda (C1: home_can_edit).
+ */
 function home_is_me(string $name): bool
 {
     $a = current_account();
@@ -174,32 +177,31 @@ function home_is_me(string $name): bool
     return $me !== '' && $me === $key($name);
 }
 
-/** Kas gali redaguoti pagrindinį puslapį: adminas ir instruktoriai, kurių vardas yra instruktorių bloke (pagal paskyros vardą ir pavardę) */
-function home_can_edit(?array $a = null): bool
+/** Instruktorių kortelių vardai (mažosiomis) - Paskyrose tik pasiūlymui „yra kortelė tarp instruktorių“ */
+function home_instructor_names(): array
 {
-    $a = $a ?? current_account();
-    if (!$a || !is_active_account($a)) {
-        return false;
-    }
-    if (is_admin($a)) {
-        return true;
-    }
-    $key = function (string $n): string { return preg_replace('/\s+/u', ' ', mb_strtolower(trim($n))); };
-    $me = $key($a['first_name'] . ' ' . $a['last_name']);
-    if ($me === '') {
-        return false;
-    }
+    $out = [];
     foreach (home_page() as $b) {
         if ($b['type'] !== 'instructors') {
             continue;
         }
         foreach ((array) ($b['d']['items'] ?? []) as $p) {
-            if (is_array($p) && $key((string) ($p['name'] ?? '')) === $me) {
-                return true;
+            $n = is_array($p) ? preg_replace('/\s+/u', ' ', mb_strtolower(trim((string) ($p['name'] ?? '')))) : '';
+            if ($n !== '') {
+                $out[$n] = true;
             }
         }
     }
-    return false;
+    return $out;
+}
+
+/**
+ * Kas gali redaguoti pagrindinį puslapį: administratorius ir paskyros, kurioms administratorius Paskyrose paspaudė „🏠 Redaguoja pradžią“
+ * (C1: pagal paskyros id, nebe pagal vardą instruktorių bloke)
+ */
+function home_can_edit(?array $a = null): bool
+{
+    return can('home_edit', $a);
 }
 
 /** Meniu nuorodos iš blokų su „meniu pavadinimu“: [[tekstas, #id, ar mygtukas]] */

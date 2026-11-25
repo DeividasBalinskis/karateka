@@ -16,7 +16,7 @@ $json = function (array $d, int $code = 200) {
 if (get('img')) {
     $img = feedback_images_ready() ? q_one('SELECT i.*, f.account_id FROM feedback_images i JOIN feedback f ON f.id = i.feedback_id WHERE i.id = ?', [(int) get('img')]) : null;
     $f = $img ? q_one('SELECT * FROM feedback WHERE id = ?', [(int) $img['feedback_id']]) : null;
-    if (!$img || !($f && (feedback_can_edit($a, $f) || is_staff($a) || ($a && (int) $f['account_id'] === (int) $a['id']) || feedback_api_check((string) ($_SERVER['HTTP_X_API_KEY'] ?? ''))))) {
+    if (!$img || !($f && (feedback_can_edit($a, $f) || can('feedback_box', $a) || ($a && (int) $f['account_id'] === (int) $a['id']) || feedback_api_check((string) ($_SERVER['HTTP_X_API_KEY'] ?? ''))))) {
         not_found();
     }
     $path = FEEDBACK_IMG_DIR . '/' . (get('thumb') ? 'thumb_' : '') . basename($img['file']);

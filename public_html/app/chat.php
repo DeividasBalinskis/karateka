@@ -179,7 +179,7 @@ function comment_notifications_done(int $memberId): void
 /** Kiek naujų žinučių (skaičiukas ant pokalbio mygtuko): treneriui - nuo narių, nariui - nuo trenerių */
 function chat_unread_count(array $a): int
 {
-    if (is_staff($a)) {
+    if (can('messages', $a)) {
         return staff_unread_messages();
     }
     try {
@@ -213,7 +213,7 @@ function chat_widget_html(): string
     $form = '<form class="chat-form"><textarea name="body" rows="1" maxlength="' . MESSAGE_MAX . '" placeholder="' . e(t('Rašykite žinutę…')) . '" required></textarea>'
         . '<button class="chat-send" type="submit" aria-label="' . e(t('Siųsti')) . '"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M3.4 20.4 21 12 3.4 3.6 3.3 10l12.6 2-12.6 2z"/></svg></button></form>';
 
-    if (is_staff($a)) {
+    if (can('messages', $a)) {
         $cfg = ['api' => url('pokalbis.php'), 'csrf' => csrf_token(), 'staff' => true, 'pages' => url('klausimai.php')];
         return '<div class="chat staff" id="chat" data-chat="' . e(json_encode($cfg)) . '">'
             . '<button type="button" class="chat-fab" id="chatFab" aria-expanded="false" aria-controls="chatPanel" title="' . e(t('Pokalbiai su nariais')) . '">' . $icon

@@ -2,7 +2,7 @@
 // C10: Duomenų priežiūra (tik adminas). Viršuje - kas trinama automatiškai; žemiau - kas galėtų būti ištrinta.
 // Niekas netrinama, kol administratorius nepaspaudžia „Ištrinti“ ir nepatvirtina (sprendimas: pirmiausia parodyti sąrašą).
 require dirname(__DIR__) . '/app/bootstrap.php';
-$me = require_admin();
+$me = require_can('backups');
 
 if (is_post()) {
     csrf_check();

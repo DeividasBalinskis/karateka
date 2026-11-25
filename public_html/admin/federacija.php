@@ -4,9 +4,9 @@
 require dirname(__DIR__) . '/app/bootstrap.php';
 require_once APP_DIR . '/exam_protocol.php';
 require_once APP_DIR . '/federation.php';
-$me = require_staff();
+$me = require_can('federation');
 $tab = in_array(get('skiltis'), ['klubai', 'teisejai'], true) ? get('skiltis') : 'nariai';
-$canEdit = is_admin($me);
+$canEdit = can('ltkf', $me);
 
 // v1.86: teisėjo diplomo atsisiuntimas (tik personalui; failai užrakinti naršyklei)
 if (($fid = (int) get('failas')) && ltkf_judge_extra_ready()) {

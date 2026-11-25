@@ -1,7 +1,7 @@
 <?php
 // SMS žinutės (tik adminas): tekstas, gavėjai (grupės, renginio dalyviai, konkretūs žmonės), peržiūra, siuntimas, istorija
 require dirname(__DIR__) . '/app/bootstrap.php';
-$me = require_admin();
+$me = require_can('sms');
 
 const SMS_MAX_CHARS = 600;
 $errors = [];

@@ -3,7 +3,7 @@
 require __DIR__ . '/app/bootstrap.php';
 
 $a = require_login();
-$isStaff = is_staff($a);
+$isStaff = can('quizzes', $a);
 
 // Rezultatas
 if ($resId = (int) get('rezultatas')) {

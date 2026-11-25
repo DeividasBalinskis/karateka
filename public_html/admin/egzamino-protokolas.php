@@ -4,7 +4,7 @@
 // siuntimas) - „⚙ Daugiau“ apačioje. Spausdinimas (kaip popierinis LTKA protokolas), Excel ir siuntimas el. paštu.
 // Kiekvienas dalyvis - unikalus numeris MM-mm-dd-eilė; neatvykusį ištrynus, jo numeris daugiau niekam nepriskiriamas.
 require dirname(__DIR__) . '/app/bootstrap.php';
-$me = require_staff();
+$me = require_can('exam_protocols');
 
 $id = (int) (get('id') ?: post('id'));
 $event = q_one('SELECT * FROM events WHERE id = ?', [$id]);
@@ -148,7 +148,7 @@ if (is_post()) {
             q('UPDATE exam_protocol_rows SET deleted_at = NULL WHERE id = ? AND event_id = ?', [(int) post('row'), $id]);
             break;
         case 'to_results':
-            if (!is_admin($me)) {
+            if (!can('exams', $me)) {
                 forbidden();
             }
             $res = event_results($event);
@@ -333,7 +333,7 @@ page_start(t('Egzamino protokolas') . ': ' . $event['title'], ['admin' => true, 
     <div class="row no-print prot-after">
       <form method="post" class="prot-fed"><?= csrf_field() ?><input type="hidden" name="id" value="<?= $id ?>"><input type="hidden" name="action" value="fed_send">
         <button class="btn btn-primary btn-sm" type="submit"><?= !empty($p['fed_sent_at']) ? te('📨 Atnaujinti Federacijoje') : te('📨 Siųsti protokolą Federacijai') ?></button></form>
-      <?php if (is_admin($me)): ?>
+      <?php if (can('exams', $me)): ?>
         <form method="post"><?= csrf_field() ?><input type="hidden" name="id" value="<?= $id ?>"><input type="hidden" name="action" value="to_results">
           <button class="btn btn-ghost btn-sm" type="submit" title="<?= te('Diržą pakelti galima „Rezultatai ir taškai“ puslapyje.') ?>"><?= te('🏅 „Išlaikė“ → renginio rezultatai ir taškai') ?></button></form>
       <?php endif; ?>
