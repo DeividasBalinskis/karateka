@@ -283,17 +283,18 @@
     return a ? a.name : 'Tatamis ' + CFG.area;
   }
   function rawLive() { var s = data && data.live && data.live[CFG.area]; return s ? s.data : null; }
-  function pm(side, d) { return '<button type="button" class="ov-pm" data-d="' + side + '|' + d + '" aria-label="' + (d > 0 ? '+1' : '−1') + '">' + (d > 0 ? '+' : '−') + '</button>'; }
+  // ± - vienas mygtukas, perpjautas per pusę: viršuje +, apačioje − (Deividas)
+  function pm(side) { return '<span class="ov-pmv"><button type="button" class="ov-pm" data-d="' + side + '|1" aria-label="+1">+</button><button type="button" class="ov-pm" data-d="' + side + '|-1" aria-label="−1">−</button></span>'; }
   function renderBar() {
     var raw = rawLive(), live = ovlHtml(CFG.area, true), test = !!live && !!(raw && raw.test), real = !!live && !test, html;
     if (CFG.test && !real) {
       var sa = test ? (+raw.sa || 0) : 0, sb = test ? (+raw.sb || 0) : 0;
       html = '<div class="gv-ovl gv-bar has-ctl">' +
         (test ? '<span class="ov-cat">🧪 Pavyzdinė kova</span>' : '<span class="ov-cat"><span>' + esc(barName()) + '</span> · <span>paspauskite ± - pavyzdinė kova</span></span>') +
-        // vardai - vienoje eilutėje, žemiau: − balai +   laikas   − balai + (kortelės siauros)
+        // vardai - vienoje eilutėje, žemiau: [+/−] balai   laikas   balai [+/−] (kortelės siauros)
         '<span class="ov-row"><span class="ov-n aka">' + esc(test ? raw.aka.name : 'AKA') + '</span><span class="ov-n shiro">' + esc(test ? raw.shiro.name : 'SHIRO') + '</span></span>' +
-        '<span class="ov-row ov-sc">' + pm('a', -1) + '<b class="ov-s aka">' + sa + '</b>' + pm('a', 1) + '<span class="ov-t">1:30</span>' +
-        pm('b', -1) + '<b class="ov-s shiro">' + sb + '</b>' + pm('b', 1) +
+        '<span class="ov-row ov-sc">' + pm('a') + '<b class="ov-s aka">' + sa + '</b><span class="ov-t">1:30</span>' +
+        '<b class="ov-s shiro">' + sb + '</b>' + pm('b') +
         (test ? '<button type="button" class="ov-end" data-end="1" title="Baigti pavyzdinę kovą" aria-label="Baigti pavyzdinę kovą">✕</button>' : '') + '</span></div>';
     } else {
       html = live || ('<span class="ov-cat">' + esc((data && data.title) || CFG.title) + '</span><span class="ov-n">' + esc(barName()) + '</span>');

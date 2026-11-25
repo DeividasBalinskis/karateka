@@ -1838,7 +1838,7 @@
   try { vidOn = localStorage.getItem('vz-bout-vid') === '1'; } catch (e) {}
   var CAMS = CFG.cams && typeof CFG.cams === 'object' ? CFG.cams : {};
   // ± ant vaizdo (v1.99): tie patys mygtukai kaip kovos skydelyje (+1 / −1), todėl balai keičiasi ten pat
-  function vpm(side, d) { return '<button type="button" class="bv-pm" data-vpt="' + side + '|' + d + '" aria-label="' + (d > 0 ? '+1' : '−1') + '">' + (d > 0 ? '+' : '−') + '</button>'; }
+  function vpm(side) { return '<span class="bv-pmv"><button type="button" class="bv-pm" data-vpt="' + side + '|1" aria-label="+1">+</button><button type="button" class="bv-pm" data-vpt="' + side + '|-1" aria-label="−1">−</button></span>'; }   // viršuje +, apačioje −
   function syncVid() {
     if (!Object.keys(CAMS).length) return;
     var show = !!B && vidOn;
@@ -1865,12 +1865,12 @@
     link.textContent = '🎥 Prijungti telefoną'; link.href = CFG.streamUrl;
     var fr = vidEl.querySelector('iframe');
     if ((fr.getAttribute('src') || '') !== src) { if (src) fr.setAttribute('src', src); else fr.removeAttribute('src'); }
-    // Balai ant vaizdo: AKA − balai + … − balai + SHIRO (tik ten, kur kovos skydelyje yra +1 / −1)
+    // Balai ant vaizdo: AKA [+/−] balai | balai [+/−] SHIRO (tik ten, kur kovos skydelyje yra +1 / −1)
     var sc = vidEl.querySelector('.bv-score'), can = !!boutEl.querySelector('[data-pt="a|1"]') && !!boutEl.querySelector('[data-pt="a|-1"]');
     sc.hidden = !can;
     if (can) {
-      var h = '<span class="bv-n aka">' + esc(pubName(B.a)) + '</span>' + vpm('a', -1) + '<b class="bv-s aka">' + esc(B.sa) + '</b>' + vpm('a', 1) +
-        vpm('b', -1) + '<b class="bv-s shiro">' + esc(B.sb) + '</b>' + vpm('b', 1) + '<span class="bv-n shiro">' + esc(pubName(B.b)) + '</span>';
+      var h = '<span class="bv-n aka">' + esc(pubName(B.a)) + '</span>' + vpm('a') + '<b class="bv-s aka">' + esc(B.sa) + '</b>' +
+        '<b class="bv-s shiro">' + esc(B.sb) + '</b>' + vpm('b') + '<span class="bv-n shiro">' + esc(pubName(B.b)) + '</span>';
       if (sc.dataset.h !== h) { sc.dataset.h = h; sc.innerHTML = h; }
     }
     vidEl.hidden = false;

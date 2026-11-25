@@ -57,7 +57,7 @@ test('Budo streaming with phones only: one QR, assign to a tatami, ± on the vid
   await bar.locator('.ov-pm[data-d="b|1"]').click(); await a.waitForTimeout(500);
   const live = JSON.parse(sql(`SELECT data FROM tournament_live WHERE tournament_id = ${tid} AND area_id = ${area1}`) || '{}');
   check('sample bout saved', live.test === true && live.sa === 2 && live.sb === 1, JSON.stringify(live));
-  check('± are next to the scores', /−\s*2\s*\+/.test(await bar.locator('.gv-bar').innerText()));
+  check('one split button per side: + on top, − below', await bar.locator('.ov-pmv').count() === 2 && (await bar.locator('.ov-pmv').first().locator('button').first().textContent()) === '+' && (await bar.locator('.ov-pmv').first().locator('button').last().textContent()) === '−');
 
   // Žiūrovai: prie tatamio „▶ Žiūrėti gyvai“ - vaizdas tik paspaudus, su juosta
   const share = sql(`SELECT share_token FROM tournaments WHERE id = ${tid}`);

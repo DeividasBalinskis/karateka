@@ -12,6 +12,7 @@ Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar
   - **Žiūrovams** (nuoroda žiūrovams) prie tatamio - **„▶ Žiūrėti gyvai“**: vaizdas su balais ir laiku. Vaizdą žiūrovams dalija vdo.ninja serveris,
     todėl žiūrėti gali daug žmonių; vaizdas įsijungia tik paspaudus (taupomas telefonų internetas).
   - **Sekretoriatui** kovoje „📹 Vaizdas“ - telefono vaizdas šalia balų ir **± ant vaizdo** (keičia tos kovos balus).
+  - **±** - vienas mygtukas prie balų, perpjautas per pusę: **viršuje +, apačioje −** (juostoje ir sekretoriato vaizde).
   - Viskas, kas buvo susiję su OBS (juostos nuorodos, paaiškinimai, „Visi tatamiai“), pašalinta.
 - **Budo viršus** - švelni mėlynai pilka spalva visose temose (buvo beveik juodas ar tamsus) (#184).
 - **Rungtis užsirakina pati**, kai įrašomas paskutinės kovos rezultatas; pataisyti - paspausti „🔒 Užrakinta“ (#182).

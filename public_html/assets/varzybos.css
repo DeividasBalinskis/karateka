@@ -1532,7 +1532,11 @@ body.gv-bar-body { margin: 0; background: transparent !important; font-family: '
 .gv-ovl .ov-pm { width: 4.4vw; height: 4.4vw; min-width: 30px; min-height: 30px; padding: 0; border: 0; border-radius: 1vw; background: rgba(255, 255, 255, .18); color: #fff;
   font: 800 3vw/1 'Inter', system-ui, sans-serif; cursor: pointer; display: inline-grid; place-items: center; }
 .gv-ovl .ov-pm:hover { background: rgba(255, 255, 255, .32); }
-/* ± juostoje: dvi eilutės - vardai, po jais − balai + laikas − balai + (✕ - baigti pavyzdinę kovą) */
+/* ± - vienas mygtukas, perpjautas per pusę: viršuje +, apačioje − */
+.gv-ovl .ov-pmv { display: inline-flex; flex-direction: column; flex: none; border-radius: 1vw; overflow: hidden; }
+.gv-ovl .ov-pmv .ov-pm { width: 4.8vw; height: 2.7vw; min-width: 38px; min-height: 22px; border-radius: 0; font-size: 2.4vw; }
+.gv-ovl .ov-pmv .ov-pm + .ov-pm { border-top: 1px solid rgba(255, 255, 255, .28); background: rgba(255, 255, 255, .1); }
+/* ± juostoje: dvi eilutės - vardai, po jais [+/−] balai laikas balai [+/−] (✕ - baigti pavyzdinę kovą) */
 .gv-ovl.gv-bar.has-ctl .ov-row { flex: 1 1 100%; display: flex; align-items: center; justify-content: space-between; gap: .6vw 1vw; min-width: 0; }
 .gv-ovl.gv-bar.has-ctl .ov-sc { justify-content: center; }
 .gv-ovl.gv-bar.has-ctl .ov-sc .ov-t { margin: 0 1.2vw; }
@@ -1542,6 +1546,7 @@ body.gv-bar-body { margin: 0; background: transparent !important; font-family: '
   .gv-ovl.gv-bar { font-size: 15px; gap: 4px 8px; padding: 8px 10px; border-radius: 10px; }
   .gv-ovl.gv-bar .ov-s { font-size: 22px; } .gv-ovl.gv-bar .ov-t { font-size: 14px; } .gv-ovl.gv-bar .ov-cat { font-size: 11px; }
   .gv-ovl .ov-pm { font-size: 18px; border-radius: 8px; }
+  .gv-ovl .ov-pmv { border-radius: 8px; } .gv-ovl .ov-pmv .ov-pm { font-size: 16px; border-radius: 0; }
 }
 /* v1.99: žiūrovams - telefono vaizdas įjungiamas paspaudus „▶ Žiūrėti gyvai“ */
 .gv-vid-frame.gv-cam { background: #0B0D12; }
@@ -1608,6 +1613,9 @@ body.bout-vid-on .bout { padding-right: calc(var(--bv-w) + 32px); }
 .bv-s.aka { color: #FF8A8A; }
 .bv-pm { width: 34px; height: 34px; padding: 0; border: 0; border-radius: 8px; background: rgba(255, 255, 255, .18); color: #fff; font: 800 1.2rem/1 'Inter', system-ui, sans-serif; cursor: pointer; }
 .bv-pm:hover { background: rgba(255, 255, 255, .32); }
+.bv-pmv { display: inline-flex; flex-direction: column; flex: none; border-radius: 8px; overflow: hidden; }
+.bv-pmv .bv-pm { width: 40px; height: 22px; border-radius: 0; font-size: 1rem; }
+.bv-pmv .bv-pm + .bv-pm { border-top: 1px solid rgba(255, 255, 255, .28); background: rgba(255, 255, 255, .1); }
 .bout-vid .bv-hint { margin: 0; padding: 6px 12px 8px; font-size: .75rem; color: #9AA3B2; }
 .bout-vid .bv-hint a { color: #fff; }
 .bout-top .btn.on { background: #fff; color: #12151C; }
