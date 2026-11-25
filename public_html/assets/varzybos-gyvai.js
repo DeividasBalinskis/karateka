@@ -324,6 +324,8 @@
   }
   function renderVideos() {
     var areas = ((data && data.areas) || []).filter(function (a) { return a.cam || a.video; });
+    // v2.07: tatamiai su telefonu, kurių dar nėra santraukoje (naujos varžybos)
+    ((data && data.cams) || []).forEach(function (c) { if (!areas.some(function (a) { return String(a.id) === String(c.id); })) areas.push(c); });
     if (!vidBox) {
       if (!areas.length) return;
       vidBox = document.createElement('section'); vidBox.className = 'gv-vids'; vidBox.id = 'gv-vids';

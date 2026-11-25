@@ -151,7 +151,19 @@ if (get('json')) {
         unset($c);
     }
     unset($a);
-    exit(json_encode(['ok' => true, 'now' => (int) round(microtime(true) * 1000), 'title' => $t['title'], 'areas' => $areas,
+    // v2.07: tatamis su telefonu, kurio dar nėra santraukoje (naujos varžybos, dar neišsaugotos) - žiūrovai vis tiek mato „📹 Žiūrėti gyvai“
+    $extra = [];
+    if ($cams) {
+        $have = array_flip(array_map(function ($a) { return (int) ($a['id'] ?? 0); }, $areas));
+        $st = json_decode((string) ($t['state'] ?? ''), true);
+        foreach ((array) ($st['areas'] ?? []) as $sa) {
+            $id = (int) ($sa['id'] ?? 0);
+            if ($id && isset($cams[$id]) && !isset($have[$id])) {
+                $extra[] = ['id' => $id, 'name' => (string) ($sa['name'] ?? ($id . ' TATAMIS')), 'cam' => varz_cam_view_url(varz_cam_id(varz_cam_key(), $id))];
+            }
+        }
+    }
+    exit(json_encode(['ok' => true, 'now' => (int) round(microtime(true) * 1000), 'title' => $t['title'], 'areas' => $areas, 'cams' => $extra,
         'live' => (object) tournament_live_get((int) $t['id']), 'medals' => $r['medals'] ?? [], 'cats' => $cats], JSON_UNESCAPED_UNICODE));
 }
 
