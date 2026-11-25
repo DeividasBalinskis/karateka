@@ -38,7 +38,10 @@ for (const f of names) {
   }
   const D = new PNG({ width: A.width, height: A.height });
   const n = pixelmatch(A.data, B.data, D.data, A.width, A.height, { threshold: 0, includeAA: true });
-  rows.push([f, n]);
+  // Didžiausias spalvos šuolis (0-255): teksto kraštų glotninimas - iki ~60, tikras pakeitimas (spalva, poslinkis) - daug daugiau
+  let big = 0;
+  for (let i = 0; i < A.data.length; i += 4) for (let c = 0; c < 3; c++) big = Math.max(big, Math.abs(A.data[i + c] - B.data[i + c]));
+  rows.push([f, n, big]);
   if (n) {
     bad++;
     fs.writeFileSync(path.join(out, f.replace('.png', '-skirtumas.png')), PNG.sync.write(D));
@@ -49,8 +52,8 @@ const same = rows.filter(r => r[1] === 0).length;
 md.push(`## Nuotraukos: ${same} / ${rows.length} vienodos (0 px skirtumo)`, '');
 const diffRows = rows.filter(r => r[1] !== 0);
 if (diffRows.length) {
-  md.push('| Nuotrauka | Skirtingi pikseliai (šaka - bazė) | Triukšmas (bazė - bazė) |', '|---|---|---|');
-  diffRows.forEach(r => md.push(`| ${r[0]} | ${r[1]} | ${noise(r[0])} |`)); md.push('');
+  md.push('| Nuotrauka | Skirtingi pikseliai (šaka - bazė) | Didžiausias spalvos šuolis (0-255) | Triukšmas (bazė - bazė) |', '|---|---|---|---|');
+  diffRows.forEach(r => md.push(`| ${r[0]} | ${r[1]} | ${r[2] ?? '-'} | ${noise(r[0])} |`)); md.push('');
 }
 if (shotsA2) {
   const noisy = names.filter(f => noise(f) !== 0);

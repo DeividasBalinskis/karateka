@@ -9,11 +9,14 @@ const fs = require('fs');
 const path = require('path');
 const zlib = require('zlib');
 const { test } = require('@playwright/test');
-const { login } = require('../e2e/helpers');
+const { login, BASE_URL } = require('../e2e/helpers');
 const { PAGES } = require('./pages');
 
+// Pirmas: „👁 Tėvai“ (.view-switch.is-test) - pirmą kartą persijungus sukuriamos testinės paskyros, todėl visi kiti mato tuos pačius duomenis
+const FIRST = [['ziuri-kaip-tevai', 'paskyra.php', 'info@karateka.lt', { view: 'parent' }]];
 const EXTRA = [
   ['be-meniu', 'privatumas.php?be_meniu=1', null],   // „bare“ antraštė (egzamino nuoroda)
+  ['admin-isjungtas', 'index.php', 'info@karateka.lt', { adm: '0' }],   // „🛠 Grįžti į valdymą“
 ];
 const WIDTHS = (process.env.STYLE_WIDTHS
   || '375,400,401,480,481,520,521,768,769,860,861,900,901,1099,1100,1101,1280,1281,1400,1401,1440,2560').split(',').map(Number);
@@ -90,10 +93,15 @@ async function settle(p) {
 }
 
 fs.mkdirSync(OUT, { recursive: true });
-for (const [name, url, who] of PAGES.concat(EXTRA)) {
+for (const [name, url, who, opt] of FIRST.concat(PAGES, EXTRA)) {
   test(`stiliai ${name}`, async ({ browser }) => {
     test.setTimeout(300_000);
     const p = await login(browser, who, 1440, 900);
+    if (opt && opt.adm) await p.context().addCookies([{ name: 'adm', value: opt.adm, url: BASE_URL }]);
+    if (opt && opt.view) {
+      await p.goto('index.php');
+      await Promise.all([p.waitForNavigation(), p.evaluate(v => { const b = document.querySelector('.vs-modes button[value="' + v + '"]'); b.form.requestSubmit(b); }, opt.view)]);
+    }
     await p.goto(url);
     await p.waitForLoadState('networkidle').catch(() => {});
     // Valdymo meniu tvarkymas (✎) - atidaromas atskirai, kad būtų matomi ir jo elementai

@@ -106,14 +106,15 @@ jobs:
           npm ci
           npx playwright install --with-deps chromium
 
-      - name: Bazinė versija - nuotraukos ir stiliai
+      - name: Bazinė versija - stiliai ir nuotraukos
         working-directory: tests
         run: |
           php -S 127.0.0.1:8088 -t /tmp/base/public_html > /tmp/php-A.log 2>&1 & echo $! > /tmp/php.pid
           sleep 1; curl -fsS -o /dev/null http://127.0.0.1:8088/
+          # Stiliai - pirmi: jų pirmas testas sukuria testines paskyras (Peržiūra → Tėvai), tada visos nuotraukos mato tuos pačius duomenis
+          STYLE_OUT=/tmp/styles-A npx playwright test -c visual/styles.config.js || echo "::warning::baziniai stiliai - ne visi"
           bash visual.sh update || echo "::warning::bazinės nuotraukos - ne visos"
           cp -a visual/__baseline__ /tmp/shots-A
-          STYLE_OUT=/tmp/styles-A npx playwright test -c visual/styles.config.js || echo "::warning::baziniai stiliai - ne visi"
           # Triukšmo matas: ta pati bazinė versija dar kartą (kiek skiriasi be jokių pakeitimų)
           rm -rf visual/__baseline__
           bash visual.sh update || echo "::warning::bazinės nuotraukos (2) - ne visos"
