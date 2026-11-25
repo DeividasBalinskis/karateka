@@ -1,0 +1,39 @@
+# Lokali testavimo aplinka: docker compose up -d
+#   Svetainė:    http://localhost:8090
+#   phpMyAdmin:  http://localhost:8083
+# karateka.lt lokali versija (http://localhost:8088) jungiasi per http://host.docker.internal:8090
+services:
+  web:
+    build: ./docker
+    ports:
+      - "8090:80"
+    volumes:
+      - ./public_html:/var/www/html
+    depends_on:
+      - db
+
+  db:
+    image: mariadb:10.11
+    environment:
+      MARIADB_DATABASE: varzybos
+      MARIADB_USER: varzybos
+      MARIADB_PASSWORD: varzybos_local
+      MARIADB_ROOT_PASSWORD: varzybos_root_local
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - dbdata:/var/lib/mysql
+      - ./db:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "3308:3306"
+
+  phpmyadmin:
+    image: phpmyadmin:5
+    environment:
+      PMA_HOST: db
+    ports:
+      - "8083:80"
+    depends_on:
+      - db
+
+volumes:
+  dbdata:

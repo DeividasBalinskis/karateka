@@ -1,0 +1,8 @@
+public_html/config.php
+.env
+ikelimui/
+*.zip
+.DS_Store
+Thumbs.db
+CLAUDE.md
+docs/planas.md
