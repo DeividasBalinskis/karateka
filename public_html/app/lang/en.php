@@ -4196,4 +4196,9 @@ From 2013 he trained with the team of the traditional karate-do club "Sanrei", a
     'Protokolas tuščias.' => 'The protocol is empty.',
     'Taip, ištrinti su {n} dalyviais' => 'Yes, delete with {n} participants',
     'Taip, ištrinti' => 'Yes, delete',
+    'Padaryta.' => 'Done.',
+    'Darbas pažymėtas padarytu.' => 'The job is marked as done.',
+    'Jau padaryta - pažymėti ir parašyti atsakymą' => 'Already done - mark it and write a reply',
+    'Kas padaryta' => 'What was done',
+    '✓ Padaryta' => '✓ Done',
 ];

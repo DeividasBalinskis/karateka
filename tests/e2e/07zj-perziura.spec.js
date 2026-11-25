@@ -46,6 +46,12 @@ test('Peržiūra: queue fixes, gold marks with ✓/✗ and comments, submit, ele
   check('deploy job queued', sql("SELECT kind FROM review_jobs ORDER BY id DESC LIMIT 1") === 'deploy');
   await nav(a, () => a.click('#eile [data-job] form button'));
   check('queued job can be cancelled', sql("SELECT status FROM review_jobs ORDER BY id DESC LIMIT 1") === 'cancelled');
+  // Darbą padarė žmogus - „✓“ ir atsakymas
+  await nav(a, () => a.click('#rvp-deploy'));
+  await a.click('#eile [data-job] .rvp-close summary');
+  await a.fill('#eile [data-job] .rvp-close input[name=result]', 'E2E: padaryta ranka');
+  await nav(a, () => a.click('#eile [data-job] .rvp-close button'));
+  check('job closed by hand with a reply', sql("SELECT CONCAT(status, '|', result) FROM review_jobs ORDER BY id DESC LIMIT 1") === 'done|E2E: padaryta ranka');
 
   // Auksinės žymos: Valdymo puslapyje - meniu pakeitimai; □ → ✓ → ✗ (atsidaro komentaras)
   await a.goto('admin/');

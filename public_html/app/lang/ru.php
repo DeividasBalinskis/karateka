@@ -4196,4 +4196,9 @@ Nuo 2013 m. treniravosi Tradicinio karate-do klubo „Sanrei“ komandoje, o 201
     'Protokolas tuščias.' => 'Протокол пуст.',
     'Taip, ištrinti su {n} dalyviais' => 'Да, удалить с участниками ({n})',
     'Taip, ištrinti' => 'Да, удалить',
+    'Padaryta.' => 'Сделано.',
+    'Darbas pažymėtas padarytu.' => 'Задача отмечена как сделанная.',
+    'Jau padaryta - pažymėti ir parašyti atsakymą' => 'Уже сделано - отметить и написать ответ',
+    'Kas padaryta' => 'Что сделано',
+    '✓ Padaryta' => '✓ Сделано',
 ];
