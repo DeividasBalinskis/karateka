@@ -118,6 +118,9 @@ test('my dojo: create the hero, test panel, gift box, equip, pet, collection', a
 
 test('arena: fight a bot, quick fight, four in a row and kata rhythm', async ({ browser }) => {
   const k = await login(browser, 'jaunuolis@karateka.test', 1280, 900);
+  // v1.96: lygis kainuoja 5 XP - testų vaikas jau aukšto lygio; gyvybės tikrinamos 1 lygyje (bandymų lygis), po to - tikras lygis
+  const kidHero = `(SELECT h.id FROM (SELECT id, member_id FROM game_heroes) h JOIN account_members am ON am.member_id = h.member_id JOIN accounts a ON a.id = am.account_id WHERE a.email = 'jaunuolis@karateka.test' AND am.relation = 'self')`;
+  sql(`UPDATE game_heroes SET test_level = 1 WHERE id = ${kidHero}`);
   await k.goto('arena.php');
   check('lobby with club players', await k.locator('#ar-heroes .g-hcard').count() > 3);
   await k.click('[data-pick-game=power]'); await k.click('[data-pick-level=easy]');   // #159: pasirinkimas, tada vienas „▶ Žaisti“
@@ -128,7 +131,9 @@ test('arena: fight a bot, quick fight, four in a row and kata rhythm', async ({ 
     && await k.locator('.fa-arena .fa-ui .fa-board').count() === 1 && await k.locator('.fa-side #fa-log').count() === 1);
   check('technique named with level and explanation', /Kizami tsuki jodan/.test(await k.textContent('.fa-chk[data-att=kizami] b')) && /\[smūgis į galvą\]/.test(await k.textContent('.fa-chk[data-att=kizami] small'))
     && /\[blokas nuo smūgio į pilvą\]/.test(await k.textContent('.fa-chk[data-def=soto] small')));
-  check('low HP at level 1', +(await k.textContent('#hp-a .bar span')).split('/')[1] < 40);
+  const hpText = await k.textContent('#hp-a .bar span');
+  sql(`UPDATE game_heroes SET test_level = NULL WHERE id = ${kidHero}`);
+  check('low HP at level 1', +hpText.split('/')[1] < 40, hpText);
   await k.click('.fa-chk[data-att=gyaku]'); await k.click('.fa-chk[data-def=age]');
   check('checkboxes marked', await k.locator('.fa-chk.sel').count() === 2);
   await k.click('[data-go]');

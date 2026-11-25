@@ -1,7 +1,7 @@
 // Pagrindiniai scenarijai su pavyzdiniais duomenimis (dev_seed + demo-duomenys + dev_pavyzdziai), iš eilės:
 // tėvai -> Denis (adminas) -> treneris -> narys -> svečias. Žingsniai remiasi ankstesniais (pvz. Denio atsakymas Tomui).
 const { test } = require('@playwright/test');
-const { sql, day, ids, login, nav, check, noJsErrors, flashes, closeCelebrate } = require('./helpers');
+const { sql, day, ids, login, nav, check, noJsErrors, flashes, closeCelebrate, xpLevel } = require('./helpers');
 
 test.describe.configure({ mode: 'serial' });
 
@@ -30,7 +30,10 @@ test('parent: celebration, Svarbu, invitations, exam program, quiz XP, chat, com
   check('svarbu reply item', await p.locator('#svarbu .notif.t-reply').count() === 1);
   check('svarbu sent lesson', await p.locator('#svarbu .notif.t-note', { hasText: 'atsiuntė pamoką' }).count() >= 1);
   check('svarbu broadcast', await p.locator('#svarbu .notif.t-broadcast').count() === 1);
-  check('xp card', /2\s*lygis/.test((await p.locator('.points-card .xp-card').textContent()).replace(/\s+/g, ' ')));
+  // v1.96: lygis kainuoja 5 XP (kas 5 lygius +2) - laukiamas lygis skaičiuojamas iš Jono XP
+  const xpJ = +sql(`SELECT COALESCE(SUM(points),0) FROM point_awards WHERE member_id=${I.jonas}`);
+  const xpCard = (await p.locator('.points-card .xp-card').textContent()).replace(/\s+/g, ' ');
+  check('xp card', new RegExp('(^|[^0-9])' + xpLevel(xpJ) + ' ?lygis').test(xpCard), `${xpJ} XP → ${xpLevel(xpJ)} lygis: ${xpCard.slice(0, 120)}`);
   // RSVP camp
   await nav(p, () => p.locator('#svarbu .notif.t-invite', { hasText: 'TEST: Stovykla' }).locator('button', { hasText: 'Dalyvausiu' }).click());
   check('rsvp going', sql(`SELECT status FROM event_participants WHERE event_id=${camp} AND member_id=${I.jonas}`) === 'going');

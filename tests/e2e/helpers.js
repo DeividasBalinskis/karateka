@@ -82,6 +82,14 @@ async function login(browser, email, width = 1280, height = 900, password = PASS
   return page;
 }
 
+/** Lygis pagal XP - kaip app/xp.php xp_level(): pirmi 5 lygiai po base XP, kas 5 lygius brangiau po step (v1.96) */
+function xpLevel(xp, base = 5, step = 2, every = 5) {
+  let level = 1, start = 0;
+  const cost = n => base + step * Math.floor((Math.max(1, n) - 1) / every);
+  while (level < 1000 && xp >= start + cost(level)) { start += cost(level); level++; }
+  return level;
+}
+
 /** Uždaro šventės langus, jei jie atidaryti (kelis iš eilės - po vieną puslapyje) */
 async function closeCelebrate(page) {
   for (let i = 0; i < 4 && await page.locator('#celebrate').count(); i++) {
@@ -117,4 +125,4 @@ async function openFeedback(page) {
   if (await page.locator('#fbPanel').isHidden()) await page.click('#fbFab');
 }
 
-module.exports = { openFeedback, closeCelebrate, sql, linkToken, linkNew, day, ids, login, nav, check, noJsErrors, flashes, PASSWORD, DEMO_PASSWORD, BASE_URL };
+module.exports = { openFeedback, closeCelebrate, xpLevel, sql, linkToken, linkNew, day, ids, login, nav, check, noJsErrors, flashes, PASSWORD, DEMO_PASSWORD, BASE_URL };
