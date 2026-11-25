@@ -3,12 +3,12 @@
 // Apačioje juosta: kiek įvertinta, visų pakeitimų sąrašas (ir kituose puslapiuose), „🎯 Pastaba apie elementą“, „Pateikti“.
 (function () {
   'use strict';
-  var root = document.getElementById('rv');
+  var root = document.getElementById('pzr');
   if (!root) return;
   var C;
   try { C = JSON.parse(root.getAttribute('data-cfg')); } catch (e) { return; }
   var T = C.t || {}, items = C.items || [], marks = {}, here = [], bar, listEl = null, pop = null, picking = false, hoverEl = null;
-  var HIDE_KEY = 'rv-hide-' + C.rev;
+  var HIDE_KEY = 'pzr-hide-' + C.rev;
   var hidden = false;
   try { hidden = localStorage.getItem(HIDE_KEY) === '1'; } catch (e) {}
 
@@ -31,7 +31,7 @@
     });
   }
   function toast(text, warn) {
-    var t = el('div', 'rv-toast' + (warn ? ' is-warn' : ''), text);
+    var t = el('div', 'pzr-toast' + (warn ? ' is-warn' : ''), text);
     t.setAttribute('role', 'status');
     document.body.appendChild(t);
     setTimeout(function () { if (t.parentNode) t.parentNode.removeChild(t); }, 3500);
@@ -56,17 +56,17 @@
   function setupHere() {
     items.forEach(function (it) {
       if (!it.here) return;
-      var box = el('div', 'rv-box');
-      box.setAttribute('data-rv', it.id);
-      var ctl = el('div', 'rv-ctl');
-      ctl.setAttribute('data-rv', it.id);
-      var mb = el('button', 'rv-mark');
+      var box = el('div', 'pzr-box');
+      box.setAttribute('data-pzr', it.id);
+      var ctl = el('div', 'pzr-ctl');
+      ctl.setAttribute('data-pzr', it.id);
+      var mb = el('button', 'pzr-mark');
       mb.type = 'button';
       mb.addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); cycle(it); });
-      var cb = el('button', 'rv-cm', '💬');
+      var cb = el('button', 'pzr-cm', '💬');
       cb.type = 'button'; cb.title = T.comment; cb.setAttribute('aria-label', T.comment + ': ' + it.title);
       cb.addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); openComment(it, ctl); });
-      var lb = el('span', 'rv-lbl', it.title);
+      var lb = el('span', 'pzr-lbl', it.title);
       ctl.appendChild(mb); ctl.appendChild(cb); ctl.appendChild(lb);
       document.body.appendChild(box); document.body.appendChild(ctl);
       here.push({ it: it, box: box, ctl: ctl, mb: mb, cb: cb, node: null });
@@ -77,16 +77,16 @@
   function paint(h) {
     var m = marks[h.it.id];
     h.mb.textContent = icon(m.mark);
-    h.mb.className = 'rv-mark' + (m.mark ? ' is-' + m.mark : '');
+    h.mb.className = 'pzr-mark' + (m.mark ? ' is-' + m.mark : '');
     h.mb.title = label(m.mark) + ' · ' + T.cycle;
     h.mb.setAttribute('aria-label', h.it.title + ': ' + label(m.mark));
     h.cb.classList.toggle('has-text', !!m.comment);
-    h.box.className = 'rv-box' + (m.mark ? ' is-' + m.mark : '');
+    h.box.className = 'pzr-box' + (m.mark ? ' is-' + m.mark : '');
   }
   function paintAll() { here.forEach(paint); place(); renderBar(); }
 
   function place() {
-    var sx = window.pageXOffset, sy = window.pageYOffset, vw = document.documentElement.clientWidth;
+    var sx = window.pageXOffset, sy = window.pageYOffset, vw = document.documentElement.clientWidth, placed = [];
     here.forEach(function (h) {
       if (!h.node || !h.node.isConnected || !visible(h.node)) h.node = target(h.it);
       if (!h.node || hidden) { h.box.style.display = 'none'; h.ctl.style.display = 'none'; return; }
@@ -94,11 +94,22 @@
       h.box.style.display = ''; h.ctl.style.display = '';
       h.box.style.left = (r.left + sx - 4) + 'px'; h.box.style.top = (r.top + sy - 4) + 'px';
       h.box.style.width = (r.width + 8) + 'px'; h.box.style.height = (r.height + 8) + 'px';
-      var right = Math.min(r.right + sx + 6, sx + vw - 6);
-      var w = h.ctl.offsetWidth || 80;
+      // Mygtukai - virš auksinio rėmelio dešinėje (neuždengia elemento); jei užliptų ant kito - žemiau jo
+      var w = h.ctl.offsetWidth || 80, ht = h.ctl.offsetHeight || 36;
+      var right = Math.min(r.right + sx + 4, sx + vw - 6);
       if (right - w < sx + 6) right = sx + 6 + w;
+      var top = r.top + sy - 8 - ht;
+      if (top < 4) top = r.top + sy + 4;
+      for (var moved = true, guard = 0; moved && guard < 12; guard++) {
+        moved = false;
+        for (var i = 0; i < placed.length; i++) {
+          var p = placed[i];
+          if (right - w < p.r && right > p.l && top < p.b && top + ht > p.t) { top = p.b + 4; moved = true; }
+        }
+      }
+      placed.push({ l: right - w, r: right, t: top, b: top + ht });
       h.ctl.style.left = right + 'px';
-      h.ctl.style.top = Math.max(r.top + sy, sy + 18) + 'px';
+      h.ctl.style.top = top + 'px';
     });
   }
   var raf = 0;
@@ -127,15 +138,15 @@
   }
   function openComment(it, anchor) {
     var m = marks[it.id];
-    var p = el('div', 'rv-pop');
+    var p = el('div', 'pzr-pop');
     p.setAttribute('role', 'dialog');
     p.appendChild(el('h4', '', it.title));
     if (it.note) p.appendChild(el('p', '', it.note));
     var ta = el('textarea');
     ta.value = m.comment; ta.placeholder = T.commentPh; ta.maxLength = 2000; ta.setAttribute('aria-label', T.comment);
     p.appendChild(ta);
-    var row = el('div', 'rv-row');
-    var ok = el('button', 'rv-btn rv-primary', '✓ ' + (T.comment || ''));
+    var row = el('div', 'pzr-row');
+    var ok = el('button', 'pzr-btn pzr-primary', '✓ ' + (T.comment || ''));
     ok.type = 'button';
     var save = function () {
       var v = ta.value.trim();
@@ -144,7 +155,7 @@
       post({ action: 'mark', id: it.id, mark: m.mark, comment: v })['catch'](function (e) { toast(e.message || T.err, true); });
     };
     ok.addEventListener('click', save);
-    var no = el('button', 'rv-btn', T.cancel);
+    var no = el('button', 'pzr-btn', T.cancel);
     no.type = 'button';
     no.addEventListener('click', closePop);
     row.appendChild(no); row.appendChild(ok);
@@ -162,7 +173,7 @@
   }
   function renderBar() {
     if (!bar) {
-      bar = el('div', 'rv-bar');
+      bar = el('div', 'pzr-bar');
       bar.setAttribute('role', 'region');
       bar.setAttribute('aria-label', T.bar);
       document.body.appendChild(bar);
@@ -170,30 +181,30 @@
     var c = counts();
     bar.innerHTML = '';
     bar.classList.toggle('is-mini', hidden || !items.length);
-    bar.appendChild(el('span', 'rv-t', '🔎 ' + T.bar + (C.version ? ' v' + C.version : '')));
+    bar.appendChild(el('span', 'pzr-t', '🔎 ' + T.bar + (C.version ? ' v' + C.version : '')));
     if (items.length) {
-      bar.appendChild(el('span', 'rv-n', (c.here ? c.here + ' ' + T.here + ' · ' : '') + c.rated + '/' + c.all + ' ' + T.rated));
-      var lb = el('button', 'rv-listbtn', '☰ ' + c.rated + '/' + c.all);
+      bar.appendChild(el('span', 'pzr-n', (c.here ? c.here + ' ' + T.here + ' · ' : '') + c.rated + '/' + c.all + ' ' + T.rated));
+      var lb = el('button', 'pzr-listbtn', '☰ ' + c.rated + '/' + c.all);
       lb.type = 'button'; lb.title = T.list; lb.setAttribute('aria-expanded', listEl ? 'true' : 'false');
       lb.addEventListener('click', toggleList);
       bar.appendChild(lb);
     }
-    var pk = el('button', 'rv-pick', '🎯');
+    var pk = el('button', 'pzr-pick', '🎯');
     pk.type = 'button'; pk.title = T.pick + ' - ' + T.pickHint; pk.setAttribute('aria-label', T.pick);
     pk.addEventListener('click', function () { startPick(); });
     bar.appendChild(pk);
     if (items.length) {
-      var sb = el('button', 'rv-submit' + (C.sent ? ' is-sent' : ''), C.sent ? '✓ ' + T.submitted : T.submit);
-      sb.type = 'button'; sb.id = 'rv-submit';
+      var sb = el('button', 'pzr-submit' + (C.sent ? ' is-sent' : ''), C.sent ? '✓ ' + T.submitted : T.submit);
+      sb.type = 'button'; sb.id = 'pzr-submit';
       if (C.sent) sb.title = T.sent + ' ' + T.resend + '?';
       sb.addEventListener('click', submit);
       bar.appendChild(sb);
-      var hb = el('button', 'rv-hide', hidden ? '👁' : '–');
+      var hb = el('button', 'pzr-hide', hidden ? '👁' : '–');
       hb.type = 'button'; hb.title = hidden ? T.show : T.hide; hb.setAttribute('aria-label', hb.title);
       hb.addEventListener('click', function () {
         hidden = !hidden;
         try { localStorage.setItem(HIDE_KEY, hidden ? '1' : '0'); } catch (e) {}
-        document.documentElement.classList.toggle('rv-hidden', hidden);
+        document.documentElement.classList.toggle('pzr-hidden', hidden);
         renderBar(); place();
       });
       bar.appendChild(hb);
@@ -202,27 +213,27 @@
 
   function toggleList() {
     if (listEl) { listEl.parentNode.removeChild(listEl); listEl = null; renderBar(); return; }
-    listEl = el('div', 'rv-list');
+    listEl = el('div', 'pzr-list');
     listEl.setAttribute('role', 'dialog');
     listEl.setAttribute('aria-label', T.list);
-    if (!items.length) listEl.appendChild(el('div', 'rv-empty', T.noItems));
+    if (!items.length) listEl.appendChild(el('div', 'pzr-empty', T.noItems));
     items.forEach(function (it) {
       var m = marks[it.id];
-      var li = el('div', 'rv-li');
-      li.appendChild(el('span', 'rv-ico' + (m.mark ? ' is-' + m.mark : ''), icon(m.mark)));
-      var t = el('div', 'rv-li-t', it.title);
+      var li = el('div', 'pzr-li');
+      li.appendChild(el('span', 'pzr-ico' + (m.mark ? ' is-' + m.mark : ''), icon(m.mark)));
+      var t = el('div', 'pzr-li-t', it.title);
       var sub = m.comment || it.note;
       var h = here.filter(function (x) { return x.it.id === it.id; })[0];
       if (h && !h.node) sub = '(' + T.missing + ') ' + (sub || '');
       if (sub) t.appendChild(el('small', '', sub));
       li.appendChild(t);
       var a = el('a', '', it.here ? '↓' : T.open + ' →');
-      a.href = it.here ? '#rv-' + it.id : it.href;
+      a.href = it.here ? '#pzr-' + it.id : it.href;
       if (it.here) a.addEventListener('click', function (e) { e.preventDefault(); toggleList(); focusItem(it.id); });
       li.appendChild(a);
       listEl.appendChild(li);
     });
-    var f = el('div', 'rv-foot');
+    var f = el('div', 'pzr-foot');
     var pa = el('a', '', T.page + ' →');
     pa.href = C.admin;
     f.appendChild(pa);
@@ -257,7 +268,7 @@
     while (n && n.nodeType === 1 && n !== document.body && parts.length < 5) {
       var s = n.tagName.toLowerCase();
       if (n.id && /^[A-Za-z][\w-]*$/.test(n.id)) { parts.unshift('#' + n.id); break; }
-      var cls = Array.prototype.filter.call(n.classList, function (c) { return /^[A-Za-z][\w-]*$/.test(c) && !/^(is-|active|open|rv-)/.test(c); }).slice(0, 2);
+      var cls = Array.prototype.filter.call(n.classList, function (c) { return /^[A-Za-z][\w-]*$/.test(c) && !/^(is-|active|open|pzr-)/.test(c); }).slice(0, 2);
       if (cls.length) s += '.' + cls.join('.');
       var p = n.parentElement;
       if (p) {
@@ -269,20 +280,20 @@
     }
     return parts.join(' > ');
   }
-  function ours(n) { return !n || root.contains(n) || (n.closest && n.closest('.rv-bar, .rv-list, .rv-pop, .rv-ctl, .rv-toast, .fb')); }
+  function ours(n) { return !n || root.contains(n) || (n.closest && n.closest('.pzr-bar, .pzr-list, .pzr-pop, .pzr-ctl, .pzr-toast, .fb')); }
   function startPick() {
     if (picking) { stopPick(); return; }
     closePop();
     if (listEl) toggleList();
     picking = true;
-    document.body.classList.add('rv-picking');
-    hoverEl = el('div', 'rv-hover');
+    document.body.classList.add('pzr-picking');
+    hoverEl = el('div', 'pzr-hover');
     document.body.appendChild(hoverEl);
     toast(T.pickHint, true);
   }
   function stopPick() {
     picking = false;
-    document.body.classList.remove('rv-picking');
+    document.body.classList.remove('pzr-picking');
     if (hoverEl && hoverEl.parentNode) hoverEl.parentNode.removeChild(hoverEl);
     hoverEl = null;
   }
@@ -302,18 +313,18 @@
     e.preventDefault(); e.stopPropagation();
     stopPick();
     var sel = cssPath(n), text = (n.innerText || n.value || n.getAttribute('aria-label') || '').replace(/\s+/g, ' ').trim().slice(0, 160);
-    var p = el('div', 'rv-pop');
+    var p = el('div', 'pzr-pop');
     p.setAttribute('role', 'dialog');
     p.appendChild(el('h4', '', T.pick));
     if (text) p.appendChild(el('p', '', '„' + text + '“'));
     var ta = el('textarea');
     ta.placeholder = T.pickPh; ta.maxLength = 2000; ta.setAttribute('aria-label', T.pickPh);
     p.appendChild(ta);
-    var row = el('div', 'rv-row');
-    var no = el('button', 'rv-btn', T.cancel);
+    var row = el('div', 'pzr-row');
+    var no = el('button', 'pzr-btn', T.cancel);
     no.type = 'button';
     no.addEventListener('click', closePop);
-    var ok = el('button', 'rv-btn rv-primary', T.pickSave);
+    var ok = el('button', 'pzr-btn pzr-primary', T.pickSave);
     ok.type = 'button';
     ok.addEventListener('click', function () {
       var v = ta.value.trim();
@@ -327,7 +338,7 @@
     p.appendChild(row);
     ta.addEventListener('keydown', function (ev) { if (ev.key === 'Escape') closePop(); });
     popAt(n, p);
-    var box = el('div', 'rv-hover');
+    var box = el('div', 'pzr-hover');
     var r = n.getBoundingClientRect();
     box.style.left = (r.left + window.pageXOffset) + 'px'; box.style.top = (r.top + window.pageYOffset) + 'px';
     box.style.width = r.width + 'px'; box.style.height = r.height + 'px';
@@ -342,14 +353,14 @@
     else if (listEl) toggleList();
   });
   document.addEventListener('mousedown', function (e) {
-    if (pop && !pop.contains(e.target) && !(e.target.closest && e.target.closest('.rv-ctl'))) closePop();
+    if (pop && !pop.contains(e.target) && !(e.target.closest && e.target.closest('.pzr-ctl'))) closePop();
   });
 
-  document.documentElement.classList.toggle('rv-hidden', hidden);
+  document.documentElement.classList.toggle('pzr-hidden', hidden);
   setupHere();
   window.addEventListener('scroll', schedule, { passive: true });
   window.addEventListener('resize', schedule);
   setInterval(place, 800);   // turinys keičiasi (skirtukai, išskleidžiami sąrašai) - žymos seka elementus
-  var hm = /^#rv-([a-z0-9-]+)$/.exec(location.hash);
+  var hm = /^#pzr-([a-z0-9-]+)$/.exec(location.hash);
   if (hm) setTimeout(function () { focusItem(hm[1]); }, 300);
 })();

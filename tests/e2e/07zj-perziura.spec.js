@@ -45,41 +45,41 @@ test('Peržiūra: queue fixes, gold marks with ✓/✗ and comments, submit, ele
 
   // Auksinės žymos: Valdymo puslapyje - meniu pakeitimai; □ → ✓ → ✗ (atsidaro komentaras)
   await a.goto('admin/');
-  await a.waitForSelector('.rv-bar');
-  await a.waitForSelector('.rv-ctl[data-rv="meniu-grupes"] .rv-mark');
-  check('changed elements outlined in gold', await a.locator('.rv-box[data-rv="meniu-grupes"]').isVisible() && await a.locator('.rv-box[data-rv="meniu-tvarkyti"]').isVisible());
-  const mk = a.locator('.rv-ctl[data-rv="meniu-grupes"] .rv-mark');
+  await a.waitForSelector('.pzr-bar');
+  await a.waitForSelector('.pzr-ctl[data-pzr="meniu-grupes"] .pzr-mark');
+  check('changed elements outlined in gold', await a.locator('.pzr-box[data-pzr="meniu-grupes"]').isVisible() && await a.locator('.pzr-box[data-pzr="meniu-tvarkyti"]').isVisible());
+  const mk = a.locator('.pzr-ctl[data-pzr="meniu-grupes"] .pzr-mark');
   await mk.click(); await a.waitForTimeout(400);
   check('first click: ✓ good', (await mk.textContent()) === '✓' && sql("SELECT mark FROM review_marks WHERE change_id = 'meniu-grupes'") === 'good');
   await mk.click();
-  await a.waitForSelector('.rv-pop textarea');
+  await a.waitForSelector('.pzr-pop textarea');
   check('second click: ✗ bad opens the comment', (await mk.textContent()) === '✗');
-  await a.fill('.rv-pop textarea', 'Per siauras meniu');
-  await a.click('.rv-pop .rv-primary'); await a.waitForTimeout(400);
+  await a.fill('.pzr-pop textarea', 'Per siauras meniu');
+  await a.click('.pzr-pop .pzr-primary'); await a.waitForTimeout(400);
   check('bad mark with comment saved', sql("SELECT CONCAT(mark, '|', comment) FROM review_marks WHERE change_id = 'meniu-grupes'") === 'bad|Per siauras meniu');
-  await a.locator('.rv-ctl[data-rv="meniu-tvarkyti"] .rv-mark').click(); await a.waitForTimeout(300);
+  await a.locator('.pzr-ctl[data-pzr="meniu-tvarkyti"] .pzr-mark').click(); await a.waitForTimeout(300);
 
   // Visų pakeitimų sąrašas - ir kitų puslapių su nuoroda
-  await a.click('.rv-listbtn');
-  check('list shows changes on other pages with a link', await a.locator('.rv-list a[href*="admin/perziura.php#rv-perziura-eile"]').count() === 1);
-  await a.click('.rv-listbtn');
+  await a.click('.pzr-listbtn');
+  check('list shows changes on other pages with a link', await a.locator('.pzr-list a[href*="admin/perziura.php#pzr-perziura-eile"]').count() === 1);
+  await a.click('.pzr-listbtn');
 
   // Pateikti → darbas „review“ agentui; juosta - „pateikta“
-  await a.click('#rv-submit'); await a.waitForTimeout(600);
+  await a.click('#pzr-submit'); await a.waitForTimeout(600);
   const rj = JSON.parse(sql("SELECT JSON_OBJECT('kind', kind, 'items', items) FROM review_jobs ORDER BY id DESC LIMIT 1"));
   const ri = JSON.parse(rj.items);
   check('review job with marks and comments', rj.kind === 'review' && ri.find(x => x.id === 'meniu-grupes').mark === 'bad' && ri.find(x => x.id === 'meniu-grupes').comment === 'Per siauras meniu' && ri.find(x => x.id === 'meniu-tvarkyti').mark === 'good', rj.items);
-  check('bar shows submitted', await a.locator('#rv-submit.is-sent').count() === 1);
+  check('bar shows submitted', await a.locator('#pzr-submit.is-sent').count() === 1);
   await a.reload();
-  await a.waitForSelector('#rv-submit');
-  check('submitted state stays after reload', await a.locator('#rv-submit.is-sent').count() === 1);
+  await a.waitForSelector('#pzr-submit');
+  check('submitted state stays after reload', await a.locator('#pzr-submit.is-sent').count() === 1);
 
   // 🎯 Pastaba apie bet kurį elementą → atsiliepimas su elemento adresu
-  await a.click('.rv-pick');
+  await a.click('.pzr-pick');
   await a.click('main h1');
-  await a.waitForSelector('.rv-pop textarea');
-  await a.fill('.rv-pop textarea', 'E2E: antraštė per didelė');
-  await a.click('.rv-pop .rv-primary'); await a.waitForTimeout(600);
+  await a.waitForSelector('.pzr-pop textarea');
+  await a.fill('.pzr-pop textarea', 'E2E: antraštė per didelė');
+  await a.click('.pzr-pop .pzr-primary'); await a.waitForTimeout(600);
   const pick = JSON.parse(sql("SELECT context FROM feedback WHERE body = 'E2E: antraštė per didelė' ORDER BY id DESC LIMIT 1") || '{}');
   check('element note saved with its selector', pick.pick === true && /h1/.test(pick.selector), JSON.stringify(pick));
   await a.goto('admin/perziura.php');
@@ -88,14 +88,14 @@ test('Peržiūra: queue fixes, gold marks with ✓/✗ and comments, submit, ele
   // Telefone juosta telpa ekrane
   const p = await login(browser, 'info@karateka.lt', 375, 812);
   await p.goto('admin/');
-  await p.waitForSelector('.rv-bar');
-  const bb = await p.locator('.rv-bar').boundingBox();
+  await p.waitForSelector('.pzr-bar');
+  const bb = await p.locator('.pzr-bar').boundingBox();
   check('bar fits the phone screen', bb && bb.x >= 0 && bb.x + bb.width <= 375, JSON.stringify(bb));
 
   // Treneris: nei žymų, nei puslapio, nei veiksmų
   const c = await login(browser, 'treneris@karateka.test', 1440, 900);
   await c.goto('admin/');
-  check('coach sees no review bar', await c.locator('.rv-bar').count() === 0);
+  check('coach sees no review bar', await c.locator('.pzr-bar').count() === 0);
   check('coach cannot open Peržiūra', (await c.request.get('admin/perziura.php')).status() === 403);
   check('coach cannot mark', (await c.request.post('perziura-zymos.php', { data: { action: 'mark' } })).status() === 403);
 

@@ -76,15 +76,15 @@ function review_page_match(string $pattern, string $page): bool
 function review_item_href(array $it): string
 {
     if ($it['href'] !== '') {
-        return url($it['href']) . '#rv-' . $it['id'];
+        return url($it['href']) . '#pzr-' . $it['id'];
     }
     foreach (explode('|', $it['page']) as $p) {
         $p = ltrim(trim($p), '/');
         if ($p !== '' && strpos($p, '*') === false) {
-            return url($p) . '#rv-' . $it['id'];
+            return url($p) . '#pzr-' . $it['id'];
         }
     }
-    return url('admin/') . '#rv-' . $it['id'];
+    return url('admin/') . '#pzr-' . $it['id'];
 }
 
 /** Auksinės žymos šiam žmogui: tik test / kompiuteryje, tik tikram administratoriui */
@@ -169,6 +169,6 @@ function review_overlay_html(): string
                 'unrated' => t('Dar neįvertinta:'), 'err' => t('Nepavyko išsaugoti. Atnaujinkite puslapį.'), 'page' => t('Peržiūros puslapis'),
             ]];
     return '<link rel="stylesheet" href="' . e(asset_url('assets/review.css')) . '">'
-        . '<div id="rv" class="rv" data-cfg="' . e(json_encode($cfg, JSON_UNESCAPED_UNICODE)) . '" hidden></div>'
+        . '<div id="pzr" class="pzr" data-cfg="' . e(json_encode($cfg, JSON_UNESCAPED_UNICODE)) . '" hidden></div>'
         . '<script src="' . e(asset_url('assets/review.js')) . '" defer></script>';
 }
