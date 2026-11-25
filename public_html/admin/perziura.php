@@ -6,6 +6,13 @@
 require dirname(__DIR__) . '/app/bootstrap.php';
 $me = require_admin();
 $ready = review_ready() && feedback_ready();
+if (!review_enabled()) {   // v2.10: išjungta - nuoroda į jungiklį
+    page_start(t('Peržiūra'), ['admin' => true]);
+    echo '<h1 class="styled">🔎 ' . te('Peržiūra') . '</h1><p class="panel card">' . te('Peržiūra (auksinės žymos, darbų eilė, agentas) šiuo metu išjungta.')
+        . ' <a class="btn btn-sm" href="' . e(url('admin/testavimas.php#perziura')) . '">' . te('Įjungti →') . '</a></p>';
+    page_end();
+    exit;
+}
 
 if (is_post() && $ready) {
     csrf_check();
@@ -28,6 +35,11 @@ if (is_post() && $ready) {
         case 'deploy':
             $job = review_job_add('deploy', [], (string) post('note_all'), $me, review_manifest()['rev']);
             flash('ok', t('Darbas #{n} eilėje: įkelti į test - per valandą', ['n' => $job]));
+            break;
+        case 'close':   // v2.09: darbą padarė žmogus ar kita sesija - pažymima „padaryta“ su atsakymu
+            q('UPDATE review_jobs SET status = "done", result = ?, finished_at = NOW(), started_at = IFNULL(started_at, NOW()) WHERE id = ? AND status IN ("queued", "working")',
+                [mb_substr(trim((string) post('result')), 0, 4000) ?: t('Padaryta.'), (int) post('id')]);
+            flash('ok', t('Darbas pažymėtas padarytu.'));
             break;
         case 'cancel':
             q('UPDATE review_jobs SET status = "cancelled", finished_at = NOW() WHERE id = ? AND status = "queued"', [(int) post('id')]);
@@ -108,6 +120,11 @@ page_start(t('Peržiūra'), ['admin' => true]);
 .rvp-run textarea{flex:1 1 260px; min-height:42px; max-height:140px; border-radius:10px; border:0; padding:9px 11px; font:500 14px/1.4 'Inter', sans-serif;}
 .rvp-run .btn{white-space:nowrap;}
 .rvp-run .rvp-n{font-weight:700; font-size:13px;}
+.rvp-close{display:inline-block; position:relative;}
+.rvp-close summary{list-style:none; cursor:pointer;}
+.rvp-close summary::-webkit-details-marker{display:none;}
+.rvp-close form{position:absolute; right:0; top:calc(100% + 4px); z-index:6; display:flex; gap:6px; padding:8px; width:min(420px, 80vw); border-radius:12px; background:#FFFDF7; border:1px solid rgba(23,20,15,.12); box-shadow:0 12px 30px rgba(23,20,15,.18);}
+.rvp-close form input{flex:1; min-width:0;}
 .rvp-q{font-size:11.5px; font-weight:700; padding:2px 7px; border-radius:6px; background:#2B2112; color:#FFE7B0;}
 body.theme-dark .rvp-job .rvp-res, body.theme-dark .rvp-filter a{background:rgba(255,255,255,.07); color:#ECE8F4;}
 body.theme-dark .rvp-fb-body, body.theme-dark .rvp-fb-top b{color:#ECE8F4;}
@@ -145,6 +162,12 @@ body.theme-dark .rvp-fb-body, body.theme-dark .rvp-fb-top b{color:#ECE8F4;}
         <?php if ($j['status'] === 'queued'): ?>
           <form method="post" style="display:inline;"><?= csrf_field() ?><input type="hidden" name="action" value="cancel"><input type="hidden" name="id" value="<?= (int) $j['id'] ?>">
             <button class="btn btn-ghost btn-sm" type="submit" title="<?= e(t('Atšaukti šį darbą')) ?>">✕</button></form>
+        <?php endif; ?>
+        <?php if (in_array($j['status'], ['queued', 'working'], true)): ?>
+          <details class="rvp-close"><summary class="btn btn-ghost btn-sm" title="<?= e(t('Jau padaryta - pažymėti ir parašyti atsakymą')) ?>">✓</summary>
+            <form method="post"><?= csrf_field() ?><input type="hidden" name="action" value="close"><input type="hidden" name="id" value="<?= (int) $j['id'] ?>">
+              <input type="text" name="result" maxlength="4000" placeholder="<?= e(t('Kas padaryta')) ?>" aria-label="<?= e(t('Kas padaryta')) ?>">
+              <button class="btn btn-primary btn-sm" type="submit"><?= te('✓ Padaryta') ?></button></form></details>
         <?php endif; ?>
       </span>
       <?php if ($j['result']): ?><div class="rvp-res"><?= e((string) $j['result']) ?></div><?php endif; ?>

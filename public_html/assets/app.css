@@ -1711,6 +1711,12 @@ input.tg:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
 .exam-row-main{flex:1; min-width:200px; display:grid; gap:2px;}
 .exam-row-title{font-weight:800; font-size:1.05rem;}
 .exam-row-acts{display:flex; gap:6px; flex-wrap:wrap;}
+/* v2.08 (#179): protokolo trynimas */
+.exam-del{color:var(--danger) !important;}
+.exam-del-confirm{border:2px solid rgba(181,40,31,0.45); background:#FFF6F4;}
+.exam-del-names{font-size:14px; line-height:1.5; color:#4A453A; max-height:160px; overflow:auto;}
+body.theme-dark .exam-del-confirm{background:rgba(181,40,31,0.12);}
+body.theme-dark .exam-del-names{color:#D9D4E4;}
 .exam-row .badge.ok{background:#E3F4EA; color:#0B6B3A;}
 .exam-past{margin-top:12px;}
 .exam-past > summary{cursor:pointer; font-weight:700; margin-bottom:8px;}

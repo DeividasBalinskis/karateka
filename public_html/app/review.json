@@ -1,44 +1,6 @@
 {
-  "rev": "2.02-2",
-  "version": "2.02",
-  "title": "Valdymo meniu ir Peržiūra",
-  "items": [
-    {
-      "id": "meniu-grupes",
-      "page": "admin/*",
-      "href": "admin/",
-      "sel": ".adm-side",
-      "title": "Valdymo meniu: Kasdien, Darbai, Nustatymai",
-      "note": "Dažni darbai viršuje, Aktyvumo taškai ir kiti nustatymai - apačioje grupėje „Nustatymai“."
-    },
-    {
-      "id": "meniu-tvarkyti",
-      "page": "admin/*",
-      "href": "admin/",
-      "sel": "#am-edit",
-      "title": "✎ Meniu tvarkymas",
-      "note": "Paspaudus ✎: skyrius galima tempti į kitą vietą ar grupę (arba ↑ ↓), pervadinti, kurti ir trinti grupes. „Numatytas meniu“ grąžina kaip buvo."
-    },
-    {
-      "id": "perziura-taisyti",
-      "page": "admin/perziura.php",
-      "sel": "#taisyti",
-      "title": "Peržiūra: ką taisyti",
-      "note": "Atviri atsiliepimai trumpai. Pažymite, ką taisyti, prirašote komentarą ir spaudžiate „▶ Paleisti taisymą“."
-    },
-    {
-      "id": "perziura-eile",
-      "page": "admin/perziura.php",
-      "sel": "#eile",
-      "title": "Peržiūra: darbų eilė",
-      "note": "Ką daro agentas: laukia, daroma, padaryta ir jo atsakymas."
-    },
-    {
-      "id": "perziura-test",
-      "page": "admin/perziura.php",
-      "sel": "#test",
-      "title": "Peržiūra: pakeitimai test svetainėje ir „⬆ Įkelti į test“",
-      "note": "Kas ir kaip įvertino auksines žymas (✓ / ✗ ir komentarai)."
-    }
-  ]
+  "rev": "2.10-0",
+  "version": "2.10",
+  "title": "Viskas patvirtinta",
+  "items": []
 }

@@ -2,7 +2,8 @@
 // v2.02: Peržiūros darbų eilė taisymo agentui (debesyje, kas valandą). Prieiga - tik su „API prieigos“ raktu (Valdymas → Atsiliepimai), antraštė X-Api-Key.
 //   GET                       - laukiantys ir daromi darbai (fix / deploy / review) su atsiliepimų tekstais, dabartinis pakeitimų sąrašas ir jo įvertinimai
 //   GET ?all=1                - ir paskutiniai 30 baigtų darbų
-//   POST {"id":..,"status":"working|done|failed","result":".."}  - darbo būsena ir atsakymas (matomas Valdymas → 🔎 Peržiūra)
+//   POST {"id":..,"status":"working|done|failed","result":".."}  - darbo būsena ir atsakymas (matomas Valdymas → 🔎 Peržiūra);
+//        „working“ - darbo paėmimas: pavyksta tik vienam agentui (kitam 409 {"taken":true})
 //   POST {"new":{"kind":"fix","items":[{"id":..}],"note":".."},"status":"done","result":".."} - agento paties pradėtas darbas (be prašymo)
 // Atsiliepimų būsenos ir atsakymai autoriams - per atsiliepimai-api.php, db atnaujinimas po įkėlimo - per diegimas-api.php.
 require __DIR__ . '/app/bootstrap.php';
@@ -11,6 +12,9 @@ header('Cache-Control: no-store');
 if (!feedback_ready() || !feedback_api_check((string) ($_SERVER['HTTP_X_API_KEY'] ?? ''))) {
     http_response_code(401);
     exit(json_encode(['ok' => false, 'error' => 'Netinkamas raktas.']));
+}
+if (!review_enabled()) {   // v2.10: Peržiūra išjungta - agentai nieko nedaro
+    exit(json_encode(['ok' => false, 'off' => true, 'error' => 'Peržiūra išjungta (Valdymas → Nustatymai → Testavimas).'], JSON_UNESCAPED_UNICODE));
 }
 if (!review_ready()) {
     exit(json_encode(['ok' => false, 'error' => 'Dar neimportuotas db/060 (POST diegimas-api.php {"action":"dbupdate"}).', 'db_required' => DB_REQUIRED]));
@@ -29,6 +33,20 @@ if (is_post()) {
     if (!$job || !in_array($status, ['working', 'done', 'failed'], true)) {
         http_response_code(400);
         exit(json_encode(['ok' => false, 'error' => 'Nėra tokio darbo arba netinkama būsena.']));
+    }
+    // v2.08: du agentai (debesyje kas valandą ir kompiuteryje kas 15 min.) - darbą paima tik vienas.
+    // „working“ pavyksta tik laukiančiam darbui (arba pamirštam - daromam ilgiau nei 90 min.); kitaip {"ok":false,"taken":true}
+    if ($status === 'working') {
+        $st = q('UPDATE review_jobs SET status = "working", started_at = NOW(), finished_at = NULL WHERE id = ?
+                 AND (status = "queued" OR (status = "working" AND started_at < NOW() - INTERVAL 90 MINUTE))', [(int) $job['id']]);
+        if (!$st->rowCount()) {
+            http_response_code(409);
+            exit(json_encode(['ok' => false, 'taken' => true, 'error' => 'Darbą jau paėmė kitas agentas.'], JSON_UNESCAPED_UNICODE));
+        }
+        if (array_key_exists('result', $in)) {
+            q('UPDATE review_jobs SET result = ? WHERE id = ?', [mb_substr(trim((string) $in['result']), 0, 4000) ?: null, (int) $job['id']]);
+        }
+        exit(json_encode(['ok' => true, 'id' => (int) $job['id']]));
     }
     $result = array_key_exists('result', $in) ? mb_substr(trim((string) $in['result']), 0, 4000) : (string) $job['result'];
     q('UPDATE review_jobs SET status = ?, result = ?, started_at = IF(? = "working", NOW(), IFNULL(started_at, NOW())),
