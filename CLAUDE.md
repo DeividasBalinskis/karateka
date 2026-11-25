@@ -31,7 +31,7 @@ site and the Dojo game. One repo, one database.
 - Repo on Deividas's PC: `C:\Users\deivi\Documents\IT Projektai\Karateka`
 - Test site: test.karateka.lt (database `aus15792_test`). Live karateka.lt is **not touched**.
 - `public_html/` — the site. `app/` shared code, `admin/` staff pages (Valdymas), `assets/` CSS and JS,
-  `ltkf/` federation site. Budo = `admin/varzybos*.php`, `varzybos-*.php`, `assets/varzybos*.js|css`,
+  `ltkf/` federation site. Budo = `admin/varzybos*.php`, `varzybos-*.php`, `assets/varzybos/` (ES modules, start `main.js`, engine in `engine/`), `assets/varzybos*.js|css`,
   `app/tournaments.php`. Game = `dojo.php`, `arena.php`, `zaidimas.php`, `app/game*.php`, `assets/game*`.
 - `db/` — numbered migrations; the newest name is set in `public_html/app/db.php`.
 - `tests/` — `checks.sh` (fast checks), `e2e/` (Playwright). `tools/` — PowerShell scripts, translations,

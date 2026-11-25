@@ -65,14 +65,14 @@ Status: ☐ not started · ◐ partly done · ☑ done
 | **C3** | Secret links: one model, one "Visos nuorodos" page | Denis, secretariat | L | plan first, Fable | ☐ |
 | **C4** | Design tokens + visual safety net (old step 4) | everyone | M | plan first | ☑ v1.82 (tokens.css, zero visual change proven on 55 shots; tests/visual.sh baseline/compare at 375/768/1440 + 1280/2560) |
 | **C5** | CSS cleanup, zero visual change (old step 5) | Deividas | L | plan first | ☐ |
-| **C6** | Tests: faster, independent, engine unit tests (old step 10) | Deividas | M | — | ◐ v1.60 (smoke set `tests/smoke.sh` ~2 min; flaky Budo specs pick groups robustly; tests clean their own IP limits) |
+| **C6** | Tests: faster, independent, engine unit tests (old step 10) | Deividas | M | — | ◐ v1.60 (smoke set `tests/smoke.sh` ~2 min; flaky Budo specs pick groups robustly; tests clean their own IP limits); Budo engine tests `tests/engine` + CI step - branch `claude/d3-budo-moduliai-d818a1` |
 | **C7** | One polling request (old step 11) | everyone (speed) | M | — | ☑ v1.57 (pulsas.php: chat count + staff pop-ups + game invites, ETag/304, one poller every 30 s paused when hidden; live/TV pause when hidden; open chat stays fast) |
 | **C8** | E-mail: templates, outbox, the reader's language | parents | M | plan first | ☑ v1.75 + v1.78 (coach reply e-mail only when ticked; one template file in the reader's language, one footer; outbox with result per person; chat link fixed; no game mention) |
 | **C9** | Project memory: CLAUDE.md, handoff, decisions, "Kas naujo" | Deividas, Denis | S | — | ☑ v1.52–v1.53 (CLAUDE.md, handoff, decisions, „Kas naujo“ from the version number) |
 | **C10** | Data care: retention, orphans, backups of uploads | parents, Deividas | M | reikia leidimo | ☑ v1.79 (Duomenų priežiūra page: auto rules + delete list shown first, delete only on button; photo .zip; cookie list; retention 1 y since v1.52, outbox 90 d) |
 | **D1** | Compare Budo with the external Varžybos app (old step 3a) | Deividas, Denis | M | plan first | ☐ |
 | **D2** | Apply the decision (old step 3b) | Deividas | L | reikia leidimo | ☐ |
-| **D3** | Split `assets/varzybos.js` into modules (old step 8) | Deividas | L | plan first | ☐ |
+| **D3** | Split `assets/varzybos.js` into modules (old step 8) | Deividas | L | plan first | ◐ done on branch `claude/d3-budo-moduliai-d818a1` (`assets/varzybos/`), waiting for the merge |
 | **D4** | Multi-tablet saving (old step 9) | secretariat, judges | L | plan first, Fable | ◐ v1.52 (conflict = automatic merge by group, idle tablets pull every 8 s; same group on two tablets: last one wins) |
 | **D5** | Polish one page (old step 7, repeat) | everyone | S each | — | ◐ v1.61 index, v1.62 renginiai/renginys, v1.63 prisijungti/registracija, v1.64 paskyra + all small buttons on touch, v1.65 naujienos + treniruotė, v1.66 egzaminas/mano-egzaminas, v1.67 admin index/nariai/taškai, v1.68 LTKF; next: Budo live (needs a competition with live data) |
 | **D6** | LTKF: real content model, own domain | federation | L | plan first | ◐ v1.77 registers; v1.80 parts 1-3 (own key per repeated text, versions + restore, news/documents as records, off/draft/public with noindex); part 4 domain move waits for the hosting setup |

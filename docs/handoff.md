@@ -177,8 +177,40 @@ Updated: 2026-11-25 · version v2.10 · main
 - 2026-11-25 v2.10: Peržiūra off (`review_enabled()` = site setting `review_on` === '1'; off → no overlay, no menu item, admin/perziura.php shows a link
   to the switch, perziura-api.php answers {ok:false, off:true}). Switch on admin/testavimas.php (#perziura). app/review.json items emptied (all approved).
   PC task `karateka-perziuros-eile` disabled; cloud routine disabled. 07zj turns review on in beforeAll and has an „off“ test.
+- 2026-11-25 C6 engine tests + D3 (side session, branch `claude/d3-budo-moduliai-d818a1`, not released, VERSION not bumped):
+  `assets/varzybos.js` (3,890 lines) is gone; the same code is in `assets/varzybos/` as ES modules. Page: `asset_module('assets/varzybos/main.js')`
+  (app/layout.php) = import map with every module's own `?v=` + `<script type="module">` (admin/varzybu-sistema.php, the only page that loaded it).
+  Module map:
+  | Module | What is in it |
+  |---|---|
+  | `main.js` | start: load, unsaved changes from this device (A1), auto categories / quick / simulate, `?tatamis=N` desk, first tab |
+  | `util.js` | CFG (window.VARZ), KEY, POPUP, BELTS, YEAR, esc, belts, newId, toast, hhmm / toMin / pad2 |
+  | `rules.js` | Budo rules: DISC, SYSTEMS, MEDALS, cfg (group defaults), defaultSystem, methodList / sysName, boutMode, person |
+  | `engine/draw.js` | seedOrder, shuffle, seededRnd, drawSeed(c, system, **tid**), makeDraw |
+  | `engine/bracket.js` | roundName, play, bracket (byes, bronze bout, WKF repechage, places), allMatches |
+  | `engine/rr.js` | rrMatches, parseScore, rrStandings |
+  | `engine/score.js` | scoreTotal, fmtScore, scoreRank, scoreFinalists, scoreDone |
+  | `engine/category.js` | matchCount, doneCount, prune, drawStale, catPlaces, catFinished, autoLock (#182) |
+  | `store.js` | state S, load, save / flush, pull every 8 s, merge on conflict (rebase), pending copy, history restore state, awards state AW + sync |
+  | `chrome.js` | tabs and Back, openStartTab, render / renderAll / renderSoon, theme and menu, history panel, share panel, scroll keep |
+  | `views/categories.js` `views/clubs.js` `views/people.js` `views/teams.js` | the Administracija tabs (people also: members, link registrations) |
+  | `views/draw.js` | group run: bracket, round robin, score tables, simple view, swap by drag, reset |
+  | `bout.js` | bout panel, timer and gong, hall screen push, phone video, 📹 Live kova |
+  | `schedule.js` `views/live.js` `views/desk.js` | schedule plan and moves; detached and pinned groups, board, run header; my tatami + secretariat desk |
+  | `results.js` `views/results.js` `views/draws.js` `test.js` | results for the server and viewers; Rezultatai tab and diplomas; Tinklai; +100 test people and 🎲 |
+  Rules for the next change: a module changes only its own variables (others call its setter: `resetSwap`, `setBoutHist`, `setPplClub`, `setDragId`,
+  `setRunView`, `setRestored`); the engine and `rules.js` use no browser; no module reads another module's state while loading - `main.js` starts everything.
+  Tests: `tests/engine/*.test.mjs` (`node --experimental-vm-modules --test tests/engine/*.test.mjs`, 36 tests + every module parses and links),
+  CI step „Budo variklio testai“ before Playwright, also in `tests/smoke.sh`. Proof: the split was made by a script (scope analysis, nothing moved twice);
+  old file vs modules in a browser without PHP gave the same DOM, storage and no JS errors in 31 steps at 1440 / 1280 / 375 (tools and report:
+  side-session notes `d3-moduliai/`).
+  CI on 0aa5502: engine tests ✓; full suite (run 45623818133) 155 passed, 21 failed - the same tests fail on main's full runs with the old file
+  (fb44527 / 40aa9db / 2ff6940: 01, 06c, 06h, 06n ×4, 06x ×3, 06y, 07h, 07i, 07o, 07q, 07v, 07zd, 07ze, 07zf, 08); Budo set (run 45623899106) 77 passed,
+  11 failed - all in that list. 06z „A1 tab closed while saving“ is flaky on both: 5 repeats - branch 4/5, main 3/5. 07zh and 07zk ✓.
+  Questions found (old behaviour, unchanged): round robin places use wins + score difference only, so two with the same wins share 1st place even when
+  one beat the other (the table shows the winner above); an elimination group with one participant gets no 1st place and never counts as finished.
 ## Open
-- C1 permissions, C3 secret links, C5 CSS cleanup (safe now with tests/visual.sh), C6 engine unit tests, D3 split varzybos.js, D4 same group on two tablets, D5 Budo live polish, D7 arena left hand UI, D8 pixel characters (PC + LibreSprite).
+- C1 permissions, C3 secret links, C5 CSS cleanup (safe now with tests/visual.sh), D4 same group on two tablets, D5 Budo live polish, D7 arena left hand UI, D8 pixel characters (PC + LibreSprite). C6 engine tests + D3 modules: on branch `claude/d3-budo-moduliai-d818a1`, waiting for the merge.
 - Parent payments for Budo registration need a payment provider (later).
 
 ## Next
