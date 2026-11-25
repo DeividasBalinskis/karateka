@@ -1,5 +1,5 @@
 # Handoff
-Updated: 2026-11-25 · version v2.02 · main
+Updated: 2026-11-25 · version v2.06 · main
 
 ## Pending asks (answer these first)
 | Asked | By | What | Status |
@@ -150,6 +150,14 @@ Updated: 2026-11-25 · version v2.02 · main
   POST status/result, POST {new:…} for its own work). The overlay is injected by feedback_widget_html(), so Budo pages have it too.
   Cloud agent instructions: docs/planai/taisymo-agentas.md (branch `claude/taisymai`, deploy = empty commit with „[į test]“). tests.yml: input `spec`, timeout 45 min
   (full runs were cancelled at 20 min). Tests 07zi-meniu, 07zj-perziura (run in CI with spec).
+- 2026-11-25 v2.03-v2.06 (main session, on main and test): the overlay was not printed when 💡 is visible (feedback_widget_html now returns $rv . …);
+  overlay classes renamed `rv-` → `pzr-` (app.css already has `.rv-bar` etc. for the quiz review page, testo-perziura.php - it squashed the bar to 12 px);
+  mark buttons sit above the gold outline, side by side when they would overlap (never over ✎); phone/tablet bar centred between 💡 and 💬;
+  menu rows drag only by ⠿ / icon (the name field is for typing); side menu full height while editing. Quiz page (testas.php) JS texts through t().
+  CI (workflow_dispatch with spec): 07zi-meniu ✓, 07zj-perziura ✓, 07-pages ✓ (27), 07za ✓, 07x ✓. Checked on test.karateka.lt at 2560 and 375 (iframe):
+  db/060 applied by itself on the first admin page, Peržiūra page, gold marks, bar.
+  Gotcha: two sessions in one folder share one git index - `git add` + another session's `git commit` took my files into its commit (aab1a85).
+  Always `git commit -- <paths>`.
 
 ## Open
 - C1 permissions, C3 secret links, C5 CSS cleanup (safe now with tests/visual.sh), C6 engine unit tests, D3 split varzybos.js, D4 same group on two tablets, D5 Budo live polish, D7 arena left hand UI, D8 pixel characters (PC + LibreSprite).

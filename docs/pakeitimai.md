@@ -4,6 +4,10 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v2.06 - 2026-11-25 (meniu tvarkymas - visas aukštis)
+- **✎ Meniu tvarkymas**: kol tvarkoma, šoninis meniu rodomas visu aukščiu (be slinkties), todėl skyrių galima nutempti ir į apatinę, naujai sukurtą grupę.
+- Duomenų bazė: naujų failų nėra.
+
 ## v2.05 - 2026-11-25 (meniu tempimas už ⠿; žymų mygtukai neuždengia ✎)
 - **✎ Meniu tvarkymas**: skyrius tempiamas už **⠿** (ar ikonos), pavadinimo laukelyje - rašoma. Rankenėlė didesnė, patarimas aiškesnis.
 - Auksinių žymų mygtukai, kai jų keli šalia, išsidėsto vienas šalia kito ir neuždengia mygtukų (pvz. ✎).
