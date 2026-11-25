@@ -4,6 +4,24 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.99 - 2026-11-25 (transliacija be OBS: telefonai → tatamiai → žiūrovai; atsiliepimai #182-#184; dizaino taisymai)
+- **Transliacija be OBS** (Budo → 📡 Transliacija ir registracija → „🎥 Prijungti telefonus →“):
+  - Telefonu nuskenuojate QR → telefonas atsiranda „Laukiantys telefonai“ → prie tatamio paspaudžiate telefono pavadinimą →
+    telefone **„📹 Pradėti filmuoti“** (kamera atsidaro visame ekrane). Vienas QR visiems telefonams ir visoms varžyboms.
+  - Kiekvienas tatamis - atskira kortelė: telefono vaizdas su juosta, **± kairėje ir dešinėje balų** (pavyzdinė kova, kai tikros kovos nėra), „Atjungti“.
+  - **Žiūrovams** (nuoroda žiūrovams) prie tatamio - **„▶ Žiūrėti gyvai“**: vaizdas su balais ir laiku. Vaizdą žiūrovams dalija vdo.ninja serveris,
+    todėl žiūrėti gali daug žmonių; vaizdas įsijungia tik paspaudus (taupomas telefonų internetas).
+  - **Sekretoriatui** kovoje „📹 Vaizdas“ - telefono vaizdas šalia balų ir **± ant vaizdo** (keičia tos kovos balus).
+  - Viskas, kas buvo susiję su OBS (juostos nuorodos, paaiškinimai, „Visi tatamiai“), pašalinta.
+- **Budo viršus** - švelni mėlynai pilka spalva (buvo beveik juodas), temos turi savo spalvas (#184).
+- **Rungtis užsirakina pati**, kai įrašomas paskutinės kovos rezultatas; pataisyti - paspausti „🔒 Užrakinta“ (#182).
+- Budo: „CSV (Excel)“ ir „Kontaktai (Excel)“ mygtukuose nebėra didžiulio juodo ▼; siaurame tvarkaraščio stulpelyje (4 tatamiai) rungties pavadinimas
+  nesuspaudžiamas; telefone „Administracija“ skirtukai be aukštų baltų dėžių ir nenukirsti. LTKF: išversta „dienų iki pradžios“.
+- Atsiliepimų peržiūra (#179-#184): ▾ prie logotipo nebe nuvažiuoja į dešinę (#183); nuorodose be meniu LT mygtukas dešinėje; pradžioje
+  „✎ Redaguoti puslapį“ nebeuždengia 🔔; Renginiai ir Paskyra telefone nebeišlenda; išversta svečio forma, 404, reakcijos, temų pavadinimai,
+  slaptažodžio 👁, pradžios „Tvarkaraštis“, paskyros ir registracijos pranešimai.
+- Duomenų bazė: naujų failų nėra.
+
 ## v1.98 - 2026-11-25 (transliacija: telefonai per vieną QR ir priskyrimas tatamiui, ± bandomoji kova, OBS - viena nuoroda)
 - **Budo → 📡 Transliacija ir registracija → 🎥 Transliacija → „📱 Telefonai - kameros“:** vienas QR kodas visiems telefonams.
   Telefonu nuskenuojate → „📹 Įjungti kamerą“ → telefonas atsiranda sąraše su savo vaizdu → pasirenkate, **kuriam tatamiui** jis filmuoja.

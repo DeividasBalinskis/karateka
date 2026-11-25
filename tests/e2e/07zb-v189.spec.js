@@ -1,5 +1,5 @@
 // v1.89: atsiliepimai #164-#171 ir „gyvas taisymas“: autorius įvertina pataisymą (Patinka / Grąžinti), API prieiga diegimui,
-// protokolo balai 6.4, Budo: aprašymai išimti, pavadinimas atidaro valdymą, kitos sistemos antraštėje, OBS juosta; LTKF meniu redagavimas.
+// protokolo balai 6.4, Budo: aprašymai išimti, pavadinimas atidaro valdymą, kitos sistemos antraštėje, juosta (v1.99 - be OBS); LTKF meniu redagavimas.
 const { test } = require('@playwright/test');
 const { execFileSync } = require('child_process');
 const { sql, day, login, nav, check, noJsErrors, openFeedback } = require('./helpers');
@@ -79,7 +79,7 @@ test('#166: a new person in the exam protocol starts with 6.4', async ({ browser
   noJsErrors(a);
 });
 
-test('Budo: no long descriptions, group name opens control, other systems menu, OBS bar', async ({ browser }) => {
+test('Budo: no long descriptions, group name opens control, other systems menu, score bar', async ({ browser }) => {
   const a = await login(browser, 'info@karateka.lt', 1400, 900);
   await a.goto('admin/varzybos.php');
   check('#171 other systems in the Budo header', await a.locator('.vz-top .site-switch a[href$="index.php"]').count() === 1 && await a.locator('.vz-top .site-switch a[href*="ltkf/"]').count() === 1);
@@ -92,38 +92,28 @@ test('Budo: no long descriptions, group name opens control, other systems menu, 
   await a.locator('#tk-view .tk-cat-name').first().click();
   await a.waitForTimeout(600);
   check('#170 category name opens control', await a.locator('#run').isVisible());
-  // OBS juosta: OBS programoje permatoma, su kova
+  // Juosta (v1.99: be OBS - Transliacijos peržiūroje ant telefono vaizdo): permatoma, su kova; be kovos - tatamio pavadinimas
   const areaId = JSON.parse(sql(`SELECT state FROM tournaments WHERE id = ${tid}`)).areas[0].id;
   const live = JSON.stringify({ mode: 'kumite', cat: 'Kumite M 10-11', round: 'Finalas', bout: '3', aka: { name: 'Jonas J.' }, shiro: { name: 'Petras P.' }, sa: 4, sb: 2, at: Date.now(), timer: { running: false, remaining: 61000, total: 90000 } });
   sql(`REPLACE INTO tournament_live (tournament_id, area_id, data, updated_ms) VALUES (${tid}, ${areaId}, '${live.replace(/'/g, "''")}', ${Date.now()})`);
   sql(`UPDATE tournaments SET share_token = 'abcdefabcdefabcdefab0789' WHERE id = ${tid}`);
   await a.goto(`admin/varzybu-sistema.php?id=${tid}`);
   await a.click('#share-toggle');
-  check('OBS bar link per tatami', /juosta=1&tatami=/.test(await a.locator('#sp-bars input').first().inputValue()));
+  check('no OBS block any more, phones link instead', await a.locator('#sp-bars').count() === 0 && await a.locator(`#share-panel a[href*="varzybu-transliacija.php?id=${tid}"]`).count() === 1);
   const v = await login(browser, null, 1920, 1080);
-  await v.addInitScript(() => { window.obsstudio = {}; });   // kaip OBS programoje
   await v.goto(`varzybos-gyvai.php?k=abcdefabcdefabcdefab0789&juosta=1&tatami=${areaId}`);
   await v.waitForSelector('.gv-bar');
   const txt = await v.locator('.gv-bar').innerText();
   check('bar shows the bout', /Jonas J\./.test(txt) && /Petras P\./.test(txt) && /4/.test(txt) && /1:01/.test(txt), txt);
   check('background is transparent', await v.evaluate(() => getComputedStyle(document.body).backgroundColor) === 'rgba(0, 0, 0, 0)');
-  check('no help text in OBS', await v.locator('.gv-bar-help').count() === 0);
-  // v1.96: paprastoje naršyklėje - paaiškinimas; be kovos - varžybų ir tatamio pavadinimas; ?pavyzdys=1 - pavyzdinė kova
+  check('no buttons for viewers', await v.locator('.ov-pm').count() === 0);
   sql(`DELETE FROM tournament_live WHERE tournament_id = ${tid}`);
-  const w = await login(browser, null, 1280, 800);
-  await w.goto(`varzybos-gyvai.php?k=abcdefabcdefabcdefab0789&juosta=1&tatami=${areaId}`);
-  await w.waitForSelector('.gv-bar.idle');
-  check('help shown in a browser', await w.locator('.gv-bar-help ol li').count() === 4);
+  await v.reload();
+  await v.waitForSelector('.gv-bar.idle');
   const areaName = JSON.parse(sql(`SELECT state FROM tournaments WHERE id = ${tid}`)).areas[0].name;
-  check('idle bar shows the tatami', (await w.locator('.gv-bar').innerText()).includes(areaName), areaName);
-  await w.goto(`varzybos-gyvai.php?k=abcdefabcdefabcdefab0789&juosta=1&tatami=${areaId}&pavyzdys=1`);
-  await w.waitForSelector('.gv-bar:not(.idle)');
-  check('sample bout', /Jonas Jonaitis/.test(await w.locator('.gv-bar').innerText()));
-  await a.goto(`admin/varzybu-sistema.php?id=${tid}`);
-  await a.click('#share-toggle');
-  check('sample link per tatami', /pavyzdys=1/.test(await a.locator('#sp-bars a', { hasText: 'Pavyzdys' }).first().getAttribute('href')));
+  check('idle bar shows the tatami', (await v.locator('.gv-bar').innerText()).includes(areaName), areaName);
   sql(`DELETE FROM tournaments WHERE id = ${tid}`);
-  noJsErrors(a, v, w);
+  noJsErrors(a, v);
 });
 
 test('#168 LTKF: while editing, a menu item click renames it; ↗ opens the page', async ({ browser }) => {

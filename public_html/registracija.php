@@ -21,9 +21,9 @@ $v = $_POST;   // formos reikšmės, kad nereikėtų vesti iš naujo
 function check_person(string $first, string $last, string $label, array &$errors): void
 {
     if ($first === '' || $last === '') {
-        $errors[] = "$label: įveskite vardą ir pavardę.";
+        $errors[] = t('{who}: įveskite vardą ir pavardę.', ['who' => $label]);
     } elseif (mb_strlen($first) > 80 || mb_strlen($last) > 80) {
-        $errors[] = "$label: vardas arba pavardė per ilgi.";
+        $errors[] = t('{who}: vardas arba pavardė per ilgi.', ['who' => $label]);
     }
 }
 
@@ -75,12 +75,13 @@ if (is_post() && in_array($type, ['tevai', 'pats'], true)) {
                 continue;   // tuščias blokas
             }
             $n = count($kids) + 1;
-            check_person($k['first_name'] ?? '', $k['last_name'] ?? '', "Vaikas nr. $n", $errors);
+            $kidLabel = t('Vaikas nr. {n}', ['n' => $n]);
+            check_person($k['first_name'] ?? '', $k['last_name'] ?? '', $kidLabel, $errors);
             if (!valid_birth_date($k['birth_date'] ?? '')) {
-                $errors[] = "Vaikas nr. $n: įveskite gimimo datą.";
+                $errors[] = t('{who}: įveskite gimimo datą.', ['who' => $kidLabel]);
             }
             if (!in_array($k['photo_consent'] ?? '', ['0', '1'], true)) {
-                $errors[] = "Vaikas nr. $n: pasirinkite, ar sutinkate dėl nuotraukų.";
+                $errors[] = t('{who}: pasirinkite, ar sutinkate dėl nuotraukų.', ['who' => $kidLabel]);
             }
             $kids[] = $k;
         }

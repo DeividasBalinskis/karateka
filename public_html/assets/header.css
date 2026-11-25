@@ -75,7 +75,9 @@ html{scrollbar-gutter:stable;}
 
 /* Planšetėse ir telefonuose - ☰ meniu: tos pačios grupės viena po kita */
 @media(max-width:1100px){
-  .site-header .logo{margin-right:auto;}
+  /* #183: tarpas - po kalbos ir temos, ne po logotipo: logotipas, jo ▾ ir kalba lieka kartu kairėje (anksčiau ▾ nuvažiuodavo į dešinę) */
+  .site-header .nav-prefs{margin-right:auto;}
+  .site-header .site-switch{margin-left:0;}   /* tarpas iki logotipo = antraštės tarpas (telefone 6-10 px), ▾ nebeprilimpa */
   .site-header ul.nav-list{
     display:none; position:absolute; top:100%; left:0; right:0;
     flex-direction:column; align-items:stretch; gap:10px; padding:14px; margin-top:6px;
@@ -384,6 +386,6 @@ body.theme-dark .site-header .fold-btn{color:#ECE8F4;}
 }
 /* Egzamino registracijos nuoroda ir svečio puslapiai - be meniu: tik logotipas (nepaspaudžiamas) ir kalba */
 header.site-header.is-bare > nav{display:flex; align-items:center; justify-content:space-between; gap:12px;}
-header.site-header.is-bare .nav-prefs{margin-left:auto;}
+header.site-header.is-bare .nav-prefs{margin-left:auto; margin-right:0;}   /* kalba - dešiniajame krašte ir telefone */
 .site-header.is-bare .logo{cursor:default;}
 .site-footer.is-bare .footer-bottom{justify-content:center;}

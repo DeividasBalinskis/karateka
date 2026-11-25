@@ -217,7 +217,15 @@ try {
     $awardsUrl = '';   // dar neimportuotas db/033
 }
 // v1.97: telefono kamera transliacijai (vdo.ninja) - raktas srauto vardui; puslapis su paaiškinimu - admin/varzybu-transliacija.php
-$camKey = $shareUrl ? varz_stream_key('cam') : '';   // klubo nuolatinis raktas - tos pačios nuorodos visoms varžyboms
+// v1.99: transliacija telefonais - kiekvieno tatamio telefono vaizdas (vdo.ninja) kovos skydeliui; telefonai jungiami Transliacijos puslapyje
+$cams = [];
+if ($shareUrl) {
+    $camKey = varz_cam_key();
+    $camIds = array_map('intval', array_column((array) (tournament_state($t)['areas'] ?? []), 'id'));
+    foreach (array_unique(array_merge($camIds, range(1, 8))) as $aid) {
+        $cams[(string) $aid] = varz_cam_view_url(varz_cam_id($camKey, $aid));
+    }
+}
 $streamUrl = url('admin/varzybu-transliacija.php?id=' . (int) $t['id']);
 $cfg = [
     'id' => (int) $t['id'], 'title' => $t['title'], 'version' => (int) $t['version'], 'isTest' => (bool) $t['is_test'],
@@ -230,7 +238,7 @@ $cfg = [
     'awardsApi' => $awardsUrl ? url('admin/varzybu-sistema.php?id=' . (int) $t['id'] . '&awards=1') : '', 'awardsUrl' => $awardsUrl,
     'awards' => (object) tournament_awards((int) $t['id']),
     'shareUrl' => $shareUrl, 'screenUrl' => $shareUrl ? $shareUrl . '&ekranas=1' : '', 'regUrl' => $regUrl, 'regOpen' => $regOpen,
-    'camKey' => $camKey, 'streamUrl' => $streamUrl,
+    'cams' => (object) $cams, 'streamUrl' => $streamUrl,
     'entries' => tournament_new_entries((int) $t['id']),
     'api' => url('admin/varzybu-sistema.php?id=' . (int) $t['id']), 'csrf' => csrf_token(), 'year' => (int) substr($t['starts_on'], 0, 4),
     'date' => $t['starts_on'], 'dateEnd' => $t['ends_on'] ?: $t['starts_on'],
@@ -358,11 +366,9 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
     <div class="sp-row" id="sp-screens"></div>
   </div>
   <div class="sp-block">
-    <b title="OBS → Šaltiniai → + → Naršyklė (Browser) → įklijuokite nuorodą; plotis 1920, aukštis 1080. Telefonas - kitas šaltinis po juosta.">🎬 OBS juosta ant telefono vaizdo</b>
-    <p class="muted small">Juosta su kova (vardai, balai, laikas) ant telefono vaizdo transliacijoje. Kovos nėra - rodomas varžybų ir tatamio pavadinimas, todėl prijungti ir pažiūrėti vaizdą galima iš anksto.</p>
-    <p class="muted small">OBS → Šaltiniai → + → Naršyklė (Browser) → įklijuokite nuorodą, 1920 × 1080. „↗“ atidaro juostą su paaiškinimu, „Pavyzdys“ - kaip atrodys kova.</p>
-    <?php if ($camKey): ?><div class="sp-row"><a class="btn btn-primary" href="<?= e($streamUrl) ?>">🎥 Transliacija: telefonas, OBS, peržiūra →</a></div><?php endif; ?>
-    <div id="sp-bars"></div>
+    <b>🎥 Transliacija telefonais</b>
+    <p class="muted small">Telefonai prisijungia per QR kodą ir filmuoja tatamius. Vaizdą su balais mato žiūrovai („📹 Žiūrėti gyvai“) ir sekretoriatas kovoje („📹 Vaizdas“).</p>
+    <?php if ($cams): ?><div class="sp-row"><a class="btn btn-primary" href="<?= e($streamUrl) ?>">🎥 Prijungti telefonus →</a></div><?php endif; ?>
   </div>
   <?php if ($awardsUrl): ?>
   <div class="sp-block">

@@ -103,8 +103,8 @@ function client_ip(): string
 function not_found(): void
 {
     http_response_code(404);
-    page_start('Puslapis nerastas');
-    echo '<div class="panel card"><h1>Puslapis nerastas</h1><p class="muted">Tokio puslapio nėra arba jis buvo pašalintas.</p></div>';
+    page_start(t('Puslapis nerastas'));
+    echo '<div class="panel card"><h1>' . te('Puslapis nerastas') . '</h1><p class="muted">' . te('Tokio puslapio nėra arba jis buvo pašalintas.') . '</p></div>';
     page_end();
     exit;
 }

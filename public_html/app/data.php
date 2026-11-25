@@ -323,8 +323,8 @@ function event_staff_actions(array $ev, string $back): string
     }
     $id = (int) $ev['id'];
     $pc = event_participant_counts($id);
-    $html = '<div class="event-staff no-print"><a class="btn btn-ghost btn-sm" href="' . e(url('admin/renginiai.php?edit=' . $id . '&back=' . $back)) . '">✎ Redaguoti</a>'
-        . '<a class="btn btn-ghost btn-sm" href="' . e(url('admin/renginio-dalyviai.php?id=' . $id)) . '">Dalyviai' . ($pc['going'] || $pc['invited'] ? ' ' . $pc['going'] . '/' . ($pc['going'] + $pc['invited']) : '') . '</a>';
+    $html = '<div class="event-staff no-print"><a class="btn btn-ghost btn-sm" href="' . e(url('admin/renginiai.php?edit=' . $id . '&back=' . $back)) . '">' . te('✎ Redaguoti') . '</a>'
+        . '<a class="btn btn-ghost btn-sm" href="' . e(url('admin/renginio-dalyviai.php?id=' . $id)) . '">' . te('Dalyviai') . ($pc['going'] || $pc['invited'] ? ' ' . $pc['going'] . '/' . ($pc['going'] + $pc['invited']) : '') . '</a>';
     if ($ev['type'] === 'competition' && varzybos_enabled()) {
         $html .= '<a class="btn btn-ghost btn-sm" href="' . e(url(!empty($ev['tournament_id']) ? 'admin/varzybu-dalyviai.php?id=' . $id : 'admin/varzybu-rezultatai.php?id=' . $id)) . '">'
             . (!empty($ev['tournament_id']) ? t('🥋 Varžybų sistema') : t('🔗 Susieti su varžybomis')) . '</a>';
@@ -440,9 +440,9 @@ function render_reactions(int $newsId): string
     // Visi emoji pagal grupes; paspaudus savo (pažymėtą) - reakcija nuimama
     $picker = '';
     foreach (REACTION_CHOICES as $group => $list) {
-        $picker .= '<span class="r-group" role="presentation">' . e($group) . '</span>';
+        $picker .= '<span class="r-group" role="presentation">' . te($group) . '</span>';
         foreach ($list as $emoji) {
-            $picker .= '<button type="submit" name="emoji" value="' . e($emoji) . '" class="pick' . ($mine === $emoji ? ' mine' : '') . '" role="menuitem" aria-label="Reaguoti: ' . e(reaction_label($emoji)) . '" title="' . e(reaction_label($emoji)) . '">' . reaction_html($emoji) . '</button>';
+            $picker .= '<button type="submit" name="emoji" value="' . e($emoji) . '" class="pick' . ($mine === $emoji ? ' mine' : '') . '" role="menuitem" aria-label="' . te('Reaguoti: {r}', ['r' => reaction_label($emoji)]) . '" title="' . e(reaction_label($emoji)) . '">' . reaction_html($emoji) . '</button>';
         }
     }
     return '<form class="reactions" method="post" action="' . url('reakcija.php') . '" data-news="' . $newsId . '">'

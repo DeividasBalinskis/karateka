@@ -42,7 +42,7 @@ if ($status === 'going' && date('Y-m-d') > event_deadline($ev) && ($current['sta
     set_participation($eventId, $memberId, 'late', null, $role);
     notify_admins('late_request', 'Pavėlavo užsiregistruoti: ' . $who, $ev['title'] . ' (' . fmt_date($ev['starts_on'], true) . '). Registracija baigėsi ' . fmt_date(event_deadline($ev)),
         'admin/renginio-dalyviai.php?id=' . $eventId, $memberId, $eventId);
-    flash('ok', "{$m['first_name']}: registracija jau baigėsi, todėl Denis gavo prašymą. Kol jis patvirtins - sąraše pažymėta „vėlavo“.");
+    flash('ok', t('{name}: registracija jau baigėsi, todėl treneris gavo prašymą. Kol jis patvirtins - sąraše pažymėta „vėlavo“.', ['name' => $m['first_name']]));
     redirect($back);
 }
 set_participation($eventId, $memberId, $status, null, $status === 'going' ? $role : null);
@@ -57,7 +57,8 @@ if ($ev['type'] === 'exam') {
 if ($status === 'declined') {
     notifications_done('late_request', $eventId, $memberId);
 }
+$fv = ['name' => $m['first_name'], 'event' => tr_text($ev['title'])];
 flash('ok', $status === 'going'
-    ? "{$m['first_name']}: " . ($role === 'referee' ? t('teisėjaus') : 'dalyvaus') . " - {$ev['title']}."
-    : "{$m['first_name']}: pažymėta, kad negalės - {$ev['title']}.");
+    ? ($role === 'referee' ? t('{name}: teisėjaus - {event}.', $fv) : t('{name}: dalyvaus - {event}.', $fv))
+    : t('{name}: pažymėta, kad negalės - {event}.', $fv));
 redirect($back);

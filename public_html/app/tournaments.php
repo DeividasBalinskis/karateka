@@ -631,66 +631,55 @@ function tournament_token(array $t, string $kind): string
 }
 
 /**
- * Transliacija (v1.97-v1.98, vdo.ninja): klubo nuolatiniai raktai - tos pačios nuorodos visoms varžyboms, todėl OBS ir telefono QR kodas
- * nustatomi vieną kartą (QR galima atsispausdinti prie tatamio). „cam“ - telefono kameros srautas „kt<raktas>t<tatamis>“
- * (telefonas siunčia ?push=, OBS ir sekretoriatas žiūri ?view=); „bar“ - nuolatinė juostos nuoroda, rodo tuo metu vykstančias varžybas.
- * Raktai slapti (site_settings varz_cam_key, varz_bar_key); pakeisti - Transliacijos puslapyje (tik adminas).
+ * Transliacija be OBS (v1.99, vdo.ninja + Meshcast): telefonai jungiasi per vieną klubo QR kodą (varzybos-kamera.php?c=<raktas>),
+ * kompiuteryje priskiriami tatamiui (stream_phones, db/059), tada telefone „Pradėti filmuoti“ siunčia vaizdą to tatamio srautu.
+ * Srauto vardas „kt<20 ženklų>“ gaunamas iš klubo rakto ir tatamio numerio (iš vardo rakto atspėti negalima), todėl žiūrovų puslapyje
+ * jį rodyti saugu. &meshcast - vaizdą žiūrovams dalija vdo.ninja serveris, todėl žiūrėti gali daug žmonių.
+ * Raktas slaptas (site_settings varz_cam_key); naujas - Transliacijos puslapyje (tik adminas).
  */
-function varz_stream_key(string $kind, bool $renew = false): string
+function varz_cam_key(bool $renew = false): string
 {
-    static $mem = [];
-    $name = $kind === 'bar' ? 'varz_bar_key' : 'varz_cam_key';
-    if (!$renew && isset($mem[$name])) {
-        return $mem[$name];
+    static $mem = null;
+    if (!$renew && $mem !== null) {
+        return $mem;
     }
-    $k = $renew ? '' : (string) site_setting($name, '');
+    $k = $renew ? '' : (string) site_setting('varz_cam_key', '');
     if (!preg_match('/^[a-f0-9]{16}$/', $k)) {
         $k = bin2hex(random_bytes(8));
-        set_site_setting($name, $k);
+        set_site_setting('varz_cam_key', $k);
     }
-    return $mem[$name] = $k;
-}
-
-/** Kurios varžybos dabar rodomos nuolatinėje juostoje: kur šiam tatamiui (0 - bet kuriam) naujausia kova (12 val.), šiandienos, artimiausios, paskutinės */
-function varz_current_tournament(int $area): ?array
-{
-    $test = (config('env') === 'live' ? ' AND t.is_test = 0' : '') . ' AND t.is_demo = 0';   // bandymo nuorodos varžybos - niekada
-    $id = 0;
-    try {
-        $id = (int) q_value('SELECT tl.tournament_id FROM tournament_live tl JOIN tournaments t ON t.id = tl.tournament_id
-                             WHERE (tl.area_id = ? OR ? = 0) AND tl.updated_ms > ?' . $test . ' ORDER BY tl.updated_ms DESC LIMIT 1',
-            [$area, $area, (int) round(microtime(true) * 1000) - 12 * 3600 * 1000]);
-    } catch (PDOException $ex) {
-        // dar neimportuotas db/026
-    }
-    if (!$id) {
-        $today = date('Y-m-d');
-        $id = (int) q_value('SELECT t.id FROM tournaments t WHERE 1' . $test . '
-                             ORDER BY (? BETWEEN t.starts_on AND COALESCE(t.ends_on, t.starts_on)) DESC, (t.starts_on >= ?) DESC,
-                                      IF(t.starts_on >= ?, TO_DAYS(t.starts_on), -TO_DAYS(t.starts_on)), t.id DESC LIMIT 1', [$today, $today, $today]);
-    }
-    return $id ? tournament_get($id) : null;
+    return $mem = $k;
 }
 
 function varz_cam_id(string $key, int $area): string
 {
-    return 'kt' . $key . 't' . $area;
+    return 'kt' . substr(hash('sha256', $key . '|t|' . $area), 0, 20);
 }
 
-/** v1.98: dar nepriskirto telefono srautas (kompiuteris mato jo vaizdą ir priskiria tatamiui - varzybos-kamera.php, stream_phones) */
-function varz_cam_phone_id(string $key, string $phone): string
-{
-    return 'kt' . $key . 'p' . $phone;
-}
-
+/** Telefonui: siųsti vaizdą (galinė kamera, iškart, per Meshcast serverį - daug žiūrovų) */
 function varz_cam_push_url(string $id): string
 {
-    return 'https://vdo.ninja/?push=' . rawurlencode($id) . '&webcam&autostart&facing=rear';
+    return 'https://vdo.ninja/?push=' . rawurlencode($id) . '&webcam&autostart&facing=rear&meshcast';
 }
 
+/** Žiūrėti vaizdą (be vdo.ninja mygtukų) */
 function varz_cam_view_url(string $id): string
 {
     return 'https://vdo.ninja/?view=' . rawurlencode($id) . '&cleanoutput';
+}
+
+/** [tatamio id => telefono pavadinimas]: priskirti telefonai, prisijungę per paskutines 12 val. (tik jiems rodomas vaizdas) */
+function varz_cams_live(): array
+{
+    $out = [];
+    try {
+        foreach (q_all('SELECT area_id, name FROM stream_phones WHERE area_id IS NOT NULL AND seen_at > NOW() - INTERVAL 12 HOUR') as $r) {
+            $out[(int) $r['area_id']] = (string) $r['name'];
+        }
+    } catch (PDOException $ex) {
+        // dar neimportuotas db/059
+    }
+    return $out;
 }
 
 function tournament_by_token(string $token, string $kind): ?array

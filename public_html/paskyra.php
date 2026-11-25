@@ -48,7 +48,7 @@ if (is_post()) {
             if ($a['status'] === 'active') {
                 notify_coach_pending($a);
             }
-            flash('ok', "$first pridėtas (-a). Treneris patvirtins ir priskirs grupę.");
+            flash('ok', t('{name} pridėtas (-a). Treneris patvirtins ir priskirs grupę.', ['name' => $first]));
             redirect('paskyra.php?m=' . $mid);
         }
     }
@@ -149,7 +149,7 @@ if (is_post()) {
             $m = q_one('SELECT * FROM members WHERE id = ?', [$mid]);
             $token = token_create('invite', $email, $aid, $mid);
             mail_send_tpl($email, 'kid_invite', ['name' => $m['first_name'], 'parent' => $a['first_name'] . ' ' . $a['last_name'], 'link' => abs_url('pakvietimas.php?t=' . $token)], account_lang($a));
-            flash('ok', "Kvietimas išsiųstas: $email");
+            flash('ok', t('Kvietimas išsiųstas: {email}', ['email' => $email]));
             redirect('paskyra.php?skiltis=nustatymai&m=' . $mid);
         }
     }
@@ -439,7 +439,7 @@ page_start($tab === 'nustatymai' ? t('Nustatymai') : t('Mano paskyra'), ['noinde
         <li class="notif is-new t-reply">
           <span class="notif-icon" aria-hidden="true">💬</span>
           <div class="notif-body">
-            <div class="notif-title"><?= e(message_author($r, false)) ?> <?= te('atsakė') ?><?= $key[0] === 'n' ? ': <a href="#' . e($key) . '">į pastabą</a>' : ($key !== 'general' ? ' · ' . message_topic_title($key, $r) : '') ?></div>
+            <div class="notif-title"><?= e(message_author($r, false)) ?> <?= te('atsakė') ?><?= $key[0] === 'n' ? ': <a href="#' . e($key) . '">' . te('į pastabą') . '</a>' : ($key !== 'general' ? ' · ' . message_topic_title($key, $r) : '') ?></div>
             <div class="notif-text"><?= e(mb_strimwidth(trim(preg_replace('~\s+~u', ' ', $r['body'])), 0, 200, '…')) ?></div>
             <div class="notif-meta"><?= e(notification_when($r['created_at'])) ?></div>
           </div>
@@ -656,7 +656,7 @@ page_start($tab === 'nustatymai' ? t('Nustatymai') : t('Mano paskyra'), ['noinde
     <?php $canPhoto = $selected['relation'] === 'parent' || age_on($selected['birth_date']) >= CONSENT_AGE; ?>
     <?php if ($canPhoto && $selected['photo_consent']): ?>
       <!-- Sutikimas duotas - langelio nebereikia, bet atšaukti galima visada (BDAR) -->
-      <form method="post" class="consent-line" onsubmit="return confirm('Atšaukti sutikimą skelbti nuotraukas ir vaizdo įrašus?')">
+      <form method="post" class="consent-line" onsubmit="return confirm(<?= e(json_encode(t('Atšaukti sutikimą skelbti nuotraukas ir vaizdo įrašus?'), JSON_UNESCAPED_UNICODE)) ?>)">
         <?= csrf_field() ?>
         <input type="hidden" name="action" value="photo_consent">
         <input type="hidden" name="member_id" value="<?= (int) $selected['id'] ?>">

@@ -365,4 +365,6 @@ return [
     'Jūsų atsakymas',
     'Atsakyti',
     'Ačiū! Atsakymas išsiųstas.',
+    'Rodyti slaptažodį',
+    'Slėpti slaptažodį',
 ];

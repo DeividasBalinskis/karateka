@@ -35,8 +35,7 @@ const SETTINGS = [
     'taika_ui'         => ['label' => 'Budo išvaizda ir meniu (visiems treneriams)', 'group' => 'Budo', 'type' => 'json', 'where' => 'admin/varzybos.php', 'owner' => 'coach', 'restore' => false],
     'taika_diploma'    => ['label' => 'Budo diplomo šablonas', 'group' => 'Budo', 'type' => 'json', 'where' => 'admin/varzybos.php', 'owner' => 'coach', 'restore' => false],
     'taika_demo_token' => ['label' => 'Budo bandymo nuoroda', 'group' => 'Budo', 'type' => 'secret', 'where' => 'admin/varzybos.php', 'owner' => 'admin', 'restore' => false],
-    'varz_cam_key'     => ['label' => 'Transliacijos telefono kameros raktas (QR ir OBS nuorodos)', 'group' => 'Budo', 'type' => 'secret', 'where' => 'admin/varzybu-transliacija.php', 'owner' => 'admin', 'restore' => false],
-    'varz_bar_key'     => ['label' => 'Transliacijos nuolatinės juostos raktas (OBS)', 'group' => 'Budo', 'type' => 'secret', 'where' => 'admin/varzybu-transliacija.php', 'owner' => 'admin', 'restore' => false],
+    'varz_cam_key'     => ['label' => 'Transliacijos telefonų QR kodo raktas', 'group' => 'Budo', 'type' => 'secret', 'where' => 'admin/varzybu-transliacija.php', 'owner' => 'admin', 'restore' => false],
     'varz_sekr_'       => ['label' => 'Budo sekretoriato nuoroda (kiekvienoms varžyboms)', 'group' => 'Budo', 'type' => 'secret', 'where' => 'admin/varzybos.php', 'owner' => 'coach', 'restore' => false, 'prefix' => true],
     // LTKF
     'ltkf_mode'        => ['label' => 'LTKF svetainės būsena', 'group' => 'LTKF', 'type' => 'choice', 'where' => 'admin/ltkf-perziura.php#busena', 'owner' => 'admin', 'restore' => true],

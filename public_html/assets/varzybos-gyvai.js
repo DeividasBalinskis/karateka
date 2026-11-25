@@ -14,12 +14,12 @@
   } catch (e) {}
 
   // Kas vyksta ant tatamio: naujesnis iš dviejų šaltinių (serveris arba tas pats kompiuteris)
-  function liveFor(area) {
+  function liveFor(area, allowTest) {
     var srv = data && data.live && data.live[area], loc = local[area], pick = null;
     if (srv) pick = { d: srv.data, src: 'srv', ms: srv.ms };
     if (loc && (!pick || (loc.data.at || 0) >= (pick.d.at || 0))) pick = { d: loc.data, src: 'loc', got: loc.got };
     if (!pick || pick.d.idle) return null;
-    if (pick.d.test && !CFG.bar) return null;   // bandomoji kova (v1.98) - tik OBS juostoje ir transliacijos peržiūroje
+    if (pick.d.test && !CFG.bar && !allowTest) return null;   // bandomoji kova (v1.98-v1.99) - tik juostoje ir telefono vaizde, ne sąraše ir ne salės ekrane
     var age = pick.src === 'srv' ? (Date.now() + offset) - pick.ms : Date.now() - pick.got;
     if (age > 30 * 60000) return null;   // senesnė nei 30 min. - nebeaktuali
     return pick;
@@ -264,8 +264,8 @@
   // atnaujinama tik juosta su vardais, balais ir laiku.
   var vidBox = null;
   // Kovos juosta ant vaizdo: kategorija, vardai, balai, laikas, laimėtojas (žiūrovų vaizde ir OBS juostoje)
-  function ovlHtml(areaId) {
-    var pick = liveFor(areaId), d = pick && pick.d;
+  function ovlHtml(areaId, allowTest) {
+    var pick = liveFor(areaId, allowTest), d = pick && pick.d;
     if (d && d.mode === 'score') return '<span class="ov-cat">' + esc(d.cat) + '</span><span class="ov-n aka">' + esc(d.aka.name) + '</span><b class="ov-s">' + esc(d.perf && d.perf.total != null ? d.perf.total : '–') + '</b>';
     if (!d) return '';
     var left = timeLeft(pick), sa = d.mode === 'score2' ? (d.parts.a.tk != null && d.parts.a.tp != null ? (d.parts.a.tk + d.parts.a.tp).toFixed(1) : '–') : d.sa,
@@ -274,49 +274,30 @@
       (left !== null && d.mode !== 'score2' ? '<span class="ov-t" data-timer="' + areaId + '">' + fmt(left, d.timer && d.timer.up) + '</span>' : '<span class="ov-t">:</span>') +
       '<b class="ov-s shiro">' + esc(sb) + '</b><span class="ov-n shiro">' + esc(d.shiro.name) + '</span>' + (d.winner ? '<span class="ov-win">🏆 ' + esc(d.winner === 'a' ? d.aka.name : d.shiro.name) + '</span>' : '');
   }
-  // OBS juosta (?juosta=1&tatami=N): juosta apačioje, fonas permatomas. Vyksta kova - vardai, balai, laikas;
-  // kovos nėra - varžybų ir tatamio pavadinimas (galima prijungti telefoną ir transliuoti iš anksto); ?pavyzdys=1 - pavyzdinė kova.
-  // Atidarius paprastoje naršyklėje (ne OBS) - viršuje paaiškinimas, kaip naudotis (OBS jo nerodo: ten yra window.obsstudio).
-  var IN_OBS = !!window.obsstudio || /[?&]obs=1/.test(location.search);   // &obs=1 - peržiūra Transliacijos puslapyje (be paaiškinimo)
+  // Juosta (?juosta=1&tatami=N, v1.99): Transliacijos puslapio peržiūroje ant telefono vaizdo, fonas permatomas.
+  // Vyksta kova - vardai, balai, laikas; kovos nėra - varžybų ir tatamio pavadinimas.
+  // Treneriui ir sekretoriatui (CFG.test, &valdymas=1) - ± kairėje ir dešinėje balų: pavyzdinė kova serveryje (ją mato ir žiūrovai vaizde).
+  // Kai vyksta tikra kova - mygtukų nėra: balai rašomi kovos skydelyje.
   function barName() {
     var a = ((data && data.areas) || []).filter(function (x) { return String(x.id) === String(CFG.area); })[0];
     return a ? a.name : 'Tatamis ' + CFG.area;
   }
-  // ± prie juostos (tik naršyklėje): treneriui ar sekretoriatui (CFG.test) - bandomoji kova serveryje, ją mato ir OBS;
-  // kitiems pavyzdyje (?pavyzdys=1) - tik šioje naršyklėje. Kai vyksta tikra kova - mygtukų nėra (balai - kovos skydelyje).
-  var SAMPLE = { sa: 3, sb: 1 };
   function rawLive() { var s = data && data.live && data.live[CFG.area]; return s ? s.data : null; }
-  function barSample() {
-    return '<span class="ov-cat">Pavyzdys · Kumite</span><span class="ov-n aka">Jonas Jonaitis</span><b class="ov-s aka">' + SAMPLE.sa + '</b><span class="ov-t">1:24</span>' +
-      '<b class="ov-s shiro">' + SAMPLE.sb + '</b><span class="ov-n shiro">Petras Petraitis</span>';
-  }
-  function barCtl(side) {
-    return '<span class="ov-ctl"><button type="button" data-d="' + side + '|-1" aria-label="−1">−</button><button type="button" data-d="' + side + '|1" aria-label="+1">+</button></span>';
-  }
-  function barHelp(live, real, test) {
-    var here = location.href.replace(/[?&]pavyzdys=1/, ''), sample = here + '&pavyzdys=1';
-    return '<section class="gv-bar-help"><h1><span>🎬 OBS juosta</span> · <span>' + esc(barName()) + '</span></h1>' +
-      '<p class="gv-bh-state">' + (real ? '🔴 Dabar vyksta kova - juostoje vardai, balai ir laikas. Balai rašomi kovos skydelyje.' :
-        test ? '🧪 Bandomoji kova: ± prie juostos keičia balus, ją mato ir OBS.' :
-        CFG.sample ? '👁 Rodoma pavyzdinė kova - taip atrodys juosta kovos metu.' :
-        '⏸ Kovos dabar nėra - juostoje rodomas varžybų ir tatamio pavadinimas. Kova atsiras pati, kai kovos skydelyje ją pradėsite.') +
-      (!real && CFG.test && !test ? ' <span>± prie juostos - bandomoji kova (ją matys ir OBS).</span>' : '') + '</p>' +
-      '<ol><li><b>OBS Studio:</b> <span>atidarykite kompiuteryje.</span></li>' +
-      '<li><b>Telefonas:</b> <span>Budo → „📡 Transliacija ir registracija“ → „🎥 Transliacija“ → telefonu nuskenuokite QR kodą ir priskirkite jį tatamiui.</span></li>' +
-      '<li><b>OBS:</b> <span>Šaltiniai → + → Naršyklė (Browser) → nuoroda iš „🎥 Transliacija“ („Visi tatamiai“ arba vieno tatamio - vaizdas ir juosta kartu), 1920 × 1080.</span></li>' +
-      '<li><b>Transliacija:</b> <span>OBS → Nustatymai → Transliacija → YouTube → „Pradėti transliaciją“. YouTube nuorodą žiūrovams įklijuokite Budo → „📡 Transliacija ir registracija“ → „🎥 YouTube transliacija“.</span></li></ol>' +
-      '<p class="gv-bh-btns"><button type="button" class="btn" data-copy="' + esc(here) + '">Kopijuoti nuorodą</button>' +
-      (CFG.sample ? '<a class="btn" href="' + esc(here) + '">Tikra juosta</a>' : '<a class="btn" href="' + esc(sample) + '">Pavyzdys</a>') +
-      (test ? '<button type="button" class="btn" data-end="1">Baigti bandomąją kovą</button>' : '') + '</p>' +
-      '<p class="muted small">Šis paaiškinimas OBS programoje nerodomas - ten matosi tik juosta apačioje.</p></section>';
-  }
+  function pm(side, d) { return '<button type="button" class="ov-pm" data-d="' + side + '|' + d + '" aria-label="' + (d > 0 ? '+1' : '−1') + '">' + (d > 0 ? '+' : '−') + '</button>'; }
   function renderBar() {
-    var raw = rawLive(), live = ovlHtml(CFG.area), test = !!live && !!(raw && raw.test), real = !!live && !test, showSample = CFG.sample && !live;
-    var html = showSample ? barSample() : live || ('<span class="ov-cat">' + esc((data && data.title) || CFG.title) + '</span><span class="ov-n">' + esc(barName()) + '</span>');
-    var ctl = !IN_OBS && !real && (CFG.test || CFG.sample);
-    if (ctl) html = barCtl('a') + html + barCtl('b');
-    html = '<div class="gv-ovl gv-bar' + (live || showSample ? '' : ' idle') + (ctl ? ' has-ctl' : '') + '">' + html + '</div>';
-    if (!IN_OBS) html = barHelp(!!live, real, test) + html;
+    var raw = rawLive(), live = ovlHtml(CFG.area, true), test = !!live && !!(raw && raw.test), real = !!live && !test, html;
+    if (CFG.test && !real) {
+      var sa = test ? (+raw.sa || 0) : 0, sb = test ? (+raw.sb || 0) : 0;
+      html = '<div class="gv-ovl gv-bar has-ctl">' +
+        (test ? '<span class="ov-cat">🧪 Pavyzdinė kova</span>' : '<span class="ov-cat"><span>' + esc(barName()) + '</span> · <span>paspauskite ± - pavyzdinė kova</span></span>') +
+        '<span class="ov-n aka">' + esc(test ? raw.aka.name : 'AKA') + '</span>' + pm('a', -1) + '<b class="ov-s aka">' + sa + '</b>' + pm('a', 1) +
+        '<span class="ov-t">1:30</span>' +
+        pm('b', -1) + '<b class="ov-s shiro">' + sb + '</b>' + pm('b', 1) + '<span class="ov-n shiro">' + esc(test ? raw.shiro.name : 'SHIRO') + '</span>' +
+        (test ? '<button type="button" class="ov-end" data-end="1" title="Baigti pavyzdinę kovą" aria-label="Baigti pavyzdinę kovą">✕</button>' : '') + '</div>';
+    } else {
+      html = live || ('<span class="ov-cat">' + esc((data && data.title) || CFG.title) + '</span><span class="ov-n">' + esc(barName()) + '</span>');
+      html = '<div class="gv-ovl gv-bar' + (live ? '' : ' idle') + '">' + html + '</div>';
+    }
     if (root.dataset.h !== html) { root.dataset.h = html; root.innerHTML = html; }
   }
   function sendTest(body) {
@@ -327,42 +308,53 @@
         else if (d.error) window.alert(d.error);
       }).catch(function () {});
   }
-  if (CFG.bar && !IN_OBS) {
-    document.body.classList.add('gv-bar-browser');
+  if (CFG.bar && CFG.test) {
     root.addEventListener('click', function (e) {
       var p = e.target.closest('[data-d]');
       if (p) {
-        var q = p.dataset.d.split('|'), k = q[0] === 'a' ? 'sa' : 'sb', raw = rawLive();
-        var cur = raw && raw.test && !raw.idle ? { sa: +raw.sa || 0, sb: +raw.sb || 0 } : CFG.sample ? { sa: SAMPLE.sa, sb: SAMPLE.sb } : { sa: 0, sb: 0 };
+        var q = p.dataset.d.split('|'), k = q[0] === 'a' ? 'sa' : 'sb', raw = rawLive(), cur = raw && raw.test ? { sa: +raw.sa || 0, sb: +raw.sb || 0 } : { sa: 0, sb: 0 };
         cur[k] = Math.max(0, cur[k] + (+q[1]));
-        if (CFG.test) sendTest(cur); else { SAMPLE = cur; render(); }
+        sendTest(cur);
         return;
       }
-      if (e.target.closest('[data-end]')) { sendTest({ end: true }); return; }
-      var b = e.target.closest('[data-copy]'); if (!b) return;
-      var done = function () { b.textContent = 'Nukopijuota ✓'; setTimeout(function () { b.textContent = 'Kopijuoti nuorodą'; }, 1500); };
-      if (navigator.clipboard) navigator.clipboard.writeText(b.dataset.copy).then(done, function () {});
+      if (e.target.closest('[data-end]')) sendTest({ end: true });
     });
   }
   function renderVideos() {
-    var areas = ((data && data.areas) || []).filter(function (a) { return a.video; });
+    var areas = ((data && data.areas) || []).filter(function (a) { return a.cam || a.video; });
     if (!vidBox) {
       if (!areas.length) return;
       vidBox = document.createElement('section'); vidBox.className = 'gv-vids'; vidBox.id = 'gv-vids';
       root.parentNode.insertBefore(vidBox, root);
+      // v1.99: telefono vaizdas įjungiamas paspaudus - kad žiūrovų telefonai be reikalo nenaudotų interneto
+      vidBox.addEventListener('click', function (e) {
+        var w = e.target.closest('[data-watch]'), x = e.target.closest('[data-unwatch]'), card = (w || x) && (w || x).closest('[data-vid]');
+        if (!card) return;
+        var fr = card.querySelector('.gv-vid-frame');
+        if (w) {
+          var f = document.createElement('iframe'); f.src = card.dataset.src; f.title = card.dataset.name || ''; f.setAttribute('allow', 'autoplay; fullscreen'); f.setAttribute('allowfullscreen', '');
+          fr.insertBefore(f, fr.firstChild); w.hidden = true; fr.querySelector('[data-unwatch]').hidden = false;
+        } else {
+          var old = fr.querySelector('iframe'); if (old) old.remove();
+          fr.querySelector('[data-watch]').hidden = false; x.hidden = true;
+        }
+      });
     }
     var keep = {};
     areas.forEach(function (a) {
       keep[a.id] = true;
-      var card = vidBox.querySelector('[data-vid="' + a.id + '"]');
-      if (!card || card.dataset.src !== a.video) {
+      var src = a.cam || a.video, card = vidBox.querySelector('[data-vid="' + a.id + '"]');
+      if (!card || card.dataset.src !== src) {
         if (card) card.remove();
-        card = document.createElement('div'); card.className = 'gv-vid'; card.dataset.vid = a.id; card.dataset.src = a.video;
-        card.innerHTML = '<div class="gv-vid-h">📹 ' + esc(a.name) + '</div><div class="gv-vid-frame"><iframe src="' + esc(a.video) + '" title="' + esc(a.name) + '" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>' +
-          '<div class="gv-ovl" hidden></div></div>';
+        card = document.createElement('div'); card.className = 'gv-vid'; card.dataset.vid = a.id; card.dataset.src = src; card.dataset.name = a.name;
+        card.innerHTML = a.cam
+          ? '<div class="gv-vid-h">📹 ' + esc(a.name) + '</div><div class="gv-vid-frame gv-cam"><button type="button" class="gv-watch" data-watch="1">▶ Žiūrėti gyvai</button>' +
+            '<button type="button" class="gv-unwatch" data-unwatch="1" hidden aria-label="Uždaryti vaizdą">✕</button><div class="gv-ovl" hidden></div></div>'
+          : '<div class="gv-vid-h">📹 ' + esc(a.name) + '</div><div class="gv-vid-frame"><iframe src="' + esc(a.video) + '" title="' + esc(a.name) + '" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>' +
+            '<div class="gv-ovl" hidden></div></div>';
         vidBox.appendChild(card);
       }
-      var ov = card.querySelector('.gv-ovl'), html = ovlHtml(a.id);
+      var ov = card.querySelector('.gv-ovl'), html = ovlHtml(a.id, true);
       if (ov.dataset.h !== html) { ov.dataset.h = html; ov.innerHTML = html; ov.hidden = !html; }
     });
     vidBox.querySelectorAll('[data-vid]').forEach(function (c) { if (!keep[c.dataset.vid]) c.remove(); });

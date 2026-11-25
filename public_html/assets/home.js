@@ -83,7 +83,10 @@ function pickLocation(li, scroll) {
   document.querySelectorAll('.picker-locations li[data-schedule]').forEach(other => { other.classList.remove('active'); other.setAttribute('aria-pressed', 'false'); });
   li.classList.add('active');
   li.setAttribute('aria-pressed', 'true');
-  panel.innerHTML = '<div class="kicker">Tvarkaraštis</div><div class="schedule-name"></div>' + li.dataset.schedule;
+  const kick = panel.querySelector('.kicker');   // antraštė - iš serverio, jau išversta (EN „Schedule“, RU „Расписание“)
+  const label = kick ? kick.textContent : 'Tvarkaraštis';
+  panel.innerHTML = '<div class="kicker"></div><div class="schedule-name"></div>' + li.dataset.schedule;
+  panel.querySelector('.kicker').textContent = label;
   panel.querySelector('.schedule-name').textContent = li.dataset.name;
   if (scroll && window.matchMedia('(max-width: 860px)').matches) {
     const r = panel.getBoundingClientRect();

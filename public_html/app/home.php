@@ -625,7 +625,7 @@ function home_render_block(array $b): string
                 . render_trial_location_options() . ('</select><select name="gimimo_metai" id="gimimoMetai" class="is-empty"><option value="" disabled selected>' . t('Gimimo metai') . '</option></select>')
                 . '<textarea name="zinute" rows="3" placeholder="' . e(t('Žinutė (nebūtina)')) . '"></textarea>'
                 . ($edit ? '<div class="btn btn-primary">' . hb_t('button', $d['button']) . '</div>' : '<button type="submit" class="btn btn-primary">' . e($d['button']) . '</button>')
-                . '<p class="form-note">Duomenis naudosime tik tam, kad susisiektume dėl treniruotės. Plačiau - <a href="' . e(url('privatumas.php')) . '" target="_blank">privatumo politikoje</a>.</p>'
+                . '<p class="form-note">' . te('Duomenis naudosime tik tam, kad susisiektume dėl treniruotės. Plačiau -') . ' <a href="' . e(url('privatumas.php')) . '" target="_blank">' . te('privatumo politikoje') . '</a>.</p>'
                 . '<div id="formStatus" class="form-status"></div></form></div></div></div></section>';
 
         case 'partners':

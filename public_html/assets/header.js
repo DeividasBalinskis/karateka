@@ -97,12 +97,13 @@
 
 // #143: slaptažodžio laukeliai - paslėpti po taškais, šalia 👁 parodyti / paslėpti
 (function () {
+  var T = window.tr || function (s) { return s; };   // vertimai - app/lang/js.php
   function add(inp) {
     if (inp.dataset.eye) return; inp.dataset.eye = '1';
     var wrap = document.createElement('span'); wrap.className = 'pw-wrap';
     inp.parentNode.insertBefore(wrap, inp); wrap.appendChild(inp);
-    var b = document.createElement('button'); b.type = 'button'; b.className = 'pw-eye'; b.setAttribute('aria-label', 'Rodyti slaptažodį'); b.textContent = '👁';
-    b.addEventListener('click', function () { var show = inp.type === 'password'; inp.type = show ? 'text' : 'password'; b.classList.toggle('on', show); b.setAttribute('aria-label', show ? 'Slėpti slaptažodį' : 'Rodyti slaptažodį'); inp.focus(); });
+    var b = document.createElement('button'); b.type = 'button'; b.className = 'pw-eye'; b.setAttribute('aria-label', T('Rodyti slaptažodį')); b.textContent = '👁';
+    b.addEventListener('click', function () { var show = inp.type === 'password'; inp.type = show ? 'text' : 'password'; b.classList.toggle('on', show); b.setAttribute('aria-label', T(show ? 'Slėpti slaptažodį' : 'Rodyti slaptažodį')); inp.focus(); });
     wrap.appendChild(b);
   }
   function scan() { document.querySelectorAll('input[type=password]').forEach(add); }

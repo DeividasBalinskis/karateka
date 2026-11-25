@@ -16,9 +16,12 @@ a.btn, a.vz-link { text-decoration: none; display: inline-block; }
 .muted { color: var(--muted); }
 .small { font-size: .85rem; }
 .spacer { flex: 1; }
+/* v1.99: ikonos (svg class="ico", app/icons.php) - kaip app.css; be šios taisyklės Budo mygtukuose („CSV (Excel)“) ikona būdavo didžiulė ir juoda */
+.ico { width: 1.1em; height: 1.1em; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; vertical-align: -0.2em; }
 
 /* ---------- Viršus ---------- */
-.vz-top { background: radial-gradient(1200px 300px at 0% 0%, #2A1A22 0%, transparent 60%), linear-gradient(135deg, #12151C 0%, #1B2130 100%); color: #fff; position: sticky; top: 0; z-index: 50; box-shadow: 0 6px 24px rgba(10, 12, 20, .18); }
+/* #184 (v1.99, Denis): numatytasis viršus - švelni mėlynai pilka (buvo beveik juodas); temos turi savo spalvas žemiau */
+.vz-top { background: linear-gradient(135deg, #4F5E73 0%, #67788F 100%); color: #fff; position: sticky; top: 0; z-index: 50; box-shadow: 0 6px 24px rgba(40, 52, 70, .18); }
 .vz-top-row { max-width: none; margin: 0; padding: 12px 20px 8px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; }
 .vz-back { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: rgba(255, 255, 255, .08); color: #fff; text-decoration: none; font-weight: 700; }
 .vz-back:hover { background: rgba(255, 255, 255, .16); }
@@ -1516,57 +1519,77 @@ body.vz.vz-public:not(.scr) .vz-top-row, body.vz.vz-public:not(.scr) .tabs { max
 .gv-ovl .ov-s.aka { color: #FF8A8A; }
 .gv-ovl .ov-t { font-variant-numeric: tabular-nums; opacity: .9; }
 .gv-ovl .ov-win { flex-basis: 100%; color: #FFD27A; }
-/* OBS juosta (varzybos-gyvai.php?juosta=1&tatami=N): permatomas fonas, juosta apačioje; dydis pagal ekrano plotį (OBS - 1920×1080) */
+/* Juosta (varzybos-gyvai.php?juosta=1&tatami=N): permatomas fonas, juosta apačioje; dydis pagal lango plotį (v1.99 - Transliacijos peržiūroje) */
 body.gv-bar-body { margin: 0; background: transparent !important; font-family: 'Inter', system-ui, sans-serif; overflow: hidden; }
 .gv-ovl.gv-bar { position: fixed; left: 3vw; right: 3vw; bottom: 4vh; gap: .6vw 1.2vw; padding: 1vw 1.6vw; border-radius: 1.2vw; font-size: 2.1vw; background: rgba(10, 12, 20, .86); backdrop-filter: none; }
 .gv-ovl.gv-bar .ov-cat { font-size: 1.2vw; }
 .gv-ovl.gv-bar .ov-s { font-size: 3.4vw; }
 .gv-ovl.gv-bar .ov-t { font-size: 2.4vw; }
-.gv-ovl.gv-bar.idle { justify-content: center; }
-/* v1.98: ± abiejose juostos pusėse (tik naršyklėje, ne OBS) - bandomoji kova; vardai siauram ekrane nedingsta */
 .gv-ovl.gv-bar .ov-n { min-width: 3em; }
-.gv-ovl.gv-bar.has-ctl .ov-cat { order: -1; }
-.gv-ovl.gv-bar .ov-ctl { display: inline-flex; gap: .5vw; }
-.gv-ovl.gv-bar .ov-ctl button { width: 3.6vw; height: 3.6vw; min-width: 40px; min-height: 40px; border: 0; border-radius: .8vw; background: rgba(255, 255, 255, .16); color: #fff;
-  font: 800 2.4vw/1 'Inter', system-ui, sans-serif; cursor: pointer; }
-.gv-ovl.gv-bar .ov-ctl button:hover { background: rgba(255, 255, 255, .3); }
+.gv-ovl.gv-bar.idle { justify-content: center; }
+.gv-ovl.gv-bar.idle .ov-cat { font-size: 1.6vw; opacity: .85; }
+/* v1.99: ± kairėje ir dešinėje balų (treneriui ir sekretoriatui) - pavyzdinė kova */
+.gv-ovl .ov-pm { width: 4.4vw; height: 4.4vw; min-width: 30px; min-height: 30px; padding: 0; border: 0; border-radius: 1vw; background: rgba(255, 255, 255, .18); color: #fff;
+  font: 800 3vw/1 'Inter', system-ui, sans-serif; cursor: pointer; display: inline-grid; place-items: center; }
+.gv-ovl .ov-pm:hover { background: rgba(255, 255, 255, .32); }
+.gv-ovl .ov-end { border: 0; background: rgba(255, 255, 255, .12); color: #fff; border-radius: 8px; padding: 4px 8px; font: 700 .8em/1 'Inter', system-ui, sans-serif; cursor: pointer; }
 @media (max-width: 600px) {
-  .gv-ovl.gv-bar .ov-ctl button { font-size: 20px; } .gv-ovl.gv-bar { font-size: 16px; } .gv-ovl.gv-bar .ov-s { font-size: 26px; } .gv-ovl.gv-bar .ov-t { font-size: 16px; }
-  /* telefone: vardai atskiroje eilutėje, apačioje - ± balai laikas balai ± */
-  .gv-ovl.gv-bar.has-ctl { justify-content: space-between; }
+  .gv-ovl.gv-bar { font-size: 15px; gap: 4px 8px; padding: 8px 10px; border-radius: 10px; }
+  .gv-ovl.gv-bar .ov-s { font-size: 22px; } .gv-ovl.gv-bar .ov-t { font-size: 14px; } .gv-ovl.gv-bar .ov-cat { font-size: 11px; }
+  .gv-ovl .ov-pm { font-size: 18px; border-radius: 8px; }
+  /* siaurai: vardai eilutėje virš, apačioje - − balai + laikas − balai + */
+  .gv-ovl.gv-bar.has-ctl { justify-content: center; }
   .gv-ovl.gv-bar.has-ctl .ov-cat { order: -2; }
   .gv-ovl.gv-bar.has-ctl .ov-n { order: -1; flex: 1 1 40%; }
 }
-.gv-ovl.gv-bar.idle .ov-cat { font-size: 1.6vw; opacity: .85; }
-/* v1.96: atidarius paprastoje naršyklėje - langeliais nupieštas „vaizdas“ (OBS ten bus telefono vaizdas) ir paaiškinimas viršuje */
-body.gv-bar-browser { background: #8a8f98 repeating-conic-gradient(#9aa0a8 0 25%, #8a8f98 0 50%) 0 0 / 40px 40px !important; overflow: auto; color: #17140F; }
-.gv-bar-help { max-width: 760px; margin: 16px auto 30vh; padding: 16px 20px; background: #FBF9F4; border-radius: 14px; box-shadow: 0 10px 30px rgba(0,0,0,.25); font-size: 15px; line-height: 1.45; }
-.gv-bar-help h1 { margin: 0 0 6px; font-size: 20px; }
-.gv-bar-help ol { margin: 8px 0; padding-left: 22px; display: grid; gap: 6px; }
-.gv-bar-help .gv-bh-state { margin: 0; padding: 8px 10px; background: #F1ECE0; border-radius: 10px; font-weight: 600; }
-.gv-bar-help .gv-bh-btns { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 4px; }
-@media (max-width: 600px) { .gv-bar-help { margin: 10px 10px 30vh; font-size: 14px; } }
+/* v1.99: žiūrovams - telefono vaizdas įjungiamas paspaudus „▶ Žiūrėti gyvai“ */
+.gv-vid-frame.gv-cam { background: #0B0D12; }
+.gv-watch { position: absolute; inset: 0; margin: auto; width: max-content; height: max-content; z-index: 2; padding: 14px 24px; border: 0; border-radius: 999px;
+  background: #D7263D; color: #fff; font: 800 1rem 'Inter', system-ui, sans-serif; cursor: pointer; box-shadow: 0 8px 24px rgba(0, 0, 0, .35); }
+.gv-watch[hidden], .gv-unwatch[hidden] { display: none; }
+.gv-unwatch { position: absolute; top: 8px; right: 8px; z-index: 3; width: 34px; height: 34px; border: 0; border-radius: 50%; background: rgba(0, 0, 0, .55); color: #fff; cursor: pointer; }
 
-/* v1.97: Transliacijos puslapis (admin/varzybu-transliacija.php) - peržiūra (telefono vaizdas + juosta), QR telefonui, OBS ir YouTube žingsniai */
-.tr-main { max-width: 1180px; margin: 0 auto; padding: 16px 20px 40px; display: grid; gap: 16px; }
+/* v1.99: Transliacija telefonais (admin/varzybu-transliacija.php) - QR, laukiantys telefonai, tatamių kortelės su vaizdu, ± ir priskyrimu */
+.tr-main { max-width: 1280px; margin: 0 auto; padding: 16px 20px 40px; display: grid; gap: 16px; }
 .tr-sec { padding: 16px 18px; }
 .tr-sec h2 { margin: 0 0 8px; font-size: 1.1rem; }
-.tr-preview { position: relative; aspect-ratio: 16 / 9; background: #000; border-radius: 12px; overflow: hidden; margin: 10px 0; }
+.tr-join { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 20px; align-items: start; }
+.tr-qr { padding: 8px; background: #fff; border-radius: 12px; border: 1px solid var(--line); }
+.tr-qr img, .tr-qr canvas { display: block; width: 190px; height: 190px; }
+.tr-big-steps { margin: 4px 0 12px; padding-left: 22px; display: grid; gap: 6px; font-size: 1.02rem; font-weight: 600; line-height: 1.4; }
+.tr-waiting { margin: 0 0 10px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.tr-chip { display: inline-flex; align-items: center; gap: 4px; padding: 4px 6px 4px 10px; border-radius: 999px; background: var(--green-soft); color: var(--green); font-weight: 700; font-size: .9rem; }
+.tr-x { border: 0; background: transparent; color: inherit; cursor: pointer; font-size: .8rem; padding: 2px 4px; }
+.tr-tatamis { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 460px), 1fr)); gap: 16px; }
+.tr-card { padding: 12px; display: grid; gap: 10px; }
+.tr-card-h { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.tr-card-h h2 { margin: 0; font-size: 1.15rem; }
+.tr-card-phone { font-size: .85rem; font-weight: 700; color: var(--muted); }
+.tr-card.has-phone .tr-card-phone { color: var(--green); }
+.tr-preview { position: relative; aspect-ratio: 16 / 9; background: #000; border-radius: 10px; overflow: hidden; }
 .tr-preview iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: transparent; }
-.tr-preview .tr-bar { pointer-events: none; color-scheme: normal; }
-.tr-row { display: flex; flex-wrap: wrap; gap: 8px; }
-.tr-steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
-.tr-step ol, .tr-when { margin: 6px 0 8px; padding-left: 20px; display: grid; gap: 6px; line-height: 1.45; }
-.tr-qr-row { display: flex; gap: 14px; align-items: flex-start; }
-.tr-qr { flex: none; padding: 8px; background: #fff; border-radius: 10px; border: 1px solid var(--line); }
-.tr-qr img, .tr-qr canvas { display: block; width: 180px; height: 180px; }
-.tr-when { list-style: none; padding-left: 0; }
-.tr-tab { padding: 6px 12px; border-radius: 10px; color: inherit; text-decoration: none; font-weight: 600; }
-.tr-tab.on { background: var(--accent); color: #fff; }
-@media (max-width: 1000px) { .tr-steps { grid-template-columns: 1fr; } }
-@media (max-width: 600px) { .tr-main { padding: 10px 10px 30px; } .tr-qr-row { flex-direction: column; } }
+.tr-card-f { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; min-height: 36px; }
+.tr-assign { font-weight: 700; border-color: var(--green); color: var(--green); }
+.tr-ok { font-weight: 700; color: var(--green); }
+.tr-two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+.tr-when { margin: 6px 0 8px; padding-left: 0; list-style: none; display: grid; gap: 6px; line-height: 1.45; }
+.tr-renew { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.tr-print { display: none; }
+@media (max-width: 1000px) { .tr-two { grid-template-columns: 1fr; } }
+@media (max-width: 600px) { .tr-main { padding: 10px 10px 30px; } .tr-join { grid-template-columns: 1fr; justify-items: center; } .tr-join-txt { justify-self: stretch; } }
+@media print {
+  body.tr-page { background: #fff !important; }
+  body.tr-page > header, .tr-main > :not(.tr-print) { display: none !important; }
+  .tr-main { padding: 0; max-width: none; }
+  .tr-print { display: block !important; }
+  .tr-pq { break-inside: avoid; max-width: 120mm; margin: 0 auto; border: 2px solid #000; border-radius: 6mm; padding: 10mm; text-align: center; color: #000; }
+  .tr-pq b { display: block; font-size: 24pt; margin-bottom: 5mm; }
+  .tr-pq-code { display: inline-block; }
+  .tr-pq-code img, .tr-pq-code canvas { width: 80mm !important; height: 80mm !important; }
+  .tr-pq p { font-size: 12pt; margin: 5mm 0 0; }
+}
 
-/* v1.97: telefono vaizdas kovos skydelyje - atskiras langas (balai jo nepersikrauna); kompiuteryje dešinėje, telefone viršuje */
+/* v1.97-v1.99: telefono vaizdas kovos skydelyje - atskiras langas (balai jo nepersikrauna); kompiuteryje dešinėje, telefone viršuje; ± ant vaizdo */
 :root { --bv-w: min(36vw, 520px); }
 body.bout-vid-big { --bv-w: min(55vw, 900px); }
 body.bout-vid-on .bout { padding-right: calc(var(--bv-w) + 32px); }
@@ -1576,6 +1599,14 @@ body.bout-vid-on .bout { padding-right: calc(var(--bv-w) + 32px); }
 .bout-vid .bv-head .btn { background: rgba(255, 255, 255, .12); border-color: transparent; color: #fff; padding: 4px 10px; }
 .bout-vid .bv-frame { position: relative; aspect-ratio: 16 / 9; background: #000; }
 .bout-vid iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.bout-vid .bv-score { position: absolute; left: 8px; right: 8px; bottom: 8px; z-index: 2; display: flex; align-items: center; gap: 6px; padding: 6px 8px; border-radius: 10px; background: rgba(10, 12, 20, .82); }
+.bout-vid .bv-score[hidden] { display: none; }
+.bv-n { flex: 1 1 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 700; font-size: .85rem; }
+.bv-n.aka { color: #FF8A8A; } .bv-n.shiro { text-align: right; }
+.bv-s { font-size: 1.5rem; min-width: 1.3em; text-align: center; font-variant-numeric: tabular-nums; }
+.bv-s.aka { color: #FF8A8A; }
+.bv-pm { width: 34px; height: 34px; padding: 0; border: 0; border-radius: 8px; background: rgba(255, 255, 255, .18); color: #fff; font: 800 1.2rem/1 'Inter', system-ui, sans-serif; cursor: pointer; }
+.bv-pm:hover { background: rgba(255, 255, 255, .32); }
 .bout-vid .bv-hint { margin: 0; padding: 6px 12px 8px; font-size: .75rem; color: #9AA3B2; }
 .bout-vid .bv-hint a { color: #fff; }
 .bout-top .btn.on { background: #fff; color: #12151C; }
@@ -1605,68 +1636,26 @@ body.bout-vid-on .bout { padding-right: calc(var(--bv-w) + 32px); }
 .vz-top .ss-item b { display: block; font-size: 15px; } .vz-top .ss-item small { display: block; font-size: 12px; color: #6b6457; }
 .vz-top .ss-budo { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 50%; background: #D7263D; color: #fff; font-weight: 800; font-size: 17px; }
 .vz-top .ss-ltkf { color: #14213D; }
-/* v1.98: bandomoji kova Transliacijos puslapyje - ± abiem pusėms */
-.tr-test { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
-.tr-side { display: inline-flex; align-items: center; gap: 4px; font-weight: 700; }
-.tr-side.aka { color: var(--accent); }
-.tr-side .btn { min-width: 40px; font-size: 1.1rem; }
-/* v1.98: Transliacijos puslapis - būdo pasirinkimas, patikra, „jei neveikia“, QR spausdinimas */
-.tr-ways { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
-.tr-way { border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; background: var(--surface-2); }
-.tr-way h3 { margin: 0 0 2px; font-size: 1rem; }
-.tr-way p { margin: 6px 0 0; line-height: 1.45; font-size: .92rem; }
-.tr-way .tr-way-tag { margin-top: 0; font-size: .8rem; font-weight: 700; color: var(--accent); }
-.tr-two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
-.tr-list { margin: 6px 0 8px; padding-left: 20px; display: grid; gap: 6px; line-height: 1.45; }
-.tr-renew { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--line); }
-.tr-print { display: none; }
-@media (max-width: 1000px) { .tr-ways, .tr-two { grid-template-columns: 1fr; } }
-@media print {
-  body.tr-page { background: #fff !important; }
-  body.tr-page > header, .tr-main > :not(.tr-print) { display: none !important; }
-  .tr-main { padding: 0; max-width: none; }
-  .tr-print { display: grid !important; grid-template-columns: 1fr 1fr; gap: 14mm; }
-  .tr-pq { break-inside: avoid; border: 2px solid #000; border-radius: 6mm; padding: 8mm; text-align: center; color: #000; }
-  .tr-pq b { display: block; font-size: 22pt; margin-bottom: 4mm; }
-  .tr-pq-code { display: inline-block; }
-  .tr-pq-code img, .tr-pq-code canvas { width: 60mm !important; height: 60mm !important; }
-  .tr-pq p { font-size: 11pt; margin: 4mm 0 0; }
-}
-/* v1.98: OBS juosta su telefono vaizdu po ja (?vaizdas=1) - OBS užtenka vienos nuorodos */
-.gv-bar-video { position: fixed; inset: 0; width: 100%; height: 100%; border: 0; z-index: 0; background: #000; }
-body.gv-with-video #gyvai { position: relative; z-index: 1; }
-/* v1.98: Transliacija - telefonų sąrašas ir priskyrimas tatamiui */
-.tr-ph-grid { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 20px; align-items: start; }
-.tr-ph-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
-.tr-ph-list > p { grid-column: 1 / -1; margin: 0; }
-.tr-ph { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--surface); }
-.tr-ph.off { opacity: .7; }
-.tr-ph-vid { position: relative; aspect-ratio: 16 / 9; background: #000; }
-.tr-ph-vid iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
-.tr-ph-vid .tr-ph-off { position: absolute; inset: 0; display: none; place-items: center; color: #9AA3B2; font-size: .85rem; }
-.tr-ph.off .tr-ph-vid .tr-ph-off { display: grid; }
-.tr-ph-info { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; padding: 8px 10px; }
-.tr-ph-name { flex: 1 1 100%; }
-.tr-ph-on { font-size: .8rem; color: var(--muted); }
-.tr-ph-area { display: flex; align-items: center; gap: 6px; font-size: .85rem; font-weight: 600; }
-.tr-ph-area select { font: inherit; padding: 4px 6px; border-radius: 8px; border: 1px solid var(--line-2); background: var(--surface); color: var(--ink); }
-.tr-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 8px; }
-.tr-tabs .tr-tab { border: 1px solid var(--line); }
-.tr-link-lbl { margin: 10px 0 4px; font-weight: 600; font-size: .9rem; }
-@media (max-width: 1000px) { .tr-ph-grid { grid-template-columns: 1fr; } }
-/* v1.98: telefono kameros puslapis (varzybos-kamera.php) */
+/* v1.98-v1.99: telefono kameros puslapis (varzybos-kamera.php) */
 body.cam-body { margin: 0; min-height: 100vh; background: #12151C; color: #fff; font-family: 'Inter', system-ui, sans-serif; }
-.cam-main { max-width: 720px; margin: 0 auto; padding: 16px 16px calc(24px + env(safe-area-inset-bottom)); display: grid; gap: 12px; }
+.cam-main { max-width: 620px; margin: 0 auto; padding: 18px 16px calc(24px + env(safe-area-inset-bottom)); display: grid; gap: 14px; }
 .cam-main h1 { margin: 0; font-size: 1.3rem; }
-.cam-state { margin: 0; padding: 12px 14px; border-radius: 12px; background: rgba(255, 255, 255, .08); font-weight: 600; line-height: 1.4; }
-.cam-state.ok { background: rgba(31, 146, 84, .25); }
-.cam-state.live { background: rgba(215, 38, 61, .35); }
+.cam-state { margin: 0; padding: 14px 16px; border-radius: 12px; background: rgba(255, 255, 255, .08); font-weight: 700; font-size: 1.05rem; line-height: 1.4; }
+.cam-state.ok { background: rgba(31, 146, 84, .28); }
+.cam-state.live { background: rgba(31, 146, 84, .4); }
 .cam-state.warn { background: rgba(168, 106, 12, .35); }
-.cam-start { padding: 18px; border: 0; border-radius: 14px; background: #D7263D; color: #fff; font: 800 1.2rem 'Inter', system-ui, sans-serif; cursor: pointer; }
-.cam-frame { aspect-ratio: 16 / 9; background: #000; border-radius: 12px; overflow: hidden; }
-.cam-frame iframe { width: 100%; height: 100%; border: 0; display: block; }
+.cam-start { display: block; padding: 22px 16px; border-radius: 16px; background: #D7263D; color: #fff; text-align: center; text-decoration: none; font: 800 1.35rem 'Inter', system-ui, sans-serif; box-shadow: 0 10px 28px rgba(215, 38, 61, .35); }
+.cam-start[hidden] { display: none; }
 .cam-name { display: grid; gap: 4px; font-size: .85rem; color: #C9CED8; }
 .cam-name input { font: 600 1rem 'Inter', system-ui, sans-serif; padding: 10px 12px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, .2); background: rgba(255, 255, 255, .06); color: #fff; }
-.cam-tips { margin: 0; padding-left: 20px; display: grid; gap: 4px; color: #C9CED8; font-size: .9rem; line-height: 1.4; }
-.cam-alt { margin: 0; font-size: .85rem; } .cam-alt a { color: #9DC1FF; }
-@media (orientation: landscape) and (max-height: 500px) { .cam-main { max-width: none; grid-template-columns: 1fr 1fr; align-items: start; } .cam-frame { grid-row: span 4; } }
+.cam-tips { margin: 0; padding-left: 20px; display: grid; gap: 6px; color: #C9CED8; font-size: .92rem; line-height: 1.4; }
+.cam-alt { margin: 0; font-size: .85rem; color: #9AA3B2; }
+/* v1.99 (peržiūra): siaurame stulpelyje (4 tatamiai 1440 px) rungties pavadinimas nebesuspaudžiamas - būsena nukeliama žemiau */
+.card-top { flex-wrap: wrap; }
+.card-top > .card-name { flex: 1 1 9em; }
+/* v1.99 (peržiūra): telefone Budo skirtukai - be aukštų baltų dėžių ir nenukirsti */
+.tabs { align-items: center; }
+@media (max-width: 600px) {
+  .tabs-sub-hint { display: none; }
+  #tabs { flex-wrap: wrap; overflow-x: visible; row-gap: 4px; }
+}
