@@ -5,11 +5,16 @@ on:
   push:
   pull_request:
   workflow_dispatch:
+    inputs:
+      spec:
+        description: 'Kurie testų failai (pvz. e2e/07zi-meniu.spec.js e2e/07zh-transliacija.spec.js); tuščia - visi'
+        required: false
+        default: ''
 
 jobs:
   test:
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 45
     services:
       mariadb:
         image: mariadb:10.11
@@ -58,10 +63,12 @@ jobs:
 
       - name: Naršyklės testai
         working-directory: tests
+        env:
+          SPEC: ${{ github.event.inputs.spec }}
         run: |
           npm ci
           npx playwright install --with-deps chromium
-          npx playwright test
+          npx playwright test $SPEC
 
       - name: Ataskaita, jei nepavyko
         if: failure()

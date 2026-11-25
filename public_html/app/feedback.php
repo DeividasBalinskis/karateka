@@ -487,8 +487,9 @@ function feedback_visible(?array $a, ?string $site = null): bool
 function feedback_widget_html(?string $site = null): string
 {
     $a = current_account();
+    $rv = function_exists('review_overlay_html') ? review_overlay_html() : '';   // v2.02: auksinės žymos test svetainėje (administratoriams)
     if (!feedback_visible($a, $site)) {
-        return '';
+        return $rv;
     }
     $remote = $site !== null;   // kita svetainė (LTKF) - puslapio adresą paims naršyklė
     $site = $site ?? feedback_site_now();

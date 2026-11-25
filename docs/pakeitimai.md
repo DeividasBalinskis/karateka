@@ -4,6 +4,23 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v2.02 - 2026-11-25 (🛠 Valdymo meniu tvarkymas ir 🔎 Peržiūra su auksinėmis žymomis)
+- **Valdymo meniu - naujos grupės**: **Kasdien** (Šiandien, Treniruotė, Egzaminai, Renginiai, Nariai), **Darbai** (Patvirtinimai, Atsiliepimai,
+  🔎 Peržiūra, Pateisinimai, Pranešimai), **Nustatymai** (Aktyvumo taškai, Testai, Federacijos registrai, LTKF svetainė, Nustatymai).
+- **✎ prie „🛠 Valdymas“** (tik administratoriui): skyrius galima **tempti** į kitą vietą ar grupę (arba ↑ ↓), **pervadinti** skyrius ir grupes,
+  **„+ Nauja grupė“**, **ištrinti grupę** (jos skyriai pereina į pirmą). „Išsaugoti“ - meniu visiems; „Numatytas meniu“ - kaip buvo.
+- **Valdymas → Darbai → 🔎 Peržiūra** (tik Deividui ir Deniui):
+  - **Ką taisyti** - atviri atsiliepimai trumpai: pažymite, prirašote komentarą, apačioje bendras komentaras ar nauja užduotis → **„▶ Paleisti taisymą“**;
+  - **Darbų eilė** - ką daro taisymo agentas (laukia / daroma / padaryta) ir jo atsakymas; laukiantį galima atšaukti;
+  - **Pakeitimai test svetainėje** - kas ir kaip įvertino; **„⬆ Įkelti į test“**.
+- **Auksinės žymos test svetainėje** (administratoriams): kiekvienas pakeistas elementas apvestas auksu, prie jo **□ → ✓ gerai → ✗ blogai → □** ir **💬** komentaras.
+  Apačioje juosta: kiek įvertinta, **☰ visi pakeitimai** (ir kituose puslapiuose - su nuoroda), **🎯 pastaba apie bet kurį elementą**, **„Pateikti“**, „–“ paslėpti.
+  Blogi → naujas taisymo ratas, visi geri → į main. Gyvoje svetainėje žymų nėra.
+- **Taisymo agentas debesyje** - kas valandą 7-23 val. (dažniau debesyje neleidžiama): pasiima darbus iš eilės, be prašymų taiso aiškius atsiliepimus.
+  Kol neįdėtas API raktas debesies aplinkoje - išjungtas (`docs/planai/taisymo-agentas.md`).
+- Testų workflow: galima paleisti tik kelis testų failus (Actions → Testai → Run workflow → „spec“), laiko riba 45 min.
+- Duomenų bazė: **db/060_perziura.sql** (darbų eilė ir įvertinimai).
+
 ## v2.01 - 2026-11-25 (📋 sekretoriato darbastalis vienam tatamiui)
 - **Budo → Tvarkaraštis → pasirinkite tatamį** („1 TATAMIS … Visi“ ar „▶ Start: prie kurio tatamio dirbate?“) - atsidaro to tatamio **darbastalis**:
   - **kairėje meniu**: „📋 Mano tatamis“, „📹 Live kova“, „🏟 Visi tatamiai“; po juo - **kas dabar** (grupė, kova, „▶ Kovos skydelis“) ir **kas toliau**;
@@ -17,6 +34,7 @@ Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar
 - **🧑‍💼 Sekretoriatas** → „📋 Sekretoriato darbastalis“: atidaryti bet kurio tatamio darbastalį šiame kompiuteryje arba nukopijuoti **nuorodą tatamiui**
   (sekretorius įrašo vardą ir iškart patenka į to tatamio darbastalį).
 - Telefone darbastalis viename stulpelyje: viršuje tatamis, Live ir Visi, „Dabar“, žemiau grupės.
+- Planšetėje (768-1279 px) Budo viršuje varžybų pavadinimas nebesuspaudžiamas iki „Test...“ - mygtukai dešinėje pereina į kitą eilutę.
 - Duomenų bazė: naujų failų nėra.
 
 ## v2.00 - 2026-11-25 (📹 Live kova sekretoriatui)

@@ -1816,6 +1816,12 @@ body.live-on .fb-fab { display: none !important; }
   .dk-name { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
   #run.in-desk { padding: 8px 6px 12px; }
 }
+/* v2.01: planšetėje (768-1279 px) varžybų pavadinimas nebesuspaudžiamas iki „Test...“ su data 5 eilutėmis - mygtukai dešinėje pereina į kitą eilutę */
+@media (min-width: 768px) and (max-width: 1279px) {
+  .vz-title { min-width: 280px; }
+  .vz-title .sub { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .vz-top-right { margin-left: auto; }
+}
 /* Live kova: „🏅 Rezultatai“ - šios grupės kovos ir vietos šalia vaizdo (paspaudus vardą - laimėjo) */
 .lv-side { position: absolute; top: 0; right: 0; bottom: 0; z-index: 3; width: min(380px, 42vw); overflow: auto; padding: 12px 14px 20px; background: rgba(12, 15, 22, .95); border-left: 1px solid rgba(255, 255, 255, .12); color: #E8EBF0; }
 .live-win.side-on .lv-stage iframe { right: min(380px, 42vw); width: auto; }

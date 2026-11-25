@@ -15,6 +15,7 @@ const SETTINGS = [
     'home_page_prev'   => ['label' => 'Pagrindinis puslapis - ankstesnė versija („Atšaukti“)', 'group' => 'Svetainė', 'type' => 'mark', 'where' => 'admin/puslapis.php', 'owner' => 'admin', 'restore' => false],
     'reg_off'          => ['label' => 'Registracija išjungta (paskyros, renginiai, egzaminai, Budo)', 'group' => 'Svetainė', 'type' => 'json', 'where' => 'admin/nustatymai.php', 'owner' => 'admin', 'restore' => true],
     'feedback_button'  => ['label' => 'Atsiliepimų mygtukas (💡) - kam rodomas', 'group' => 'Svetainė', 'type' => 'choice', 'where' => 'admin/atsiliepimai.php', 'owner' => 'admin', 'restore' => true],
+    'admin_menu'       => ['label' => 'Valdymo meniu: grupės, tvarka, pavadinimai', 'group' => 'Svetainė', 'type' => 'json', 'where' => 'Valdymas → ✎ šoniniame meniu', 'owner' => 'admin', 'restore' => true],
     'feedback_api_key' => ['label' => 'Atsiliepimų API raktas', 'group' => 'Svetainė', 'type' => 'secret', 'where' => 'admin/atsiliepimai.php', 'owner' => 'admin', 'restore' => false],
     // Klubas
     'xp_level_base'    => ['label' => 'Pirmų 5 lygių kaina (XP)', 'group' => 'Klubas', 'type' => 'number', 'where' => 'admin/taskai.php', 'owner' => 'admin', 'restore' => true],
@@ -132,6 +133,9 @@ function setting_show(string $name, ?string $v): string
             }
             if ($name === 'game_access') {
                 return t('tik kai kuriems') . ' (' . count((array) $d) . ')';
+            }
+            if ($name === 'admin_menu') {
+                return count((array) ($d['groups'] ?? [])) . ' ' . t('grupės');
             }
             return is_array($d) ? count($d) . ' ' . t('įraš.') : mb_strimwidth($v, 0, 60, '…');
         default:

@@ -1,9 +1,11 @@
 # Handoff
-Updated: 2026-11-25 · version v2.01 · main
+Updated: 2026-11-25 · version v2.02 · main
 
 ## Pending asks (answer these first)
 | Asked | By | What | Status |
 |---|---|---|---|
+| 2026-11-25 | Dev | Fixing agent in the cloud (routine „Karateka: Peržiūros eilė (kas valandą)“, trig_01KwSq8HaCyBeQzfAB2Wxmvg, disabled): Deividas puts the API key into the cloud environment „karateka“ as `KARATEKA_API_KEY` and allows network to `test.karateka.lt`, then it is switched on. Every 15 min is not possible in the cloud (minimum 1 hour) - now every hour 07-23; or every 15 min on the PC while the app is open? | waiting |
+| 2026-11-25 | Dev | „okay darom kad 15 min dabar, bet jeigu …“ - the sentence was cut off | waiting |
 | 2026-11-25 | Dev → Denis | Feedback questions on test: #179 delete only empty protocols? #181 delete „4 kyu“ protocol with its 1 participant? #184 Budo top bar default A light / B Budo red / C soft blue-grey (picture: side-session notes `ui-perziura/5-184-budo-virsus-variantai.png`) | waiting |
 | 2026-11-25 | Denis | #182 Budo: auto-lock a category's draw when all its bouts are done (Budo files were locked by the streaming session) | planned |
 | 2026-11-25 | Dev | Dojo: a new character every 10 levels - which are free at the start, chosen or random? | answered 2026-11-25: every 5 levels, random, gift with animation - done in v1.96 (start = Kitsunė, developer's pick) |
@@ -133,6 +135,17 @@ Updated: 2026-11-25 · version v2.01 · main
   Feedback replies posted on test: #180 done (v1.96), #182 and #183 planned (mark „Padaryta (vX.YY)“ after the upload), #179 / #181 / #184 questions.
   Not run: checks.sh, PHP lint, Playwright (no php/node). Screenshots and the full list: side-session notes folder `ui-perziura/` + report.
   Found, not fixed (locked Budo/LTKF files): Budo `.ico` missing in varzybos.css (giant ▼ on „CSV (Excel)“ and „Kontaktai (Excel)“); Budo schedule at 1440 with 4 tatamis - finished cards' names squeezed to 49 px; Budo 375 - active sub-tab „3 Dalyviai“ tall white box, main tabs cut; LTKF EN missing „dienų iki pradžios“, calendar and judges notes (ltkf/inc/lang). Not translated yet: testas.php quiz JS (~12 texts), staff confirm() texts in admin pages. Content: news text „tradicinio karatė do“ (should be „karate-do“).
+
+- 2026-11-25 v2.02 (main session): Valdymas menu groups Kasdien / Darbai / Nustatymai + admin editor „✎“ (app/layout.php `admin_menu_items` /
+  `admin_menu_default` / `admin_menu_layout` / `admin_menu_groups` (static memo) / `admin_menu_editor_data`; site setting `admin_menu` JSON {groups:[{id,name,items}],names};
+  save = admin/meniu.php (JSON, X-CSRF-Token, is_admin); assets/admin-menu.js (HTML5 drag + ↑↓, rename inputs, + group, delete → first group, reset); CSS `.am-ed*` in header.css).
+  Review system: db/060 (review_jobs, review_marks), app/review.php (manifest app/review.json: rev, version, items {id,page,href,sel,title,note}; page patterns with * and |;
+  overlay only when env ≠ live and is_admin), assets/review.js + review.css (gold `.rv-box`, `.rv-ctl` □/✓/✗ + 💬, `.rv-bar` with ☰ list, 🎯 pick → feedback with
+  context {pick, selector, text}, „Pateikti“ → job `review`), perziura-zymos.php (mark / submit / pick; the old perziura.php = view switch, untouched),
+  admin/perziura.php (queue, test changes + „⬆ Įkelti į test“, what to fix + „▶ Paleisti taisymą“), perziura-api.php (agent: GET jobs + feedback texts + marks,
+  POST status/result, POST {new:…} for its own work). The overlay is injected by feedback_widget_html(), so Budo pages have it too.
+  Cloud agent instructions: docs/planai/taisymo-agentas.md (branch `claude/taisymai`, deploy = empty commit with „[į test]“). tests.yml: input `spec`, timeout 45 min
+  (full runs were cancelled at 20 min). Tests 07zi-meniu, 07zj-perziura (run in CI with spec).
 
 ## Open
 - C1 permissions, C3 secret links, C5 CSS cleanup (safe now with tests/visual.sh), C6 engine unit tests, D3 split varzybos.js, D4 same group on two tablets, D5 Budo live polish, D7 arena left hand UI, D8 pixel characters (PC + LibreSprite).

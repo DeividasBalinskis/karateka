@@ -97,6 +97,9 @@ function page_end(): void
 </footer>
 <?= page_widgets() ?>
 <script src="<?= e(asset_url('assets/header.js')) ?>"></script>
+<?php if (!empty($GLOBALS['adm_side']) && is_admin()): /* v2.02: meniu tvarkymas „✎“ */ ?>
+<script src="<?= e(asset_url('assets/admin-menu.js')) ?>" defer></script>
+<?php endif; ?>
 <?php if (($acc = current_account()) && is_active_account($acc) && game_nav_ready()): /* kvietimai žaisti - mažas langelis bet kuriame puslapyje (tik kas mato žaidimą) */ ?>
 <script src="<?= e(asset_url('assets/game-invites.js')) ?>" data-api="<?= e(url('zaidimas.php')) ?>" data-csrf="<?= e(csrf_token()) ?>" data-arena="<?= e(url('arena.php')) ?>" data-keturi="<?= e(url('keturi.php')) ?>" defer></script>
 <?php endif; ?>
@@ -302,38 +305,133 @@ function menu_variant(): string
     return 'abu';
 }
 
-/** Visi valdymo skyriai trimis grupėmis: [grupė => [pavadinimas, [raktas => [ikona, pavadinimas, kelias, skaičiukas, paaiškinimas]]]] */
-function admin_menu_groups(): array
+/** Visi valdymo skyriai, kuriuos mato ši paskyra: [raktas => [ikona, pavadinimas, kelias, skaičiukas, paaiškinimas]] */
+function admin_menu_items(): array
 {
-    $day = [
+    $it = [
         'siandien'   => ['🏠', t('Šiandien'), 'admin/', 0, t('Darbai, pranešimai, šiandienos grupės')],
         'treniruote' => ['🥋', t('Treniruotė'), 'admin/treniruote.php', 0, t('Lankomumas, pastabos, taškai')],
         'egzaminai'  => ['📋', t('Egzaminai'), 'admin/egzaminai.php', 0, t('Protokolai, registracija, kainos')],
         'renginiai'  => ['📅', t('Renginiai'), 'admin/renginiai.php', 0, t('Renginiai, kvietimai, dalyviai, rezultatai')],
+        'nariai'     => ['👥', t('Nariai'), 'admin/nariai.php', 0, t('Visi nariai, diržai, kontaktai')],
+        'patvirtinimai' => ['✅', t('Patvirtinimai'), 'admin/patvirtinimai.php', pending_approvals_count(), t('Nauji nariai ir „Moku“ punktai')],
     ];
-    $club = [
-        'nariai'  => ['👥', t('Nariai'), 'admin/nariai.php', 0, t('Visi nariai, diržai, kontaktai')],
-        'xp'      => ['⭐', t('Aktyvumo taškai'), 'admin/taskai.php', 0, t('Taškai, lygiai, reitingas')],
-        'testai'  => ['❓', t('Testai'), 'admin/testai.php', 0, t('Teorijos testai egzaminams')],
-    ];
-    $more = ['patvirtinimai' => ['✅', t('Patvirtinimai'), 'admin/patvirtinimai.php', pending_approvals_count(), t('Nauji nariai ir „Moku“ punktai')]];
     if (is_admin()) {
-        $more['atsiliepimai'] = ['💡', t('Atsiliepimai'), 'admin/atsiliepimai.php', feedback_new_count(), t('Pastabos apie svetainę')];
+        $it['atsiliepimai'] = ['💡', t('Atsiliepimai'), 'admin/atsiliepimai.php', feedback_new_count(), t('Pastabos apie svetainę')];
+    }
+    if (is_admin() && function_exists('review_ready') && review_ready()) {   // v2.02: peržiūra - ką taisyti, darbų eilė, auksinės žymos
+        $it['perziura'] = ['🔎', t('Peržiūra'), 'admin/perziura.php', review_todo_count(), t('Ką taisyti, darbų eilė, auksinės žymos')];
     }
     if (is_admin() && function_exists('just_ready') && just_ready()) {   // v1.93: pamokų pateisinimai
-        $more['pateisinimai'] = ['📄', t('Pateisinimai'), 'admin/pateisinimai.php', just_new_count(), t('Prašymai pateisinti praleistas pamokas')];
+        $it['pateisinimai'] = ['📄', t('Pateisinimai'), 'admin/pateisinimai.php', just_new_count(), t('Prašymai pateisinti praleistas pamokas')];
     }
-    if (is_admin()) {   // #121: Pranešimai - apačioje, „Tvarkyti“
-        $more['pranesimai'] = ['✉️', t('Pranešimai'), 'admin/pranesimai.php', 0, t('Laiškai ir SMS nariams')];
+    if (is_admin()) {   // #121
+        $it['pranesimai'] = ['✉️', t('Pranešimai'), 'admin/pranesimai.php', 0, t('Laiškai ir SMS nariams')];
+    }
+    $it['xp'] = ['⭐', t('Aktyvumo taškai'), 'admin/taskai.php', 0, t('Taškai, lygiai, reitingas')];
+    $it['testai'] = ['❓', t('Testai'), 'admin/testai.php', 0, t('Teorijos testai egzaminams')];
+    if (is_admin()) {   // #160: federacijos registrai - nariai, klubai, teisėjai
+        $it['federacija'] = ['📒', t('Federacijos registrai'), 'admin/federacija.php', 0, t('Nariai, klubai, teisėjai')];
     }
     if (is_admin() && function_exists('ltkf_url') && ltkf_url() !== '') {   // B9: LTKF svetainė - ir iš Valdymo
-        $more['ltkf'] = ['🏛️', t('LTKF svetainė'), 'ltkf/', 0, t('Federacijos svetainės turinys')];
+        $it['ltkf'] = ['🏛️', t('LTKF svetainė'), 'ltkf/', 0, t('Federacijos svetainės turinys')];
     }
-    if (is_admin()) {   // #160: federacijos registrai - nariai, klubai, teisėjai
-        $more['federacija'] = ['📒', t('Federacijos registrai'), 'admin/federacija.php', 0, t('Nariai, klubai, teisėjai')];
+    $it['nustatymai'] = ['⚙️', t('Nustatymai'), 'admin/nustatymai.php', 0, t('Grupės, tvarkaraštis, vertimai, paskyra')];
+    return $it;
+}
+
+/** v2.02: numatytas išdėstymas - dažni darbai viršuje, nustatymai apačioje */
+function admin_menu_default(): array
+{
+    return [
+        ['id' => 'kasdien', 'name' => '', 'items' => ['siandien', 'treniruote', 'egzaminai', 'renginiai', 'nariai']],
+        ['id' => 'darbai', 'name' => '', 'items' => ['patvirtinimai', 'atsiliepimai', 'perziura', 'pateisinimai', 'pranesimai']],
+        ['id' => 'nustatymai', 'name' => '', 'items' => ['xp', 'testai', 'federacija', 'ltkf', 'nustatymai']],
+    ];
+}
+
+/** Numatytų grupių pavadinimai (verčiami); savo pavadinimai - tokie, kokius įrašė administratorius */
+function admin_menu_group_default_name(string $id): string
+{
+    $n = ['kasdien' => t('Kasdien'), 'darbai' => t('Darbai'), 'nustatymai' => t('Nustatymai')];
+    return $n[$id] ?? '';
+}
+
+/** Administratoriaus išsaugotas išdėstymas (site_setting admin_menu): ['groups' => [...], 'names' => [raktas => pavadinimas]] */
+function admin_menu_layout(): array
+{
+    $d = json_decode((string) site_setting('admin_menu', ''), true);
+    $groups = [];
+    if (is_array($d) && !empty($d['groups']) && is_array($d['groups'])) {
+        foreach ($d['groups'] as $g) {
+            if (is_array($g) && preg_match('/^[a-z0-9-]{1,24}$/', (string) ($g['id'] ?? ''))) {
+                $groups[] = ['id' => (string) $g['id'], 'name' => mb_substr(trim((string) ($g['name'] ?? '')), 0, 30),
+                    'items' => array_values(array_filter((array) ($g['items'] ?? []), 'is_string'))];
+            }
+        }
     }
-    $more['nustatymai'] = ['⚙️', t('Nustatymai'), 'admin/nustatymai.php', 0, t('Grupės, tvarkaraštis, vertimai, paskyra')];
-    return ['kasdien' => [t('Kasdien'), $day], 'klubas' => [t('Klubas'), $club], 'tvarkyti' => [t('Tvarkyti'), $more]];
+    $names = is_array($d) && is_array($d['names'] ?? null) ? array_map(function ($v) { return mb_substr(trim((string) $v), 0, 30); }, $d['names']) : [];
+    return ['groups' => $groups ?: admin_menu_default(), 'names' => array_filter($names, 'strlen'), 'custom' => (bool) $groups];
+}
+
+/** Valdymo skyriai grupėmis pagal išdėstymą: [grupė => [pavadinimas, [raktas => [ikona, pavadinimas, kelias, skaičiukas, paaiškinimas]]]] */
+function admin_menu_groups(): array
+{
+    static $memo = null;
+    if ($memo !== null) {
+        return $memo;
+    }
+    $items = admin_menu_items();
+    $lay = admin_menu_layout();
+    $out = [];
+    $placed = [];
+    foreach ($lay['groups'] as $g) {
+        $list = [];
+        foreach ($g['items'] as $k) {
+            if (isset($items[$k]) && !isset($placed[$k])) {
+                $list[$k] = $items[$k];
+                if (isset($lay['names'][$k])) {
+                    $list[$k][1] = $lay['names'][$k];
+                }
+                $placed[$k] = true;
+            }
+        }
+        $out[$g['id']] = [$g['name'] !== '' ? $g['name'] : (admin_menu_group_default_name($g['id']) ?: t('Grupė')), $list];
+    }
+    // Naujas skyrius, kurio dar nėra išsaugotame išdėstyme - į paskutinę grupę (niekas nedingsta)
+    $last = array_key_last($out);
+    foreach ($items as $k => $it) {
+        if (!isset($placed[$k])) {
+            $out[$last][1][$k] = $it;
+        }
+    }
+    return $memo = $out;
+}
+
+/** Meniu redaktoriui (assets/admin-menu.js): grupės su visais skyriais, numatyti ir savi pavadinimai */
+function admin_menu_editor_data(): array
+{
+    $items = admin_menu_items();
+    $lay = admin_menu_layout();
+    $own = [];
+    foreach ($lay['groups'] as $g) {
+        $own[$g['id']] = $g['name'];
+    }
+    $groups = [];
+    foreach (admin_menu_groups() as $gid => [$gname, $list]) {
+        $row = ['id' => (string) $gid, 'name' => $own[$gid] ?? '', 'def' => admin_menu_group_default_name((string) $gid), 'items' => []];
+        foreach ($list as $k => $it) {
+            $row['items'][] = ['k' => $k, 'ic' => $it[0], 'name' => $lay['names'][$k] ?? '', 'def' => $items[$k][1]];
+        }
+        $groups[] = $row;
+    }
+    return ['groups' => $groups, 'custom' => $lay['custom'], 't' => [
+        'title' => t('Meniu tvarkymas'), 'hint' => t('Tempkite skyrius į kitą vietą ar grupę. Pavadinimus galima keisti.'),
+        'add' => t('+ Nauja grupė'), 'newg' => t('Nauja grupė'), 'del' => t('Ištrinti grupę'), 'save' => t('Išsaugoti'), 'cancel' => t('Atšaukti'),
+        'reset' => t('Numatytas meniu'), 'resetq' => t('Grąžinti numatytą meniu? Jūsų grupės ir pavadinimai bus pamiršti.'),
+        'delq' => t('Ištrinti grupę? Jos skyriai pereis į pirmą grupę.'), 'empty' => t('Tempkite skyrių čia'), 'err' => t('Nepavyko išsaugoti. Atnaujinkite puslapį ir bandykite dar kartą.'),
+        'up' => t('Aukštyn'), 'down' => t('Žemyn'), 'gname' => t('Grupės pavadinimas'), 'iname' => t('Skyriaus pavadinimas'),
+    ]];
 }
 
 /** Kuris valdymo skyrius atidarytas (raktas iš admin_menu_groups) */
@@ -342,7 +440,7 @@ function admin_menu_key(): string
     $file = basename($_SERVER['SCRIPT_NAME'] ?? '', '.php');
     $map = ['index' => 'siandien', 'pirmas-adminas' => 'siandien', 'treniruote' => 'treniruote', 'egzaminai' => 'egzaminai', 'egzamino-protokolas' => 'egzaminai', 'federacija' => 'federacija',
             'programa' => 'egzaminai', 'pranesimai' => 'pranesimai', 'sms' => 'pranesimai', 'siuntimas' => 'pranesimai', 'nariai' => 'nariai', 'taskai' => 'xp', 'testai' => 'testai',
-            'patvirtinimai' => 'patvirtinimai', 'atsiliepimai' => 'atsiliepimai', 'pateisinimai' => 'pateisinimai',
+            'patvirtinimai' => 'patvirtinimai', 'atsiliepimai' => 'atsiliepimai', 'pateisinimai' => 'pateisinimai', 'perziura' => 'perziura',
             'renginiai' => 'renginiai', 'renginio-dalyviai' => 'renginiai', 'renginio-rezultatai' => 'renginiai'];
     if (isset($map[$file])) {
         return $map[$file];
@@ -402,10 +500,13 @@ function phone_site_links(string $h, array $onpage, ?array $a): string
 function admin_menu_groups_html(string $cur, bool $withDesc): string
 {
     $html = '';
-    foreach (admin_menu_groups() as [$gname, $items]) {
-        $html .= '<div class="am-group"><div class="am-gh">' . e($gname) . '</div>';
+    foreach (admin_menu_groups() as $gid => [$gname, $items]) {
+        if (!$items) {
+            continue;   // tuščia grupė (pvz. po redagavimo) - nerodoma
+        }
+        $html .= '<div class="am-group" data-g="' . e((string) $gid) . '"><div class="am-gh">' . e($gname) . '</div>';
         foreach ($items as $k => $it) {
-            $html .= '<a href="' . e(url($it[2])) . '" class="am-row' . ($k === $cur ? ' active' : '') . '"' . ($k === $cur ? ' aria-current="page"' : '') . '><span class="am-ic" aria-hidden="true">' . $it[0] . '</span>'
+            $html .= '<a href="' . e(url($it[2])) . '" data-k="' . e($k) . '" class="am-row' . ($k === $cur ? ' active' : '') . '"' . ($k === $cur ? ' aria-current="page"' : '') . '><span class="am-ic" aria-hidden="true">' . $it[0] . '</span>'
                 . '<span class="am-t">' . e($it[1]) . ($withDesc ? '<small>' . e($it[4]) . '</small>' : '') . '</span>' . (!empty($it[3]) ? '<span class="count-badge">' . (int) $it[3] . '</span>' : '') . '</a>';
         }
         $html .= '</div>';
@@ -523,7 +624,12 @@ function site_header(bool $home = false, ?string $area = null, ?string $tab = nu
             $subNav .= admin_menu_more($keys, $mk) . '</div></div>';
         }
         if ($mv === 'sonas' || $mv === 'abu') {
-            $GLOBALS['adm_side'] = '<aside class="adm-side' . ($mv === 'abu' ? ' am-wide' : '') . '" aria-label="' . e(t('Valdymas')) . '"><a class="adm-side-h" href="' . e(url('admin/')) . '">🛠 ' . e(t('Valdymas')) . '</a>' . admin_menu_groups_html($mk, false) . '</aside>';
+            // v2.02: administratorius „✎“ - tempia skyrius, pervadina, kuria ir trina grupes (admin/meniu.php)
+            $GLOBALS['adm_side'] = '<aside class="adm-side' . ($mv === 'abu' ? ' am-wide' : '') . '" aria-label="' . e(t('Valdymas')) . '"'
+                . (is_admin($a) ? ' data-menu-edit="' . e(json_encode(admin_menu_editor_data(), JSON_UNESCAPED_UNICODE)) . '" data-save="' . e(url('admin/meniu.php')) . '" data-csrf="' . e(csrf_token()) . '"' : '') . '>'
+                . '<div class="adm-side-top"><a class="adm-side-h" href="' . e(url('admin/')) . '">🛠 ' . e(t('Valdymas')) . '</a>'
+                . (is_admin($a) ? '<button type="button" class="am-edit-btn" id="am-edit" title="' . e(t('Tvarkyti meniu: tempti, pervadinti, grupės')) . '" aria-label="' . e(t('Tvarkyti meniu')) . '">✎</button>' : '') . '</div>'
+                . admin_menu_groups_html($mk, false) . '</aside>';
         }
     } elseif ($a && $area === 'account') {
         $subNav = render_sub_nav(t('Mano paskyra'), account_nav_items($a), (string) $tab);
