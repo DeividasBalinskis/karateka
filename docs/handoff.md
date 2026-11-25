@@ -207,7 +207,11 @@ Updated: 2026-11-25 · version v2.10 · main
   pixel-identical in at least one of runs 45623723381 / 45625923605, except paskyra-tevai-1440 (3 px, colour step 1 - same 3 px between two base runs).
   Tool changes: page list in tests/visual/pages.js; visual.spec.js loads lazy images and waits for fonts, masks the LTKF map (`.leaflet-container`).
   Not covered by CI: hover colours (checked by hand: same values, same winner), the font test (selectors with 'Inter' unchanged).
-  Full suite (push) times out at 45 min on main too (pre-existing); header specs run by hand - see below.
+  Run 45628720983 (branch with main v2.10 merged in vs main v2.10): styles 106 277 / 106 282, 0 property differences (5 = chat hint present or not);
+  `visual.sh` 55/55; strict 46/55 - all differing files are Budo/LTKF, equal to the base-base noise, or anti-aliasing (colour step ≤ 50) on pages that were
+  pixel-identical in runs 2-3. Before/after pictures: side-session notes `c5-header/pries-po-375.png`, `pries-po-1440.png`.
+  Full suite (push) times out at 45 min on main too (pre-existing). Header specs by hand (run 45628539751: 07zi-meniu, 07-pages, 06w, 07n, 07zf, 07f,
+  07l, 07j): 42 passed, 1 failed - 07zf „side menu ends above 💡“ (955 / 836), which fails the same way on main (run 45620671478, 1027 / 836) - open.
   Next C5 file: app.css (one file per session; the workflow picks the changed .css files by itself).
 ## Open
 - C1 permissions, C3 secret links, C5 CSS cleanup (safe now with tests/visual.sh), C6 engine unit tests, D3 split varzybos.js, D4 same group on two tablets, D5 Budo live polish, D7 arena left hand UI, D8 pixel characters (PC + LibreSprite).
