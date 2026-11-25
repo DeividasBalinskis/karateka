@@ -162,7 +162,7 @@ test('„Visos nuorodos“: every link with Kopijuoti · ↻ Nauja nuoroda · I�
   await nav(a, () => a.click('#k-demo [data-lk="new"]'));
   check('trial link created from the page', /^[a-f0-9]{64}$/.test(linkToken('demo')));
   await a.goto('admin/nuorodos.php?visos=1');
-  check('switched off and replaced shown on „Rodyti ir išjungtas“', /išjungta/.test(await a.locator('#k-live').innerText()));
+  check('switched off and replaced shown on „Rodyti ir išjungtas“', /išjungta/.test(await a.locator('#k-live').textContent()));   // daugiau nei 8 - suskleista
   // Treneris šio puslapio nemato
   const c = await login(browser, 'treneris@karateka.test', 1280, 900);
   await c.goto('admin/nuorodos.php');
@@ -178,6 +178,7 @@ test('write links ask for a name; the name is saved with each change (Budo histo
   await nav(a, () => a.click('text=🎲 Sukurti test varžybas'));
   const tid = +sql('SELECT MAX(id) FROM tournaments');
   const sk = linkNew('sekr', tid);
+  await a.goto('admin/');   // trenerio Budo langas uždaromas - kad jo išsaugojimai nepatektų į tą pačią istorijos kopiją
 
   const ctx = await browser.newContext({ baseURL: BASE_URL, viewport: { width: 1400, height: 1000 } });
   const s = await ctx.newPage();
@@ -198,8 +199,8 @@ test('write links ask for a name; the name is saved with each change (Budo histo
   await s.click('#draw-sim');
   for (let i = 0; i < 20 && +sql(`SELECT version FROM tournaments WHERE id = ${tid}`) <= v0; i++) await s.waitForTimeout(300);
   await s.waitForTimeout(800);
-  check('saved version has the name', sql(`SELECT COUNT(*) FROM tournament_versions WHERE tournament_id = ${tid} AND saved_by LIKE '%Tomas Sekretorius%'`) === '1'
-    || /Tomas Sekretorius/.test(sql(`SELECT IFNULL(saved_by, '') FROM tournaments WHERE id = ${tid}`)));
+  check('saved version has the name', +sql(`SELECT COUNT(*) FROM tournament_versions WHERE tournament_id = ${tid} AND saved_by LIKE '%Tomas Sekretorius%'`) >= 1,
+    sql(`SELECT GROUP_CONCAT(CONCAT(id, ':', IFNULL(saved_by, '-'), '@', created_at) SEPARATOR ' | ') FROM tournament_versions WHERE tournament_id = ${tid}`) + ' / pending ' + sql(`SELECT IFNULL(saved_by, '-') FROM tournaments WHERE id = ${tid}`));
 
   // Treneris istorijoje mato vardą prie kopijos
   sql(`UPDATE tournament_versions SET created_at = NOW() - INTERVAL 5 MINUTE WHERE tournament_id = ${tid}`);
