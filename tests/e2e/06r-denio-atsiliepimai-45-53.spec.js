@@ -3,16 +3,25 @@
 const { test } = require('@playwright/test');
 const { sql, login, nav, check, noJsErrors } = require('./helpers');
 
-test('home page: instructors listed on the page can edit it, others cannot', async ({ browser }) => {
+// C1: redaguoti gali tik paskyra, kurią administratorius pažymėjo Paskyrose („🏠 Redaguoja pradžią“, home_editors) - vardas instruktorių bloke teisės neduoda
+test('home page: accounts marked as homepage editors can edit it, a matching name alone cannot', async ({ browser }) => {
+  const before = sql("SELECT COALESCE(MAX(value), '') FROM site_settings WHERE name = 'home_editors'");
+  const cid = +sql("SELECT id FROM accounts WHERE email = 'treneris@karateka.test'");
+  sql("DELETE FROM site_settings WHERE name = 'home_editors'");
   sql("UPDATE accounts SET first_name = 'Karolis', last_name = 'Kiela' WHERE email = 'treneris@karateka.test'");
   const c = await login(browser, 'treneris@karateka.test', 1280, 900);
   await c.goto('index.php');
-  check('listed instructor sees “Edit page”', await c.locator('.hb-fab').count() === 1);
+  check('name in the instructors block alone - no editing', await c.locator('.hb-fab').count() === 0);
+  sql(`INSERT INTO site_settings (name, value) VALUES ('home_editors', '[${cid}]') ON DUPLICATE KEY UPDATE value = '[${cid}]'`);
+  await c.goto('index.php');
+  check('marked account sees “Edit page”', await c.locator('.hb-fab').count() === 1);
   await c.goto('index.php?redaguoti=1');
   check('edit mode opens', await c.evaluate(() => document.body.classList.contains('home-edit')));
   sql("UPDATE accounts SET first_name = 'Lukas', last_name = 'Treneris' WHERE email = 'treneris@karateka.test'");
+  sql("DELETE FROM site_settings WHERE name = 'home_editors'");
   await c.goto('index.php');
-  check('not listed - no editing', await c.locator('.hb-fab').count() === 0);
+  check('not marked - no editing', await c.locator('.hb-fab').count() === 0);
+  if (before !== '') sql(`INSERT INTO site_settings (name, value) VALUES ('home_editors', '${before}')`);
   noJsErrors(c);
 });
 
