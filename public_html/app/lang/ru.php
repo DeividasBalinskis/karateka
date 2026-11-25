@@ -4201,4 +4201,9 @@ Nuo 2013 m. treniravosi Tradicinio karate-do klubo „Sanrei“ komandoje, o 201
     'Jau padaryta - pažymėti ir parašyti atsakymą' => 'Уже сделано - отметить и написать ответ',
     'Kas padaryta' => 'Что сделано',
     '✓ Padaryta' => '✓ Сделано',
+    'Peržiūra (auksinės žymos, darbų eilė, agentas) šiuo metu išjungta.' => 'Обзор (золотые отметки, очередь задач, агент) сейчас выключен.',
+    'Įjungti →' => 'Включить →',
+    'Peržiūra įjungta.' => 'Обзор включён.',
+    'Peržiūra išjungta.' => 'Обзор выключен.',
+    'auksinės žymos test svetainėje, darbų eilė ir taisymo agentas' => 'золотые отметки на тестовом сайте, очередь задач и агент исправлений',
 ];

@@ -4201,4 +4201,9 @@ From 2013 he trained with the team of the traditional karate-do club "Sanrei", a
     'Jau padaryta - pažymėti ir parašyti atsakymą' => 'Already done - mark it and write a reply',
     'Kas padaryta' => 'What was done',
     '✓ Padaryta' => '✓ Done',
+    'Peržiūra (auksinės žymos, darbų eilė, agentas) šiuo metu išjungta.' => 'Review (gold marks, job queue, agent) is switched off for now.',
+    'Įjungti →' => 'Switch on →',
+    'Peržiūra įjungta.' => 'Review switched on.',
+    'Peržiūra išjungta.' => 'Review switched off.',
+    'auksinės žymos test svetainėje, darbų eilė ir taisymo agentas' => 'gold marks on the test site, job queue and the fixing agent',
 ];

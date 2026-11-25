@@ -15,6 +15,9 @@ if (is_post()) {
     if ($action === 'generate') {
         $done = test_people_generate((array) ($_POST['scenarios'] ?? []), $me);
         flash('ok', (t('Sukurta:') . ' ') . implode(', ', $done) . '. Peržiūrėti - viršuje 👁 „Tėvai“ arba „Vaikas“.');
+    } elseif ($action === 'review') {   // v2.10: Peržiūra įjungiama / išjungiama (kodas lieka)
+        set_site_setting('review_on', post('on') === '1' ? '1' : '');
+        flash('ok', post('on') === '1' ? t('Peržiūra įjungta.') : t('Peržiūra išjungta.'));
     } elseif ($action === 'delete') {
         [$members, $accounts] = test_people_delete();
         flash('ok', (t('Ištrinta testinių:') . ' ') . $members . (' ' . t('nar. ir') . ' ') . $accounts . (' ' . t('pask. Tikri duomenys nepakeisti.')));
@@ -33,6 +36,15 @@ page_start(t('Testavimas'), ['admin' => true]);
 <?php require_once APP_DIR . '/game.php'; if (game_ready() && !game_public() && is_admin()): ?>
   <p class="panel card game-hidden-note">🏯 <?= te('Dojo (žaidimas) kol kas paslėptas - meniu jo nemato niekas. Administratoriai jį gali išbandyti:') ?>
     <a class="btn btn-sm" href="<?= url('dojo.php') ?>"><?= te('Atidaryti Dojo →') ?></a></p>
+<?php endif; ?>
+
+<?php if (function_exists('review_ready') && review_ready()): ?>
+  <form method="post" class="panel card" id="perziura"><?= csrf_field() ?><input type="hidden" name="action" value="review">
+    <input type="hidden" name="on" value="<?= review_enabled() ? '0' : '1' ?>">
+    🔎 <strong><?= te('Peržiūra') ?></strong>: <?= review_enabled() ? te('įjungta') : te('išjungta') ?> ·
+    <span class="muted"><?= te('auksinės žymos test svetainėje, darbų eilė ir taisymo agentas') ?></span>
+    <button class="btn btn-sm" type="submit" id="review-toggle"><?= review_enabled() ? te('Išjungti') : te('Įjungti') ?></button>
+  </form>
 <?php endif; ?>
 
 <div class="grid-2 testing-grid">

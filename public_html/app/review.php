@@ -11,6 +11,12 @@ const REVIEW_KINDS = ['fix' => '🛠 Taisyti', 'deploy' => '⬆ Įkelti į test'
 const REVIEW_STATUS = ['queued' => ['Laukia', 'badge-warn'], 'working' => ['Daroma', 'badge-pink'], 'done' => ['Padaryta', 'badge-ok'],
                        'failed' => ['Nepavyko', 'badge-warn'], 'cancelled' => ['Atšaukta', '']];
 
+/** v2.10 (Deividas): Peržiūra kol kas išjungta - kodas lieka. Įjungiama Valdymas → Nustatymai → Testavimas („🔎 Peržiūra“), nustatymas review_on */
+function review_enabled(): bool
+{
+    return site_setting('review_on', '') === '1';
+}
+
 /** Ar jau importuotas db/060 */
 function review_ready(): bool
 {
@@ -90,7 +96,7 @@ function review_item_href(array $it): string
 /** Auksinės žymos šiam žmogui: tik test / kompiuteryje, tik tikram administratoriui */
 function review_can(?array $a = null): bool
 {
-    return config('env') !== 'live' && is_admin($a) && review_ready();
+    return config('env') !== 'live' && is_admin($a) && review_ready() && review_enabled();
 }
 
 /** Mano įvertinimai: [change_id => ['mark' => good|bad|null, 'comment' => '', 'sent' => bool]] */
