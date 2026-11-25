@@ -2,7 +2,21 @@
 // (□ → ✓ → ✗ + komentaras, „Pateikti“), „🎯 Pastaba apie elementą“, agento API (perziura-api.php). Tik tikriems administratoriams.
 const { test } = require('@playwright/test');
 const { execFileSync } = require('child_process');
+const fs = require('fs');
+const path = require('path');
 const { sql, login, nav, check, noJsErrors } = require('./helpers');
+
+// Testas naudoja savo pakeitimų sąrašą (app/review.json keičiasi su kiekviena versija); pabaigoje grąžinamas tikrasis
+const MANIFEST = path.join(__dirname, '..', '..', 'public_html', 'app', 'review.json');
+const TEST_MANIFEST = { rev: 'e2e-1', version: 'e2e', title: 'E2E', items: [
+  { id: 'meniu-grupes', page: 'admin/*', href: 'admin/', sel: '.adm-side', title: 'Valdymo meniu: Kasdien, Darbai, Nustatymai', note: 'E2E' },
+  { id: 'meniu-tvarkyti', page: 'admin/*', href: 'admin/', sel: '#am-edit', title: '✎ Meniu tvarkymas', note: 'E2E' },
+  { id: 'perziura-taisyti', page: 'admin/perziura.php', sel: '#taisyti', title: 'Peržiūra: ką taisyti' },
+  { id: 'perziura-eile', page: 'admin/perziura.php', sel: '#eile', title: 'Peržiūra: darbų eilė' },
+] };
+let saved = null;
+test.beforeAll(() => { saved = fs.readFileSync(MANIFEST, 'utf8'); fs.writeFileSync(MANIFEST, JSON.stringify(TEST_MANIFEST)); });
+test.afterAll(() => { if (saved !== null) fs.writeFileSync(MANIFEST, saved); });
 
 test('Peržiūra: queue fixes, gold marks with ✓/✗ and comments, submit, element notes, agent API', async ({ browser }) => {
   sql('DELETE FROM review_marks'); sql('DELETE FROM review_jobs');

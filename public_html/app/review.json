@@ -1,44 +1,29 @@
 {
-  "rev": "2.02-2",
-  "version": "2.02",
-  "title": "Valdymo meniu ir Peržiūra",
+  "rev": "2.09-1",
+  "version": "2.09",
+  "title": "Protokolų trynimas, meniu iki apačios, darbų uždarymas",
   "items": [
     {
-      "id": "meniu-grupes",
+      "id": "egzaminai-trinti",
+      "page": "admin/egzaminai.php",
+      "sel": ".exam-del",
+      "title": "🗑 Protokolo trynimas (#179)",
+      "note": "Tuščias - po vieno klausimo. Jei yra dalyvių - parodoma kiek ir kas, tada „Taip, ištrinti su N dalyviais“. Kiti tos dienos protokolai lieka."
+    },
+    {
+      "id": "meniu-iki-apacios",
       "page": "admin/*",
       "href": "admin/",
       "sel": ".adm-side",
-      "title": "Valdymo meniu: Kasdien, Darbai, Nustatymai",
-      "note": "Dažni darbai viršuje, Aktyvumo taškai ir kiti nustatymai - apačioje grupėje „Nustatymai“."
+      "title": "Valdymo meniu - iki ekrano apačios",
+      "note": "Jūsų pastaba Peržiūroje: meniu dabar eina iki pat apačios; apačioje vieta 💡 mygtukui."
     },
     {
-      "id": "meniu-tvarkyti",
-      "page": "admin/*",
-      "href": "admin/",
-      "sel": "#am-edit",
-      "title": "✎ Meniu tvarkymas",
-      "note": "Paspaudus ✎: skyrius galima tempti į kitą vietą ar grupę (arba ↑ ↓), pervadinti, kurti ir trinti grupes. „Numatytas meniu“ grąžina kaip buvo."
-    },
-    {
-      "id": "perziura-taisyti",
-      "page": "admin/perziura.php",
-      "sel": "#taisyti",
-      "title": "Peržiūra: ką taisyti",
-      "note": "Atviri atsiliepimai trumpai. Pažymite, ką taisyti, prirašote komentarą ir spaudžiate „▶ Paleisti taisymą“."
-    },
-    {
-      "id": "perziura-eile",
+      "id": "perziura-padaryta",
       "page": "admin/perziura.php",
       "sel": "#eile",
-      "title": "Peržiūra: darbų eilė",
-      "note": "Ką daro agentas: laukia, daroma, padaryta ir jo atsakymas."
-    },
-    {
-      "id": "perziura-test",
-      "page": "admin/perziura.php",
-      "sel": "#test",
-      "title": "Peržiūra: pakeitimai test svetainėje ir „⬆ Įkelti į test“",
-      "note": "Kas ir kaip įvertino auksines žymas (✓ / ✗ ir komentarai)."
+      "title": "Darbų eilė: „✓“ - pažymėti padarytu",
+      "note": "Jei darbą padarėte patys ar jį padarė kita sesija - „✓“, parašote, kas padaryta, ir darbas uždaromas."
     }
   ]
 }

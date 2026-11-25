@@ -4,6 +4,12 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v2.09 - 2026-11-25 (Peržiūra: jūsų pastaba - meniu iki apačios)
+- **Valdymo šoninis meniu** eina iki pat ekrano apačios (Deividas Peržiūroje: „gal padarom, kad šitas meniu eitų iki pat apačios“); apačioje vieta 💡 mygtukui.
+- **🔎 Peržiūra → Darbų eilė → „✓“**: darbą, kurį padarėte patys (ar kita sesija), galima pažymėti padarytu ir parašyti, kas padaryta.
+- Peržiūros ratas v2.02 įvertintas „Visi geri“ - jau main'e. Naujas auksinių žymų sąrašas: protokolų trynimas, meniu iki apačios, „✓“.
+- Duomenų bazė: naujų failų nėra.
+
 ## v2.08 - 2026-11-25 (#179 protokolų trynimas; agentas ir kompiuteryje)
 - **Valdymas → Egzaminai → 🗑** prie protokolo (tik administratoriui, #179): tuščias protokolas ištrinamas po vieno klausimo;
   jei jame yra dalyvių - pirma parodoma, **kiek ir kas** jame yra, ir tik tada „Taip, ištrinti su N dalyviais“. Kiti tos dienos protokolai lieka.
