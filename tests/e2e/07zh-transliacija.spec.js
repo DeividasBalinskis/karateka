@@ -96,9 +96,10 @@ test('Budo streaming with phones only: one QR, assign to a tatami, ± on the vid
 
   // #182: rungtis užsirakina pati, kai baigiama paskutinė kova; atrakinti - paspaudus „🔒 Užrakinta“
   check('unlocked while bouts are left', (await a.textContent('#draw-lock')).includes('Užrakinti'));
-  for (let i = 0; i < 30 && await a.locator('#bout [data-win="a"]').count(); i++) {
+  // „▶“ rodomas ir baigtoms kovoms - imama pirma NEbaigta
+  for (let i = 0; i < 40 && await a.locator('#bout:not([hidden]) [data-win="a"]').count(); i++) {
     await a.click('#bout [data-win="a"]'); await a.waitForTimeout(250);
-    const next = a.locator('#draw-view .bout-open').first();
+    const next = a.locator('#draw-view .match:not(.is-done) .bout-open').first();
     if (!(await next.count())) break;
     await next.click(); await a.waitForTimeout(200);
   }
