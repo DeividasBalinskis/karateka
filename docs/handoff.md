@@ -1,5 +1,5 @@
 # Handoff
-Updated: 2026-11-25 · version v2.07 · main
+Updated: 2026-11-25 · version v2.08 · main
 
 ## Pending asks (answer these first)
 | Asked | By | What | Status |
@@ -164,6 +164,12 @@ Updated: 2026-11-25 · version v2.07 · main
   viewers' JSON gets `cams` (tatamis with a phone that are not yet in the saved summary, from state) - renderVideos adds them.
   Test 07zh fixed (the loop reopened a finished bout: „▶“ is shown on finished bouts too → `.match:not(.is-done) .bout-open`). 07zh ✓ in CI (both tests).
 
+- 2026-11-25 v2.08: #179 exam protocol delete (admin/egzaminai.php `delete_protocol`, `exam_protocol_people()` in app/exam_protocol.php; with people → `?trinti=ID#trinti`
+  confirm box; children of a deleted main protocol: first one becomes main). Test 07zl ✓. Agent: perziura-api.php „working“ = atomic claim (409 taken; stale after 90 min).
+  PC scheduled task `karateka-perziuros-eile` (*/15 7-22, Auto mode, no notifications) + cloud routine trig_01KwSq8HaCyBeQzfAB2Wxmvg (disabled until the key is set).
+  Both need `KARATEKA_API_KEY` (cloud env „karateka“ + Windows user variable). PC copy works only in the worktree `..\Karateka-agentas` on `claude/taisymai`.
+  Plan steps started in their own worktree sessions (Deividas: „tiesiog daryk“): C1 `c1-teises`, C5 `c5-css` (header.css), C6+D3 `d3-budo-moduliai`, D1 `d1-palyginimas`.
+  C3 waits for Denis's answers (secretariat link lifetime, one link per competition or tatami, awards tablet names).
 ## Open
 - C1 permissions, C3 secret links, C5 CSS cleanup (safe now with tests/visual.sh), C6 engine unit tests, D3 split varzybos.js, D4 same group on two tablets, D5 Budo live polish, D7 arena left hand UI, D8 pixel characters (PC + LibreSprite).
 - Parent payments for Budo registration need a payment provider (later).
