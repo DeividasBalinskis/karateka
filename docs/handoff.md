@@ -1,5 +1,5 @@
 # Handoff
-Updated: 2026-11-25 · version v2.00 · work branch
+Updated: 2026-11-25 · version v2.01 · main
 
 ## Pending asks (answer these first)
 | Asked | By | What | Status |
@@ -108,6 +108,18 @@ Updated: 2026-11-25 · version v2.00 · work branch
   Released to main and test (CI checks passed, db/059 applied). Checked on test: stream page, one QR, a simulated phone (ping) appears in the list, assigned to 2 TATAMIS → it streams as tatami 2, wrong key → 404, „Visi tatamiai“ 2×2 with the same competition in every cell (all permanent bars use `varz_current_tournament(0)` = latest activity on any tatami), test bout ± shown in the cell; test phone forgotten and test bout ended afterwards. Not checked with a real phone camera (needs Deividas's phone).
 - 2026-11-25 v1.99: Deividas's real phone joined and was assigned (stream_phones) but no video reached the PC: the vdo.ninja camera inside an iframe on the phone did not stream. Now the phone page only waits for the assignment, then a big link opens the vdo.ninja camera full screen (`varz_cam_push_url` = push + webcam + autostart + facing=rear + meshcast). OBS removed entirely (bar help, OBS links, „Visi tatamiai“, permanent bar key, `varz_current_tournament`); stream ids `kt` + sha256(key|t|N)[0:20] (`varz_cam_id`); viewers' JSON has `areas[].cam` for tatamis with an assigned phone seen in 12 h (`varz_cams_live`), viewer page „▶ Žiūrėti gyvai“ (iframe only after a tap); stream page = QR + waiting phones + a card per tatami (video + bar iframe `&valdymas=1` with ± next to the scores); bout video uses CFG.cams and has ± on the video (clicks the panel's own `[data-pt]` buttons). #182 `autoLock()` in all result paths; #184 header #4F5E73→#67788F; `.ico` rule in varzybos.css; tabs and schedule fixes. Includes the review session's 14 files (header/home/app CSS, translations). Tests: 07zh rewritten, 07zb OBS parts removed. Open: #179/#181 (delete exam protocols) - waiting for Deividas. 2026-11-25: Deividas confirmed on test with his own phone - the phone video shows on the PC (v1.99, split +/- button by the scores).
 - 2026-11-25 v2.00 (released to main and test; Live kova checked on test; Valdymas menu max-height 100vh-180px; 💡 hidden in Live). Gotcha: `gh workflow run` right after `git push` may build the previous commit - wait ~6 s, then check the run's headSha. Was: „📹 Live kova“ window (varzybos.js `syncLive`/`setLive`/`liveNext`, `#live-win`, localStorage `<KEY>-live`; Tvarkaraštis button `#live-cam`, bout header `#bt-live`); its buttons click the bout panel's `[data-pt]`, `#bt-start`, `#bt-finish`, `[data-win]`; side video hidden while Live is open. Test in 07zh.
+- 2026-11-25 v2.01 (side session, released to main and test): secretariat desk for one tatami (Deividas's ask). Budo → Tvarkaraštis with a tatami picked
+  on the device (`myArea`, localStorage `<KEY>-myarea`) = desk `#desk` (admin/varzybu-sistema.php): left menu `.desk-side` („📋 Mano tatamis“, „📹 Live kova“ = setLive,
+  „🏟 Visi tatamiai“ = sessionStorage `<KEY>-deskall` → old board + `#desk-back` / run-strip `[data-desk-back]`), `#dk-now` (now / next bout, „▶ Kovos skydelis“),
+  rows `.dk-row` (renderDesk/deskRow from areaPlan; time input = setCatAt; ⠿ pointer drag → moveCat), a clicked row expands in place: `#run` is moved into `#dk-run`
+  (class `in-desk` hides run-strip, back, title, prev/next, run-list, category select) - never re-created, so score inputs keep focus (#175).
+  „✎ Keisti“ (#draw-swap, was „⇄ Keisti vietas“; also for score order: in swap mode moveOrder swaps). Live window: „🏅 Rezultatai“ `.lv-side` (pinTree of the group,
+  toggleResult shared with pins; localStorage `vz-live-side`), close label „📋 Mano tatamis“ in desk mode. `?tatamis=N` (CFG.deskArea) opens that desk and is removed
+  from the address; secretariat link `varzybos-sekretoriatas.php?k=…&t=N` names the tatami and lands there; 🧑‍💼 panel: „📋 Sekretoriato darbastalis“ buttons per tatami
+  + copy links per tatami (renderSekrDesk). The one-column „only my tatami“ board is gone (shownAreas = all). CSS `--vz-head` = sticky header height (setHeadVar).
+  Tests: new 07zk-sekretoriato-darbastalis; 06i (desk instead of one column) and 06k („✎ Keisti“) updated - not run (no node/php here).
+  Local check without PHP: scratchpad harness (make.py renders the template + generated test competition, serve.py) at 1440 / 1024 / 375, dark theme, secretariat mode.
+  Another session works in the same folder at the same time (review system: layout.php, header.css, app/review.php, db/060, 07zi-meniu) - its files were not committed here.
 - 2026-11-25 (PC, not committed) exam protocol time: each protocol = its own `events.start_time` (no new db file).
   `admin/egzamino-protokolas.php`: „Pradžios laikas“ input #protTime in the header (saved at once: `?save=1` field `start_time`, staff, HH:MM or empty; print shows #protTimePrint).
   `admin/egzaminai.php`: copy_exam form has `start_time` (prefilled with that protocol's time; posted value wins, missing field = copy), list sorted by time within a day.

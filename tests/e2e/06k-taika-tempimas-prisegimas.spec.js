@@ -34,7 +34,7 @@ test('swap names by dragging, reorder score order, pin a category window', async
     const m0 = (await a.locator('#draw-view [data-drag-slot]').nth(0).locator('b').innerText()).trim();
     check('names swapped by dragging', m0 === n1 && n0 !== n1, n0 + ' / ' + n1 + ' → ' + m0);
   }
-  check('button renamed', /Keisti vietas/.test(await a.textContent('#draw-swap')));
+  check('button renamed', /✎ Keisti/.test(await a.textContent('#draw-swap')));   // v2.01: „✎ Keisti“ (buvo „⇄ Keisti vietas“)
 
   // Prisegti: mygtukas, langelis matosi kituose skirtukuose, tempiamas, išlieka perkrovus
   await a.click('#run-pin');

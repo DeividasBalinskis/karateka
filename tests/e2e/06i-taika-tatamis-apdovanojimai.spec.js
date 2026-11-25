@@ -15,21 +15,21 @@ test('my tatami, next group, send to awards, awards tablet finishes the age grou
   await a.click('#tab-live');
   if (await a.locator('#run').isVisible()) await a.click('#run-back');
 
-  // Pirmą kartą: „Prie kurio tatamio dirbate?“ → rodomas tik jis, kitą galima pažiūrėti
+  // Pirmą kartą: „Prie kurio tatamio dirbate?“ → v2.01: to tatamio darbastalis (tik jo grupės), kitą galima pasirinkti
   await a.waitForSelector('#area-pick.ask');
   const allAreas = await a.locator('#sched .area').count();
+  check('one tatami control, no duplicates', await a.locator('#area-seg .seg-btn').count() === allAreas + 1 && await a.locator('select#my-area').count() === 0);
   await a.click('#area-pick [data-my-area="1"]');
-  check('only my tatami shown', await a.locator('#sched .area').count() === 1 && allAreas > 1, String(allAreas));
-  check('one tatami control, no duplicates', await a.locator('#area-seg .seg-btn').count() === allAreas + 1 && await a.locator('#area-pick').isHidden() && await a.locator('select#my-area').count() === 0);
-  await a.click('#area-seg [data-my-area="2"]');
-  check('look at another tatami', (await a.locator('#sched .area .name').inputValue()) === '2 TATAMIS');
-  await a.click('#area-seg [data-my-area="1"]');
-  check('back to mine', (await a.locator('#sched .area .name').inputValue()) === '1 TATAMIS');
+  check('only my tatami shown (desk)', await a.locator('#desk').isVisible() && await a.locator('#live-board').isHidden() && allAreas > 1 && /1 TATAMIS/.test(await a.textContent('#dk-title')), String(allAreas));
+  await a.selectOption('#dk-area', '2');
+  check('look at another tatami', /2 TATAMIS/.test(await a.textContent('#dk-title')));
+  await a.selectOption('#dk-area', '1');
+  check('back to mine', /1 TATAMIS/.test(await a.textContent('#dk-title')));
   await a.reload();
-  if (await a.locator('#run').isVisible()) await a.click('#run-back');
-  check('remembered on this device', await a.locator('#sched .area').count() === 1 && await a.locator('#area-pick').isHidden());
+  check('remembered on this device', await a.locator('#desk').isVisible() && await a.locator('#area-pick').isHidden());
 
-  // „▶ Dabar: …“ atidaro dabartinę grupę; apačioje - visos tatamio grupės
+  // „🏟 Visi tatamiai“ → „▶ Dabar: …“ atidaro dabartinę grupę; apačioje - visos tatamio grupės
+  await a.click('.desk-side [data-dk="all"]');
   await a.click('[data-start-run="1"]');
   await a.waitForSelector('#run:not([hidden])');
   check('all groups listed at the bottom', await a.locator('#run-list .rl-row').count() >= 3 && await a.locator('#run-list .rl-row.on').count() === 1);

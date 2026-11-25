@@ -517,10 +517,14 @@
   function setRun(open) { runOpen = !!open; try { sessionStorage.setItem(KEY + '-run', runOpen ? '1' : ''); } catch (e) {} }
   function openRun(id) {
     if (id && isDetached(id)) { toast('Ši rungtis atidaryta <b>atskirame lange</b> - ten ir valdykite. Uždarius tą langą, ji grįš čia.'); return; }
-    if (id && S.selected !== id) { S.selected = id; save(); }
+    // v2.01: darbastalyje - kito tatamio grupė atidaroma bendrame tvarkaraštyje („🏟 Visi tatamiai“), savas tatamis išlieka
+    var oc = id ? cat(id) : null, da = deskArea();
+    if (da && oc && String(oc.tatami) !== String(da.id)) setDeskAll(true);
+    if (id && S.selected !== id) { S.selected = id; swapMode = false; picked = null; save(); }
     var wasRun = runOpen && curTab() === 'live';
     setRun(true); showTab('live', true);
     if (!POPUP && !wasRun) history.pushState({ vz: 1, tab: 'live', run: S.selected }, '');
+    if (deskArea()) { deskScrollTo(S.selected); return; }
     var r = document.getElementById('run'); if (r && r.getBoundingClientRect().top < 0) r.scrollIntoView({ block: 'start' });
   }
   function curTab() { return tabs.find(function (t) { return !document.getElementById('v-' + t).hidden; }); }
@@ -1382,7 +1386,7 @@
       }).join('') + '</div>';
     }
     html += '</div><div class="draw-foot">' + placesHtml(c, b.places, 'Vietos atsiras, kai baigsis finalas.');
-    html += '<p class="hint">' + (swapMode ? '⇄ Vietų keitimas: <b>tempkite vardą ant kito</b> (ar spauskite du vardus) pirmame rate - jie apsikeis vietomis. Baigę - „✓ Baigti keitimą“.' : 'Spauskite dalyvio vardą kovoje – jis laimi (dar kartą – atšaukiama). Balus įrašykite kovos viršuje. Kol kovų nebuvo, dalyvius pirmame rate galima <b>tempti</b> - apsikeis vietomis. Raudonas – aka, baltas – shiro.') + '</p></div>';
+    html += '<p class="hint">' + (swapMode ? '✎ Keitimas: <b>nutempkite vardą ant kito</b> (ar spauskite du vardus) pirmame rate - jie iškart susikeis vietomis. Baigę - „✓ Baigti keitimą“.' : 'Spauskite dalyvio vardą kovoje – jis laimi (dar kartą – atšaukiama). Balus įrašykite kovos viršuje. Kol kovų nebuvo, dalyvius pirmame rate galima <b>tempti</b> - apsikeis vietomis. Raudonas – aka, baltas – shiro.') + '</p></div>';
     view.innerHTML = html;
   }
   function renderRR(c, view) {
@@ -1453,6 +1457,7 @@
     }
     var what = f.avg ? 'vidurkis' : 'suma';
     html += '<div class="draw-foot">' + placesHtml(c, catPlaces(c), 'Vietos atsiras, kai visi gaus balus.') +
+      (swapMode ? '<p class="hint"><b>✎ Keitimas: nutempkite ⠿ ant kito dalyvio - jie iškart susikeis vietomis.</b></p>' : '') +
       '<p class="hint">Įrašykite kiekvieno teisėjo balą be taško: 75 → 7.5. ' + (f.drop && f.judges >= 5 ? '* ' + (f.avg ? 'Vidurkis' : 'Suma') + ' be aukščiausio ir žemiausio balo - jie lieka matomi perbraukti. ' : '') +
       (f.rounds === 2 ? 'Finalininkų vietos - pusfinalio ir finalo ' + (f.avg ? 'vidurkių' : 'sumų') + ' suma; lygiųjų atveju - finalo ' + what + ', tada visų balų suma. ' : 'Lygiųjų atveju lemia visų balų suma. ') +
       (c.discipline === 'kata' ? 'Kata - pasirinkite iš sąrašo ar įrašykite. ' : '') + 'Eilės tvarka - burtų; „Burti iš naujo“ ją sumaišo.' +
@@ -1506,9 +1511,10 @@
     dsel.innerHTML = methodList(c).map(function (x) { return '<option value="' + x[0] + '">' + esc(x[1]) + '</option>'; }).join('');
     dsel.value = methodOf(c.draw.system);
     if (msel) { msel.closest('label').style.display = methodOf(c.draw.system) === 'elim' ? '' : 'none'; msel.value = MEDALS[c.draw.system] ? c.draw.system : elimDefault(c); }
-    var sw = document.getElementById('draw-swap'); sw.setAttribute('aria-pressed', swapMode ? 'true' : 'false'); sw.textContent = swapMode ? '✓ Baigti keitimą' : '⇄ Keisti vietas';
+    // v2.01: „✎ Keisti“ - varžovų sukeitimas tempiant (olimpinėje - pirmame rate, balų sistemoje - pasirodymo eilė)
+    var sw = document.getElementById('draw-swap'); sw.setAttribute('aria-pressed', swapMode ? 'true' : 'false'); sw.textContent = swapMode ? '✓ Baigti keitimą' : '✎ Keisti';
     document.getElementById('draw-view').classList.toggle('swap-mode', swapMode);
-    document.getElementById('draw-swap').hidden = !isElim(c.draw.system);
+    document.getElementById('draw-swap').hidden = c.draw.system === 'rr';
     document.getElementById('draw-lock').setAttribute('aria-pressed', c.draw.locked ? 'true' : 'false');
     document.getElementById('draw-lock').textContent = c.draw.locked ? '🔒 Užrakinta' : '🔓 Užrakinti';
     document.getElementById('draw-new').disabled = c.draw.locked;
@@ -1747,7 +1753,10 @@
   function moveOrder(c, id, beforeId) {
     var o = (c.draw.order || []).slice(), from = o.indexOf(id), to = o.indexOf(beforeId);
     if (from < 0 || to < 0 || from === to) return;
-    snapshot(); o.splice(from, 1); o.splice(o.indexOf(beforeId) + (from < to ? 1 : 0), 0, id); c.draw.order = o; save(); render();
+    snapshot();
+    // v2.01: „✎ Keisti“ režime - abu dalyviai iškart susikeičia vietomis (kaip lentelėje); kitaip - įterpiama prieš kitą
+    if (swapMode) { o[from] = beforeId; o[to] = id; } else { o.splice(from, 1); o.splice(o.indexOf(beforeId) + (from < to ? 1 : 0), 0, id); }
+    c.draw.order = o; save(); render();
   }
   document.getElementById('draw-view').addEventListener('pointerdown', function (e) {
     if (e.button !== 0) return;
@@ -1908,16 +1917,20 @@
       liveEl = document.createElement('div'); liveEl.className = 'live-win'; liveEl.id = 'live-win';
       liveEl.setAttribute('role', 'dialog'); liveEl.setAttribute('aria-label', 'Live kova');
       liveEl.innerHTML = '<div class="lv-head"><b class="lv-title"></b><span class="lv-areas"></span><span class="spacer"></span>' +
+        '<button type="button" class="btn" data-lv="side" aria-pressed="false" title="Šios grupės kovos ir rezultatai šalia vaizdo (paspaudus vardą - laimėjo)">🏅 Rezultatai</button>' +
         '<button type="button" class="btn" data-lv="close">📋 Tvarkaraštis</button></div>' +
-        '<div class="lv-stage"><iframe title="Telefono vaizdas" allow="autoplay; fullscreen" allowfullscreen></iframe><div class="lv-bar"></div></div>' +
+        '<div class="lv-stage"><iframe title="Telefono vaizdas" allow="autoplay; fullscreen" allowfullscreen></iframe><div class="lv-bar"></div><aside class="lv-side" hidden></aside></div>' +
         '<div class="lv-foot"></div>';
       document.body.appendChild(liveEl);
       liveEl.addEventListener('click', function (e) {
         var p = e.target.closest('[data-vpt]');
         if (p) { var t = boutEl.querySelector('[data-pt="' + p.dataset.vpt + '"]'); if (t) t.click(); return; }
+        var pr = e.target.closest('[data-pin-res]');
+        if (pr) { var q2 = pr.dataset.pinRes.split('|'); toggleResult(q2[0], q2[1], q2[2]); return; }
         var b = e.target.closest('[data-lv]'); if (!b) return;
         var act = b.dataset.lv;
         if (act === 'close') { setLive(null); return; }
+        if (act === 'side') { liveSide = !liveSide; try { localStorage.setItem('vz-live-side', liveSide ? '1' : '0'); } catch (x) {} syncLive(); return; }
         if (act === 'area') { setLive(b.dataset.area); return; }
         if (act === 'open') { var q = b.dataset.open.split('|'); openBout(q[0], q[1]); return; }
         if (act === 'run') { setLive(null); goRun(b.dataset.cat); return; }
@@ -1954,8 +1967,33 @@
     var bl = liveEl.querySelector('.lv-bar'), fl = liveEl.querySelector('.lv-foot');
     if (bl.dataset.h !== bar) { bl.dataset.h = bar; bl.innerHTML = bar; }
     if (fl.dataset.h !== foot) { fl.dataset.h = foot; fl.innerHTML = foot; }
+    // v2.01: darbastalyje uždarius - atgal į „📋 Mano tatamis“; „🏅 Rezultatai“ - šios grupės kovos ir vietos šalia vaizdo
+    var cl = liveEl.querySelector('[data-lv="close"]'), cll = deskArea() ? '📋 Mano tatamis' : '📋 Tvarkaraštis';
+    if (cl.dataset.l !== cll) { cl.dataset.l = cll; cl.textContent = cll; }
+    var sb = liveEl.querySelector('[data-lv="side"]'), side = liveEl.querySelector('.lv-side');
+    sb.setAttribute('aria-pressed', liveSide ? 'true' : 'false');
+    liveEl.classList.toggle('side-on', liveSide);
+    side.hidden = !liveSide;
+    if (liveSide) {
+      var gc = inBout ? cat(B.cat) : (liveNext(a) || {}).c || null;
+      if (!gc) { var done = areaPlan(a).items.filter(function (x) { return x.st === 'done'; }); gc = done.length ? done[done.length - 1].c : null; }
+      var sh = gc ? '<h3><span class="disc d-' + gc.discipline + '"></span>' + esc(gc.name) + '</h3>' +
+        (catPlaces(gc).length && catFinished(gc) ? '<div class="pin-places">' + placesShort(gc) + '</div>' : '') + pinTree(gc) : '<p class="muted small">Šio tatamio grupių dar nėra.</p>';
+      if (side.dataset.h !== sh) { side.dataset.h = sh; side.innerHTML = sh; }
+    }
     liveTick();
     liveEl.hidden = false;
+  }
+  var liveSide = false;
+  try { liveSide = localStorage.getItem('vz-live-side') === '1'; } catch (e) {}
+  // Nugalėtojas paspaudus vardą (prisegtame langelyje ir Live lango „🏅 Rezultatai“); dar kartą - atšaukiama
+  function toggleResult(catId, mid, pid) {
+    var pc = cat(catId); if (!pc || !pc.draw) return;
+    if (B && B.cat === catId && B.mid === mid) { toast('Ši kova atidaryta kovos skydelyje - baikite ją ten.'); return; }
+    snapshot();
+    var wasDone = catFinished(pc);
+    if (pc.draw.results[mid] === pid) delete pc.draw.results[mid]; else pc.draw.results[mid] = pid;
+    prune(pc); autoLock(pc, wasDone); save(); render(); syncLive();
   }
   // Laikas ir ▶/⏸ - kaip kovos skydelyje (perrašoma kas tiksėjimą)
   function liveTick() {
@@ -2389,23 +2427,28 @@
   var myArea = null;
   try { myArea = localStorage.getItem(KEY + '-myarea'); } catch (e) {}
   function areaById(id) { return S.areas.find(function (a) { return String(a.id) === String(id); }) || null; }
-  function shownAreas() { var a = areaById(myArea); return a ? [a] : S.areas; }
-  function setMyArea(v) { myArea = v; try { localStorage.setItem(KEY + '-myarea', v); } catch (e) {} render(); }
+  // v2.01: pasirinkus vieną tatamį - jo darbastalis (žr. „Sekretoriato darbastalis“); tvarkaraštyje - visi tatamiai
+  function shownAreas() { return S.areas; }
+  function setMyArea(v) { myArea = v; setDeskAll(false); try { localStorage.setItem(KEY + '-myarea', v); } catch (e) {} render(); }
   function renderAreaPick() {
-    var seg = document.getElementById('area-seg'), box = document.getElementById('area-pick'), cur = areaById(myArea) ? String(myArea) : 'all';
+    var seg = document.getElementById('area-seg'), box = document.getElementById('area-pick'), cur = !deskAll && areaById(myArea) ? String(myArea) : 'all';
     var opts = S.areas.map(function (a) { return [String(a.id), a.name]; }).concat([['all', 'Visi']]);
-    seg.hidden = S.areas.length < 2;
-    seg.innerHTML = opts.map(function (o) { return '<button type="button" class="seg-btn' + (o[0] === cur ? ' on' : '') + '" aria-pressed="' + (o[0] === cur) + '" data-my-area="' + o[0] + '">' + esc(o[1]) + '</button>'; }).join('');
+    seg.hidden = !S.areas.length;
+    seg.innerHTML = opts.map(function (o) { return '<button type="button" class="seg-btn' + (o[0] === cur ? ' on' : '') + '" aria-pressed="' + (o[0] === cur) + '" data-my-area="' + o[0] + '"' + (o[0] === 'all' ? '' : ' title="Šio tatamio darbastalis"') + '>' + esc(o[1]) + '</button>'; }).join('');
     // Pirmą kartą šiame kompiuteryje - paklausiama (dideli mygtukai)
     var ask = S.areas.length > 1 && !myArea;
     box.hidden = !ask;
     box.classList.toggle('ask', ask);
-    if (ask) box.innerHTML = '<div class="ap-q"><b>▶ Start: prie kurio tatamio dirbate?</b><span class="muted small">Šiame kompiuteryje bus rodomas tik jis, kitą - vienu paspaudimu viršuje.</span></div><div class="ap-btns">' +
+    if (ask) box.innerHTML = '<div class="ap-q"><b>▶ Start: prie kurio tatamio dirbate?</b><span class="muted small">Šiame kompiuteryje atsidarys to tatamio darbastalis: visos jo grupės, kovos ir Live kova. Visus tatamius - vienu paspaudimu.</span></div><div class="ap-btns">' +
       opts.map(function (o) { return '<button type="button" class="btn' + (o[0] === 'all' ? '' : ' btn-primary') + '" data-my-area="' + o[0] + '">' + (o[0] === 'all' ? 'Visi tatamiai (vyr. sekretoriatas)' : esc(o[1])) + '</button>'; }).join('') + '</div>';
+    var db = document.getElementById('desk-back'), mine = areaById(myArea);
+    if (db) { db.hidden = !(deskAll && mine && deskEl && !POPUP); if (mine) db.title = 'Grįžti į savo tatamio darbastalį: ' + mine.name; }
   }
   ['area-seg', 'area-pick'].forEach(function (id) {
-    document.getElementById(id).addEventListener('click', function (e) { var b = e.target.closest('[data-my-area]'); if (b) setMyArea(b.dataset.myArea); });
+    document.getElementById(id).addEventListener('click', function (e) { var b = e.target.closest('[data-my-area]'); if (!b) return; setRun(false); setMyArea(b.dataset.myArea); window.scrollTo(0, 0); });
   });
+  var deskBack = document.getElementById('desk-back');
+  if (deskBack) deskBack.addEventListener('click', function () { setDeskAll(false); setRun(false); render(); window.scrollTo(0, 0); });
   // 📹 Live kova (v2.00): pasirinkto tatamio (arba pirmo su telefonu) vaizdas per visą ekraną
   var liveCamBtn = document.getElementById('live-cam');
   if (liveCamBtn) liveCamBtn.addEventListener('click', function () {
@@ -2413,6 +2456,163 @@
     if (!a || !CAMS[a.id]) a = S.areas.find(function (x) { return CAMS[x.id]; });
     if (a) setLive(a.id);
   });
+
+  // ---------- v2.01: Sekretoriato darbastalis - vienas tatamis šiame įrenginyje ----------
+  // Pasirinkus tatamį („1 TATAMIS … Visi“, „▶ Start“ ar sekretoriato nuoroda tatamiui): kairėje meniu („📋 Mano tatamis“, „📹 Live kova“,
+  // „🏟 Visi tatamiai“) ir kas dabar / kas toliau; dešinėje - visos to tatamio grupės su laikais, būsenomis ir vėlavimu.
+  // Paspaudus grupę - ji išsiskleidžia čia pat: tas pats rungties valdymas (#run) perkeliamas po jos eilute (lentelė, vardas - laimėjo,
+  // „✎ Keisti“ - sukeisti tempiant). Grupių eilė - tempiant už ⠿ (pele ir pirštu). „🏟 Visi tatamiai“ - bendras tvarkaraštis (šio
+  // naršyklės skirtuko), savas tatamis išlieka: grįžti - „📋 Mano tatamis“.
+  var deskEl = document.getElementById('desk'), runEl = document.getElementById('run'), runHome = runEl.parentNode;
+  var deskAll = false, deskQ = '', skipDeskClick = false, dkd = null;
+  try { deskAll = sessionStorage.getItem(KEY + '-deskall') === '1'; } catch (e) {}
+  function deskArea() { return deskEl && !POPUP && !deskAll ? areaById(myArea) : null; }
+  function setDeskAll(on) { deskAll = !!on; try { sessionStorage.setItem(KEY + '-deskall', deskAll ? '1' : ''); } catch (e) {} }
+  function deskOpenCat() { return runOpen && !runEl.hidden ? cat(S.selected) : null; }
+  function deskScrollTo(id) {
+    var r = id && deskEl.querySelector('[data-dk-row="' + (window.CSS && CSS.escape ? CSS.escape(id) : id) + '"]'); if (!r) return;
+    var top = r.getBoundingClientRect().top, head = document.querySelector('.vz-top'), hh = head && getComputedStyle(head).position === 'sticky' ? head.offsetHeight : 0;
+    if (top < hh + 8 || top > window.innerHeight * 0.55) window.scrollTo(window.scrollX, window.scrollY + top - hh - 12);
+  }
+  function deskName(c, id) { return esc((person(c, id) || {}).name || '—'); }
+  // Prilipusio viršaus aukštis: meniu kairėje ir eilutės (slenkant) nelenda po juo; telefone viršus neprilimpa - 0
+  function setHeadVar() {
+    var h = document.querySelector('.vz-top'), v = h && getComputedStyle(h).position === 'sticky' ? h.offsetHeight : 0;
+    if (document.documentElement.style.getPropertyValue('--vz-head') !== v + 'px') document.documentElement.style.setProperty('--vz-head', v + 'px');
+  }
+  window.addEventListener('resize', function () { if (deskArea()) setHeadVar(); });
+  // Kas dabar / kas toliau / laikas (kairėje, telefone - virš grupių)
+  function deskNowHtml(a, plan) {
+    var cur = plan.cur, h = '';
+    if (!cur) return '<div class="dk-card"><span class="dk-k">Dabar</span><b>' + (plan.items.length ? 'Visos grupės baigtos' : 'Grupių dar nėra') + '</b></div>';
+    var c = cur.c, up = upcoming(c), m = up[0], nm = function (id) { return deskName(c, id); };
+    h += '<div class="dk-card dk-cur"><span class="dk-k">Dabar · ' + hhmm(cur.start) + '</span><button type="button" class="dk-link" data-dk-open="' + esc(c.id) + '"><span class="disc d-' + c.discipline + '"></span>' + esc(c.name) + '</button>';
+    if (m) {
+      h += '<div class="dk-bout"><span class="dk-bno">' + esc(m.no ? 'Kova ' + m.no : m.title || '') + '</span><span class="dk-p aka">' + nm(m.a) + '</span>' +
+        (m.b ? '<span class="dk-vs">vs</span><span class="dk-p shiro">' + nm(m.b) + '</span>' : '') + '</div>';
+      if (m.b && m.id && boutMode(c, m) !== 'flags') h += '<button type="button" class="btn btn-primary btn-sm dk-boutbtn" data-dk-bout="' + esc(c.id) + '|' + esc(m.id) + '">▶ Kovos skydelis</button>';
+    }
+    h += '</div>';
+    var nb = up[1], nx = plan.items.filter(function (x) { return x.st !== 'done' && x !== cur; })[0];
+    if (nb || nx) {
+      h += '<div class="dk-card"><span class="dk-k">Toliau</span>';
+      if (nb) h += '<div class="dk-bout"><span class="dk-bno">' + esc(nb.no ? 'Kova ' + nb.no : nb.title || '') + '</span><span class="dk-p aka">' + nm(nb.a) + '</span>' + (nb.b ? '<span class="dk-vs">vs</span><span class="dk-p shiro">' + nm(nb.b) + '</span>' : '') + '</div>';
+      if (nx) h += '<button type="button" class="dk-link dk-nextg" data-dk-open="' + esc(nx.c.id) + '"><span class="dk-t">' + hhmm(nx.start) + '</span><span class="disc d-' + nx.c.discipline + '"></span>' + esc(nx.c.name) + '</button>';
+      h += '</div>';
+    }
+    return h;
+  }
+  function deskRow(x, open, q) {
+    var c = x.c, st = catStatus(c, x.st === 'now'), isOpen = open === c, det = isDetached(c.id);
+    var hits = schedHits(c, q), hit = q && (hits.length || fold(c.name).indexOf(q) >= 0);
+    var chip = st === 'wait' ? '' : st === 'fin' ? '<button type="button" class="btn btn-award btn-xs" data-award-send="' + esc(c.id) + '" title="Siųsti apdovanojimams">🏅 Siųsti</button>' : stChip(st);
+    var sub = '<span class="dk-sub">' + c.competitors.length + ' dalyv. · ~' + x.dur + ' min</span>';
+    if (x.st === 'now' && !isOpen) {
+      var m = upcoming(c)[0];
+      if (m) sub += '<span class="dk-sub dk-nowb"><b>' + esc(m.no ? 'Kova ' + m.no : m.title || '') + ':</b> <span class="dk-p aka">' + deskName(c, m.a) + '</span>' + (m.b ? ' <span class="dk-vs">vs</span> <span class="dk-p shiro">' + deskName(c, m.b) + '</span>' : '') + '</span>';
+    }
+    if (hits.length) sub += '<span class="dk-sub dk-hits">' + hits.map(function (p) { return '<span class="sq-me">' + esc(p.name) + '</span>'; }).join(' ') + '</span>';
+    return '<li class="dk-row st-' + x.st + (isOpen ? ' open' : '') + (det ? ' detached' : '') + (x.st === 'done' && st === 'fin' ? ' needs-send' : '') + (q ? (hit ? ' sq-hit' : ' sq-dim') : '') + '" data-dk-row="' + esc(c.id) + '">' +
+      '<span class="dk-grip" data-dk-grip title="Tempkite - pakeisti eilę">⠿</span>' +
+      '<input class="card-time-in dk-time" type="text" inputmode="numeric" maxlength="5" value="' + hhmm(x.start) + '" data-cat-at="' + esc(c.id) + '" aria-label="Pradžios laikas" title="' + (c.at ? 'Nustatytas laikas (ištrinkite - vėl skaičiuosis pats)' : 'Pakeiskite - rungtis prasidės ne anksčiau') + '"' + (c.at ? ' data-fixed="1"' : '') + '>' +
+      '<button type="button" class="dk-open" data-dk-open="' + esc(c.id) + '" aria-expanded="' + isOpen + '" title="' + (isOpen ? 'Suskleisti' : 'Atidaryti: lentelė, kovos, balai') + '"><span class="dk-name"><span class="disc d-' + c.discipline + '"></span>' + esc(c.name) + '</span>' + sub + '</button>' +
+      '<span class="dk-prog' + (x.total && x.done >= x.total ? ' done' : '') + '" title="Kovos: ' + x.done + ' / ' + x.total + '"><i style="width:' + x.pct + '%"></i><span>' + x.done + '/' + x.total + '</span></span>' +
+      '<span class="dk-st">' + (det ? '<span class="st-badge det">atskirame lange</span>' : x.st === 'done' ? '' : ST_BADGE[x.st]) + chip + '</span>' +
+      '<span class="dk-chev" aria-hidden="true">' + (isOpen ? '▴' : '▾') + '</span></li>';
+  }
+  function renderDesk(a, open) {
+    var plan = areaPlan(a), q = fold(deskQ.trim()), sel = document.getElementById('dk-area');
+    var opts = S.areas.map(function (x) { return '<option value="' + x.id + '">' + esc(x.name) + '</option>'; }).join('');
+    if (sel.dataset.h !== opts) { sel.dataset.h = opts; sel.innerHTML = opts; }
+    sel.value = String(a.id);
+    var lb = deskEl.querySelector('[data-dk="live"]'); if (lb) lb.hidden = !CAMS[a.id];
+    var left = plan.items.filter(function (x) { return x.st !== 'done'; }).length;
+    document.getElementById('dk-title').innerHTML = '<h2>📋 ' + esc(a.name) + '</h2><span class="dk-meta"><span>' + plan.items.length + ' grup.</span><span>liko ' + left + '</span><span>Pabaiga apie ' + hhmm(plan.end) + '</span></span>' + delayChip(plan.delay);
+    var st = document.getElementById('dk-start'); if (document.activeElement !== st) st.value = a.start || '09:30';
+    document.getElementById('dk-clock').textContent = hhmm(nowMin());
+    document.getElementById('dk-now').innerHTML = deskNowHtml(a, plan);
+    renderFound(q, 'dk-found');
+    var idx = open ? plan.items.findIndex(function (x) { return x.c === open; }) : -1, rows = plan.items.map(function (x) { return deskRow(x, open, q); });
+    document.getElementById('dk-list').innerHTML = (idx >= 0 ? rows.slice(0, idx + 1) : rows).join('') || '<li class="dk-empty muted">Šiam tatamiui grupių dar nėra. Jas paskirstysite „🏟 Visi tatamiai“ (tempkite kortelę į tatamį).</li>';
+    document.getElementById('dk-after').innerHTML = idx >= 0 ? rows.slice(idx + 1).join('') : '';
+    deskEl.classList.toggle('has-open', idx >= 0);
+  }
+  function toggleDeskGroup(id) {
+    if (deskOpenCat() && S.selected === id) { setRun(false); swapMode = false; picked = null; render(); deskScrollTo(id); return; }
+    openRun(id);
+  }
+  if (deskEl) {
+    deskEl.addEventListener('click', function (e) {
+      var t = e.target;
+      if (skipDeskClick || t.closest('#dk-run')) return;
+      var nav = t.closest('[data-dk]');
+      if (nav) {
+        var v = nav.dataset.dk, a = deskArea();
+        if (v === 'live') { if (a) setLive(a.id); }
+        else if (v === 'all') { setDeskAll(true); setRun(false); render(); window.scrollTo(0, 0); }
+        else window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+      var as = t.closest('[data-award-send]'); if (as) { setAward([as.dataset.awardSend], 'sent'); return; }
+      var bo = t.closest('[data-dk-bout]'); if (bo) { var q = bo.dataset.dkBout.split('|'); openBout(q[0], q[1]); return; }
+      var sq = t.closest('[data-sq-open]'); if (sq) { openRun(sq.dataset.sqOpen); return; }
+      if (t.closest('input, select, a, [data-dk-grip]')) return;
+      var row = t.closest('[data-dk-open]') || t.closest('[data-dk-row]');
+      if (row) toggleDeskGroup(row.dataset.dkOpen || row.dataset.dkRow);
+    });
+    deskEl.addEventListener('change', function (e) {
+      var t = e.target;
+      if (t.id === 'dk-area') { setRun(false); setMyArea(t.value); return; }
+      if (t.id === 'dk-start') { var a = deskArea(); if (a) { a.start = t.value || '09:00'; save(); render(); } return; }
+      if (t.dataset.catAt) setCatAt(t);
+    });
+    deskEl.addEventListener('keydown', function (e) { if (e.key === 'Enter' && e.target.dataset && e.target.dataset.catAt) e.target.blur(); });
+    document.getElementById('dk-q').addEventListener('input', function (e) { deskQ = e.target.value; var a = deskArea(); if (a) renderDesk(a, deskOpenCat()); });
+    // Grupių eilė: tempiama už ⠿ (pele ir pirštu); kol tempiama - automatinis perpiešimas palaukia (dragId)
+    deskEl.addEventListener('pointerdown', function (e) {
+      var g = e.target.closest('[data-dk-grip]'); if (!g || e.button > 0) return;
+      var li = g.closest('.dk-row'); if (!li) return;
+      e.preventDefault();
+      dkd = { id: li.dataset.dkRow, li: li, x: e.clientX, y: e.clientY, on: false, gh: null, before: undefined };
+    });
+    document.addEventListener('pointermove', function (e) {
+      if (!dkd) return;
+      if (!dkd.on) {
+        if (Math.abs(e.clientY - dkd.y) + Math.abs(e.clientX - dkd.x) < 6) return;
+        var r = dkd.li.getBoundingClientRect();
+        dkd.on = true; dragId = dkd.id; dkd.dy = dkd.y - r.top;
+        dkd.gh = dkd.li.cloneNode(true); dkd.gh.classList.add('dk-ghost');
+        dkd.gh.style.cssText = 'position:fixed;left:' + r.left + 'px;top:' + r.top + 'px;width:' + r.width + 'px;pointer-events:none;z-index:2000;';
+        document.body.appendChild(dkd.gh); dkd.li.classList.add('dragging'); document.body.classList.add('is-dragging-name');
+      }
+      e.preventDefault();
+      dkd.gh.style.top = (e.clientY - dkd.dy) + 'px';
+      var rows = Array.prototype.slice.call(deskEl.querySelectorAll('.dk-row')), before = null;
+      for (var i = 0; i < rows.length; i++) { var rr = rows[i].getBoundingClientRect(); if (e.clientY < rr.top + rr.height / 2) { before = rows[i]; break; } }
+      deskEl.querySelectorAll('.dk-drop-before, .dk-drop-after').forEach(function (x) { x.classList.remove('dk-drop-before', 'dk-drop-after'); });
+      if (before) before.classList.add('dk-drop-before'); else if (rows.length) rows[rows.length - 1].classList.add('dk-drop-after');
+      dkd.before = before ? before.dataset.dkRow : null;
+      // Prie ekrano krašto - slenkama
+      if (e.clientY < 90) window.scrollBy(0, -12); else if (e.clientY > window.innerHeight - 50) window.scrollBy(0, 12);
+    }, { passive: false });
+    var deskDrop = function (cancel) {
+      if (!dkd) return;
+      var d = dkd; dkd = null;
+      if (!d.on) return;
+      dragId = null; skipDeskClick = true; setTimeout(function () { skipDeskClick = false; }, 0);
+      if (d.gh) d.gh.remove();
+      document.body.classList.remove('is-dragging-name');
+      deskEl.querySelectorAll('.dk-drop-before, .dk-drop-after, .dragging').forEach(function (x) { x.classList.remove('dk-drop-before', 'dk-drop-after', 'dragging'); });
+      var a = deskArea();
+      if (cancel || !a || d.before === undefined || d.before === d.id) return;
+      var list = S.categories.filter(function (x) { return x.tatami === a.id; }), i = list.findIndex(function (x) { return x.id === d.id; });
+      if (d.before === (list[i + 1] ? list[i + 1].id : null)) return;   // ta pati vieta
+      moveCat(d.id, a.id, d.before);
+      toast('Eilė pakeista - laikai persiskaičiavo.');
+    };
+    document.addEventListener('pointerup', function () { deskDrop(false); });
+    document.addEventListener('pointercancel', function () { deskDrop(true); });
+  }
 
   // ---------- Sekanti grupė: pirma nebaigta po šios tame pačiame tatamyje ----------
   function nextGroup(c) {
@@ -2422,7 +2622,8 @@
   }
   function goRun(id) {
     if (POPUP) { S.selected = id; save(); render(); if (winCh) winCh.postMessage({ t: 'open', cat: id }); window.scrollTo(0, 0); return; }
-    openRun(id); window.scrollTo(0, 0);
+    openRun(id);
+    if (!deskArea()) window.scrollTo(0, 0);   // darbastalyje openRun pats parodo grupės eilutę
   }
   function placesShort(c) {
     var pl = catPlaces(c).filter(function (x) { return x[0] <= 3; });
@@ -2494,8 +2695,8 @@
   var schedQ = '';
   function fold(x) { return String(x || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase(); }
   function schedHits(c, q) { return q ? c.competitors.filter(function (p) { return fold(p.name + ' ' + p.club).indexOf(q) >= 0; }) : []; }
-  function renderFound(q) {
-    var box = document.getElementById('sched-found'); if (!box) return;
+  function renderFound(q, boxId) {
+    var box = document.getElementById(boxId || 'sched-found'); if (!box) return;
     if (!q) { box.hidden = true; box.innerHTML = ''; return; }
     var rows = [];
     S.areas.forEach(function (a) {
@@ -2687,11 +2888,8 @@
     else if (e.target.closest('[data-pin-min]') && p) { p.min = !p.min; savePins(); renderPins(); }
     else if (e.target.closest('[data-pin-view]') && p) { p.view = p.view === 'tree' ? '' : 'tree'; p.h = 0; savePins(); renderPins(); }
     else if (e.target.closest('[data-pin-res]')) {
-      var pr = e.target.closest('[data-pin-res]').dataset.pinRes.split('|'), pc = cat(pr[0]); if (!pc || !pc.draw) return;
-      snapshot();
-      var wasDone = catFinished(pc);
-      if (pc.draw.results[pr[1]] === pr[2]) delete pc.draw.results[pr[1]]; else pc.draw.results[pr[1]] = pr[2];
-      prune(pc); autoLock(pc, wasDone); save(); render();
+      var pr = e.target.closest('[data-pin-res]').dataset.pinRes.split('|');
+      toggleResult(pr[0], pr[1], pr[2]);
     }
     else if (e.target.closest('[data-pin-open]')) goRun(id);
   });
@@ -2709,10 +2907,27 @@
     var lc = document.getElementById('live-cam');
     if (lc) lc.hidden = !Object.keys(CAMS).length;
     syncLive();
-    var c = runOpen ? cat(S.selected) : null;
+    var c = runOpen ? cat(S.selected) : null, da = deskArea();
     if (runOpen && !c) setRun(false);
+    // v2.01: darbastalis (vienas tatamis) - rungties valdymas perkeliamas po išskleista grupe; kitur - į savo vietą
+    if (deskEl) {
+      var home = da ? document.getElementById('dk-run') : runHome;
+      if (runEl.parentNode !== home) home.appendChild(runEl);
+      runEl.classList.toggle('in-desk', !!da);
+      deskEl.hidden = !da;
+      document.body.classList.toggle('desk-on', !!da);
+    }
+    if (da) {
+      if (c && String(c.tatami) !== String(da.id)) { setRun(false); c = null; }
+      document.getElementById('live-board').hidden = true;
+      runEl.hidden = !c;
+      setHeadVar();
+      renderDesk(da, c);
+      if (c) { renderRunHead(c); renderDraw(); }
+      return;
+    }
     document.getElementById('live-board').hidden = !!c;
-    document.getElementById('run').hidden = !c;
+    runEl.hidden = !c;
     if (!c) { renderSched(); return; }
     renderRunHead(c);
     renderDraw();
@@ -2733,7 +2948,8 @@
     nx.title = nb.next ? 'Kita: ' + nb.next.name : 'Šio tatamio grupių daugiau nėra';
     document.getElementById('run-prev').title = nb.prev ? 'Ankstesnė: ' + nb.prev.name : 'Tai pirma šio tatamio grupė';
     var idx = plan.items.findIndex(function (x) { return x.c === c; }), left = plan.items.filter(function (x) { return x.st !== 'done'; }).length;
-    document.getElementById('run-strip').innerHTML =
+    var mine = deskEl && !POPUP && deskAll ? areaById(myArea) : null;   // v2.01: žiūrima per „🏟 Visi tatamiai“ - grįžti į savo darbastalį
+    document.getElementById('run-strip').innerHTML = (mine ? '<button type="button" class="btn btn-primary btn-sm" data-desk-back title="Grįžti į savo tatamio darbastalį: ' + esc(mine.name) + '">📋 Mano tatamis</button>' : '') +
       (S.areas.length > 1 && S.areas.length <= 4 ? '<span class="seg rs-area" role="group" aria-label="Tatamis">' + S.areas.map(function (x) { return '<button type="button" class="seg-btn' + (x.id === a.id ? ' on' : '') + '" data-rs-area="' + x.id + '" title="' + (x.id === a.id ? 'Šis tatamis' : 'Pažiūrėti: dabartinė ' + esc(x.name) + ' grupė') + '">' + esc(x.name) + '</button>'; }).join('') + '</span>'
         : S.areas.length > 4 ? '<select class="sel rs-area" id="rs-area" aria-label="Tatamis" title="Pažiūrėti kitą tatamį">' + S.areas.map(function (x) { return '<option value="' + x.id + '"' + (x.id === a.id ? ' selected' : '') + '>' + esc(x.name) + '</option>'; }).join('') + '</select>' : '<b class="rs-area">' + esc(a.name) + '</b>') +
       delayChip(plan.delay) + '<span class="rs-pos muted small">Grupė ' + (idx + 1) + ' iš ' + plan.items.length + ' · liko ' + left + '</span>' + stChip(catStatus(c, it.st === 'now')) +
@@ -2775,6 +2991,7 @@
   document.getElementById('run-detach').addEventListener('click', function () { var c = cat(S.selected); if (c) detach(c); });
   document.getElementById('run-pin').addEventListener('click', function () { if (S.selected) pinCat(S.selected); });
   document.getElementById('run-strip').addEventListener('click', function (e) {
+    if (e.target.closest('[data-desk-back]')) { setDeskAll(false); render(); var sc = cat(S.selected), da = deskArea(); if (sc && da && String(sc.tatami) === String(da.id)) deskScrollTo(sc.id); else window.scrollTo(0, 0); return; }
     var b = e.target.closest('[data-run]'); if (b) openRun(b.dataset.run);
     var ra = e.target.closest('[data-rs-area]');
     if (ra) { var pl = areaPlan(areaById(ra.dataset.rsArea)), go = pl.cur || pl.items[0]; if (go) openRun(go.c.id); return; }
@@ -2794,8 +3011,15 @@
   });
   // Laikrodis ir vėlavimas atsinaujina kas 30 s (jei niekas nevelkama ir nerašoma lentoje)
   setInterval(function () {
-    var board = document.getElementById('live-board');
-    if (document.getElementById('v-live').hidden || board.hidden || dragId) return;
+    var board = document.getElementById('live-board'), da = deskArea();
+    if (document.getElementById('v-live').hidden || dragId) return;
+    // v2.01: darbastalis - atnaujinamos tik grupių eilutės, laikas ir „Dabar“ (išskleista lentelė nepaliečiama)
+    if (da && deskEl && !deskEl.hidden) {
+      var ae = document.activeElement;
+      if (!(ae && deskEl.contains(ae) && /INPUT|SELECT|TEXTAREA/.test(ae.tagName))) renderDesk(da, deskOpenCat());
+      return;
+    }
+    if (board.hidden) return;
     if (document.activeElement && board.contains(document.activeElement) && /INPUT|SELECT/.test(document.activeElement.tagName)) return;
     renderSched();
   }, 30000);
@@ -2877,13 +3101,15 @@
       S.areas = S.areas.filter(function (x) { return x.id !== id; }); save(); render();
     }
   });
+  // Grupės laikas „ne anksčiau kaip“ (tvarkaraščio kortelėje ir darbastalio eilutėje); tuščias - skaičiuojasi pats
+  function setCatAt(t0) {
+    var ca = cat(t0.dataset.catAt), tv = t0.value.trim().replace('.', ':'); if (!ca) return;
+    if (tv && !/^\d{1,2}:\d{2}$/.test(tv)) { toast('Laiką įrašykite taip: 13:45'); render(); return; }
+    snapshot(); if (tv) ca.at = hhmm(toMin(tv)); else delete ca.at; save(); render();
+  }
   sched.addEventListener('change', function (e) {
     var t0 = e.target;
-    if (t0.dataset.catAt) {
-      var ca = cat(t0.dataset.catAt), tv = t0.value.trim().replace('.', ':'); if (!ca) return;
-      if (tv && !/^\d{1,2}:\d{2}$/.test(tv)) { toast('Laiką įrašykite taip: 13:45'); renderSched(); return; }
-      snapshot(); if (tv) ca.at = hhmm(toMin(tv)); else delete ca.at; save(); render(); return;
-    }
+    if (t0.dataset.catAt) { setCatAt(t0); return; }
     if (t0.dataset.cname) { var cn = cat(t0.dataset.cname); editName = null; if (!cn) return; var v = t0.value.trim(); if (v && v !== cn.name) { snapshot(); cn.name = v; cn.customName = v !== critName(cn); save(); } render(); return; }
     var t = e.target;
     if (t.dataset.start) { S.areas.find(function (a) { return a.id === +t.dataset.start; }).start = t.value || '09:00'; }
@@ -3483,6 +3709,27 @@
     save(); render();
   });
 
+  // ---------- v2.01: „🧑‍💼 Sekretoriatas“ → „📋 Sekretoriato darbastalis“: atidaryti čia arba nukopijuoti nuorodą tatamiui (&t=N) ----------
+  function renderSekrDesk() {
+    var box = document.getElementById('sekr-desk'), links = document.getElementById('sekr-links');
+    if (box) {
+      var h = S.areas.map(function (a) { return '<button type="button" class="btn btn-sm" data-desk-open="' + a.id + '">📋 ' + esc(a.name) + '</button>'; }).join('');
+      if (box.dataset.h !== h) { box.dataset.h = h; box.innerHTML = h; }
+    }
+    if (links && links.dataset.url) {
+      var l = S.areas.map(function (a) { return '<button type="button" class="btn btn-sm" data-copy="' + esc(links.dataset.url + '&t=' + a.id) + '" title="Nuoroda sekretoriatui: ' + esc(a.name) + '">⧉ ' + esc(a.name) + '</button>'; }).join('');
+      if (links.dataset.h !== l) { links.dataset.h = l; links.innerHTML = l; }
+    }
+  }
+  var sekrPanel = document.getElementById('sekr-panel');
+  if (sekrPanel) sekrPanel.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-desk-open]'); if (!b) return;
+    sekrPanel.hidden = true; var st = document.getElementById('sekr-toggle'); if (st) st.setAttribute('aria-expanded', 'false');
+    setRun(false); myArea = b.dataset.deskOpen; setDeskAll(false);
+    try { localStorage.setItem(KEY + '-myarea', myArea); } catch (x) {}
+    showTab('live'); window.scrollTo(0, 0);
+  });
+
   // ---------- Transliacija ir registracija: nuorodos, ekranai ----------
   var shareBtn = document.getElementById('share-toggle'), sharePanel = document.getElementById('share-panel');
   function renderScreens() {
@@ -3590,7 +3837,8 @@
     document.getElementById('t-name').textContent = S.tournament;
     var tab = curTab();
     if (tab === 'klubai') renderClubs(); else if (tab === 'dalyviai') { renderEntries(); renderPeople(); } else if (tab === 'komandos') renderTeams(); else if (tab === 'kategorijos') renderCats(); else if (tab === 'rezultatai') renderResults(); else if (tab === 'tinklai') renderDraws(); else renderLive();
-    renderPins();
+    if (tab !== 'live' && deskEl) { deskEl.hidden = true; document.body.classList.remove('desk-on'); }
+    renderPins(); renderSekrDesk();
   }
   load(); markSaved(stateObj());
   (function restorePending() {
@@ -3615,6 +3863,12 @@
     save(); render();
   }
   if (S.simulate) { var fr = +S.simulate; delete S.simulate; simulate(fr); save(); }
+  // v2.01: nuoroda tatamiui (?tatamis=N - sekretoriato nuoroda su &t=N ar „📋 Darbastalis“) - šiame įrenginyje atsidaro to tatamio darbastalis
+  if (CFG.deskArea && !POPUP && areaById(CFG.deskArea)) {
+    myArea = String(CFG.deskArea); setDeskAll(false); setRun(false);
+    try { localStorage.setItem(KEY + '-myarea', myArea); } catch (e) {}
+    try { history.replaceState(history.state, '', location.href.replace(/([?&])tatamis=\d+&?/, '$1').replace(/[?&](#|$)/, '$1')); } catch (e) {}
+  }
   var startTab = 'live';
   try { startTab = location.hash.replace('#', '') || sessionStorage.getItem(KEY + '-tab') || 'live'; } catch (e) {}
   if (startTab === 'lenteles') { setRun(true); startTab = 'live'; } else if (startTab === 'tvarkarastis') startTab = 'live';

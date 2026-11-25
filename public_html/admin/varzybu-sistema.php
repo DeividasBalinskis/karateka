@@ -247,6 +247,7 @@ $cfg = [
     'clubContacts' => tournament_club_contacts((int) $t['id']), 'clubDirectory' => $demo || $asSekr ? [] : varz_club_directory(), 'demo' => $demo, 'sekr' => $asSekr,
     'admin' => (is_admin() && !$preview) || $demo,
     'diplomaApi' => url('admin/varzybu-sistema.php?id=' . (int) $t['id'] . '&diplomai=1'), 'diplomaTpl' => diploma_template(),   // tatamio šalinimas - tik pagrindiniam adminui (ir bandymo nuorodai)
+    'deskArea' => max(0, (int) get('tatamis')) ?: null,   // v2.01: ?tatamis=N - šiame įrenginyje atsidaro to tatamio sekretoriato darbastalis
 ];
 $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($t['ends_on'], true) : '');
 ?><!doctype html>
@@ -343,6 +344,12 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
       <form method="post" class="sp-row"><?= csrf_field() ?><button class="btn btn-primary" name="action" value="sekr_on" type="submit">Sukurti sekretoriato nuorodą</button></form>
     <?php endif; ?>
     <div class="sp-row"><a class="btn" href="<?= url('admin/varzybu-sistema.php?id=' . (int) $t['id'] . '&kaip=sekretoriatas') ?>" id="sekr-preview">👁 Peržiūrėti kaip sekretoriatas</a></div>
+  </div>
+  <?php /* v2.01: sekretoriato darbastalis vienam tatamiui - atidaryti čia arba nuoroda tatamiui (mygtukus įdeda assets/varzybos.js) */ ?>
+  <div class="sp-block">
+    <b title="Vienas tatamis: visos jo grupės su laikais, lentelės, kovos ir Live kova. Kitus tatamius galima pažiūrėti „🏟 Visi tatamiai“.">📋 Sekretoriato darbastalis</b>
+    <div class="sp-row"><span class="small muted">Atidaryti šiame kompiuteryje:</span><span class="sekr-desk" id="sekr-desk"></span></div>
+    <?php if ($sekrUrl): ?><div class="sp-row"><span class="small muted">Kopijuoti nuorodą tatamiui (atsidarys iškart jo darbastalis):</span><span class="sekr-desk" id="sekr-links" data-url="<?= e($sekrUrl) ?>"></span></div><?php endif; ?>
   </div>
 </div>
 <script>
@@ -509,11 +516,38 @@ foreach (take_flashes() as $f): ?>
 
   <!-- LIVE TVARKARAŠTIS: tatamiai ir rungtys; atidarius rungtį - jos valdymas (lentelė, kovos, balai) -->
   <section id="v-live" role="tabpanel" aria-labelledby="tab-live" hidden>
+    <!-- v2.01: sekretoriato darbastalis vienam tatamiui (pasirinktas šiame įrenginyje): kairėje meniu ir kas dabar / toliau,
+         dešinėje - visos to tatamio grupės; paspaudus grupę ji išsiskleidžia čia pat (rungties valdymas #run perkeliamas į #dk-run) -->
+    <div class="desk" id="desk" hidden>
+      <nav class="desk-side" aria-label="Sekretoriatas">
+        <label class="dk-who"><span class="dk-kicker">Mano tatamis</span><select class="sel dk-area" id="dk-area" title="Prie kurio tatamio dirbate (šiame įrenginyje)"></select></label>
+        <div class="dk-navs">
+          <button type="button" class="dk-nav on" data-dk="list" aria-current="page">📋 Mano tatamis</button>
+          <button type="button" class="dk-nav" data-dk="live" hidden title="Tatamio telefono vaizdas per visą ekraną: kova, balai ir laikas ant vaizdo">📹 Live kova</button>
+          <button type="button" class="dk-nav" data-dk="all" title="Visų tatamių tvarkaraštis - grįšite „📋 Mano tatamis“">🏟 Visi tatamiai</button>
+        </div>
+        <div class="dk-now" id="dk-now"></div>
+      </nav>
+      <div class="desk-main">
+        <div class="dk-head">
+          <div class="dk-title" id="dk-title"></div>
+          <label class="dk-start small">Pradžia <input type="time" id="dk-start"></label>
+          <input type="search" class="sel dk-q" id="dk-q" placeholder="🔍 Rask dalyvį, klubą ar kategoriją" aria-label="Paieška tvarkaraštyje" autocomplete="off">
+          <b class="live-clock" id="dk-clock" title="Dabar"></b>
+        </div>
+        <div class="sched-found" id="dk-found" hidden></div>
+        <ol class="dk-list" id="dk-list"></ol>
+        <div class="dk-run" id="dk-run"></div>
+        <ol class="dk-list dk-after" id="dk-after"></ol>
+        <p class="hint dk-hint">Paspauskite grupę - atsiskleis jos lentelė: paspaudus vardą - laimėjo. „✎ Keisti“ - nutempkite vardą ant kito, jie susikeis vietomis. Grupių eilę keiskite tempdami už ⠿.</p>
+      </div>
+    </div>
     <div class="live-board" id="live-board">
       <div class="toolbar live-bar">
+        <button type="button" class="btn btn-primary" id="desk-back" hidden title="Grįžti į savo tatamio darbastalį">📋 Mano tatamis</button>
         <b class="live-clock" id="live-clock" title="Dabar"></b>
         <input type="search" class="sel sched-q" id="sched-q" placeholder="🔍 Rask dalyvį, klubą ar kategoriją" aria-label="Paieška tvarkaraštyje" autocomplete="off">
-        <span class="seg area-seg" id="area-seg" role="group" aria-label="Rodomas tatamis" title="Šiame kompiuteryje (planšetėje) rodomas tik pasirinktas tatamis"></span>
+        <span class="seg area-seg" id="area-seg" role="group" aria-label="Rodomas tatamis" title="Pasirinkus tatamį - jo darbastalis šiame kompiuteryje (planšetėje); „Visi“ - visų tatamių tvarkaraštis"></span>
         <button type="button" class="btn btn-primary" id="live-cam" hidden title="Tatamio telefono vaizdas per visą ekraną: kova, balai ir laikas ant vaizdo">📹 Live kova</button>
         <span class="muted small" id="live-legend">Paspauskite rungtį - atsidarys jos valdymas. Tempkite rungtis tarp tatamių.</span>
         <span class="spacer"></span>

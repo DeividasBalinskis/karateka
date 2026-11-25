@@ -4,6 +4,21 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v2.01 - 2026-11-25 (📋 sekretoriato darbastalis vienam tatamiui)
+- **Budo → Tvarkaraštis → pasirinkite tatamį** („1 TATAMIS … Visi“ ar „▶ Start: prie kurio tatamio dirbate?“) - atsidaro to tatamio **darbastalis**:
+  - **kairėje meniu**: „📋 Mano tatamis“, „📹 Live kova“, „🏟 Visi tatamiai“; po juo - **kas dabar** (grupė, kova, „▶ Kovos skydelis“) ir **kas toliau**;
+  - **dešinėje - visos to tatamio grupės**: laikai (galima pakeisti), DABAR / toliau, kiek kovų įvykę, būsena, vėlavimas, pabaiga, paieška;
+  - **paspaudus grupę - ji išsiskleidžia čia pat** su visa lentele (šakomis): paspaudus vardą - laimėjo (dar kartą - atšaukiama), balai, kovos skydelis,
+    „Sekanti grupė →“ atidaro kitą grupę toje pačioje vietoje;
+  - **„✎ Keisti“** (buvo „⇄ Keisti vietas“): nutempkite vardą ant kito - jie **iškart susikeičia vietomis** (ir kata balais - pasirodymo eilė);
+  - **grupių eilė keičiama tempiant už ⠿** (pele ir pirštu), laikai persiskaičiuoja patys;
+  - **„🏟 Visi tatamiai“** - visų tatamių tvarkaraštis kaip anksčiau; grįžti - „📋 Mano tatamis“ (tatamis šiame įrenginyje prisimenamas).
+- **📹 Live kova** - nauja „🏅 Rezultatai“: šios grupės kovos ir vietos šalia vaizdo (paspaudus vardą - laimėjo); uždarius - atgal į darbastalį.
+- **🧑‍💼 Sekretoriatas** → „📋 Sekretoriato darbastalis“: atidaryti bet kurio tatamio darbastalį šiame kompiuteryje arba nukopijuoti **nuorodą tatamiui**
+  (sekretorius įrašo vardą ir iškart patenka į to tatamio darbastalį).
+- Telefone darbastalis viename stulpelyje: viršuje tatamis, Live ir Visi, „Dabar“, žemiau grupės.
+- Duomenų bazė: naujų failų nėra.
+
 ## v2.00 - 2026-11-25 (📹 Live kova sekretoriatui)
 - **Budo → Tvarkaraštis → „📹 Live kova“** (pasirinkto tatamio): telefono vaizdas per visą ekraną, ant jo - kova, balai su **[+/−]**
   (viršuje +, apačioje −), laikas ir **▶ / ⏸**; apačioje - „✓ Baigti kovą“, „Laimėjo AKA / SHIRO“, „📋 Kovos skydelis“.

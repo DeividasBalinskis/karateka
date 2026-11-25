@@ -1,13 +1,27 @@
 <?php
 // Sekretoriato nuoroda (be paskyros): varžybų puslapyje → „🧑‍💼 Sekretoriatas“. Atidaręs įrašo vardą ir pavardę ir veda tik šias varžybas:
 // dalyviai, kategorijos, kovos, balai, apdovanojimai. Kitų varžybų, klubo narių duomenų ir karateka.lt valdymo nemato.
+// v2.01: nuoroda tatamiui (&t=N) - po vardo iškart atsidaro to tatamio sekretoriato darbastalis.
 require __DIR__ . '/app/bootstrap.php';
 
 $token = (string) (get('k') ?: post('k'));
 $tid = varz_sekr_find($token);
 $t = $tid ? tournament_get($tid) : null;
+$areaId = max(0, (int) (get('t') ?: post('t')));
+$areaName = '';
+if ($t && $areaId) {
+    foreach ((array) (tournament_state($t)['areas'] ?? []) as $a) {
+        if ((int) ($a['id'] ?? 0) === $areaId) {
+            $areaName = (string) ($a['name'] ?? '');
+        }
+    }
+    if ($areaName === '') {
+        $areaId = 0;   // tokio tatamio nebėra - atsidarys įprastai (paklaus, prie kurio dirbate)
+    }
+}
+$dest = 'admin/varzybu-sistema.php?id=' . $tid . ($areaId ? '&tatamis=' . $areaId : '') . '#live';
 if ($t && (is_staff() || varz_sekr($tid))) {
-    redirect('admin/varzybu-sistema.php?id=' . $tid);
+    redirect($dest);
 }
 $error = '';
 if (is_post() && $t) {
@@ -17,7 +31,7 @@ if (is_post() && $t) {
         $error = 'Įrašykite savo vardą - kad būtų aišku, kas vedė varžybas.';
     } else {
         varz_sekr_start($tid, $name);
-        redirect('admin/varzybu-sistema.php?id=' . $tid . '#live');
+        redirect($dest);
     }
 }
 varz_html_head('Sekretoriatas', 'vz-public vz-demo-start');
@@ -34,9 +48,10 @@ varz_html_head('Sekretoriatas', 'vz-public vz-demo-start');
     <div class="panel demo-card"><h2>Nuoroda neveikia</h2><p class="muted">Ji išjungta arba pakeista. Paprašykite naujos nuorodos varžybų organizatoriaus.</p></div>
   <?php else: ?>
     <form method="post" class="panel demo-card">
-      <?= csrf_field() ?><input type="hidden" name="k" value="<?= e($token) ?>">
+      <?= csrf_field() ?><input type="hidden" name="k" value="<?= e($token) ?>"><?php if ($areaId): ?><input type="hidden" name="t" value="<?= $areaId ?>"><?php endif; ?>
       <h2>🧑‍💼 Sekretoriatas</h2>
       <p>Su šia nuoroda vedate varžybas <b><?= e($t['title']) ?></b>: dalyviai, kategorijos, kovos, balai, apdovanojimai. Paskyros nereikia.</p>
+      <?php if ($areaName !== ''): ?><p class="sekr-area"><b>📋 <?= e($areaName) ?></b> - atsidarys šio tatamio darbastalis: visos jo grupės, kovos ir Live kova.</p><?php endif; ?>
       <p class="muted small">Pastebėjimus rašykite per 💡 (apačioje kairėje).</p>
       <?php if ($error): ?><div class="flash flash-err"><?= e($error) ?></div><?php endif; ?>
       <label>Jūsų vardas <span class="muted small">(pavardė - nebūtina)</span> <input class="sel" type="text" name="name" maxlength="80" required autofocus value="<?= e((string) post('name')) ?>" placeholder="pvz. Tomas"></label>
