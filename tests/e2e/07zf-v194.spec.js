@@ -3,7 +3,7 @@
 const { test } = require('@playwright/test');
 const { sql, day, login, nav, check, noJsErrors } = require('./helpers');
 
-test('💡 bottom left on every page, admin side menu's last item stays above it; 🔔 is a small bell with a list', async ({ browser }) => {
+test('💡 bottom left on every page, admin side menu - last item stays above it; 🔔 is a small bell with a list', async ({ browser }) => {
   sql("DELETE FROM notifications WHERE type = 'exam_registration' AND title LIKE 'v194:%'");
   const admId = sql("SELECT id FROM accounts WHERE email = 'info@karateka.lt'");
   sql(`INSERT INTO notifications (account_id, type, title, body, link) VALUES (${admId}, 'exam_registration', 'v194: Užsiregistravo į egzaminą: Ona', '3 kyu', 'admin/egzaminai.php')`);
