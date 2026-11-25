@@ -21,6 +21,34 @@ if (is_post() && post('action') === 'prices' && is_admin($me)) {
 }
 
 // #165: laukiančiųjų sąrašas - nuoroda, atidaryta / uždaryta, įtraukimas į protokolą (su laišku), išėmimas; kitas protokolas tai pačiai datai
+// v2.08 (#179): protokolą (egzamino renginį) administratorius gali ištrinti. Jei jame yra dalyvių - pirma parodoma, kas jame yra, ir klausiama dar kartą.
+if (is_post() && post('action') === 'delete_protocol' && is_admin($me)) {
+    csrf_check();
+    $ev = q_one('SELECT * FROM events WHERE id = ? AND type = "exam"', [(int) post('id')]);
+    if ($ev) {
+        $id = (int) $ev['id'];
+        if (exam_protocol_people($id) && post('confirm') !== '1') {
+            redirect('admin/egzaminai.php?trinti=' . $id . '#trinti');
+        }
+        // Papildomi tos dienos protokolai lieka: pirmas iš jų tampa pagrindiniu
+        try {
+            $kids = q_all('SELECT id FROM events WHERE parent_id = ? ORDER BY id', [$id]);
+            if ($kids) {
+                $main = (int) $kids[0]['id'];
+                q('UPDATE events SET parent_id = NULL WHERE id = ?', [$main]);
+                q('UPDATE events SET parent_id = ? WHERE parent_id = ?', [$main, $id]);
+            }
+        } catch (PDOException $ex) {
+            // dar neimportuotas db/058 - papildomų protokolų nėra
+        }
+        event_file_save($id, null, true);
+        event_cover_save($id, null, true);
+        q('DELETE FROM events WHERE id = ?', [$id]);   // protokolo eilutės, registracijos ir nuorodos ištrinamos kartu (ON DELETE CASCADE)
+        flash('ok', t('Protokolas ištrintas: {t}', ['t' => $ev['title']]));
+    }
+    redirect('admin/egzaminai.php');
+}
+
 if (is_post() && in_array(post('action'), ['wl_link', 'wl_open', 'wl_assign', 'wl_remove', 'copy_exam'], true) && exam_waitlist_ready()) {
     csrf_check();
     switch (post('action')) {
@@ -94,7 +122,7 @@ $prices = exam_prices();
 $waiting = exam_waitlist_pending();
 $wlUrl = exam_waitlist_ready() ? exam_waitlist_url() : '';
 
-$item = function (array $ev, bool $isPast) use ($rowsBy, $signBy): string {
+$item = function (array $ev, bool $isPast) use ($rowsBy, $signBy, $me): string {
     $id = (int) $ev['id'];
     $r = $rowsBy[$id] ?? null;
     $l = $isPast ? null : exam_signup_link($id);
@@ -118,6 +146,9 @@ $item = function (array $ev, bool $isPast) use ($rowsBy, $signBy): string {
           <button class="btn btn-ghost btn-sm" type="submit" title="<?= te('Užsiregistravusius per svetainę įrašyti į protokolą') ?>"><?= te('↓ Į protokolą ({n})', ['n' => $missing]) ?></button></form><?php endif; ?>
         <?php if ($l): ?><button type="button" class="btn btn-ghost btn-sm" data-copy="<?= e(exam_signup_url($l)) ?>" title="<?= te('Kopijuoti registracijos nuorodą') ?>"><?= te('🔗 Nuoroda') ?></button><?php endif; ?>
         <a class="btn btn-primary btn-sm" href="<?= url('admin/egzamino-protokolas.php?id=' . $id) ?>"><?= te('📋 Protokolas') ?></a>
+        <?php if (is_admin($me)): /* v2.08 (#179) */ ?><form method="post" class="inline-form"<?= ($n + $reg) ? '' : ' onsubmit="return confirm(' . e(json_encode(t('Ištrinti tuščią protokolą „{t}“?', ['t' => $ev['title']]))) . ')"' ?>><?= csrf_field() ?>
+          <input type="hidden" name="action" value="delete_protocol"><input type="hidden" name="id" value="<?= $id ?>">
+          <button class="btn btn-ghost btn-sm exam-del" type="submit" title="<?= te('Ištrinti protokolą') ?>" aria-label="<?= e(t('Ištrinti protokolą: {t}', ['t' => $ev['title']])) ?>">🗑</button></form><?php endif; ?>
       </div>
     </div>
     <?php return (string) ob_get_clean();
@@ -132,6 +163,27 @@ page_start(t('Egzaminai'), ['admin' => true]);
   </div>
   <?php if (is_admin($me)): ?><a class="btn btn-primary btn-sm" href="<?= url('admin/renginiai.php?edit=new&back=egzaminai') ?>"><?= te('+ Naujas egzaminas') ?></a><?php endif; ?>
 </div>
+
+<?php
+// v2.08 (#179): trinamas protokolas su dalyviais - parodoma, kas jame yra, ir klausiama dar kartą
+$delEv = is_admin($me) && get('trinti') ? q_one('SELECT * FROM events WHERE id = ? AND type = "exam"', [(int) get('trinti')]) : null;
+$delPeople = $delEv ? exam_protocol_people((int) $delEv['id']) : [];
+if ($delEv): ?>
+  <section class="panel card exam-del-confirm" id="trinti" role="alertdialog" aria-labelledby="trinti-h">
+    <h2 id="trinti-h" style="margin-top:0;">🗑 <?= e(t('Ištrinti protokolą „{t}“?', ['t' => tr_text($delEv['title'])])) ?></h2>
+    <?php if ($delPeople): ?>
+      <p><strong><?= e(t('Jame yra dalyvių: {n}.', ['n' => count($delPeople)])) ?></strong> <?= te('Kartu dings jų įrašai, balai, rezultatai ir registracijos į šį egzaminą. Atšaukti nebus galima.') ?></p>
+      <p class="exam-del-names"><?= e(implode(', ', array_slice($delPeople, 0, 40))) ?><?= count($delPeople) > 40 ? ' ' . e(t('ir dar {n}', ['n' => count($delPeople) - 40])) : '' ?></p>
+    <?php else: ?>
+      <p><?= te('Protokolas tuščias.') ?></p>
+    <?php endif; ?>
+    <form method="post" class="row" style="gap:8px; flex-wrap:wrap;"><?= csrf_field() ?>
+      <input type="hidden" name="action" value="delete_protocol"><input type="hidden" name="id" value="<?= (int) $delEv['id'] ?>"><input type="hidden" name="confirm" value="1">
+      <button class="btn btn-danger" type="submit" id="exam-del-yes"><?= $delPeople ? e(t('Taip, ištrinti su {n} dalyviais', ['n' => count($delPeople)])) : te('Taip, ištrinti') ?></button>
+      <a class="btn btn-ghost" href="<?= url('admin/egzaminai.php') ?>"><?= te('Atšaukti') ?></a>
+    </form>
+  </section>
+<?php endif; ?>
 
 <?php if (!$ready): ?>
   <p class="panel card muted"><?= te('Protokolai veiks, kai bus atnaujinta duomenų bazė (Pradžia → „Atnaujinkite duomenų bazę“).') ?></p>

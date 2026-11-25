@@ -34,7 +34,9 @@ test('Peržiūra: queue fixes, gold marks with ✓/✗ and comments, submit, ele
   const api = await (await a.request.get('perziura-api.php', H)).json();
   const aj = (api.jobs || []).find(j => j.kind === 'fix');
   check('API lists the job with the feedback text', aj && aj.items[0].feedback.body.includes('mygtukas per mažas') && api.review.items.length > 0, JSON.stringify(api).slice(0, 300));
-  await a.request.post('perziura-api.php', { ...H, data: { id: aj.id, status: 'working' } });
+  const claim1 = await a.request.post('perziura-api.php', { ...H, data: { id: aj.id, status: 'working' } });
+  const claim2 = await a.request.post('perziura-api.php', { ...H, data: { id: aj.id, status: 'working' } });
+  check('only one agent takes a job', claim1.status() === 200 && claim2.status() === 409 && (await claim2.json()).taken === true, `${claim1.status()} ${claim2.status()}`);
   await a.request.post('perziura-api.php', { ...H, data: { id: aj.id, status: 'done', result: 'E2E: pataisyta, paruošta įkelti' } });
   await a.reload();
   check('agent reply shown in the queue', /E2E: pataisyta, paruošta įkelti/.test(await a.textContent('#eile')) && /Padaryta/.test(await a.textContent(`[data-job="${aj.id}"]`)));
