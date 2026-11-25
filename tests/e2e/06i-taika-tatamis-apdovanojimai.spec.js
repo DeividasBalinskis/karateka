@@ -184,7 +184,7 @@ test('Taika test link: no account, only demo competitions, no real members, can 
   const a = await login(browser, 'info@karateka.lt', 1300, 900);
   await a.goto('admin/varzybos.php');
   await a.evaluate(() => { document.getElementById('bandymas').open = true; });
-  await Promise.all([a.waitForNavigation(), a.click('#bandymas [data-lk="new"]')]);
+  await Promise.all([a.waitForNavigation(), a.click('#bandymas [data-lk="new"], #bandymas [data-lk="renew"]')]);
   const link = await a.locator('#bandymas .sp-url').inputValue();
   check('test link created', /varzybos-bandymas\.php\?k=[a-f0-9]{64}$/.test(link), link);
 
@@ -219,7 +219,7 @@ test('Taika test link: no account, only demo competitions, no real members, can 
 
   // Išjungus nuorodą - prieiga baigiasi
   await a.goto('admin/varzybos.php');
-  await Promise.all([a.waitForNavigation(), a.click('#bandymas button[value="demo_off"]')]);
+  await Promise.all([a.waitForNavigation(), a.click('#bandymas [data-lk="off"]')]);
   await g.goto('admin/varzybos.php');
   check('access ends when link off', /prisijungti/.test(g.url()));
   await ctx.close();

@@ -118,7 +118,7 @@ if (is_post()) {
             exam_find_log((bool) $tok);
         }
         if ($tok) {
-            redirect('mano-egzaminas.php?t=' . $tok);
+            redirect('mano-egzaminas.php?k=' . $tok);   // C3: ?k=
         }
         $findErr = $tooMany ? t('Per daug bandymų. Pabandykite vėliau.') : (!exam_find_open($event) ? t('Egzaminas jau įvyko - savo rezultatą sužinokite iš trenerio.')
             : t('Neradome. Patikrinkite vardą, pavardę ir gimimo datą arba užsiregistruokite.'));

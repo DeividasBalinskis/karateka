@@ -15,7 +15,7 @@ test('secretariat link: name only, only this competition, no member data; admin 
 
   // Adminas sukuria nuorodą
   await a.click('#sekr-toggle');
-  await Promise.all([a.waitForNavigation(), a.click('#sekr-panel [data-lk="new"]')]);
+  await Promise.all([a.waitForNavigation(), a.click('#sekr-panel [data-lk="new"], #sekr-panel [data-lk="renew"]')]);
   const link = await a.inputValue('#sekr-url');
   check('link created', /varzybos-sekretoriatas\.php\?k=[0-9a-f]{64}$/.test(link), link);
 

@@ -93,7 +93,7 @@ test('exam signup link for people without an account, invitations, exam list for
   check('no average column (#124)', await a.locator('#protTable .col-avg, #protTable .avg').count() === 0);
   await pr.locator('[data-pay]').click(); await a.waitForTimeout(500);
   check('paid marked', sql(`SELECT paid_at IS NOT NULL FROM exam_protocol_rows WHERE event_id = ${eid}`) === '1');
-  check('personal link in the protocol', (await pr.locator('.pr-link').getAttribute('data-copy')).includes('mano-egzaminas.php?t='));
+  check('personal link in the protocol', (await pr.locator('.pr-link').getAttribute('data-copy')).includes('mano-egzaminas.php?k='));
   await more();
   check('protocol lists signups', await a.locator('.su-table tr', { hasText: 'Ona Svečiūtė' }).count() === 1);
   await nav(a, () => a.click('#registracija button:has-text("Uždaryti registraciją")'));

@@ -52,7 +52,7 @@ test('exam protocol start time: set when copying, changed on the protocol page, 
   await a.fill('.prot-add-form input[name="name"]', 'Laiko Dalyvis');
   await nav(a, () => a.click('.prot-add-form button[type="submit"]'));
   const link = await a.locator('#protTable tr[data-row] .pr-link').first().getAttribute('data-copy');
-  const tok = (link.match(/[?&]t=([^&]+)/) || [])[1];
+  const tok = (link.match(/[?&][kt]=([^&]+)/) || [])[1];
   const v = await login(browser, null, 375, 812);
   await v.goto(`mano-egzaminas.php?t=${tok}`);
   check('Mano egzaminas shows the protocol time', /13:15/.test(await v.textContent('.my-exam-hero')));
