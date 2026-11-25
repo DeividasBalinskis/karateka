@@ -721,3 +721,45 @@ OBS → Šaltiniai → + → Naršyklė (Browser) → įklijuokite nuorodą, 192
 Atidaryti juostą su paaiškinimu	Open the bar with help	Открыть полосу с подсказкой
 Kaip atrodys juosta kovos metu	How the bar looks during a bout	Как полоса выглядит во время боя
 Pavyzdys · Kumite	Example · Kumite	Пример · Кумитэ
+Kaip atrodys transliacija	How the stream will look	Как будет выглядеть трансляция
+Telefono vaizdas ir juosta - taip, kaip matys žiūrovai. Juodas langas - telefonas dar neprijungtas.	Phone video and the bar - as viewers will see it. A black window means the phone is not connected yet.	Видео с телефона и полоса - так увидят зрители. Чёрное окно - телефон ещё не подключён.
+🧪 Pavyzdinė kova	🧪 Sample bout	🧪 Пример боя
+↺ Tikra juosta	↺ Real bar	↺ Настоящая полоса
+Į varžybas - atidaryti kovą	To the competition - open a bout	К соревнованиям - открыть бой
+1. Telefonas (kamera)	1. Phone (camera)	1. Телефон (камера)
+Nuskenuokite kodą telefono kamera arba atsiųskite nuorodą į telefoną.	Scan the code with the phone camera or send the link to the phone.	Отсканируйте код камерой телефона или отправьте ссылку на телефон.
+Leiskite naudoti kamerą ir mikrofoną - įsijungs galinė kamera.	Allow the camera and microphone - the rear camera turns on.	Разрешите камеру и микрофон - включится задняя камера.
+Telefoną laikykite gulsčią, prijunkite kroviklį ir neužrakinkite ekrano - kitaip vaizdas dings.	Hold the phone sideways, plug in the charger and do not lock the screen - otherwise the video stops.	Держите телефон горизонтально, подключите зарядку и не блокируйте экран - иначе видео пропадёт.
+Po kelių sekundžių vaizdas atsiras peržiūroje viršuje.	After a few seconds the video appears in the preview above.	Через несколько секунд видео появится в предпросмотре выше.
+Nuoroda skirta tik šiam tatamiui. Neduokite jos kitiems - su ja galima siųsti vaizdą į šį tatamį.	The link is only for this tatami. Do not share it - anyone with it can send video to this tatami.	Ссылка только для этого татами. Не передавайте её - с ней можно отправлять видео на этот татами.
+2. Kompiuteris (OBS Studio)	2. Computer (OBS Studio)	2. Компьютер (OBS Studio)
+Šaltiniai (Sources) → + → Naršyklė (Browser) → pavadinimas „Telefonas“ → įklijuokite šią nuorodą, plotis 1920, aukštis 1080, pažymėkite „Control audio via OBS“.	Sources → + → Browser → name “Telefonas” → paste this link, width 1920, height 1080, tick “Control audio via OBS”.	Источники → + → Браузер → название «Telefonas» → вставьте эту ссылку, ширина 1920, высота 1080, отметьте «Control audio via OBS».
+Dar kartą + → Naršyklė (Browser) → „Juosta“ → šią nuorodą, 1920 × 1080.	Again + → Browser → “Juosta” → this link, 1920 × 1080.	Ещё раз + → Браузер → «Juosta» → эту ссылку, 1920 × 1080.
+Šaltinių sąraše „Juosta“ turi būti virš „Telefonas“. Jei vaizdas neužpildo ekrano: dešinysis pelės klavišas → Transform → Fit to screen.	In the source list “Juosta” must be above “Telefonas”. If the video does not fill the screen: right-click → Transform → Fit to screen.	В списке источников «Juosta» должна быть выше «Telefonas». Если видео не заполняет экран: правая кнопка мыши → Transform → Fit to screen.
+3. YouTube	3. YouTube	3. YouTube
+OBS → Settings → Stream → YouTube → Connect Account, tada „Start Streaming“.	OBS → Settings → Stream → YouTube → Connect Account, then “Start Streaming”.	OBS → Settings → Stream → YouTube → Connect Account, затем «Start Streaming».
+Pirmą kartą YouTube transliacijas įjungia iki 24 val. - padarykite tai dieną prieš varžybas.	The first time, YouTube needs up to 24 h to enable streaming - do it a day before the competition.	В первый раз YouTube включает трансляции до 24 ч - сделайте это за день до соревнований.
+Bandymui pasirinkite „Unlisted“ (nerodoma viešai).	For a test choose “Unlisted” (not public).	Для проверки выберите «Unlisted» (не публично).
+Transliacijos nuorodą žiūrovams įklijuokite Budo → „📡 Transliacija ir registracija“ → „🎥 YouTube transliacija“.	Paste the stream link for viewers in Budo → “📡 Streaming and registration” → “🎥 YouTube stream”.	Ссылку трансляции для зрителей вставьте в Budo → «📡 Трансляция и регистрация» → «🎥 Трансляция YouTube».
+Kada kas veikia	When what works	Когда что работает
+📱 Telefono vaizdas	📱 Phone video	📱 Видео с телефона
+- visada, kai telefone atidaryta kameros nuoroda. Varžybų ir kovų nereikia.	- always, while the camera link is open on the phone. No competition or bouts needed.	- всегда, пока на телефоне открыта ссылка камеры. Соревнования и бои не нужны.
+🎬 Juosta	🎬 Bar	🎬 Полоса
+- visada. Kol kovos nėra - varžybų ir tatamio pavadinimas; sekretoriatui atidarius kovą - vardai, balai ir laikas.	- always. With no bout - the competition and tatami name; when the secretariat opens a bout - names, scores and time.	- всегда. Пока боя нет - название соревнований и татами; когда секретариат открывает бой - имена, баллы и время.
+- atidaręs kovą spaudžia „📹 Vaizdas“: telefono vaizdas rodomas šalia balų, balus galima pridėti ir nuimti kaip visada.	- after opening a bout, press “📹 Video”: the phone video is shown next to the scores, which can be added and removed as usual.	- открыв бой, нажмите «📹 Видео»: видео с телефона показывается рядом с баллами, баллы добавляются и снимаются как обычно.
+🧪 Bandymas	🧪 Test	🧪 Проверка
+- „Pavyzdinė kova“ šiame puslapyje arba test varžybos (Budo → „🧪 Test varžybos“) - jose galima atidaryti tikrą kovą.	- “Sample bout” on this page or a test competition (Budo → “🧪 Test competition”) - there you can open a real bout.	- «Пример боя» на этой странице или тестовые соревнования (Budo → «🧪 Тестовые соревнования») - там можно открыть настоящий бой.
+📶 Internetas	📶 Internet	📶 Интернет
+- kiekvienas atidarytas vaizdas (OBS, sekretoriatas, šis puslapis) naudoja telefono internetą, todėl geriau ne daugiau 3 vienu metu.	- every open view (OBS, secretariat, this page) uses the phone's internet, so better no more than 3 at once.	- каждый открытый просмотр (OBS, секретариат, эта страница) использует интернет телефона, поэтому лучше не больше 3 одновременно.
+Telefono nuoroda	Phone link	Ссылка для телефона
+Telefono vaizdas OBS programai	Phone video for OBS	Видео с телефона для OBS
+Juosta OBS programai	Bar for OBS	Полоса для OBS
+Telefono vaizdas	Phone video	Видео с телефона
+Juosta	Bar	Полоса
+Į varžybas	To the competition	К соревнованиям
+Tatamiai	Tatamis	Татами
+🎥 Transliacija: telefonas, OBS, peržiūra →	🎥 Streaming: phone, OBS, preview →	🎥 Трансляция: телефон, OBS, предпросмотр →
+Telefono vaizdas šalia balų (🎥 Transliacija)	Phone video next to the scores (🎥 Streaming)	Видео с телефона рядом с баллами (🎥 Трансляция)
+Didesnis / mažesnis	Bigger / smaller	Больше / меньше
+Uždaryti vaizdą	Close video	Закрыть видео
+Juodas langas - telefonas neprijungtas:	Black window - the phone is not connected:	Чёрное окно - телефон не подключён:

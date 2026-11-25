@@ -276,7 +276,7 @@
   // OBS juosta (?juosta=1&tatami=N): juosta apačioje, fonas permatomas. Vyksta kova - vardai, balai, laikas;
   // kovos nėra - varžybų ir tatamio pavadinimas (galima prijungti telefoną ir transliuoti iš anksto); ?pavyzdys=1 - pavyzdinė kova.
   // Atidarius paprastoje naršyklėje (ne OBS) - viršuje paaiškinimas, kaip naudotis (OBS jo nerodo: ten yra window.obsstudio).
-  var IN_OBS = !!window.obsstudio;
+  var IN_OBS = !!window.obsstudio || /[?&]obs=1/.test(location.search);   // &obs=1 - peržiūra Transliacijos puslapyje (be paaiškinimo)
   function barName() {
     var a = ((data && data.areas) || []).filter(function (x) { return String(x.id) === String(CFG.area); })[0];
     return a ? a.name : 'Tatamis ' + CFG.area;

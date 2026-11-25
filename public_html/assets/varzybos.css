@@ -1532,6 +1532,46 @@ body.gv-bar-browser { background: #8a8f98 repeating-conic-gradient(#9aa0a8 0 25%
 .gv-bar-help .gv-bh-state { margin: 0; padding: 8px 10px; background: #F1ECE0; border-radius: 10px; font-weight: 600; }
 .gv-bar-help .gv-bh-btns { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 4px; }
 @media (max-width: 600px) { .gv-bar-help { margin: 10px 10px 30vh; font-size: 14px; } }
+
+/* v1.97: Transliacijos puslapis (admin/varzybu-transliacija.php) - peržiūra (telefono vaizdas + juosta), QR telefonui, OBS ir YouTube žingsniai */
+.tr-main { max-width: 1180px; margin: 0 auto; padding: 16px 20px 40px; display: grid; gap: 16px; }
+.tr-sec { padding: 16px 18px; }
+.tr-sec h2 { margin: 0 0 8px; font-size: 1.1rem; }
+.tr-preview { position: relative; aspect-ratio: 16 / 9; background: #000; border-radius: 12px; overflow: hidden; margin: 10px 0; }
+.tr-preview iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: transparent; }
+.tr-preview .tr-bar { pointer-events: none; color-scheme: normal; }
+.tr-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.tr-steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
+.tr-step ol, .tr-when { margin: 6px 0 8px; padding-left: 20px; display: grid; gap: 6px; line-height: 1.45; }
+.tr-qr-row { display: flex; gap: 14px; align-items: flex-start; }
+.tr-qr { flex: none; padding: 8px; background: #fff; border-radius: 10px; border: 1px solid var(--line); }
+.tr-qr img, .tr-qr canvas { display: block; width: 180px; height: 180px; }
+.tr-when { list-style: none; padding-left: 0; }
+.tr-tab { padding: 6px 12px; border-radius: 10px; color: inherit; text-decoration: none; font-weight: 600; }
+.tr-tab.on { background: var(--accent); color: #fff; }
+@media (max-width: 1000px) { .tr-steps { grid-template-columns: 1fr; } }
+@media (max-width: 600px) { .tr-main { padding: 10px 10px 30px; } .tr-qr-row { flex-direction: column; } }
+
+/* v1.97: telefono vaizdas kovos skydelyje - atskiras langas (balai jo nepersikrauna); kompiuteryje dešinėje, telefone viršuje */
+:root { --bv-w: min(36vw, 520px); }
+body.bout-vid-big { --bv-w: min(55vw, 900px); }
+body.bout-vid-on .bout { padding-right: calc(var(--bv-w) + 32px); }
+.bout-vid { position: fixed; z-index: 210; right: 16px; top: 50%; transform: translateY(-50%); width: var(--bv-w); background: #0B0D12; color: #fff; border-radius: 14px; overflow: hidden; box-shadow: 0 20px 60px rgba(0, 0, 0, .45); }
+.bout-vid .bv-head { display: flex; align-items: center; gap: 6px; padding: 6px 8px 6px 12px; font-size: .9rem; }
+.bout-vid .bv-head .spacer { flex: 1; }
+.bout-vid .bv-head .btn { background: rgba(255, 255, 255, .12); border-color: transparent; color: #fff; padding: 4px 10px; }
+.bout-vid .bv-frame { position: relative; aspect-ratio: 16 / 9; background: #000; }
+.bout-vid iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.bout-vid .bv-hint { margin: 0; padding: 6px 12px 8px; font-size: .75rem; color: #9AA3B2; }
+.bout-vid .bv-hint a { color: #fff; }
+.bout-top .btn.on { background: #fff; color: #12151C; }
+@media (max-width: 999px) {
+  .bout-vid { top: 8px; left: 8px; right: 8px; width: auto; transform: none; }
+  .bout-vid .bv-frame { aspect-ratio: auto; height: 26vh; }
+  .bout-vid .bv-hint { display: none; }
+  body.bout-vid-on .bout { padding-right: 16px; padding-top: calc(26vh + 56px); align-items: start; }
+  body.bout-vid-on .bout-card { max-height: calc(100dvh - 26vh - 72px); }
+}
 .area-vid { display: flex; align-items: center; gap: 4px; font-size: 12px; flex: 1 1 100%; min-width: 0; }
 .area-vid input { flex: 1; min-width: 0; width: auto; font-size: 12px; padding: 4px 6px; }
 

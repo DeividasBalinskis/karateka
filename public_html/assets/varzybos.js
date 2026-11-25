@@ -1830,6 +1830,42 @@
   boutEl.setAttribute('role', 'dialog'); boutEl.setAttribute('aria-modal', 'true'); boutEl.setAttribute('aria-label', 'Kova');
   document.body.appendChild(boutEl);
 
+  // v1.97: telefono vaizdas kovos skydelyje (vdo.ninja, srautas „kt<raktas>t<tatamis>“ - kaip admin/varzybu-transliacija.php).
+  // Atskiras langas šalia kortelės, kad balų perpiešimas vaizdo nepersikrautų; įjungta / išjungta - prisimenama šiame įrenginyje.
+  var vidOn = false, vidEl = null;
+  try { vidOn = localStorage.getItem('vz-bout-vid') === '1'; } catch (e) {}
+  function syncVid() {
+    if (!CFG.camKey) return;
+    var show = !!B && vidOn;
+    document.body.classList.toggle('bout-vid-on', show);
+    if (!show) { if (vidEl) vidEl.hidden = true; return; }
+    var a = areaOf(cat(B.cat)), src = 'https://vdo.ninja/?view=kt' + CFG.camKey + 't' + a.id + '&cleanoutput';
+    if (!vidEl) {
+      vidEl = document.createElement('div'); vidEl.className = 'bout-vid'; vidEl.id = 'bout-vid';
+      vidEl.innerHTML = '<div class="bv-head"><b></b><span class="spacer"></span><button type="button" class="btn" data-bv="big" title="Didesnis / mažesnis">⤢</button>' +
+        '<button type="button" class="btn" data-bv="off" aria-label="Uždaryti vaizdą">✕</button></div><div class="bv-frame"><iframe title="Telefono vaizdas" allow="autoplay; fullscreen" allowfullscreen></iframe></div>' +
+        '<p class="bv-hint">Juodas langas - telefonas neprijungtas: <a target="_blank" rel="noopener"></a></p>';
+      document.body.appendChild(vidEl);
+      vidEl.addEventListener('click', function (e) {
+        var b = e.target.closest('[data-bv]'); if (!b) return;
+        if (b.dataset.bv === 'big') document.body.classList.toggle('bout-vid-big');
+        else setVid(false);
+      });
+    }
+    vidEl.querySelector('.bv-head b').textContent = '📹 ' + a.name;
+    var link = vidEl.querySelector('.bv-hint a');
+    link.textContent = '🎥 Transliacija'; link.href = CFG.streamUrl + '&tatami=' + a.id;
+    var fr = vidEl.querySelector('iframe');
+    if (fr.getAttribute('src') !== src) fr.setAttribute('src', src);
+    vidEl.hidden = false;
+  }
+  function setVid(on) {
+    vidOn = on;
+    try { localStorage.setItem('vz-bout-vid', on ? '1' : '0'); } catch (e) {}
+    if (!on && vidEl) vidEl.querySelector('iframe').removeAttribute('src');   // išjungus - telefono internetas nebenaudojamas
+    if (B) renderBout(); else syncVid();
+  }
+
   function openBout(catId, mid) {
     var c = cat(catId), m = findMatch(c, mid); if (!m || !m.a || !m.b) return;
     var mode = boutMode(c, m), f = cfg(c), saved = (c.draw.bouts || {})[mid] || {};
@@ -1857,7 +1893,7 @@
     if (!B) return;
     if (B.timer.running) toggleTimer();
     var area = areaOf(cat(B.cat));
-    B = null; liveMatch = null; boutEl.hidden = true; document.body.classList.remove('bout-open-body');
+    B = null; liveMatch = null; boutEl.hidden = true; document.body.classList.remove('bout-open-body'); syncVid();
     pushLive(area); render();
     if (boutHist && history.state && history.state.bout) { boutHist = false; history.back(); }
     boutHist = false;
@@ -1988,7 +2024,8 @@
     if (!B) return;
     var c = cat(B.cat), area = areaOf(c), body, mode = B.mode, f = cfg(c);
     var head = '<div class="bout-top"><div class="bout-info"><span class="disc d-' + c.discipline + '"></span><b>' + esc(c.name) + '</b><span>' + (B.no ? B.no + ' · ' : '') + esc(B.title) + '</span><span class="pill sys">' + MODE_NAME[mode] + '</span><span class="pill">' + esc(area.name) + '</span></div>' +
-      '<span class="spacer"></span>' + (CFG.screenUrl ? '<button type="button" class="btn" id="bt-screen" title="Atidaryti ekrano langą šiam tatamiui (antram monitoriui ar televizoriui)" aria-label="Ekranas">📺<span class="bt-lbl"> Ekranas</span></button>' : '') +
+      '<span class="spacer"></span>' + (CFG.camKey ? '<button type="button" class="btn' + (vidOn ? ' on' : '') + '" id="bt-vid" aria-pressed="' + vidOn + '" title="Telefono vaizdas šalia balų (🎥 Transliacija)">📹<span class="bt-lbl"> Vaizdas</span></button>' : '') +
+      (CFG.screenUrl ? '<button type="button" class="btn" id="bt-screen" title="Atidaryti ekrano langą šiam tatamiui (antram monitoriui ar televizoriui)" aria-label="Ekranas">📺<span class="bt-lbl"> Ekranas</span></button>' : '') +
       '<button type="button" class="btn" id="bt-close" aria-label="Uždaryti">✕<span class="bt-lbl"> Uždaryti</span></button></div>';
     if (mode === 'score2') {
       body = partsTable();
@@ -2023,6 +2060,7 @@
     if (keepX) nc.scrollLeft = keepX;
     if (keepTs && nc.querySelector('.table-scroll')) nc.querySelector('.table-scroll').scrollLeft = keepTs;
     if (window.scrollY !== keepWin) window.scrollTo(window.scrollX, keepWin);
+    syncVid();
   }
   function finishBout(forced) {
     var c = cat(B.cat), winner, txt, mode = B.mode;
@@ -2045,7 +2083,7 @@
     prune(c); save();
     var area = areaOf(c);
     setTimeout(function () { pushLive(area); }, 8000);   // ekrane nugalėtojas rodomas 8 s
-    B = null; liveMatch = null; boutEl.hidden = true; document.body.classList.remove('bout-open-body'); render();
+    B = null; liveMatch = null; boutEl.hidden = true; document.body.classList.remove('bout-open-body'); syncVid(); render();
   }
   boutEl.addEventListener('click', function (e) {
     if (!B) return;
@@ -2053,6 +2091,7 @@
     var c = cat(B.cat);
     if (t.id === 'bt-close') { keepBout(); closeBout(); return; }
     if (t.id === 'bt-screen') { window.open(CFG.screenUrl + '&tatami=' + areaOf(c).id, 'taika-ekranas-' + areaOf(c).id); return; }
+    if (t.id === 'bt-vid') { setVid(!vidOn); return; }
     if (t.id === 'bt-start') { toggleTimer(); return; }
     if (t.id === 'bt-timer') { editTimer(); return; }
     if (t.id === 'bt-reset') { if (B.timer.running) toggleTimer(); setTime(B.timer.total); return; }

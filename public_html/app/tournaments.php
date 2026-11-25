@@ -630,6 +630,31 @@ function tournament_token(array $t, string $kind): string
     return (string) q_value("SELECT $col FROM tournaments WHERE id = ?", [(int) $t['id']]);
 }
 
+/**
+ * Telefono kamera transliacijai (v1.97, vdo.ninja): kiekvienam tatamiui - slaptas srauto vardas „kt<raktas>t<tatamis>“.
+ * Raktas - iš žiūrovų ir apdovanojimų nuorodų (abi slaptos), todėl jo nežino tie, kurie turi tik žiūrovų nuorodą.
+ * Telefonas siunčia: https://vdo.ninja/?push=<vardas>, OBS ir sekretoriatas žiūri: https://vdo.ninja/?view=<vardas>.
+ */
+function tournament_cam_key(array $t): string
+{
+    return substr(hash('sha256', 'cam|' . tournament_token($t, 'share') . '|' . tournament_token($t, 'awards')), 0, 16);
+}
+
+function varz_cam_id(string $key, int $area): string
+{
+    return 'kt' . $key . 't' . $area;
+}
+
+function varz_cam_push_url(string $id): string
+{
+    return 'https://vdo.ninja/?push=' . rawurlencode($id) . '&webcam&autostart&facing=rear';
+}
+
+function varz_cam_view_url(string $id): string
+{
+    return 'https://vdo.ninja/?view=' . rawurlencode($id) . '&cleanoutput';
+}
+
 function tournament_by_token(string $token, string $kind): ?array
 {
     if (!preg_match('/^[a-f0-9]{24}$/', $token) || !tournaments_ready()) {

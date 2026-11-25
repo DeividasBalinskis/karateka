@@ -4,6 +4,16 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.97 - 2026-11-25 (Budo transliacija: telefono kamera, peržiūra, vaizdas sekretoriatui)
+- **Budo → 📡 Transliacija ir registracija → „🎥 Transliacija: telefonas, OBS, peržiūra →“** - naujas puslapis kiekvienam tatamiui:
+  - **Peržiūra** - telefono vaizdas su juosta, taip kaip matys žiūrovai; „🧪 Pavyzdinė kova“ parodo juostą su kova.
+  - **1. Telefonas** - QR kodas: nuskenavus telefonu įsijungia galinė kamera ir vaizdas siunčiamas į šį tatamį (per vdo.ninja, nieko diegti nereikia).
+  - **2. OBS** - dvi nuorodos su „Kopijuoti“: telefono vaizdas ir juosta; **3. YouTube** - kaip pradėti transliaciją.
+  - **Kada kas veikia** - vaizdas ir juosta veikia bet kada, be varžybų ir kovų; prasidėjus kovai juostoje atsiranda vardai, balai ir laikas.
+- **Kovos skydelyje - „📹 Vaizdas“:** sekretoriatas mato telefono vaizdą šalia balų (kompiuteryje dešinėje, telefone viršuje, „⤢“ - didesnis)
+  ir rašo balus kaip visada. Įjungta / išjungta prisimenama šiame įrenginyje.
+- Duomenų bazė: naujų failų nėra.
+
 ## v1.96 - 2026-11-25 (Dojo: nauji lygiai, dovanos, personažai; egzaminų protokolų laikas; OBS juosta)
 - **Lygiai greitesni:** pirmi 5 lygiai - po 5 XP (aktyvumo taškų), toliau kas 5 lygius lygis brangsta 2 XP (5, 7, 9, 11 …).
   Anksčiau kiekvienas lygis - 100 XP, todėl vaikas, kuris treniruojasi 2 kartus per savaitę, po metų buvo tik 2 lygio; dabar - apie 18.

@@ -1,5 +1,5 @@
 # Handoff
-Updated: 2026-11-25 · version v1.96 · work branch
+Updated: 2026-11-25 · version v1.97 · work branch
 
 ## Pending asks (answer these first)
 | Asked | By | What | Status |
@@ -100,6 +100,7 @@ Updated: 2026-11-25 · version v1.96 · work branch
   Character every 5 levels: `GAME_CHAR_START`, `GAME_CHAR_EVERY`, `game_chars_owned()` (start + current + opened „ch:“ boxes, item_key `ch_<key>`), picker shows locked as 🔒 shadows when GAME_UNLOCK_ALL is false; box reveal animation (game-px.css charRise). Test 06n checks the ch:5 box.
   OBS bar: idle bar (title + tatami), `&pavyzdys=1` sample, help card only when `window.obsstudio` is missing; Budo texts in tools/vertimai/taika.tsv (build.py run). Test 07zb updated (OBS simulated with addInitScript).
   JS syntax of the changed files checked with the Windows script engine; PHP not checked (no php).
+- 2026-11-25 v1.97 (PC): Budo streaming page `admin/varzybu-transliacija.php` (auth as Budo: staff, secretariat of that tournament, demo), `tournament_cam_key()`, `varz_cam_id()`, `varz_cam_push_url()`, `varz_cam_view_url()` in app/tournaments.php; CFG.camKey/streamUrl; bout video window `#bout-vid` (varzybos.js syncVid/setVid, localStorage `vz-bout-vid`); bar `&obs=1` = no help. Test 07zh. Translations in tools/vertimai/taika.tsv.
 - 2026-11-25 (PC, not committed) exam protocol time: each protocol = its own `events.start_time` (no new db file).
   `admin/egzamino-protokolas.php`: „Pradžios laikas“ input #protTime in the header (saved at once: `?save=1` field `start_time`, staff, HH:MM or empty; print shows #protTimePrint).
   `admin/egzaminai.php`: copy_exam form has `start_time` (prefilled with that protocol's time; posted value wins, missing field = copy), list sorted by time within a day.
