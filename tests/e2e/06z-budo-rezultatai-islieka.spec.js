@@ -170,7 +170,8 @@ test('A1: tab closed while saving fails - the change is kept on the device and s
   await a.close();
   await p2.goto(`admin/varzybu-sistema.php?id=${tid}`);
   await p2.waitForFunction(() => /Išsaugota/.test((document.querySelector('.save-state') || {}).textContent || ''), null, { timeout: 15000 });
-  await p2.waitForTimeout(1000);
+  // „Išsaugota“ gali būti parodyta dar prieš atkurto pakeitimo siuntimą - laukiama, kol serveris jį gaus (iki 15 s)
+  for (let i = 0; i < 30 && draw() === before; i++) await p2.waitForTimeout(500);
   check('change restored and saved after reopening', draw() !== before, draw());
   check('device copy cleared', !(await p2.evaluate(id => localStorage.getItem('taika-pend-' + id), tid)));
 });

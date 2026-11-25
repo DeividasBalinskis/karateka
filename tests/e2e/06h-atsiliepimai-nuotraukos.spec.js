@@ -72,6 +72,8 @@ test('feedback widget: autosave, paste many images, Enter for next, edit earlier
   // Adminas: nuotraukos sąraše; API raktas
   await a.goto('admin/atsiliepimai.php');
   check('admin sees images', await a.locator('.fb-card-imgs img').count() === 3);
+  // 💡 langas išlieka atidarytas pereinant tarp puslapių (v1.87) ir gali uždengti mygtuką apačioje - uždaromas
+  if (await a.locator('#fbPanel').isVisible()) await a.click('#fbPanel .fb-close');
   await nav(a, () => a.click('button[value=api_key]'));
   const key = await a.inputValue('#fbKey');
   check('key shown once', /^[a-f0-9]{40}$/.test(key));
