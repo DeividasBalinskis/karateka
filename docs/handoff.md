@@ -172,6 +172,8 @@ Updated: 2026-11-25 · version v2.09 · main
   CSRF: `csrf_ok()` added; awards tablet and phone camera POSTs now send X-CSRF-Token; exceptions = the 3 key APIs. checks.sh: no raw role checks, every action in the docs table, every POST page has csrf_check/csrf_ok.
   Test 07zm-paskyros-gyvenimas (life cycle + page access per role); 07zh sends the token. Open questions: testers lack Atsiliepimai and „Žiūrėti kaip“ (table says ✔);
   excuse-letter recipients default to admins named Denis while `just_notify` is unset. Gotcha for merges: new code with `is_admin(` etc. outside auth.php now fails checks.sh - use `can()`.
+  CI on the branch (main v2.09 merged in): checks.sh ✓; 07zm (2), 07-pages, 07b, 07zh, 06i ✓ (run 45623054023); 06r updated to the new editor rule ✓ (run 45630694117).
+  Full suite (run 45623035547): 158 passed, 21 failed - 20 of them fail on main too (main run 45622864810: 01, 06h, 06n ×4, 06x ×3, 06y, 06z, 07h, 07i, 07o, 07q, 07v, 07zd, 07ze, 07zf, 08); the 21st was 06r, now fixed.
 
 - 2026-11-25 v2.08: #179 exam protocol delete (admin/egzaminai.php `delete_protocol`, `exam_protocol_people()` in app/exam_protocol.php; with people → `?trinti=ID#trinti`
   confirm box; children of a deleted main protocol: first one becomes main). Test 07zl ✓. Agent: perziura-api.php „working“ = atomic claim (409 taken; stale after 90 min).
