@@ -277,7 +277,7 @@ Updated: 2026-11-25 · version v2.11 · main
   ltkf_* → ltkf - same people as before). Open questions from the side sessions: see „Pending asks“.
   CI on the merge (run 45642955419): 164 passed, 20 failed - 18 fail on main too, 06z:155 flaky, links.spec fixed (sends the CSRF token; re-run 45650015534 ✓).
   Deployed (run 45651071881), checked on test: v2.11, db 061 + 062 imported with a backup, „Visos nuorodos“ at 1440 and 375 (no overflow), Budo loads main.js modules.
-  Main has 18 failing e2e tests from before (01, 06f, 06h, 06n ×4, 06x ×3, 06y, 07h, 07i, 07o, 07q, 07v, 07zd, 07ze, 07zf, 08) - not fixed yet.
+  Main has 19 failing e2e tests from before (01, 06f, 06n ×4, 06x ×3, 06y, 07h, 07i, 07o, 07q, 07v, 07zd, 07ze, 07zf, 08; 06h and 06z:155 flaky) - not fixed yet.
 ## Open
 - C5 CSS cleanup: header.css done (v2.11), next app.css (one file per session). D4 same group on two tablets, D5 Budo live polish, D7 arena left hand UI, D8 pixel characters (PC + LibreSprite).
 - Parent payments for Budo registration need a payment provider (later).
