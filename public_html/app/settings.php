@@ -15,6 +15,7 @@ const SETTINGS = [
     'home_page_prev'   => ['label' => 'Pagrindinis puslapis - ankstesnė versija („Atšaukti“)', 'group' => 'Svetainė', 'type' => 'mark', 'where' => 'admin/puslapis.php', 'owner' => 'admin', 'restore' => false],
     'reg_off'          => ['label' => 'Registracija išjungta (paskyros, renginiai, egzaminai, Budo)', 'group' => 'Svetainė', 'type' => 'json', 'where' => 'admin/nustatymai.php', 'owner' => 'admin', 'restore' => true],
     'feedback_button'  => ['label' => 'Atsiliepimų mygtukas (💡) - kam rodomas', 'group' => 'Svetainė', 'type' => 'choice', 'where' => 'admin/atsiliepimai.php', 'owner' => 'admin', 'restore' => true],
+    'review_on'        => ['label' => 'Peržiūra (auksinės žymos, darbų eilė, agentas) įjungta', 'group' => 'Svetainė', 'type' => 'bool', 'where' => 'admin/testavimas.php#perziura', 'owner' => 'admin', 'restore' => true],
     'admin_menu'       => ['label' => 'Valdymo meniu: grupės, tvarka, pavadinimai', 'group' => 'Svetainė', 'type' => 'json', 'where' => 'Valdymas → ✎ šoniniame meniu', 'owner' => 'admin', 'restore' => true],
     'feedback_api_key' => ['label' => 'Atsiliepimų API raktas', 'group' => 'Svetainė', 'type' => 'secret', 'where' => 'admin/atsiliepimai.php', 'owner' => 'admin', 'restore' => false],
     // Klubas

@@ -1,9 +1,10 @@
 # Handoff
-Updated: 2026-11-25 · version v2.07 · main
+Updated: 2026-11-25 · version v2.10 · main
 
 ## Pending asks (answer these first)
 | Asked | By | What | Status |
 |---|---|---|---|
+| 2026-11-25 | Dev | D1 done - pick the system that stays (D2): `docs/varzybos-palyginimas.md` | answered 2026-11-25: Budo stays. Varžybos code saved on branch `varzybos-kodas` (43 files, no config/.env/.sql). Next: Denis picks features to port (table in the doc), OK to remove the bridge |
 | 2026-11-25 | Dev | Fixing agent in the cloud (routine „Karateka: Peržiūros eilė (kas valandą)“, trig_01KwSq8HaCyBeQzfAB2Wxmvg, disabled): Deividas puts the API key into the cloud environment „karateka“ as `KARATEKA_API_KEY` and allows network to `test.karateka.lt`, then it is switched on. Every 15 min is not possible in the cloud (minimum 1 hour) - now every hour 07-23; or every 15 min on the PC while the app is open? | waiting |
 | 2026-11-25 | Dev | „okay darom kad 15 min dabar, bet jeigu …“ - the sentence was cut off | waiting |
 | 2026-11-25 | Dev → Denis | Feedback questions on test: #179 delete only empty protocols? #181 delete „4 kyu“ protocol with its 1 participant? #184 Budo top bar default A light / B Budo red / C soft blue-grey (picture: side-session notes `ui-perziura/5-184-budo-virsus-variantai.png`) | waiting |
@@ -164,6 +165,18 @@ Updated: 2026-11-25 · version v2.07 · main
   viewers' JSON gets `cams` (tatamis with a phone that are not yet in the saved summary, from state) - renderVideos adds them.
   Test 07zh fixed (the loop reopened a finished bout: „▶“ is shown on finished bouts too → `.match:not(.is-done) .bout-open`). 07zh ✓ in CI (both tests).
 
+- 2026-11-25 v2.08: #179 exam protocol delete (admin/egzaminai.php `delete_protocol`, `exam_protocol_people()` in app/exam_protocol.php; with people → `?trinti=ID#trinti`
+  confirm box; children of a deleted main protocol: first one becomes main). Test 07zl ✓. Agent: perziura-api.php „working“ = atomic claim (409 taken; stale after 90 min).
+  PC scheduled task `karateka-perziuros-eile` (*/15 7-22, Auto mode, no notifications) + cloud routine trig_01KwSq8HaCyBeQzfAB2Wxmvg (disabled until the key is set).
+  Both need `KARATEKA_API_KEY` (cloud env „karateka“ + Windows user variable). PC copy works only in the worktree `..\Karateka-agentas` on `claude/taisymai`.
+  Plan steps started in their own worktree sessions (Deividas: „tiesiog daryk“): C1 `c1-teises`, C5 `c5-css` (header.css), C6+D3 `d3-budo-moduliai`, D1 `d1-palyginimas`.
+  C3 waits for Denis's answers (secretariat link lifetime, one link per competition or tatami, awards tablet names).
+- 2026-11-25 v2.09: Deividas used Peržiūra on test (jobs #1, #2 „review“, all good, one comment on the side menu) - done by hand in the main session:
+  side menu max-height calc(100vh - 108px) + padding-bottom 64px (widgets.css); admin/perziura.php action `close` („✓“ + reply) for queued/working jobs;
+  app/review.json → rev 2.09-1. Test 07zj now writes its own manifest (beforeAll / afterAll restore), so review.json can change freely.
+- 2026-11-25 v2.10: Peržiūra off (`review_enabled()` = site setting `review_on` === '1'; off → no overlay, no menu item, admin/perziura.php shows a link
+  to the switch, perziura-api.php answers {ok:false, off:true}). Switch on admin/testavimas.php (#perziura). app/review.json items emptied (all approved).
+  PC task `karateka-perziuros-eile` disabled; cloud routine disabled. 07zj turns review on in beforeAll and has an „off“ test.
 ## Open
 - C1 permissions, C3 secret links, C5 CSS cleanup (safe now with tests/visual.sh), C6 engine unit tests, D3 split varzybos.js, D4 same group on two tablets, D5 Budo live polish, D7 arena left hand UI, D8 pixel characters (PC + LibreSprite).
 - Parent payments for Budo registration need a payment provider (later).

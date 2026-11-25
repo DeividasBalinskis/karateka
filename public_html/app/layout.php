@@ -341,7 +341,7 @@ function admin_menu_items(): array
     if (is_admin()) {
         $it['atsiliepimai'] = ['💡', t('Atsiliepimai'), 'admin/atsiliepimai.php', feedback_new_count(), t('Pastabos apie svetainę')];
     }
-    if (is_admin() && function_exists('review_ready') && review_ready()) {   // v2.02: peržiūra - ką taisyti, darbų eilė, auksinės žymos
+    if (is_admin() && function_exists('review_ready') && review_ready() && review_enabled()) {   // v2.02: peržiūra - ką taisyti, darbų eilė, auksinės žymos (v2.10: tik įjungus)
         $it['perziura'] = ['🔎', t('Peržiūra'), 'admin/perziura.php', review_todo_count(), t('Ką taisyti, darbų eilė, auksinės žymos')];
     }
     if (is_admin() && function_exists('just_ready') && just_ready()) {   // v1.93: pamokų pateisinimai
