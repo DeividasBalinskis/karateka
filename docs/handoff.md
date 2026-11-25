@@ -1,9 +1,13 @@
 # Handoff
-Updated: 2026-11-25 · version v2.10 · main
+Updated: 2026-11-25 · version v2.11 · main
 
 ## Pending asks (answer these first)
 | Asked | By | What | Status |
 |---|---|---|---|
+| 2026-11-25 | Dev (C1) | Testers: give them the Atsiliepimai page and „Žiūrėti kaip“ (the standartai table says ✔, today they do not have them)? | waiting |
+| 2026-11-25 | Dev (C1) | Excuse letters: while `just_notify` is unset, recipients = admins named Denis (a choice by name). Keep, or one chosen account? | waiting |
+| 2026-11-25 | Dev (C5) | Extra CSS widths 1099, 860, 900, 1400, 520, 400, 1101-1280 → the standard four? (visible change at those widths) | waiting |
+| 2026-11-25 | Dev (D3) → Denis | Budo rule (not changed, not invented): round robin - same wins → both 1st even if A beat B; elimination group with 1 participant never gets 1st / never finished. Intended? | waiting |
 | 2026-11-25 | Dev | D1 done - pick the system that stays (D2): `docs/varzybos-palyginimas.md` | answered 2026-11-25: Budo stays. Varžybos code saved on branch `varzybos-kodas` (43 files, no config/.env/.sql). Next: Denis picks features to port (table in the doc), OK to remove the bridge |
 | 2026-11-25 | Dev | Fixing agent in the cloud (routine „Karateka: Peržiūros eilė (kas valandą)“, trig_01KwSq8HaCyBeQzfAB2Wxmvg, disabled): Deividas puts the API key into the cloud environment „karateka“ as `KARATEKA_API_KEY` and allows network to `test.karateka.lt`, then it is switched on. Every 15 min is not possible in the cloud (minimum 1 hour) - now every hour 07-23; or every 15 min on the PC while the app is open? | waiting |
 | 2026-11-25 | Dev | „okay darom kad 15 min dabar, bet jeigu …“ - the sentence was cut off | waiting |
@@ -266,6 +270,11 @@ Updated: 2026-11-25 · version v2.10 · main
   11 failed - all in that list. 06z „A1 tab closed while saving“ is flaky on both: 5 repeats - branch 4/5, main 3/5. 07zh and 07zk ✓.
   Questions found (old behaviour, unchanged): round robin places use wins + score difference only, so two with the same wins share 1st place even when
   one beat the other (the table shows the winner above); an elimination group with one participant gets no 1st place and never counts as finished.
+- 2026-11-25 v2.11: merged into main by the main session - C5 (header.css), C1 (can() table, db/061), C6+D3 (Budo modules), C3 (links, db/062);
+  DB_REQUIRED = 062_nuorodos.sql. Merge fixes: Peržiūra switch kept with can('review'); C3's chrome.js „👤 by“ line moved into
+  assets/varzybos/chrome.js (varzybos.js gone); C3 role checks → can(): new action `links` (admin) for „Visos nuorodos“, LINK_KINDS `manage` is now
+  a PERMISSIONS action per kind (sekr/awards/live/reg → budo, demo/cam → budo_admin, exam_* → exam_protocols, quiz → quizzes, just → justifications,
+  ltkf_* → ltkf - same people as before). Open questions from the side sessions: see „Pending asks“.
 ## Open
 - C5 CSS cleanup: header.css done (v2.11), next app.css (one file per session). D4 same group on two tablets, D5 Budo live polish, D7 arena left hand UI, D8 pixel characters (PC + LibreSprite).
 - Parent payments for Budo registration need a payment provider (later).

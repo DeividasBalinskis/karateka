@@ -4,6 +4,21 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v2.11 - 2026-11-25 (teisės, slaptos nuorodos, Budo moduliai, header.css)
+- **Teisės - viena lentelė** (C1): kas ką gali, aprašyta vienoje vietoje; visų teisės tos pačios kaip buvo.
+  Išimtis - **pagrindinio puslapio redaktoriai**: tai dabar paskyros, kurias adminas pažymi **Valdymas → Nustatymai → Paskyros ir rolės → „🏠 Redaguoja pradžią“**
+  (anksčiau - pagal vardą instruktorių bloke). Kol nepažymėta, treneris savo kortelės redaguoti negali (adminai - gali).
+- **Pakeitimų žurnalas**: Paskyros ir rolės → „Pakeitimų žurnalas“ - kas, kada ir ką pakeitė (rolė, būsena, testuotojas, žaidimas, slaptažodis). Saugoma 1 metus.
+- **Pakeitus slaptažodį** (ar vaiko PIN) kiti įrenginiai atjungiami; tas, kuriame keitėte, lieka prisijungęs.
+- **Slaptos nuorodos - vienoje vietoje** (C3): Valdymas → Nustatymai → **🔗 Visos nuorodos**. Prie kiekvienos: Kopijuoti · ↻ Nauja nuoroda · Išjungti,
+  kada sukurta ir kada naudota. Senos nuorodos veikia toliau.
+  - Sekretoriatas: **viena nuoroda varžyboms** (`&t=N` atidaro tik to tatamio stalą), veikia iki 2 d. po varžybų, mygtukas „Baigti darbą“.
+  - **Apdovanojimų planšetė** pirma paklausia vardo; vardas rodomas prie apdovanotų grupių, Budo istorijoje - „👤 vardas“ prie išsaugotų kopijų.
+  - Išjungta ar pakeista nuoroda rodo vieną puslapį „Nuoroda neveikia“.
+- **Budo programa** padalinta į mažus failus (D3) ir turi 36 automatinius variklio testus (C6) - ekrane niekas nesikeičia.
+- **Viršutinė juosta (header.css)** sutvarkyta (C5) - ekrane niekas nesikeičia (tikrinta automatiškai 22 pločiais).
+- Duomenų bazė: **061_paskyru_zurnalas.sql**, **062_nuorodos.sql** (įsidiegia patys, atidarius Valdymą).
+
 ## v2.10 - 2026-11-25 (Peržiūra kol kas išjungta)
 - **🔎 Peržiūra išjungta** (Deividas: „kol kas išjunk, bet neištrink“): nėra auksinių žymų, apačios juostos, 🎯 ir meniu punkto; agentai nieko nedaro.
   Kodas lieka - įjungiama **Valdymas → Nustatymai → Testavimas → „🔎 Peržiūra: Įjungti“**.
