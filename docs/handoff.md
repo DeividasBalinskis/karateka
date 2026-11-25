@@ -177,6 +177,38 @@ Updated: 2026-11-25 · version v2.10 · main
 - 2026-11-25 v2.10: Peržiūra off (`review_enabled()` = site setting `review_on` === '1'; off → no overlay, no menu item, admin/perziura.php shows a link
   to the switch, perziura-api.php answers {ok:false, off:true}). Switch on admin/testavimas.php (#perziura). app/review.json items emptied (all approved).
   PC task `karateka-perziuros-eile` disabled; cloud routine disabled. 07zj turns review on in beforeAll and has an „off“ test.
+- 2026-11-25 C5 file 1/5 `public_html/assets/header.css` (side session, branch `claude/c5-css-header-e5d689`, main v2.10 merged in; VERSION not bumped, not on main):
+  Before → after: 428 → 396 lines, 309 → 262 rules, 1089 → 957 declarations, `!important` 16 → 6, @media blocks 20 → 9 (distinct widths 9 → 9),
+  distinct colours 92 → 75, „vX.YY“ blocks 3 → 0. All @media now at the end, one block per width.
+  Folded into the rule they change: #104 logo ▾, #107 „Žiūrėti kaip“, #113 (the „›“ rule and its `content:none` both gone), #114 „Valdymas“ button
+  (one rule; `body[data-theme]` copies and `.is-current` rules removed - body always has data-theme, colour themes decide .is-current in themes.css),
+  #97 „Grįžti į valdymą“ into `.site-header .adm-sw`, „Apie klubą ▾“ button, duplicates.
+  Deleted (no page or script makes them): phone menu variants pm-burger / pm-lapas / pm-eilute with .pm-admin / .pm-site (`phone_menu_variant()` is always
+  'apacia'), old Admin slider (.adm-knob, .adm-sw.is-on), .lang-li, .lang-opt, .lang-caret, .sub-nav-2; rules that never win (.lang-switch base and
+  `.site-header nav.lang-switch` → merged into `.lang-dd > nav.lang-switch`; ≤1100 `.am-line .am-more-panel`; ≤860 `.ver-tag`, `.sub-nav` padding and
+  justify-content; ≤1100 `.lang-switch a` padding); two invalid `font: … inherit` lines (never applied). Kept: `.sub-nav a.sub-last` (PHP still names it).
+  Tokens used: --cream, --pink, --border, --border-soft, --admin-gradient(-hover), --radius-sm/md/pill, --tap, --font-mono, --sp-1..3 (only where the
+  whole value is on the scale). Not used on purpose: --ink / --muted / --accent (themes.css and varzybos.css redefine them - the header would change
+  colour in themes), --font-body ('Inter' stays written out: sriftas.php looks for it), --fs-* (rem; the header is px on purpose).
+  `!important` kept (6): `[hidden]`; „Valdymas“ text colour (else themes.css dark menu colour wins); `.am-row` / `.am-row.active` + their 2 dark copies
+  („Daugiau ▾“ rows sit inside `.sub-nav a`, which is stronger; themes.css colour themes also use !important there).
+  New global rule (standartai 8.9): `[hidden]:not(.g-stat .plus){display:none !important}` - exception: Dojo „+“ keeps its place
+  (game.css `display:block; visibility:hidden`, D7). The same rule was already in home.css and varzybos.css; Budo and LTKF pages do not load header.css.
+  Widths left as they are (moving them = a visible change at those widths, needs a decision): 1099 (D5 tap sizes; at exactly 1100 px not applied),
+  860, 900, 1400, 520, 400, 1101-1280. Merging 1099 into 1100 would only change the view at exactly 1100 px.
+  Proof - new workflow `.github/workflows/visual.yml` (Actions → „Vaizdo palyginimas“; runs by itself on a push that changes CSS or tests/visual on any branch
+  except main; by hand: `ref_base`, `css`). Base = where the branch left main. (1) tests/visual screenshots compared with 0 px tolerance; base taken twice
+  (noise column) + largest colour step; (2) `tests/visual/styles.spec.js`: computed styles (~100 properties) of every element matched by any selector of
+  the old or new file, 22 widths (both sides of every breakpoint), states: loaded / all menus open / open + dark theme / ✎ menu editor / admin mode off /
+  viewing as test parent / bare header; (3) the normal `bash tests/visual.sh`. `checks.sh` passes in every run.
+  Run 45625923605: styles 109 240 / 109 250 identical (the 10 = chat widget's place among body children differs between runs, not a style);
+  `visual.sh` 55/55 passed; strict pixels 48/55 identical - the rest is noise: Budo and LTKF (no header.css) text anti-aliasing (colour step ≤ 58),
+  celebration confetti on the parent page, and 3 files that differ the same way between two runs of unchanged main. Every header.css page was
+  pixel-identical in at least one of runs 45623723381 / 45625923605, except paskyra-tevai-1440 (3 px, colour step 1 - same 3 px between two base runs).
+  Tool changes: page list in tests/visual/pages.js; visual.spec.js loads lazy images and waits for fonts, masks the LTKF map (`.leaflet-container`).
+  Not covered by CI: hover colours (checked by hand: same values, same winner), the font test (selectors with 'Inter' unchanged).
+  Full suite (push) times out at 45 min on main too (pre-existing); header specs run by hand - see below.
+  Next C5 file: app.css (one file per session; the workflow picks the changed .css files by itself).
 ## Open
 - C1 permissions, C3 secret links, C5 CSS cleanup (safe now with tests/visual.sh), C6 engine unit tests, D3 split varzybos.js, D4 same group on two tablets, D5 Budo live polish, D7 arena left hand UI, D8 pixel characters (PC + LibreSprite).
 - Parent payments for Budo registration need a payment provider (later).
