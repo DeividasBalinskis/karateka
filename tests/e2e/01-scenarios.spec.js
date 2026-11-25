@@ -324,8 +324,17 @@ test('coach: limited rights', async ({ browser }) => {
 
 test('member: exam celebration and reply from Denis', async ({ browser }) => {
   const t = await login(browser, 'narys@karateka.test');
-  await t.goto('paskyra.php');
-  check('exam passed celebration', await t.locator('#celebrate .celebrate-kicker', { hasText: 'Egzaminas' }).count() === 1);
+  // Egzaminas duoda XP (v1.96: lygis - 5 XP), todėl kartu atsiranda ir „Naujas lygis“ - šventės rodomos po vieną puslapyje
+  t.keepCelebration = true;
+  let examCelebration = false;
+  for (let i = 0; i < 5; i++) {
+    await t.goto('paskyra.php');
+    if (await t.locator('#celebrate .celebrate-kicker', { hasText: 'Egzaminas' }).count()) { examCelebration = true; break; }
+    if (!(await t.locator('#celebrate').count())) break;
+    await t.locator('#celebrate button').click(); await t.waitForTimeout(500);
+  }
+  t.keepCelebration = false;
+  check('exam passed celebration', examCelebration);
   check('tomas sees Denis reply badge', await t.locator('#chatFab .count-badge:not([hidden])').count() === 1);
   await closeCelebrate(t);
   check('tomas svarbu reply', await t.locator('#svarbu .notif.t-reply', { hasText: 'Žinoma, ateik' }).count() === 1);
