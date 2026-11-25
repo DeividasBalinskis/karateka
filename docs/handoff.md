@@ -181,6 +181,8 @@ Updated: 2026-11-25 · version v2.10 · main
   Every link page shows one „Nuoroda neveikia …“ page. Secretariat: one link per competition (`&t=N` = tatami hint), 2 days after (LINK_SEKR_DAYS), no history restore /
   registration / stream settings, „Baigti darbą“; awards tablet asks a name (saved as `by_name`); Budo history shows „👤 name“ per copy. Tests: new `tests/e2e/links.spec.js`;
   `tests/setup/link.php` + helpers `linkToken` / `linkNew` (tests read keys through PHP now); 17 specs updated (06d/e/f/i/l/p/q/s/t/u, 07i/k/z/zb/zd/ze/zh/zk), 07-pages has the new page.
+  CI on the branch: run 45640461052 ✓ 38/38 (links, 06d, 06q, 06t, 07-pages, 07k); run 45638183610 73/75 (06e/f/i/l/p/s/u, 07z/zb/zg/zh/zk ✓; 07i fails on main the same way; links fixed after).
+  07v, 07zd, 07ze, 07zf (and flaky 06z:155) fail on main v2.10 with the same errors - not from C3. Screenshots not taken (no PHP on the PC) - after the release on test.
   Merge notes: db file is 062 (C1 branch has 061_paskyru_zurnalas.sql - DB_REQUIRED takes the higher one). Touches `app/tournaments.php`, `admin/varzybu-sistema.php` (link panels), one line in `assets/varzybos.js` (history row), `app/layout.php` menu item, `app/bootstrap.php` require.
 - 2026-11-25 v2.10: Peržiūra off (`review_enabled()` = site setting `review_on` === '1'; off → no overlay, no menu item, admin/perziura.php shows a link
   to the switch, perziura-api.php answers {ok:false, off:true}). Switch on admin/testavimas.php (#perziura). app/review.json items emptied (all approved).
