@@ -2048,7 +2048,7 @@ From 2013 he trained with the team of the traditional karate-do club "Sanrei", a
     'Kojos' => 'Legs',
     'Išsisukti' => 'Dodge',
     'Treniruotė su partneriu' => 'Training with a partner',
-    'Botas - treniruočių partneris. Reitingas nesikeičia, bet pergalės skaičiuojamos dovanai (3 per savaitę).' => 'The bot is a training partner. Rating doesn't change, but wins count toward the gift (3 a week).',
+    'Botas - treniruočių partneris. Reitingas nesikeičia, bet pergalės skaičiuojamos dovanai (3 per savaitę).' => 'The bot is a training partner. Rating doesn\'t change, but wins count toward the gift (3 a week).',
     'Jėgos kova' => 'Power fight',
     'Svarbūs lygis, savybės, daiktai ir gyvūnėlis. Stipresnis dažniau laimi, bet gudrumas irgi padeda.' => 'Level, stats, items and pet matter. The stronger one wins more often, but smarts help too.',
     'Gudrumo kova' => 'Skill fight',
