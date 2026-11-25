@@ -119,7 +119,9 @@ Updated: 2026-11-25 · version v2.06 · main
   toggleResult shared with pins; localStorage `vz-live-side`), close label „📋 Mano tatamis“ in desk mode. `?tatamis=N` (CFG.deskArea) opens that desk and is removed
   from the address; secretariat link `varzybos-sekretoriatas.php?k=…&t=N` names the tatami and lands there; 🧑‍💼 panel: „📋 Sekretoriato darbastalis“ buttons per tatami
   + copy links per tatami (renderSekrDesk). The one-column „only my tatami“ board is gone (shownAreas = all). CSS `--vz-head` = sticky header height (setHeadVar).
-  Tests: new 07zk-sekretoriato-darbastalis; 06i (desk instead of one column) and 06k („✎ Keisti“) updated - not run (no node/php here).
+  Tests: new 07zk-sekretoriato-darbastalis; 06i (desk instead of one column) and 06k („✎ Keisti“) updated. CI run 45612854239 (Actions → Testai → spec, main c656196):
+  07zk, 06i (4), 06k (4), 06q, 07zh „Live kova“ passed; 07zh „Budo streaming with phones only“ FAILS at line 55 - admin/varzybu-transliacija.php, ± in the bar iframe:
+  „<html lang="lt"> intercepts pointer events“ (pages not touched by v2.01; this test was never run in CI since the v1.99 rewrite) - open, trace in the run's artifact.
   Local check without PHP: scratchpad harness (make.py renders the template + generated test competition, serve.py) at 1440 / 1024 / 375, dark theme, secretariat mode.
   Another session works in the same folder at the same time (review system: layout.php, header.css, app/review.php, db/060, 07zi-meniu).
   Mistake: commit aab1a85 („v2.01: Budo header at tablet width…“) also took that session's files, which were staged (git add) in the shared index at that moment -
