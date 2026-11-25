@@ -96,14 +96,14 @@ test('home registration: locations grouped by district with who it is for', asyn
 });
 
 test('LTKF review link: guests leave feedback, karateka.lt link only for the admin', async ({ browser }) => {
-  sql("DELETE FROM site_settings WHERE name = 'ltkf_review_token'");
+  sql("DELETE FROM site_settings WHERE name = 'ltkf_review_token'"); sql("UPDATE access_links SET revoked_at = NOW() WHERE kind = 'ltkf_review' AND revoked_at IS NULL");
   const a = await login(browser, 'info@karateka.lt', 1280, 900);
   await a.goto('ltkf/index.php');
   check('admin sees ← karateka.lt and the review link', await a.locator('.karateka-bar a', { hasText: 'karateka.lt' }).count() === 1 && await a.locator('.karateka-bar a[href*="ltkf-perziura"]').count() === 1);
   await a.goto('admin/ltkf-perziura.php');
-  await Promise.all([a.waitForNavigation(), a.click('button[value="on"]')]);
+  await Promise.all([a.waitForNavigation(), a.click('[data-link-kind="ltkf_review"] [data-lk="new"]')]);
   const link = await a.inputValue('#ltkfLink');
-  check('link created', /ltkf-perziura\.php\?k=[0-9a-f]{24}$/.test(link), link);
+  check('link created', /ltkf-perziura\.php\?k=[0-9a-f]{64}$/.test(link), link);
 
   const g = await browser.newPage();
   await g.goto(BASE_URL + 'ltkf/index.php');
@@ -117,7 +117,7 @@ test('LTKF review link: guests leave feedback, karateka.lt link only for the adm
   await g.press('#fbText', 'Enter');
   await g.waitForTimeout(1200);
   check('reviewer feedback saved', sql("SELECT CONCAT(IFNULL(name,''), '|', site) FROM feedback WHERE body LIKE 'LTKF peržiūra: meniu%' ORDER BY id DESC LIMIT 1") === 'Svečias (LTKF peržiūra)|ltkf');
-  sql("DELETE FROM site_settings WHERE name = 'ltkf_review_token'");
+  sql("DELETE FROM site_settings WHERE name = 'ltkf_review_token'"); sql("UPDATE access_links SET revoked_at = NOW() WHERE kind = 'ltkf_review' AND revoked_at IS NULL");
   await g.close();
   noJsErrors(a);
 });

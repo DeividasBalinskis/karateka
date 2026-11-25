@@ -140,16 +140,11 @@ page_start(t('Pateisinimai'), ['admin' => true]);
 <section class="panel card">
   <div class="kicker"><?= te('Nuoroda prašymams') ?></div>
   <div class="just-link-row" style="margin-top:6px;">
+    <?php /* C3: Kopijuoti · ↻ Nauja nuoroda · Išjungti (app/links.php) */ ?>
+    <?= $ready ? link_box('just', null, ['open' => true, 'back' => '/admin/pateisinimai.php']) : '' ?>
     <?php if ($url): ?>
-      <code><?= e(preg_replace('~^https?://~', '', $url)) ?></code>
-      <button type="button" class="btn btn-ghost btn-sm" data-copy="<?= e($url) ?>"><?= te('🔗 Kopijuoti nuorodą') ?></button>
-      <a class="btn btn-ghost btn-sm" href="<?= e($url) ?>" target="_blank" rel="noopener"><?= te('Atidaryti ↗') ?></a>
       <form method="post" class="inline-form"><?= csrf_field() ?><input type="hidden" name="action" value="open"><input type="hidden" name="open" value="<?= just_is_open() ? '0' : '1' ?>">
         <button class="btn btn-ghost btn-sm" type="submit"><?= just_is_open() ? te('Nebepriimti prašymų') : te('Priimti prašymus') ?></button></form>
-      <form method="post" class="inline-form"><?= csrf_field() ?><input type="hidden" name="action" value="link">
-        <button class="btn btn-ghost btn-sm" type="submit" onclick="return confirm('<?= e(t('Sukurti naują nuorodą? Sena nebeveiks.')) ?>')"><?= te('↻ Nauja nuoroda') ?></button></form>
-    <?php else: ?>
-      <form method="post" class="inline-form"><?= csrf_field() ?><input type="hidden" name="action" value="link"><button class="btn btn-primary btn-sm" type="submit"><?= te('Sukurti nuorodą') ?></button></form>
     <?php endif; ?>
   </div>
   <?php if ($url && !just_is_open()): ?><p class="small muted" style="margin:6px 0 0;"><?= te('Prašymai nepriimami - nuoroda rodo „Prašymai nepriimami“.') ?></p><?php endif; ?>

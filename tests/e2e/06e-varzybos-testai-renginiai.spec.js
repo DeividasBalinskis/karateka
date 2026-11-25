@@ -2,7 +2,7 @@
 // LTKF - tik tikri klubai ir teisėjai iš Karatekos; testai - forma neišsitrina, Enter į kitą laukelį, įkėlimas iš teksto,
 // kelių klausimų trynimas, nuoroda be paskyros; renginio priedas (reglamentas); vaikų tvarkaraštis telefone.
 const { test } = require('@playwright/test');
-const { sql, login, nav, check, noJsErrors, flashes, ids } = require('./helpers');
+const { sql, linkToken, login, nav, check, noJsErrors, flashes, ids } = require('./helpers');
 
 test('Taika: club contacts, 6 judges, Enter through scores; registration for Karateka with one row; LTKF clubs and judges', async ({ browser }) => {
   const a = await login(browser, 'info@karateka.lt', 1400, 900);
@@ -55,7 +55,7 @@ test('Taika: club contacts, 6 judges, Enter through scores; registration for Kar
   await a.click('#share-toggle');
   await a.check('#reg-open');
   await a.waitForTimeout(500);
-  const reg = sql(`SELECT reg_token FROM tournaments WHERE id = ${tid}`);
+  const reg = linkToken('reg', tid);
   const c = await login(browser, null, 390, 844);
   await c.goto(`varzybos-registracija.php?k=${reg}`);
   check('Karateka in club list', await c.locator('#regClubs option[value="Karateka"]').count() === 1);
@@ -126,7 +126,7 @@ test('quiz: form keeps input, Enter to next answer, import from text, bulk delet
   // Nuoroda be paskyros
   await nav(a, () => a.check('#nuoroda input[name=share_open]'));
   const link = await a.inputValue('#quizShareUrl');
-  check('share link', /testas-svecias\.php\?k=[a-f0-9]{24}/.test(link), link);
+  check('share link', /testas-svecias\.php\?k=[a-f0-9]{24,64}/.test(link), link);
   const g = await login(browser, null, 390, 844);
   await g.goto(link.replace(/^https?:\/\/[^/]+\//, ''));
   await g.fill('input[name=name]', 'Svečias Testuotojas');

@@ -5,11 +5,10 @@
 // Prieiga - tik su klubo raktu (?c=), paskyros nereikia. Telefonas praneša apie save kas 3 s (stream_phones, db/059).
 require __DIR__ . '/app/bootstrap.php';
 
-$key = varz_cam_key();
-if (!hash_equals($key, (string) get('c'))) {
-    http_response_code(404);
-    exit('<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Nuoroda netinkama</title>'
-        . '<p style="font-family:system-ui;padding:40px;">Nuoroda netinkama. Nuskenuokite QR kodą iš Budo → 🎥 Transliacija.</p>');
+// C3: raktas - app/links.php (rūšis 'cam'), adrese ?k= (senas ?c= veikia toliau)
+$key = (string) (get('k') ?: get('c'));
+if (!link_find('cam', $key)) {
+    link_dead(is_post());
 }
 
 if (is_post() && get('ping')) {
@@ -33,7 +32,7 @@ if (is_post() && get('ping')) {
     exit(json_encode(['ok' => true, 'area' => $area, 'areaName' => $area ? (string) ($row['area_name'] ?: $area . ' TATAMIS') : '',
         'push' => $area ? varz_cam_push_url(varz_cam_id($key, $area)) : ''], JSON_UNESCAPED_UNICODE));
 }
-$cfg = ['ping' => url('varzybos-kamera.php?c=' . $key . '&ping=1')];
+$cfg = ['ping' => url('varzybos-kamera.php?k=' . $key . '&ping=1')];
 ?><!doctype html>
 <html lang="lt">
 <head>

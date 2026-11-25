@@ -173,8 +173,16 @@ Updated: 2026-11-25 · version v2.09 · main
 - 2026-11-25 v2.09: Deividas used Peržiūra on test (jobs #1, #2 „review“, all good, one comment on the side menu) - done by hand in the main session:
   side menu max-height calc(100vh - 108px) + padding-bottom 64px (widgets.css); admin/perziura.php action `close` („✓“ + reply) for queued/working jobs;
   app/review.json → rev 2.09-1. Test 07zj now writes its own manifest (beforeAll / afterAll restore), so review.json can change freely.
+- 2026-11-25 C3 (side session, branch `claude/c3-nuorodos-1bb636`, not merged, VERSION not bumped): secret links - one model. db/062 `access_links` (+ `tournaments.saved_by`,
+  `tournament_versions.saved_by`, `tournament_awards.by_name`), `app/links.php` (LINK_KINDS: sekr, awards, live, reg, demo, cam, exam_signup, exam_waitlist, exam_row, quiz, just,
+  ltkf_editor, ltkf_review; fingerprint + locked copy, `links_key` in config.example.php; `link_find` / `link_alive` / `link_box` / `link_dead`), `admin/nuorodos.php` „Visos nuorodos“
+  (menu key `nuorodos`, also Nustatymai → Sistema). Old tokens move on first use (`links_import` once, mark `links_imported`; `link_legacy_find` per key) - old columns/settings untouched.
+  Every link page shows one „Nuoroda neveikia …“ page. Secretariat: one link per competition (`&t=N` = tatami hint), 2 days after (LINK_SEKR_DAYS), no history restore /
+  registration / stream settings, „Baigti darbą“; awards tablet asks a name (saved as `by_name`); Budo history shows „👤 name“ per copy. Tests: new `tests/e2e/links.spec.js`;
+  `tests/setup/link.php` + helpers `linkToken` / `linkNew` (tests read keys through PHP now); 17 specs updated (06d/e/f/i/l/p/q/s/t/u, 07i/k/z/zb/zd/ze/zh/zk), 07-pages has the new page.
+  Merge notes: db file is 062 (C1 branch has 061_paskyru_zurnalas.sql - DB_REQUIRED takes the higher one). Touches `app/tournaments.php`, `admin/varzybu-sistema.php` (link panels), one line in `assets/varzybos.js` (history row), `app/layout.php` menu item, `app/bootstrap.php` require.
 ## Open
-- C1 permissions, C3 secret links, C5 CSS cleanup (safe now with tests/visual.sh), C6 engine unit tests, D3 split varzybos.js, D4 same group on two tablets, D5 Budo live polish, D7 arena left hand UI, D8 pixel characters (PC + LibreSprite).
+- C1 permissions, C5 CSS cleanup (safe now with tests/visual.sh), C6 engine unit tests, D3 split varzybos.js, D4 same group on two tablets, D5 Budo live polish, D7 arena left hand UI, D8 pixel characters (PC + LibreSprite).
 - Parent payments for Budo registration need a payment provider (later).
 
 ## Next

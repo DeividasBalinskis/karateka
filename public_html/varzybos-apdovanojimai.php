@@ -5,10 +5,30 @@
 // Duomenys: varžybų santrauka (tournaments.results - prizininkai su pilnais vardais) ir būsenos (db/033 tournament_awards).
 require __DIR__ . '/app/bootstrap.php';
 
-$t = tournament_by_token((string) get('k'), 'awards');
+// C3: nuoroda - app/links.php (rūšis 'awards'). Planšetė gali keisti, todėl pirmiausia paklausia vardo; vardas įrašomas prie pažymėtų grupių.
+$k = (string) get('k');
+$link = link_find('awards', $k);
+$t = $link ? tournament_get((int) $link['owner_id']) : null;
 if (!$t) {
-    http_response_code(404);
-    exit('<!doctype html><meta charset="utf-8"><title>Nuoroda netinkama</title><p style="font-family:system-ui;padding:40px;">Nuoroda netinkama arba varžybos ištrintos.</p>');
+    link_dead((bool) get('json') || is_post());
+}
+$me = current_account();
+$who = $me && is_staff($me) ? varz_who($me) : link_name($link);
+$nameErr = '';
+if (is_post() && post('action') !== '') {
+    csrf_check();
+    if (post('action') === 'end') {
+        link_name_clear($link);
+        varz_html_head('Apdovanojimai', 'vz-public vz-demo-start');
+        echo '<main class="vzh demo-start"><div class="panel demo-card"><h2>Darbas baigtas</h2><p class="muted">Šioje planšetėje apdovanojimų prieiga baigta. Norėdami tęsti, vėl atidarykite nuorodą.</p></div></main></body></html>';
+        exit;
+    }
+    $name = trim((string) post('name'));
+    $nameErr = link_name_check($name);
+    if ($nameErr === '') {
+        link_name_set($link, $name);
+        redirect('varzybos-apdovanojimai.php?k=' . $k);
+    }
 }
 
 if (get('json') || is_post()) {
@@ -16,6 +36,10 @@ if (get('json') || is_post()) {
     header('Cache-Control: no-store');
     if (is_post()) {
         // Planšetė: „Užbaigti“ (apdovanota) arba „Grąžinti“ (vėl laukia apdovanojimo). Siųsti gali tik sekretoriatas.
+        if ($who === '') {
+            http_response_code(403);
+            exit(json_encode(['ok' => false, 'error' => 'Įrašykite savo vardą (perkraukite puslapį).'], JSON_UNESCAPED_UNICODE));
+        }
         $in = json_decode((string) file_get_contents('php://input'), true) ?: [];
         $st = ($in['status'] ?? '') === 'done' ? 'done' : 'sent';
         $have = tournament_awards((int) $t['id']);
@@ -27,7 +51,7 @@ if (get('json') || is_post()) {
         }
         foreach (array_slice((array) ($in['cats'] ?? []), 0, 100) as $cid) {
             if (isset($have[(string) $cid]) || isset($fin[(string) $cid])) {
-                tournament_award_set((int) $t['id'], (string) $cid, $st);
+                tournament_award_set((int) $t['id'], (string) $cid, $st, $who);
             }
         }
     }
@@ -45,7 +69,26 @@ if (get('json') || is_post()) {
     exit(json_encode(['ok' => true, 'cats' => $cats, 'awards' => (object) tournament_awards((int) $t['id'])], JSON_UNESCAPED_UNICODE));
 }
 
-$cfg = ['api' => url('varzybos-apdovanojimai.php?k=' . $t['awards_token']), 'title' => $t['title']];
+$cfg = ['api' => url('varzybos-apdovanojimai.php?k=' . $k), 'title' => $t['title']];
+if ($who === '') {   // vardas - pirmiausia (taisyklė 6)
+    varz_html_head('Apdovanojimai · ' . $t['title'], 'vz-public vz-demo-start');
+    ?>
+<main class="vzh demo-start">
+  <form method="post" class="panel demo-card" id="apd-name">
+    <?= csrf_field() ?>
+    <h2>🏅 Apdovanojimai</h2>
+    <p><b><?= e($t['title']) ?></b> · <?= e(fmt_date($t['starts_on'], true)) ?></p>
+    <p class="muted small">Įrašykite savo vardą - jis bus matomas prie apdovanotų grupių. Paskyros nereikia.</p>
+    <?php if ($nameErr): ?><div class="flash flash-err"><?= e($nameErr) ?></div><?php endif; ?>
+    <label>Jūsų vardas <input class="sel" type="text" name="name" maxlength="80" required autofocus placeholder="pvz. Tomas"></label>
+    <button class="btn btn-primary" type="submit" name="action" value="name">Pradėti →</button>
+  </form>
+</main>
+</body>
+</html>
+<?php
+    exit;
+}
 varz_html_head('Apdovanojimai · ' . $t['title'], 'vz-public apd');
 ?>
 <header class="vz-top">
@@ -55,7 +98,9 @@ varz_html_head('Apdovanojimai · ' . $t['title'], 'vz-public apd');
       <h1>🏅 Apdovanojimai</h1>
       <div class="sub"><?= e($t['title']) ?> · <?= e(fmt_date($t['starts_on'], true)) ?></div>
     </div>
-  <div class="vz-top-right"><?= render_lang_switch(tl_lang()) ?></div>
+  <div class="vz-top-right"><span class="vz-link" title="Kas apdovanoja">👤 <?= e($who) ?></span>
+    <?php if (!($me && is_staff($me))): ?><form method="post" class="inline-form"><?= csrf_field() ?><button class="vz-link" type="submit" name="action" value="end" id="apd-end">Baigti darbą</button></form><?php endif; ?>
+    <?= render_lang_switch(tl_lang()) ?></div>
   </div>
 </header>
 <main id="apd" aria-live="polite"><p class="muted">Kraunama…</p></main>

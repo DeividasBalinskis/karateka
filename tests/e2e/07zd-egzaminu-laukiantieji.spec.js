@@ -6,12 +6,13 @@ const { sql, day, login, nav, check, noJsErrors } = require('./helpers');
 test('exam waiting list: one link, separate protocols per belt, add to protocol with an e-mail', async ({ browser }) => {
   sql("DELETE FROM exam_waitlist");
   sql("DELETE FROM site_settings WHERE name IN ('exam_waitlist_token', 'exam_waitlist_open')");
+  sql("UPDATE access_links SET revoked_at = NOW() WHERE kind = 'exam_waitlist' AND revoked_at IS NULL");   // C3: app/links.php
   sql(`REPLACE INTO site_settings (name, value) VALUES ('exam_prices', '{"1": 25}')`);
   sql(`INSERT INTO events (type, title, starts_on, start_time, location) VALUES ('exam', 'Kyu egzaminas (laukiantieji)', '${day(12)}', '10:00', 'Sporto centras')`);
   const a = await login(browser, 'info@karateka.lt', 1440, 900);
   await a.goto('admin/egzaminai.php');
   await nav(a, () => a.click('#laukiantieji button:has-text("Sukurti registracijos nuorodą")'));
-  const url = await a.getAttribute('#laukiantieji [data-copy]', 'data-copy');
+  const url = await a.getAttribute('#laukiantieji [data-link-copy]', 'data-link-copy');
   check('one short registration link', /\/e\/\?[a-z2-9]{6}$/.test(url) && url.length <= 40, url);
   // Ta pati diena - kitas protokolas kitiems diržams
   await a.locator('.exam-copy input[name=label]').last().fill('9–7 kyu');

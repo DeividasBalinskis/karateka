@@ -48,12 +48,13 @@ test('LTKF: edit any text, hide a section, add blocks, footer text, new page in 
 
 test('LTKF editor link: name only, look and contacts, file box; switching the link off ends editing', async ({ browser }) => {
   sql("DELETE FROM site_settings WHERE name IN ('ltkf_nust', 'ltkf_editors')"); sql('DELETE FROM ltkf_files');
+  sql("UPDATE access_links SET revoked_at = NOW() WHERE kind = 'ltkf_editor' AND revoked_at IS NULL");   // C3: redaktorių nuorodos - app/links.php
   const a = await login(browser, 'info@karateka.lt', 1300, 900);
   await a.goto('admin/ltkf-perziura.php');
   await a.fill('#redaktoriai input[name=name]', 'Jonas Sanrei');
   await Promise.all([a.waitForNavigation(), a.click('#redaktoriai button[value=ed_add]')]);
-  const link = (await a.inputValue('#redaktoriai .ltkf-ed input[type=text]')).replace(/^https?:\/\/[^/]+\//, BASE_URL);
-  check('editor link created', /ltkf-redaktorius\.php\?k=[0-9a-f]{24}$/.test(link), link);
+  const link = (await a.inputValue('#redaktoriai .ltkf-ed .lk-url')).replace(/^https?:\/\/[^/]+\//, BASE_URL);
+  check('editor link created', /ltkf-redaktorius\.php\?k=[0-9a-f]{64}$/.test(link), link);
   const ctx = await browser.newContext({ baseURL: BASE_URL, viewport: { width: 1300, height: 900 } });
   const g = await ctx.newPage();
   await g.goto(link); await g.fill('input[name=name]', 'Jonas');
@@ -68,7 +69,7 @@ test('LTKF editor link: name only, look and contacts, file box; switching the li
   await a.goto('ltkf/failai.php');
   check('admin sees the file box', await a.locator('.inbox-list li').count() === 1);
   await a.goto('admin/ltkf-perziura.php');
-  await Promise.all([a.waitForNavigation(), a.click('#redaktoriai button[value=ed_toggle]')]);
+  await Promise.all([a.waitForNavigation(), a.click('#redaktoriai [data-lk="off"]')]);
   await g.goto('ltkf/index.php?redaguoti=1');
   check('switched off - no editing', await g.locator('.ed-bar').count() === 0);
   await ctx.close();

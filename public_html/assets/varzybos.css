@@ -1845,3 +1845,12 @@ body.live-on .fb-fab { display: none !important; }
   .live-win.side-on .lv-stage iframe { right: 0; width: 100%; }
   .live-win.side-on .lv-bar { display: none; }
 }
+
+/* C3: slaptos nuorodos - bendras blokas (app/links.php link_box) Budo puslapiuose */
+.inline-form{display:inline; margin:0;}
+.lk{display:grid; gap:4px;}
+.lk-row{display:flex; flex-wrap:wrap; gap:6px; align-items:center;}
+.lk-row .lk-url{flex:1 1 240px; min-width:0;}
+.lk-form{display:inline; margin:0;}
+.lk-meta{margin:0;}
+.hist-by{white-space:nowrap;}

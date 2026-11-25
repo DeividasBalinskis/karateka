@@ -1,6 +1,6 @@
 // v1.54 (B3): Budo telefone varžybų dieną - kovos langas telpa ekrane, plaukiojantys mygtukai paslėpti, patvirtinimai, TV be tatamio numerio.
 const { test } = require('@playwright/test');
-const { sql, login, check, noJsErrors, BASE_URL } = require('./helpers');
+const { sql, linkToken, login, check, noJsErrors, BASE_URL } = require('./helpers');
 
 test('B3: phone bout - pair and score buttons fit on 375×812, time section folds, floats hidden; confirmations; TV tatami picker', async ({ browser }) => {
   const a = await login(browser, 'info@karateka.lt', 375, 812);
@@ -34,7 +34,7 @@ test('B3: phone bout - pair and score buttons fit on 375×812, time section fold
   check('folded state remembered after a score', await a.locator('.bt-more[open]').count() === 1);
   await a.click('#bt-close');
 
-  const tok = sql(`SELECT share_token FROM tournaments WHERE id = ${tid}`);
+  const tok = linkToken('live', tid);
   const v = await login(browser, null, 1440, 900);
   await v.goto(`varzybos-gyvai.php?k=${tok}&ekranas=1`);
   await v.waitForTimeout(2000);

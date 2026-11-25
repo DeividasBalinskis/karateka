@@ -9,6 +9,8 @@ return [
     'force_https' => true,
     'notify_email'=> 'info@karateka.lt',
     'setup_key'   => 'CHANGE_ME_LONG_RANDOM',      // ištrinkite/pakeiskite sukūrę pirmą administratorių
+    'links_key'   => '',                           // C3: slaptų nuorodų kopijų raktas (ilgas atsitiktinis); tuščias - iš DB nustatymų.
+                                                   // Pakeitus, nuorodos veikia toliau, bet nukopijuoti jas galima tik po „↻ Nauja nuoroda“
     'retention'   => ['unfinished_days' => 30],    // nebaigtos registracijos ištrinamos po N dienų
     'ranking'     => ['scope' => 'category'],     // reitingas: category (vaikai/jaunimas/suaugę) | group | club
 

@@ -4,13 +4,14 @@
 // Nuoroda rodoma užsiregistravus, ją gali nukopijuoti treneris (protokole), o pamiršus - „Jau užsiregistravai?“ registracijos puslapyje.
 require __DIR__ . '/app/bootstrap.php';
 
-$tok = (string) (get('t') ?: post('t'));
+// C3: raktas - app/links.php (rūšis 'exam_row'), adrese ?k= (senas ?t= veikia toliau)
+$tok = (string) (get('k') ?: post('k') ?: get('t') ?: post('t'));
 $row = exam_row_by_token($tok);
 $event = $row ? q_one('SELECT * FROM events WHERE id = ? AND type = "exam"', [(int) $row['event_id']]) : null;
 if (!$event) {
-    not_found();
+    link_dead();
 }
-$self = 'mano-egzaminas.php?t=' . $tok;
+$self = 'mano-egzaminas.php?k=' . $tok;
 $past = event_last_day($event) < date('Y-m-d');
 // Asmeninė nuoroda galioja 30 dienų po egzamino (sprendimas 2026-11-20): vėliau - tik paaiškinimas, be asmens duomenų
 if (event_last_day($event) < date('Y-m-d', strtotime('-30 days'))) {
@@ -75,7 +76,7 @@ page_start(t('Mano egzaminas') . ': ' . tr_text($event['title']), ['noindex' => 
       <strong><?= te('Kokį diržą laikysi?') ?></strong>
       <?php if (!$past && !$row['result']): ?>
         <form method="post" class="row" style="gap:6px; flex-wrap:wrap;">
-          <?= csrf_field() ?><input type="hidden" name="t" value="<?= e($tok) ?>"><input type="hidden" name="action" value="belt">
+          <?= csrf_field() ?><input type="hidden" name="k" value="<?= e($tok) ?>"><input type="hidden" name="action" value="belt">
           <select name="belt" onchange="this.form.submit()" aria-label="<?= te('Laikomas diržas') ?>">
             <option value=""><?= te('— pasirink —') ?></option>
             <?php foreach (BELTS as $l => [$kyu, $name]): if ($l < 2 || $l > 10) { continue; } ?>
@@ -122,7 +123,7 @@ page_start(t('Mano egzaminas') . ': ' . tr_text($event['title']), ['noindex' => 
     <section class="panel card program-card">
       <div class="row between" style="gap:10px; flex-wrap:wrap;">
         <div><div class="kicker"><?= te('Egzamino programa') ?></div><h2 style="margin:2px 0 0;"><?= belt_chip($showLvl) ?></h2></div>
-        <form method="get" class="row" style="gap:6px;"><input type="hidden" name="t" value="<?= e($tok) ?>">
+        <form method="get" class="row" style="gap:6px;"><input type="hidden" name="k" value="<?= e($tok) ?>">
           <select name="dirzas" onchange="this.form.submit()" aria-label="<?= te('Kito diržo programa') ?>" class="small-select">
             <?php foreach (BELTS as $l => [$kyu, $name]): if ($l < 2 || $l > 10) { continue; } ?><option value="<?= $l ?>"<?= $l === $showLvl ? ' selected' : '' ?>><?= e($kyu) ?></option><?php endforeach; ?>
           </select></form>

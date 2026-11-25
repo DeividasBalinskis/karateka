@@ -1,7 +1,7 @@
 // v1.41: registracija į egzaminą per nuorodą (be paskyros) ir kvietimai, „Egzaminavimas“ treneriams, „Registruotis“ / „Registracija uždaryta“
 // prie renginių, mokestis pagal lankomumą, testas iš visų klausimų, prisijungimo tekstas; Budo: „Rask save“ ir YouTube transliacija žiūrovams.
 const { test } = require('@playwright/test');
-const { sql, day, login, nav, check, noJsErrors } = require('./helpers');
+const { sql, linkToken, day, login, nav, check, noJsErrors } = require('./helpers');
 
 test('exam signup link for people without an account, invitations, exam list for staff, register buttons', async ({ browser }) => {
   sql("DELETE FROM events WHERE title LIKE 'E2E egzaminas%' OR title = 'E2E uždaryta registracija'");
@@ -22,7 +22,7 @@ test('exam signup link for people without an account, invitations, exam list for
   const more = async () => { if (!(await a.locator('#registracija').isVisible())) await a.locator('#daugiau > summary').click(); };
   await more();
   await nav(a, () => a.click('button:has-text("Sukurti registracijos nuorodą")'));
-  const token = sql(`SELECT token FROM exam_signup_links WHERE event_id = ${eid}`);
+  const token = linkToken('exam_signup', eid);
   check('short link code created', /^[a-z2-9]{6}$/.test(token), token);
   await more();
   check('link shown with copy', (await a.inputValue('#registracija .su-url')).endsWith('/e/?' + token));
@@ -184,7 +184,7 @@ test('Budo spectators: find yourself in the schedule, YouTube stream with start 
   await a.waitForFunction(() => /Transliacija išsaugota/.test(document.getElementById('save-state').textContent));
   check('stream saved', sql(`SELECT CONCAT(stream_url, '|', stream_at) FROM tournaments WHERE id = ${tid}`) === 'https://www.youtube.com/watch?v=dQw4w9WgXcQ|2027-02-06 10:00:00');
 
-  const share = sql(`SELECT share_token FROM tournaments WHERE id = ${tid}`);
+  const share = linkToken('live', tid);
   const v = await login(browser, null, 390, 844);
   await v.goto(`varzybos-gyvai.php?k=${share}`);
   check('stream block with start date', /prasidės/.test(await v.textContent('#gv-stream')) && await v.locator('#gv-stream iframe[src*="youtube-nocookie.com/embed/dQw4w9WgXcQ"]').count() === 1);

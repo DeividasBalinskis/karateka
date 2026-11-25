@@ -60,6 +60,7 @@ test('Taika home, switcher, menu order, live schedule with current category and 
 });
 
 test('guest quiz: only name required, optional email stored', async ({ browser }) => {
+  sql("DELETE FROM access_links WHERE token_hash = SHA2('aaaaaaaaaaaaaaaaaaaaaaaa', 256)");   // C3: sena nuoroda perkeliama iš naujo
   sql("INSERT INTO quizzes (title, audience, question_count, pass_percent, is_published, share_open, share_token) VALUES ('Svečio testas (e2e)', 'karateka', 1, 50, 1, 1, 'aaaaaaaaaaaaaaaaaaaaaaaa')");
   const qz = +sql("SELECT id FROM quizzes WHERE title = 'Svečio testas (e2e)'");
   sql(`INSERT INTO quiz_questions (quiz_id, body, sort_order) VALUES (${qz}, 'Kas yra kiai?', 1)`);

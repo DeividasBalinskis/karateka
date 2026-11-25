@@ -96,6 +96,7 @@ test('Budo: no long descriptions, group name opens control, other systems menu, 
   const areaId = JSON.parse(sql(`SELECT state FROM tournaments WHERE id = ${tid}`)).areas[0].id;
   const live = JSON.stringify({ mode: 'kumite', cat: 'Kumite M 10-11', round: 'Finalas', bout: '3', aka: { name: 'Jonas J.' }, shiro: { name: 'Petras P.' }, sa: 4, sb: 2, at: Date.now(), timer: { running: false, remaining: 61000, total: 90000 } });
   sql(`REPLACE INTO tournament_live (tournament_id, area_id, data, updated_ms) VALUES (${tid}, ${areaId}, '${live.replace(/'/g, "''")}', ${Date.now()})`);
+  sql("DELETE FROM access_links WHERE token_hash = SHA2('abcdefabcdefabcdefab0789', 256)");   // C3: sena nuoroda perkeliama iš naujo
   sql(`UPDATE tournaments SET share_token = 'abcdefabcdefabcdefab0789' WHERE id = ${tid}`);
   await a.goto(`admin/varzybu-sistema.php?id=${tid}`);
   await a.click('#share-toggle');

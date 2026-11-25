@@ -14,7 +14,7 @@ $ready = tournaments_ready();
 // Bandymo nuoroda draugams: sukurti / pakeisti / išjungti (tik adminui)
 if (is_post() && in_array(post('action'), ['demo_on', 'demo_off'], true) && is_admin()) {
     csrf_check();
-    set_site_setting('taika_demo_token', post('action') === 'demo_on' ? bin2hex(random_bytes(12)) : '');
+    post('action') === 'demo_on' ? link_create('demo') : link_off_kind('demo');   // C3: app/links.php (seni mygtukai)
     flash('ok', post('action') === 'demo_on' ? t('Bandymo nuoroda sukurta - nukopijuokite ir nusiųskite.') : t('Bandymo nuoroda išjungta - su ja nebeprisijungs.'));
     redirect('admin/varzybos.php#bandymas');
 }
@@ -211,6 +211,7 @@ varz_html_head(t('Varžybos'), 'vz-home');
     <div class="varz-demo-note">
       <b><?= te('👋 Sveiki,') ?> <?= e($me['first_name']) ?>!</b> <?= te('Tai Budo varžybų sistemos bandymas: galite daryti viską, ką daro sekretoriatas ir organizatorius - kurti varžybas, dalyvius, kategorijas, vesti kovas, siųsti apdovanojimams.') ?>
       <?= te('Pradėkite nuo „🎲 Sukurti test varžybas“ - bus išgalvoti dalyviai ir dalis kovų. Pastebėjimus rašykite per') ?> <b><?= te('💡 Atsiliepimas') ?></b> <?= te('(apačioje kairėje) - galima įklijuoti ekrano nuotrauką (Ctrl+V).') ?>
+      <form method="post" action="<?= url('varzybos-bandymas.php') ?>" class="inline-form"><?= csrf_field() ?><button class="btn btn-sm" type="submit" name="action" value="end" id="demo-end"><?= te('Baigti darbą') ?></button></form>
     </div>
   <?php endif; ?>
   <?php if (!$ready): ?>
@@ -297,19 +298,11 @@ varz_html_head(t('Varžybos'), 'vz-home');
   <?php if (varzybos_enabled() && !$demo): ?>
     <a class="varz-share varz-ext" href="<?= url('admin/varzybos-isorine.php') ?>">🔗 <b><?= te('Išorinė varžybų sistema') ?></b> <span class="muted small"><?= te('- registracija per karateka.lt') ?></span> <span class="varz-ext-go">→</span></a>
   <?php endif; ?>
-  <?php if (is_admin()): $demoTok = varz_demo_token(); $demoUrl = $demoTok !== '' ? abs_url('varzybos-bandymas.php?k=' . $demoTok) : ''; ?>
-    <details class="varz-share" id="bandymas"<?= $demoUrl ? ' open' : '' ?>>
+  <?php if (is_admin()): $demoLink = link_current('demo'); ?>
+    <details class="varz-share" id="bandymas"<?= $demoLink ? ' open' : '' ?>>
       <summary><b><?= te('👀 Duoti išbandyti (be paskyros)') ?></b> <span class="small muted"><?= te('- draugui ar kito klubo sekretoriatui') ?></span></summary>
       <p class="small muted"><?= te('Su šia nuoroda žmogus įrašo savo vardą ir gali daryti viską, ką daro adminas, bet tik bandymo varžybose: tikrų klubo narių ir jų duomenų nemato, karateka.lt valdymo neatidaro. Atsiliepimus (💡) matysite Valdymas → Atsiliepimai.') ?></p>
-      <?php if ($demoUrl): ?>
-        <div class="sp-row"><input class="sel sp-url" readonly value="<?= e($demoUrl) ?>" aria-label="<?= te('Bandymo nuoroda') ?>" onclick="this.select()">
-          <button type="button" class="btn" onclick="navigator.clipboard && navigator.clipboard.writeText(this.previousElementSibling.value).then(() => { this.textContent = '✓'; })"><?= te('Kopijuoti') ?></button></div>
-        <form method="post" class="sp-row"><?= csrf_field() ?>
-          <button class="btn" name="action" value="demo_on" type="submit" onclick="return confirm('<?= e(t('Sukurti naują nuorodą? Sena nebeveiks.')) ?>')"><?= te('↻ Nauja nuoroda') ?></button>
-          <button class="btn btn-danger" name="action" value="demo_off" type="submit"><?= te('Išjungti') ?></button></form>
-      <?php else: ?>
-        <form method="post"><?= csrf_field() ?><button class="btn btn-primary" name="action" value="demo_on" type="submit"><?= te('Sukurti bandymo nuorodą') ?></button></form>
-      <?php endif; ?>
+      <?= link_box('demo', null, ['row' => $demoLink, 'create' => t('Sukurti bandymo nuorodą'), 'back' => '/admin/varzybos.php#bandymas']) ?>
     </details>
   <?php endif; ?>
 </main>

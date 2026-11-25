@@ -6,6 +6,7 @@ require __DIR__ . '/app/bootstrap.php';
 if (ltkf_review_start((string) get('k')) || is_admin()) {
     redirect('ltkf/index.php');
 }
+link_dead();   // C3: viena „Nuoroda neveikia“ žinutė
 http_response_code(404);
 ?><!doctype html>
 <html lang="lt"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>LTKF peržiūra</title>

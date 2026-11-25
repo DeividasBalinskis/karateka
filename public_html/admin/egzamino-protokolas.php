@@ -163,9 +163,9 @@ if (is_post()) {
         case 'su_create':
             flash(exam_signup_link($id, true) ? 'ok' : 'err', exam_signup_ready() ? t('Registracijos nuoroda sukurta - nukopijuokite ir išsiųskite.') : t('Atnaujinkite duomenų bazę (Šiandien → „Atnaujinkite duomenų bazę“).'));
             break;
-        case 'su_short':   // v1.92: ilgą (seną) nuorodą pakeisti trumpa - sena nebeveiks
-            if (exam_signup_link($id)) {
-                q('UPDATE exam_signup_links SET token = ? WHERE event_id = ?', [exam_short_code(), $id]);
+        case 'su_short':   // v1.92: ilgą (seną) nuorodą pakeisti trumpa - sena nebeveiks (C3: ↻ Nauja nuoroda - visada trumpa)
+            if (($l = exam_signup_link($id)) && !empty($l['link'])) {
+                link_renew((int) $l['link']['id']);
                 flash('ok', t('Nauja trumpa nuoroda sukurta. Sena nebeveikia.'));
             }
             break;
@@ -357,15 +357,16 @@ page_start(t('Egzamino protokolas') . ': ' . $event['title'], ['admin' => true, 
             <button class="btn btn-primary btn-sm" type="submit"><?= te('Sukurti registracijos nuorodą') ?></button></form>
         <?php else: $suUrl = exam_signup_url($suLink); ?>
           <p class="small"><?= te('Nusiųskite nuorodą (Messenger, SMS, el. paštu). Užsiregistravę iškart atsiranda protokole; kiekvienas gauna asmeninį egzamino puslapį (🔗 prie vardo).') ?></p>
-          <div class="row" style="gap:6px; flex-wrap:wrap;">
-            <input type="text" readonly value="<?= e($suUrl) ?>" class="su-url" aria-label="<?= te('Registracijos nuoroda') ?>" onclick="this.select()">
-            <button type="button" class="btn btn-sm" data-copy="<?= e($suUrl) ?>"><?= te('Kopijuoti') ?></button>
-            <a class="btn btn-ghost btn-sm" href="<?= e($suUrl) ?>" target="_blank" rel="noopener"><?= te('Atidaryti ↗') ?></a>
-            <form method="post"><?= csrf_field() ?><input type="hidden" name="id" value="<?= $id ?>"><input type="hidden" name="action" value="su_toggle">
-              <button class="btn btn-ghost btn-sm" type="submit"><?= (int) $suLink['is_open'] ? te('Uždaryti registraciją') : te('Atidaryti registraciją') ?></button></form>
-            <?php if (strlen((string) $suLink['token']) > 6): ?><form method="post"><?= csrf_field() ?><input type="hidden" name="id" value="<?= $id ?>"><input type="hidden" name="action" value="su_short">
-              <button class="btn btn-ghost btn-sm" type="submit" onclick="return confirm('<?= e(t('Sukurti trumpą nuorodą? Sena (ilga) nebeveiks.')) ?>')"><?= te('↻ Trumpa nuoroda') ?></button></form><?php endif; ?>
-          </div>
+          <?php if (!empty($suLink['link'])): /* C3: Kopijuoti · ↻ Nauja nuoroda · Išjungti (app/links.php) */ ?>
+            <div class="su-link"><?= link_box('exam_signup', $id, ['row' => $suLink['link'], 'open' => true, 'class' => 'su-url', 'back' => '/admin/egzamino-protokolas.php?id=' . $id . '#registracija']) ?></div>
+          <?php else: ?>
+            <div class="row" style="gap:6px; flex-wrap:wrap;">
+              <input type="text" readonly value="<?= e($suUrl) ?>" class="su-url" aria-label="<?= te('Registracijos nuoroda') ?>" onclick="this.select()">
+              <button type="button" class="btn btn-sm" data-copy="<?= e($suUrl) ?>"><?= te('Kopijuoti') ?></button>
+            </div>
+          <?php endif; ?>
+          <form method="post" class="inline-form"><?= csrf_field() ?><input type="hidden" name="id" value="<?= $id ?>"><input type="hidden" name="action" value="su_toggle">
+            <button class="btn btn-ghost btn-sm" type="submit"><?= (int) $suLink['is_open'] ? te('Uždaryti registraciją') : te('Atidaryti registraciją') ?></button></form>
           <?php if (!$suOpen && (int) $suLink['is_open']): ?><p class="small muted"><?= reg_on('exam') ? te('Registracija nevyksta: praėjo registracijos terminas arba egzaminas jau įvyko.') : te('Egzaminų registracija išjungta: Nustatymai → Registracija.') ?></p><?php endif; ?>
           <?php if ($suList): ?>
             <div class="table-scroll"><table class="su-table">

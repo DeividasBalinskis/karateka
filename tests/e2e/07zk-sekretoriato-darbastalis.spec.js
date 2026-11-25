@@ -109,7 +109,7 @@ test('secretariat desk: my tatami, groups open in place, winner by name, swap an
 
   // Adminas: „🧑‍💼 Sekretoriatas“ → darbastalis kitam tatamiui ir nuorodos tatamiams
   await a.click('#sekr-toggle');
-  await nav(a, () => a.click('#sekr-panel button[value="sekr_on"]'));
+  await nav(a, () => a.click('#sekr-panel [data-lk="new"]'));
   await a.waitForSelector('#sekr-panel:not([hidden]) #sekr-links [data-copy]');   // po sukūrimo skydelis atidarytas (&sekr=1)
   const copies = await a.$$eval('#sekr-links [data-copy]', bs => bs.map(b => b.dataset.copy));
   check('a secretariat link per tatami', copies.length === state(tid).areas.length && copies.every((u, i) => /varzybos-sekretoriatas\.php\?k=[0-9a-f]+&t=\d+$/.test(u)), JSON.stringify(copies));

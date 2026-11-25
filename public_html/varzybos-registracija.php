@@ -7,7 +7,7 @@ require __DIR__ . '/app/bootstrap.php';
 $k = (string) (get('k') ?: post('k'));
 $t = tournament_by_token($k, 'reg');
 if (!$t) {
-    not_found();
+    link_dead();
 }
 $open = !empty($t['reg_open']) && reg_on('budo');
 $year = (int) date('Y');

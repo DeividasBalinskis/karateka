@@ -67,15 +67,22 @@ function just_is_recipient(?array $acc): bool
     return false;
 }
 
-/** Nuorodos kodas (trumpas, kaip egzaminų); $new - naujas (senas nebeveiks) */
+/** Nuorodos kodas (trumpas, kaip egzaminų; '' - nėra); $new - naujas (senas nebeveiks). C3: app/links.php (rūšis 'just'). */
 function just_token(bool $new = false): string
 {
-    $t = (string) site_setting('just_token', '');
-    if ($new || ($t !== '' && !exam_code_ok($t))) {
-        $t = exam_short_code();
-        set_site_setting('just_token', $t);
+    if (!links_ready()) {   // db/062 dar neimportuotas - kaip anksčiau
+        $t = (string) site_setting('just_token', '');
+        if ($new || ($t !== '' && !exam_code_ok($t))) {
+            $t = exam_short_code();
+            set_site_setting('just_token', $t);
+        }
+        return $t;
     }
-    return $t;
+    $l = link_current('just');
+    if ($new) {
+        $l = $l ? link_renew((int) $l['id']) : link_create('just');
+    }
+    return (string) link_token($l);
 }
 
 function just_url(): string

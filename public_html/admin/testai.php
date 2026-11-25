@@ -401,10 +401,8 @@ if ($id || get('id') === 'new' || get('new')) {
           <noscript><button class="btn btn-ghost btn-sm" type="submit"><?= te('Išsaugoti') ?></button></noscript>
         </form>
         <?php if (!empty($quiz['share_open'])): ?>
-          <div class="row share-row" style="gap:8px; margin-top:8px;">
-            <input type="text" readonly value="<?= e($shareUrl) ?>" id="quizShareUrl" aria-label="<?= te('Nuoroda') ?>" onclick="this.select()">
-            <button class="btn btn-ghost btn-sm" type="button" onclick="var i=document.getElementById('quizShareUrl'); i.select(); try { navigator.clipboard.writeText(i.value); } catch (e) { document.execCommand('copy'); } this.textContent='✓ Nukopijuota';"><?= te('Kopijuoti') ?></button>
-            <a class="btn btn-ghost btn-sm" href="<?= e($shareUrl) ?>" target="_blank" rel="noopener"><?= te('Atidaryti ↗') ?></a>
+          <div class="share-row" style="margin-top:8px;">
+            <?= link_box('quiz', $id, ['id' => 'quizShareUrl', 'open' => true, 'back' => '/admin/testai.php?id=' . $id . '#nuoroda']) /* C3: Kopijuoti · ↻ · Išjungti */ ?>
           </div>
         <?php endif; ?>
         <?php $guests = q_all('SELECT * FROM quiz_guest_attempts WHERE quiz_id = ? ORDER BY created_at DESC LIMIT 100', [$id]); ?>

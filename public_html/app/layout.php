@@ -336,6 +336,9 @@ function admin_menu_items(): array
     if (is_admin() && function_exists('ltkf_url') && ltkf_url() !== '') {   // B9: LTKF svetainė - ir iš Valdymo
         $it['ltkf'] = ['🏛️', t('LTKF svetainė'), 'ltkf/', 0, t('Federacijos svetainės turinys')];
     }
+    if (is_admin()) {   // C3: visos slaptos nuorodos vienoje vietoje
+        $it['nuorodos'] = ['🔗', t('Visos nuorodos'), 'admin/nuorodos.php', 0, t('Slaptos nuorodos: kopijuoti, pakeisti, išjungti')];
+    }
     $it['nustatymai'] = ['⚙️', t('Nustatymai'), 'admin/nustatymai.php', 0, t('Grupės, tvarkaraštis, vertimai, paskyra')];
     return $it;
 }
@@ -346,7 +349,7 @@ function admin_menu_default(): array
     return [
         ['id' => 'kasdien', 'name' => '', 'items' => ['siandien', 'treniruote', 'egzaminai', 'renginiai', 'nariai']],
         ['id' => 'darbai', 'name' => '', 'items' => ['patvirtinimai', 'atsiliepimai', 'perziura', 'pateisinimai', 'pranesimai']],
-        ['id' => 'nustatymai', 'name' => '', 'items' => ['xp', 'testai', 'federacija', 'ltkf', 'nustatymai']],
+        ['id' => 'nustatymai', 'name' => '', 'items' => ['xp', 'testai', 'federacija', 'ltkf', 'nuorodos', 'nustatymai']],
     ];
 }
 

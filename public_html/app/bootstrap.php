@@ -48,6 +48,7 @@ require APP_DIR . '/db.php';
 require APP_DIR . '/csrf.php';
 require APP_DIR . '/mail.php';
 require APP_DIR . '/tokens.php';
+require APP_DIR . '/links.php';
 require APP_DIR . '/auth.php';
 require APP_DIR . '/two_factor.php';
 require APP_DIR . '/device_codes.php';

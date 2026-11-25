@@ -4,8 +4,14 @@
 // programa, testas, kaina, rezultatas. Nuorodą pamiršus - „Jau užsiregistravai?“: vardas pavardė + gimimo data.
 require __DIR__ . '/app/bootstrap.php';
 
+// C3: abi nuorodos (/e/?kodas) - app/links.php: 'exam_waitlist' (visiems egzaminams) ir 'exam_signup' (vienam egzaminui)
+$code = (string) get('k');
+$found = exam_code_ok($code) ? link_find(['exam_waitlist', 'exam_signup'], $code) : null;
+if (!$found) {
+    link_dead();
+}
 // #165: bendra nuoroda visiems egzaminams - registracija į laukiančiųjų sąrašą (treneris vėliau priskiria egzaminą ir protokolą)
-if (exam_waitlist_ready() && exam_code_ok((string) get('k')) && exam_waitlist_token() !== '' && hash_equals(exam_waitlist_token(), (string) get('k'))) {
+if ($found['kind'] === 'exam_waitlist' && exam_waitlist_ready()) {
     $wOpen = exam_waitlist_is_open();
     $wErr = [];
     $wDone = null;
@@ -86,10 +92,10 @@ if (exam_waitlist_ready() && exam_code_ok((string) get('k')) && exam_waitlist_to
     exit;
 }
 
-$link = exam_signup_ready() && exam_code_ok((string) get('k')) ? q_one('SELECT * FROM exam_signup_links WHERE token = ?', [(string) get('k')]) : null;
+$link = $found['kind'] === 'exam_signup' && $found['owner_id'] !== null ? (exam_signup_link((int) $found['owner_id']) ?: ['event_id' => (int) $found['owner_id'], 'is_open' => 1, 'token' => $code]) : null;
 $event = $link ? q_one('SELECT * FROM events WHERE id = ? AND type = "exam"', [(int) $link['event_id']]) : null;
 if (!$event) {
-    not_found();
+    link_dead();
 }
 $open = exam_signup_open($event, $link) && reg_on('exam');
 $errors = [];

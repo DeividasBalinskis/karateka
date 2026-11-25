@@ -23,6 +23,7 @@ test('Budo video: YouTube link per tatami; viewers see the video with the live b
   // Kova vyksta ant to tatamio
   const live = JSON.stringify({ mode: 'kumite', cat: 'Kumite M 10-11', round: 'Finalas', bout: '3', aka: { name: 'Jonas J.' }, shiro: { name: 'Petras P.' }, sa: 2, sb: 1, at: Date.now(), timer: { running: false, remaining: 61000 } });
   sql(`REPLACE INTO tournament_live (tournament_id, area_id, data, updated_ms) VALUES (${tid}, ${areaId}, '${live.replace(/'/g, "''")}', ${Date.now()})`);
+  sql("DELETE FROM access_links WHERE token_hash = SHA2('abcdefabcdefabcdefab0786', 256)");   // C3: sena nuoroda perkeliama iš naujo
   sql(`UPDATE tournaments SET share_token = 'abcdefabcdefabcdefab0786' WHERE id = ${tid}`);
   const v = await login(browser, null, 390, 844);
   await v.goto('varzybos-gyvai.php?k=abcdefabcdefabcdefab0786');

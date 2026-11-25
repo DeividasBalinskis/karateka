@@ -239,24 +239,32 @@ function member_upcoming_exam(array $m): ?array
 
 // ---------- Nuoroda be paskyros (db/028) ----------
 
-/** Testo nuorodos raktas (sukuriamas pirmą kartą) */
+/** Testo nuorodos raktas (sukuriamas pirmą kartą; išjungtos - '' kol nepaspaudžiama „Sukurti nuorodą“). C3: app/links.php (rūšis 'quiz'). */
 function quiz_share_token(array $quiz): string
 {
-    if (!empty($quiz['share_token'])) {
-        return (string) $quiz['share_token'];
+    if (!links_ready()) {   // db/062 dar neimportuotas - kaip anksčiau
+        if (!empty($quiz['share_token'])) {
+            return (string) $quiz['share_token'];
+        }
+        q('UPDATE quizzes SET share_token = ? WHERE id = ? AND share_token IS NULL', [bin2hex(random_bytes(12)), (int) $quiz['id']]);
+        return (string) q_value('SELECT share_token FROM quizzes WHERE id = ?', [(int) $quiz['id']]);
     }
-    q('UPDATE quizzes SET share_token = ? WHERE id = ? AND share_token IS NULL', [bin2hex(random_bytes(12)), (int) $quiz['id']]);
-    return (string) q_value('SELECT share_token FROM quizzes WHERE id = ?', [(int) $quiz['id']]);
+    if (!empty($quiz['share_token']) && !link_current('quiz', (int) $quiz['id'])) {
+        link_find('quiz', (string) $quiz['share_token']);   // sena nuoroda - perkeliama, veikia toliau
+    }
+    return (string) link_token(link_ensure('quiz', (int) $quiz['id']));
 }
 
 /** Testas pagal nuorodos raktą (tik jei dalijimasis įjungtas) */
-function quiz_by_share_token(string $token): ?array
+function quiz_by_share_token(string $token, bool $fromExam = false): ?array
 {
-    if (!preg_match('/^[a-f0-9]{24}$/', $token)) {
+    $l = link_find('quiz', $token);
+    if (!$l) {
         return null;
     }
     try {
-        return q_one('SELECT * FROM quizzes WHERE share_token = ? AND share_open = 1', [$token]);
+        // Iš asmeninio egzamino puslapio - ir neatidarius dalijimosi (tik paskelbtas testas)
+        return q_one('SELECT * FROM quizzes WHERE id = ? AND ' . ($fromExam ? '(share_open = 1 OR is_published = 1)' : 'share_open = 1'), [(int) $l['owner_id']]) ?: null;
     } catch (PDOException $ex) {
         return null;   // dar neimportuotas db/028
     }

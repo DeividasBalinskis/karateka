@@ -15,9 +15,9 @@ test('secretariat link: name only, only this competition, no member data; admin 
 
   // Adminas sukuria nuorodą
   await a.click('#sekr-toggle');
-  await Promise.all([a.waitForNavigation(), a.click('#sekr-panel button[value="sekr_on"]')]);
+  await Promise.all([a.waitForNavigation(), a.click('#sekr-panel [data-lk="new"]')]);
   const link = await a.inputValue('#sekr-url');
-  check('link created', /varzybos-sekretoriatas\.php\?k=[0-9a-f]{24}$/.test(link), link);
+  check('link created', /varzybos-sekretoriatas\.php\?k=[0-9a-f]{64}$/.test(link), link);
 
   // Peržiūra „kaip sekretoriatas“
   await Promise.all([a.waitForNavigation(), a.click('#sekr-preview')]);
@@ -57,7 +57,7 @@ test('secretariat link: name only, only this competition, no member data; admin 
 
   // Išjungus nuorodą - prieiga baigiasi
   await a.goto(`admin/varzybu-sistema.php?id=${tid}&sekr=1`);
-  await Promise.all([a.waitForNavigation(), a.click('#sekr-panel button[value="sekr_off"]')]);
+  await Promise.all([a.waitForNavigation(), a.click('#sekr-panel [data-lk="off"]')]);
   await g.goto(`admin/varzybu-sistema.php?id=${tid}`);
   check('access ends when the link is off', /prisijungti\.php/.test(g.url()), g.url());
   await ctx.close();

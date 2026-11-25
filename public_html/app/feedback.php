@@ -212,7 +212,7 @@ const FEEDBACK_MAX_IMAGES = 40;
 function feedback_safe_page(string $page): string
 {
     $page = (string) preg_replace('~(/[ep]/?\?)[^&#]*~i', '$1…', $page);   // v1.92-v1.93: trumpos nuorodos /e/?kodas, /p/?kodas
-    return (string) preg_replace('/([?&](?:k|t|e|key|token)=)[^&#]*/i', '$1…', $page);
+    return (string) preg_replace('/([?&](?:k|t|e|c|key|token)=)[^&#]*/i', '$1…', $page);   // C3: ir ?c= (senas telefonų QR)
 }
 
 function feedback_add(?array $a, string $body, string $page, string $name = '', string $site = 'karateka', ?string $context = null, bool $allowEmpty = false)
@@ -454,22 +454,26 @@ function feedback_site_now(): string
 /** LTKF peržiūros nuoroda federacijos nariams (be paskyros): admin → admin/ltkf-perziura.php; atsidarius - gali palikti atsiliepimus LTKF svetainėje */
 function ltkf_review_token(): string
 {
-    return (string) site_setting('ltkf_review_token', '');
+    return (string) link_token(link_current('ltkf_review'));   // C3: app/links.php (rūšis 'ltkf_review')
 }
 
+/** Peržiūros nuorodos sesija (arba LTKF redaktorius - jis irgi gali palikti atsiliepimų) */
 function ltkf_review(): bool
 {
-    $tok = ltkf_review_token();
-    return $tok !== '' && hash_equals(hash('sha256', $tok), (string) ($_SESSION['ltkf_review'] ?? ''));
+    if (link_alive('ltkf_review', (string) ($_SESSION['ltkf_review'] ?? ''))) {
+        return true;
+    }
+    $ed = (string) ($_SESSION['ltkf_editor'] ?? '');
+    return $ed !== '' && link_alive('ltkf_editor', preg_match('/^[a-f0-9]{64}$/', $ed) ? $ed : hash('sha256', $ed)) !== null;
 }
 
 function ltkf_review_start(string $token): bool
 {
-    $tok = ltkf_review_token();
-    if ($tok === '' || !hash_equals($tok, $token)) {
+    $l = link_find('ltkf_review', $token);
+    if (!$l) {
         return false;
     }
-    $_SESSION['ltkf_review'] = hash('sha256', $tok);
+    $_SESSION['ltkf_review'] = (string) $l['token_hash'];
     return true;
 }
 

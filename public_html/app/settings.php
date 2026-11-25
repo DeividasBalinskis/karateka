@@ -51,6 +51,7 @@ const SETTINGS = [
     'pamokos_dan'      => ['label' => 'Dan pamokos sukurtos', 'group' => 'Žymos', 'type' => 'mark', 'where' => '', 'owner' => 'admin', 'restore' => false],
     'pamokos_katos'    => ['label' => 'Katų pamokos sukurtos', 'group' => 'Žymos', 'type' => 'mark', 'where' => '', 'owner' => 'admin', 'restore' => false],
     'reactions'        => ['label' => 'Senas reakcijų sąrašas (nebenaudojamas, db/011)', 'group' => 'Žymos', 'type' => 'mark', 'where' => '', 'owner' => 'admin', 'restore' => false],
+    'links_imported'   => ['label' => 'Senos slaptos nuorodos perkeltos į vieną sąrašą (C3)', 'group' => 'Žymos', 'type' => 'mark', 'where' => '', 'owner' => 'admin', 'restore' => false],
     'pamokos_katos_v2' => ['label' => 'Katų pamokos atnaujintos', 'group' => 'Žymos', 'type' => 'mark', 'where' => '', 'owner' => 'admin', 'restore' => false],
 ];
 
