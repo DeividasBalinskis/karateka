@@ -217,7 +217,7 @@ try {
     $awardsUrl = '';   // dar neimportuotas db/033
 }
 // v1.97: telefono kamera transliacijai (vdo.ninja) - raktas srauto vardui; puslapis su paaiškinimu - admin/varzybu-transliacija.php
-$camKey = $shareUrl && $awardsUrl ? tournament_cam_key($t) : '';
+$camKey = $shareUrl ? varz_stream_key('cam') : '';   // klubo nuolatinis raktas - tos pačios nuorodos visoms varžyboms
 $streamUrl = url('admin/varzybu-transliacija.php?id=' . (int) $t['id']);
 $cfg = [
     'id' => (int) $t['id'], 'title' => $t['title'], 'version' => (int) $t['version'], 'isTest' => (bool) $t['is_test'],

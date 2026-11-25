@@ -5,10 +5,51 @@
 // Duomenys: kovos skydelis (tournament_live) ir varžybų santrauka (tournaments.results), atnaujinama kas 1-3 s (?json=1).
 require __DIR__ . '/app/bootstrap.php';
 
-$t = tournament_by_token((string) get('k'), 'share');
+// v1.98: nuolatinė OBS juosta (?b=<klubo raktas>&juosta=1&tatami=N) - visada rodo tuo metu vykstančias varžybas,
+// todėl OBS nustatomas vieną kartą (varz_current_tournament: kur šiam tatamiui paskutinė kova, šiandienos, artimiausios).
+$perm = get('k') === '' && get('b') !== '' && hash_equals(varz_stream_key('bar'), (string) get('b'));
+$t = $perm ? varz_current_tournament(max(1, (int) get('tatami'))) : tournament_by_token((string) get('k'), 'share');
+if (!$t && $perm) {
+    exit('<!doctype html><meta charset="utf-8"><meta http-equiv="refresh" content="60"><title>OBS</title><body style="background:transparent"></body>');
+}
 if (!$t) {
     http_response_code(404);
     exit('<!doctype html><meta charset="utf-8"><title>Nuoroda netinkama</title><p style="font-family:system-ui;padding:40px;">Nuoroda netinkama arba varžybos ištrintos.</p>');
+}
+
+// v1.98: bandomoji kova (OBS juostai ir transliacijos peržiūrai) - balus ± keičia treneris ar šių varžybų sekretoriatas.
+// Įrašoma kaip tatamio „gyva“ būsena su žyma test (žiūrovų puslapis ir salės ekranas jos nerodo). Kai vyksta tikra kova - neliečiama.
+$canTest = is_staff() || varz_sekr((int) $t['id']) !== null;
+if (is_post() && get('bandymas')) {
+    header('Content-Type: application/json; charset=utf-8');
+    if (!$canTest) {
+        http_response_code(403);
+        exit(json_encode(['ok' => false]));
+    }
+    csrf_check();
+    $in = json_decode((string) file_get_contents('php://input'), true) ?: [];
+    $area = (int) ($in['area'] ?? 0);
+    $name = '';
+    foreach ((array) (tournament_state($t)['areas'] ?? []) as $a) {
+        if ((int) ($a['id'] ?? 0) === $area) {
+            $name = (string) ($a['name'] ?? '');
+        }
+    }
+    if ($name === '') {
+        http_response_code(400);
+        exit(json_encode(['ok' => false]));
+    }
+    $cur = tournament_live_get((int) $t['id'])[$area] ?? null;
+    $now = (int) round(microtime(true) * 1000);
+    if ($cur && empty($cur['data']['idle']) && empty($cur['data']['test']) && $now - $cur['ms'] < 30 * 60000) {
+        exit(json_encode(['ok' => false, 'busy' => true, 'error' => 'Vyksta tikra kova - balai rašomi kovos skydelyje.'], JSON_UNESCAPED_UNICODE));
+    }
+    $data = !empty($in['end']) ? ['area' => $area, 'areaName' => $name, 'idle' => true, 'at' => $now]
+        : ['area' => $area, 'areaName' => $name, 'test' => true, 'mode' => 'kumite', 'cat' => 'Bandomoji kova', 'round' => '', 'aka' => ['name' => 'Jonas Jonaitis', 'club' => ''],
+           'shiro' => ['name' => 'Petras Petraitis', 'club' => ''], 'sa' => max(0, min(99, (int) ($in['sa'] ?? 0))), 'sb' => max(0, min(99, (int) ($in['sb'] ?? 0))), 'at' => $now,
+           'timer' => ['total' => 90000, 'remaining' => 90000, 'running' => false]];
+    tournament_live_set((int) $t['id'], $area, $data);
+    exit(json_encode(['ok' => true, 'data' => $data, 'ms' => $now], JSON_UNESCAPED_UNICODE));
 }
 
 if (get('json')) {
@@ -116,12 +157,46 @@ if (get('json')) {
         'live' => (object) tournament_live_get((int) $t['id']), 'medals' => $r['medals'] ?? [], 'cats' => $cats], JSON_UNESCAPED_UNICODE));
 }
 
+// v1.98: „Visi tatamiai“ vienoje transliacijoje (?b=<raktas>&visi=1) - OBS gauna vieną nuorodą: kiekvieno tatamio telefono vaizdas
+// su juosta (be garso), 1 tatamis - visas ekranas, iki 4 - 2 × 2, daugiau - 3 × 2.
+if ($perm && get('visi')) {
+    $all = array_slice(array_values(array_filter((array) (tournament_state($t)['areas'] ?? []), function ($a) { return isset($a['id']); })), 0, 6);
+    if (!$all) {
+        $all = [['id' => 1, 'name' => '1 TATAMIS']];
+    }
+    $cols = count($all) <= 1 ? 1 : (count($all) <= 4 ? 2 : 3);
+    $rows = (int) ceil(count($all) / $cols);
+    ?><!doctype html>
+<html lang="lt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Visi tatamiai · OBS · <?= e(VARZ_NAME) ?></title>
+<style>html, body { margin: 0; height: 100%; background: #000; overflow: hidden; }
+.gv-all { display: grid; width: 100vw; height: 100vh; gap: 4px; grid-template-columns: repeat(<?= $cols ?>, 1fr); grid-template-rows: repeat(<?= $rows ?>, 1fr); }
+.gv-all iframe { width: 100%; height: 100%; border: 0; display: block; background: #000; }</style>
+</head>
+<body>
+<div class="gv-all">
+<?php foreach ($all as $a): ?>
+  <iframe src="<?= e(url('varzybos-gyvai.php?b=' . get('b') . '&juosta=1&vaizdas=1&tyliai=1&obs=1&tatami=' . (int) $a['id'])) ?>" title="<?= e($a['name']) ?>" allow="autoplay"></iframe>
+<?php endforeach; ?>
+</div>
+</body>
+</html>
+<?php
+    exit;
+}
+
 $screen = (bool) get('ekranas');
 // OBS juosta (?juosta=1&tatami=N): permatomas fonas, apačioje - kova, balai ir laikas; OBS uždeda ją ant telefono vaizdo (Browser Source)
 $bar = !$screen && (bool) get('juosta');
 // v1.96: be kovos juostoje - varžybų ir tatamio pavadinimas (galima prijungti iš anksto); ?pavyzdys=1 - pavyzdinė kova; paprastoje naršyklėje - paaiškinimas
-$cfg = ['json' => url('varzybos-gyvai.php?k=' . $t['share_token'] . '&json=1'), 'id' => (int) $t['id'], 'screen' => $screen, 'bar' => $bar, 'area' => (int) get('tatami'),
-        'title' => $t['title'], 'sample' => $bar && (bool) get('pavyzdys')];
+$shareTok = tournament_token($t, 'share');
+$cfg = ['json' => url($perm ? 'varzybos-gyvai.php?b=' . get('b') . '&tatami=' . (int) get('tatami') . '&json=1' : 'varzybos-gyvai.php?k=' . $shareTok . '&json=1'), 'id' => (int) $t['id'], 'screen' => $screen, 'bar' => $bar, 'area' => (int) get('tatami'),
+        'title' => $t['title'], 'sample' => $bar && (bool) get('pavyzdys')]
+     + ($bar && $canTest ? ['test' => url('varzybos-gyvai.php?k=' . $shareTok . '&bandymas=1'), 'csrf' => csrf_token()] : []);
 if ($bar): ?><!doctype html>
 <html lang="lt">
 <head>
@@ -133,7 +208,10 @@ if ($bar): ?><!doctype html>
 <link rel="stylesheet" href="<?= e(asset_url('assets/varzybos.css')) ?>">
 <?= tl_script() ?>
 </head>
-<body class="gv-bar-body">
+<body class="gv-bar-body<?= $perm && get('vaizdas') ? ' gv-with-video' : '' ?>">
+<?php if ($perm && get('vaizdas')): /* v1.98: telefono vaizdas po juosta - OBS užtenka vienos nuorodos */ ?>
+<iframe class="gv-bar-video" src="<?= e(varz_cam_view_url(varz_cam_id(varz_stream_key('cam'), max(1, (int) get('tatami')))) . (get('tyliai') ? '&noaudio' : '')) ?>" title="Vaizdas" allow="autoplay; fullscreen"></iframe>
+<?php endif; ?>
 <main id="gyvai" aria-live="polite"></main>
 <script>window.GYVAI = <?= json_encode($cfg, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP) ?>;</script>
 <script src="<?= e(asset_url('assets/varzybos-gyvai.js')) ?>"></script>

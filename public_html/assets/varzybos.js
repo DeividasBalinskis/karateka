@@ -1839,12 +1839,12 @@
     var show = !!B && vidOn;
     document.body.classList.toggle('bout-vid-on', show);
     if (!show) { if (vidEl) vidEl.hidden = true; return; }
-    var a = areaOf(cat(B.cat)), src = 'https://vdo.ninja/?view=kt' + CFG.camKey + 't' + a.id + '&cleanoutput';
+    var a = areaOf(cat(B.cat)), src = 'https://vdo.ninja/?view=kt' + CFG.camKey + 't' + a.id + '&cleanoutput&noaudio';   // be garso - salėje nebus aido
     if (!vidEl) {
       vidEl = document.createElement('div'); vidEl.className = 'bout-vid'; vidEl.id = 'bout-vid';
       vidEl.innerHTML = '<div class="bv-head"><b></b><span class="spacer"></span><button type="button" class="btn" data-bv="big" title="Didesnis / mažesnis">⤢</button>' +
         '<button type="button" class="btn" data-bv="off" aria-label="Uždaryti vaizdą">✕</button></div><div class="bv-frame"><iframe title="Telefono vaizdas" allow="autoplay; fullscreen" allowfullscreen></iframe></div>' +
-        '<p class="bv-hint">Juodas langas - telefonas neprijungtas: <a target="_blank" rel="noopener"></a></p>';
+        '<p class="bv-hint">Juodas langas - šiam tatamiui nepriskirtas telefonas: <a target="_blank" rel="noopener"></a></p>';
       document.body.appendChild(vidEl);
       vidEl.addEventListener('click', function (e) {
         var b = e.target.closest('[data-bv]'); if (!b) return;

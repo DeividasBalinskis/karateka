@@ -4,6 +4,22 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.98 - 2026-11-25 (transliacija: telefonai per vieną QR ir priskyrimas tatamiui, ± bandomoji kova, OBS - viena nuoroda)
+- **Budo → 📡 Transliacija ir registracija → 🎥 Transliacija → „📱 Telefonai - kameros“:** vienas QR kodas visiems telefonams.
+  Telefonu nuskenuojate → „📹 Įjungti kamerą“ → telefonas atsiranda sąraše su savo vaizdu → pasirenkate, **kuriam tatamiui** jis filmuoja.
+  Priskirtą telefoną iškart mato sekretoriatas (kovoje „📹 Vaizdas“), peržiūra ir OBS. Vienas telefonas - vienam tatamiui; „Pamiršti“ - išimti iš sąrašo.
+  Telefono puslapyje ekranas neužmiega; telefonas prisimena savo pavadinimą ir tatamį (vėl nuskenavus - tas pats tatamis).
+- **QR kodas ir nuorodos nuolatiniai** - tinka visoms varžyboms, QR galima atsispausdinti („🖨 Spausdinti QR“).
+  Adminui - „↻ Naujos slaptos nuorodos“, jei QR pateko ne tiems žmonėms.
+- **OBS - viena nuoroda:** vieno tatamio vaizdas ir juosta kartu, arba **„Visi tatamiai“** - visi tatamiai vienoje transliacijoje (2 × 2), kiekvienas su savo juosta.
+  Juosta pati rodo tuo metu vykstančias varžybas - kitoms varžyboms OBS nieko keisti nereikia.
+- **„Kur matosi vaizdas“:** tik telefonai (sekretoriatas ir puslapis, iki 3 žiūrinčių), YouTube - visi tatamiai vienoje transliacijoje (1 kompiuteris),
+  YouTube - atskirai kiekvienas tatamis (po kompiuterį su OBS, nuorodos Budo prie tatamių). OBS ir YouTube žingsniai, „✅ Prieš varžybas“, „🛠 Jei neveikia“.
+- **± abiejose juostos pusėse** (OBS juosta naršyklėje) ir „🧪 Bandomoji kova“ Transliacijos puslapyje: AKA ir SHIRO balai ±, ją mato ir OBS.
+  Mygtukus mato tik treneriai ir sekretoriatas; kai vyksta tikra kova - balai rašomi kovos skydelyje. Žiūrovų puslapis ir salės ekranas bandomosios kovos nerodo.
+- Sekretoriato vaizdas kovoje ir peržiūros - be garso (salėje nebus aido). OBS juosta telefone: vardai atskiroje eilutėje.
+- Duomenų bazė: naujas failas `db/059_transliacijos_telefonai.sql` (atsinaujina pats, kai administratorius atidaro puslapį).
+
 ## v1.97 - 2026-11-25 (Budo transliacija: telefono kamera, peržiūra, vaizdas sekretoriatui)
 - **Budo → 📡 Transliacija ir registracija → „🎥 Transliacija: telefonas, OBS, peržiūra →“** - naujas puslapis kiekvienam tatamiui:
   - **Peržiūra** - telefono vaizdas su juosta, taip kaip matys žiūrovai; „🧪 Pavyzdinė kova“ parodo juostą su kova.

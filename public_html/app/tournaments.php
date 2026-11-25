@@ -631,18 +631,56 @@ function tournament_token(array $t, string $kind): string
 }
 
 /**
- * Telefono kamera transliacijai (v1.97, vdo.ninja): kiekvienam tatamiui - slaptas srauto vardas „kt<raktas>t<tatamis>“.
- * Raktas - iš žiūrovų ir apdovanojimų nuorodų (abi slaptos), todėl jo nežino tie, kurie turi tik žiūrovų nuorodą.
- * Telefonas siunčia: https://vdo.ninja/?push=<vardas>, OBS ir sekretoriatas žiūri: https://vdo.ninja/?view=<vardas>.
+ * Transliacija (v1.97-v1.98, vdo.ninja): klubo nuolatiniai raktai - tos pačios nuorodos visoms varžyboms, todėl OBS ir telefono QR kodas
+ * nustatomi vieną kartą (QR galima atsispausdinti prie tatamio). „cam“ - telefono kameros srautas „kt<raktas>t<tatamis>“
+ * (telefonas siunčia ?push=, OBS ir sekretoriatas žiūri ?view=); „bar“ - nuolatinė juostos nuoroda, rodo tuo metu vykstančias varžybas.
+ * Raktai slapti (site_settings varz_cam_key, varz_bar_key); pakeisti - Transliacijos puslapyje (tik adminas).
  */
-function tournament_cam_key(array $t): string
+function varz_stream_key(string $kind, bool $renew = false): string
 {
-    return substr(hash('sha256', 'cam|' . tournament_token($t, 'share') . '|' . tournament_token($t, 'awards')), 0, 16);
+    static $mem = [];
+    $name = $kind === 'bar' ? 'varz_bar_key' : 'varz_cam_key';
+    if (!$renew && isset($mem[$name])) {
+        return $mem[$name];
+    }
+    $k = $renew ? '' : (string) site_setting($name, '');
+    if (!preg_match('/^[a-f0-9]{16}$/', $k)) {
+        $k = bin2hex(random_bytes(8));
+        set_site_setting($name, $k);
+    }
+    return $mem[$name] = $k;
+}
+
+/** Kurios varžybos dabar rodomos nuolatinėje juostoje: kur šiam tatamiui naujausia kova (12 val.), šiandienos, artimiausios, paskutinės */
+function varz_current_tournament(int $area): ?array
+{
+    $test = (config('env') === 'live' ? ' AND t.is_test = 0' : '') . ' AND t.is_demo = 0';   // bandymo nuorodos varžybos - niekada
+    $id = 0;
+    try {
+        $id = (int) q_value('SELECT tl.tournament_id FROM tournament_live tl JOIN tournaments t ON t.id = tl.tournament_id
+                             WHERE tl.area_id = ? AND tl.updated_ms > ?' . $test . ' ORDER BY tl.updated_ms DESC LIMIT 1',
+            [$area, (int) round(microtime(true) * 1000) - 12 * 3600 * 1000]);
+    } catch (PDOException $ex) {
+        // dar neimportuotas db/026
+    }
+    if (!$id) {
+        $today = date('Y-m-d');
+        $id = (int) q_value('SELECT t.id FROM tournaments t WHERE 1' . $test . '
+                             ORDER BY (? BETWEEN t.starts_on AND COALESCE(t.ends_on, t.starts_on)) DESC, (t.starts_on >= ?) DESC,
+                                      IF(t.starts_on >= ?, TO_DAYS(t.starts_on), -TO_DAYS(t.starts_on)), t.id DESC LIMIT 1', [$today, $today, $today]);
+    }
+    return $id ? tournament_get($id) : null;
 }
 
 function varz_cam_id(string $key, int $area): string
 {
     return 'kt' . $key . 't' . $area;
+}
+
+/** v1.98: dar nepriskirto telefono srautas (kompiuteris mato jo vaizdą ir priskiria tatamiui - varzybos-kamera.php, stream_phones) */
+function varz_cam_phone_id(string $key, string $phone): string
+{
+    return 'kt' . $key . 'p' . $phone;
 }
 
 function varz_cam_push_url(string $id): string

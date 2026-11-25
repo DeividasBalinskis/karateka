@@ -1,5 +1,5 @@
 # Handoff
-Updated: 2026-11-25 · version v1.97 · work branch
+Updated: 2026-11-25 · version v1.98 · work branch
 
 ## Pending asks (answer these first)
 | Asked | By | What | Status |
@@ -101,6 +101,8 @@ Updated: 2026-11-25 · version v1.97 · work branch
   OBS bar: idle bar (title + tatami), `&pavyzdys=1` sample, help card only when `window.obsstudio` is missing; Budo texts in tools/vertimai/taika.tsv (build.py run). Test 07zb updated (OBS simulated with addInitScript).
   JS syntax of the changed files checked with the Windows script engine; PHP not checked (no php).
 - 2026-11-25 v1.97 (PC): Budo streaming page `admin/varzybu-transliacija.php` (auth as Budo: staff, secretariat of that tournament, demo), `tournament_cam_key()`, `varz_cam_id()`, `varz_cam_push_url()`, `varz_cam_view_url()` in app/tournaments.php; CFG.camKey/streamUrl; bout video window `#bout-vid` (varzybos.js syncVid/setVid, localStorage `vz-bout-vid`); bar `&obs=1` = no help. Test 07zh. Translations in tools/vertimai/taika.tsv.
+  Released to main and test (CI checks passed). On test: „Test varžybos #1 · Budo Cup pavyzdys“ (id 21) created for Deividas to try; stream page, QR, preview bar and bout video checked at desktop width; phone width (375) not checked (Chrome window could not be resized).
+- 2026-11-25 v1.98: phones join by one club QR `varzybos-kamera.php?c=<varz_cam_key>` (ping every 8 s, localStorage id/name, Wake Lock, vdo.ninja push in an iframe: unassigned `kt<key>p<phone>`, assigned `kt<key>t<tatami>`); stream page `admin/varzybu-transliacija.php` lists phones (`&telefonai=1` JSON, assign/forget with CSRF, staff+secretariat, not demo) and gives one OBS link per tatami `varzybos-gyvai.php?b=<bar key>&juosta=1&vaizdas=1&tatami=N` and `&visi=1` (2×2 grid of those, `&tyliai=1` no sound); permanent bar follows `varz_current_tournament()`; test bout `?k=..&bandymas=1`; previews and bout video `&noaudio`. db/059 `stream_phones`. Test 07zh. Translations in tools/vertimai/taika.tsv.
 - 2026-11-25 (PC, not committed) exam protocol time: each protocol = its own `events.start_time` (no new db file).
   `admin/egzamino-protokolas.php`: „Pradžios laikas“ input #protTime in the header (saved at once: `?save=1` field `start_time`, staff, HH:MM or empty; print shows #protTimePrint).
   `admin/egzaminai.php`: copy_exam form has `start_time` (prefilled with that protocol's time; posted value wins, missing field = copy), list sorted by time within a day.

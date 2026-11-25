@@ -763,3 +763,131 @@ Telefono vaizdas šalia balų (🎥 Transliacija)	Phone video next to the scores
 Didesnis / mažesnis	Bigger / smaller	Больше / меньше
 Uždaryti vaizdą	Close video	Закрыть видео
 Juodas langas - telefonas neprijungtas:	Black window - the phone is not connected:	Чёрное окно - телефон не подключён:
+🧪 Bandomoji kova:	🧪 Test bout:	🧪 Тестовый бой:
+Baigti	End	Завершить
+Bandomąją kovą mato ir OBS. Kai vyksta tikra kova, balai rašomi kovos skydelyje.	OBS shows the test bout too. During a real bout, scores are entered in the bout panel.	Тестовый бой видит и OBS. Во время настоящего боя баллы вносятся на панели боя.
+- „Bandomoji kova“ šiame puslapyje (± abiem pusėms, mato ir OBS) arba test varžybos (Budo → „🎲 Sukurti test varžybas“) - jose galima atidaryti tikrą kovą.	- “Test bout” on this page (± for both sides, OBS shows it too) or a test competition (Budo → “🎲 Create a test competition”) - there you can open a real bout.	- «Тестовый бой» на этой странице (± для обеих сторон, видит и OBS) или тестовые соревнования (Budo → «🎲 Создать тестовые соревнования») - там можно открыть настоящий бой.
+🔴 Dabar vyksta kova - juostoje vardai, balai ir laikas. Balai rašomi kovos skydelyje.	🔴 A bout is on now - the bar shows names, scores and time. Scores are entered in the bout panel.	🔴 Сейчас идёт бой - на полосе имена, баллы и время. Баллы вносятся на панели боя.
+🧪 Bandomoji kova: ± prie juostos keičia balus, ją mato ir OBS.	🧪 Test bout: ± next to the bar changes the scores, OBS shows it too.	🧪 Тестовый бой: ± у полосы меняют баллы, его видит и OBS.
+± prie juostos - bandomoji kova (ją matys ir OBS).	± next to the bar - a test bout (OBS will show it too).	± у полосы - тестовый бой (его увидит и OBS).
+Baigti bandomąją kovą	End the test bout	Завершить тестовый бой
+Vyksta tikra kova - balai rašomi kovos skydelyje.	A real bout is on - scores are entered in the bout panel.	Идёт настоящий бой - баллы вносятся на панели боя.
+Bandomoji kova	Test bout	Тестовый бой
+Budo → „📡 Transliacija ir registracija“ → „🎥 Transliacija“ → telefonu nuskenuokite QR kodą. Iš ten pat nukopijuokite telefono vaizdo nuorodą į OBS: Šaltiniai → + → Naršyklė (Browser), 1920 × 1080.	Budo → “📡 Streaming and registration” → “🎥 Streaming” → scan the QR code with the phone. From the same page copy the phone video link into OBS: Sources → + → Browser, 1920 × 1080.	Budo → «📡 Трансляция и регистрация» → «🎥 Трансляция» → отсканируйте QR-код телефоном. Там же скопируйте ссылку видео телефона в OBS: Источники → + → Браузер, 1920 × 1080.
+Ką matys žiūrovai	What viewers will see	Что увидят зрители
+Telefono vaizdas ir juosta - taip, kaip transliacijoje. Juodas langas - telefonas dar neprijungtas (nuskenuokite QR kodą žemiau).	Phone video and the bar - as in the stream. A black window means the phone is not connected yet (scan the QR code below).	Видео с телефона и полоса - как в трансляции. Чёрное окно - телефон ещё не подключён (отсканируйте QR-код ниже).
+Kaip transliuoti - pasirinkite	How to stream - choose	Как транслировать - выберите
+📱 Tik telefonas	📱 Phone only	📱 Только телефон
+Be OBS ir be YouTube · 1 min.	No OBS, no YouTube · 1 min.	Без OBS и YouTube · 1 мин.
+Nuskenuojate QR kodą - vaizdą mato sekretoriatas (kovos skydelyje „📹 Vaizdas“) ir šis puslapis. Salei ir treneriams, iki 3 žiūrinčių vienu metu.	Scan the QR code - the secretariat sees the video (bout panel “📹 Video”) and so does this page. For the hall and coaches, up to 3 viewers at once.	Отсканируйте QR-код - видео видит секретариат (панель боя «📹 Видео») и эта страница. Для зала и тренеров, до 3 зрителей одновременно.
+Reikia: telefono su internetu. Daryti: tik 1 žingsnį.	Needed: a phone with internet. Do: step 1 only.	Нужно: телефон с интернетом. Сделать: только шаг 1.
+▶ Telefonas tiesiai į YouTube	▶ Phone straight to YouTube	▶ Телефон прямо в YouTube
+Be kompiuterio ir OBS · ~10 min.	No computer, no OBS · ~10 min.	Без компьютера и OBS · ~10 мин.
+Telefone - YouTube programėlė („+“ → „Go live“; kanalui reikia bent 50 prenumeratorių) arba nemokama „Larix Broadcaster“ su YouTube srauto raktu. YouTube nuorodą įklijuokite Budo → Tvarkaraštis → po tatamiu „YouTube Live nuoroda“: žiūrovų puslapyje juosta su balais bus ant vaizdo.	On the phone - the YouTube app (“+” → “Go live”; the channel needs at least 50 subscribers) or the free “Larix Broadcaster” with the YouTube stream key. Paste the YouTube link in Budo → Schedule → under the tatami “YouTube Live link”: the viewers' page shows the score bar over the video.	На телефоне - приложение YouTube («+» → «Go live»; каналу нужно не меньше 50 подписчиков) или бесплатный «Larix Broadcaster» с ключом трансляции YouTube. Ссылку YouTube вставьте в Budo → Расписание → под татами «YouTube Live ссылка»: на странице зрителей полоса с баллами будет поверх видео.
+Pačiame YouTube juostos nebus. Telefonas vienu metu siunčia vaizdą tik į vieną vietą - arba į YouTube, arba per QR.	On YouTube itself there is no bar. The phone sends video to one place at a time - either YouTube or via the QR code.	На самом YouTube полосы не будет. Телефон отправляет видео только в одно место - либо в YouTube, либо по QR-коду.
+💻 Su OBS - juosta pačiame vaizde	💻 With OBS - the bar inside the video	💻 С OBS - полоса в самом видео
+Telefonas + kompiuteris · ~20 min. pirmą kartą	Phone + computer · ~20 min. the first time	Телефон + компьютер · ~20 мин. в первый раз
+Telefonas per QR, kompiuteryje OBS sujungia vaizdą su juosta ir siunčia į YouTube. Juosta su balais matosi visur, ir YouTube.	The phone via QR, and OBS on the computer joins the video with the bar and sends it to YouTube. The score bar is visible everywhere, YouTube too.	Телефон по QR, на компьютере OBS соединяет видео с полосой и отправляет в YouTube. Полоса с баллами видна везде, и в YouTube.
+Reikia: telefono, kompiuterio (Windows ar Mac) ir YouTube kanalo. Daryti: 1, 2 ir 3 žingsnius. Vėliau - tik 1 žingsnį.	Needed: a phone, a computer (Windows or Mac) and a YouTube channel. Do: steps 1, 2 and 3. Later - step 1 only.	Нужно: телефон, компьютер (Windows или Mac) и канал YouTube. Сделать: шаги 1, 2 и 3. Потом - только шаг 1.
+1. Telefonas (QR kodas)	1. Phone (QR code)	1. Телефон (QR-код)
+Telefono kamera nuskenuokite kodą (arba atsiųskite nuorodą į telefoną).	Scan the code with the phone camera (or send the link to the phone).	Отсканируйте код камерой телефона (или отправьте ссылку на телефон).
+Telefoną laikykite gulsčią, ant stovo, prijunkite kroviklį ir neužrakinkite ekrano - kitaip vaizdas dings.	Hold the phone sideways on a stand, plug in the charger and do not lock the screen - otherwise the video stops.	Держите телефон горизонтально на подставке, подключите зарядку и не блокируйте экран - иначе видео пропадёт.
+🖨 Spausdinti visų tatamių QR	🖨 Print QR codes for all tatamis	🖨 Печать QR-кодов всех татами
+QR kodas ir nuorodos nesikeičia - tinka visoms varžyboms. Atsispausdinkite ir priklijuokite prie tatamio. Neduokite jų kitiems: su QR kodu galima siųsti vaizdą į šį tatamį.	The QR code and links do not change - they work for every competition. Print them and stick them at the tatami. Do not share them: with the QR code anyone can send video to this tatami.	QR-код и ссылки не меняются - подходят для всех соревнований. Распечатайте и приклейте у татами. Не передавайте их: по QR-коду можно отправлять видео на этот татами.
+2. OBS kompiuteryje (vieną kartą)	2. OBS on the computer (once)	2. OBS на компьютере (один раз)
+Atsisiųskite OBS Studio: obsproject.com → Windows arba macOS → įdiekite (nemokama).	Download OBS Studio: obsproject.com → Windows or macOS → install (free).	Скачайте OBS Studio: obsproject.com → Windows или macOS → установите (бесплатно).
+Pirmą kartą atidarius - vedlys: „Optimize for streaming“ → 1920 × 1080, 30 FPS → Service „YouTube - RTMPS“ → „Connect Account“ (klubo YouTube paskyra) → „Apply Settings“.	On the first start - the wizard: “Optimize for streaming” → 1920 × 1080, 30 FPS → Service “YouTube - RTMPS” → “Connect Account” (the club's YouTube account) → “Apply Settings”.	При первом запуске - мастер: «Optimize for streaming» → 1920 × 1080, 30 FPS → Service «YouTube - RTMPS» → «Connect Account» (аккаунт YouTube клуба) → «Apply Settings».
+Šaltiniai (Sources) → + → Naršyklė (Browser) → pavadinimas „Telefonas“ → ši nuoroda, plotis 1920, aukštis 1080, pažymėkite „Control audio via OBS“:	Sources → + → Browser → name “Telefonas” → this link, width 1920, height 1080, tick “Control audio via OBS”:	Источники → + → Браузер → название «Telefonas» → эта ссылка, ширина 1920, высота 1080, отметьте «Control audio via OBS»:
+Dar kartą + → Naršyklė (Browser) → „Juosta“ → ši nuoroda, 1920 × 1080:	Again + → Browser → “Juosta” → this link, 1920 × 1080:	Ещё раз + → Браузер → «Juosta» → эта ссылка, 1920 × 1080:
+Garsas: Audio Mixer'yje palikite „Telefonas“, o „Desktop Audio“ ir „Mic/Aux“ nutildykite (🔇) - kitaip bus aidas.	Sound: in the Audio Mixer keep “Telefonas” and mute “Desktop Audio” and “Mic/Aux” (🔇) - otherwise there is an echo.	Звук: в Audio Mixer оставьте «Telefonas», а «Desktop Audio» и «Mic/Aux» выключите (🔇) - иначе будет эхо.
+Kitoms varžyboms OBS nieko keisti nereikia: juosta pati rodo tuo metu vykstančias varžybas.	For the next competitions nothing changes in OBS: the bar shows the competition that is running.	Для следующих соревнований в OBS ничего менять не нужно: полоса сама показывает текущие соревнования.
+3. YouTube transliacija	3. YouTube stream	3. Трансляция YouTube
+Pirmą kartą YouTube transliacijas įjungia iki 24 val. (YouTube Studio → „Create“ → „Go live“) - padarykite tai dieną prieš varžybas.	The first time, YouTube needs up to 24 h to enable streaming (YouTube Studio → “Create” → “Go live”) - do it a day before the competition.	В первый раз YouTube включает трансляции до 24 ч (YouTube Studio → «Create» → «Go live») - сделайте это за день до соревнований.
+OBS → „Manage Broadcast“: pavadinimas ir matomumas („Unlisted“ - bandymui, „Public“ - varžyboms) → „Create broadcast and start streaming“.	OBS → “Manage Broadcast”: title and visibility (“Unlisted” for a test, “Public” for the competition) → “Create broadcast and start streaming”.	OBS → «Manage Broadcast»: название и видимость («Unlisted» - для проверки, «Public» - для соревнований) → «Create broadcast and start streaming».
+YouTube vaizdas vėluoja apie 10-20 s - tai normalu.	The YouTube picture is about 10-20 s behind - that is normal.	Видео в YouTube отстаёт примерно на 10-20 с - это нормально.
+✅ Prieš varžybas patikrinkite (5 min.)	✅ Check before the competition (5 min.)	✅ Проверьте перед соревнованиями (5 мин.)
+Telefonas nuskenavo QR - peržiūroje viršuje matosi vaizdas.	The phone scanned the QR code - the video shows in the preview above.	Телефон отсканировал QR - в предпросмотре выше видно видео.
+„🧪 Bandomoji kova“: ± abiem pusėms - balai keičiasi peržiūroje ir OBS.	“🧪 Test bout”: ± for both sides - the scores change in the preview and in OBS.	«🧪 Тестовый бой»: ± для обеих сторон - баллы меняются в предпросмотре и в OBS.
+Kovos skydelyje „📹 Vaizdas“ - sekretoriatas mato vaizdą.	In the bout panel “📹 Video” - the secretariat sees the video.	На панели боя «📹 Видео» - секретариат видит видео.
+YouTube „Unlisted“ transliacija - pažiūrėkite ją savo telefone.	An “Unlisted” YouTube stream - watch it on your phone.	Трансляция YouTube «Unlisted» - посмотрите её на своём телефоне.
+🛠 Jei neveikia	🛠 If it does not work	🛠 Если не работает
+Juodas vaizdas	Black video	Чёрное видео
+- telefone užsirakino ekranas arba užsidarė puslapis. Vėl nuskenuokite QR.	- the phone screen locked or the page closed. Scan the QR code again.	- на телефоне заблокировался экран или закрылась страница. Снова отсканируйте QR.
+Vaizdas stringa	Video stutters	Видео тормозит
+- per daug atidarytų vaizdų arba silpnas internetas. Uždarykite nereikalingus (šį puslapį, „📹 Vaizdas“), telefoną junkite prie Wi-Fi.	- too many open views or weak internet. Close the ones you do not need (this page, “📹 Video”), connect the phone to Wi-Fi.	- слишком много открытых просмотров или слабый интернет. Закройте лишние (эту страницу, «📹 Видео»), подключите телефон к Wi-Fi.
+OBS nesimato juostos	OBS does not show the bar	OBS не показывает полосу
+- „Juosta“ turi būti virš „Telefonas“; dešinysis pelės klavišas → „Refresh“.	- “Juosta” must be above “Telefonas”; right-click → “Refresh”.	- «Juosta» должна быть выше «Telefonas»; правая кнопка мыши → «Refresh».
+Juosta rodo kitas varžybas	The bar shows another competition	Полоса показывает другие соревнования
+- atidarykite kovą reikiamose varžybose: juosta pereina prie tų, kuriose paskutinė kova.	- open a bout in the right competition: the bar switches to the one with the latest bout.	- откройте бой в нужных соревнованиях: полоса переходит к тем, где был последний бой.
+Keli tatamiai vienu metu	Several tatamis at once	Несколько татами одновременно
+- kiekvienam reikia atskiro telefono ir atskiro kompiuterio su OBS (viena OBS = viena transliacija).	- each needs its own phone and its own computer with OBS (one OBS = one stream).	- для каждого нужен свой телефон и свой компьютер с OBS (один OBS = одна трансляция).
+↻ Naujos slaptos nuorodos	↻ New secret links	↻ Новые секретные ссылки
+Jei QR kodas ar OBS nuoroda pateko ne tiems žmonėms. Senos nebeveiks.	If the QR code or an OBS link reached the wrong people. The old ones stop working.	Если QR-код или ссылка OBS попали не к тем людям. Старые перестанут работать.
+📱 Transliacija: nuskenuokite telefonu, leiskite kamerą, telefoną laikykite gulsčią.	📱 Streaming: scan with the phone, allow the camera, hold the phone sideways.	📱 Трансляция: отсканируйте телефоном, разрешите камеру, держите телефон горизонтально.
+Sukurtos naujos nuorodos. Telefonui nuskenuokite naują QR kodą, OBS įklijuokite naujas nuorodas.	New links created. Scan the new QR code with the phone and paste the new links into OBS.	Созданы новые ссылки. Отсканируйте новый QR-код телефоном и вставьте новые ссылки в OBS.
+📱 Budo kamera	📱 Budo camera	📱 Камера Budo
+Paspauskite „Įjungti kamerą“ ir leiskite naudoti kamerą.	Tap “Turn on camera” and allow the camera.	Нажмите «Включить камеру» и разрешите камеру.
+📹 Įjungti kamerą	📹 Turn on camera	📹 Включить камеру
+Šio telefono pavadinimas	This phone's name	Название этого телефона
+Telefoną laikykite gulsčią, ant stovo, ir prijunkite kroviklį.	Hold the phone sideways on a stand and plug in the charger.	Держите телефон горизонтально на подставке и подключите зарядку.
+Šį puslapį laikykite atidarytą - ekranas neužges.	Keep this page open - the screen will stay on.	Держите эту страницу открытой - экран не погаснет.
+Kompiuteryje: Budo → „🎥 Transliacija“ → šį telefoną priskirkite tatamiui.	On the computer: Budo → “🎥 Streaming” → assign this phone to a tatami.	На компьютере: Budo → «🎥 Трансляция» → назначьте этот телефон татами.
+Kamera neįsijungia? Atidaryti ją atskirai	Camera does not start? Open it separately	Камера не включается? Откройте её отдельно
+Jungiamasi…	Connecting…	Подключение…
+✅ Prisijungta. Kompiuteryje (Budo → „🎥 Transliacija“) priskirkite šį telefoną tatamiui.	✅ Connected. On the computer (Budo → “🎥 Streaming”) assign this phone to a tatami.	✅ Подключено. На компьютере (Budo → «🎥 Трансляция») назначьте этот телефон татами.
+🔴 Transliuojama: {#} TATAMIS	🔴 Streaming: {#} TATAMI	🔴 Идёт трансляция: {#} ТАТАМИ
+⚠ Nėra ryšio su serveriu - bandoma iš naujo…	⚠ No connection to the server - retrying…	⚠ Нет связи с сервером - повторяем…
+⚠ Nepavyko prisijungti.	⚠ Could not connect.	⚠ Не удалось подключиться.
+⚠ Serveris dar ruošiamas - pabandykite po minutės.	⚠ The server is being prepared - try again in a minute.	⚠ Сервер ещё готовится - попробуйте через минуту.
+📱 Telefonai - kameros	📱 Phones - cameras	📱 Телефоны - камеры
+Telefonu nuskenuokite QR kodą → „📹 Įjungti kamerą“ → leiskite naudoti kamerą.	Scan the QR code with a phone → “📹 Turn on camera” → allow the camera.	Отсканируйте QR-код телефоном → «📹 Включить камеру» → разрешите камеру.
+Telefonas atsiras sąraše - pasirinkite, kuriam tatamiui jis filmuoja.	The phone appears in the list - choose which tatami it films.	Телефон появится в списке - выберите, какой татами он снимает.
+Telefoną pastatykite gulsčią prie tatamio ir prijunkite kroviklį.	Put the phone sideways at the tatami and plug in the charger.	Поставьте телефон горизонтально у татами и подключите зарядку.
+🖨 Spausdinti QR	🖨 Print QR	🖨 Печать QR
+Vienas QR kodas visiems telefonams ir visoms varžyboms - galima atsispausdinti. Neduokite jo kitiems: su juo galima prisijungti kamera.	One QR code for all phones and all competitions - you can print it. Do not share it: with it anyone can connect a camera.	Один QR-код для всех телефонов и всех соревнований - его можно распечатать. Не передавайте его: с ним можно подключить камеру.
+Telefonų dar nėra - nuskenuokite QR kodą telefonu.	No phones yet - scan the QR code with a phone.	Телефонов пока нет - отсканируйте QR-код телефоном.
+Tatamio telefono vaizdas ir juosta - taip, kaip transliacijoje. Juodas langas - šiam tatamiui dar nepriskirtas telefonas.	The tatami's phone video and the bar - as in the stream. A black window means no phone is assigned to this tatami yet.	Видео телефона татами и полоса - как в трансляции. Чёрное окно - этому татами ещё не назначен телефон.
+Kur matosi vaizdas	Where the video is shown	Где видно видео
+📱 Tik telefonai	📱 Phones only	📱 Только телефоны
+Be kompiuterio programų · 1 min.	No computer software · 1 min.	Без программ на компьютере · 1 мин.
+Nuskenavus QR ir priskyrus tatamį, vaizdą mato sekretoriatas (kovos skydelyje „📹 Vaizdas“) ir šis puslapis. Salei, sekretoriatui ir treneriams.	After scanning the QR and assigning a tatami, the secretariat sees the video (bout panel “📹 Video”) and so does this page. For the hall, the secretariat and coaches.	После сканирования QR и назначения татами видео видит секретариат (панель боя «📹 Видео») и эта страница. Для зала, секретариата и тренеров.
+Vienas telefonas vaizdą siunčia tiesiogiai - vienu metu gali žiūrėti iki 3. Tėvams namuose reikia YouTube.	A phone sends video directly - up to 3 can watch at once. Parents at home need YouTube.	Телефон отправляет видео напрямую - одновременно смотреть могут до 3. Родителям дома нужен YouTube.
+▶ YouTube - visi tatamiai vienoje transliacijoje	▶ YouTube - all tatamis in one stream	▶ YouTube - все татами в одной трансляции
+Telefonai + 1 kompiuteris su OBS · rekomenduojama	Phones + 1 computer with OBS · recommended	Телефоны + 1 компьютер с OBS · рекомендуется
+OBS gauna vieną nuorodą „Visi tatamiai“: YouTube rodo visus tatamius vienu metu (2 × 2), kiekvienas su savo juosta ir balais. Užtenka vieno kompiuterio ir vienos YouTube transliacijos.	OBS gets one “All tatamis” link: YouTube shows all tatamis at once (2 × 2), each with its own bar and scores. One computer and one YouTube stream are enough.	OBS получает одну ссылку «Все татами»: YouTube показывает все татами сразу (2 × 2), каждый со своей полосой и баллами. Достаточно одного компьютера и одной трансляции YouTube.
+Žiūrovai mato visus tatamius viename vaizde.	Viewers see all tatamis in one picture.	Зрители видят все татами в одной картинке.
+▶ YouTube - atskirai kiekvienas tatamis	▶ YouTube - each tatami separately	▶ YouTube - каждый татами отдельно
+Kiekvienam tatamiui - kompiuteris su OBS	A computer with OBS for each tatami	Для каждого татами - компьютер с OBS
+Kiekvienam tatamiui - atskira YouTube transliacija su jo nuoroda (vaizdas + juosta). YouTube nuorodas įklijuokite Budo → Tvarkaraštis → po tatamiu „YouTube Live nuoroda“: žiūrovų puslapyje kiekvienas tatamis su savo vaizdu.	Each tatami gets its own YouTube stream with its link (video + bar). Paste the YouTube links in Budo → Schedule → under each tatami “YouTube Live link”: the viewers' page shows each tatami with its own video.	Для каждого татами - отдельная трансляция YouTube с его ссылкой (видео + полоса). Ссылки YouTube вставьте в Budo → Расписание → под татами «YouTube Live ссылка»: на странице зрителей каждый татами со своим видео.
+4 tatamiai = 4 kompiuteriai su OBS ir 4 transliacijos. Internetas: apie 5 Mbps išsiuntimo kiekvienai.	4 tatamis = 4 computers with OBS and 4 streams. Internet: about 5 Mbps upload for each.	4 татами = 4 компьютера с OBS и 4 трансляции. Интернет: около 5 Мбит/с отдачи на каждую.
+OBS kompiuteryje (vieną kartą)	OBS on the computer (once)	OBS на компьютере (один раз)
+Šaltiniai (Sources) → + → Naršyklė (Browser) → įklijuokite vieną nuorodą, plotis 1920, aukštis 1080, pažymėkite „Control audio via OBS“.	Sources → + → Browser → paste one link, width 1920, height 1080, tick “Control audio via OBS”.	Источники → + → Браузер → вставьте одну ссылку, ширина 1920, высота 1080, отметьте «Control audio via OBS».
+Visi tatamiai (2 × 2) - viena transliacija:	All tatamis (2 × 2) - one stream:	Все татами (2 × 2) - одна трансляция:
+Tik {#} TATAMIS (vaizdas + juosta):	Only {#} TATAMI (video + bar):	Только {#} ТАТАМИ (видео + полоса):
+Nuorodos nesikeičia: kitoms varžyboms OBS nieko keisti nereikia - rodomos tuo metu vykstančios varžybos.	The links do not change: nothing changes in OBS for the next competitions - the running competition is shown.	Ссылки не меняются: для следующих соревнований в OBS ничего менять не нужно - показываются текущие соревнования.
+YouTube transliacija	YouTube stream	Трансляция YouTube
+Kitos nuorodos	Other links	Другие ссылки
+Tik juosta (jei OBS'e naudojate savo kamerą):	Bar only (if you use your own camera in OBS):	Только полоса (если в OBS своя камера):
+Tik {#} TATAMIS telefono vaizdas:	Only {#} TATAMI phone video:	Только видео телефона {#} ТАТАМИ:
+Telefonai nuskenavo QR ir priskirti tatamiams - sąraše matosi jų vaizdas.	The phones scanned the QR and are assigned to tatamis - the list shows their video.	Телефоны отсканировали QR и назначены татами - в списке видно их видео.
+- telefone užsirakino ekranas arba užsidarė puslapis. Vėl nuskenuokite QR - telefonas lieka priskirtas tam pačiam tatamiui.	- the phone screen locked or the page closed. Scan the QR again - the phone stays assigned to the same tatami.	- на телефоне заблокировался экран или закрылась страница. Снова отсканируйте QR - телефон останется назначен тому же татами.
+Telefono nėra sąraše	The phone is not in the list	Телефона нет в списке
+- telefone paspauskite „📹 Įjungti kamerą“ ir palaukite 10 s.	- tap “📹 Turn on camera” on the phone and wait 10 s.	- на телефоне нажмите «📹 Включить камеру» и подождите 10 с.
+OBS nesimato vaizdo ar juostos	OBS does not show the video or the bar	OBS не показывает видео или полосу
+- dešinysis pelės klavišas ant šaltinio → „Refresh“.	- right-click the source → “Refresh”.	- правой кнопкой мыши по источнику → «Refresh».
+- visada, kai telefone atidarytas kameros puslapis ir telefonas priskirtas tatamiui. Varžybų ir kovų nereikia.	- always, while the camera page is open on the phone and the phone is assigned to a tatami. No competition or bouts needed.	- всегда, пока на телефоне открыта страница камеры и телефон назначен татами. Соревнования и бои не нужны.
+Nuskenuokite telefonu → „📹 Įjungti kamerą“ → leiskite kamerą. Kompiuteryje priskirkite telefoną tatamiui.	Scan with a phone → “📹 Turn on camera” → allow the camera. On the computer assign the phone to a tatami.	Отсканируйте телефоном → «📹 Включить камеру» → разрешите камеру. На компьютере назначьте телефон татами.
+Sukurtos naujos nuorodos. Telefonais nuskenuokite naują QR kodą, OBS įklijuokite naujas nuorodas.	New links created. Scan the new QR code with the phones and paste the new links into OBS.	Созданы новые ссылки. Отсканируйте новый QR-код телефонами и вставьте новые ссылки в OBS.
+Neprisijungęs	Not connected	Не подключён
+— nepriskirtas —	— not assigned —	— не назначен —
+Pamiršti	Forget	Забыть
+🟢 prisijungęs	🟢 connected	🟢 подключён
+⚪ prieš {#} s	⚪ {#} s ago	⚪ {#} с назад
+⚪ prieš {#} min.	⚪ {#} min. ago	⚪ {#} мин. назад
+⚪ prieš {#} val.	⚪ {#} h ago	⚪ {#} ч назад
+Duomenų bazė dar atnaujinama - perkraukite puslapį po minutės.	The database is still updating - reload the page in a minute.	База данных ещё обновляется - перезагрузите страницу через минуту.
+Telefonas:	Phone:	Телефон:
+Budo → „📡 Transliacija ir registracija“ → „🎥 Transliacija“ → telefonu nuskenuokite QR kodą ir priskirkite jį tatamiui.	Budo → “📡 Streaming and registration” → “🎥 Streaming” → scan the QR code with the phone and assign it to a tatami.	Budo → «📡 Трансляция и регистрация» → «🎥 Трансляция» → отсканируйте QR-код телефоном и назначьте его татами.
+OBS:	OBS:	OBS:
+Šaltiniai → + → Naršyklė (Browser) → nuoroda iš „🎥 Transliacija“ („Visi tatamiai“ arba vieno tatamio - vaizdas ir juosta kartu), 1920 × 1080.	Sources → + → Browser → a link from “🎥 Streaming” (“All tatamis” or one tatami - video and bar together), 1920 × 1080.	Источники → + → Браузер → ссылка из «🎥 Трансляция» («Все татами» или один татами - видео и полоса вместе), 1920 × 1080.
+Juodas langas - šiam tatamiui nepriskirtas telefonas:	Black window - no phone assigned to this tatami:	Чёрное окно - этому татами не назначен телефон:
