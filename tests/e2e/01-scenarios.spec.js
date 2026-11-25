@@ -1,7 +1,7 @@
 // Pagrindiniai scenarijai su pavyzdiniais duomenimis (dev_seed + demo-duomenys + dev_pavyzdziai), iš eilės:
 // tėvai -> Denis (adminas) -> treneris -> narys -> svečias. Žingsniai remiasi ankstesniais (pvz. Denio atsakymas Tomui).
 const { test } = require('@playwright/test');
-const { sql, day, ids, login, nav, check, noJsErrors, flashes } = require('./helpers');
+const { sql, day, ids, login, nav, check, noJsErrors, flashes, closeCelebrate } = require('./helpers');
 
 test.describe.configure({ mode: 'serial' });
 
@@ -15,12 +15,16 @@ test.beforeAll(() => {
 
 test('parent: celebration, Svarbu, invitations, exam program, quiz XP, chat, comments', async ({ browser }) => {
   const p = await login(browser, 'tevai@karateka.test');
-  sql(`UPDATE notifications SET read_at = NULL WHERE type='level_up'`);
+  p.keepCelebration = true;   // ši dalis tikrina pačią šventę (helpers.js ją kitaip uždaro pats)
+  // Viena neperskaityta šventė: kitos jau matytos (kitaip po „Valio!“ rodoma kita - po vieną kiekviename puslapyje)
+  sql(`UPDATE notifications SET read_at = NOW() WHERE type IN ('level_up', 'exam_passed') AND read_at IS NULL AND account_id = (SELECT id FROM accounts WHERE email = 'tevai@karateka.test')`);
+  sql(`UPDATE notifications SET read_at = NULL WHERE type = 'level_up' AND account_id = (SELECT id FROM accounts WHERE email = 'tevai@karateka.test') ORDER BY id DESC LIMIT 1`);
   await p.goto('paskyra.php?m=' + I.jonas);
   check('celebration shown', await p.locator('#celebrate').count() === 1);
   await p.click('#celebrate button'); await p.waitForTimeout(600);
   await p.reload();
   check('celebration not again', await p.locator('#celebrate').count() === 0);
+  p.keepCelebration = false;
   check('svarbu exists', await p.locator('#svarbu').count() === 1);
   check('svarbu invite camp with countdown', await p.locator('#svarbu .notif.t-invite', { hasText: 'TEST: Stovykla' }).locator('.deadline[data-deadline]').count() === 1);
   check('svarbu reply item', await p.locator('#svarbu .notif.t-reply').count() === 1);
@@ -320,7 +324,7 @@ test('member: exam celebration and reply from Denis', async ({ browser }) => {
   await t.goto('paskyra.php');
   check('exam passed celebration', await t.locator('#celebrate .celebrate-kicker', { hasText: 'Egzaminas' }).count() === 1);
   check('tomas sees Denis reply badge', await t.locator('#chatFab .count-badge:not([hidden])').count() === 1);
-  if (await t.locator('#celebrate').count()) { await t.click('#celebrate button'); await t.waitForTimeout(400); }
+  await closeCelebrate(t);
   check('tomas svarbu reply', await t.locator('#svarbu .notif.t-reply', { hasText: 'Žinoma, ateik' }).count() === 1);
   await t.locator('#svarbu .notif.t-reply button[data-open-chat]').click(); await t.waitForTimeout(900);
   check('atsakyti opens chat', await t.locator('#chatPanel').isVisible());

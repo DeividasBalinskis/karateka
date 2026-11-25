@@ -226,6 +226,9 @@ test('history restore, category reset from a round, themes and menu customizatio
   if (await a.locator('#run').isVisible()) await a.click('#run-back');
   const done = a.locator('#sched .card.st-done').first();
   await done.locator('[data-open-cat]').click();
+  // #99: „Grupė baigta“ kortelė dešinėje apačioje gali uždengti įrankius - suskleidžiama „▾“, įrankiai - ekrano viduryje
+  if (await a.locator('#run-done.rd-float:not(.rd-min) [data-rd-min]').isVisible()) await a.click('#run-done [data-rd-min]');
+  await a.locator('#draw-reset-menu summary').evaluate(e => e.scrollIntoView({ block: 'center' }));
   await a.click('#draw-reset-menu summary');
   const opts = await a.locator('#draw-reset [data-reset]').allTextContents();
   await a.click('#draw-reset-menu summary');

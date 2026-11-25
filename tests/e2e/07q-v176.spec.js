@@ -1,10 +1,6 @@
 // v1.76: #109 / sprendimas 38 - kairė ranka arenoje: skydas (2 gynybos) arba antras ginklas (2 smūgiai).
 const { test } = require('@playwright/test');
-const { sql, login, check, noJsErrors } = require('./helpers');
-
-async function closeCelebrate(p) {
-  for (let i = 0; i < 4 && await p.locator('#celebrate').count(); i++) { await p.click('#celebrate button').catch(() => {}); await p.waitForTimeout(300); }
-}
+const { sql, login, check, noJsErrors, closeCelebrate } = require('./helpers');
 
 test('#109: shield in the left hand - two blocks per turn; second weapon - two strikes', async ({ browser }) => {
   sql("INSERT INTO site_settings (name, value) VALUES ('game_access', 'all') ON DUPLICATE KEY UPDATE value = 'all'");

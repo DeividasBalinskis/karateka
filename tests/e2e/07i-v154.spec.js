@@ -9,7 +9,9 @@ test('B3: phone bout - pair and score buttons fit on 375×812, time section fold
   const tid = +sql('SELECT MAX(id) FROM tournaments');
   check('creation confirmed on the competition page', /sukurtos/.test((await a.locator('.vz-flash').allTextContents()).join(' ')));
   await a.waitForTimeout(1500);
-  check('header is low on a phone', await a.evaluate(() => document.querySelector('.vz-top').getBoundingClientRect().height) <= 160);
+  // v1.99: telefone skirtukai nekerpami - Tvarkaraštis · Rezultatai · Administracija gali būti dviem eilutėmis (~190 px)
+  const topH = await a.evaluate(() => document.querySelector('.vz-top').getBoundingClientRect().height);
+  check('header is low on a phone', topH <= 200, String(topH));
   const st = JSON.parse(sql(`SELECT state FROM tournaments WHERE id = ${tid}`));
   const kumite = st.categories.find(c => c.discipline === 'kumite' && !c.team && c.competitors.length >= 4);
   await a.click('#tab-live');

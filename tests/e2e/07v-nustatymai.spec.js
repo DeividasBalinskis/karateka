@@ -13,7 +13,8 @@ test('C2: settings map lists every switch; a change is logged and can be restore
   await a.goto('admin/nustatymai-visi.php');
   check('map shows the LTKF state with a link', (await a.locator('.set-map li', { hasText: 'ltkf_mode' }).innerText()).includes('public'));
   check('server items shown read-only', (await a.locator('.panel', { hasText: 'config.php' }).innerText()).includes('env'));
-  check('no unknown settings', await a.locator('text=Nežinomi nustatymai').count() === 0);
+  const unknown = await a.locator('p.warn-t', { hasText: 'Nežinomi nustatymai' }).allInnerTexts();
+  check('no unknown settings', unknown.length === 0, unknown.join(' | '));
   const row = a.locator('#zurnalas li', { hasText: 'LTKF svetainės būsena' }).first();
   check('change logged with who', (await row.innerText()).includes('public'));
   await nav(a, () => row.locator('button').click());

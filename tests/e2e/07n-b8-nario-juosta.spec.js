@@ -1,10 +1,6 @@
 // B8 (sprendimas 6a): nariams, tėvams ir vaikams telefone - apatinė juosta (4 skirtukai + ⋯ Daugiau); 🏯 Dojo - kampe.
 const { test } = require('@playwright/test');
-const { sql, login, check, noJsErrors } = require('./helpers');
-
-async function closeCelebrate(p) {
-  for (let i = 0; i < 4 && await p.locator('#celebrate').count(); i++) { await p.click('#celebrate button').catch(() => {}); await p.waitForTimeout(300); }
-}
+const { sql, login, check, noJsErrors, closeCelebrate } = require('./helpers');
 
 test('B8 member: tab bar on a phone (top since v1.86), none on a computer, tablet = computer; Dojo in the corner when the game is open', async ({ browser }) => {
   sql("INSERT INTO site_settings (name, value) VALUES ('game_access', 'all') ON DUPLICATE KEY UPDATE value = 'all'");

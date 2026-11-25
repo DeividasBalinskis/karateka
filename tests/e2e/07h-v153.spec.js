@@ -1,10 +1,6 @@
 // v1.53: „Kas naujo“ (versijos numeris), kodas kitam įrenginiui (vienkartinis, atjungiamas), vaiko prisijungimas vardu ir PIN (B7).
 const { test } = require('@playwright/test');
-const { sql, login, check, noJsErrors } = require('./helpers');
-
-async function closeCelebrate(p) {
-  for (let i = 0; i < 3 && await p.locator('#celebrate').count(); i++) { await p.click('#celebrate button'); await p.waitForTimeout(500); }
-}
+const { sql, login, check, noJsErrors, closeCelebrate } = require('./helpers');
 
 test('Kas naujo: staff click the version number and see the 3 newest versions; members do not get the link', async ({ browser }) => {
   const a = await login(browser, 'info@karateka.lt', 375, 812);

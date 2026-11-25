@@ -65,6 +65,12 @@ async function login(browser, email, width = 1280, height = 900, password = PASS
   page.jsErrors = [];
   page.on('pageerror', e => page.jsErrors.push(e.message));
   page.on('dialog', d => d.accept());
+  // Šventės langas (naujas lygis / išlaikytas egzaminas) atsiranda po XP bet kuriame puslapyje ir uždengia mygtukus -
+  // uždaromas pats prieš kiekvieną veiksmą. Testas, kuris tikrina pačią šventę, nustato page.keepCelebration = true.
+  await page.addLocatorHandler(page.locator('#celebrate'), async () => {
+    if (page.keepCelebration) return;
+    await page.locator('#celebrate button').click({ timeout: 3000 }).catch(() => {});
+  }, { noWaitAfter: true });
   if (email) {
     // C2 (v1.78): kalba saugoma paskyroje - kiekvienas testas prisijungia ta kalba, kurią nurodo (kitas testas galėjo perjungti į RU)
     try { sql(`UPDATE accounts SET lang = NULL WHERE email = '${email.replace(/'/g, "''")}'`); } catch (e) {}
@@ -74,6 +80,14 @@ async function login(browser, email, width = 1280, height = 900, password = PASS
     await Promise.all([page.waitForNavigation(), page.click('button[type=submit]')]);
   }
   return page;
+}
+
+/** Uždaro šventės langus, jei jie atidaryti (kelis iš eilės - po vieną puslapyje) */
+async function closeCelebrate(page) {
+  for (let i = 0; i < 4 && await page.locator('#celebrate').count(); i++) {
+    await page.locator('#celebrate button').click({ timeout: 3000 }).catch(() => {});
+    await page.waitForTimeout(300);
+  }
 }
 
 /** Paspaudimas, po kurio įkeliamas naujas puslapis */
@@ -103,4 +117,4 @@ async function openFeedback(page) {
   if (await page.locator('#fbPanel').isHidden()) await page.click('#fbFab');
 }
 
-module.exports = { openFeedback, sql, linkToken, linkNew, day, ids, login, nav, check, noJsErrors, flashes, PASSWORD, DEMO_PASSWORD, BASE_URL };
+module.exports = { openFeedback, closeCelebrate, sql, linkToken, linkNew, day, ids, login, nav, check, noJsErrors, flashes, PASSWORD, DEMO_PASSWORD, BASE_URL };

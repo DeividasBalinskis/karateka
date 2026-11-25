@@ -40,11 +40,12 @@ test('event photo, events column to the bottom, back link', async ({ browser }) 
   noJsErrors(a, v);
 });
 
-test('admin: Pranešimai under Tvarkyti, no exam program in settings, protocol without average fits a tablet', async ({ browser }) => {
+test('admin: Pranešimai under Darbai, no exam program in settings, protocol without average fits a tablet', async ({ browser }) => {
   const a = await login(browser, 'info@karateka.lt', 1400, 900);
   await a.goto('admin/');
   const groups = await a.locator('.adm-side .am-group').allInnerTexts();
-  check('Pranešimai in Tvarkyti', /Tvarkyti[\s\S]*Pranešimai/i.test(groups[2] || '') && !/Pranešimai/.test(groups[0] || ''), JSON.stringify(groups));
+  // v2.0x: meniu grupės Kasdien / Darbai / Nustatymai - Pranešimai tarp darbų, ne kasdienių
+  check('Pranešimai in Darbai', /^Darbai[\s\S]*Pranešimai/i.test(groups[1] || '') && !/Pranešimai/.test(groups[0] || ''), JSON.stringify(groups));
   await a.goto('admin/nustatymai.php');
   check('no exam program card', await a.locator('.settings-group a[href$="programa.php"]').count() === 0);
   const ev = +sql("SELECT id FROM events WHERE type = 'exam' ORDER BY id LIMIT 1");

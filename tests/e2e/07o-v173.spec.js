@@ -1,6 +1,6 @@
 // v1.73: #157 Budo varžybų rezultatai persikelia patys (be „Įvesk rezultatus“); #158 Dojo vardas po vardo pakeitimo; #159 arena aiškesnė.
 const { test } = require('@playwright/test');
-const { sql, day, login, check, noJsErrors } = require('./helpers');
+const { sql, day, login, check, noJsErrors, closeCelebrate } = require('./helpers');
 
 test('#157: competition run in Budo - no „enter results“ to-do, places and points arrive by themselves', async ({ browser }) => {
   const mid = +sql("SELECT am.member_id FROM account_members am JOIN accounts a ON a.id = am.account_id WHERE a.email = 'jaunuolis@karateka.test' AND am.relation = 'self'");
@@ -58,7 +58,7 @@ test('#159: arena - pick a game, pick the opponent, one big „Žaisti“; choic
   sql("INSERT INTO site_settings (name, value) VALUES ('game_access', 'all') ON DUPLICATE KEY UPDATE value = 'all'");
   const p = await login(browser, 'jaunuolis@karateka.test', 375, 812);
   await p.goto('arena.php');
-  for (let i = 0; i < 4 && await p.locator('#celebrate').count(); i++) { await p.click('#celebrate button').catch(() => {}); await p.waitForTimeout(300); }
+  await closeCelebrate(p);
   check('5 games to choose from', await p.locator('.ar-games [data-pick-game]').count() === 5);
   await p.click('[data-pick-game="greita"]');
   check('quick fight: no opponent choice', await p.locator('.ar-levels').isHidden());

@@ -1,11 +1,7 @@
 // B8 (sprendimas 2026-11-21, variantas B): 7-10 m. vaikas savo paskyroje - lygis ir XP viršuje, 2 kortelės, „Kas toliau“;
 // telpa į pirmą telefono ekraną, be „Atsijungti“ ir kainų; tėvai mato įprastą apžvalgą.
 const { test } = require('@playwright/test');
-const { sql, login, check, noJsErrors } = require('./helpers');
-
-async function closeCelebrate(p) {
-  for (let i = 0; i < 4 && await p.locator('#celebrate').count(); i++) { await p.click('#celebrate button').catch(() => {}); await p.waitForTimeout(300); }
-}
+const { sql, login, check, noJsErrors, closeCelebrate } = require('./helpers');
 
 test('B8: kid home - level on top, next training, one task with „✓ Atlikau“, „Kas toliau“; fits 375x812; parent view unchanged', async ({ browser }) => {
   sql("DELETE FROM accounts WHERE email LIKE '%@vaikas.invalid'");

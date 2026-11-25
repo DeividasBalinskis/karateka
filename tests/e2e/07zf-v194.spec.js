@@ -3,7 +3,7 @@
 const { test } = require('@playwright/test');
 const { sql, day, login, nav, check, noJsErrors } = require('./helpers');
 
-test('💡 bottom left on every page, admin side menu ends above it; 🔔 is a small bell with a list', async ({ browser }) => {
+test('💡 bottom left on every page, admin side menu's last item stays above it; 🔔 is a small bell with a list', async ({ browser }) => {
   sql("DELETE FROM notifications WHERE type = 'exam_registration' AND title LIKE 'v194:%'");
   const admId = sql("SELECT id FROM accounts WHERE email = 'info@karateka.lt'");
   sql(`INSERT INTO notifications (account_id, type, title, body, link) VALUES (${admId}, 'exam_registration', 'v194: Užsiregistravo į egzaminą: Ona', '3 kyu', 'admin/egzaminai.php')`);
@@ -14,8 +14,19 @@ test('💡 bottom left on every page, admin side menu ends above it; 🔔 is a s
     check(`💡 bottom left on ${url}`, fb && fb.x < 40 && fb.y > 800, JSON.stringify(fb));
   }
   await a.goto('admin/');
-  const side = await a.locator('.adm-side').boundingBox(), fb = await a.locator('#fbFab').boundingBox();
-  check('side menu ends above 💡', side.y + side.height <= fb.y - 4, `${side.y + side.height} / ${fb.y}`);
+  // v2.09 (Deividas): šoninis meniu eina iki ekrano apačios ir slenka pats; apačioje - vieta 💡, kad paskutinis punktas būtų virš jo
+  const sm = await a.evaluate(async () => {
+    window.scrollTo(0, document.documentElement.scrollHeight);
+    await new Promise(r => setTimeout(r, 200));
+    const s = document.querySelector('.adm-side');
+    s.scrollTop = s.scrollHeight;
+    await new Promise(r => setTimeout(r, 200));
+    const links = s.querySelectorAll('a'), last = links[links.length - 1].getBoundingClientRect();
+    const res = { last: Math.round(last.bottom), fb: Math.round(document.getElementById('fbFab').getBoundingClientRect().top), ov: getComputedStyle(s).overflowY };
+    s.scrollTop = 0; window.scrollTo(0, 0);
+    return res;
+  });
+  check('side menu: last item above 💡, the menu scrolls', sm.last <= sm.fb - 4 && sm.ov === 'auto', JSON.stringify(sm));
   const bell = await a.locator('.ntf-bell').boundingBox(), chat = await a.locator('.chat-fab').boundingBox();
   check('🔔 on the right above 💬', bell && chat && bell.x > 1300 && bell.y + bell.height <= chat.y, JSON.stringify([bell, chat]));
   check('no side cards, list closed', await a.locator('.ntf-card').count() === 0 && await a.locator('.ntf-menu').isHidden());

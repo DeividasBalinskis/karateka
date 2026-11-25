@@ -26,6 +26,12 @@ jobs:
         options: >-
           --health-cmd="healthcheck.sh --connect --innodb_initialized"
           --health-interval=5s --health-timeout=5s --health-retries=24
+      # Laiškai (config.ci.php: 127.0.0.1:1025) - be jo send_mail() grąžina false ir testai „laiškas išsiųstas“ krenta (07zd, 07ze)
+      mailpit:
+        image: axllent/mailpit:v1.33.1
+        ports:
+          - 1025:1025
+          - 8025:8025
     env:
       DB_HOST: 127.0.0.1
       DB_USER: root
