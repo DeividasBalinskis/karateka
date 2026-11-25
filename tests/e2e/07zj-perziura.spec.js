@@ -2,7 +2,21 @@
 // (□ → ✓ → ✗ + komentaras, „Pateikti“), „🎯 Pastaba apie elementą“, agento API (perziura-api.php). Tik tikriems administratoriams.
 const { test } = require('@playwright/test');
 const { execFileSync } = require('child_process');
+const fs = require('fs');
+const path = require('path');
 const { sql, login, nav, check, noJsErrors } = require('./helpers');
+
+// Testas naudoja savo pakeitimų sąrašą (app/review.json keičiasi su kiekviena versija); pabaigoje grąžinamas tikrasis
+const MANIFEST = path.join(__dirname, '..', '..', 'public_html', 'app', 'review.json');
+const TEST_MANIFEST = { rev: 'e2e-1', version: 'e2e', title: 'E2E', items: [
+  { id: 'meniu-grupes', page: 'admin/*', href: 'admin/', sel: '.adm-side', title: 'Valdymo meniu: Kasdien, Darbai, Nustatymai', note: 'E2E' },
+  { id: 'meniu-tvarkyti', page: 'admin/*', href: 'admin/', sel: '#am-edit', title: '✎ Meniu tvarkymas', note: 'E2E' },
+  { id: 'perziura-taisyti', page: 'admin/perziura.php', sel: '#taisyti', title: 'Peržiūra: ką taisyti' },
+  { id: 'perziura-eile', page: 'admin/perziura.php', sel: '#eile', title: 'Peržiūra: darbų eilė' },
+] };
+let saved = null;
+test.beforeAll(() => { saved = fs.readFileSync(MANIFEST, 'utf8'); fs.writeFileSync(MANIFEST, JSON.stringify(TEST_MANIFEST)); });
+test.afterAll(() => { if (saved !== null) fs.writeFileSync(MANIFEST, saved); });
 
 test('Peržiūra: queue fixes, gold marks with ✓/✗ and comments, submit, element notes, agent API', async ({ browser }) => {
   sql('DELETE FROM review_marks'); sql('DELETE FROM review_jobs');
@@ -34,7 +48,9 @@ test('Peržiūra: queue fixes, gold marks with ✓/✗ and comments, submit, ele
   const api = await (await a.request.get('perziura-api.php', H)).json();
   const aj = (api.jobs || []).find(j => j.kind === 'fix');
   check('API lists the job with the feedback text', aj && aj.items[0].feedback.body.includes('mygtukas per mažas') && api.review.items.length > 0, JSON.stringify(api).slice(0, 300));
-  await a.request.post('perziura-api.php', { ...H, data: { id: aj.id, status: 'working' } });
+  const claim1 = await a.request.post('perziura-api.php', { ...H, data: { id: aj.id, status: 'working' } });
+  const claim2 = await a.request.post('perziura-api.php', { ...H, data: { id: aj.id, status: 'working' } });
+  check('only one agent takes a job', claim1.status() === 200 && claim2.status() === 409 && (await claim2.json()).taken === true, `${claim1.status()} ${claim2.status()}`);
   await a.request.post('perziura-api.php', { ...H, data: { id: aj.id, status: 'done', result: 'E2E: pataisyta, paruošta įkelti' } });
   await a.reload();
   check('agent reply shown in the queue', /E2E: pataisyta, paruošta įkelti/.test(await a.textContent('#eile')) && /Padaryta/.test(await a.textContent(`[data-job="${aj.id}"]`)));
@@ -44,6 +60,12 @@ test('Peržiūra: queue fixes, gold marks with ✓/✗ and comments, submit, ele
   check('deploy job queued', sql("SELECT kind FROM review_jobs ORDER BY id DESC LIMIT 1") === 'deploy');
   await nav(a, () => a.click('#eile [data-job] form button'));
   check('queued job can be cancelled', sql("SELECT status FROM review_jobs ORDER BY id DESC LIMIT 1") === 'cancelled');
+  // Darbą padarė žmogus - „✓“ ir atsakymas
+  await nav(a, () => a.click('#rvp-deploy'));
+  await a.click('#eile [data-job] .rvp-close summary');
+  await a.fill('#eile [data-job] .rvp-close input[name=result]', 'E2E: padaryta ranka');
+  await nav(a, () => a.click('#eile [data-job] .rvp-close button'));
+  check('job closed by hand with a reply', sql("SELECT CONCAT(status, '|', result) FROM review_jobs ORDER BY id DESC LIMIT 1") === 'done|E2E: padaryta ranka');
 
   // Auksinės žymos: Valdymo puslapyje - meniu pakeitimai; □ → ✓ → ✗ (atsidaro komentaras)
   await a.goto('admin/');

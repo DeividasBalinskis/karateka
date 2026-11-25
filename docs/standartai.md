@@ -106,7 +106,7 @@ Where today's code differs from the table above (kept as it was, waiting for an 
 | `broadcast` | Pranešimai to all (e-mail and SMS) | – | – | – | – | – | ✔ |
 | `sms` | Send SMS (also the „SMS tėvams“ boxes) | – | – | – | – | – | ✔ |
 | `justifications` | Pateisinimai | – | – | – | – | – | ✔ |
-| `exams` | Create exams, exam prices, waiting list, extra protocols | – | – | – | – | – | ✔ |
+| `exams` | Create and delete exams and their protocols, exam prices, waiting list, extra protocols | – | – | – | – | – | ✔ |
 | `schedule` | Change the timetable, prices, group names and colours; cancel trainings | – | – | – | – | – | ✔ |
 | `xp_settings` | Point categories and level cost | – | – | – | – | – | ✔ |
 | `event_lists` | The final participant list and results of an event | – | – | – | – | – | ✔ |

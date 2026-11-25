@@ -46,6 +46,26 @@ function exam_protocol_rows(int $eventId, bool $deleted = false): array
     return q_all('SELECT * FROM exam_protocol_rows WHERE event_id = ? AND deleted_at IS ' . ($deleted ? 'NOT ' : '') . 'NULL ORDER BY seq, id', [$eventId]);
 }
 
+/** v2.08 (#179): kas yra protokole - vardai iš protokolo eilučių ir užsiregistravę per svetainę (dar neįkelti) */
+function exam_protocol_people(int $eventId): array
+{
+    $names = [];
+    try {
+        foreach (q_all('SELECT name FROM exam_protocol_rows WHERE event_id = ? AND deleted_at IS NULL ORDER BY seq, id', [$eventId]) as $r) {
+            $names[] = (string) $r['name'];
+        }
+    } catch (PDOException $ex) {
+        // dar neimportuotas db/031
+    }
+    foreach (q_all('SELECT m.first_name, m.last_name FROM event_participants ep JOIN members m ON m.id = ep.member_id
+                    WHERE ep.event_id = ? AND ep.status IN ("going", "late")
+                      AND NOT EXISTS (SELECT 1 FROM exam_protocol_rows r WHERE r.event_id = ep.event_id AND r.member_id = ep.member_id AND r.deleted_at IS NULL)
+                    ORDER BY m.last_name, m.first_name', [$eventId]) as $r) {
+        $names[] = trim($r['first_name'] . ' ' . $r['last_name']);
+    }
+    return $names;
+}
+
 /** Naujas dalyvis su kitu laisvu numeriu tai datai (ištrintų numeriai irgi užimti) */
 function exam_protocol_add(array $event, array $row): int
 {

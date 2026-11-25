@@ -390,8 +390,8 @@ body.m-more-open .fb, body.m-more-open .chat-fab, body.m-more-open .ntf-pop{disp
 
 /* v1.94 (#172): 💡 visur apačioje kairėje (dešinė - 💬 ir 🔔). Kompiuteryje Valdymo šoninis meniu baigiasi virš 💡, kad jo neuždengtų. */
 @media (min-width:1101px){
-  /* v2.00 (Deividas): meniu ilgesnis - baigiasi tik virš 💡 (buvo 320 px tarpas) */
-  body:has(.fb) .adm-side{max-height:calc(100vh - 180px); overflow-y:auto; scrollbar-width:thin;}
+  /* v2.09 (Deividas, Peržiūra): meniu - iki pat ekrano apačios; apačioje vieta 💡 mygtukui, kad paskutinį punktą būtų galima nuslinkti virš jo */
+  body:has(.fb) .adm-side{max-height:calc(100vh - 108px); overflow-y:auto; scrollbar-width:thin; padding-bottom:64px;}
 }
 }
 /* v1.95: „Aa“ šriftų bandymas ir „👍 Patinka“ temoms bei šriftams (administratoriams) */

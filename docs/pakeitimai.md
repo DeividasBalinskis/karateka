@@ -4,6 +4,19 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v2.09 - 2026-11-25 (Peržiūra: jūsų pastaba - meniu iki apačios)
+- **Valdymo šoninis meniu** eina iki pat ekrano apačios (Deividas Peržiūroje: „gal padarom, kad šitas meniu eitų iki pat apačios“); apačioje vieta 💡 mygtukui.
+- **🔎 Peržiūra → Darbų eilė → „✓“**: darbą, kurį padarėte patys (ar kita sesija), galima pažymėti padarytu ir parašyti, kas padaryta.
+- Peržiūros ratas v2.02 įvertintas „Visi geri“ - jau main'e. Naujas auksinių žymų sąrašas: protokolų trynimas, meniu iki apačios, „✓“.
+- Duomenų bazė: naujų failų nėra.
+
+## v2.08 - 2026-11-25 (#179 protokolų trynimas; agentas ir kompiuteryje)
+- **Valdymas → Egzaminai → 🗑** prie protokolo (tik administratoriui, #179): tuščias protokolas ištrinamas po vieno klausimo;
+  jei jame yra dalyvių - pirma parodoma, **kiek ir kas** jame yra, ir tik tada „Taip, ištrinti su N dalyviais“. Kiti tos dienos protokolai lieka.
+- **Taisymo agentas**: debesyje kas valandą 7–23 val. ir **kompiuteryje kas 15 min.**, kai Claude programa įjungta. Darbą paima tik vienas iš jų.
+  Kai bent vienas iš jūsų pažymi auksines žymas ir paspaudžia „Pateikti“ be ✗ - agentas pats kelia į main.
+- Duomenų bazė: naujų failų nėra.
+
 ## v2.07 - 2026-11-25 (transliacija: ± juostoje spaudžiami; „Žiūrėti gyvai“ ir naujose varžybose)
 - **Budo → 🎥 Transliacija**: ± ir ✕ juostoje ant tatamio vaizdo vėl spaudžiami (juosta virš vaizdo paspaudimų nepriėmė).
 - **Žiūrovams** „📹 Žiūrėti gyvai“ rodomas ir naujose varžybose, kurių santrauka dar neišsaugota (kai tatamiui priskirtas telefonas).
