@@ -4,6 +4,7 @@ Updated: 2026-11-25 · version v2.09 · main
 ## Pending asks (answer these first)
 | Asked | By | What | Status |
 |---|---|---|---|
+| 2026-11-25 | Dev | D1 done - pick the system that stays (D2): `docs/varzybos-palyginimas.md` (proposal: Budo stays, Varžybos removed; code compared, apps not run) | waiting |
 | 2026-11-25 | Dev | Fixing agent in the cloud (routine „Karateka: Peržiūros eilė (kas valandą)“, trig_01KwSq8HaCyBeQzfAB2Wxmvg, disabled): Deividas puts the API key into the cloud environment „karateka“ as `KARATEKA_API_KEY` and allows network to `test.karateka.lt`, then it is switched on. Every 15 min is not possible in the cloud (minimum 1 hour) - now every hour 07-23; or every 15 min on the PC while the app is open? | waiting |
 | 2026-11-25 | Dev | „okay darom kad 15 min dabar, bet jeigu …“ - the sentence was cut off | waiting |
 | 2026-11-25 | Dev → Denis | Feedback questions on test: #179 delete only empty protocols? #181 delete „4 kyu“ protocol with its 1 participant? #184 Budo top bar default A light / B Budo red / C soft blue-grey (picture: side-session notes `ui-perziura/5-184-budo-virsus-variantai.png`) | waiting |
