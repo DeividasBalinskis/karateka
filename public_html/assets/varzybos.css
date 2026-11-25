@@ -1700,3 +1700,5 @@ body.cam-body { margin: 0; min-height: 100vh; background: #12151C; color: #fff; 
 .lv-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; padding: 10px 14px calc(10px + env(safe-area-inset-bottom)); }
 .lv-foot .lv-big { min-height: 48px; padding: 12px 18px; font-size: 1.05rem; }
 @media (max-width: 600px) { .lv-bar { left: 6px; right: 6px; bottom: 6px; padding: 8px 10px; } .lv-row { gap: 6px; } }
+/* v2.00: Live lange 💡 neuždengia „▶ Pradėti kovą“ */
+body.live-on .fb-fab { display: none !important; }
