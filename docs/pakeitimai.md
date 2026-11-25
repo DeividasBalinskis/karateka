@@ -13,7 +13,7 @@ Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar
     todėl žiūrėti gali daug žmonių; vaizdas įsijungia tik paspaudus (taupomas telefonų internetas).
   - **Sekretoriatui** kovoje „📹 Vaizdas“ - telefono vaizdas šalia balų ir **± ant vaizdo** (keičia tos kovos balus).
   - Viskas, kas buvo susiję su OBS (juostos nuorodos, paaiškinimai, „Visi tatamiai“), pašalinta.
-- **Budo viršus** - švelni mėlynai pilka spalva (buvo beveik juodas), temos turi savo spalvas (#184).
+- **Budo viršus** - švelni mėlynai pilka spalva visose temose (buvo beveik juodas ar tamsus) (#184).
 - **Rungtis užsirakina pati**, kai įrašomas paskutinės kovos rezultatas; pataisyti - paspausti „🔒 Užrakinta“ (#182).
 - Budo: „CSV (Excel)“ ir „Kontaktai (Excel)“ mygtukuose nebėra didžiulio juodo ▼; siaurame tvarkaraščio stulpelyje (4 tatamiai) rungties pavadinimas
   nesuspaudžiamas; telefone „Administracija“ skirtukai be aukštų baltų dėžių ir nenukirsti. LTKF: išversta „dienų iki pradžios“.
