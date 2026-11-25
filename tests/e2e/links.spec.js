@@ -224,7 +224,9 @@ test('write links ask for a name; the name is saved with each change (Budo histo
   const p = await ctx.newPage();
   await p.goto(`varzybos-apdovanojimai.php?k=${aw}`);
   check('awards tablet asks for a name first', await p.locator('#apd-name input[name=name]').count() === 1);
-  const no = await p.request.post(`varzybos-apdovanojimai.php?k=${aw}`, { data: { cats: ['x'], status: 'done' } });
+  // su sesijos žetonu (C1: be jo - 400), kad būtų tikrinamas būtent vardas
+  const tok = await p.inputValue('#apd-name input[name=_csrf]');
+  const no = await p.request.post(`varzybos-apdovanojimai.php?k=${aw}`, { data: { cats: ['x'], status: 'done' }, headers: { 'X-CSRF-Token': tok } });
   check('no changes without a name', no.status() === 403, String(no.status()));
   await p.fill('#apd-name input[name=name]', 'Ona');
   await nav(p, () => p.click('#apd-name button[type=submit]'));
