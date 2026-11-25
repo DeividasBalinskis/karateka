@@ -1532,6 +1532,8 @@ body.gv-bar-body { margin: 0; background: transparent !important; font-family: '
 .gv-ovl .ov-pm { width: 4.4vw; height: 4.4vw; min-width: 30px; min-height: 30px; padding: 0; border: 0; border-radius: 1vw; background: rgba(255, 255, 255, .18); color: #fff;
   font: 800 3vw/1 'Inter', system-ui, sans-serif; cursor: pointer; display: inline-grid; place-items: center; }
 .gv-ovl .ov-pm:hover { background: rgba(255, 255, 255, .32); }
+/* v2.07: juosta virš vaizdo paspaudimų nepriima (pointer-events: none), bet ± ir ✕ - spaudžiami */
+.gv-ovl .ov-pm, .gv-ovl .ov-end { pointer-events: auto; }
 /* ± - vienas mygtukas, perpjautas per pusę: viršuje +, apačioje − */
 .gv-ovl .ov-pmv { display: inline-flex; flex-direction: column; flex: none; border-radius: 1vw; overflow: hidden; }
 .gv-ovl .ov-pmv .ov-pm { width: 4.8vw; height: 2.7vw; min-width: 38px; min-height: 22px; border-radius: 0; font-size: 2.4vw; }
