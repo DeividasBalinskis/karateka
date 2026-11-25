@@ -273,7 +273,7 @@ Kinds: `sekr`, `demo`, `live`, `reg`, `awards`, `quiz`, `exam_signup`, `exam_row
 6. Every map in saved data is an object when loaded, on both sides (an empty PHP array must not become a list).
 7. Browser storage is read inside `try`, with a default.
 8. `tests/checks.sh` fails on two top-level functions with the same name in one file.
-9. Target module list for `assets/varzybos.js` (step D3): `budo/rules`, `engine/draw`, `engine/bracket`, `engine/rr`, `engine/score`, `store`, `util`, `results`, `schedule`, `views/*`, `bout`, `chrome`, `main`.
+9. Budo modules (D3, done): `assets/varzybos/` - `rules` (the Budo rules), `engine/draw`, `engine/bracket`, `engine/rr`, `engine/score`, `engine/category`, `store`, `util`, `results`, `schedule`, `views/*`, `bout`, `chrome`, `test`, `main`. Loaded by `asset_module()` (import map with `?v=` per file). A module changes only its own variables - others call its setter (`setDragId`, `resetSwap`…); the engine and `rules` use no browser and are tested in `tests/engine`; a module does not read another module's state while loading - `main.js` starts everything.
 
 ## 10. Data
 

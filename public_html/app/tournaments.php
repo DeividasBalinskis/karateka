@@ -1,6 +1,6 @@
 <?php
 // Varžybų sistema svetainėje (db/025): Valdymas → Varžybos. Klubai, dalyviai, komandos, kategorijos, lentelės, tvarkaraštis, rezultatai.
-// Visa varžybų būsena - vienas JSON (tournaments.state), redaguojamas naršyklėje (assets/varzybos.js) ir išsaugomas automatiškai.
+// Visa varžybų būsena - vienas JSON (tournaments.state), redaguojamas naršyklėje (assets/varzybos/, ES moduliai) ir išsaugomas automatiškai.
 // Rezultatai (tournaments.results) - prizininkai ir klubų medaliai: iš jų narių taškai karateka.lt ir LTKF svetainės rezultatai.
 // Test varžybos (is_test): sugeneruojamos vienu mygtuku iš Karateka narių ir kitų LTKF klubų išgalvotų dalyvių, ištrinamos vienu mygtuku.
 
@@ -541,7 +541,7 @@ function tournament_generate_test(int $by, bool $demo = false): int
         ? [['id' => 'kt1', 'name' => 'Kata komandos Mix', 'discipline' => 'kata', 'team' => true, 'competitors' => $teamCompetitors, 'tatami' => 3, 'draw' => null]] : [];
     $state['areas'][] = ['id' => 3, 'name' => '3 TATAMIS', 'start' => '09:30'];
     $state['areas'][] = ['id' => 4, 'name' => '4 TATAMIS', 'start' => '09:30'];   // varžybose dažniausiai 4 tatamiai
-    $state['autoCats'] = true;    // kategorijos sudaromos atidarius (assets/varzybos.js)
+    $state['autoCats'] = true;    // kategorijos sudaromos atidarius (assets/varzybos/main.js)
     $state['simulate'] = 0.6;     // ir dalis kovų „sužaidžiama“
     $date = date('Y-m-d', strtotime('next saturday'));
     $n = (int) q_value('SELECT COUNT(*) FROM tournaments WHERE is_test = 1') + 1;

@@ -281,6 +281,28 @@ function asset_url(string $path): string
     return url($path) . '?v=' . @filemtime(PUBLIC_DIR . '/' . $path);
 }
 
+/**
+ * ES moduliai (D3, pvz. assets/varzybos/main.js): import map - kiekvienas to aplanko .js failas su savo ?v= (kaip asset_url),
+ * kad naršyklė po pakeitimo paimtų naują; tada pradinis modulis. Naršyklė be import map ima tuos pačius failus be ?v=.
+ */
+function asset_module(string $entry): string
+{
+    $dir = trim(str_replace('\\', '/', dirname($entry)), '/');
+    $base = PUBLIC_DIR . '/' . $dir;
+    $map = [];
+    if (is_dir($base)) {
+        foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($base, FilesystemIterator::SKIP_DOTS)) as $f) {
+            if ($f->isFile() && $f->getExtension() === 'js') {
+                $rel = $dir . '/' . str_replace('\\', '/', substr($f->getPathname(), strlen($base) + 1));
+                $map[url($rel)] = asset_url($rel);
+            }
+        }
+    }
+    ksort($map);
+    return '<script type="importmap">' . json_encode(['imports' => $map], JSON_UNESCAPED_SLASHES | JSON_HEX_TAG) . '</script>'
+        . '<script type="module" src="' . e(asset_url($entry)) . '"></script>';
+}
+
 /** Kaip įsidiegti svetainę telefone kaip programėlę (įdiegus - nerodoma) */
 function render_app_install_card(): string
 {

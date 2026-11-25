@@ -1,7 +1,7 @@
 <?php
 // Varžybų valdymas (Valdymas → Varžybos → Atidaryti): klubai, komandos, dalyviai, kategorijos (organizacinė pusė), live tvarkaraštis
 // (tatamiai, laikai ir kiekvienos rungties valdymas - lentelė, kovos, balai), rezultatai. Viršuje - perjungimas į kitas varžybas.
-// Viskas veikia naršyklėje (assets/varzybos.js), pakeitimai išsaugomi automatiškai (POST JSON į šį puslapį).
+// Viskas veikia naršyklėje (assets/varzybos/ - ES moduliai, pradžia main.js), pakeitimai išsaugomi automatiškai (POST JSON į šį puslapį).
 require dirname(__DIR__) . '/app/bootstrap.php';
 require_once dirname(__DIR__) . '/app/diplomas.php';
 $me = varz_require_access();
@@ -175,7 +175,7 @@ if (get('restore') && is_post()) {
     exit(json_encode($r ? ['ok' => true] + $r : ['ok' => false, 'error' => 'Kopija nerasta.'], JSON_UNESCAPED_UNICODE));
 }
 
-// Išsaugojimas (fetch iš assets/varzybos.js)
+// Išsaugojimas (fetch iš assets/varzybos/store.js)
 if (is_post()) {
     csrf_check();
     header('Content-Type: application/json; charset=utf-8');
@@ -345,7 +345,7 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
     <?php endif; ?>
     <div class="sp-row"><a class="btn" href="<?= url('admin/varzybu-sistema.php?id=' . (int) $t['id'] . '&kaip=sekretoriatas') ?>" id="sekr-preview">👁 Peržiūrėti kaip sekretoriatas</a></div>
   </div>
-  <?php /* v2.01: sekretoriato darbastalis vienam tatamiui - atidaryti čia arba nuoroda tatamiui (mygtukus įdeda assets/varzybos.js) */ ?>
+  <?php /* v2.01: sekretoriato darbastalis vienam tatamiui - atidaryti čia arba nuoroda tatamiui (mygtukus įdeda assets/varzybos/views/desk.js) */ ?>
   <div class="sp-block">
     <b title="Vienas tatamis: visos jo grupės su laikais, lentelės, kovos ir Live kova. Kitus tatamius galima pažiūrėti „🏟 Visi tatamiai“.">📋 Sekretoriato darbastalis</b>
     <div class="sp-row"><span class="small muted">Atidaryti šiame kompiuteryje:</span><span class="sekr-desk" id="sekr-desk"></span></div>
@@ -625,7 +625,7 @@ foreach (take_flashes() as $f): ?>
   </section>
 </main>
 <script>window.VARZ = <?= json_encode($cfg, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP) ?>;</script>
-<script src="<?= e(asset_url('assets/varzybos.js')) ?>"></script>
+<?= asset_module('assets/varzybos/main.js') /* D3: ES moduliai assets/varzybos/ */ ?>
 <?= feedback_widget_html() ?><script src="<?= e(asset_url('assets/site.js')) ?>" defer></script><script src="<?= e(asset_url('assets/theme-pick.js')) ?>" defer></script>
 </body>
 </html>

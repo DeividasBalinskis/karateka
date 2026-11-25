@@ -50,6 +50,9 @@ jobs:
       - name: Greitos patikros (PHP sintaksė, db failai, koduotė)
         run: bash tests/checks.sh
 
+      - name: Budo variklio testai (be naršyklės, tests/engine)
+        run: node --experimental-vm-modules --test tests/engine/*.test.mjs
+
       - name: Konfigūracija ir testų duomenų bazė
         run: |
           cp tests/setup/config.ci.php public_html/config.php
