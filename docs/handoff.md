@@ -1,9 +1,12 @@
 # Handoff
-Updated: 2026-11-24 · version v1.95 · work branch
+Updated: 2026-11-25 · version v1.96 · work branch
 
 ## Pending asks (answer these first)
 | Asked | By | What | Status |
 |---|---|---|---|
+| 2026-11-25 | Dev | Dojo: a new character every 10 levels - which are free at the start, chosen or random? | answered 2026-11-25: every 5 levels, random, gift with animation - done in v1.96 (start = Kitsunė, developer's pick) |
+| 2026-11-25 | Denis | OBS bar „link does not work“ (it worked, but was empty without a bout) | answered: help + idle bar + „Pavyzdys“ - done in v1.96, Denis to try on test |
+| 2026-11-24 | Dev | D8 pixel concept: mark existing art „Gerai / Netinka“ on the private review page (claude.ai artifact „Dojo pikselių dizainas“, marks saved in its db `zymos`, group notes `pastabos`) + 4 questions: style OK for all characters? how 3 pets help (every turn or chance)? does the bot have pets? whole Dojo at once or backpack + battle first? | waiting |
 | 2026-11-20 | Denis | #30 and #147: messages cut off - ask Denis to write them again | waiting |
 | 2026-11-22 | Dev | Pick variants: menu on a computer A1/A2/A3, phone menu B1/B2/B3, Budo video C1 (done) + C2 tablet / C3 hall TV (screenshots sent in chat) | waiting |
 | 2026-11-22 | Dev | „į main“ for v1.85-v1.93 (main = v1.84) | answered 2026-11-24 („į main viską“) - main = v1.94 |
@@ -84,6 +87,24 @@ Updated: 2026-11-24 · version v1.95 · work branch
   themes.css v1.95 block: per-theme --t-panel/--t-border/--t-shadow/--t-glow/--t-chip/--t-2, body::before glow, themed panels (3 px strip), h1, buttons, side menu.
   docs/projekto-zemelapis.md = project map. Test 07zg.
 - Committed and pushed to the work branch after each stage.
+- 2026-11-24 (PC, not committed): LibreSprite + libresprite-mcp works (Scripts → mcp.js → Connect first, else run_script hangs); test fox head `tools/pikseliai/bandymas/lapinas-32.png`.
+  D8 concept (no site code changed): `tools/pikseliai/koncepcija/` - pxkit.py (shapes → shaded layers, one navy outline), veikejai.py (Kitsunė, Meistras Drakonas, Dvasia 48×48 with idle 4 frames + punch/block/hit; pets Vėžliukas, Lapiukas, Drakoniukas 32×32),
+  aplinka.py (dojo kiemas 320×180), ui.py (5×7 pixel font with ĄČĘĖĮŠŲŪŽ, panels, buttons, HP bars, hit/block marks), ginklai.py (15 weapons 24×24), koncepcija.py / meniu.py / animacijos.py → `out/` (battle GIF, Dojo home, backpack, animations).
+  Review of existing art (contact sheets + second opinion): characters are 150-330 px generated pictures (mixels → dragon looks pasted), weapons 9×7..33×32 (→ backpack uneven), 4 fonts + emoji. Research: Pixelify Sans / Tiny5 / Press Start 2P have latin-ext + Cyrillic; Silkscreen, VT323, Jersey 10, Micro 5 lack Cyrillic.
+  `bash tests/checks.sh` cannot run on this PC (no php on PATH).
+- 2026-11-25 (PC, committed, not pushed) v1.96: Dojo progression approved („Taip, daryk“). `app/xp.php`: level cost 5 + 2 × floor((n-1)/5) (settings `xp_level_base` 5, `xp_level_step` 2 replace `xp_per_level`; old row 100 left in site_settings, unused),
+  `xp_level_cost()`, `xp_level_start()`, `XP_GIFT_LEVELS` 60. `app/game.php`: `game_week_win_box()` (3 wins Mon-Sun = 1 box, reason `wk:YYYYWW`) replaces `game_daily_win_box()`; `GAME_EGG_LEVELS` [3, 8, 15] → egg-only box.
+  Admin Treneriams → Taškai: two inputs + current prices. Texts LT/EN/RU. Test 01-scenarios updated. Calculator: claude.ai artifact „Dojo progresija“; doc `docs/dojo-progresija.md`.
+  Not run: checks.sh and Playwright (no php/node on this PC). Existing kids jump many levels at once (e.g. 150 XP → level 20) and get those boxes when they open Dojo.
+  Exam protocol time (Deividas 2026-11-25: „protokoluose rašyti laiką, kada, keisti“) - done by a separate session in the same folder (start time on the protocol page and in „+ Protokolas šiai datai“; test 07zg).
+  Character every 5 levels: `GAME_CHAR_START`, `GAME_CHAR_EVERY`, `game_chars_owned()` (start + current + opened „ch:“ boxes, item_key `ch_<key>`), picker shows locked as 🔒 shadows when GAME_UNLOCK_ALL is false; box reveal animation (game-px.css charRise). Test 06n checks the ch:5 box.
+  OBS bar: idle bar (title + tatami), `&pavyzdys=1` sample, help card only when `window.obsstudio` is missing; Budo texts in tools/vertimai/taika.tsv (build.py run). Test 07zb updated (OBS simulated with addInitScript).
+  JS syntax of the changed files checked with the Windows script engine; PHP not checked (no php).
+- 2026-11-25 (PC, not committed) exam protocol time: each protocol = its own `events.start_time` (no new db file).
+  `admin/egzamino-protokolas.php`: „Pradžios laikas“ input #protTime in the header (saved at once: `?save=1` field `start_time`, staff, HH:MM or empty; print shows #protTimePrint).
+  `admin/egzaminai.php`: copy_exam form has `start_time` (prefilled with that protocol's time; posted value wins, missing field = copy), list sorted by time within a day.
+  `app/exam_protocol.php`: Excel/CSV header gets „Pradžios laikas: HH:MM“. CSS `.prot-time`. 3 texts LT/EN/RU. Test `tests/e2e/07zg-protokolo-laikas.spec.js` (new, not run - no php/node here).
+  A changed time sends no e-mail to people already in the protocol (not asked).
 
 ## Open
 - C1 permissions, C3 secret links, C5 CSS cleanup (safe now with tests/visual.sh), C6 engine unit tests, D3 split varzybos.js, D4 same group on two tablets, D5 Budo live polish, D7 arena left hand UI, D8 pixel characters (PC + LibreSprite).

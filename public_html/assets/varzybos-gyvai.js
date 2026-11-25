@@ -273,11 +273,44 @@
       (left !== null && d.mode !== 'score2' ? '<span class="ov-t" data-timer="' + areaId + '">' + fmt(left, d.timer && d.timer.up) + '</span>' : '<span class="ov-t">:</span>') +
       '<b class="ov-s shiro">' + esc(sb) + '</b><span class="ov-n shiro">' + esc(d.shiro.name) + '</span>' + (d.winner ? '<span class="ov-win">🏆 ' + esc(d.winner === 'a' ? d.aka.name : d.shiro.name) + '</span>' : '');
   }
-  // OBS juosta (?juosta=1&tatami=N): tik kovos juosta apačioje, fonas permatomas; kai kovos nėra - nieko nerodoma
+  // OBS juosta (?juosta=1&tatami=N): juosta apačioje, fonas permatomas. Vyksta kova - vardai, balai, laikas;
+  // kovos nėra - varžybų ir tatamio pavadinimas (galima prijungti telefoną ir transliuoti iš anksto); ?pavyzdys=1 - pavyzdinė kova.
+  // Atidarius paprastoje naršyklėje (ne OBS) - viršuje paaiškinimas, kaip naudotis (OBS jo nerodo: ten yra window.obsstudio).
+  var IN_OBS = !!window.obsstudio;
+  function barName() {
+    var a = ((data && data.areas) || []).filter(function (x) { return String(x.id) === String(CFG.area); })[0];
+    return a ? a.name : 'Tatamis ' + CFG.area;
+  }
+  function barSample() {
+    return '<span class="ov-cat">Pavyzdys · Kumite</span><span class="ov-n aka">Jonas Jonaitis</span><b class="ov-s aka">3</b><span class="ov-t">1:24</span>' +
+      '<b class="ov-s shiro">1</b><span class="ov-n shiro">Petras Petraitis</span>';
+  }
+  function barHelp(live) {
+    var here = location.href.replace(/[?&]pavyzdys=1/, ''), sample = here + '&pavyzdys=1';
+    return '<section class="gv-bar-help"><h1><span>🎬 OBS juosta</span> · <span>' + esc(barName()) + '</span></h1>' +
+      '<p class="gv-bh-state">' + (CFG.sample ? '👁 Rodoma pavyzdinė kova - taip atrodys juosta kovos metu.' : live ? '🔴 Dabar vyksta kova - juostoje vardai, balai ir laikas.' :
+        '⏸ Kovos dabar nėra - juostoje rodomas varžybų ir tatamio pavadinimas. Kova atsiras pati, kai kovos skydelyje ją pradėsite.') + '</p>' +
+      '<ol><li><b>OBS Studio:</b> <span>atidarykite kompiuteryje.</span></li>' +
+      '<li><b>Telefono vaizdas:</b> <span>telefone atidarykite vdo.ninja → „Add your Camera to OBS“ → „Start“. Gautą nuorodą įdėkite į OBS: Šaltiniai → + → Naršyklė (Browser), plotis 1920, aukštis 1080.</span></li>' +
+      '<li><b>Ši juosta:</b> <span>OBS → Šaltiniai → + → Naršyklė (Browser) → įklijuokite šio puslapio nuorodą, plotis 1920, aukštis 1080. Šaltinių sąraše juosta turi būti virš telefono vaizdo.</span></li>' +
+      '<li><b>Transliacija:</b> <span>OBS → Nustatymai → Transliacija → YouTube → „Pradėti transliaciją“. YouTube nuorodą žiūrovams įklijuokite Budo → „📡 Transliacija ir registracija“ → „🎥 YouTube transliacija“.</span></li></ol>' +
+      '<p class="gv-bh-btns"><button type="button" class="btn" data-copy="' + esc(here) + '">Kopijuoti nuorodą</button>' +
+      (CFG.sample ? '<a class="btn" href="' + esc(here) + '">Tikra juosta</a>' : '<a class="btn" href="' + esc(sample) + '">Pavyzdys</a>') + '</p>' +
+      '<p class="muted small">Šis paaiškinimas OBS programoje nerodomas - ten matosi tik juosta apačioje.</p></section>';
+  }
   function renderBar() {
-    var html = ovlHtml(CFG.area);
-    html = html ? '<div class="gv-ovl gv-bar">' + html + '</div>' : '';
+    var live = ovlHtml(CFG.area), html = CFG.sample ? barSample() : live || ('<span class="ov-cat">' + esc((data && data.title) || CFG.title) + '</span><span class="ov-n">' + esc(barName()) + '</span>');
+    html = '<div class="gv-ovl gv-bar' + (live || CFG.sample ? '' : ' idle') + '">' + html + '</div>';
+    if (!IN_OBS) html = barHelp(!!live) + html;
     if (root.dataset.h !== html) { root.dataset.h = html; root.innerHTML = html; }
+  }
+  if (CFG.bar && !IN_OBS) {
+    document.body.classList.add('gv-bar-browser');
+    root.addEventListener('click', function (e) {
+      var b = e.target.closest('[data-copy]'); if (!b) return;
+      var done = function () { b.textContent = 'Nukopijuota ✓'; setTimeout(function () { b.textContent = 'Kopijuoti nuorodą'; }, 1500); };
+      if (navigator.clipboard) navigator.clipboard.writeText(b.dataset.copy).then(done, function () {});
+    });
   }
   function renderVideos() {
     var areas = ((data && data.areas) || []).filter(function (a) { return a.video; });

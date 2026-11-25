@@ -63,6 +63,10 @@ if (is_post() && in_array(post('action'), ['wl_link', 'wl_open', 'wl_assign', 'w
                 if (event_main_sql() !== '1') {   // v1.94 (#174): papildomas protokolas - viešuose sąrašuose rodomas tik pagrindinis renginys
                     q('UPDATE events SET parent_id = ? WHERE id = ?', [(int) ($src['parent_id'] ?? 0) ?: (int) $src['id'], $newId]);
                 }
+                if (isset($_POST['start_time'])) {   // savas pradžios laikas (tuščias - be laiko); be lauko - kaip šaltinio
+                    $tm = trim((string) post('start_time'));
+                    q('UPDATE events SET start_time = ? WHERE id = ?', [preg_match('/^([01]\d|2[0-3]):[0-5]\d/', $tm) ? substr($tm, 0, 5) . ':00' : null, $newId]);
+                }
                 flash('ok', t('Protokolas sukurtas: {t}', ['t' => $title]));
             }
             break;
@@ -71,7 +75,7 @@ if (is_post() && in_array(post('action'), ['wl_link', 'wl_open', 'wl_assign', 'w
 }
 
 $ready = exam_protocol_ready();
-$exams = q_all('SELECT * FROM events WHERE type = "exam" ORDER BY (COALESCE(ends_on, starts_on) < CURDATE()), IF(COALESCE(ends_on, starts_on) < CURDATE(), -TO_DAYS(starts_on), TO_DAYS(starts_on)) LIMIT 60');
+$exams = q_all('SELECT * FROM events WHERE type = "exam" ORDER BY (COALESCE(ends_on, starts_on) < CURDATE()), IF(COALESCE(ends_on, starts_on) < CURDATE(), -TO_DAYS(starts_on), TO_DAYS(starts_on)), start_time IS NULL, start_time, id LIMIT 60');
 $rowsBy = $signBy = [];
 if ($ready && $exams) {
     $ids = implode(',', array_map(function ($e) { return (int) $e['id']; }, $exams));
@@ -195,6 +199,7 @@ page_start(t('Egzaminai'), ['admin' => true]);
         if (is_admin($me) && exam_waitlist_ready() && (!$next || $next['starts_on'] !== $ev['starts_on'])) {
             echo '<form method="post" class="exam-copy">' . csrf_field() . '<input type="hidden" name="action" value="copy_exam"><input type="hidden" name="id" value="' . (int) $ev['id'] . '">'
                 . '<input type="text" name="label" maxlength="60" required placeholder="' . e(t('pvz. 10–7 kyu')) . '" aria-label="' . e(t('Kokiems diržams')) . '">'
+                . '<input type="time" name="start_time" value="' . e(fmt_time($ev['start_time'])) . '" aria-label="' . e(t('Pradžios laikas')) . '" title="' . e(t('Naujo protokolo pradžios laikas')) . '">'
                 . '<button class="btn btn-ghost btn-sm" type="submit">' . te('+ Protokolas šiai datai') . '</button></form>';
         }
     } ?>

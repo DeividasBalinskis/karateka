@@ -119,8 +119,9 @@ if (get('json')) {
 $screen = (bool) get('ekranas');
 // OBS juosta (?juosta=1&tatami=N): permatomas fonas, apačioje - kova, balai ir laikas; OBS uždeda ją ant telefono vaizdo (Browser Source)
 $bar = !$screen && (bool) get('juosta');
+// v1.96: be kovos juostoje - varžybų ir tatamio pavadinimas (galima prijungti iš anksto); ?pavyzdys=1 - pavyzdinė kova; paprastoje naršyklėje - paaiškinimas
 $cfg = ['json' => url('varzybos-gyvai.php?k=' . $t['share_token'] . '&json=1'), 'id' => (int) $t['id'], 'screen' => $screen, 'bar' => $bar, 'area' => (int) get('tatami'),
-        'title' => $t['title']];
+        'title' => $t['title'], 'sample' => $bar && (bool) get('pavyzdys')];
 if ($bar): ?><!doctype html>
 <html lang="lt">
 <head>
@@ -130,6 +131,7 @@ if ($bar): ?><!doctype html>
 <title><?= e($t['title']) ?> · OBS · <?= e(VARZ_NAME) ?></title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@600;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="<?= e(asset_url('assets/varzybos.css')) ?>">
+<?= tl_script() ?>
 </head>
 <body class="gv-bar-body">
 <main id="gyvai" aria-live="polite"></main>

@@ -4,6 +4,23 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v1.96 - 2026-11-25 (Dojo: nauji lygiai, dovanos, personažai; egzaminų protokolų laikas; OBS juosta)
+- **Lygiai greitesni:** pirmi 5 lygiai - po 5 XP (aktyvumo taškų), toliau kas 5 lygius lygis brangsta 2 XP (5, 7, 9, 11 …).
+  Anksčiau kiekvienas lygis - 100 XP, todėl vaikas, kuris treniruojasi 2 kartus per savaitę, po metų buvo tik 2 lygio; dabar - apie 18.
+  Taškų vertės nesikeitė. Lygis matomas ir vaikų pradžioje, paskyroje, pranešimuose.
+- **Valdymas → Treneriams → Taškai:** vietoj „Vienam lygiui reikia“ - „Pirmi 5 lygiai - po … taškų“ ir „Kas 5 lygius lygis brangsta … taškų“, po jais - dabartinės kainos.
+- **Dojo dovanų dėžės:** už pergales žaidime - **3 pergalės per savaitę = 1 dėžė** (anksčiau kas dieną). Už lygius - iki 60 lygio, už renginius su „Buvo“ - kaip anksčiau.
+- **3, 8 ir 15 lygio dėžėje - visada kiaušinis** (gyvūnėlis), jei dar telpa (daugiausia 6).
+- **Naujas personažas kas 5 lygius:** pasiekus 5, 10, 15 … lygį - atskira dovana „✨ Naujas personažas“. Atidarius iš dėžės išlenda atsitiktinis dar neturimas personažas,
+  jį galima iškart „Rinktis šį“. Pradžioje - Kitsunė (perdažoma), kiti personažų sąraše - šešėliai su 🔒. Kol žaidimas testuojamas, visi atrakinti kaip anksčiau.
+- **Budo → 📡 Transliacija ir registracija → 🎬 OBS juosta**: juosta veikia ir be kovos - rodomas varžybų ir tatamio pavadinimas, todėl telefoną galima
+  prijungti ir vaizdą patikrinti iš anksto. Prie kiekvieno tatamio - „Pavyzdys“ (kaip atrodys kova). Atidarius nuorodą naršyklėje - paaiškinimas, kaip prijungti
+  OBS, telefoną (vdo.ninja) ir YouTube; OBS programoje paaiškinimo nėra, tik permatoma juosta. Tą patį bloką mato ir sekretoriatas.
+- **Egzaminų protokolai - savas pradžios laikas:** protokolo viršuje (Valdymas → Egzaminai → „📋 Protokolas“) - laukas „Pradžios laikas“,
+  įrašius ar pakeitus išsaugoma iš karto. „+ Protokolas šiai datai“ formoje - laikas naujam protokolui (iš anksto toks pat).
+  Tos dienos protokolai sąraše - pagal laiką. Laikas rodomas sąraše, spausdintame protokole, Excel faile, „Mano egzaminas“ ir laiškuose dalyviams.
+- Duomenų bazė: naujų failų nėra.
+
 ## v1.95 - 2026-11-24 (šriftų bandymas, „👍 Patinka“ temoms ir šriftams, gražesnės temos)
 - **„Aa“ šalia 🎨 (tik administratoriams):** 13 šriftų porų (antraštės + tekstas, visi su lietuviškomis ir rusiškomis raidėmis).
   Paspaudus - visa svetainė šiame įrenginyje rodoma tuo šriftu (kitiems nesikeičia). „Dabartinis“ - grąžina kaip buvo.

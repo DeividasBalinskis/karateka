@@ -1522,6 +1522,16 @@ body.gv-bar-body { margin: 0; background: transparent !important; font-family: '
 .gv-ovl.gv-bar .ov-cat { font-size: 1.2vw; }
 .gv-ovl.gv-bar .ov-s { font-size: 3.4vw; }
 .gv-ovl.gv-bar .ov-t { font-size: 2.4vw; }
+.gv-ovl.gv-bar.idle { justify-content: center; }
+.gv-ovl.gv-bar.idle .ov-cat { font-size: 1.6vw; opacity: .85; }
+/* v1.96: atidarius paprastoje naršyklėje - langeliais nupieštas „vaizdas“ (OBS ten bus telefono vaizdas) ir paaiškinimas viršuje */
+body.gv-bar-browser { background: #8a8f98 repeating-conic-gradient(#9aa0a8 0 25%, #8a8f98 0 50%) 0 0 / 40px 40px !important; overflow: auto; color: #17140F; }
+.gv-bar-help { max-width: 760px; margin: 16px auto 30vh; padding: 16px 20px; background: #FBF9F4; border-radius: 14px; box-shadow: 0 10px 30px rgba(0,0,0,.25); font-size: 15px; line-height: 1.45; }
+.gv-bar-help h1 { margin: 0 0 6px; font-size: 20px; }
+.gv-bar-help ol { margin: 8px 0; padding-left: 22px; display: grid; gap: 6px; }
+.gv-bar-help .gv-bh-state { margin: 0; padding: 8px 10px; background: #F1ECE0; border-radius: 10px; font-weight: 600; }
+.gv-bar-help .gv-bh-btns { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 4px; }
+@media (max-width: 600px) { .gv-bar-help { margin: 10px 10px 30vh; font-size: 14px; } }
 .area-vid { display: flex; align-items: center; gap: 4px; font-size: 12px; flex: 1 1 100%; min-width: 0; }
 .area-vid input { flex: 1; min-width: 0; width: auto; font-size: 12px; padding: 4px 6px; }
 

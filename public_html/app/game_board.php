@@ -201,7 +201,7 @@ function board_move(array $m, string $side, array $mv)
         foreach (['a' => 1, 'b' => 2] as $x => $n) {
             $hid = $x === 'a' ? (int) $m['a_hero'] : (int) $m['b_hero'];
             if ($hid && $m['winner'] === $n && ($h = game_hero_row($hid))) {
-                game_daily_win_box($h);
+                game_week_win_box($h);
             }
         }
         return $m;

@@ -85,6 +85,8 @@ test('my dojo: create the hero, test panel, gift box, equip, pet, collection', a
   await a.click('.dw-tool[data-pane=test]');
   await a.fill('#t-lvl', '6'); await a.click('[data-test=level]'); await a.waitForTimeout(700);
   check('test level applied', (await a.textContent('.df-lv')).includes('6'));
+  // v1.96: kas 5 lygius - atskira dovana su nauju personažu
+  check('new character gift at level 5', +sql("SELECT COUNT(*) FROM game_boxes WHERE reason = 'ch:5' AND hero_id IN (SELECT id FROM game_heroes WHERE account_id = (SELECT id FROM accounts WHERE email='info@karateka.lt') OR member_id IN (SELECT member_id FROM account_members am JOIN accounts x ON x.id = am.account_id WHERE x.email='info@karateka.lt' AND am.relation='self'))") >= 1);
   await a.click('[data-test=all]'); await a.waitForTimeout(900);
   await a.click('[data-test=boxes]'); await a.waitForTimeout(700);
   await a.click('.sc-x');

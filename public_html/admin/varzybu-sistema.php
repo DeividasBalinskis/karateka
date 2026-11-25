@@ -355,7 +355,8 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
   </div>
   <div class="sp-block">
     <b title="OBS → Šaltiniai → + → Naršyklė (Browser) → įklijuokite nuorodą; plotis 1920, aukštis 1080. Telefonas - kitas šaltinis po juosta.">🎬 OBS juosta ant telefono vaizdo</b>
-    <p class="muted small">OBS: + → Naršyklė (Browser), 1920 × 1080. Fonas permatomas - matosi tik kova, balai ir laikas.</p>
+    <p class="muted small">Juosta su kova (vardai, balai, laikas) ant telefono vaizdo transliacijoje. Kovos nėra - rodomas varžybų ir tatamio pavadinimas, todėl prijungti ir pažiūrėti vaizdą galima iš anksto.</p>
+    <p class="muted small">OBS → Šaltiniai → + → Naršyklė (Browser) → įklijuokite nuorodą, 1920 × 1080. „↗“ atidaro juostą su paaiškinimu, „Pavyzdys“ - kaip atrodys kova.</p>
     <div id="sp-bars"></div>
   </div>
   <?php if ($awardsUrl): ?>

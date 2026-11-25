@@ -65,8 +65,11 @@ if (is_post()) {
             q('UPDATE point_categories SET name = ?, points = ?, is_active = ? WHERE id = ?',
                 [$name, (int) ($_POST['points'][$id] ?? 0), !empty($_POST['active'][$id]) ? 1 : 0, (int) $id]);
         }
-        if (post('xp_per_level') !== '') {
-            set_site_setting('xp_per_level', (string) max(10, min(10000, (int) post('xp_per_level'))));
+        if (post('xp_level_base') !== '') {
+            set_site_setting('xp_level_base', (string) max(1, min(1000, (int) post('xp_level_base'))));
+        }
+        if (post('xp_level_step') !== '') {
+            set_site_setting('xp_level_step', (string) max(0, min(1000, (int) post('xp_level_step'))));
         }
         flash('ok', t('Taškų vertės išsaugotos. Jos galioja naujiems skyrimams.'));
     }
@@ -173,9 +176,13 @@ page_start(t('Aktyvumo taškai'), ['admin' => true]);
       <input type="hidden" name="action" value="save_categories">
       <h2><?= te('Už ką skiriami taškai') ?></h2>
       <p class="hint"><?= te('Pakeista vertė galioja tik naujiems skyrimams - anksčiau skirti taškai nesikeičia.') ?><?= is_admin() ? '' : (' ' . t('Keisti gali administratorius.')) ?></p>
-      <label class="xp-setting"><?= te('Vienam lygiui reikia') ?>
-        <input type="number" name="xp_per_level" min="10" max="10000" value="<?= xp_per_level() ?>" <?= is_admin() ? '' : 'disabled' ?>> <?= te('taškų') ?>
+      <label class="xp-setting"><?= te('Pirmi 5 lygiai - po') ?>
+        <input type="number" name="xp_level_base" min="1" max="1000" value="<?= xp_level_base() ?>" <?= is_admin() ? '' : 'disabled' ?>> <?= te('taškų') ?>
       </label>
+      <label class="xp-setting"><?= te('Kas 5 lygius lygis brangsta') ?>
+        <input type="number" name="xp_level_step" min="0" max="1000" value="<?= xp_level_step() ?>" <?= is_admin() ? '' : 'disabled' ?>> <?= te('taškų') ?>
+      </label>
+      <p class="hint"><?= te('Lygių kaina dabar: {list} …', ['list' => implode(', ', array_map('xp_level_cost', [1, 6, 11, 16, 21]))]) ?></p>
       <?php foreach ([[t('Skiriama automatiškai'), $autoCats, true], [t('Skiria treneris (✨ Skirti taškus, „+ Taškai“ treniruotėje, nario kortelėje)'), $handCats, false]] as [$title, $list, $isAuto]): ?>
         <div class="kicker" style="margin-top:10px;"><?= e($title) ?></div>
         <table class="table xp-rules">

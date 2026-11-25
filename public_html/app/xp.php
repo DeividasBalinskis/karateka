@@ -1,21 +1,53 @@
 <?php
 // XP ir lygiai. XP = aktyvumo taškai (viena sistema, v1.49): už treniruotes, renginius, testus gauni XP, nuo jų - lygis,
 // kiekvienas naujas lygis - dovanų dėžė Dojo (app/game.php game_sync). XP = tie patys taškai, iš kurių skaičiuojamas reitingas. Lygis - nuo visų kada nors surinktų taškų
-// (sezonas jo nenuima), kiek XP reikia vienam lygiui - nustatoma Treneriams -> Taškai.
+// (sezonas jo nenuima). Lygio kaina (v1.96, sprendimas 2026-11-25, docs/dojo-progresija.md): pirmi 5 lygiai po 5 XP, kas 5 lygius +2 XP
+// (5, 7, 9, 11 …) - nustatoma Treneriams -> Taškai. Dovanos už lygius - iki 60 lygio.
 // Egzamino programos punktai: narys pažymi „Moku“, Denis patvirtina pranešime - tada skiriami punkto XP.
 
-function xp_per_level(): int
+const XP_LEVEL_EVERY = 5;   // kas kiek lygių kaina padidėja
+const XP_GIFT_LEVELS = 60;  // dovanų dėžės už lygius - iki šio lygio
+
+/** Pirmų lygių kaina (XP) */
+function xp_level_base(): int
 {
-    return max(10, (int) site_setting('xp_per_level', '100'));
+    return max(1, min(1000, (int) site_setting('xp_level_base', '5')));
 }
 
-/** ['level' => n, 'xp' => viso, 'into' => kiek surinkta šiame lygyje, 'need' => kiek trūksta iki kito, 'per' => lygio dydis, 'pct' => 0-100] */
+/** Kiek XP daugiau kainuoja kas 5 lygius */
+function xp_level_step(): int
+{
+    return max(0, min(1000, (int) site_setting('xp_level_step', '2')));
+}
+
+/** Kiek XP reikia pakilti iš lygio n į n+1 */
+function xp_level_cost(int $n): int
+{
+    return xp_level_base() + xp_level_step() * intdiv(max(1, $n) - 1, XP_LEVEL_EVERY);
+}
+
+/** Kiek XP iš viso reikia pasiekti lygį n (1 lygis - 0 XP) */
+function xp_level_start(int $n): int
+{
+    $sum = 0;
+    for ($l = 1; $l < $n; $l++) {
+        $sum += xp_level_cost($l);
+    }
+    return $sum;
+}
+
+/** ['level' => n, 'xp' => viso, 'into' => kiek surinkta šiame lygyje, 'need' => kiek trūksta iki kito, 'per' => šio lygio kaina, 'pct' => 0-100] */
 function xp_level(int $xp): array
 {
-    $per = xp_per_level();
     $xp = max(0, $xp);
-    $level = intdiv($xp, $per) + 1;
-    $into = $xp - ($level - 1) * $per;
+    $level = 1;
+    $start = 0;
+    while ($level < 1000 && $xp >= $start + xp_level_cost($level)) {
+        $start += xp_level_cost($level);
+        $level++;
+    }
+    $per = xp_level_cost($level);
+    $into = $xp - $start;
     return ['level' => $level, 'xp' => $xp, 'into' => $into, 'need' => $per - $into, 'per' => $per, 'pct' => (int) floor(100 * $into / $per)];
 }
 
@@ -32,7 +64,7 @@ function xp_check_level_up(int $memberId, int $before): void
     try {
         notify_member($memberId, 'level_up', ($m['first_name'] ?? 'Narys') . ' pasiekė ' . $new['level'] . ' lygį!',
             t('Surinkta {a} XP (aktyvumo taškų). Iki {l} lygio - {n} XP.', ['a' => $after, 'l' => $new['level'] + 1, 'n' => $new['need']])
-            . (xp_gifts_open() ? ' ' . t('🎁 Dovanų dėžė laukia Dojo.') : ''), xp_gifts_open() ? 'dojo.php' : 'paskyra.php?m=' . $memberId, $new['level']);
+            . (xp_gifts_open() && $new['level'] <= XP_GIFT_LEVELS ? ' ' . t('🎁 Dovanų dėžė laukia Dojo.') : ''), xp_gifts_open() ? 'dojo.php' : 'paskyra.php?m=' . $memberId, $new['level']);
     } catch (PDOException $ex) {
         // dar neimportuotas db/021 - taškai skirti, tik be pranešimo
     }

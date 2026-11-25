@@ -1,7 +1,9 @@
 <?php
 // Tekstai, naudojami JavaScript'e (assets/*.js per tr('...') / T('...')): jie perduodami į window.I18N. Vertimai - en.php, ru.php.
 return [
-    '3 pergalės šiandien - dovanų dėžė laukia tavo dojo!',
+    '3 pergalės šią savaitę - dovanų dėžė laukia tavo dojo!',
+    'Rinktis šį',
+    'Naujas personažas - kas 5 lygius, dovanų dėžėje',
     'Akys',
     'Aplinka',
     'Apranga',
@@ -23,7 +25,7 @@ return [
     'Berniukas',
     'Blokai',
     'Blokas',
-    'Botas - treniruočių partneris. Reitingas nesikeičia, bet pergalės skaičiuojamos dovanai (3 per dieną).',
+    'Botas - treniruočių partneris. Reitingas nesikeičia, bet pergalės skaičiuojamos dovanai (3 per savaitę).',
     'Dabar - stulpelis savo žetonui',
     'Dar kartą',
     'Dar niekas nekovojo - būk pirmas!',
@@ -39,7 +41,7 @@ return [
     'Dojo sutvarkytas',
     'Dovana',
     'Dovanos',
-    'Dovanų dėžių neturi. Jas gauni pasiekęs naują lygį, po renginių ir už 3 pergales per dieną.',
+    'Dovanų dėžių neturi. Jas gauni pasiekęs naują lygį, po renginių ir už 3 pergales per savaitę.',
     'Esu pasiruošęs!',
     'Galva',
     'Galvoja…',

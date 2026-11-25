@@ -472,7 +472,7 @@ function fight_finish(array $m): void
         if ($hid && $w === $n) {
             $h = game_hero_row($hid);
             if ($h) {
-                game_daily_win_box($h);
+                game_week_win_box($h);
                 game_char_win($hid);   // personažo meistriškumas - gebėjimas suveiks dažniau
             }
         }

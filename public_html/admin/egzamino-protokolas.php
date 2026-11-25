@@ -29,6 +29,15 @@ if (is_post() && get('save')) {
     header('Content-Type: application/json; charset=utf-8');
     $in = json_decode((string) file_get_contents('php://input'), true) ?: [];
     $field = (string) ($in['field'] ?? '');
+    if ($field === 'start_time') {   // Deividas: kiekvienas protokolas - savo pradžios laikas (renginio laikas); tuščias - be laiko
+        $tm = trim((string) ($in['value'] ?? ''));
+        if ($tm !== '' && !preg_match('/^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$/', $tm)) {
+            http_response_code(400);
+            exit(json_encode(['ok' => false]));
+        }
+        q('UPDATE events SET start_time = ? WHERE id = ?', [$tm === '' ? null : substr($tm, 0, 5) . ':00', $id]);
+        exit(json_encode(['ok' => true]));
+    }
     $row = q_one('SELECT * FROM exam_protocol_rows WHERE id = ? AND event_id = ?', [(int) ($in['row'] ?? 0), $id]);
     if ($row && preg_match('/^x\d{1,3}$/', $field)) {   // papildomas stulpelis
         exam_set_extra($row, $field, mb_substr(trim((string) ($in['value'] ?? '')), 0, 60));
@@ -220,7 +229,10 @@ page_start(t('Egzamino protokolas') . ': ' . $event['title'], ['admin' => true, 
   <div class="prot-title">
     <h1><?= te('EGZAMINO PROTOKOLAS') ?></h1>
     <div class="prot-org"><?= e($p['org_name']) ?></div>
-    <div class="prot-meta"><span><?= te('Egzaminas') ?> <b><?= e($p['kyu_label'] ?: '_____') ?></b> KYU</span><span><?= te('Egzamino data ir vieta') ?>: <b><?= e((string) $p['place_text']) ?></b></span></div>
+    <div class="prot-meta"><span><?= te('Egzaminas') ?> <b><?= e($p['kyu_label'] ?: '_____') ?></b> KYU</span><span><?= te('Egzamino data ir vieta') ?>: <b><?= e((string) $p['place_text']) ?></b></span>
+      <span class="prot-time"><label for="protTime"><?= te('Pradžios laikas') ?>:</label>
+        <input type="time" id="protTime" class="no-print" value="<?= e(fmt_time($event['start_time'])) ?>" title="<?= te('Kada prasideda šis protokolas. Rodoma sąraše ir dalyvių laiškuose.') ?>">
+        <b class="print-only" id="protTimePrint"><?= e(fmt_time($event['start_time']) ?: '_____') ?></b></span></div>
   </div>
 
   <div class="row no-print prot-tools">
@@ -448,6 +460,12 @@ page_start(t('Egzamino protokolas') . ': ' . $event['title'], ['admin' => true, 
       .then(function (d) { st.textContent = d.ok ? T.saved : T.fail; })
       .catch(function () { st.textContent = T.offline; });
   }
+  // Pradžios laikas (antraštėje) - išsaugomas iš karto, kaip ir lentelė
+  var tm = document.getElementById('protTime');
+  tm.addEventListener('change', function () {
+    document.getElementById('protTimePrint').textContent = tm.value || '_____';
+    send(0, 'start_time', tm.value);
+  });
   var t = document.getElementById('protTable'), base = parseFloat(t.dataset.base) || 5;
   function num(v) { v = String(v).replace(',', '.').trim(); return v !== '' && !isNaN(v) ? parseFloat(v) : null; }
   // #133: balas 6,3 ar mažesnis - langelis raudonas (neišlaikius - raudona visa eilutė)

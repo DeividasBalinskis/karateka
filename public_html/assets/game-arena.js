@@ -65,7 +65,7 @@
         return '<button type="button" class="ar-lvl' + (l.k === arPick.level ? ' on' : '') + '" data-pick-level="' + l.k + '" aria-pressed="' + (l.k === arPick.level) + '">' + l.n + '</button>';
       }).join('') + '</div>' +
       '<button type="button" class="ar-play" data-play="1">▶ ' + T('Žaisti') + ' <span id="ar-play-what">' + playLabel() + '</span></button>' +
-      '<p class="g-empty ar-note">' + T('Botas - treniruočių partneris. Reitingas nesikeičia, bet pergalės skaičiuojamos dovanai (3 per dieną).') + ' ' + T('Su draugu - žemiau, „Iššūkis klubo draugams“.') + '</p></section>';
+      '<p class="g-empty ar-note">' + T('Botas - treniruočių partneris. Reitingas nesikeičia, bet pergalės skaičiuojamos dovanai (3 per savaitę).') + ' ' + T('Su draugu - žemiau, „Iššūkis klubo draugams“.') + '</p></section>';
     html += '<section class="g-card"><h3>🏅 ' + T('Reitingai') + '</h3><div class="ar-tops">' + topList('power', '🏆 ' + T('Jėgos')) + topList('fair', '🎯 ' + T('Gudrumo')) + '</div></section>';
     html += '</div>';
     html += '<section class="g-card" id="zaidejai" style="margin-top:12px"><div class="row" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px"><h3 style="margin:0">⚔️ ' + T('Iššūkis klubo draugams') + '</h3>' +
@@ -523,7 +523,7 @@
     document.getElementById('gr-again').onclick = function () { greitaStart(g.lv, g.md); };
     if (win) confetti();
     api({ action: 'score', game: 'greita', song: g.lv, mode: g.md, score: score, grade: grade, win: win ? 1 : 0 }).then(function (d) {
-      if (d.ok && d.prize === 'box') document.getElementById('gr-prize').innerHTML = '<p style="font-weight:800">🎁 ' + T('3 pergalės šiandien - dovanų dėžė laukia tavo dojo!') + '</p>';
+      if (d.ok && d.prize === 'box') document.getElementById('gr-prize').innerHTML = '<p style="font-weight:800">🎁 ' + T('3 pergalės šią savaitę - dovanų dėžė laukia tavo dojo!') + '</p>';
     });
   }
 

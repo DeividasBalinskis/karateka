@@ -275,6 +275,10 @@ function game_items(): array
 /** Numatyti daiktai naujam personažui (visada turimi) */
 const GAME_START_ITEMS = ['k_white', 'b_plain', 'hr_short', 'bg_dojo', 'hs_tent'];
 const GAME_DECOR_MAX = 8;   // kiek dekoracijų skaičiuojasi savybėms
+const GAME_EGG_LEVELS = [3, 8, 15];   // šių lygių dovanų dėžėje - visada kiaušinis (v1.96, sprendimas 2026-11-25)
+// Personažai (v1.96, sprendimas 2026-11-25): pradžioje - tik šie; kas 5 lygius - atskira dovana su atsitiktiniu nauju personažu
+const GAME_CHAR_START = ['kitsune'];
+const GAME_CHAR_EVERY = 5;
 // Testavimo laikotarpis: visi personažai, daiktai, aplinkos, namai ir gyvūnėliai atrakinti visiems (be lygių ir dovanų dėžių).
 // Kai dizainas bus baigtas - false, ir vėl veiks lygiai bei dovanų dėžės.
 const GAME_UNLOCK_ALL = true;
@@ -490,7 +494,7 @@ function game_xp(array $hero): array
         return xp_level(member_points_total((int) $hero['member_id']));
     }
     $lvl = game_level($hero);
-    return ['level' => $lvl, 'xp' => ($lvl - 1) * xp_per_level(), 'into' => 0, 'need' => xp_per_level(), 'per' => xp_per_level(), 'pct' => 0];
+    return ['level' => $lvl, 'xp' => xp_level_start($lvl), 'into' => 0, 'need' => xp_level_cost($lvl), 'per' => xp_level_cost($lvl), 'pct' => 0];
 }
 
 function game_belt(array $hero): int
@@ -594,8 +598,12 @@ function game_sync(array $hero): array
             }
         }
     }
-    for ($l = 2; $l <= min($lvl, 60); $l++) {
-        q('INSERT IGNORE INTO game_boxes (hero_id, reason, title) VALUES (?, ?, ?)', [$hid, 'lvl:' . $l, t('Pasiektas') . ' ' . $l . ' ' . t('lygis')]);
+    for ($l = 2; $l <= min($lvl, XP_GIFT_LEVELS); $l++) {
+        q('INSERT IGNORE INTO game_boxes (hero_id, reason, title) VALUES (?, ?, ?)', [$hid, 'lvl:' . $l,
+            t('Pasiektas') . ' ' . $l . ' ' . t('lygis') . (in_array($l, GAME_EGG_LEVELS, true) ? ' · 🥚 ' . t('Kiaušinis') : '')]);
+        if ($l % GAME_CHAR_EVERY === 0) {
+            q('INSERT IGNORE INTO game_boxes (hero_id, reason, title) VALUES (?, ?, ?)', [$hid, 'ch:' . $l, t('Pasiektas') . ' ' . $l . ' ' . t('lygis') . ' · ✨ ' . t('Naujas personažas')]);
+        }
     }
     if ($hero['member_id']) {
         try {
@@ -616,6 +624,25 @@ function game_box_count(int $heroId): int
     return (int) q_value('SELECT COUNT(*) FROM game_boxes WHERE hero_id = ? AND opened_at IS NULL', [$heroId]);
 }
 
+/** Turimi personažai: pradiniai, dabartinis ir gauti dovanose (dėžė „ch:…“, daiktas „ch_<raktas>“). Testavimo laikotarpiu - visi. */
+function game_chars_owned(array $hero): array
+{
+    if (GAME_UNLOCK_ALL) {
+        return array_keys(GAME_PX_CHARS);
+    }
+    $own = GAME_CHAR_START;
+    if (isset(GAME_PX_CHARS[$hero['species']])) {
+        $own[] = $hero['species'];
+    }
+    foreach (q_all('SELECT item_key FROM game_boxes WHERE hero_id = ? AND reason LIKE "ch:%" AND item_key LIKE "ch\_%"', [(int) $hero['id']]) as $r) {
+        $k = substr((string) $r['item_key'], 3);
+        if (isset(GAME_PX_CHARS[$k])) {
+            $own[] = $k;
+        }
+    }
+    return array_values(array_unique($own));
+}
+
 /** Atidaryti dėžę: atsitiktinis daiktas pagal retumą (dažniau - neturimas). Grąžina daikto raktą. */
 function game_box_open(array $hero, int $boxId): ?string
 {
@@ -624,12 +651,30 @@ function game_box_open(array $hero, int $boxId): ?string
     if (!$box) {
         return null;
     }
+    // Kas 5 lygius - naujas personažas (atsitiktinis iš dar neturimų); jei turi visus - įprasta dovana
+    if (strpos((string) $box['reason'], 'ch:') === 0) {
+        $left = array_values(array_diff(array_keys(GAME_PX_CHARS), GAME_UNLOCK_ALL ? GAME_CHAR_START : game_chars_owned($hero)));
+        if ($left) {
+            $key = 'ch_' . $left[random_int(0, count($left) - 1)];
+            q('UPDATE game_boxes SET opened_at = NOW(), item_key = ? WHERE id = ?', [$key, $boxId]);
+            return $key;
+        }
+    }
     $owned = game_owned($hid);
     $pets = (int) q_value('SELECT COUNT(*) FROM game_pets WHERE hero_id = ?', [$hid]);
+    $eggs = 0;
+    foreach ($owned as $k => $q) {
+        $eggs += (game_items()[$k]['slot'] ?? '') === 'egg' ? (int) $q : 0;
+    }
+    // 3, 8 ir 15 lygio dėžėje - visada kiaušinis, jei dar telpa gyvūnėlis (daugiausia 6 su neišperėtais kiaušiniais)
+    $eggOnly = preg_match('/^lvl:(\d+)$/', (string) $box['reason'], $mm) && in_array((int) $mm[1], GAME_EGG_LEVELS, true) && $pets + $eggs < 6;
     $weights = [1 => 50, 2 => 32, 3 => 14, 4 => 4];
     $pool = [];
     foreach (game_items() as $k => $it) {
         if ($it['slot'] === 'egg' && $pets >= 6) {
+            continue;
+        }
+        if ($eggOnly && $it['slot'] !== 'egg') {
             continue;
         }
         if (in_array($k, GAME_START_ITEMS, true)) {
@@ -653,13 +698,13 @@ function game_box_open(array $hero, int $boxId): ?string
     return $pick;
 }
 
-/** Dienos prizas už pergales: 3 pergalės per dieną - viena dėžė */
-function game_daily_win_box(array $hero): void
+/** Savaitės prizas už pergales: 3 pergalės per savaitę (pirmadienis-sekmadienis) - viena dėžė, ne daugiau 1 per savaitę (v1.96, sprendimas 2026-11-25) */
+function game_week_win_box(array $hero): void
 {
-    $wins = (int) q_value('SELECT COUNT(*) FROM game_matches WHERE status = "done" AND DATE(updated_at) = CURDATE() AND
-                            ((a_hero = ? AND winner = 1) OR (b_hero = ? AND winner = 2))', [(int) $hero['id'], (int) $hero['id']]);
-    if ($wins >= 3) {
-        q('INSERT IGNORE INTO game_boxes (hero_id, reason, title) VALUES (?, ?, ?)', [(int) $hero['id'], 'day:' . date('Y-m-d'), t('3 pergalės per dieną')]);
+    $r = q_one('SELECT COUNT(*) AS wins, YEARWEEK(CURDATE(), 3) AS wk FROM game_matches WHERE status = "done" AND YEARWEEK(updated_at, 3) = YEARWEEK(CURDATE(), 3) AND
+                ((a_hero = ? AND winner = 1) OR (b_hero = ? AND winner = 2))', [(int) $hero['id'], (int) $hero['id']]);
+    if ((int) ($r['wins'] ?? 0) >= 3) {
+        q('INSERT IGNORE INTO game_boxes (hero_id, reason, title) VALUES (?, ?, ?)', [(int) $hero['id'], 'wk:' . (int) $r['wk'], t('3 pergalės per savaitę')]);
     }
 }
 
@@ -738,6 +783,7 @@ function game_hero_view(array $hero, bool $own = true): array
         $out['xpWays'] = array_map(function ($c) { return ['n' => t((string) $c['name']), 'p' => (int) $c['points']]; },
             q_all('SELECT name, points FROM point_categories WHERE is_active = 1 AND points > 0 ORDER BY code = "attendance" DESC, points DESC, sort_order LIMIT 10'));
         $out['owned'] = game_owned($hid);
+        $out['chars'] = game_chars_owned($hero);
         $out['points'] = game_points($hero);
         $out['alloc'] = $hero['alloc'];
         $out['boxes'] = q_all('SELECT id, title, created_at FROM game_boxes WHERE hero_id = ? AND opened_at IS NULL ORDER BY id', [$hid]);
@@ -780,7 +826,7 @@ function game_save_hero(array $hero, array $in): array
             $upd['name'] = mb_substr($n, 0, 24);
         }
     }
-    if (isset($in['species']) && isset(GAME_PX_CHARS[$in['species']]) && GAME_UNLOCK_ALL) {
+    if (isset($in['species']) && isset(GAME_PX_CHARS[$in['species']]) && in_array($in['species'], game_chars_owned($hero), true)) {
         $upd['species'] = $in['species'];
     } elseif (isset($in['species']) && isset(GAME_SPECIES[$in['species']]) && (!isset(GAME_SPECIES_LOCK[$in['species']]) || !empty($owned['sp_' . $in['species']]))) {
         $upd['species'] = $in['species'];

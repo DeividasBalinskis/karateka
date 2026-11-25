@@ -1477,7 +1477,10 @@ span.req-check:hover{transform:none;}
 .prot-title{text-align:center; margin:10px 0 16px;}
 .prot-title h1{font-size:1.5rem; letter-spacing:.08em; margin:0;}
 .prot-org{font-weight:700; letter-spacing:.06em; margin-top:2px;}
-.prot-meta{display:flex; flex-wrap:wrap; justify-content:center; gap:6px 28px; margin-top:8px;}
+.prot-meta{display:flex; flex-wrap:wrap; justify-content:center; align-items:center; gap:6px 28px; margin-top:8px;}
+.prot-time{display:inline-flex; align-items:center; gap:6px;}
+.prot-time input{min-height:40px; padding:4px 8px; font:inherit; font-size:16px; border:1px solid rgba(23,20,15,.25); border-radius:8px; background:#fff; color:inherit;}
+.prot-time input:focus{outline:2px solid var(--accent); outline-offset:1px;}
 .prot-head-form summary{cursor:pointer; font-weight:600;}
 .prot-tools{gap:8px; align-items:center; flex-wrap:wrap; margin:10px 0;}
 .prot-tools form{margin:0;}

@@ -92,7 +92,7 @@ test('Budo: no long descriptions, group name opens control, other systems menu, 
   await a.locator('#tk-view .tk-cat-name').first().click();
   await a.waitForTimeout(600);
   check('#170 category name opens control', await a.locator('#run').isVisible());
-  // OBS juosta: permatoma, su kova
+  // OBS juosta: OBS programoje permatoma, su kova
   const areaId = JSON.parse(sql(`SELECT state FROM tournaments WHERE id = ${tid}`)).areas[0].id;
   const live = JSON.stringify({ mode: 'kumite', cat: 'Kumite M 10-11', round: 'Finalas', bout: '3', aka: { name: 'Jonas J.' }, shiro: { name: 'Petras P.' }, sa: 4, sb: 2, at: Date.now(), timer: { running: false, remaining: 61000, total: 90000 } });
   sql(`REPLACE INTO tournament_live (tournament_id, area_id, data, updated_ms) VALUES (${tid}, ${areaId}, '${live.replace(/'/g, "''")}', ${Date.now()})`);
@@ -101,13 +101,29 @@ test('Budo: no long descriptions, group name opens control, other systems menu, 
   await a.click('#share-toggle');
   check('OBS bar link per tatami', /juosta=1&tatami=/.test(await a.locator('#sp-bars input').first().inputValue()));
   const v = await login(browser, null, 1920, 1080);
+  await v.addInitScript(() => { window.obsstudio = {}; });   // kaip OBS programoje
   await v.goto(`varzybos-gyvai.php?k=abcdefabcdefabcdefab0789&juosta=1&tatami=${areaId}`);
   await v.waitForSelector('.gv-bar');
   const txt = await v.locator('.gv-bar').innerText();
   check('bar shows the bout', /Jonas J\./.test(txt) && /Petras P\./.test(txt) && /4/.test(txt) && /1:01/.test(txt), txt);
   check('background is transparent', await v.evaluate(() => getComputedStyle(document.body).backgroundColor) === 'rgba(0, 0, 0, 0)');
+  check('no help text in OBS', await v.locator('.gv-bar-help').count() === 0);
+  // v1.96: paprastoje naršyklėje - paaiškinimas; be kovos - varžybų ir tatamio pavadinimas; ?pavyzdys=1 - pavyzdinė kova
+  sql(`DELETE FROM tournament_live WHERE tournament_id = ${tid}`);
+  const w = await login(browser, null, 1280, 800);
+  await w.goto(`varzybos-gyvai.php?k=abcdefabcdefabcdefab0789&juosta=1&tatami=${areaId}`);
+  await w.waitForSelector('.gv-bar.idle');
+  check('help shown in a browser', await w.locator('.gv-bar-help ol li').count() === 4);
+  const areaName = JSON.parse(sql(`SELECT state FROM tournaments WHERE id = ${tid}`)).areas[0].name;
+  check('idle bar shows the tatami', (await w.locator('.gv-bar').innerText()).includes(areaName), areaName);
+  await w.goto(`varzybos-gyvai.php?k=abcdefabcdefabcdefab0789&juosta=1&tatami=${areaId}&pavyzdys=1`);
+  await w.waitForSelector('.gv-bar:not(.idle)');
+  check('sample bout', /Jonas Jonaitis/.test(await w.locator('.gv-bar').innerText()));
+  await a.goto(`admin/varzybu-sistema.php?id=${tid}`);
+  await a.click('#share-toggle');
+  check('sample link per tatami', /pavyzdys=1/.test(await a.locator('#sp-bars a', { hasText: 'Pavyzdys' }).first().getAttribute('href')));
   sql(`DELETE FROM tournaments WHERE id = ${tid}`);
-  noJsErrors(a, v);
+  noJsErrors(a, v, w);
 });
 
 test('#168 LTKF: while editing, a menu item click renames it; ↗ opens the page', async ({ browser }) => {

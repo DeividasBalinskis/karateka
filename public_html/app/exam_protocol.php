@@ -122,7 +122,8 @@ function exam_protocol_table(array $event): array
     $out = [];
     $out[] = [t('EGZAMINO PROTOKOLAS')];
     $out[] = [(string) $p['org_name']];
-    $out[] = [t('Egzaminas') . ' ' . ((string) $p['kyu_label'] ?: '___') . ' KYU', t('Egzamino data ir vieta') . ': ' . (string) $p['place_text']];
+    $out[] = array_merge([t('Egzaminas') . ' ' . ((string) $p['kyu_label'] ?: '___') . ' KYU', t('Egzamino data ir vieta') . ': ' . (string) $p['place_text']],
+        !empty($event['start_time']) ? [t('Pradžios laikas') . ': ' . fmt_time($event['start_time'])] : []);
     $out[] = [];
     $cols = exam_cols($p);
     $fed = fed_numbers_for_event((int) $event['id']);

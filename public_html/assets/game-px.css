@@ -417,6 +417,12 @@
 .g-skill{margin:8px 0; padding:8px 10px; background:rgba(255,236,170,.35); box-shadow:0 0 0 2px rgba(150,104,30,.35); font-size:13px; line-height:1.35;}
 .g-skill small{opacity:.8;}
 .ed-chars .ed-sk{display:block; font-size:10px; line-height:1.1; opacity:.85; margin-top:2px;}
+/* v1.96: neturimas personažas - šešėlis (gaunamas kas 5 lygius); naujas personažas išlenda iš dėžės */
+.ed-chars button.locked{cursor:default; background:#1C1930; color:#8C88A8;}
+.ed-chars button.locked img{filter:brightness(0) opacity(.35);}
+.box-char img{width:160px; height:160px; object-fit:contain; margin:0 auto; animation:charRise .9s cubic-bezier(.2,1.4,.4,1) both;}
+@keyframes charRise{0%{transform:translateY(40px) scale(.3); filter:brightness(4) saturate(0);} 60%{transform:translateY(-8px) scale(1.08); filter:brightness(1.8);} 100%{transform:none; filter:none;}}
+@media (prefers-reduced-motion:reduce){.box-char img{animation:none;}}
 .fa-arena .fa-f .fa-pet.p2{width:24%; bottom:22%;}
 .petab.skillab{background:rgba(255,215,90,.25);}
 .ln.k-skill{color:#B8860B; font-weight:700;}

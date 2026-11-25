@@ -220,10 +220,12 @@ test('admin: notifications, chat, comments at the post, broadcast, events, atten
   } else { check('exam result radio found', false); }
   // Points settings
   await a.goto('admin/taskai.php');
-  await a.fill('input[name=xp_per_level]', '50');
+  // v1.96: lygio kaina - pirmi 5 lygiai po 5 XP, kas 5 lygius +2 (sprendimas 2026-11-25)
+  await a.fill('input[name=xp_level_base]', '6');
+  await a.fill('input[name=xp_level_step]', '3');
   await nav(a, () => a.click('form:has(.xp-setting) button[type=submit]'));
-  check('xp per level saved', sql("SELECT value FROM site_settings WHERE name='xp_per_level'") === '50');
-  sql("UPDATE site_settings SET value='100' WHERE name='xp_per_level'");
+  check('xp level price saved', sql("SELECT value FROM site_settings WHERE name='xp_level_base'") === '6' && sql("SELECT value FROM site_settings WHERE name='xp_level_step'") === '3');
+  sql("DELETE FROM site_settings WHERE name IN ('xp_level_base', 'xp_level_step')");
   // Programa XP field
   await a.goto('admin/programa.php?dirzas=5');
   const newForm = a.locator('form.req-form').last();
@@ -307,7 +309,7 @@ test('coach: limited rights', async ({ browser }) => {
   await c.goto('admin/nariai.php?id=' + I.jonas);
   check('coach sees card program', await c.locator('#programa').count() === 1);
   await c.goto('admin/taskai.php');
-  check('coach xp setting disabled', await c.locator('input[name=xp_per_level][disabled]').count() === 1);
+  check('coach xp setting disabled', await c.locator('input[name=xp_level_base][disabled]').count() === 1);
   await c.goto('renginys.php?id=' + camp);
   check('coach sees counts not rsvp', /Dalyvauja/.test(await c.locator('.ep-reg').textContent()));
   noJsErrors(c);

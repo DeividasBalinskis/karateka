@@ -390,7 +390,7 @@
   var GIFT = '<svg class="box-gift" viewBox="0 0 120 120"><defs><linearGradient id="gbx" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E5484D"/><stop offset="1" stop-color="#A51D24"/></linearGradient></defs><rect x="16" y="52" width="88" height="62" rx="6" fill="url(#gbx)"/><rect x="54" y="52" width="12" height="62" fill="#F2C14E"/><g class="lid"><rect x="10" y="36" width="100" height="20" rx="5" fill="#E5484D" stroke="#A51D24"/><rect x="54" y="36" width="12" height="20" fill="#F2C14E"/><path d="M60 36 C40 10 22 28 44 36 Z M60 36 C80 10 98 28 76 36 Z" fill="#F2C14E" stroke="#C99A1E"/></g></svg>';
   function openBoxes() {
     var boxes = H.boxes || [];
-    if (!boxes.length) return toast(T('Dovanų dėžių neturi. Jas gauni pasiekęs naują lygį, po renginių ir už 3 pergales per dieną.'));
+    if (!boxes.length) return toast(T('Dovanų dėžių neturi. Jas gauni pasiekęs naują lygį, po renginių ir už 3 pergales per savaitę.'));
     var b = boxes[0];
     var m = modal('<h2>🎁 ' + esc(b.title || T('Dovana')) + '</h2><div class="box-stage">' + GIFT + '</div><p class="g-empty" id="box-hint">' + T('Paspausk dėžę!') + ' (' + boxes.length + ')</p><div class="gm-foot" style="justify-content:center" id="box-foot"></div>', 'sm');
     var g = m.querySelector('.box-gift'), busy = false;
@@ -402,6 +402,25 @@
         req.then(function (d) {
           if (!d.ok) return m.close();
           g.classList.add('open');
+          // Kas 5 lygius - naujas personažas (v1.96): išlenda iš dėžės, galima iškart rinktis
+          if (String(d.item).indexOf('ch_') === 0) {
+            var ck = d.item.slice(3), ch = (C.chars || {})[ck] || { n: ck };
+            setTimeout(function () {
+              m.querySelector('.box-stage').innerHTML = '<div class="box-rays"></div><div class="box-item box-char">' + A.hero({ species: ck, look: {}, equipped: H.equipped, belt: H.belt }) + '</div>';
+              m.querySelector('#box-hint').innerHTML = '<b style="font-size:1.15rem;color:var(--ink)">✨ ' + esc(T('Naujas personažas!')) + '</b><br><b>' + esc(ch.n) + '</b>' + (ch.s ? '<br><small>✨ ' + esc(ch.s) + ': ' + esc(ch.sd) + '</small>' : '');
+              var foot = m.querySelector('#box-foot');
+              foot.innerHTML = '<button class="g-btn primary" data-b="use">' + T('Rinktis šį') + '</button>' + ((H.boxes || []).length ? '<button class="g-btn gold" data-b="next">🎁 ' + T('Kita dėžė') + ' (' + H.boxes.length + ')</button>' : '') + '<button class="g-btn" data-b="ok">' + T('Puiku!') + '</button>';
+              foot.onclick = function (e) {
+                var x = e.target.closest('[data-b]'); if (!x) return;
+                if (x.dataset.b === 'use') save({ species: ck });
+                m.close();
+                if (x.dataset.b === 'next') openBoxes();
+              };
+              confetti();
+              renderAll();
+            }, 450);
+            return;
+          }
           var it = item(d.item);
           setTimeout(function () {
             m.querySelector('.box-stage').innerHTML = '<div class="box-rays"></div><div class="box-item">' + A.itemIcon(d.item, it) + '</div>';
@@ -439,9 +458,11 @@
       m.querySelector('#ed-prev').innerHTML = A.hero({ species: d.species, gender: d.gender, look: d.look, equipped: eq, belt: H.belt, name: d.name });
       var isH = d.species === 'human', f = '';
       if (PIXEL) {
-        var CH = C.chars || {};
-        f += '<div class="ed-row"><span class="ed-lab">' + T('Kas tu?') + '</span><div class="ed-chars">' + Object.keys(CH).map(function (k) {
-          return '<button type="button" data-sp="' + k + '" class="' + (k === d.species ? 'sel' : '') + '" title="' + esc(CH[k].n + (CH[k].s ? ' · ✨ ' + CH[k].s + ': ' + CH[k].sd : '')) + '">' + A.hero({ species: k, look: k === 'kitsune' ? d.look : {}, equipped: H.equipped, belt: H.belt }) + '<span>' + esc(CH[k].n) + '</span>' + (CH[k].s ? '<small class="ed-sk">✨ ' + esc(CH[k].s) + '</small>' : '') + '</button>';
+        var CH = C.chars || {}, mine = C.unlockAll ? Object.keys(CH) : (H.chars || ['kitsune']);
+        // Neturimi personažai - užrakinti: naujas gaunamas kas 5 lygius (atsitiktinis, dovanų dėžėje)
+        f += '<div class="ed-row"><span class="ed-lab">' + T('Kas tu?') + '</span><div class="ed-chars">' + Object.keys(CH).sort(function (a, b) { return (mine.indexOf(a) < 0) - (mine.indexOf(b) < 0); }).map(function (k) {
+          var locked = mine.indexOf(k) < 0;
+          return '<button type="button" data-sp="' + k + '" class="' + (k === d.species ? 'sel' : '') + (locked ? ' locked' : '') + '"' + (locked ? ' disabled' : '') + ' title="' + esc(locked ? T('Naujas personažas - kas 5 lygius, dovanų dėžėje') : CH[k].n + (CH[k].s ? ' · ✨ ' + CH[k].s + ': ' + CH[k].sd : '')) + '">' + A.hero({ species: k, look: k === 'kitsune' ? d.look : {}, equipped: H.equipped, belt: H.belt }) + '<span>' + (locked ? '🔒 ' : '') + esc(CH[k].n) + '</span>' + (CH[k].s && !locked ? '<small class="ed-sk">✨ ' + esc(CH[k].s) + '</small>' : '') + '</button>';
         }).join('') + '</div></div>';
         if (d.species === 'kitsune') {
           f += '<div class="ed-row"><span class="ed-lab">' + T('Kailio spalva') + '</span>' + sw('fur', C.fur, paints) + '</div>';

@@ -17,7 +17,8 @@ const SETTINGS = [
     'feedback_button'  => ['label' => 'Atsiliepimų mygtukas (💡) - kam rodomas', 'group' => 'Svetainė', 'type' => 'choice', 'where' => 'admin/atsiliepimai.php', 'owner' => 'admin', 'restore' => true],
     'feedback_api_key' => ['label' => 'Atsiliepimų API raktas', 'group' => 'Svetainė', 'type' => 'secret', 'where' => 'admin/atsiliepimai.php', 'owner' => 'admin', 'restore' => false],
     // Klubas
-    'xp_per_level'     => ['label' => 'XP vienam lygiui', 'group' => 'Klubas', 'type' => 'number', 'where' => 'admin/taskai.php', 'owner' => 'admin', 'restore' => true],
+    'xp_level_base'    => ['label' => 'Pirmų 5 lygių kaina (XP)', 'group' => 'Klubas', 'type' => 'number', 'where' => 'admin/taskai.php', 'owner' => 'admin', 'restore' => true],
+    'xp_level_step'    => ['label' => 'Kiek XP lygis brangsta kas 5 lygius', 'group' => 'Klubas', 'type' => 'number', 'where' => 'admin/taskai.php', 'owner' => 'admin', 'restore' => true],
     'exam_prices'      => ['label' => 'Egzaminų kainos', 'group' => 'Klubas', 'type' => 'json', 'where' => 'admin/egzaminai.php', 'owner' => 'admin', 'restore' => true],
     'exam_pay_info'    => ['label' => 'Egzamino mokėjimo informacija', 'group' => 'Klubas', 'type' => 'text', 'where' => 'admin/egzaminai.php', 'owner' => 'admin', 'restore' => true],
     'exam_waitlist_token' => ['label' => 'Egzaminų registracijos nuoroda (laukiantieji)', 'group' => 'Klubas', 'type' => 'secret', 'where' => 'admin/egzaminai.php', 'owner' => 'coach', 'restore' => false],

@@ -699,3 +699,25 @@ likus 30 s - 1 gongas, pabaigoje - 2	30 s left - 1 gong, at the end - 2	за 30 
 Kontaktai (Excel)	Contacts (Excel)	Контакты (Excel)
 CSV (Excel)	CSV (Excel)	CSV (Excel)
 Sujungiama su kitų planšečių pakeitimais…	Merging with changes from other tablets…	Объединяем с изменениями других планшетов…
+🎬 OBS juosta	🎬 OBS bar	🎬 Полоса OBS
+🎬 OBS juosta ant telefono vaizdo	🎬 OBS bar over the phone video	🎬 Полоса OBS поверх видео с телефона
+👁 Rodoma pavyzdinė kova - taip atrodys juosta kovos metu.	👁 A sample bout is shown - this is how the bar looks during a bout.	👁 Показан пример боя - так полоса будет выглядеть во время боя.
+🔴 Dabar vyksta kova - juostoje vardai, balai ir laikas.	🔴 A bout is on now - the bar shows names, scores and time.	🔴 Сейчас идёт бой - на полосе имена, баллы и время.
+⏸ Kovos dabar nėra - juostoje rodomas varžybų ir tatamio pavadinimas. Kova atsiras pati, kai kovos skydelyje ją pradėsite.	⏸ No bout right now - the bar shows the competition and tatami name. The bout appears by itself when you start it on the scoreboard.	⏸ Сейчас боя нет - на полосе название соревнований и татами. Бой появится сам, когда вы начнёте его на табло.
+OBS Studio:	OBS Studio:	OBS Studio:
+atidarykite kompiuteryje.	open it on the computer.	откройте на компьютере.
+Telefono vaizdas:	Phone video:	Видео с телефона:
+telefone atidarykite vdo.ninja → „Add your Camera to OBS“ → „Start“. Gautą nuorodą įdėkite į OBS: Šaltiniai → + → Naršyklė (Browser), plotis 1920, aukštis 1080.	on the phone open vdo.ninja → “Add your Camera to OBS” → “Start”. Put the link you get into OBS: Sources → + → Browser, width 1920, height 1080.	на телефоне откройте vdo.ninja → «Add your Camera to OBS» → «Start». Полученную ссылку добавьте в OBS: Источники → + → Браузер, ширина 1920, высота 1080.
+Ši juosta:	This bar:	Эта полоса:
+OBS → Šaltiniai → + → Naršyklė (Browser) → įklijuokite šio puslapio nuorodą, plotis 1920, aukštis 1080. Šaltinių sąraše juosta turi būti virš telefono vaizdo.	OBS → Sources → + → Browser → paste this page's link, width 1920, height 1080. In the source list the bar must be above the phone video.	OBS → Источники → + → Браузер → вставьте ссылку этой страницы, ширина 1920, высота 1080. В списке источников полоса должна быть выше видео с телефона.
+Transliacija:	Streaming:	Трансляция:
+OBS → Nustatymai → Transliacija → YouTube → „Pradėti transliaciją“. YouTube nuorodą žiūrovams įklijuokite Budo → „📡 Transliacija ir registracija“ → „🎥 YouTube transliacija“.	OBS → Settings → Stream → YouTube → “Start Streaming”. Paste the YouTube link for viewers in Budo → “📡 Streaming and registration” → “🎥 YouTube stream”.	OBS → Настройки → Трансляция → YouTube → «Начать трансляцию». Ссылку YouTube для зрителей вставьте в Budo → «📡 Трансляция и регистрация» → «🎥 Трансляция YouTube».
+Kopijuoti nuorodą	Copy link	Копировать ссылку
+Pavyzdys	Example	Пример
+Tikra juosta	Real bar	Настоящая полоса
+Šis paaiškinimas OBS programoje nerodomas - ten matosi tik juosta apačioje.	This help is not shown in OBS - there you only see the bar at the bottom.	В OBS эта подсказка не показывается - там видна только полоса внизу.
+Juosta su kova (vardai, balai, laikas) ant telefono vaizdo transliacijoje. Kovos nėra - rodomas varžybų ir tatamio pavadinimas, todėl prijungti ir pažiūrėti vaizdą galima iš anksto.	A bar with the bout (names, scores, time) over the phone video in the stream. With no bout it shows the competition and tatami name, so you can connect and check the picture in advance.	Полоса с боем (имена, баллы, время) поверх видео с телефона в трансляции. Когда боя нет - название соревнований и татами, поэтому подключить и проверить картинку можно заранее.
+OBS → Šaltiniai → + → Naršyklė (Browser) → įklijuokite nuorodą, 1920 × 1080. „↗“ atidaro juostą su paaiškinimu, „Pavyzdys“ - kaip atrodys kova.	OBS → Sources → + → Browser → paste the link, 1920 × 1080. “↗” opens the bar with help, “Example” shows how a bout will look.	OBS → Источники → + → Браузер → вставьте ссылку, 1920 × 1080. «↗» открывает полосу с подсказкой, «Пример» - как будет выглядеть бой.
+Atidaryti juostą su paaiškinimu	Open the bar with help	Открыть полосу с подсказкой
+Kaip atrodys juosta kovos metu	How the bar looks during a bout	Как полоса выглядит во время боя
+Pavyzdys · Kumite	Example · Kumite	Пример · Кумитэ

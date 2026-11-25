@@ -3336,7 +3336,8 @@
     if (bars && CFG.shareUrl) bars.innerHTML = S.areas.map(function (a) {
       var u = CFG.shareUrl + '&juosta=1&tatami=' + a.id;
       return '<div class="sp-row"><span class="sp-lbl">' + esc(a.name) + '</span><input class="sel sp-url" readonly value="' + esc(u) + '" aria-label="OBS juosta: ' + esc(a.name) + '" onclick="this.select()">' +
-        '<button type="button" class="btn" data-copy="' + esc(u) + '">Kopijuoti</button><a class="btn" href="' + esc(u) + '" target="_blank" rel="noopener">↗</a></div>';
+        '<button type="button" class="btn" data-copy="' + esc(u) + '">Kopijuoti</button><a class="btn" href="' + esc(u) + '" target="_blank" rel="noopener" title="Atidaryti juostą su paaiškinimu">↗</a>' +
+        '<a class="btn" href="' + esc(u + '&pavyzdys=1') + '" target="_blank" rel="noopener" title="Kaip atrodys juosta kovos metu">Pavyzdys</a></div>';
     }).join('');
   }
   if (shareBtn) {

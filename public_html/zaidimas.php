@@ -245,13 +245,13 @@ switch ($action) {
         q('INSERT INTO game_scores (hero_id, game, song, score, grade) VALUES (?, ?, ?, ?, ?)', [$hid, $game, $song, $score, $grade]);
         $prize = '';
         if ($game === 'greita') {
-            // Pergalė prieš botą įskaitoma į „3 pergalės per dieną“ (dovanų dėžė), reitingas nesikeičia
+            // Pergalė prieš botą įskaitoma į „3 pergalės per savaitę“ (dovanų dėžė), reitingas nesikeičia
             $win = !empty($in['win']);
             q('INSERT INTO game_matches (game, mode, a_hero, b_hero, status, winner, updated_at) VALUES ("greita", ?, ?, NULL, "done", ?, NOW())',
                 [($in['mode'] ?? '') === 'fair' ? 'fair' : 'power', $hid, $win ? 1 : 2]);
             if ($win) {
                 $before = game_box_count($hid);
-                game_daily_win_box(game_hero_row($hid));
+                game_week_win_box(game_hero_row($hid));
                 $prize = game_box_count($hid) > $before ? 'box' : '';
             }
             $out(['ok' => true, 'prize' => $prize]);
