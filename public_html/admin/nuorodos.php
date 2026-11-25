@@ -82,16 +82,24 @@ page_start(t('Visos nuorodos'), ['admin' => true]);
 <?php if (!links_ready()): ?>
   <div class="panel card"><p class="muted"><?= te('Atnaujinkite duomenų bazę (db/062).') ?></p></div>
 <?php endif; ?>
-<?php foreach (LINK_KINDS as $kind => $def): $rows = $byKind[$kind] ?? []; if (!$rows && !in_array($kind, $creatable, true) && !$all) { continue; } ?>
+<?php foreach (LINK_KINDS as $kind => $def):
+    $rows = [];
+    foreach ($byKind[$kind] ?? [] as $r) {
+        $r['_owner'] = link_owner_name($r);
+        if (!$all && $r['owner_id'] !== null && $r['_owner'] === '#' . (int) $r['owner_id']) {
+            continue;   // savininkas ištrintas - nuoroda vis tiek neveikia
+        }
+        $rows[] = $r;
+    }
+    if (!$rows && !in_array($kind, $creatable, true) && !$all) { continue; } ?>
 <section class="panel card lk-kind" id="k-<?= e($kind) ?>">
   <div class="kicker"><?= e(link_kind_label($kind)) ?> <span class="muted">(<?= count(array_filter($rows, function ($r) { return empty($r['revoked_at']); })) ?>)</span>
     <?php if (!empty($def['write'])): ?><span class="badge badge-warn" title="<?= te('Atidaręs įrašo vardą - jis išsaugomas su kiekvienu pakeitimu') ?>"><?= te('gali keisti') ?></span><?php endif; ?></div>
   <?php if (!$rows): ?>
     <?= in_array($kind, $creatable, true) ? link_box($kind, null, ['row' => null, 'back' => '/admin/nuorodos.php#k-' . $kind]) : '<p class="muted small">' . te('Nėra.') . '</p>' ?>
   <?php endif; ?>
-  <?php $many = count($rows) > 8; if ($many): ?><details class="lk-more"><summary><?= te('Rodyti visas ({n})', ['n' => count($rows)]) ?></summary><?php endif; ?>
-  <?php foreach ($rows as $r): $st = link_state($r); $where = link_where($r); $owner = link_owner_name($r);
-    if (!$all && $r['owner_id'] !== null && $owner === '#' . (int) $r['owner_id']) { continue; }   // savininkas ištrintas - nuoroda vis tiek neveikia ?>
+  <?php foreach ($rows as $i => $r): $st = link_state($r); $where = link_where($r); $owner = $r['_owner']; ?>
+    <?php if ($i === 8): /* naujausios 8 - matomos, kitos suskleistos */ ?><details class="lk-more"><summary><?= te('Rodyti dar ({n})', ['n' => count($rows) - 8]) ?></summary><?php endif; ?>
     <div class="lk-item" data-link-row="<?= (int) $r['id'] ?>">
       <div class="lk-head"><b><?= e($owner !== '' ? $owner : link_kind_label($kind)) ?></b>
         <span class="badge <?= $stateCls[$st] ?>"><?= e($stateName[$st]) ?></span>
@@ -103,7 +111,7 @@ page_start(t('Visos nuorodos'), ['admin' => true]);
       <?php endif; ?>
     </div>
   <?php endforeach; ?>
-  <?php if ($many): ?></details><?php endif; ?>
+  <?php if (count($rows) > 8): ?></details><?php endif; ?>
 </section>
 <?php endforeach; ?>
 
