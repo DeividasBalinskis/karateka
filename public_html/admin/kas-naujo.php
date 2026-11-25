@@ -2,7 +2,7 @@
 // „Kas naujo“ (planas C9): 3 naujausios versijos iš pakeitimų sąrašo - trumpai, su skyriais. Atsidaro paspaudus versijos numerį (tik treneriams ir adminams).
 // Sąrašas: app/pakeitimai.md (į paketą įdedamas iš docs/pakeitimai.md); kompiuteryje - tiesiai iš docs/.
 require dirname(__DIR__) . '/app/bootstrap.php';
-require_staff();
+require_can('valdymas');
 
 $file = is_file(APP_DIR . '/pakeitimai.md') ? APP_DIR . '/pakeitimai.md' : dirname(PUBLIC_DIR) . '/docs/pakeitimai.md';
 $text = is_file($file) ? (string) file_get_contents($file) : '';

@@ -1,7 +1,7 @@
 <?php
 // Renginio rezultatai: pažymite, kas dalyvavo / išlaikė / kokią vietą užėmė - taškai skiriami automatiškai
 require dirname(__DIR__) . '/app/bootstrap.php';
-$me = require_staff();
+$me = require_can('events');
 
 $id = (int) (get('id') ?: post('id'));
 $event = q_one('SELECT * FROM events WHERE id = ?', [$id]);
@@ -12,7 +12,7 @@ $options = EVENT_RESULTS[$event['type']];
 
 if (is_post()) {
     csrf_check();
-    if (!is_admin($me)) {
+    if (!can('event_lists', $me)) {
         forbidden();   // galutinius rezultatus ir taškus tvirtina Denis (adminas)
     }
     $results = [];
@@ -151,7 +151,7 @@ page_start((t('Rezultatai:') . ' ') . $event['title'], ['admin' => true, 'sectio
   <?php if ($event['type'] === 'exam'): ?>
     <label class="raise-belt"><input type="checkbox" name="raise_belt" value="1"><span><?= te('Naujai išlaikiusiems pakelti diržą vienu lygiu') ?> <span class="small muted"><?= te('(pvz. 9 kyu → 8 kyu; nariams be diržo - geltonas)') ?></span></span></label>
   <?php endif; ?>
-  <?php if (is_admin($me)): ?>
+  <?php if (can('event_lists', $me)): ?>
   <div class="sticky-save">
     <button class="btn btn-primary btn-block" type="submit"><?= te('Išsaugoti rezultatus') ?></button>
   </div>

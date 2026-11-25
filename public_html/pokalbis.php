@@ -31,7 +31,7 @@ if (!$a || !is_active_account($a)) {
     $ajax ? chat_out(['ok' => false, 'error' => t('Prisijunkite.')], 403) : redirect('prisijungti.php');
 }
 $aid = (int) $a['id'];
-$isStaff = is_staff($a);
+$isStaff = can('messages', $a);
 $back = preg_match('~^(renginys|naujienos|pamokos|klausimai)\.php(\?[\w=&%.\-]*)?(#[\w-]*)?$~', post('back')) ? post('back') : 'index.php';
 
 // Skaičiukas ant mygtuko (kol langelis uždarytas)

@@ -96,7 +96,7 @@ function review_item_href(array $it): string
 /** Auksinės žymos šiam žmogui: tik test / kompiuteryje, tik tikram administratoriui */
 function review_can(?array $a = null): bool
 {
-    return config('env') !== 'live' && is_admin($a) && review_ready() && review_enabled();
+    return config('env') !== 'live' && can('review', $a) && review_ready() && review_enabled();
 }
 
 /** Mano įvertinimai: [change_id => ['mark' => good|bad|null, 'comment' => '', 'sent' => bool]] */

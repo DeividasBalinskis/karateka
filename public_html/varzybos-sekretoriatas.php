@@ -20,7 +20,7 @@ if ($t && $areaId) {
     }
 }
 $dest = 'admin/varzybu-sistema.php?id=' . $tid . ($areaId ? '&tatamis=' . $areaId : '') . '#live';
-if ($t && (is_staff() || varz_sekr($tid))) {
+if ($t && (can('budo') || varz_sekr($tid))) {
     redirect($dest);
 }
 $error = '';

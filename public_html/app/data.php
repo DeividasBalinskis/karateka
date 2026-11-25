@@ -142,7 +142,7 @@ function event_reg_button(array $ev, string $class = 'btn btn-primary btn-sm', b
         return '<a class="' . e($class) . ' event-reg" href="' . e($url) . '" target="_blank" rel="noopener">' . e(t('📝 Registracija →')) . '</a>';
     }
     $acc = current_account();
-    $member = $acc && is_active_account($acc) && !is_staff($acc);
+    $member = $acc && is_active_account($acc) && !can('valdymas', $acc);
     if ($ev['type'] === 'exam' && !$member && reg_on('exam') && ($l = exam_signup_link((int) $ev['id'])) && exam_signup_open($ev, $l)) {
         return '<a class="' . e($class) . ' event-reg" href="' . e(exam_signup_url($l)) . '">' . e(t('📝 Registruotis į egzaminą')) . '</a>';
     }
@@ -668,7 +668,7 @@ function budo_results_auto_transfer(array $ev): bool
         return false;
     }
     $a = current_account();
-    if ($a && is_staff($a) && !empty(tournament_results($t)['categories']) && (string) ($t['ends_on'] ?: $t['starts_on']) < date('Y-m-d')) {
+    if ($a && can('budo', $a) && !empty(tournament_results($t)['categories']) && (string) ($t['ends_on'] ?: $t['starts_on']) < date('Y-m-d')) {
         try {
             tournament_results_to_points($t, (int) $a['id']);
         } catch (Throwable $ex) {
@@ -725,18 +725,18 @@ function admin_todo_items(): array
     if (($n = feedback_questions_count(current_account()))) {
         array_unshift($todo, ['❓ ' . t('Atsakykite į klausimus apie jūsų atsiliepimus:') . ' ' . $n, 'admin/#atsiliepimas', t('Atsakyti')]);
     }
-    if (is_admin() && ($n = just_new_count()) && just_is_recipient(current_account())) {   // v1.93; v1.94 - tik tiems, kam pranešama
+    if (can('justifications') && ($n = just_new_count()) && just_is_recipient(current_account())) {   // v1.93; v1.94 - tik tiems, kam pranešama
         $todo[] = [t('Nauji pateisinimų prašymai:') . ' ' . $n, 'admin/pateisinimai.php', t('Peržiūrėti')];
     }
-    if (is_admin() && ($n = feedback_new_count())) {
+    if (can('feedback') && ($n = feedback_new_count())) {
         $todo[] = [(t('Nauji atsiliepimai apie svetainę:') . ' ') . $n, 'admin/atsiliepimai.php', t('Peržiūrėti')];
     }
     // Įkelta nauja versija, o duomenų bazė dar neatnaujinta - vienu mygtuku
-    if (is_admin() && db_update_pending()) {
+    if (can('backups') && db_update_pending()) {
         array_unshift($todo, [t('Atnaujinkite duomenų bazę naujai versijai'), 'admin/kopijos.php', t('Atnaujinti')]);   // visada viršuje
     }
     // Atsarginė kopija: nepavyko arba nedaryta ilgiau nei 2 d.
-    if (is_admin() && backup_auto()) {
+    if (can('backups') && backup_auto()) {
         $last = backup_last_time();
         $tried = @filemtime(backup_dir() . '/.bandyta');   // pirmą kartą kopija daroma dabar - nerodoma
         if (backup_error() || ($last && $last < time() - 2 * 86400) || (!$last && $tried && $tried < time() - 3600)) {

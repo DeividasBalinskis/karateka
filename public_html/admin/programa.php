@@ -1,7 +1,7 @@
 <?php
 // Egzaminų programa: ko reikia kiekvienam diržui (kihon, kata, kumite, teorija). Nariai mato kito diržo programą.
 require dirname(__DIR__) . '/app/bootstrap.php';
-$me = require_staff();
+$me = require_can('training');
 
 $belt = isset(BELTS[(int) (get('dirzas') ?: post('dirzas'))]) ? (int) (get('dirzas') ?: post('dirzas')) : 2;
 $back = 'admin/programa.php?dirzas=' . $belt;

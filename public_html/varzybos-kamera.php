@@ -15,6 +15,10 @@ if (!hash_equals($key, (string) get('c'))) {
 if (is_post() && get('ping')) {
     header('Content-Type: application/json; charset=utf-8');
     header('Cache-Control: no-store');
+    if (!csrf_ok()) {   // C1: kiekvienas POST - su sesijos žetonu (window.CAM.csrf)
+        http_response_code(400);
+        exit(json_encode(['ok' => false, 'error' => 'Atnaujinkite puslapį.'], JSON_UNESCAPED_UNICODE));
+    }
     $in = json_decode((string) file_get_contents('php://input'), true) ?: [];
     $id = (string) ($in['id'] ?? '');
     if (!preg_match('/^[a-z0-9]{6,12}$/', $id)) {
@@ -33,7 +37,7 @@ if (is_post() && get('ping')) {
     exit(json_encode(['ok' => true, 'area' => $area, 'areaName' => $area ? (string) ($row['area_name'] ?: $area . ' TATAMIS') : '',
         'push' => $area ? varz_cam_push_url(varz_cam_id($key, $area)) : ''], JSON_UNESCAPED_UNICODE));
 }
-$cfg = ['ping' => url('varzybos-kamera.php?c=' . $key . '&ping=1')];
+$cfg = ['ping' => url('varzybos-kamera.php?c=' . $key . '&ping=1'), 'csrf' => csrf_token()];
 ?><!doctype html>
 <html lang="lt">
 <head>
@@ -82,7 +86,7 @@ $cfg = ['ping' => url('varzybos-kamera.php?c=' . $key . '&ping=1')];
   });
   function state(text, cls) { var s = $('cam-state'); s.textContent = text; s.className = 'cam-state' + (cls ? ' ' + cls : ''); }
   function ping() {
-    fetch(C.ping, { method: 'POST', cache: 'no-store', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: id, name: name }) })
+    fetch(C.ping, { method: 'POST', cache: 'no-store', headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': C.csrf || '' }, body: JSON.stringify({ id: id, name: name }) })
       .then(function (r) { return r.json(); }).then(function (d) {
         if (!d.ok) { state('⚠ ' + (d.error || 'Nepavyko prisijungti.'), 'warn'); return; }
         fails = 0;

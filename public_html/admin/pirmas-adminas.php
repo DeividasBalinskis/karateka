@@ -6,7 +6,7 @@ require dirname(__DIR__) . '/app/bootstrap.php';
 
 $key = (string) config('setup_key', '');
 $given = get('key') ?: post('key');
-$hasAdmin = (bool) q_value('SELECT 1 FROM accounts WHERE role = "admin" LIMIT 1');
+$hasAdmin = any_admin_exists();
 
 if ($hasAdmin || strlen($key) < 8 || !hash_equals($key, $given)) {
     not_found();
@@ -30,7 +30,8 @@ if (is_post()) {
     }
     if (!$errors) {
         $id = create_account($email, $pw, post('first_name'), post('last_name'), null, 'active');
-        q('UPDATE accounts SET role = "admin", email_verified_at = NOW(), approved_at = NOW() WHERE id = ?', [$id]);
+        q('UPDATE accounts SET email_verified_at = NOW(), approved_at = NOW() WHERE id = ?', [$id]);
+        account_set($id, 'role', 'admin');
         login_account($id);
         flash('ok', t('Administratorius sukurtas. Pakeiskite setup_key config.php faile.'));
         redirect('admin/');

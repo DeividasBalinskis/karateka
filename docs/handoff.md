@@ -164,6 +164,17 @@ Updated: 2026-11-25 · version v2.10 · main
 - 2026-11-25 v2.07: Budo stream bar ± / ✕ were not clickable (`.gv-ovl` has pointer-events:none - now auto on `.ov-pm`, `.ov-end`);
   viewers' JSON gets `cams` (tatamis with a phone that are not yet in the saved summary, from state) - renderVideos adds them.
   Test 07zh fixed (the loop reopened a finished bout: „▶“ is shown on finished bouts too → `.match:not(.is-done) .bout-open`). 07zh ✓ in CI (both tests).
+- 2026-11-25 C1 permissions (side session, branch `claude/c1-teises-61f4c7`, not in main, VERSION not bumped): `PERMISSIONS` const (39 actions × roles guest/member/parent/coach/tester/admin)
+  + `can()` / `require_can()` / `account_role()` in app/auth.php; the same table in docs/standartai.md §2. All ~230 `is_admin()` / `is_staff()` / `require_staff()` / `require_admin()` /
+  `is_tester()` calls and `role = "admin"` SQL outside auth.php replaced, behaviour kept (wrappers stay inside auth.php only). LTKF `karateka_adminas()` loads auth.php (bootstrap now `require_once`).
+  Homepage editors: accounts marked in Paskyros „🏠 Redaguoja pradžią“ (setting `home_editors`), no longer names in the instructors block - instructors lose editing until an admin marks them (a hint shows the matching card).
+  db/061 `account_log` (created/role/status/is_tester/game_access/home_editor/password, who + old → new, 1 year) shown in Paskyros → „Pakeitimų žurnalas“; `accounts.session_ver`:
+  password change, reset by link and a child's new PIN sign out other devices (`account_password_set()`, `session_account_set()`; „Žiūrėti kaip“ keeps the admin's version).
+  CSRF: `csrf_ok()` added; awards tablet and phone camera POSTs now send X-CSRF-Token; exceptions = the 3 key APIs. checks.sh: no raw role checks, every action in the docs table, every POST page has csrf_check/csrf_ok.
+  Test 07zm-paskyros-gyvenimas (life cycle + page access per role); 07zh sends the token. Open questions: testers lack Atsiliepimai and „Žiūrėti kaip“ (table says ✔);
+  excuse-letter recipients default to admins named Denis while `just_notify` is unset. Gotcha for merges: new code with `is_admin(` etc. outside auth.php now fails checks.sh - use `can()`.
+  CI on the branch (main v2.09 merged in): checks.sh ✓; 07zm (2), 07-pages, 07b, 07zh, 06i ✓ (run 45623054023); 06r updated to the new editor rule ✓ (run 45630694117).
+  Full suite (run 45623035547): 158 passed, 21 failed - 20 of them fail on main too (main run 45622864810: 01, 06h, 06n ×4, 06x ×3, 06y, 06z, 07h, 07i, 07o, 07q, 07v, 07zd, 07ze, 07zf, 08); the 21st was 06r, now fixed.
 
 - 2026-11-25 v2.08: #179 exam protocol delete (admin/egzaminai.php `delete_protocol`, `exam_protocol_people()` in app/exam_protocol.php; with people → `?trinti=ID#trinti`
   confirm box; children of a deleted main protocol: first one becomes main). Test 07zl ✓. Agent: perziura-api.php „working“ = atomic claim (409 taken; stale after 90 min).
@@ -214,7 +225,7 @@ Updated: 2026-11-25 · version v2.10 · main
   07l, 07j): 42 passed, 1 failed - 07zf „side menu ends above 💡“ (955 / 836), which fails the same way on main (run 45620671478, 1027 / 836) - open.
   Next C5 file: app.css (one file per session; the workflow picks the changed .css files by itself).
 ## Open
-- C1 permissions, C3 secret links, C5 CSS cleanup (safe now with tests/visual.sh), C6 engine unit tests, D3 split varzybos.js, D4 same group on two tablets, D5 Budo live polish, D7 arena left hand UI, D8 pixel characters (PC + LibreSprite).
+- C1 permissions (done on branch `claude/c1-teises-61f4c7`, waits for merge), C3 secret links, C5 CSS cleanup (safe now with tests/visual.sh), C6 engine unit tests, D3 split varzybos.js, D4 same group on two tablets, D5 Budo live polish, D7 arena left hand UI, D8 pixel characters (PC + LibreSprite).
 - Parent payments for Budo registration need a payment provider (later).
 
 ## Next

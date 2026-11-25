@@ -101,7 +101,7 @@ function notifications_popup(int $accountId): array
 function notify_popup_html(): string
 {
     $a = current_account();
-    if (!$a || !is_staff($a)) {
+    if (!$a || !can('valdymas', $a)) {
         return '';
     }
     $cfg = ['api' => url('pranesimas.php'), 'csrf' => csrf_token(), 'items' => notifications_popup((int) $a['id']),
@@ -223,7 +223,7 @@ function render_notifications(array $list, string $back): string
 function celebration_html(): string
 {
     $a = current_account();
-    if (!$a || is_staff($a) || basename($_SERVER['SCRIPT_NAME'] ?? '') === 'pranesimas.php') {
+    if (!$a || can('valdymas', $a) || basename($_SERVER['SCRIPT_NAME'] ?? '') === 'pranesimas.php') {
         return '';
     }
     try {
@@ -278,7 +278,7 @@ function page_widgets(): string
  */
 function no_photo_consent_html(): string
 {
-    if (!is_admin()) {
+    if (!can('members_admin')) {
         return '';
     }
     $rows = q_all('SELECT m.id, m.first_name, m.last_name, g.name AS group_name FROM members m LEFT JOIN training_groups g ON g.id = m.group_id

@@ -77,7 +77,7 @@
     busy = true;
     ids.forEach(function (id) { AW[id] = AW[id] || {}; AW[id].st = status; });
     lastHtml = ''; render();
-    fetch(CFG.api, { method: 'POST', cache: 'no-store', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ cats: ids, status: status }) })
+    fetch(CFG.api, { method: 'POST', cache: 'no-store', headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': CFG.csrf || '' }, body: JSON.stringify({ cats: ids, status: status }) })
       .then(function (r) { return r.json(); }).then(function (d) { busy = false; apply(d); })
       .catch(function () { busy = false; failed++; alert('Nepavyko - nėra ryšio. Bandykite dar kartą.'); load(); });
   }

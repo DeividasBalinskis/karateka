@@ -8,7 +8,7 @@ $id = (int) get('id');
 
 if ($id) {
     // Treneris mato ir juodraščius bei suplanuotas (peržiūrai)
-    $n = is_staff() ? q_one('SELECT * FROM news WHERE id = ?', [$id])
+    $n = can('events') ? q_one('SELECT * FROM news WHERE id = ?', [$id])
         : q_one('SELECT * FROM news WHERE id = ? AND is_published = 1 AND published_at <= NOW() AND ' . visibility_sql(), [$id]);
     if (!$n) {
         not_found();
@@ -56,7 +56,7 @@ $total = (int) q_value('SELECT COUNT(*) FROM news WHERE is_published = 1 AND pub
 $items = q_all('SELECT * FROM news WHERE is_published = 1 AND published_at <= NOW() AND ' . visibility_sql() . ' ORDER BY published_at DESC LIMIT ' . PER_PAGE . ' OFFSET ' . (($page - 1) * PER_PAGE));
 
 // Treneriui - ir juodraščiai bei suplanuotos (nariai jų nemato)
-$drafts = is_staff() ? q_all('SELECT * FROM news WHERE is_published = 0 OR published_at > NOW() ORDER BY published_at DESC') : [];
+$drafts = can('events') ? q_all('SELECT * FROM news WHERE is_published = 0 OR published_at > NOW() ORDER BY published_at DESC') : [];
 
 // #118: vienas puslapis - kairėje naujienos, dešinėje artimiausi renginiai (2 renginiai = vienos naujienos aukštis)
 // Renginiai dešinėje - iki pat apačios kaip naujienos (#119): artimiausi, o jei jų mažiau - neseniai vykę

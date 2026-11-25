@@ -3,7 +3,7 @@
 // „Patvirtinti ir išsiųsti“ (pateisinimas .docx priede nurodytu el. paštu) arba „Atmesti“; šablonas - Word .docx su žymėmis arba tekstas.
 // v1.94: „✎ Redaguoti“ - prašymo duomenys ir tekstas; savo galutinis failas (Word arba PDF) siunčiamas vietoj parengto; kam pranešti.
 require dirname(__DIR__) . '/app/bootstrap.php';
-$me = require_admin();
+$me = require_can('justifications');
 
 $filter = in_array(get('b'), ['new', 'sent', 'rejected', 'all'], true) ? (string) get('b') : 'new';
 
@@ -235,7 +235,7 @@ page_start(t('Pateisinimai'), ['admin' => true]);
   <form method="post" class="form" style="margin-top:8px;">
     <?= csrf_field() ?><input type="hidden" name="action" value="notify">
     <div class="just-who">
-      <?php foreach (q_all('SELECT id, first_name, last_name FROM accounts WHERE role = "admin" AND status = "active" ORDER BY first_name, last_name') as $a): ?>
+      <?php foreach (active_admins() as $a): ?>
         <label class="check"><input type="checkbox" name="who[]" value="<?= (int) $a['id'] ?>"<?= in_array((int) $a['id'], $whoIds, true) ? ' checked' : '' ?>> <?= e(trim($a['first_name'] . ' ' . $a['last_name'])) ?></label>
       <?php endforeach; ?>
     </div>

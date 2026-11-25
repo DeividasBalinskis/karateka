@@ -16,11 +16,11 @@ if ($t !== '') {
             $errors[] = t('Slaptažodžiai nesutampa.');
         } else {
             token_use((int) $token['id']);
-            q('UPDATE accounts SET password_hash = ? WHERE id = ?', [password_hash($pw, PASSWORD_DEFAULT), $token['account_id']]);
+            account_password_set((int) $token['account_id'], $pw, 'reset');   // C1: visi kiti įrenginiai atjungiami
             // Nuoroda laiške patvirtina ir el. paštą
             q('UPDATE accounts SET email_verified_at = COALESCE(email_verified_at, NOW()) WHERE id = ?', [$token['account_id']]);
             advance_account_status((int) $token['account_id']);
-            flash('ok', t('Slaptažodis pakeistas. Galite prisijungti.'));
+            flash('ok', t('Slaptažodis pakeistas, kiti įrenginiai atjungti. Galite prisijungti.'));
             redirect('prisijungti.php');
         }
     }

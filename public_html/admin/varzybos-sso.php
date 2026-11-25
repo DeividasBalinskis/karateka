@@ -1,7 +1,7 @@
 <?php
 // Į varžybų sistemą be atskiro prisijungimo (treneriui / adminui)
 require dirname(__DIR__) . '/app/bootstrap.php';
-$me = require_staff();
+$me = require_can('budo');
 if (!varzybos_enabled()) {
     flash('err', t('Varžybų sistema neprijungta (config.php: varzybos).'));
     redirect('admin/varzybos.php');

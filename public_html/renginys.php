@@ -9,7 +9,7 @@ if (!$ev) {
     not_found();
 }
 $acc = current_account();
-$isStaff = is_staff();
+$isStaff = can('events');
 $members = $acc && is_active_account($acc) && !$isStaff
     ? array_values(array_filter(account_members((int) $acc['id']), function ($m) { return $m['status'] === 'active'; })) : [];
 $counts = event_participant_counts($id);

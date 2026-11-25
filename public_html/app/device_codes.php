@@ -63,7 +63,7 @@ function device_code_redeem(string $code): string
         ? q_one('SELECT * FROM device_codes WHERE code_hash = ? AND used_at IS NULL AND revoked_at IS NULL AND expires_at > NOW()', [device_code_hash($code)])
         : null;
     $acc = $row ? q_one('SELECT * FROM accounts WHERE id = ?', [(int) $row['account_id']]) : null;
-    $ok = $acc && is_admin($acc);   // kūrėjas vis dar tikras administratorius
+    $ok = $acc && can('device_codes', $acc);   // kūrėjas vis dar tikras administratorius
     if ($ok) {
         $st = q('UPDATE device_codes SET used_at = NOW(), used_ip = ?, used_device = ?, session_until = NOW() + INTERVAL hours HOUR
                   WHERE id = ? AND used_at IS NULL', [client_ip(), mb_substr(device_label(), 0, 120), (int) $row['id']]);

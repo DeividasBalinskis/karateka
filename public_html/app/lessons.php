@@ -144,7 +144,7 @@ function lessons_kata_seed(): void
     }
     try {
         db()->beginTransaction();
-        $author = q_value('SELECT id FROM accounts WHERE role = "admin" AND status = "active" ORDER BY id LIMIT 1');
+        $author = first_admin_id();
         foreach (KATA_VIDEOS as $belt => $katas) {
             $folder = (int) q_value('SELECT id FROM lesson_folders WHERE parent_id IS NULL AND belt_level = ? ORDER BY sort_order, id LIMIT 1', [$belt]);
             if (!$folder) {
@@ -325,7 +325,7 @@ function icon_picker(string $inputId, ?string $current = null): string
 function lesson_preview_member(): ?array
 {
     $id = (int) ($_SESSION['lesson_preview'] ?? 0);
-    if (!$id || !is_staff()) {
+    if (!$id || !can('training')) {
         return null;
     }
     return q_one('SELECT m.*, g.name AS group_name FROM members m LEFT JOIN training_groups g ON g.id = m.group_id WHERE m.id = ? AND m.status = "active"', [$id]);
@@ -338,8 +338,8 @@ function lesson_preview_member(): ?array
  */
 function lesson_viewer(array $a): array
 {
-    $preview = is_staff($a) ? lesson_preview_member() : null;
-    if (is_staff($a) && !$preview) {
+    $preview = can('training', $a) ? lesson_preview_member() : null;
+    if (can('training', $a) && !$preview) {
         return ['staff' => true, 'preview' => null, 'members' => [], 'tags' => array_keys(MEMBER_TAGS), 'own' => [], 'belts' => array_keys(BELTS)];
     }
     $members = $preview ? [$preview] : array_values(array_filter(account_members((int) $a['id']), function ($m) { return $m['status'] === 'active'; }));

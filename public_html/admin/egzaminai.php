@@ -3,9 +3,9 @@
 // (ten - lentelė su balais, registracijos nuoroda ir visa kita) ir „🔗“ registracijos nuorodai nukopijuoti. Įvykę - suskleisti.
 // Adminui: „💶 Kainos, mokėjimai, sertifikatai“ - egzamino kaina kiekvienam diržui (rodoma vaiko egzamino puslapyje); kas dar laukia info - pažymėta.
 require dirname(__DIR__) . '/app/bootstrap.php';
-$me = require_staff();
+$me = require_can('exam_protocols');
 
-if (is_post() && post('action') === 'prices' && is_admin($me)) {
+if (is_post() && post('action') === 'prices' && can('exams', $me)) {
     csrf_check();
     $out = [];
     foreach ((array) ($_POST['price'] ?? []) as $lvl => $v) {
@@ -22,7 +22,7 @@ if (is_post() && post('action') === 'prices' && is_admin($me)) {
 
 // #165: laukiančiųjų sąrašas - nuoroda, atidaryta / uždaryta, įtraukimas į protokolą (su laišku), išėmimas; kitas protokolas tai pačiai datai
 // v2.08 (#179): protokolą (egzamino renginį) administratorius gali ištrinti. Jei jame yra dalyvių - pirma parodoma, kas jame yra, ir klausiama dar kartą.
-if (is_post() && post('action') === 'delete_protocol' && is_admin($me)) {
+if (is_post() && post('action') === 'delete_protocol' && can('exams', $me)) {
     csrf_check();
     $ev = q_one('SELECT * FROM events WHERE id = ? AND type = "exam"', [(int) post('id')]);
     if ($ev) {
@@ -82,7 +82,7 @@ if (is_post() && in_array(post('action'), ['wl_link', 'wl_open', 'wl_assign', 'w
         case 'copy_exam':   // tai pačiai egzamino dienai - kitas protokolas (pvz. kitiems diržams)
             $src = q_one('SELECT * FROM events WHERE id = ? AND type = "exam"', [(int) post('id')]);
             $label = mb_substr(trim((string) post('label')), 0, 60);
-            if ($src && $label !== '' && is_admin($me)) {
+            if ($src && $label !== '' && can('exams', $me)) {
                 $title = mb_substr(preg_replace('/\s+·\s+[^·]*$/u', '', $src['title']) . ' · ' . $label, 0, 190);
                 q('INSERT INTO events (type, title, starts_on, ends_on, start_time, location, is_abroad, members_only, registration, registration_until, invited_only, description, summary, cover)
                    SELECT type, ?, starts_on, ends_on, start_time, location, is_abroad, members_only, registration, registration_until, invited_only, description, summary, cover FROM events WHERE id = ?',
@@ -146,7 +146,7 @@ $item = function (array $ev, bool $isPast) use ($rowsBy, $signBy, $me): string {
           <button class="btn btn-ghost btn-sm" type="submit" title="<?= te('Užsiregistravusius per svetainę įrašyti į protokolą') ?>"><?= te('↓ Į protokolą ({n})', ['n' => $missing]) ?></button></form><?php endif; ?>
         <?php if ($l): ?><button type="button" class="btn btn-ghost btn-sm" data-copy="<?= e(exam_signup_url($l)) ?>" title="<?= te('Kopijuoti registracijos nuorodą') ?>"><?= te('🔗 Nuoroda') ?></button><?php endif; ?>
         <a class="btn btn-primary btn-sm" href="<?= url('admin/egzamino-protokolas.php?id=' . $id) ?>"><?= te('📋 Protokolas') ?></a>
-        <?php if (is_admin($me)): /* v2.08 (#179) */ ?><form method="post" class="inline-form"<?= ($n + $reg) ? '' : ' onsubmit="return confirm(' . e(json_encode(t('Ištrinti tuščią protokolą „{t}“?', ['t' => $ev['title']]))) . ')"' ?>><?= csrf_field() ?>
+        <?php if (can('exams', $me)): /* v2.08 (#179) */ ?><form method="post" class="inline-form"<?= ($n + $reg) ? '' : ' onsubmit="return confirm(' . e(json_encode(t('Ištrinti tuščią protokolą „{t}“?', ['t' => $ev['title']]))) . ')"' ?>><?= csrf_field() ?>
           <input type="hidden" name="action" value="delete_protocol"><input type="hidden" name="id" value="<?= $id ?>">
           <button class="btn btn-ghost btn-sm exam-del" type="submit" title="<?= te('Ištrinti protokolą') ?>" aria-label="<?= e(t('Ištrinti protokolą: {t}', ['t' => $ev['title']])) ?>">🗑</button></form><?php endif; ?>
       </div>
@@ -161,12 +161,12 @@ page_start(t('Egzaminai'), ['admin' => true]);
     <h1 class="styled"><?= te('Egzaminai') ?></h1>
     <p style="margin:0;"><?= te('Atidarykite protokolą - ten balai, registracijos nuoroda ir viskas kita.') ?></p>
   </div>
-  <?php if (is_admin($me)): ?><a class="btn btn-primary btn-sm" href="<?= url('admin/renginiai.php?edit=new&back=egzaminai') ?>"><?= te('+ Naujas egzaminas') ?></a><?php endif; ?>
+  <?php if (can('exams', $me)): ?><a class="btn btn-primary btn-sm" href="<?= url('admin/renginiai.php?edit=new&back=egzaminai') ?>"><?= te('+ Naujas egzaminas') ?></a><?php endif; ?>
 </div>
 
 <?php
 // v2.08 (#179): trinamas protokolas su dalyviais - parodoma, kas jame yra, ir klausiama dar kartą
-$delEv = is_admin($me) && get('trinti') ? q_one('SELECT * FROM events WHERE id = ? AND type = "exam"', [(int) get('trinti')]) : null;
+$delEv = can('exams', $me) && get('trinti') ? q_one('SELECT * FROM events WHERE id = ? AND type = "exam"', [(int) get('trinti')]) : null;
 $delPeople = $delEv ? exam_protocol_people((int) $delEv['id']) : [];
 if ($delEv): ?>
   <section class="panel card exam-del-confirm" id="trinti" role="alertdialog" aria-labelledby="trinti-h">
@@ -248,7 +248,7 @@ if ($delEv): ?>
         // #165: viena egzamino diena - keli protokolai (skirtingiems diržams); po paskutiniu tos dienos - „+ Protokolas šiai datai“
         echo $item($ev, false);
         $next = $upcoming[array_search($ev, $upcoming, true) + 1] ?? null;
-        if (is_admin($me) && exam_waitlist_ready() && (!$next || $next['starts_on'] !== $ev['starts_on'])) {
+        if (can('exams', $me) && exam_waitlist_ready() && (!$next || $next['starts_on'] !== $ev['starts_on'])) {
             echo '<form method="post" class="exam-copy">' . csrf_field() . '<input type="hidden" name="action" value="copy_exam"><input type="hidden" name="id" value="' . (int) $ev['id'] . '">'
                 . '<input type="text" name="label" maxlength="60" required placeholder="' . e(t('pvz. 10–7 kyu')) . '" aria-label="' . e(t('Kokiems diržams')) . '">'
                 . '<input type="time" name="start_time" value="' . e(fmt_time($ev['start_time'])) . '" aria-label="' . e(t('Pradžios laikas')) . '" title="' . e(t('Naujo protokolo pradžios laikas')) . '">'
@@ -265,7 +265,7 @@ if ($delEv): ?>
 <?php endif; ?>
 
 <div class="exam-extra">
-  <?php if (is_admin($me)): ?>
+  <?php if (can('exams', $me)): ?>
     <details class="panel card exam-prices" id="kainos">
       <summary><b><?= te('💶 Kainos, mokėjimai, sertifikatai') ?></b> <span class="small muted"><?= $prices ? te('kainos nustatytos: {n}', ['n' => count($prices)]) : te('kainos dar nenustatytos') ?></span></summary>
       <form method="post" class="form">

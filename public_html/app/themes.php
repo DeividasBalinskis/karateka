@@ -44,7 +44,7 @@ const FONTS = [
 function font_current(): string
 {
     $f = (string) ($_COOKIE['sriftas'] ?? 'default');
-    return isset(FONTS[$f]) && is_admin() ? $f : 'default';
+    return isset(FONTS[$f]) && can('design') ? $f : 'default';
 }
 
 /** Google Fonts adresas šriftams (be dabartinių - jie jau kraunami) */
@@ -128,7 +128,7 @@ function design_like_html(string $kind, string $id, array $named, int $me): stri
 /** „Aa“ - šrifto pasirinkimas (tik administratoriams): paspaudus - pritaikoma visam puslapiui šiame įrenginyje */
 function font_picker_html(): string
 {
-    if (!is_admin()) {
+    if (!can('design')) {
         return '';
     }
     $cur = font_current();
@@ -181,7 +181,7 @@ function theme_picker_html(string $scope, string $current, string $btnClass = ''
     $html = '<div class="theme-pick" data-scope="' . e($scope) . '" data-api="' . e(url('tema.php')) . '" data-csrf="' . e(csrf_token()) . '">'
         . '<button type="button" class="tp-btn ' . e($btnClass) . '" aria-expanded="false" title="' . e(t('Tema')) . '">🎨<span class="tp-now">' . e(THEMES[$current][0]) . '</span></button>'
         . '<div class="tp-panel" hidden role="group" aria-label="' . e(t('Tema')) . '"><div class="tp-title">' . e($scope === 'me' ? t('Mano tema (išsaugoma paskyrai)') : ($scope === 'site' ? t('Svetainės tema (visiems)') : ($scope === 'device' ? t('Tema šiame įrenginyje') : t('Budo tema (visoms varžyboms)')))) . '</div><div class="tp-grid">';
-    $likes = $scope === 'me' && is_admin();   // v1.95: „👍 Patinka“ - administratoriams
+    $likes = $scope === 'me' && can('design');   // v1.95: „👍 Patinka“ - administratoriams
     $named = $likes ? design_likes_named() : [];
     $me = (int) (current_account()['id'] ?? 0);
     foreach (THEMES as $id => [$icon, $name, $dark, $scene]) {
@@ -190,7 +190,7 @@ function theme_picker_html(string $scope, string $current, string $btnClass = ''
             . '<span class="tp-prev" style="background:' . e($bg) . '; --sw:' . e(THEME_ACCENTS[$id] ?? 'transparent') . '"></span><span class="tp-name">' . $icon . ' ' . e(t($name)) . '</span></button>';
         $html .= $likes ? '<div class="tp-item">' . $btn . design_like_html('theme', $id, $named, $me) . '</div>' : $btn;
     }
-    if ($scope === 'me' && is_admin()) {
+    if ($scope === 'me' && can('design')) {
         $html .= '</div><label class="tp-all small"><input type="checkbox" class="tp-all-chk"> ' . e(t('Ir numatytoji visiems lankytojams')) . '</label><div>';
     }
     return $html . '</div></div></div>';

@@ -12,7 +12,7 @@ $demo = varz_is_demo($me);   // bandymo nuoroda: tik bandymo varžybos, be tikr�
 $ready = tournaments_ready();
 
 // Bandymo nuoroda draugams: sukurti / pakeisti / išjungti (tik adminui)
-if (is_post() && in_array(post('action'), ['demo_on', 'demo_off'], true) && is_admin()) {
+if (is_post() && in_array(post('action'), ['demo_on', 'demo_off'], true) && can('budo_admin')) {
     csrf_check();
     set_site_setting('taika_demo_token', post('action') === 'demo_on' ? bin2hex(random_bytes(12)) : '');
     flash('ok', post('action') === 'demo_on' ? t('Bandymo nuoroda sukurta - nukopijuokite ir nusiųskite.') : t('Bandymo nuoroda išjungta - su ja nebeprisijungs.'));
@@ -78,7 +78,7 @@ if (is_post() && $ready) {
             flash('ok', t('Ištrinta test varžybų:') . ' ' . $n . '.');
             break;
         case 'delete':
-            if ($t && ($t['is_test'] || is_admin())) {
+            if ($t && ($t['is_test'] || can('budo_admin'))) {
                 tournament_delete($id);
                 flash('ok', t('Varžybos „') . $t['title'] . t('“ ištrintos.'));
             }
@@ -90,7 +90,7 @@ if (is_post() && $ready) {
                 q('UPDATE tournaments SET title = ?, starts_on = ?, ends_on = ?, location = ?, status = ?, is_public = ? WHERE id = ?',
                     [mb_substr(trim((string) post('title')) ?: $t['title'], 0, 190), $start, $end, trim((string) post('location')) ?: null,
                      isset(TOURNAMENT_STATUS[post('status')]) ? post('status') : $t['status'], post('is_public') === '1' ? 1 : 0, $id]);
-                if (is_admin()) {   // LTKF kalendoriuje - tik federacijos patvirtintos (db/046)
+                if (can('ltkf')) {   // LTKF kalendoriuje - tik federacijos patvirtintos (db/046)
                     try {
                         q('UPDATE tournaments SET ltkf_approved = ? WHERE id = ?', [post('ltkf_approved') === '1' ? 1 : 0, $id]);
                     } catch (PDOException $ex) {
@@ -159,7 +159,7 @@ $card = function (array $t): string {
             <div class="varz-2">
               <label><?= te('Būsena') ?> <select class="sel" name="status"><?php foreach (TOURNAMENT_STATUS as $k => $l): ?><option value="<?= $k ?>"<?= $k === $t['status'] ? ' selected' : '' ?>><?= e(t($l)) ?></option><?php endforeach; ?></select></label>
               <label class="small"><input type="checkbox" name="is_public" value="1"<?= $t['is_public'] ? ' checked' : '' ?>> <?= te('Rezultatai viešai (LTKF, karateka.lt)') ?></label>
-              <?php if (is_admin() && array_key_exists('ltkf_approved', $t)): ?><label class="small"><input type="checkbox" name="ltkf_approved" value="1"<?= $t['ltkf_approved'] ? ' checked' : '' ?>> <?= te('Federacijos kalendoriuje (patvirtinta LTKF)') ?></label><?php endif; ?>
+              <?php if (can('ltkf') && array_key_exists('ltkf_approved', $t)): ?><label class="small"><input type="checkbox" name="ltkf_approved" value="1"<?= $t['ltkf_approved'] ? ' checked' : '' ?>> <?= te('Federacijos kalendoriuje (patvirtinta LTKF)') ?></label><?php endif; ?>
             </div>
             <button class="btn btn-primary" type="submit"><?= te('Išsaugoti') ?></button>
           </form>
@@ -171,7 +171,7 @@ $card = function (array $t): string {
             <?php else: ?>
               <span class="small muted"><?= te('Test varžybų rezultatai į narių taškus neperkeliami.') ?></span>
             <?php endif; ?>
-            <?php if ($t['is_test'] || is_admin()): /* bandantysis mato tik bandymo varžybas */ ?>
+            <?php if ($t['is_test'] || can('budo_admin')): /* bandantysis mato tik bandymo varžybas */ ?>
               <form method="post" onsubmit="return confirm('<?= e(t('Ištrinti varžybas su visais dalyviais, lentelėmis ir rezultatais?')) ?>')"><?= csrf_field() ?>
                 <input type="hidden" name="action" value="delete"><input type="hidden" name="id" value="<?= (int) $t['id'] ?>">
                 <button class="btn btn-danger" type="submit"><?= te('Ištrinti') ?></button></form>
@@ -190,7 +190,7 @@ varz_html_head(t('Varžybos'), 'vz-home');
   <div class="vz-top-row">
     <?php if (!$demo): ?><a class="vz-back" href="<?= url('admin/index.php') ?>" title="<?= te('Į Karateka valdymą') ?>">←</a><?php endif; ?>
     <a class="vz-brand" href="<?= url('admin/varzybos.php') ?>"><span class="vz-logo" aria-hidden="true"></span><?= e(VARZ_NAME) ?></a>
-    <?php if (!$demo && is_staff()): ?><?= site_switch_html('budo') ?><?php endif; /* #171: į Karateka ir LTKF - kaip Karateka logotipo meniu */ ?>
+    <?php if (!$demo && can('valdymas')): ?><?= site_switch_html('budo') ?><?php endif; /* #171: į Karateka ir LTKF - kaip Karateka logotipo meniu */ ?>
     <div class="vz-title">
       <h1><?= te('Varžybos') ?></h1>
       <div class="sub"><?= te('Visos varžybos vienoje vietoje: klubai, komandos, dalyviai, kategorijos, live tvarkaraštis ir rezultatai.') ?></div>
@@ -297,7 +297,7 @@ varz_html_head(t('Varžybos'), 'vz-home');
   <?php if (varzybos_enabled() && !$demo): ?>
     <a class="varz-share varz-ext" href="<?= url('admin/varzybos-isorine.php') ?>">🔗 <b><?= te('Išorinė varžybų sistema') ?></b> <span class="muted small"><?= te('- registracija per karateka.lt') ?></span> <span class="varz-ext-go">→</span></a>
   <?php endif; ?>
-  <?php if (is_admin()): $demoTok = varz_demo_token(); $demoUrl = $demoTok !== '' ? abs_url('varzybos-bandymas.php?k=' . $demoTok) : ''; ?>
+  <?php if (can('budo_admin')): $demoTok = varz_demo_token(); $demoUrl = $demoTok !== '' ? abs_url('varzybos-bandymas.php?k=' . $demoTok) : ''; ?>
     <details class="varz-share" id="bandymas"<?= $demoUrl ? ' open' : '' ?>>
       <summary><b><?= te('👀 Duoti išbandyti (be paskyros)') ?></b> <span class="small muted"><?= te('- draugui ar kito klubo sekretoriatui') ?></span></summary>
       <p class="small muted"><?= te('Su šia nuoroda žmogus įrašo savo vardą ir gali daryti viską, ką daro adminas, bet tik bandymo varžybose: tikrų klubo narių ir jų duomenų nemato, karateka.lt valdymo neatidaro. Atsiliepimus (💡) matysite Valdymas → Atsiliepimai.') ?></p>

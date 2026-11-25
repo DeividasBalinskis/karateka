@@ -30,7 +30,10 @@ test('Budo streaming with phones only: one QR, assign to a tatami, ± on the vid
   check('tatami video does not reveal the QR key', /vdo\.ninja\/\?view=kt[a-f0-9]{20}&cleanoutput&noaudio/.test(cam1) && !cam1.includes(key), cam1);
 
   // Telefonas: prisijungia, laukia; priskyrus tatamiui - „Pradėti filmuoti“ su to tatamio srautu per Meshcast
-  const ping = async () => (await a.request.post(`varzybos-kamera.php?c=${key}&ping=1`, { data: { id: 'e2etel01', name: 'E2E telefonas' } })).json();
+  // C1: kiekvienas POST - su sesijos žetonu (telefono puslapis jį gauna window.CAM.csrf; čia - tos pačios sesijos)
+  const csrf = await a.getAttribute('#tr-main', 'data-csrf');
+  const ping = async () => (await a.request.post(`varzybos-kamera.php?c=${key}&ping=1`, { data: { id: 'e2etel01', name: 'E2E telefonas' }, headers: { 'X-CSRF-Token': csrf } })).json();
+  check('ping without the token is refused', (await a.request.post(`varzybos-kamera.php?c=${key}&ping=1`, { data: { id: 'e2etel03' } })).status() === 400);
   let ph = await ping();
   check('phone joins and waits', ph.ok && ph.area === 0 && ph.push === '', JSON.stringify(ph));
   check('wrong key is refused', (await a.request.post('varzybos-kamera.php?c=0000000000000000&ping=1', { data: { id: 'e2etel02' } })).status() === 404);

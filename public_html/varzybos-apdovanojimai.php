@@ -15,6 +15,10 @@ if (get('json') || is_post()) {
     header('Content-Type: application/json; charset=utf-8');
     header('Cache-Control: no-store');
     if (is_post()) {
+        if (!csrf_ok()) {   // C1: kiekvienas POST - su sesijos žetonu (window.APD.csrf)
+            http_response_code(400);
+            exit(json_encode(['ok' => false, 'error' => 'Puslapis per ilgai buvo atidarytas - atnaujinkite jį.'], JSON_UNESCAPED_UNICODE));
+        }
         // Planšetė: „Užbaigti“ (apdovanota) arba „Grąžinti“ (vėl laukia apdovanojimo). Siųsti gali tik sekretoriatas.
         $in = json_decode((string) file_get_contents('php://input'), true) ?: [];
         $st = ($in['status'] ?? '') === 'done' ? 'done' : 'sent';
@@ -45,7 +49,7 @@ if (get('json') || is_post()) {
     exit(json_encode(['ok' => true, 'cats' => $cats, 'awards' => (object) tournament_awards((int) $t['id'])], JSON_UNESCAPED_UNICODE));
 }
 
-$cfg = ['api' => url('varzybos-apdovanojimai.php?k=' . $t['awards_token']), 'title' => $t['title']];
+$cfg = ['api' => url('varzybos-apdovanojimai.php?k=' . $t['awards_token']), 'title' => $t['title'], 'csrf' => csrf_token()];
 varz_html_head('Apdovanojimai · ' . $t['title'], 'vz-public apd');
 ?>
 <header class="vz-top">

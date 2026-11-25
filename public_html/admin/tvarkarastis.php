@@ -1,8 +1,8 @@
 <?php
 // Visų grupių tvarkaraštis ir kainos vienoje vietoje. Keičia tik adminas, išsaugoma iš karto (be „Išsaugoti“).
 require dirname(__DIR__) . '/app/bootstrap.php';
-$me = require_staff();
-$canEdit = is_admin($me);
+$me = require_can('training');
+$canEdit = can('schedule', $me);
 
 /** "18:00" -> "18:00:00"; tuščia - null; netinkamas - false */
 function time_from_post(string $field)

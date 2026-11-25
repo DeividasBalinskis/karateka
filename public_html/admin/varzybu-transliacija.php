@@ -19,7 +19,7 @@ if (!$t) {
     redirect('admin/varzybos.php');
 }
 // QR kodas pateko ne tiems žmonėms - naujas (tik pagrindinis adminas; senas QR nebeveiks, telefonus reikės prijungti iš naujo)
-if (is_post() && post('action') === 'renew' && is_admin() && !$demo) {
+if (is_post() && post('action') === 'renew' && can('budo_admin') && !$demo) {
     csrf_check();
     varz_cam_key(true);
     flash('ok', 'Sukurtas naujas QR kodas. Telefonais nuskenuokite naują kodą.');
@@ -161,7 +161,7 @@ $phonesApi = url('admin/varzybu-transliacija.php?id=' . (int) $t['id'] . '&telef
     </div>
   </section>
 
-  <?php if (is_admin() && !$demo): ?>
+  <?php if (can('budo_admin') && !$demo): ?>
   <form method="post" class="tr-renew" onsubmit="return confirm('Sukurti naują QR kodą? Senas nebeveiks, telefonus reikės prijungti iš naujo.')">
     <?= csrf_field() ?><input type="hidden" name="action" value="renew">
     <button type="submit" class="btn btn-xs">↻ Naujas QR kodas</button>

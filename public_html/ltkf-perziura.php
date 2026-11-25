@@ -3,7 +3,7 @@
 // kurioje be paskyros galima palikti atsiliepimus (💡); nuorodos į karateka.lt nerodomos.
 require __DIR__ . '/app/bootstrap.php';
 
-if (ltkf_review_start((string) get('k')) || is_admin()) {
+if (ltkf_review_start((string) get('k')) || can('ltkf')) {
     redirect('ltkf/index.php');
 }
 http_response_code(404);

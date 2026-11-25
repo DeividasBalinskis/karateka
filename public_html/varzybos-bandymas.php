@@ -5,7 +5,7 @@ require __DIR__ . '/app/bootstrap.php';
 
 $token = (string) (get('k') ?: post('k'));
 $valid = $token !== '' && varz_demo_token() !== '' && hash_equals(varz_demo_token(), $token);
-if ($valid && (is_staff() || varz_demo())) {
+if ($valid && (can('budo') || varz_demo())) {
     redirect('admin/varzybos.php');
 }
 $error = '';

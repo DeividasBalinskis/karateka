@@ -314,25 +314,9 @@ function game_public(): bool
 /** Ar ši paskyra mato žaidimą (žiūrint „kaip vaikas“ - pagal tikrąją, administratoriaus, paskyrą) */
 function game_allowed(?array $a = null): bool
 {
-    if (!game_ready()) {
-        return false;
-    }
-    $a = $a ?? current_account();
-    if (!$a) {
-        return false;
-    }
-    // Sprendžia dabartinė paskyra: žiūrint „kaip vaikas“ matoma tiksliai tai, ką mato vaikas (#148)
-    if (is_tester($a)) {
-        return false;   // testuotojai žaidimo nemato (kad nesugadintume staigmenos)
-    }
-    if (is_admin($a)) {
-        return true;    // tikri administratoriai (Denis, Deividas) gali atsidaryti visada - testavimui
-    }
-    $ids = game_access_ids();
-    if ($ids === null) {
-        return true;
-    }
-    return in_array((int) $a['id'], $ids, true);
+    // Sprendžia dabartinė paskyra: žiūrint „kaip vaikas“ matoma tiksliai tai, ką mato vaikas (#148).
+    // C1: taisyklė - can('dojo') (app/auth.php): testuotojai nemato, tikri administratoriai - visada, kiti - pagal game_access
+    return can('dojo', $a);
 }
 
 function game_ready(): bool
@@ -442,7 +426,7 @@ function game_my_heroes(array $a): array
         }
     }
     // Treneriui - savas herojus, nebent jis pats yra narys (tada jo nario herojus ir yra jo)
-    if ((is_staff($a) && !$self) || !$out) {
+    if ((can('valdymas', $a) && !$self) || !$out) {
         array_unshift($out, game_hero_for_account($a));
     }
     return $out;

@@ -320,7 +320,7 @@ function test_data_drop_links(string $pattern, array $ids): void
  */
 function legacy_demo_autopurge(array $me): ?string
 {
-    if (!is_admin($me) || !empty($_SESSION['view_admin'])) {
+    if (!can('testing', $me) || !empty($_SESSION['view_admin'])) {
         return null;
     }
     if ($prev = site_setting('demo_isvalyta')) {

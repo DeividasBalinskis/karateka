@@ -2,7 +2,7 @@
 // v2.02: Valdymo meniu išdėstymas - išsaugo administratoriaus „✎“ pakeitimus (assets/admin-menu.js).
 // Grupės (savo pavadinimai, tvarka), skyrių tvarka ir savi skyrių pavadinimai → site_setting admin_menu. Tuščias = numatytas meniu.
 require dirname(__DIR__) . '/app/bootstrap.php';
-require_admin();
+require_can('settings');
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
 if (!is_post()) {

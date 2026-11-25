@@ -495,5 +495,6 @@ function karateka_adminas(): bool
     } catch (PDOException $e) {
         return false;
     }
-    return $r && $r['role'] === 'admin' && $r['status'] === 'active' && empty($r['is_tester']);   // testuotojas - ne administratorius (db/044)
+    require_once dirname(__DIR__, 2) . '/app/auth.php';   // C1: viena teisių lentelė (testuotojas - ne administratorius)
+    return $r && can('ltkf', $r);
 }

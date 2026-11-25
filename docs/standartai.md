@@ -29,16 +29,18 @@ Paths are relative to `public_html/` unless they start with `db/`, `tools/`, `te
 
 ## 2. Roles and permissions
 
-**Model (target, steps A4 and C1).** Three roles stay: `member`, `coach`, `admin`. "Testuotojas" is a flag on an admin account, not a fourth role. Real admin = admin without the flag. Link roles (secretariat, awards, LTKF editor, reviewer, trial) are not accounts.
+**Model (today since C1).** Three roles stay in the database: `member`, `coach`, `admin`. "Testuotojas" is a flag on an admin account, not a fourth role. Real admin = admin without the flag. Link roles (secretariat, awards, LTKF editor, reviewer, trial) are not accounts.
+For the permission table the code reads six roles from an account (`account_role()` in `app/auth.php`): **guest** (not logged in, or the account is not active yet),
+**member** (also a child with own login), **parent** (a member with children), **coach**, **tester** (admin or coach role with the flag), **admin** (real admin).
 
 **Rules**
-1. One source: `can('action', $account)` in `app/auth.php`. Pages call `require_can()`. No raw role checks elsewhere.
-2. Never allow something by a person's name. Lists of people hold account ids chosen in the screen.
+1. **Today (C1):** one source: `can('action', $account)` in `app/auth.php` (const `PERMISSIONS`). Pages call `require_can('action')`. No raw role checks elsewhere — `tests/checks.sh` fails on `is_admin(` / `is_staff(` / `['role'] === …` / `role = "admin"` outside `app/auth.php`, and on an action that is in the code but not in the table below (or the other way round).
+2. **Today (C1):** never allow something by a person's name. Lists of people hold account ids chosen in the screen. The homepage editors are accounts marked in Paskyros („🏠 Redaguoja pradžią“, setting `home_editors`), not names in the instructors block. Open: the excuse-letter recipients default to admins named Denis while `just_notify` is unset (decision 2026-11-24).
 3. "Admin mode" and "Žiūrėti kaip" are display choices. They never grant or remove a right.
 4. A missing visibility setting means **closed**.
-5. Role, status, tester, game-access and consent changes are written to a log that real admins can read.
+5. **Today (C1):** role, status, tester, game-access, homepage-editor and password changes are written to `account_log` (db/061): who, when, account, old → new (no password values). Real admins read it in Valdymas → Nustatymai → Paskyros ir rolės → „Pakeitimų žurnalas“. Kept 1 year. Consent changes: not logged yet.
 6. Dangerous changes need a button and a confirm that names the person and the new value. No saving on touch.
-7. Every form that changes something checks the CSRF token. Exceptions are listed in this file only: the feedback API (key in a header).
+7. **Today (C1):** every POST checks the CSRF token: `csrf_check()` (HTML pages) or `csrf_ok()` (JSON). Exceptions are listed in this file only — APIs with a key in a header: `atsiliepimai-api.php` (feedback API), `diegimas-api.php`, `perziura-api.php`. `tests/checks.sh` fails on any other page that reads a POST and has neither.
 8. **Code for another device** (v1.53, `app/device_codes.php`): only a real admin creates it; 8 signs, entered within 10 minutes, once;
    the device works with that admin's rights for 4 h / 12 h / 2 days and shows the „🔑“ bar; any real admin can disconnect it;
    only the hash is stored; every code and use stays in the log for 1 year. No shared "dev code" exists or may be added.
@@ -71,6 +73,50 @@ Paths are relative to `public_html/` unless they start with `db/`, `tools/`, `te
 | Site-wide switches (registration, menu, feedback button) | – | – | – | – | – | – | ◐ read | ✔ |
 | Roles, tester flag, game access, backups and restore | – | – | – | – | – | – | **–** | ✔ |
 
+Where today's code differs from the table above (kept as it was, waiting for an answer): testers do **not** open Valdymas → Atsiliepimai and do **not** have „Žiūrėti kaip“ (both real admin only); coaches see all feedback in the 💡 box.
+
+**Permission table (today, the spec — `PERMISSIONS` in `app/auth.php`).** ✔ yes · – no. A new action is added in both places in the same change.
+
+| Action | What it allows | guest | member | parent | coach | tester | admin |
+|---|---|---|---|---|---|---|---|
+| `member_self` | Paskyra: „+ Aš pats treniruojuosi“, „+ Pridėti vaiką“ (logged in, also before approval; never on a child's own login) | ✔ | ✔ | ✔ | – | – | – |
+| `dojo` | Dojo, arena, games — only when the account is in „kas mato žaidimą“ (`game_access`); real admins always; the tester flag never | – | ✔ | ✔ | ✔ | – | ✔ |
+| `dojo_menu` | „🏯 Dojo“ in the menu: as `dojo`, but while the game is not open to all — real admins only | – | ✔ | ✔ | ✔ | – | ✔ |
+| `valdymas` | Valdymas, the staff header and menu, staff versions of pages (news drafts, lesson preview), admin mode, staff start page after login | – | – | – | ✔ | ✔ | ✔ |
+| `members` | Nariai, Patvirtinimai (approve accounts and children), Grupės | – | – | – | ✔ | ✔ | ✔ |
+| `training` | Treniruotė (attendance, notes), Pamokos, Programa, Tvarkaraštis and Atšaukimai (read) | – | – | – | ✔ | ✔ | ✔ |
+| `xp` | Give Aktyvumo taškai | – | – | – | ✔ | ✔ | ✔ |
+| `events` | Renginiai, invitations, participants, Naujienos | – | – | – | ✔ | ✔ | ✔ |
+| `exam_protocols` | Egzaminai list, edit exam protocols | – | – | – | ✔ | ✔ | ✔ |
+| `quizzes` | Testai (theory quizzes) | – | – | – | ✔ | ✔ | ✔ |
+| `budo` | Run Budo competitions, stream page, secretariat preview | – | – | – | ✔ | ✔ | ✔ |
+| `messages` | Chat and messages with members, Laiškų siuntimas | – | – | – | ✔ | ✔ | ✔ |
+| `translations` | Vertimai (EN / RU) | – | – | – | ✔ | ✔ | ✔ |
+| `federation` | Federacijos registrai — read | – | – | – | ✔ | ✔ | ✔ |
+| `feedback_box` | All feedback items in the 💡 box | – | – | – | ✔ | ✔ | ✔ |
+| `settings_view` | See the site switches in Nustatymai (tester: read only) | – | – | – | – | ✔ | ✔ |
+| `accounts` | Paskyros ir rolės: roles, tester flag, „🏠 Redaguoja pradžią“, change log | – | – | – | – | – | ✔ |
+| `game_access` | Who sees the game | – | – | – | – | – | ✔ |
+| `settings` | Site-wide switches, „Visi nustatymai“, the Valdymas menu editor | – | – | – | – | – | ✔ |
+| `backups` | Backups, Duomenų priežiūra, database update | – | – | – | – | – | ✔ |
+| `device_codes` | Code for another device | – | – | – | – | – | ✔ |
+| `testing` | Testavimas, „Žiūrėti kaip“ | – | – | – | – | – | ✔ |
+| `feedback` | Valdymas → Atsiliepimai (read, answer, status) | – | – | – | – | – | ✔ |
+| `review` | 🔎 Peržiūra | – | – | – | – | – | ✔ |
+| `broadcast` | Pranešimai to all (e-mail and SMS) | – | – | – | – | – | ✔ |
+| `sms` | Send SMS (also the „SMS tėvams“ boxes) | – | – | – | – | – | ✔ |
+| `justifications` | Pateisinimai | – | – | – | – | – | ✔ |
+| `exams` | Create and delete exams and their protocols, exam prices, waiting list, extra protocols | – | – | – | – | – | ✔ |
+| `schedule` | Change the timetable, prices, group names and colours; cancel trainings | – | – | – | – | – | ✔ |
+| `xp_settings` | Point categories and level cost | – | – | – | – | – | ✔ |
+| `event_lists` | The final participant list and results of an event | – | – | – | – | – | ✔ |
+| `members_admin` | Delete a member; the list of members without photo consent | – | – | – | – | – | ✔ |
+| `budo_admin` | Budo: delete a real competition (coaches delete trial ones), trial link on/off, stream key, removing a tatami | – | – | – | – | – | ✔ |
+| `ltkf` | LTKF site, changing the federation registers, federation approval of a competition | – | – | – | – | – | ✔ |
+| `design` | Site theme, font test, „👍 Patinka“ | – | – | – | – | – | ✔ |
+| `dojo_admin` | Dojo admin tools | – | – | – | – | – | ✔ |
+| `home_edit` | Edit the homepage — also accounts marked „🏠 Redaguoja pradžią“ in Paskyros | – | – | – | – | – | ✔ |
+
 **People who come by link (target, step C3)**
 
 | Link role | May | May not |
@@ -89,7 +135,7 @@ Paths are relative to `public_html/` unless they start with `db/`, `tools/`, `te
 - States: account `pending_email → pending_parent → pending_approval → active | disabled`; member `pending → active → inactive`. A member is approved once.
 - Every account may have 0–1 own member and any number of children.
 - Minimum password length is one constant, also for accounts an admin creates. No password is ever shown again after it is typed.
-- A password change or reset signs out all other devices.
+- A password change or reset signs out all other devices — **today (C1)**: `accounts.session_ver` (db/061) grows on a change, a reset by link or a child's new PIN; sessions with the old number are signed out, the device that made the change stays in.
 - Test people ("Žiūrėti kaip") have Lithuanian names and stay out of rankings, lists and exports.
 
 ## 3. Notifications, messages, e-mail, SMS

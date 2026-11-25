@@ -31,7 +31,7 @@ function game_dojo_html(array $hero, array $heroes = [], bool $readOnly = false)
     $cfg = [
         'api' => url('zaidimas.php'), 'csrf' => csrf_token(), 'catalog' => game_catalog_json(), 'hero' => game_hero_view($hero, !$readOnly),
         'heroes' => array_map(function ($h) { return ['id' => (int) $h['id'], 'name' => $h['name']]; }, $heroes), 'heroUrl' => url('dojo.php?h=HID'),
-        'admin' => is_admin() && !$readOnly, 'readOnly' => $readOnly, 'news' => $news, 'urls' => game_urls(),
+        'admin' => can('dojo_admin') && !$readOnly, 'readOnly' => $readOnly, 'news' => $news, 'urls' => game_urls(),
     ];
     return game_assets()
         . '<section class="dojo" id="dojo" aria-label="' . e(t('Mano dojo')) . '"><noscript>' . e(t('Žaidimui reikia JavaScript.')) . '</noscript></section>'

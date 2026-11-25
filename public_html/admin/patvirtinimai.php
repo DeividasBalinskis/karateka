@@ -1,7 +1,7 @@
 <?php
 // Naujų paskyrų ir naujai pridėtų vaikų patvirtinimas su grupės priskyrimu
 require dirname(__DIR__) . '/app/bootstrap.php';
-$me = require_staff();
+$me = require_can('members');
 
 function send_approved_mail(array $account): void
 {
@@ -38,11 +38,12 @@ if (is_post()) {
                     flash('err', t('Priskirkite grupę kiekvienam nariui.'));
                     redirect('admin/patvirtinimai.php');
                 }
-                q('UPDATE accounts SET status = "active", approved_at = NOW() WHERE id = ?', [$acc['id']]);
+                q('UPDATE accounts SET approved_at = NOW() WHERE id = ?', [$acc['id']]);
+                account_set((int) $acc['id'], 'status', 'active');   // C1: į žurnalą
                 send_approved_mail($acc);
                 flash('ok', "Patvirtinta: {$acc['first_name']} {$acc['last_name']}");
             } else {
-                q('UPDATE accounts SET status = "disabled" WHERE id = ?', [$acc['id']]);
+                account_set((int) $acc['id'], 'status', 'disabled');
                 foreach ($pendingIds as $mid) {
                     q('UPDATE members SET status = "inactive" WHERE id = ?', [$mid]);
                 }

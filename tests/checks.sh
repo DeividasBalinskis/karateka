@@ -37,6 +37,24 @@ known=$(grep -oP "^\s+'\K[a-z_]+(?=' +=> \[)" public_html/app/notifications.php 
 used=$( (grep -rhoP "notify_(admins|staff)\(\s*'\K[a-z_]+" public_html --include=*.php; grep -rhoP "notify_(account|member)\([^,()]+(\([^()]*\))?[^,()]*,\s*'\K[a-z_]+" public_html --include=*.php) | sort -u)
 for ty in $used; do echo "$known" | grep -qx "$ty" || err "pranešimo tipas '$ty' nėra NOTIFY_TYPES sąraše (app/notifications.php)"; done
 
+# C1: teisės tikrinamos tik per can() / require_can() (app/auth.php) - jokių tiesioginių rolių patikrų kitur
+roles_re=$(cat <<'RE'
+\b(is_admin|is_staff|is_tester|require_staff|require_admin)\(|\['role'\] *(===|!==|==|!=) *['"](admin|coach|member)['"]|['"](admin|coach|member)['"] *(===|!==|==|!=) *\$[a-zA-Z_]+\['role'\]|in_array\( *\$[a-zA-Z_]+\['role'\]|role *= *\\?['"](admin|coach)['"]
+RE
+)
+bad=$(grep -rnE --include=*.php "$roles_re" public_html | grep -v "^public_html/app/auth.php:\|^public_html/app/cli/" || true)
+[ -n "$bad" ] && err "teisės - tik per can('veiksmas') (app/auth.php PERMISSIONS): $(echo "$bad" | head -3 | cut -c1-140)"
+# C1: kiekvienas PERMISSIONS veiksmas aprašytas docs/standartai.md lentelėje (ir atvirkščiai)
+acts=$(awk '/^const PERMISSIONS = \[/{on=1; next} on && /^\];/{on=0} on' public_html/app/auth.php | grep -oP "^\s+'\K[a-z_]+(?=')")
+for act in $acts; do grep -q "^| \`$act\` |" docs/standartai.md || err "veiksmas '$act' (app/auth.php) neaprašytas docs/standartai.md teisių lentelėje"; done
+for act in $(grep -oP "^\| \`\K[a-z_]+(?=\` \| )" docs/standartai.md); do echo "$acts" | grep -qx "$act" || err "docs/standartai.md: veiksmo '$act' nėra app/auth.php PERMISSIONS"; done
+# C1: kiekvienas POST tikrina CSRF žetoną (csrf_check / csrf_ok); išimtys - tik API su raktu antraštėje (docs/standartai.md, 2 skyrius)
+csrf_free=" public_html/atsiliepimai-api.php public_html/diegimas-api.php public_html/perziura-api.php "
+while IFS= read -r f; do
+  case "$csrf_free" in *" $f "*) continue;; esac
+  grep -qE "csrf_check\(\)|csrf_ok\(" "$f" || err "$f: priima POST, bet netikrina CSRF (csrf_check / csrf_ok)"
+done < <(grep -rlE --include=*.php 'is_post\(\)|REQUEST_METHOD|php://input|\$_POST\[' public_html | grep -v "^public_html/app/")
+
 # C2: kiekvienas nustatymas - registre (public_html/app/settings.php)
 php tests/settings-check.php public_html || err "nustatymas ne registre (app/settings.php)"
 

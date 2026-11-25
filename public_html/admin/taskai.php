@@ -2,7 +2,7 @@
 // XP: skirti XP keliems nariams iš karto, už ką XP skiriama (automatiškai ir treneriui skiriant), reitingas ir paskutiniai skyrimai.
 // XP ir taškai - tas pats: iš sezono XP skaičiuojamas reitingas, iš visų kada nors surinktų - nario lygis.
 require dirname(__DIR__) . '/app/bootstrap.php';
-$me = require_staff();
+$me = require_can('xp');
 
 if (is_post()) {
     csrf_check();
@@ -18,7 +18,7 @@ if (is_post()) {
         $points = (int) post('points');
         $date = post('awarded_on') ?: date('Y-m-d');
         $cat = null;
-        if (post('category_id') === 'new' && is_admin() && post('new_name') !== '') {
+        if (post('category_id') === 'new' && can('xp_settings') && post('new_name') !== '') {
             q('INSERT INTO point_categories (name, points, sort_order) VALUES (?, ?, 100)', [mb_substr(post('new_name'), 0, 120), max(1, $points)]);
             $cat = q_one('SELECT * FROM point_categories WHERE id = ?', [(int) db()->lastInsertId()]);
         } elseif (post('category_id') !== 'new') {
@@ -56,7 +56,7 @@ if (is_post()) {
         exit(json_encode(['ok' => true, 'points' => $pts, 'line' => '✨ +' . $pts . ' ' . t('taškai') . ' · ' . $cat['name'] . (post('note') !== '' ? ' · ' . mb_strimwidth(post('note'), 0, 80, '…') : '')], JSON_UNESCAPED_UNICODE));
     }
 
-    if ($action === 'save_categories' && is_admin()) {
+    if ($action === 'save_categories' && can('xp_settings')) {
         foreach ((array) ($_POST['name'] ?? []) as $id => $name) {
             $name = is_string($name) ? trim($name) : '';
             if ($name === '') {
@@ -74,7 +74,7 @@ if (is_post()) {
         flash('ok', t('Taškų vertės išsaugotos. Jos galioja naujiems skyrimams.'));
     }
 
-    if ($action === 'add_category' && is_admin() && post('new_name') !== '') {
+    if ($action === 'add_category' && can('xp_settings') && post('new_name') !== '') {
         q('INSERT INTO point_categories (name, points, sort_order) VALUES (?, ?, 100)', [post('new_name'), (int) post('new_points')]);
         flash('ok', t('Kategorija pridėta.'));
     }
@@ -124,7 +124,7 @@ page_start(t('Aktyvumo taškai'), ['admin' => true]);
     <label><?= te('Už ką') ?>
       <select name="category_id" id="giveCat">
         <?php foreach ($giveCats as $c): ?><option value="<?= (int) $c['id'] ?>" data-points="<?= (int) $c['points'] ?>"><?= e($c['name']) ?></option><?php endforeach; ?>
-        <?php if (is_admin()): ?><option value="new" data-points="5"><?= te('+ Nauja kategorija…') ?></option><?php endif; ?>
+        <?php if (can('xp_settings')): ?><option value="new" data-points="5"><?= te('+ Nauja kategorija…') ?></option><?php endif; ?>
       </select></label>
     <label class="xp-new" hidden><?= te('Naujos kategorijos pavadinimas') ?> <input type="text" name="new_name" maxlength="120" placeholder="<?= te('pvz. Pagalba renginyje') ?>"></label>
     <label><?= te('Taškų kiekvienam') ?> <input type="number" name="points" id="givePts" min="1" max="1000" value="<?= (int) $giveCats[0]['points'] ?>" required></label>
@@ -175,12 +175,12 @@ page_start(t('Aktyvumo taškai'), ['admin' => true]);
       <?= csrf_field() ?>
       <input type="hidden" name="action" value="save_categories">
       <h2><?= te('Už ką skiriami taškai') ?></h2>
-      <p class="hint"><?= te('Pakeista vertė galioja tik naujiems skyrimams - anksčiau skirti taškai nesikeičia.') ?><?= is_admin() ? '' : (' ' . t('Keisti gali administratorius.')) ?></p>
+      <p class="hint"><?= te('Pakeista vertė galioja tik naujiems skyrimams - anksčiau skirti taškai nesikeičia.') ?><?= can('xp_settings') ? '' : (' ' . t('Keisti gali administratorius.')) ?></p>
       <label class="xp-setting"><?= te('Pirmi 5 lygiai - po') ?>
-        <input type="number" name="xp_level_base" min="1" max="1000" value="<?= xp_level_base() ?>" <?= is_admin() ? '' : 'disabled' ?>> <?= te('taškų') ?>
+        <input type="number" name="xp_level_base" min="1" max="1000" value="<?= xp_level_base() ?>" <?= can('xp_settings') ? '' : 'disabled' ?>> <?= te('taškų') ?>
       </label>
       <label class="xp-setting"><?= te('Kas 5 lygius lygis brangsta') ?>
-        <input type="number" name="xp_level_step" min="0" max="1000" value="<?= xp_level_step() ?>" <?= is_admin() ? '' : 'disabled' ?>> <?= te('taškų') ?>
+        <input type="number" name="xp_level_step" min="0" max="1000" value="<?= xp_level_step() ?>" <?= can('xp_settings') ? '' : 'disabled' ?>> <?= te('taškų') ?>
       </label>
       <p class="hint"><?= te('Lygių kaina dabar: {list} …', ['list' => implode(', ', array_map('xp_level_cost', [1, 6, 11, 16, 21]))]) ?></p>
       <?php foreach ([[t('Skiriama automatiškai'), $autoCats, true], [t('Skiria treneris (✨ Skirti taškus, „+ Taškai“ treniruotėje, nario kortelėje)'), $handCats, false]] as [$title, $list, $isAuto]): ?>
@@ -190,23 +190,23 @@ page_start(t('Aktyvumo taškai'), ['admin' => true]);
           <tbody>
             <?php foreach ($list as $c): ?>
               <tr>
-                <td><input type="text" name="name[<?= (int) $c['id'] ?>]" value="<?= e($c['name']) ?>" <?= is_admin() ? '' : 'disabled' ?>>
+                <td><input type="text" name="name[<?= (int) $c['id'] ?>]" value="<?= e($c['name']) ?>" <?= can('xp_settings') ? '' : 'disabled' ?>>
                   <?php if ($isAuto): ?><div class="hint xp-when"><?= e(t(XP_AUTO_RULES[$c['code']])) ?></div><?php endif; ?></td>
                 <?php if ($c['code'] === 'skill'): ?>
                   <td><input type="hidden" name="points[<?= (int) $c['id'] ?>]" value="0"><a class="small" href="<?= url('admin/programa.php') ?>" title="<?= te('Kiekvienas programos punktas turi savo aktyvumo taškus') ?>"><?= te('prie punkto') ?></a></td>
                 <?php else: ?>
-                  <td><input type="number" name="points[<?= (int) $c['id'] ?>]" value="<?= (int) $c['points'] ?>" <?= is_admin() ? '' : 'disabled' ?>></td>
+                  <td><input type="number" name="points[<?= (int) $c['id'] ?>]" value="<?= (int) $c['points'] ?>" <?= can('xp_settings') ? '' : 'disabled' ?>></td>
                 <?php endif; ?>
-                <td><input type="checkbox" name="active[<?= (int) $c['id'] ?>]" value="1" <?= $c['is_active'] ? 'checked' : '' ?> <?= is_admin() ? '' : 'disabled' ?>></td>
+                <td><input type="checkbox" name="active[<?= (int) $c['id'] ?>]" value="1" <?= $c['is_active'] ? 'checked' : '' ?> <?= can('xp_settings') ? '' : 'disabled' ?>></td>
               </tr>
             <?php endforeach; ?>
           </tbody>
         </table>
       <?php endforeach; ?>
-      <?php if (is_admin()): ?><div><button class="btn btn-primary" type="submit"><?= te('Išsaugoti vertes') ?></button></div><?php endif; ?>
+      <?php if (can('xp_settings')): ?><div><button class="btn btn-primary" type="submit"><?= te('Išsaugoti vertes') ?></button></div><?php endif; ?>
     </form>
 
-    <?php if (is_admin()): ?>
+    <?php if (can('xp_settings')): ?>
       <form method="post" class="panel card form">
         <?= csrf_field() ?>
         <input type="hidden" name="action" value="add_category">

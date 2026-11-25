@@ -5,7 +5,7 @@ function page_start(string $title, array $opt = []): void
 {
     $a = current_account();
     $admin = !empty($opt['admin']);
-    if ($admin && is_staff($a) && !admin_mode() && !headers_sent()) {
+    if ($admin && can('valdymas', $a) && !admin_mode() && !headers_sent()) {
         admin_mode_set(true);   // atidarius valdymo puslapį - admin režimas įsijungia
     }
     $flashes = take_flashes();
@@ -97,7 +97,7 @@ function page_end(): void
 </footer>
 <?= page_widgets() ?>
 <script src="<?= e(asset_url('assets/header.js')) ?>"></script>
-<?php if (!empty($GLOBALS['adm_side']) && is_admin()): /* v2.02: meniu tvarkymas „✎“ */ ?>
+<?php if (!empty($GLOBALS['adm_side']) && can('settings')): /* v2.02: meniu tvarkymas „✎“ */ ?>
 <script src="<?= e(asset_url('assets/admin-menu.js')) ?>" defer></script>
 <?php endif; ?>
 <?php if (($acc = current_account()) && is_active_account($acc) && game_nav_ready()): /* kvietimai žaisti - mažas langelis bet kuriame puslapyje (tik kas mato žaidimą) */ ?>
@@ -316,24 +316,24 @@ function admin_menu_items(): array
         'nariai'     => ['👥', t('Nariai'), 'admin/nariai.php', 0, t('Visi nariai, diržai, kontaktai')],
         'patvirtinimai' => ['✅', t('Patvirtinimai'), 'admin/patvirtinimai.php', pending_approvals_count(), t('Nauji nariai ir „Moku“ punktai')],
     ];
-    if (is_admin()) {
+    if (can('feedback')) {
         $it['atsiliepimai'] = ['💡', t('Atsiliepimai'), 'admin/atsiliepimai.php', feedback_new_count(), t('Pastabos apie svetainę')];
     }
-    if (is_admin() && function_exists('review_ready') && review_ready() && review_enabled()) {   // v2.02: peržiūra - ką taisyti, darbų eilė, auksinės žymos (v2.10: tik įjungus)
+    if (can('review') && function_exists('review_ready') && review_ready() && review_enabled()) {   // v2.02: peržiūra - ką taisyti, darbų eilė, auksinės žymos (v2.10: tik įjungus)
         $it['perziura'] = ['🔎', t('Peržiūra'), 'admin/perziura.php', review_todo_count(), t('Ką taisyti, darbų eilė, auksinės žymos')];
     }
-    if (is_admin() && function_exists('just_ready') && just_ready()) {   // v1.93: pamokų pateisinimai
+    if (can('justifications') && function_exists('just_ready') && just_ready()) {   // v1.93: pamokų pateisinimai
         $it['pateisinimai'] = ['📄', t('Pateisinimai'), 'admin/pateisinimai.php', just_new_count(), t('Prašymai pateisinti praleistas pamokas')];
     }
-    if (is_admin()) {   // #121
+    if (can('broadcast')) {   // #121
         $it['pranesimai'] = ['✉️', t('Pranešimai'), 'admin/pranesimai.php', 0, t('Laiškai ir SMS nariams')];
     }
     $it['xp'] = ['⭐', t('Aktyvumo taškai'), 'admin/taskai.php', 0, t('Taškai, lygiai, reitingas')];
     $it['testai'] = ['❓', t('Testai'), 'admin/testai.php', 0, t('Teorijos testai egzaminams')];
-    if (is_admin()) {   // #160: federacijos registrai - nariai, klubai, teisėjai
+    if (can('ltkf')) {   // #160: federacijos registrai - nariai, klubai, teisėjai
         $it['federacija'] = ['📒', t('Federacijos registrai'), 'admin/federacija.php', 0, t('Nariai, klubai, teisėjai')];
     }
-    if (is_admin() && function_exists('ltkf_url') && ltkf_url() !== '') {   // B9: LTKF svetainė - ir iš Valdymo
+    if (can('ltkf') && function_exists('ltkf_url') && ltkf_url() !== '') {   // B9: LTKF svetainė - ir iš Valdymo
         $it['ltkf'] = ['🏛️', t('LTKF svetainė'), 'ltkf/', 0, t('Federacijos svetainės turinys')];
     }
     $it['nustatymai'] = ['⚙️', t('Nustatymai'), 'admin/nustatymai.php', 0, t('Grupės, tvarkaraštis, vertimai, paskyra')];
@@ -519,7 +519,7 @@ function game_nav_ready(): bool
 {
     require_once APP_DIR . '/game.php';
     // #140 + sprendimas 2026-11-21: kol žaidimas neatidarytas nariams - meniu jį mato tik tikri administratoriai (ne testuotojai, ne nariai)
-    return game_allowed() && (game_public() || is_admin());
+    return can('dojo_menu');
 }
 
 /** Nario paskyros skirtukai */
@@ -530,7 +530,7 @@ function account_nav_items(array $a): array
     $little = $selfBirth !== '' && age_on($selfBirth) <= 10;
     $items = ['apzvalga' => [$little ? t('Mano diena') : t('Apžvalga'), 'paskyra.php', account_attention_count((int) $a['id'])]];
     if ($a['status'] === 'active') {
-        if (!is_staff($a) || account_members((int) $a['id'])) {
+        if (!can('valdymas', $a) || account_members((int) $a['id'])) {
             foreach (account_nav_extra($a) as $key => $item) {
                 $items[$key] = $item;
             }
@@ -538,7 +538,7 @@ function account_nav_items(array $a): array
     }
     $items['nustatymai'] = [t('Nustatymai'), 'paskyra.php?skiltis=nustatymai'];
     // Skirtumai - atskiruose languose: tėvams (vaikai), treneriui / adminui (valdymas)
-    if (is_staff($a)) {
+    if (can('valdymas', $a)) {
         $items['valdymas'] = [t('🛠 Valdymas'), 'admin/', staff_attention_count((int) $a['id'])];
     } elseif (array_filter(account_members((int) $a['id']), function ($m) { return $m['relation'] === 'parent'; })) {
         $items['vaikai'] = [t('👪 Tėvams'), 'paskyra.php?skiltis=nustatymai#vaikai'];
@@ -610,7 +610,7 @@ function site_header(bool $home = false, ?string $area = null, ?string $tab = nu
     $subNav = '';
     $mv = menu_variant();
     $mk = admin_menu_key();
-    if ($a && $area === 'admin' && is_staff($a)) {
+    if ($a && $area === 'admin' && can('valdymas', $a)) {
         // B+C (#106): kompiuteryje - šoninis meniu, telefone ir planšetėje - viena eilutė su „⚙ Daugiau ▾“
         if ($mv === 'eilute' || $mv === 'abu') {
             $keys = ['siandien', 'treniruote', 'egzaminai', 'nariai'];
@@ -626,23 +626,23 @@ function site_header(bool $home = false, ?string $area = null, ?string $tab = nu
         if ($mv === 'sonas' || $mv === 'abu') {
             // v2.02: administratorius „✎“ - tempia skyrius, pervadina, kuria ir trina grupes (admin/meniu.php)
             $GLOBALS['adm_side'] = '<aside class="adm-side' . ($mv === 'abu' ? ' am-wide' : '') . '" aria-label="' . e(t('Valdymas')) . '"'
-                . (is_admin($a) ? ' data-menu-edit="' . e(json_encode(admin_menu_editor_data(), JSON_UNESCAPED_UNICODE)) . '" data-save="' . e(url('admin/meniu.php')) . '" data-csrf="' . e(csrf_token()) . '"' : '') . '>'
+                . (can('settings', $a) ? ' data-menu-edit="' . e(json_encode(admin_menu_editor_data(), JSON_UNESCAPED_UNICODE)) . '" data-save="' . e(url('admin/meniu.php')) . '" data-csrf="' . e(csrf_token()) . '"' : '') . '>'
                 . '<div class="adm-side-top"><a class="adm-side-h" href="' . e(url('admin/')) . '">🛠 ' . e(t('Valdymas')) . '</a>'
-                . (is_admin($a) ? '<button type="button" class="am-edit-btn" id="am-edit" title="' . e(t('Tvarkyti meniu: tempti, pervadinti, grupės')) . '" aria-label="' . e(t('Tvarkyti meniu')) . '">✎</button>' : '') . '</div>'
+                . (can('settings', $a) ? '<button type="button" class="am-edit-btn" id="am-edit" title="' . e(t('Tvarkyti meniu: tempti, pervadinti, grupės')) . '" aria-label="' . e(t('Tvarkyti meniu')) . '">✎</button>' : '') . '</div>'
                 . admin_menu_groups_html($mk, false) . '</aside>';
         }
     } elseif ($a && $area === 'account') {
         $subNav = render_sub_nav(t('Mano paskyra'), account_nav_items($a), (string) $tab);
     }
     ?>
-<?php $pm = $a && is_staff($a) && admin_mode() ? phone_menu_variant() : '';
+<?php $pm = $a && can('valdymas', $a) && admin_mode() ? phone_menu_variant() : '';
 // B8 (sprendimas 6a): nariams, tėvams ir vaikams telefone - apatinė juosta kaip programėlėje (be žaidimų ir testo langų)
-$mt = !$pm && $a && !is_staff($a) && is_active_account($a) && $a['status'] === 'active'
+$mt = !$pm && $a && !can('valdymas', $a) && is_active_account($a) && $a['status'] === 'active'
     && !in_array(basename($_SERVER['SCRIPT_NAME'] ?? ''), ['testas.php', 'testas-svecias.php', 'arena.php', 'keturi.php', 'ritmas.php', 'kova-bandymai.php'], true); ?>
 <header class="site-header<?= $pm ? ' pm-' . $pm : '' ?><?= $mt ? ' pm-nariams' : '' ?>">
   <nav>
-    <a class="logo" href="<?= $home ? '#' : url('index.php') ?>"><img src="<?= url('img/logo.png') ?>" alt="<?= te('Karateka logotipas') ?>"><?php if (config('env') !== 'live'): ?><span class="ver-tag" title="<?= is_staff() ? te('Kas naujo šioje versijoje') : te('Svetainės versija (rodoma tik testuojant)') ?>"<?= is_staff() ? ' role="link" tabindex="0" onclick="event.preventDefault(); event.stopPropagation(); location.href=' . e(json_encode(url('admin/kas-naujo.php'))) . '"' : '' ?>>v<?= e(site_version()) ?><?= config('env') === 'local' ? (' ' . t('· local')) : '' ?></span><?php endif; ?></a>
-    <?php if ($a && is_staff($a)): ?>
+    <a class="logo" href="<?= $home ? '#' : url('index.php') ?>"><img src="<?= url('img/logo.png') ?>" alt="<?= te('Karateka logotipas') ?>"><?php if (config('env') !== 'live'): ?><span class="ver-tag" title="<?= can('valdymas') ? te('Kas naujo šioje versijoje') : te('Svetainės versija (rodoma tik testuojant)') ?>"<?= can('valdymas') ? ' role="link" tabindex="0" onclick="event.preventDefault(); event.stopPropagation(); location.href=' . e(json_encode(url('admin/kas-naujo.php'))) . '"' : '' ?>>v<?= e(site_version()) ?><?= config('env') === 'local' ? (' ' . t('· local')) : '' ?></span><?php endif; ?></a>
+    <?php if ($a && can('valdymas', $a)): ?>
       <!-- Kitos sistemos: Budo varžybos ir LTKF - per logotipo meniu (#91/#92) -->
       <?= site_switch_html('karateka') ?>
     <?php endif; ?>
@@ -667,11 +667,11 @@ $mt = !$pm && $a && !is_staff($a) && is_active_account($a) && $a['status'] === '
           </ul>
         <?php endif; ?>
         <ul class="nav-group nav-pages" aria-label="<?= te('Puslapiai') ?>">
-          <li><a class="nav-page<?= $cur('naujienos') . $cur('renginiai') ?>" href="<?= url('naujienos.php') ?>"><?= te('Naujienos ir renginiai') ?><?php if ($a && !is_staff($a) && ($inv = account_pending_invites((int) $a['id']))): ?> <span class="count-badge" title="<?= te('Treneris kviečia - atsakykite') ?>"><?= $inv ?></span><?php endif; ?></a></li>
+          <li><a class="nav-page<?= $cur('naujienos') . $cur('renginiai') ?>" href="<?= url('naujienos.php') ?>"><?= te('Naujienos ir renginiai') ?><?php if ($a && !can('valdymas', $a) && ($inv = account_pending_invites((int) $a['id']))): ?> <span class="count-badge" title="<?= te('Treneris kviečia - atsakykite') ?>"><?= $inv ?></span><?php endif; ?></a></li>
           <?php if ($a && can_see_lessons($a)): ?>
             <li><a class="nav-page<?= $cur('pamokos') ?>" href="<?= url('pamokos.php') ?>"><?= te('Pamokos') ?></a></li>
           <?php endif; ?>
-          <?php if ($a && is_active_account($a) && game_nav_ready() && is_staff($a)): // B8: nariams Dojo - atskiras mygtukas dešiniame kampe ?>
+          <?php if ($a && is_active_account($a) && game_nav_ready() && can('valdymas', $a)): // B8: nariams Dojo - atskiras mygtukas dešiniame kampe ?>
             <li><a class="nav-page nav-game<?= $cur('zaidimas') ?>" href="<?= url('dojo.php') ?>"><?= te('🏯 Dojo') ?></a></li>
           <?php endif; ?>
         </ul>
@@ -682,8 +682,8 @@ $mt = !$pm && $a && !is_staff($a) && is_active_account($a) && $a['status'] === '
       <!-- Dešinėje: paskyra (ar „Išbandyti“ ir „Prisijungti“) - prisijungus „Išbandyti“ dingsta, meniu nepasislenka -->
       <li class="nav-account">
         <ul>
-          <?php if ($a && !is_staff($a) && ($vs = render_view_switch())): ?><li class="vs-li"><?= $vs ?></li><?php endif; ?>
-          <?php if ($a && is_staff($a) && admin_mode()): ?>
+          <?php if ($a && !can('valdymas', $a) && ($vs = render_view_switch())): ?><li class="vs-li"><?= $vs ?></li><?php endif; ?>
+          <?php if ($a && can('valdymas', $a) && admin_mode()): ?>
             <li><a class="nav-login<?= $area === 'admin' ? ' is-current' : '' ?>" href="<?= url('admin/') ?>"><?= te('Valdymas') ?><?php if ($n = staff_attention_count((int) $a['id'])): ?><span class="count-badge nav-bubble" title="<?= te('Reikia padaryti: pranešimai, patvirtinimai ir kiti darbai') ?>"><?= $n ?></span><?php endif; ?></a></li>
           <?php elseif ($a): ?>
             <li><a class="nav-login<?= $area === 'account' ? ' is-current' : '' ?>" href="<?= url('paskyra.php' . (($am = account_attention_member((int) $a['id'])) ? '?m=' . $am : '')) ?>"><?= te('Mano paskyra') ?><?php if ($att = account_attention_count((int) $a['id'])): ?><span class="count-badge nav-bubble" title="<?= te('Reikia padaryti: užduotys, pastabos, kvietimai') ?>"><?= $att ?></span><?php endif; ?></a></li>
@@ -691,7 +691,7 @@ $mt = !$pm && $a && !is_staff($a) && is_active_account($a) && $a['status'] === '
               <li class="dojo-li"><a class="nav-game nav-dojo<?= $cur('zaidimas') ?>" href="<?= url('dojo.php') ?>" title="<?= te('Tavo personažas, gyvūnėliai, namas ir kovos') ?>"><?= te('🏯 Dojo') ?></a></li>
             <?php endif; ?>
           <?php endif; ?>
-          <?php if ($a && is_staff($a)): ?>
+          <?php if ($a && can('valdymas', $a)): ?>
             <li class="adm-li"><?= admin_mode_toggle() ?></li>
           <?php endif; ?>
           <?php if ($a): ?>
@@ -714,7 +714,7 @@ $mt = !$pm && $a && !is_staff($a) && is_active_account($a) && $a['status'] === '
           <form method="post" action="<?= url('atsijungti.php') ?>" class="inline-form"><?= csrf_field() ?><button type="submit" class="am-row am-logout"><span class="am-ic">🚪</span><span class="am-t"><?= te('Atsijungti') ?></span></button></form></div></details>
     <?php endif; ?>
     <?php if ($mt && game_nav_ready()): ?><a class="m-dojo" href="<?= url('dojo.php') ?>" aria-label="<?= te('🏯 Dojo') ?>"><span aria-hidden="true">🏯</span></a><?php endif; ?>
-    <button class="burger" id="burgerBtn" type="button" aria-label="<?= te('Meniu') ?>"><span></span><span></span><span></span><?php if ($a && (is_staff($a) ? staff_attention_count((int) $a['id']) : account_attention_count((int) $a['id']))): ?><i class="burger-dot"></i><?php endif; ?></button>
+    <button class="burger" id="burgerBtn" type="button" aria-label="<?= te('Meniu') ?>"><span></span><span></span><span></span><?php if ($a && (can('valdymas', $a) ? staff_attention_count((int) $a['id']) : account_attention_count((int) $a['id']))): ?><i class="burger-dot"></i><?php endif; ?></button>
   </nav>
   <?= $subNav ?>
 <?php if ($pm === 'apacia'): $tflat = admin_menu_flat(); $tkeys = ['siandien', 'treniruote', 'egzaminai', 'nariai']; ?>
@@ -946,7 +946,7 @@ function render_account_settings(array $a, string $id = 'nustatymai', string $ti
         </form>
       <?php else: ?>
         <p class="hint"><?= te('Papildoma apsauga: prisijungiant naujame įrenginyje, be slaptažodžio, reikės kodo, kurį atsiųsime el. paštu.') ?>
-          <?= is_staff($a) ? t('Rekomenduojama - jūsų paskyra mato narių duomenis.') : '' ?> <?= te('Pirma atsiųsime kodą, kad įsitikintume, jog laiškai ateina.') ?></p>
+          <?= can('valdymas', $a) ? t('Rekomenduojama - jūsų paskyra mato narių duomenis.') : '' ?> <?= te('Pirma atsiųsime kodą, kad įsitikintume, jog laiškai ateina.') ?></p>
         <form method="post" class="form">
           <?= csrf_field() ?>
           <input type="hidden" name="action" value="tfa_start">

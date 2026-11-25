@@ -2,7 +2,7 @@
 // Kodas kitam įrenginiui (app/device_codes.php): tik tikras administratorius. Kodas parodomas vieną kartą.
 // Čia pat - kurie įrenginiai dabar prisijungę su kodu (atjungti) ir žurnalas.
 require dirname(__DIR__) . '/app/bootstrap.php';
-$me = require_admin();
+$me = require_can('device_codes');
 if (!device_codes_ready()) {
     flash('err', t('Pirmiausia atnaujinkite duomenų bazę (db/047).'));
     redirect('admin/nustatymai.php');

@@ -2,7 +2,7 @@
 // Pamokos treneriui: aplankai aplankuose, pamokos iš blokų (tekstas, video, nuotrauka, pastaba...), tempimas pele
 require dirname(__DIR__) . '/app/bootstrap.php';
 require_once APP_DIR . '/images.php';
-$me = require_staff();
+$me = require_can('training');
 lessons_belt_folders_setup();
 lessons_kata_seed();
 lessons_kata_update();

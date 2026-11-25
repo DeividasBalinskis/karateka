@@ -3,7 +3,7 @@
 require __DIR__ . '/app/bootstrap.php';
 
 $a = require_login();
-if (!is_staff($a) || !is_post()) {
+if (!can('valdymas', $a) || !is_post()) {
     redirect('index.php');
 }
 csrf_check();

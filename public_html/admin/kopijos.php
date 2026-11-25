@@ -2,7 +2,7 @@
 // Atsarginės kopijos ir sistemos būsena (tik adminas): kopijų sąrašas, atsisiuntimas, „Sukurti dabar“,
 // versija, kurie db failai importuoti. Kopijos daromos automatiškai kartą per dieną (app/backup.php).
 require dirname(__DIR__) . '/app/bootstrap.php';
-$me = require_admin();
+$me = require_can('backups');
 
 // Atsisiųsti kopiją
 if (($file = get('atsisiusti')) !== '') {
