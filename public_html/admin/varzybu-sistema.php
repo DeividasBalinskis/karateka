@@ -514,6 +514,7 @@ foreach (take_flashes() as $f): ?>
         <b class="live-clock" id="live-clock" title="Dabar"></b>
         <input type="search" class="sel sched-q" id="sched-q" placeholder="🔍 Rask dalyvį, klubą ar kategoriją" aria-label="Paieška tvarkaraštyje" autocomplete="off">
         <span class="seg area-seg" id="area-seg" role="group" aria-label="Rodomas tatamis" title="Šiame kompiuteryje (planšetėje) rodomas tik pasirinktas tatamis"></span>
+        <button type="button" class="btn btn-primary" id="live-cam" hidden title="Tatamio telefono vaizdas per visą ekraną: kova, balai ir laikas ant vaizdo">📹 Live kova</button>
         <span class="muted small" id="live-legend">Paspauskite rungtį - atsidarys jos valdymas. Tempkite rungtis tarp tatamių.</span>
         <span class="spacer"></span>
         <button class="btn" id="auto-balance" type="button">Paskirstyti tolygiai</button>

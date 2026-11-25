@@ -4,6 +4,13 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v2.00 - 2026-11-25 (📹 Live kova sekretoriatui)
+- **Budo → Tvarkaraštis → „📹 Live kova“** (pasirinkto tatamio): telefono vaizdas per visą ekraną, ant jo - kova, balai su **[+/−]**
+  (viršuje +, apačioje −), laikas ir **▶ / ⏸**; apačioje - „✓ Baigti kovą“, „Laimėjo AKA / SHIRO“, „📋 Kovos skydelis“.
+  Kai kovos nėra - rodoma kita šio tatamio kova ir **„▶ Pradėti kovą“**. Viršuje galima perjungti tatamį, „📋 Tvarkaraštis“ - grįžti.
+- Kovos skydelyje - **„📹 Live“**: ta pati kova Live lange. Mygtukai Live lange spaudžia tuos pačius kovos skydelio mygtukus, todėl balai ir rezultatas tie patys.
+- Duomenų bazė: naujų failų nėra.
+
 ## v1.99 - 2026-11-25 (transliacija be OBS: telefonai → tatamiai → žiūrovai; atsiliepimai #182-#184; dizaino taisymai)
 - **Transliacija be OBS** (Budo → 📡 Transliacija ir registracija → „🎥 Prijungti telefonus →“):
   - Telefonu nuskenuojate QR → telefonas atsiranda „Laukiantys telefonai“ → prie tatamio paspaudžiate telefono pavadinimą →

@@ -4,6 +4,7 @@ Answers given by Deividas on 2026-11-20 (questions from `docs/darbo-planas.md`, 
 
 | Date | Area | Decision | Who decided | Source |
 |---|---|---|---|---|
+| 2026-11-25 | Budo | Secretariat „📹 Live kova“ window per tatami (Deividas): the phone video full screen with the bout, scores [+/−], timer and finish on it; chosen in Tvarkaraštis or from the bout panel („📹 Live“); no bout = next bout of that tatami + „▶ Pradėti kovą“. The buttons press the bout panel's own buttons. | Deividas | chat |
 | 2026-11-25 | Budo | Streaming without OBS (Deividas: „jei be OBS veikia - ištrinti viską su OBS“): phones join by one club QR, are assigned to a tatami on the stream page, then „📹 Pradėti filmuoti“ opens the vdo.ninja camera full screen (an iframe on the phone did not stream) with &meshcast, so many viewers can watch. Viewers: „📹 Žiūrėti gyvai“ per tatami (video only after a tap, score bar on top); secretariat: „📹 Vaizdas“ with ± on the video; stream page: a card per tatami with ± next to the scores (sample bout). All OBS parts removed (bar help, OBS links, „Visi tatamiai“, permanent bar key). Stream ids are hashes, so the viewers' page does not reveal the QR key. | Deividas | chat |
 | 2026-11-25 | Budo | #184: Budo header = soft blue-grey (variant C) always, in every theme. | Deividas | feedback #184 |
 | 2026-11-25 | Budo | #182: a category locks itself when its last result is entered; „🔒 Užrakinta“ unlocks it to fix. | Denis | feedback #182 |

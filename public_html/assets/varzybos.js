@@ -1841,7 +1841,8 @@
   function vpm(side) { return '<span class="bv-pmv"><button type="button" class="bv-pm" data-vpt="' + side + '|1" aria-label="+1">+</button><button type="button" class="bv-pm" data-vpt="' + side + '|-1" aria-label="−1">−</button></span>'; }   // viršuje +, apačioje −
   function syncVid() {
     if (!Object.keys(CAMS).length) return;
-    var show = !!B && vidOn;
+    syncLive();
+    var show = !!B && vidOn && !liveShown();
     document.body.classList.toggle('bout-vid-on', show);
     if (!show) { if (vidEl) vidEl.hidden = true; return; }
     var a = areaOf(cat(B.cat)), src = CAMS[a.id] ? CAMS[a.id] + '&noaudio' : '';   // be garso - salėje nebus aido
@@ -1882,7 +1883,91 @@
     if (B) renderBout(); else syncVid();
   }
 
+  // ---------- 📹 Live kova (v2.00): sekretoriato langas - tatamio telefono vaizdas per visą ekraną; kova, balai [+/−], laikas ir „Baigti“ ant vaizdo ----------
+  // Atidaroma Tvarkaraštyje („📹 Live kova“) arba kovos skydelyje („📹 Live“). Mygtukai ant vaizdo spaudžia tuos pačius kovos skydelio mygtukus,
+  // todėl balai, laikas ir rezultatas - tie patys. Kai kovos nėra - rodoma kita šio tatamio kova ir „▶ Pradėti kovą“.
+  var liveArea = null, liveEl = null;
+  try { liveArea = localStorage.getItem(KEY + '-live') || null; } catch (e) {}
+  function liveShown() { var a = liveArea && areaById(liveArea); return !!(a && CAMS[a.id]); }
+  function setLive(aid) {
+    liveArea = aid ? String(aid) : null;
+    try { if (liveArea) localStorage.setItem(KEY + '-live', liveArea); else localStorage.removeItem(KEY + '-live'); } catch (e) {}
+    syncVid(); syncLive();
+  }
+  function liveNext(a) {
+    var it = areaPlan(a).items.find(function (x) { return x.st === 'now'; }); if (!it) return null;
+    var m = upcoming(it.c).find(function (x) { return x.id && x.a && x.b; });
+    return { c: it.c, m: m || null };
+  }
+  function lvpm(side) { return '<span class="lv-pmv"><button type="button" class="lv-pm" data-vpt="' + side + '|1" aria-label="+1">+</button><button type="button" class="lv-pm" data-vpt="' + side + '|-1" aria-label="−1">−</button></span>'; }
+  function syncLive() {
+    var a = liveArea && areaById(liveArea), show = !!(a && CAMS[a.id]);
+    document.body.classList.toggle('live-on', show);
+    if (!show) { if (liveEl) { liveEl.hidden = true; liveEl.querySelector('iframe').removeAttribute('src'); } return; }
+    if (!liveEl) {
+      liveEl = document.createElement('div'); liveEl.className = 'live-win'; liveEl.id = 'live-win';
+      liveEl.setAttribute('role', 'dialog'); liveEl.setAttribute('aria-label', 'Live kova');
+      liveEl.innerHTML = '<div class="lv-head"><b class="lv-title"></b><span class="lv-areas"></span><span class="spacer"></span>' +
+        '<button type="button" class="btn" data-lv="close">📋 Tvarkaraštis</button></div>' +
+        '<div class="lv-stage"><iframe title="Telefono vaizdas" allow="autoplay; fullscreen" allowfullscreen></iframe><div class="lv-bar"></div></div>' +
+        '<div class="lv-foot"></div>';
+      document.body.appendChild(liveEl);
+      liveEl.addEventListener('click', function (e) {
+        var p = e.target.closest('[data-vpt]');
+        if (p) { var t = boutEl.querySelector('[data-pt="' + p.dataset.vpt + '"]'); if (t) t.click(); return; }
+        var b = e.target.closest('[data-lv]'); if (!b) return;
+        var act = b.dataset.lv;
+        if (act === 'close') { setLive(null); return; }
+        if (act === 'area') { setLive(b.dataset.area); return; }
+        if (act === 'open') { var q = b.dataset.open.split('|'); openBout(q[0], q[1]); return; }
+        if (act === 'run') { setLive(null); goRun(b.dataset.cat); return; }
+        if (act === 'panel') { setLive(null); return; }
+        var map = { start: '#bt-start', finish: '#bt-finish', wina: '[data-win="a"]', winb: '[data-win="b"]' }, t2 = map[act] && boutEl.querySelector(map[act]);
+        if (t2) t2.click();
+      });
+    }
+    liveEl.querySelector('.lv-title').textContent = '📹 ' + a.name + ' · Live kova';
+    var ar = S.areas.filter(function (x) { return CAMS[x.id]; });
+    var areasHtml = ar.length > 1 ? ar.map(function (x) { return '<button type="button" class="seg-btn' + (String(x.id) === String(a.id) ? ' on' : '') + '" data-lv="area" data-area="' + x.id + '">' + esc(x.name) + '</button>'; }).join('') : '';
+    var ah = liveEl.querySelector('.lv-areas'); if (ah.dataset.h !== areasHtml) { ah.dataset.h = areasHtml; ah.innerHTML = areasHtml; }
+    var fr = liveEl.querySelector('iframe'), src = CAMS[a.id] + '&noaudio';
+    if ((fr.getAttribute('src') || '') !== src) fr.setAttribute('src', src);
+    var inBout = !!B && String(areaOf(cat(B.cat)).id) === String(a.id), bar = '', foot = '';
+    if (inBout) {
+      var c = cat(B.cat), can = !!boutEl.querySelector('[data-pt="a|1"]') && !!boutEl.querySelector('[data-pt="a|-1"]');
+      bar = '<div class="lv-cat">' + esc(c.name) + ' · ' + esc(B.title) + '</div><div class="lv-row">' +
+        '<span class="lv-n aka">' + esc(pubName(B.a)) + '</span>' + (can ? lvpm('a') : '') + '<b class="lv-s aka">' + esc(B.sa) + '</b>' +
+        '<span class="lv-t" data-lv-timer></span>' +
+        '<b class="lv-s shiro">' + esc(B.sb) + '</b>' + (can ? lvpm('b') : '') + '<span class="lv-n shiro">' + esc(pubName(B.b)) + '</span></div>';
+      foot = '<button type="button" class="btn btn-primary lv-big" data-lv="start" data-lv-start></button>' +
+        (boutEl.querySelector('#bt-finish') ? '<button type="button" class="btn lv-big" data-lv="finish">✓ Baigti kovą</button>' : '') +
+        (boutEl.querySelector('[data-win="a"]') ? '<button type="button" class="btn" data-lv="wina">Laimėjo AKA</button><button type="button" class="btn" data-lv="winb">Laimėjo SHIRO</button>' : '') +
+        '<span class="spacer"></span><button type="button" class="btn" data-lv="panel" title="Kovos skydelis: laikas, šablonai, įspėjimai">📋 Kovos skydelis</button>';
+    } else {
+      var nx = liveNext(a);
+      bar = '<div class="lv-cat">' + esc(a.name) + (nx ? ' · ' + esc(nx.c.name) : '') + '</div>' +
+        (nx && nx.m ? '<div class="lv-row lv-next"><span class="lv-n aka">' + esc(pubName(nx.m.a)) + '</span><span class="lv-vs">vs</span><span class="lv-n shiro">' + esc(pubName(nx.m.b)) + '</span></div>'
+          : '<div class="lv-row lv-next"><span class="lv-n">' + (nx ? 'Kitą kovą pradėkite grupės lange.' : 'Šio tatamio grupės baigtos.') + '</span></div>');
+      foot = nx && nx.m ? '<button type="button" class="btn btn-primary lv-big" data-lv="open" data-open="' + esc(nx.c.id) + '|' + esc(nx.m.id) + '">▶ Pradėti kovą</button>'
+        : nx ? '<button type="button" class="btn lv-big" data-lv="run" data-cat="' + esc(nx.c.id) + '">Atidaryti grupę</button>' : '';
+    }
+    var bl = liveEl.querySelector('.lv-bar'), fl = liveEl.querySelector('.lv-foot');
+    if (bl.dataset.h !== bar) { bl.dataset.h = bar; bl.innerHTML = bar; }
+    if (fl.dataset.h !== foot) { fl.dataset.h = foot; fl.innerHTML = foot; }
+    liveTick();
+    liveEl.hidden = false;
+  }
+  // Laikas ir ▶/⏸ - kaip kovos skydelyje (perrašoma kas tiksėjimą)
+  function liveTick() {
+    if (!liveEl || liveEl.hidden) return;
+    var lt = liveEl.querySelector('[data-lv-timer]'), bt = boutEl.querySelector('#bt-timer');
+    if (lt && bt) { lt.textContent = bt.textContent; lt.className = 'lv-t ' + bt.className.replace('bt-timer', ''); }
+    var ls = liveEl.querySelector('[data-lv-start]'), bs = boutEl.querySelector('#bt-start');
+    if (ls && bs) ls.textContent = bs.textContent;
+  }
+
   function openBout(catId, mid) {
+
     var c = cat(catId), m = findMatch(c, mid); if (!m || !m.a || !m.b) return;
     var mode = boutMode(c, m), f = cfg(c), saved = (c.draw.bouts || {})[mid] || {};
     SL = null; slKey = '';
@@ -1992,6 +2077,7 @@
     el.textContent = fmtTime(left, B.timer.up);
     el.className = 'bt-timer' + (B.timer.up ? ' up' : left <= 0 ? ' over' : left <= 15000 ? ' last' : '') + (B.timer.running ? ' running' : '');
     var tb = document.getElementById('bt-start'); if (tb) tb.textContent = B.timer.running ? '⏸ Sustabdyti' : '▶ Pradėti';
+    liveTick();
   }
   function sideHtml(side) {
     var c = cat(B.cat), id = side === 'a' ? B.a : B.b, p = person(c, id) || {}, sc = side === 'a' ? B.sa : B.sb, mode = B.mode;
@@ -2040,7 +2126,8 @@
     if (!B) return;
     var c = cat(B.cat), area = areaOf(c), body, mode = B.mode, f = cfg(c);
     var head = '<div class="bout-top"><div class="bout-info"><span class="disc d-' + c.discipline + '"></span><b>' + esc(c.name) + '</b><span>' + (B.no ? B.no + ' · ' : '') + esc(B.title) + '</span><span class="pill sys">' + MODE_NAME[mode] + '</span><span class="pill">' + esc(area.name) + '</span></div>' +
-      '<span class="spacer"></span>' + (Object.keys(CAMS).length ? '<button type="button" class="btn' + (vidOn ? ' on' : '') + '" id="bt-vid" aria-pressed="' + vidOn + '" title="Telefono vaizdas šalia balų (🎥 Transliacija)">📹<span class="bt-lbl"> Vaizdas</span></button>' : '') +
+      '<span class="spacer"></span>' + (CAMS[area.id] ? '<button type="button" class="btn" id="bt-live" title="Live kova: telefono vaizdas per visą ekraną, balai ant vaizdo">📹<span class="bt-lbl"> Live</span></button>' : '') +
+      (Object.keys(CAMS).length ? '<button type="button" class="btn' + (vidOn ? ' on' : '') + '" id="bt-vid" aria-pressed="' + vidOn + '" title="Telefono vaizdas šalia balų (🎥 Transliacija)">📹<span class="bt-lbl"> Vaizdas</span></button>' : '') +
       (CFG.screenUrl ? '<button type="button" class="btn" id="bt-screen" title="Atidaryti ekrano langą šiam tatamiui (antram monitoriui ar televizoriui)" aria-label="Ekranas">📺<span class="bt-lbl"> Ekranas</span></button>' : '') +
       '<button type="button" class="btn" id="bt-close" aria-label="Uždaryti">✕<span class="bt-lbl"> Uždaryti</span></button></div>';
     if (mode === 'score2') {
@@ -2109,6 +2196,7 @@
     if (t.id === 'bt-close') { keepBout(); closeBout(); return; }
     if (t.id === 'bt-screen') { window.open(CFG.screenUrl + '&tatami=' + areaOf(c).id, 'taika-ekranas-' + areaOf(c).id); return; }
     if (t.id === 'bt-vid') { setVid(!vidOn); return; }
+    if (t.id === 'bt-live') { setLive(areaOf(c).id); return; }
     if (t.id === 'bt-start') { toggleTimer(); return; }
     if (t.id === 'bt-timer') { editTimer(); return; }
     if (t.id === 'bt-reset') { if (B.timer.running) toggleTimer(); setTime(B.timer.total); return; }
@@ -2317,6 +2405,13 @@
   }
   ['area-seg', 'area-pick'].forEach(function (id) {
     document.getElementById(id).addEventListener('click', function (e) { var b = e.target.closest('[data-my-area]'); if (b) setMyArea(b.dataset.myArea); });
+  });
+  // 📹 Live kova (v2.00): pasirinkto tatamio (arba pirmo su telefonu) vaizdas per visą ekraną
+  var liveCamBtn = document.getElementById('live-cam');
+  if (liveCamBtn) liveCamBtn.addEventListener('click', function () {
+    var a = areaById(myArea);
+    if (!a || !CAMS[a.id]) a = S.areas.find(function (x) { return CAMS[x.id]; });
+    if (a) setLive(a.id);
   });
 
   // ---------- Sekanti grupė: pirma nebaigta po šios tame pačiame tatamyje ----------
@@ -2611,6 +2706,9 @@
   });
 
   function renderLive() {
+    var lc = document.getElementById('live-cam');
+    if (lc) lc.hidden = !Object.keys(CAMS).length;
+    syncLive();
     var c = runOpen ? cat(S.selected) : null;
     if (runOpen && !c) setRun(false);
     document.getElementById('live-board').hidden = !!c;

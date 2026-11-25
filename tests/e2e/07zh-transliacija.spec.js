@@ -110,3 +110,36 @@ test('Budo streaming with phones only: one QR, assign to a tatami, ± on the vid
   sql('DELETE FROM stream_phones');
   noJsErrors(a, m, v);
 });
+
+test('Live kova: the secretariat watches the tatami video full screen and scores on it', async ({ browser }) => {
+  const a = await login(browser, 'info@karateka.lt', 1440, 900);
+  await a.route('https://vdo.ninja/**', blank);
+  await a.goto('admin/varzybos.php');
+  await nav(a, () => a.click('text=🎲 Sukurti test varžybas'));
+  const tid = +sql('SELECT MAX(id) FROM tournaments');
+  await a.goto(`admin/varzybu-sistema.php?id=${tid}`);
+  await a.waitForSelector('#live-cam:not([hidden])');
+  await a.click('#live-cam');
+  await a.waitForSelector('#live-win:not([hidden])');
+  check('Live window with the tatami video', /view=kt[a-f0-9]{20}/.test(await a.getAttribute('#live-win iframe', 'src')) && /Live kova/.test(await a.textContent('#live-win .lv-title')));
+  // Kova pradedama iš Live lango, balai - ant vaizdo (viršuje +, apačioje −)
+  const start = a.locator('#live-win [data-lv="open"]');
+  if (await start.count()) {
+    await start.click();
+    await a.waitForSelector('#live-win .lv-pmv');
+    await a.click('#live-win [data-vpt="a|1"]');
+    await a.click('#live-win [data-vpt="a|1"]');
+    await a.click('#live-win [data-vpt="b|1"]');
+    check('scores on the video change the bout', (await a.inputValue('#bout [data-sc="a"]')) === '2' && (await a.inputValue('#bout [data-sc="b"]')) === '1');
+    check('scores shown on the video', (await a.textContent('#live-win .lv-s.aka')) === '2' && (await a.textContent('#live-win .lv-s.shiro')) === '1');
+    await a.click('#live-win [data-lv="start"]'); await a.waitForTimeout(1200);
+    check('timer runs from the video', /Sustabdyti/.test(await a.textContent('#live-win [data-lv="start"]')));
+    await a.click('#live-win [data-lv="start"]');
+  } else {
+    check('next bout or group button shown', await a.locator('#live-win [data-lv="run"]').count() === 1);
+  }
+  await a.click('#live-win [data-lv="close"]');
+  check('back to the schedule', await a.locator('#live-win').isHidden());
+  sql(`DELETE FROM tournaments WHERE id = ${tid}`);
+  noJsErrors(a);
+});
