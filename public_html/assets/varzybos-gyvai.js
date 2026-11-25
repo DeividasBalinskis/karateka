@@ -290,10 +290,11 @@
       var sa = test ? (+raw.sa || 0) : 0, sb = test ? (+raw.sb || 0) : 0;
       html = '<div class="gv-ovl gv-bar has-ctl">' +
         (test ? '<span class="ov-cat">🧪 Pavyzdinė kova</span>' : '<span class="ov-cat"><span>' + esc(barName()) + '</span> · <span>paspauskite ± - pavyzdinė kova</span></span>') +
-        '<span class="ov-n aka">' + esc(test ? raw.aka.name : 'AKA') + '</span>' + pm('a', -1) + '<b class="ov-s aka">' + sa + '</b>' + pm('a', 1) +
-        '<span class="ov-t">1:30</span>' +
-        pm('b', -1) + '<b class="ov-s shiro">' + sb + '</b>' + pm('b', 1) + '<span class="ov-n shiro">' + esc(test ? raw.shiro.name : 'SHIRO') + '</span>' +
-        (test ? '<button type="button" class="ov-end" data-end="1" title="Baigti pavyzdinę kovą" aria-label="Baigti pavyzdinę kovą">✕</button>' : '') + '</div>';
+        // vardai - vienoje eilutėje, žemiau: − balai +   laikas   − balai + (kortelės siauros)
+        '<span class="ov-row"><span class="ov-n aka">' + esc(test ? raw.aka.name : 'AKA') + '</span><span class="ov-n shiro">' + esc(test ? raw.shiro.name : 'SHIRO') + '</span></span>' +
+        '<span class="ov-row ov-sc">' + pm('a', -1) + '<b class="ov-s aka">' + sa + '</b>' + pm('a', 1) + '<span class="ov-t">1:30</span>' +
+        pm('b', -1) + '<b class="ov-s shiro">' + sb + '</b>' + pm('b', 1) +
+        (test ? '<button type="button" class="ov-end" data-end="1" title="Baigti pavyzdinę kovą" aria-label="Baigti pavyzdinę kovą">✕</button>' : '') + '</span></div>';
     } else {
       html = live || ('<span class="ov-cat">' + esc((data && data.title) || CFG.title) + '</span><span class="ov-n">' + esc(barName()) + '</span>');
       html = '<div class="gv-ovl gv-bar' + (live ? '' : ' idle') + '">' + html + '</div>';

@@ -1532,15 +1532,16 @@ body.gv-bar-body { margin: 0; background: transparent !important; font-family: '
 .gv-ovl .ov-pm { width: 4.4vw; height: 4.4vw; min-width: 30px; min-height: 30px; padding: 0; border: 0; border-radius: 1vw; background: rgba(255, 255, 255, .18); color: #fff;
   font: 800 3vw/1 'Inter', system-ui, sans-serif; cursor: pointer; display: inline-grid; place-items: center; }
 .gv-ovl .ov-pm:hover { background: rgba(255, 255, 255, .32); }
-.gv-ovl .ov-end { border: 0; background: rgba(255, 255, 255, .12); color: #fff; border-radius: 8px; padding: 4px 8px; font: 700 .8em/1 'Inter', system-ui, sans-serif; cursor: pointer; }
+/* ± juostoje: dvi eilutės - vardai, po jais − balai + laikas − balai + (✕ - baigti pavyzdinę kovą) */
+.gv-ovl.gv-bar.has-ctl .ov-row { flex: 1 1 100%; display: flex; align-items: center; justify-content: space-between; gap: .6vw 1vw; min-width: 0; }
+.gv-ovl.gv-bar.has-ctl .ov-sc { justify-content: center; }
+.gv-ovl.gv-bar.has-ctl .ov-sc .ov-t { margin: 0 1.2vw; }
+.gv-ovl.gv-bar.has-ctl .ov-n { flex: 1 1 0; }
+.gv-ovl .ov-end { margin-left: 1vw; border: 0; background: rgba(255, 255, 255, .12); color: #fff; border-radius: 8px; padding: 4px 8px; font: 700 .8em/1 'Inter', system-ui, sans-serif; cursor: pointer; }
 @media (max-width: 600px) {
   .gv-ovl.gv-bar { font-size: 15px; gap: 4px 8px; padding: 8px 10px; border-radius: 10px; }
   .gv-ovl.gv-bar .ov-s { font-size: 22px; } .gv-ovl.gv-bar .ov-t { font-size: 14px; } .gv-ovl.gv-bar .ov-cat { font-size: 11px; }
   .gv-ovl .ov-pm { font-size: 18px; border-radius: 8px; }
-  /* siaurai: vardai eilutėje virš, apačioje - − balai + laikas − balai + */
-  .gv-ovl.gv-bar.has-ctl { justify-content: center; }
-  .gv-ovl.gv-bar.has-ctl .ov-cat { order: -2; }
-  .gv-ovl.gv-bar.has-ctl .ov-n { order: -1; flex: 1 1 40%; }
 }
 /* v1.99: žiūrovams - telefono vaizdas įjungiamas paspaudus „▶ Žiūrėti gyvai“ */
 .gv-vid-frame.gv-cam { background: #0B0D12; }
