@@ -1,0 +1,167 @@
+# C5: vaizdo palyginimas - ar CSS tvarkymas nieko nepakeitė. Bazinė versija (main, iš kurio atsišakota) ir ši šaka:
+#   1) tests/visual nuotraukos (375 / 768 / 1440, Valdymas ir Budo dar 1280 / 2560) - griežtai, 0 pikselių leidžiama
+#      (bazė nufotografuojama du kartus - stulpelis „triukšmas“ rodo, kiek skiriasi be jokių pakeitimų);
+#   2) apskaičiuoti stiliai kiekvienam elementui, kurį liečia pakeistas CSS (22 pločiai, atidaryti meniu, tamsi tema);
+#   3) tests/visual.sh palyginimas (įprastas, su HTML ataskaita).
+# Skirtumai - Actions → šis paleidimas → Summary ir priedas „vaizdo-skirtumai“.
+name: Vaizdo palyginimas
+
+on:
+  push:
+    branches-ignore: [main]
+    paths:
+      - 'public_html/**.css'
+      - 'tests/visual/**'
+      - '.github/workflows/visual.yml'
+  workflow_dispatch:
+    inputs:
+      ref_base:
+        description: 'Su kuo lyginti (šaka arba commit); tuščia - vieta, kur ši šaka atsišakojo nuo main'
+        required: false
+        default: ''
+      css:
+        description: 'CSS failai stilių palyginimui (tarpais, pvz. public_html/assets/app.css); tuščia - pakeisti .css failai'
+        required: false
+        default: ''
+
+concurrency:
+  group: vaizdas-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  compare:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 75
+    services:
+      mariadb:
+        image: mariadb:10.11
+        env:
+          MARIADB_ROOT_PASSWORD: root
+          TZ: Europe/Vilnius
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=5s --health-timeout=5s --health-retries=24
+    env:
+      DB_HOST: 127.0.0.1
+      DB_USER: root
+      DB_PASS: root
+      DB_NAME: karateka
+      TZ: Europe/Vilnius
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Bazinė versija ir tikrinami CSS failai
+        env:
+          REF_BASE: ${{ github.event.inputs.ref_base }}
+          CSS_IN: ${{ github.event.inputs.css }}
+        run: |
+          git fetch -q origin main
+          if [ -n "$REF_BASE" ]; then
+            BASE=$(git rev-parse -q --verify "origin/$REF_BASE^{commit}" || git rev-parse --verify "$REF_BASE^{commit}")
+          else
+            BASE=$(git merge-base HEAD origin/main)
+          fi
+          git worktree add -q /tmp/base "$BASE"
+          CSS="${CSS_IN:-$(git diff --name-only "$BASE" HEAD -- '*.css' | tr '\n' ' ')}"
+          [ -n "${CSS// }" ] || CSS=public_html/assets/header.css
+          LIST=""
+          for f in $CSS; do
+            [ -f "/tmp/base/$f" ] && LIST="$LIST,/tmp/base/$f"
+            [ -f "$f" ] && LIST="$LIST,$PWD/$f"
+          done
+          echo "STYLE_CSS=${LIST#,}" >> "$GITHUB_ENV"
+          echo "### Bazė: \`$(git log -1 --format='%h %s' "$BASE")\` · šaka: \`$(git log -1 --format='%h %s' HEAD)\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "Tikrinami CSS: \`$CSS\`" >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: pdo_mysql, mbstring, gd, zlib
+          coverage: none
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: tests/package-lock.json
+
+      - name: Greitos patikros
+        run: bash tests/checks.sh
+
+      - name: Konfigūracija ir testų duomenų bazė (bendra abiem versijoms)
+        run: |
+          cp tests/setup/config.ci.php public_html/config.php
+          cp tests/setup/config.ci.php /tmp/base/public_html/config.php
+          bash tests/setup/reset-db.sh
+          mkdir -p /tmp/base/public_html/uploads
+          cp -a public_html/uploads/. /tmp/base/public_html/uploads/
+
+      - name: Playwright
+        working-directory: tests
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+
+      - name: Bazinė versija - stiliai ir nuotraukos
+        working-directory: tests
+        run: |
+          php -S 127.0.0.1:8088 -t /tmp/base/public_html > /tmp/php-A.log 2>&1 & echo $! > /tmp/php.pid
+          sleep 1; curl -fsS -o /dev/null http://127.0.0.1:8088/
+          # Stiliai - pirmi: jų pirmas testas sukuria testines paskyras (Peržiūra → Tėvai), tada visos nuotraukos mato tuos pačius duomenis
+          STYLE_OUT=/tmp/styles-A npx playwright test -c visual/styles.config.js || echo "::warning::baziniai stiliai - ne visi"
+          bash visual.sh update || echo "::warning::bazinės nuotraukos - ne visos"
+          cp -a visual/__baseline__ /tmp/shots-A
+          # Triukšmo matas: ta pati bazinė versija dar kartą (kiek skiriasi be jokių pakeitimų)
+          rm -rf visual/__baseline__
+          bash visual.sh update || echo "::warning::bazinės nuotraukos (2) - ne visos"
+          cp -a visual/__baseline__ /tmp/shots-A2
+          kill "$(cat /tmp/php.pid)"; sleep 1
+
+      - name: Ši šaka - nuotraukos ir stiliai
+        working-directory: tests
+        run: |
+          php -S 127.0.0.1:8088 -t ../public_html > /tmp/php-B.log 2>&1 & echo $! > /tmp/php.pid
+          sleep 1; curl -fsS -o /dev/null http://127.0.0.1:8088/
+          rm -rf visual/__baseline__
+          bash visual.sh update || echo "::warning::šakos nuotraukos - ne visos"
+          cp -a visual/__baseline__ /tmp/shots-B
+          STYLE_OUT=/tmp/styles-B npx playwright test -c visual/styles.config.js || echo "::warning::šakos stiliai - ne visi"
+
+      - name: tests/visual.sh palyginimas (įprastas)
+        working-directory: tests
+        continue-on-error: true
+        run: |
+          rm -rf visual/__baseline__ && cp -a /tmp/shots-A visual/__baseline__
+          bash visual.sh
+
+      - name: Griežtas palyginimas (0 px, stiliai)
+        id: strict
+        continue-on-error: true
+        run: |
+          mkdir -p /tmp/cmp && (cd /tmp/cmp && npm init -y > /dev/null && npm i -s pngjs@7.0.0 pixelmatch@5.3.0)
+          rc=0
+          NODE_PATH=/tmp/cmp/node_modules node tests/visual/compare.js /tmp/shots-A /tmp/shots-B /tmp/styles-A /tmp/styles-B /tmp/skirtumai /tmp/shots-A2 || rc=$?
+          [ -f /tmp/skirtumai/santrauka.md ] && cat /tmp/skirtumai/santrauka.md >> "$GITHUB_STEP_SUMMARY"
+          exit $rc
+
+      - name: Skirtumai (priedas)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vaizdo-skirtumai
+          path: |
+            /tmp/skirtumai
+            tests/visual-report
+            /tmp/php-A.log
+            /tmp/php-B.log
+          retention-days: 7
+
+      - name: Rezultatas
+        if: steps.strict.outcome != 'success'
+        run: |
+          echo "Yra skirtumų - žr. Summary ir priedą „vaizdo-skirtumai“"
+          exit 1

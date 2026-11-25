@@ -6,26 +6,7 @@ const { test, expect } = require('@playwright/test');
 const { login } = require('../e2e/helpers');
 // Kiekvienas testas - savo langas (helpers.login uždaro ankstesnius)
 
-const PAGES = [
-  // [pavadinimas, adresas, kas prisijungęs (null - svečias), ar Valdymas / Budo (papildomi pločiai)]
-  ['pagrindinis', 'index.php', null],
-  ['tvarkarastis', 'tvarkarastis.php', null],
-  ['kontaktai', 'kontaktai.php', null],
-  ['prisijungti', 'prisijungti.php', null],
-  ['naujienos', 'naujienos.php', null],
-  ['privatumas', 'privatumas.php', null],
-  ['paskyra-tevai', 'paskyra.php', 'tevai@karateka.test'],
-  ['paskyra-narys', 'paskyra.php', 'narys@karateka.test'],
-  ['valdymas', 'admin/', 'info@karateka.lt', true],
-  ['valdymas-nariai', 'admin/nariai.php', 'info@karateka.lt', true],
-  ['valdymas-nustatymai', 'admin/nustatymai.php', 'info@karateka.lt', true],
-  ['egzaminai', 'admin/egzaminai.php', 'info@karateka.lt', true],
-  ['budo', 'admin/varzybos.php', 'info@karateka.lt', true],
-  ['ltkf', 'ltkf/index.php', null],
-  ['ltkf-klubai', 'ltkf/klubai.php', null],
-];
-const WIDTHS = [375, 768, 1440];
-const WIDE = [1280, 2560];
+const { PAGES, WIDTHS, WIDE } = require('./pages');   // sąrašas - pages.js (tas pats ir styles.spec.js)
 
 for (const [name, url, who, wide] of PAGES) {
   for (const w of WIDTHS.concat(wide ? WIDE : [])) {
@@ -34,11 +15,18 @@ for (const [name, url, who, wide] of PAGES) {
       await p.goto(url);
       await p.waitForLoadState('networkidle').catch(() => {});
       await p.addStyleTag({ content: '*,*::before,*::after{animation:none!important;transition:none!important;caret-color:transparent!important}' });
+      // C5: be atsitiktinių skirtumų - visi paveikslėliai įkelti (ir „lazy“ apačioje), šriftai paruošti
+      await p.evaluate(() => {
+        document.querySelectorAll('img[loading="lazy"]').forEach(i => { i.loading = 'eager'; });
+        const imgs = [...document.images].map(i => (i.complete ? i.decode().catch(() => {}) : new Promise(r => { i.addEventListener('load', r); i.addEventListener('error', r); })));
+        return Promise.race([Promise.all(imgs.concat(document.fonts.ready)), new Promise(r => setTimeout(r, 8000))]);
+      });
       await expect(p).toHaveScreenshot(`${name}-${w}.png`, {
         fullPage: true,
         maxDiffPixelRatio: 0.002,
         timeout: 15000,
-        mask: [p.locator('.ver-tag, time, .count-badge, .ntf-pill, #chatFab, .chat-hint')],
+        // .leaflet-container - LTKF žemėlapis (plytelės iš interneto, kraunasi kiekvieną kartą kitaip)
+        mask: [p.locator('.ver-tag, time, .count-badge, .ntf-pill, #chatFab, .chat-hint, .leaflet-container')],
       });
     });
   }
