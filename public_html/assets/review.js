@@ -94,7 +94,7 @@
       h.box.style.display = ''; h.ctl.style.display = '';
       h.box.style.left = (r.left + sx - 4) + 'px'; h.box.style.top = (r.top + sy - 4) + 'px';
       h.box.style.width = (r.width + 8) + 'px'; h.box.style.height = (r.height + 8) + 'px';
-      // Mygtukai - virš auksinio rėmelio dešinėje (neuždengia elemento); jei užliptų ant kito - žemiau jo
+      // Mygtukai - virš auksinio rėmelio dešinėje (neuždengia elemento); jei užliptų ant kito - šalia jo kairėje, jei netelpa - aukščiau
       var w = h.ctl.offsetWidth || 80, ht = h.ctl.offsetHeight || 36;
       var right = Math.min(r.right + sx + 4, sx + vw - 6);
       if (right - w < sx + 6) right = sx + 6 + w;
@@ -104,7 +104,10 @@
         moved = false;
         for (var i = 0; i < placed.length; i++) {
           var p = placed[i];
-          if (right - w < p.r && right > p.l && top < p.b && top + ht > p.t) { top = p.b + 4; moved = true; }
+          if (right - w < p.r && right > p.l && top < p.b && top + ht > p.t) {
+            if (p.l - 6 - w >= sx + 6) right = p.l - 6; else top = p.t - ht - 4;
+            moved = true;
+          }
         }
       }
       placed.push({ l: right - w, r: right, t: top, b: top + ht });

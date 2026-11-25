@@ -4184,4 +4184,5 @@ Nuo 2013 m. treniravosi Tradicinio karate-do klubo „Sanrei“ komandoje, o 201
     'Laikyti tikrą testą' => 'Сдать настоящий тест',
     'Atsakyta {n} iš {total}' => 'Отвечено {n} из {total}',
     'Neatsakyta į {n} klaus. Vis tiek baigti?' => 'Без ответа: {n} вопр. Всё равно завершить?',
+    'Tempkite už ⠿ į kitą vietą ar grupę (arba ↑ ↓). Pavadinimus galima keisti.' => 'Перетаскивайте за ⠿ в другое место или группу (или ↑ ↓). Названия можно менять.',
 ];

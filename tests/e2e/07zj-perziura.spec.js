@@ -20,8 +20,10 @@ test('Peržiūra: queue fixes, gold marks with ✓/✗ and comments, submit, ele
   await a.fill('textarea[name="note_all"]', 'E2E bendras');
   check('selected count updates', /1/.test(await a.textContent('#rvp-n')));
   await nav(a, () => a.click('#rvp-run'));
-  const job = JSON.parse(sql("SELECT JSON_OBJECT('kind', kind, 'status', status, 'items', items, 'note', note) FROM review_jobs ORDER BY id DESC LIMIT 1"));
-  check('fix job queued with the item and comments', job.kind === 'fix' && job.status === 'queued' && JSON.parse(job.items)[0].id === fid && JSON.parse(job.items)[0].note === 'Padidinti iki 44 px' && job.note === 'E2E bendras', JSON.stringify(job));
+  // (mysql -N išvestyje „\“ dvigubinami - JSON skaitomas atskirai, ne JSON_OBJECT)
+  const [jk, js, jn] = sql("SELECT kind, status, note FROM review_jobs ORDER BY id DESC LIMIT 1").split(String.fromCharCode(9));
+  const ji = JSON.parse(sql('SELECT items FROM review_jobs ORDER BY id DESC LIMIT 1'));
+  check('fix job queued with the item and comments', jk === 'fix' && js === 'queued' && ji[0].id === fid && ji[0].note === 'Padidinti iki 44 px' && jn === 'E2E bendras', [jk, js, jn, JSON.stringify(ji)].join(' | '));
   check('item shows it is queued', /eilėje #/.test(await a.textContent(`#f${fid}`)));
 
   // Agento API: mato darbą su atsiliepimo tekstu, pažymi „daroma“ ir „padaryta“ su atsakymu
@@ -66,9 +68,9 @@ test('Peržiūra: queue fixes, gold marks with ✓/✗ and comments, submit, ele
 
   // Pateikti → darbas „review“ agentui; juosta - „pateikta“
   await a.click('#pzr-submit'); await a.waitForTimeout(600);
-  const rj = JSON.parse(sql("SELECT JSON_OBJECT('kind', kind, 'items', items) FROM review_jobs ORDER BY id DESC LIMIT 1"));
-  const ri = JSON.parse(rj.items);
-  check('review job with marks and comments', rj.kind === 'review' && ri.find(x => x.id === 'meniu-grupes').mark === 'bad' && ri.find(x => x.id === 'meniu-grupes').comment === 'Per siauras meniu' && ri.find(x => x.id === 'meniu-tvarkyti').mark === 'good', rj.items);
+  const rk = sql('SELECT kind FROM review_jobs ORDER BY id DESC LIMIT 1');
+  const ri = JSON.parse(sql('SELECT items FROM review_jobs ORDER BY id DESC LIMIT 1'));
+  check('review job with marks and comments', rk === 'review' && ri.find(x => x.id === 'meniu-grupes').mark === 'bad' && ri.find(x => x.id === 'meniu-grupes').comment === 'Per siauras meniu' && ri.find(x => x.id === 'meniu-tvarkyti').mark === 'good', JSON.stringify(ri));
   check('bar shows submitted', await a.locator('#pzr-submit.is-sent').count() === 1);
   await a.reload();
   await a.waitForSelector('#pzr-submit');

@@ -66,15 +66,14 @@ body.pzr-picking, body.pzr-picking *{cursor:crosshair !important;}
 .pzr-toast.is-warn{background:#2B2112; color:#FFE7B0;}
 body.live-on .pzr-bar, body.live-on .pzr-box, body.live-on .pzr-ctl, body.live-on .pzr-list{display:none !important;}
 @media (max-width:900px){
-  /* kairėje apačioje - 💡; juosta - dešinėje, kad neuždengtų */
-  .pzr-bar{left:auto; right:10px; transform:none; max-width:calc(100vw - 84px);}
+  /* kairėje apačioje - 💡, dešinėje - 💬 Žinutės: juosta per vidurį tarp jų */
+  .pzr-bar{max-width:calc(100vw - 340px);}
   .pzr-bar .pzr-n{display:none;}
-  .pzr-list{left:auto; right:10px; transform:none;}
 }
-@media (max-width:560px){
-  .pzr-bar{bottom:10px; gap:4px; padding:5px;}
+@media (max-width:640px){
+  .pzr-bar{bottom:10px; gap:3px; padding:5px; max-width:calc(100vw - 140px);}
+  .pzr-bar button{padding:9px 8px;}
   .pzr-bar .pzr-t{display:none;}
-  .pzr-bar button{padding:9px 10px;}
   .pzr-ctl .pzr-lbl{display:none;}
   .pzr-list{bottom:62px;}
 }

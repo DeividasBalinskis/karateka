@@ -8,6 +8,10 @@ const groupsOf = (p) => p.$$eval('.adm-side .am-group', gs => gs.map(g => ({ id:
 test('Valdymas menu: new groups, admin rearranges, renames, adds and deletes groups, resets', async ({ browser }) => {
   sql("DELETE FROM site_settings WHERE name = 'admin_menu'");
   const a = await login(browser, 'info@karateka.lt', 1440, 900);
+  // Peržiūros auksinės žymos (v2.02) šiame teste nereikalingos - paslepiamos, kad neuždengtų mygtukų
+  await a.addInitScript(() => document.addEventListener('DOMContentLoaded', () => {
+    const s = document.createElement('style'); s.textContent = '.pzr-ctl,.pzr-bar,.pzr-box{display:none !important}'; document.head.appendChild(s);
+  }));
   await a.goto('admin/');
   let g = await groupsOf(a);
   check('default groups: Kasdien, Darbai, Nustatymai', g.map(x => x.id).join() === 'kasdien,darbai,nustatymai', JSON.stringify(g));
@@ -18,12 +22,12 @@ test('Valdymas menu: new groups, admin rearranges, renames, adds and deletes gro
   // ✎ → tempti „Aktyvumo taškai“ į Darbai, pervadinti grupę ir skyrių, nauja grupė su „Testai“
   await a.click('#am-edit');
   await a.waitForSelector('.am-ed');
-  await a.locator('.am-ei[data-k="xp"]').dragTo(a.locator('.am-eg[data-id="darbai"] .am-ei').first(), { targetPosition: { x: 12, y: 3 } });
+  await a.locator('.am-ei[data-k="xp"] .am-handle').dragTo(a.locator('.am-eg[data-id="darbai"] .am-ei').first(), { targetPosition: { x: 12, y: 3 } });
   await a.fill('.am-eg[data-id="darbai"] .am-gin', 'Mano darbai');
   await a.fill('.am-ei[data-k="testai"] .am-in', 'Teorija');
   await a.click('.am-add');
   await a.fill('.am-eg:last-child .am-gin', 'Retai');
-  await a.locator('.am-ei[data-k="testai"]').dragTo(a.locator('.am-eg:last-child .am-el'));
+  await a.locator('.am-ei[data-k="testai"] .am-handle').dragTo(a.locator('.am-eg:last-child .am-el'));
   await Promise.all([a.waitForNavigation(), a.click('#am-save')]);
   g = await groupsOf(a);
   check('item dragged to another group', g[1].items[0] === 'xp', JSON.stringify(g[1]));

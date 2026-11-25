@@ -4,6 +4,12 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v2.05 - 2026-11-25 (meniu tempimas už ⠿; žymų mygtukai neuždengia ✎)
+- **✎ Meniu tvarkymas**: skyrius tempiamas už **⠿** (ar ikonos), pavadinimo laukelyje - rašoma. Rankenėlė didesnė, patarimas aiškesnis.
+- Auksinių žymų mygtukai, kai jų keli šalia, išsidėsto vienas šalia kito ir neuždengia mygtukų (pvz. ✎).
+- Telefone ir planšetėje peržiūros juosta - per vidurį tarp 💡 ir 💬, nieko neuždengia.
+- Duomenų bazė: naujų failų nėra.
+
 ## v2.04 - 2026-11-25 (auksinių žymų juosta ir mygtukai)
 - Peržiūros juosta apačioje buvo suspausta (jos pavadinimas sutapo su testų peržiūros stiliumi) - dabar visas dydis.
 - □ / 💬 mygtukai - virš auksinio rėmelio dešinėje, nebeuždengia elemento ir vienas kito.

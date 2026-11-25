@@ -61,7 +61,7 @@ switch ((string) ($in['action'] ?? '')) {
         $sel = mb_substr(trim((string) ($in['selector'] ?? '')), 0, 300);
         $site = isset(FEEDBACK_SITES[$in['site'] ?? '']) ? (string) $in['site'] : 'karateka';
         $ctx = json_encode(['pick' => true, 'selector' => $sel, 'text' => mb_substr((string) ($in['text'] ?? ''), 0, 160),
-                            'url' => mb_substr((string) ($in['url'] ?? ''), 0, 400), 'w' => (int) ($in['w'] ?? 0)], JSON_UNESCAPED_UNICODE);
+                            'url' => mb_substr((string) ($in['url'] ?? ''), 0, 400), 'w' => (int) ($in['w'] ?? 0)], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         $r = feedback_add($a, $comment, mb_substr((string) ($in['page'] ?? ''), 0, 255), '', $site, $ctx);
         if (!is_int($r)) {
             $fail((string) $r);

@@ -30,8 +30,13 @@
     var inp = el('input', 'am-in');
     inp.type = 'text'; inp.maxLength = 30; inp.value = it.name || it.def; inp.placeholder = it.def;
     inp.setAttribute('aria-label', T.iname || 'Name');
+    // Tempiama už ⠿ ar ikonos (pavadinimo laukelyje - rašoma, žymimas tekstas)
+    r.draggable = false;
+    Array.prototype.forEach.call(r.querySelectorAll('.am-handle, .am-ic'), function (g) {
+      g.addEventListener('mousedown', function () { r.draggable = true; });
+    });
     inp.addEventListener('mousedown', function () { r.draggable = false; });
-    inp.addEventListener('blur', function () { r.draggable = true; });
+    r.addEventListener('mouseup', function () { if (!dragEl) r.draggable = false; });
     r.appendChild(inp);
     r.appendChild(small('↑', T.up || '↑', function () { move(r, -1); }));
     r.appendChild(small('↓', T.down || '↓', function () { move(r, 1); }));
@@ -39,7 +44,7 @@
       dragEl = r; r.classList.add('am-drag');
       try { e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', it.k); } catch (x) {}
     });
-    r.addEventListener('dragend', function () { r.classList.remove('am-drag'); dragEl = null; marks(); });
+    r.addEventListener('dragend', function () { r.classList.remove('am-drag'); r.draggable = false; dragEl = null; marks(); });
     return r;
   }
 

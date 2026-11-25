@@ -4184,4 +4184,5 @@ From 2013 he trained with the team of the traditional karate-do club "Sanrei", a
     'Laikyti tikrą testą' => 'Take the real test',
     'Atsakyta {n} iš {total}' => 'Answered {n} of {total}',
     'Neatsakyta į {n} klaus. Vis tiek baigti?' => '{n} questions not answered. Finish anyway?',
+    'Tempkite už ⠿ į kitą vietą ar grupę (arba ↑ ↓). Pavadinimus galima keisti.' => 'Drag by ⠿ to another place or group (or ↑ ↓). Names can be changed.',
 ];

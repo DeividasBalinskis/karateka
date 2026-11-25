@@ -426,7 +426,7 @@ function admin_menu_editor_data(): array
         $groups[] = $row;
     }
     return ['groups' => $groups, 'custom' => $lay['custom'], 't' => [
-        'title' => t('Meniu tvarkymas'), 'hint' => t('Tempkite skyrius į kitą vietą ar grupę. Pavadinimus galima keisti.'),
+        'title' => t('Meniu tvarkymas'), 'hint' => t('Tempkite už ⠿ į kitą vietą ar grupę (arba ↑ ↓). Pavadinimus galima keisti.'),
         'add' => t('+ Nauja grupė'), 'newg' => t('Nauja grupė'), 'del' => t('Ištrinti grupę'), 'save' => t('Išsaugoti'), 'cancel' => t('Atšaukti'),
         'reset' => t('Numatytas meniu'), 'resetq' => t('Grąžinti numatytą meniu? Jūsų grupės ir pavadinimai bus pamiršti.'),
         'delq' => t('Ištrinti grupę? Jos skyriai pereis į pirmą grupę.'), 'empty' => t('Tempkite skyrių čia'), 'err' => t('Nepavyko išsaugoti. Atnaujinkite puslapį ir bandykite dar kartą.'),

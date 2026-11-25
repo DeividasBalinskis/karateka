@@ -282,7 +282,9 @@ html{scrollbar-gutter:stable;}
 .am-ei{display:flex; align-items:center; gap:4px; padding:2px 4px; border-radius:8px; background:#fff; border:1px solid rgba(23,20,15,.07); cursor:grab;}
 .am-ei.am-drag{opacity:.45; outline:2px dashed #8A4FC9;}
 .am-ei .am-ic{width:20px; text-align:center; font-size:15px;}
-.am-handle{color:#B5AD9E; font-size:13px; cursor:grab; user-select:none;}
+.am-handle{color:#8A8273; font-size:15px; cursor:grab; user-select:none; padding:6px 4px; margin:-2px 0; border-radius:6px;}
+.am-handle:hover{background:rgba(110,74,134,.1); color:#6E4A86;}
+.am-ei .am-ic{cursor:grab;}
 .am-eb{border:0; background:transparent; color:#8A8273; font-size:12px; line-height:1; padding:5px 4px; border-radius:6px; cursor:pointer;}
 .am-eb:hover:not(:disabled){background:rgba(23,20,15,.07); color:#17140F;}
 .am-eb:disabled{opacity:.3; cursor:default;}
