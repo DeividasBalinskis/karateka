@@ -120,6 +120,10 @@ if ($practice) {
       <script>
       (function () {
         var data = <?= json_encode($data, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP) ?>, i = 0, ok = 0, kid = <?= $kid ? 'true' : 'false' ?>, chosen = null;
+        var T = <?= json_encode(['okKid' => t('🎉 Teisingai!'), 'ok' => t('✓ Teisingai.'), 'badKid' => t('🙂 Ne visai. Teisingas atsakymas pažymėtas žaliai.'),
+          'bad' => t('✕ Neteisingai. Teisingas atsakymas pažymėtas žaliai.'), 'next' => t('Toliau →'), 'end' => t('Baigti'), 'score' => t('Teisingai {ok} iš {n}.'),
+          'passKid' => t('🎉 Puiku! Gali laikyti tikrą testą.'), 'pass' => t('Pakaktų testui išlaikyti.'), 'fail' => t('Testui reikia bent {p} %. Pabandyk dar kartą.', ['p' => (int) $quiz['pass_percent']]),
+          'again' => t('Iš naujo'), 'real' => t('Laikyti tikrą testą')], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP) ?>;
         var $ = function (id) { return document.getElementById(id); };
         function show() {
           var q = data[i];
@@ -151,20 +155,21 @@ if ($practice) {
           if (an.ok) { ok++; } else { btn.classList.add('wrong'); }
           $('pOk').textContent = ok;
           var fb = $('pFeedback');
-          fb.textContent = (an.ok ? (kid ? '🎉 Teisingai!' : '✓ Teisingai.') : (kid ? '🙂 Ne visai. Teisingas atsakymas pažymėtas žaliai.' : '✕ Neteisingai. Teisingas atsakymas pažymėtas žaliai.'))
+          fb.textContent = (an.ok ? (kid ? T.okKid : T.ok) : (kid ? T.badKid : T.bad))
             + (q.explanation ? ' ' + q.explanation : '');
           fb.className = 'q-feedback ' + (an.ok ? 'ok' : 'bad'); fb.hidden = false;
           $('pNext').hidden = false;
-          $('pNext').textContent = i + 1 < data.length ? 'Toliau →' : 'Baigti';
+          $('pNext').textContent = i + 1 < data.length ? T.next : T.end;
         }
         $('pNext').addEventListener('click', function () {
           i++;
           if (i < data.length) { show(); return; }
           var pct = Math.round(100 * ok / data.length);
-          $('practice').innerHTML = '<div class="result-big">' + pct + ' %</div><p class="result-msg">Teisingai ' + ok + ' iš ' + data.length + '. '
-            + (pct >= <?= (int) $quiz['pass_percent'] ?> ? (kid ? '🎉 Puiku! Gali laikyti tikrą testą.' : 'Pakaktų testui išlaikyti.') : 'Testui reikia bent <?= (int) $quiz['pass_percent'] ?> %. Pabandyk dar kartą.') + '</p>'
-            + '<div class="row" style="gap:8px; justify-content:center;"><a class="btn btn-ghost" href="">Iš naujo</a>'
-            <?php if ($member): ?> + '<a class="btn btn-primary" href="<?= e(url('testas.php?q=' . (int) $quiz['id'] . '&m=' . $mid)) ?>">Laikyti tikrą testą</a>'<?php endif; ?> + '</div>';
+          var esc = function (x) { var d = document.createElement('div'); d.textContent = x; return d.innerHTML; };
+          $('practice').innerHTML = '<div class="result-big">' + pct + ' %</div><p class="result-msg">' + esc(T.score.replace('{ok}', ok).replace('{n}', data.length)) + ' '
+            + esc(pct >= <?= (int) $quiz['pass_percent'] ?> ? (kid ? T.passKid : T.pass) : T.fail) + '</p>'
+            + '<div class="row" style="gap:8px; justify-content:center;"><a class="btn btn-ghost" href="">' + esc(T.again) + '</a>'
+            <?php if ($member): ?> + '<a class="btn btn-primary" href="<?= e(url('testas.php?q=' . (int) $quiz['id'] . '&m=' . $mid)) ?>">' + esc(T.real) + '</a>'<?php endif; ?> + '</div>';
         });
         show();
       })();
@@ -253,7 +258,8 @@ page_start((t('Testas:') . ' ') . $quiz['title'], ['noindex' => true, 'narrow' =
 <script>
 (function () {
   var f = document.getElementById('quizForm'), total = <?= count($ids) ?>, key = 'quiz-attempt-<?= (int) $att['id'] ?>';
-  function upd() { document.getElementById('answered').textContent = 'Atsakyta ' + f.querySelectorAll('input[type=radio]:checked').length + ' iš ' + total; }
+  var T = <?= json_encode(['done' => t('Atsakyta {n} iš {total}'), 'left' => t('Neatsakyta į {n} klaus. Vis tiek baigti?')], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP) ?>;
+  function upd() { document.getElementById('answered').textContent = T.done.replace('{n}', f.querySelectorAll('input[type=radio]:checked').length).replace('{total}', total); }
   // Pažymėti atsakymai saugomi naršyklėje - netyčia perkrovus puslapį jie nedingsta
   try {
     var saved = JSON.parse(localStorage.getItem(key) || '{}');
@@ -266,7 +272,7 @@ page_start((t('Testas:') . ' ') . $quiz['title'], ['noindex' => true, 'narrow' =
   upd();
   f.addEventListener('submit', function (e) {
     var left = total - f.querySelectorAll('input[type=radio]:checked').length;
-    if (left > 0 && !confirm('Neatsakyta į ' + left + ' klaus. Vis tiek baigti?')) { e.preventDefault(); return; }
+    if (left > 0 && !confirm(T.left.replace('{n}', left))) { e.preventDefault(); return; }
     try { localStorage.removeItem(key); } catch (err) {}
   });
   // Laikmatis: baigus laiką testas išsiunčiamas automatiškai (be klausimo)

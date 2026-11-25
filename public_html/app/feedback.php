@@ -497,7 +497,7 @@ function feedback_widget_html(?string $site = null): string
     $cfg = ['api' => url('atsiliepimas.php'), 'csrf' => csrf_token(), 'site' => $site, 'page' => $remote ? '' : feedback_current_page(), 'guest' => !$a,
             'admin' => is_admin($a) ? url('admin/atsiliepimai.php') : '', 'images' => feedback_images_ready(), 'questions' => feedback_questions_count($a)];
     $staff = $a && is_staff($a);
-    return '<div class="fb" id="fb" data-cfg="' . e(json_encode($cfg, JSON_UNESCAPED_UNICODE)) . '">'
+    return $rv . '<div class="fb" id="fb" data-cfg="' . e(json_encode($cfg, JSON_UNESCAPED_UNICODE)) . '">'
         . '<button type="button" class="fb-fab" id="fbFab" aria-expanded="false" aria-controls="fbPanel" title="' . e(t('Palikite komentarą ar ekrano nuotrauką - pataisysime')) . '">' . $icon
         . '<span class="fb-fab-label">' . te('Atsiliepimas') . '</span><span class="fb-fab-n" hidden></span></button>'
         . '<div class="fb-panel" id="fbPanel" role="dialog" aria-labelledby="fbTitle" hidden>'

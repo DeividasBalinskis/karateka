@@ -4,6 +4,11 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v2.03 - 2026-11-25 (auksinės žymos matosi; testo tekstai EN/RU)
+- **Auksinės žymos test svetainėje** dabar matosi (v2.02 jos buvo paruoštos, bet nepridėtos šalia 💡 mygtuko).
+- **Testas** (teorijos testai): pratybų ir tikro testo tekstai („Teisingai!“, „Toliau →“, „Atsakyta 3 iš 10“, „Neatsakyta į … klaus.“ ir kt.) - ir angliškai, ir rusiškai.
+- Duomenų bazė: naujų failų nėra.
+
 ## v2.02 - 2026-11-25 (🛠 Valdymo meniu tvarkymas ir 🔎 Peržiūra su auksinėmis žymomis)
 - **Valdymo meniu - naujos grupės**: **Kasdien** (Šiandien, Treniruotė, Egzaminai, Renginiai, Nariai), **Darbai** (Patvirtinimai, Atsiliepimai,
   🔎 Peržiūra, Pateisinimai, Pranešimai), **Nustatymai** (Aktyvumo taškai, Testai, Federacijos registrai, LTKF svetainė, Nustatymai).
