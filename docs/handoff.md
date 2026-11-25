@@ -121,7 +121,11 @@ Updated: 2026-11-25 · version v2.02 · main
   + copy links per tatami (renderSekrDesk). The one-column „only my tatami“ board is gone (shownAreas = all). CSS `--vz-head` = sticky header height (setHeadVar).
   Tests: new 07zk-sekretoriato-darbastalis; 06i (desk instead of one column) and 06k („✎ Keisti“) updated - not run (no node/php here).
   Local check without PHP: scratchpad harness (make.py renders the template + generated test competition, serve.py) at 1440 / 1024 / 375, dark theme, secretariat mode.
-  Another session works in the same folder at the same time (review system: layout.php, header.css, app/review.php, db/060, 07zi-meniu) - its files were not committed here.
+  Another session works in the same folder at the same time (review system: layout.php, header.css, app/review.php, db/060, 07zi-meniu).
+  Mistake: commit aab1a85 („v2.01: Budo header at tablet width…“) also took that session's files, which were staged (git add) in the shared index at that moment -
+  the whole review system + Valdymas menu v2.02 (VERSION 2.02, db/060_perziura.sql, layout.php, header.css, review.*, perziura*.php, 07zi/07zj tests). Content unchanged,
+  only the commit message is wrong; it is on main and on test (deploy run 45609232401 OK, guest pages 200, db/060 runs when an admin opens a page). Not reverted
+  (a revert would delete that session's files from the shared folder; no force push). Lesson: in a shared folder commit with `git commit -m … -- <paths>` (only those paths).
 - 2026-11-25 (PC, not committed) exam protocol time: each protocol = its own `events.start_time` (no new db file).
   `admin/egzamino-protokolas.php`: „Pradžios laikas“ input #protTime in the header (saved at once: `?save=1` field `start_time`, staff, HH:MM or empty; print shows #protTimePrint).
   `admin/egzaminai.php`: copy_exam form has `start_time` (prefilled with that protocol's time; posted value wins, missing field = copy), list sorted by time within a day.
