@@ -1,5 +1,5 @@
 # Handoff
-Updated: 2026-11-25 · version v2.06 · main
+Updated: 2026-11-25 · version v2.07 · main
 
 ## Pending asks (answer these first)
 | Asked | By | What | Status |
@@ -160,6 +160,9 @@ Updated: 2026-11-25 · version v2.06 · main
   db/060 applied by itself on the first admin page, Peržiūra page, gold marks, bar.
   Gotcha: two sessions in one folder share one git index - `git add` + another session's `git commit` took my files into its commit (aab1a85).
   Always `git commit -- <paths>`.
+- 2026-11-25 v2.07: Budo stream bar ± / ✕ were not clickable (`.gv-ovl` has pointer-events:none - now auto on `.ov-pm`, `.ov-end`);
+  viewers' JSON gets `cams` (tatamis with a phone that are not yet in the saved summary, from state) - renderVideos adds them.
+  Test 07zh fixed (the loop reopened a finished bout: „▶“ is shown on finished bouts too → `.match:not(.is-done) .bout-open`). 07zh ✓ in CI (both tests).
 
 ## Open
 - C1 permissions, C3 secret links, C5 CSS cleanup (safe now with tests/visual.sh), C6 engine unit tests, D3 split varzybos.js, D4 same group on two tablets, D5 Budo live polish, D7 arena left hand UI, D8 pixel characters (PC + LibreSprite).

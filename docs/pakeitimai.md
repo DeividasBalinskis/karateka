@@ -4,6 +4,12 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v2.07 - 2026-11-25 (transliacija: ± juostoje spaudžiami; „Žiūrėti gyvai“ ir naujose varžybose)
+- **Budo → 🎥 Transliacija**: ± ir ✕ juostoje ant tatamio vaizdo vėl spaudžiami (juosta virš vaizdo paspaudimų nepriėmė).
+- **Žiūrovams** „📹 Žiūrėti gyvai“ rodomas ir naujose varžybose, kurių santrauka dar neišsaugota (kai tatamiui priskirtas telefonas).
+- Testai: transliacijos testas (07zh) dabar praeina GitHub'e - ir ±, ir #182 (rungtis užsirakina pati).
+- Duomenų bazė: naujų failų nėra.
+
 ## v2.06 - 2026-11-25 (meniu tvarkymas - visas aukštis)
 - **✎ Meniu tvarkymas**: kol tvarkoma, šoninis meniu rodomas visu aukščiu (be slinkties), todėl skyrių galima nutempti ir į apatinę, naujai sukurtą grupę.
 - Duomenų bazė: naujų failų nėra.
