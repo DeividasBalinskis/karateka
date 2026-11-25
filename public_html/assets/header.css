@@ -267,6 +267,7 @@ html{scrollbar-gutter:stable;}
 .am-edit-btn{border:0; background:transparent; color:#8A8273; font-size:15px; line-height:1; padding:6px 8px; border-radius:8px; cursor:pointer;}
 .am-edit-btn:hover, .am-edit-btn[aria-pressed="true"]{background:rgba(110,74,134,.12); color:#6E4A86;}
 .adm-shell:has(.am-editing){grid-template-columns:300px minmax(0, 1fr);}
+.adm-shell .adm-side.am-editing{position:relative; top:auto; max-height:none; overflow:visible;}
 .adm-side.am-editing > .am-group{display:none;}
 .am-ed{display:grid; gap:10px;}
 .am-ed-t{font-weight:800; font-size:14px; padding:0 4px;}

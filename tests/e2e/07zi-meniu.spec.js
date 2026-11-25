@@ -7,7 +7,7 @@ const groupsOf = (p) => p.$$eval('.adm-side .am-group', gs => gs.map(g => ({ id:
 
 test('Valdymas menu: new groups, admin rearranges, renames, adds and deletes groups, resets', async ({ browser }) => {
   sql("DELETE FROM site_settings WHERE name = 'admin_menu'");
-  const a = await login(browser, 'info@karateka.lt', 1440, 900);
+  const a = await login(browser, 'info@karateka.lt', 1440, 1400);
   // Peržiūros auksinės žymos (v2.02) šiame teste nereikalingos - paslepiamos, kad neuždengtų mygtukų
   await a.addInitScript(() => document.addEventListener('DOMContentLoaded', () => {
     const s = document.createElement('style'); s.textContent = '.pzr-ctl,.pzr-bar,.pzr-box{display:none !important}'; document.head.appendChild(s);
