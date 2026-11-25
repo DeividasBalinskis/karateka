@@ -3,7 +3,7 @@
 // viršuje, „✓ Apdovanota“ - nukeliama žemyn, sistemoje „Užbaigta ir apdovanota“; katos balai: 75 → 7.5, katos sąrašas, finalas = pusfinalis + finalas;
 // kumite laiko šablonai; kategorijų rikiavimas didėjančia / mažėjančia; ekranas telefone nešokinėja į viršų.
 const { test } = require('@playwright/test');
-const { sql, login, check, noJsErrors, openFeedback } = require('./helpers');
+const { sql, linkToken, login, check, noJsErrors, openFeedback } = require('./helpers');
 
 test('my tatami, next group, send to awards, awards tablet finishes the age group', async ({ browser }) => {
   const a = await login(browser, 'info@karateka.lt', 1400, 1000);
@@ -53,17 +53,20 @@ test('my tatami, next group, send to awards, awards tablet finishes the age grou
   check('results: award queue lists the finished group', await a.locator(`#award-view [data-award-done="${catId}"]`).count() === 1);
 
   // Apdovanojimų planšetė: baigta rungtis viršuje → „✓ Apdovanota“ → nukeliama į „Jau apdovanota“
-  const token = sql(`SELECT awards_token FROM tournaments WHERE id = ${tid}`);
+  const token = linkToken('awards', tid);
   const p = await browser.newPage({ viewport: { width: 900, height: 1100 } });
   const errs = []; p.on('pageerror', e => errs.push(e.message));
   await p.goto(`varzybos-apdovanojimai.php?k=${token}`);
+  // C3: planšetė gali keisti - pirmiausia vardas (jis įrašomas prie apdovanotų grupių)
+  await p.fill('#apd-name input[name=name]', 'Rūta');
+  await Promise.all([p.waitForNavigation(), p.click('#apd-name button[type=submit]')]);
   await p.waitForSelector('.apd-sum');
   const card = p.locator('.apd-c.ready', { has: p.locator(`[data-done="${catId}"]`) });
   check('finished group ready with podium', await card.count() === 1 && await card.locator('.apd-places li').count() >= 1);
   await p.click(`.apd-c.ready [data-done="${catId}"]`);
   await p.waitForSelector('.apd-donebox');
   await p.waitForTimeout(800);
-  check('awarded stored', sql(`SELECT status FROM tournament_awards WHERE tournament_id = ${tid} AND cat_id = '${catId}'`) === 'done');
+  check('awarded stored with the name', sql(`SELECT CONCAT(status, '|', IFNULL(by_name, '')) FROM tournament_awards WHERE tournament_id = ${tid} AND cat_id = '${catId}'`) === 'done|Rūta');
   check('moved down to awarded', await p.locator(`.apd-c.ready [data-done="${catId}"]`).count() === 0 && await p.locator(`.apd-donebox [data-undo="${catId}"]`).count() === 1);
   check('no tablet js errors', !errs.length, errs.join('; '));
 
@@ -72,7 +75,7 @@ test('my tatami, next group, send to awards, awards tablet finishes the age grou
   await a.click('#tab-live');
   if (await a.locator('#run').isVisible()) await a.click('#run-back');
   check('board shows awarded', /Užbaigta ir apdovanota/.test(await a.textContent('#sched')));
-  const share = sql(`SELECT share_token FROM tournaments WHERE id = ${tid}`);
+  const share = linkToken('live', tid);
   const pub = await (await p.request.get(`varzybos-gyvai.php?k=${share}&json=1`)).json();
   check('public sees awarded', pub.areas.some(ar => ar.cats.some(c => c.id === catId && c.aw === 'done')));
   await p.close();
@@ -159,7 +162,7 @@ test('tatami screen on a phone does not jump to the top', async ({ browser }) =>
   await a.goto(`admin/varzybu-sistema.php?id=${tid}`);
   await a.click('#tab-live');
   await a.waitForTimeout(1500);   // santrauka išsaugoma serveryje
-  const share = sql(`SELECT share_token FROM tournaments WHERE id = ${tid}`);
+  const share = linkToken('live', tid);
   const p = await browser.newPage({ viewport: { width: 390, height: 760 } });
   await p.goto(`varzybos-gyvai.php?k=${share}&ekranas=1&tatami=1`);
   await p.waitForSelector('.scr-stage');
@@ -181,9 +184,9 @@ test('Taika test link: no account, only demo competitions, no real members, can 
   const a = await login(browser, 'info@karateka.lt', 1300, 900);
   await a.goto('admin/varzybos.php');
   await a.evaluate(() => { document.getElementById('bandymas').open = true; });
-  await Promise.all([a.waitForNavigation(), a.click('#bandymas button[value="demo_on"]')]);
+  await Promise.all([a.waitForNavigation(), a.click('#bandymas [data-lk="new"], #bandymas [data-lk="renew"]')]);
   const link = await a.locator('#bandymas .sp-url').inputValue();
-  check('test link created', /varzybos-bandymas\.php\?k=[a-f0-9]{24}$/.test(link), link);
+  check('test link created', /varzybos-bandymas\.php\?k=[a-f0-9]{64}$/.test(link), link);
 
   const ctx = await browser.newContext({ viewport: { width: 1300, height: 900 } });
   const g = await ctx.newPage();
@@ -216,7 +219,7 @@ test('Taika test link: no account, only demo competitions, no real members, can 
 
   // Išjungus nuorodą - prieiga baigiasi
   await a.goto('admin/varzybos.php');
-  await Promise.all([a.waitForNavigation(), a.click('#bandymas button[value="demo_off"]')]);
+  await Promise.all([a.waitForNavigation(), a.click('#bandymas [data-lk="off"]')]);
   await g.goto('admin/varzybos.php');
   check('access ends when link off', /prisijungti/.test(g.url()));
   await ctx.close();

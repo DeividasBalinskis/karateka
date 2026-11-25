@@ -75,7 +75,7 @@ if (get('telefonai')) {
     }, $list)], JSON_UNESCAPED_UNICODE));
 }
 
-$join = abs_url('varzybos-kamera.php?c=' . $key);
+$join = abs_url('varzybos-kamera.php?k=' . $key);   // C3: ?k= (senas ?c= veikia)
 $share = tournament_token($t, 'share');
 $viewers = abs_url('varzybos-gyvai.php?k=' . $share);
 $back = url('admin/varzybu-sistema.php?id=' . (int) $t['id']);

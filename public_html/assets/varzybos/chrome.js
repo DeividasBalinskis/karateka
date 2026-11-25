@@ -149,7 +149,7 @@ function loadHistory() {
   fetch(CFG.historyApi, { credentials: 'same-origin', headers: { Accept: 'application/json' } }).then(function (r) { return r.json(); }).then(function (d) {
     histList = (d.list || []).map(function (x) { x.ago = agoText(x.at, d.now); x.min = Math.round((new Date(d.now.replace(' ', 'T')) - new Date(x.at.replace(' ', 'T'))) / 60000); return x; });
     box.innerHTML = histList.length ? '<table class="hist-table"><tbody>' + histList.map(function (x) {
-      return '<tr><td><b>' + x.at.slice(11, 16) + '</b> <span class="muted small">' + esc(x.ago) + '</span></td><td class="small">' + x.cats + ' kat., baigta ' + x.done + (x.note ? ' · <i>' + esc(x.note) + '</i>' : '') + '</td>' +
+      return '<tr><td><b>' + x.at.slice(11, 16) + '</b> <span class="muted small">' + esc(x.ago) + '</span></td><td class="small">' + x.cats + ' kat., baigta ' + x.done + (x.note ? ' · <i>' + esc(x.note) + '</i>' : '') + (x.by ? ' · <span class="hist-by" title="Kas išsaugojo">👤 ' + esc(x.by) + '</span>' : '') + '</td>' +
         '<td><button type="button" class="btn btn-xs" data-hist-id="' + x.id + '">Atkurti</button></td></tr>';
     }).join('') + '</tbody></table>' : '<p class="muted small">Kopijų dar nėra - jos atsiranda, kai kas nors pakeičiama.</p>';
   }).catch(function () { box.innerHTML = '<p class="muted small">Nepavyko įkelti istorijos.</p>'; });

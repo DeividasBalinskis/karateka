@@ -32,10 +32,39 @@ function ltkf_json_setting(string $name): array
     return is_array($v) ? $v : [];
 }
 
-/** Redaktoriai su nuorodomis [['t' => token, 'n' => vardas, 'on' => 1, 'c' => data], ...] */
+/** Redaktoriai su nuorodomis [['t' => token, 'n' => vardas, 'on' => 1, 'c' => data], ...] - seni (iki C3), skaitomi tik kol neperkelti */
 function ltkf_editors(): array
 {
     return array_values(array_filter(ltkf_json_setting('ltkf_editors'), 'is_array'));
+}
+
+/**
+ * C3: nuoroda iš karateka nuorodų lentelės (app/links.php, access_links) pagal sesijoje saugomą pirštų atspaudą.
+ * Grąžina eilutę (veikia), false (išjungta, pakeista ar pasibaigusi) arba null (lentelės ar įrašo nėra - tikrinama senu būdu).
+ */
+function ltkf_link_ok(string $kind, string $hash)
+{
+    $db = karateka_db();
+    if (!$db || !preg_match('/^[a-f0-9]{64}$/', $hash)) {
+        return null;
+    }
+    try {
+        $st = $db->prepare('SELECT * FROM access_links WHERE kind = ? AND token_hash = ?');
+        $st->execute([$kind, $hash]);
+        $r = $st->fetch(PDO::FETCH_ASSOC);
+    } catch (Throwable $ex) {
+        return null;   // dar neimportuotas db/062
+    }
+    if (!$r) {
+        return null;
+    }
+    return $r['revoked_at'] === null && ($r['expires_at'] === null || strtotime((string) $r['expires_at']) > time()) ? $r : false;
+}
+
+/** Redaktoriaus sesija: pirštų atspaudas (nuo C3) arba senas raktas */
+function ltkf_editor_hash(string $v): string
+{
+    return preg_match('/^[a-f0-9]{64}$/', $v) ? $v : hash('sha256', $v);
 }
 
 /** Kas redaguoja: ['name' => ..., 'admin' => bool] arba null */
@@ -57,9 +86,14 @@ function ltkf_redaktorius(): ?array
         }
         $who = ['name' => $name, 'admin' => true];
     } elseif (!empty($s['ltkf_editor'])) {
-        foreach (ltkf_editors() as $ed) {
-            if (!empty($ed['on']) && hash_equals((string) $ed['t'], (string) $s['ltkf_editor'])) {
-                $who = ['name' => (string) ($s['ltkf_editor_name'] ?? $ed['n']), 'admin' => false];
+        $ok = ltkf_link_ok('ltkf_editor', ltkf_editor_hash((string) $s['ltkf_editor']));
+        if (is_array($ok)) {
+            $who = ['name' => (string) ($s['ltkf_editor_name'] ?? $ok['label']), 'admin' => false];
+        } elseif ($ok === null) {
+            foreach (ltkf_editors() as $ed) {   // senas būdas (kol db/062 neimportuotas)
+                if (!empty($ed['on']) && hash_equals(ltkf_editor_hash((string) $ed['t']), ltkf_editor_hash((string) $s['ltkf_editor']))) {
+                    $who = ['name' => (string) ($s['ltkf_editor_name'] ?? $ed['n']), 'admin' => false];
+                }
             }
         }
     }

@@ -3,12 +3,11 @@
 // Nuoroda asmeninė - adminas gali ją išjungti, tada redaguoti nebegalima.
 require __DIR__ . '/app/bootstrap.php';
 
+// C3: nuoroda - app/links.php (rūšis 'ltkf_editor', vardas - label); sesijoje - tik pirštų atspaudas
 $tok = (string) (get('k') ?: post('k'));
-$ed = null;
-foreach ((array) json_decode((string) site_setting('ltkf_editors', '[]'), true) as $e) {
-    if (is_array($e) && !empty($e['on']) && $tok !== '' && hash_equals((string) $e['t'], $tok)) {
-        $ed = $e;
-    }
+$ed = link_find('ltkf_editor', $tok);
+if (!$ed) {
+    link_dead();
 }
 $err = '';
 if ($ed && is_post()) {
@@ -18,9 +17,8 @@ if ($ed && is_post()) {
         $err = 'Įrašykite savo vardą.';
     } else {
         session_regenerate_id(true);
-        $_SESSION['ltkf_editor'] = $ed['t'];
-        $_SESSION['ltkf_editor_name'] = $name;
-        $_SESSION['ltkf_review'] = hash('sha256', ltkf_review_token() ?: 'x');   // atsiliepimų langas LTKF svetainėje
+        $_SESSION['ltkf_editor'] = (string) $ed['token_hash'];
+        $_SESSION['ltkf_editor_name'] = $name;   // atsiliepimų langas LTKF svetainėje - ltkf_review() priima ir redaktorių
         csrf_token();
         redirect('ltkf/index.php?redaguoti=1');
     }
@@ -40,7 +38,7 @@ input{width:100%;box-sizing:border-box;padding:12px 14px;border-radius:10px;bord
   <p>Įrašykite savo vardą - jis bus matomas prie jūsų pakeitimų. Paskyros nereikia.</p>
   <?php if ($err): ?><p class="err"><?= e($err) ?></p><?php endif; ?>
   <form method="post"><?= csrf_field() ?><input type="hidden" name="k" value="<?= e($tok) ?>">
-    <input type="text" name="name" value="<?= e((string) post('name') ?: (string) $ed['n']) ?>" placeholder="Vardas Pavardė" required autofocus>
+    <input type="text" name="name" value="<?= e((string) post('name') ?: (string) $ed['label']) ?>" placeholder="Vardas Pavardė" required autofocus>
     <button type="submit">Pradėti redaguoti</button></form>
   <p><small>Spaudžiate bet kurį tekstą ir rašote; nuotraukas, failus ir naujus puslapius pridedate apačios juostoje.</small></p>
 <?php else: ?>

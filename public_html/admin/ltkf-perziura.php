@@ -4,7 +4,8 @@
 require dirname(__DIR__) . '/app/bootstrap.php';
 require_can('ltkf');
 
-$editors = array_values(array_filter((array) json_decode((string) site_setting('ltkf_editors', '[]'), true), 'is_array'));
+// C3: redaktorių ir peržiūros nuorodos - app/links.php (rūšys 'ltkf_editor' ir 'ltkf_review'); seni įrašai (site_settings) perkelti, netrinami
+$editors = link_list('ltkf_editor');
 // D6 3 dalis: svetainės būsena (visai svetainei - klausiama prieš išsaugant)
 const LTKF_MODES = ['off' => 'Išjungta', 'draft' => 'Juodraštis', 'public' => 'Vieša'];
 if (is_post() && post('action') === 'mode' && isset(LTKF_MODES[post('mode')])) {
@@ -17,33 +18,20 @@ $ltkfMode = (string) site_setting('ltkf_mode', '');
 if (!isset(LTKF_MODES[$ltkfMode])) {
     $ltkfMode = config('env') === 'live' ? 'off' : 'draft';
 }
-if (is_post() && in_array(post('action'), ['ed_add', 'ed_toggle', 'ed_del'], true)) {
+if (is_post() && post('action') === 'ed_add') {
     csrf_check();
-    if (post('action') === 'ed_add' && trim(post('name')) !== '') {
-        $editors[] = ['t' => bin2hex(random_bytes(12)), 'n' => mb_substr(trim(post('name')), 0, 80), 'on' => 1, 'c' => date('Y-m-d')];
+    $name = mb_substr(trim(preg_replace('/\s+/u', ' ', post('name'))), 0, 80);
+    if ($name !== '' && link_create('ltkf_editor', null, $name)) {
         flash('ok', t('Redaktoriaus nuoroda sukurta - nukopijuokite ir nusiųskite.'));
     }
-    foreach ($editors as $i => $ed) {
-        if ($ed['t'] === post('t')) {
-            if (post('action') === 'ed_toggle') {
-                $editors[$i]['on'] = empty($ed['on']) ? 1 : 0;
-            }
-            if (post('action') === 'ed_del') {
-                unset($editors[$i]);
-            }
-        }
-    }
-    set_site_setting('ltkf_editors', json_encode(array_values($editors), JSON_UNESCAPED_UNICODE));
     redirect('admin/ltkf-perziura.php#redaktoriai');
 }
-if (is_post()) {
+if (is_post() && in_array(post('action'), ['on', 'off'], true)) {   // seni mygtukai (C3: dabar - bendras blokas)
     csrf_check();
-    set_site_setting('ltkf_review_token', post('action') === 'on' ? bin2hex(random_bytes(12)) : '');
+    post('action') === 'on' ? link_create('ltkf_review') : link_off_kind('ltkf_review');
     flash('ok', post('action') === 'on' ? t('Peržiūros nuoroda sukurta - nukopijuokite ir nusiųskite.') : t('Peržiūros nuoroda išjungta.'));
     redirect('admin/ltkf-perziura.php');
 }
-$tok = ltkf_review_token();
-$link = $tok !== '' ? abs_url('ltkf-perziura.php?k=' . $tok) : '';
 
 page_start(t('LTKF peržiūra'), ['admin' => true]);
 ?>
@@ -62,16 +50,8 @@ page_start(t('LTKF peržiūra'), ['admin' => true]);
   </form>
 </div>
 <div class="panel card form">
-  <?php if ($link): ?>
-    <label><?= te('Nuoroda') ?>
-      <div class="row" style="gap:8px;flex-wrap:wrap;"><input type="text" readonly value="<?= e($link) ?>" onclick="this.select()" style="flex:1;min-width:260px;" id="ltkfLink">
-        <button type="button" class="btn" onclick="navigator.clipboard && navigator.clipboard.writeText(document.getElementById('ltkfLink').value).then(() => { this.textContent = '✓'; })"><?= te('Kopijuoti') ?></button></div></label>
-    <form method="post" class="row" style="gap:8px;"><?= csrf_field() ?>
-      <button class="btn" name="action" value="on" type="submit" onclick="return confirm('<?= e(t('Sukurti naują nuorodą? Sena nebeveiks.')) ?>')"><?= te('↻ Nauja nuoroda') ?></button>
-      <button class="btn btn-danger" name="action" value="off" type="submit"><?= te('Išjungti') ?></button></form>
-  <?php else: ?>
-    <form method="post"><?= csrf_field() ?><button class="btn btn-primary" name="action" value="on" type="submit"><?= te('Sukurti peržiūros nuorodą') ?></button></form>
-  <?php endif; ?>
+  <div class="kicker"><?= te('Peržiūros nuoroda') ?></div>
+  <?= link_box('ltkf_review', null, ['id' => 'ltkfLink', 'create' => t('Sukurti peržiūros nuorodą'), 'back' => '/admin/ltkf-perziura.php']) ?>
   <p class="hint"><a href="<?= url('ltkf/index.php') ?>"><?= te('Atidaryti LTKF svetainę →') ?></a> · <a href="<?= url('admin/atsiliepimai.php') ?>"><?= te('Atsiliepimai') ?></a></p>
 </div>
 
@@ -79,14 +59,10 @@ page_start(t('LTKF peržiūra'), ['admin' => true]);
   <h2><?= te('✏️ Redaktoriai') ?></h2>
   <p class="muted"><?= te('Žmonės, kurie gali patys keisti LTKF svetainę: tekstus, nuotraukas, failus, meniu, naujus puslapius. Kiekvienam - asmeninė nuoroda (paskyros nereikia, tik vardas). Išjungus nuorodą, redaguoti nebegalima.') ?></p>
   <p><a class="btn" href="<?= url('ltkf/index.php?redaguoti=1') ?>"><?= te('✏️ Redaguoti pačiam') ?></a> <a class="btn btn-ghost" href="<?= url('ltkf/failai.php') ?>"><?= icon('upload') ?> <?= te('Failų dėžė') ?></a></p>
-  <?php foreach ($editors as $ed): $elink = abs_url('ltkf-redaktorius.php?k=' . $ed['t']); ?>
-    <div class="row ltkf-ed<?= empty($ed['on']) ? ' muted' : '' ?>" style="gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0;">
-      <b style="min-width:140px;"><?= e($ed['n']) ?></b>
-      <input type="text" readonly value="<?= e($elink) ?>" onclick="this.select()" style="flex:1;min-width:240px;">
-      <button type="button" class="btn" onclick="navigator.clipboard && navigator.clipboard.writeText(<?= e(json_encode($elink)) ?>).then(() => { this.textContent = '✓'; })"><?= te('Kopijuoti') ?></button>
-      <form method="post" style="display:inline"><?= csrf_field() ?><input type="hidden" name="t" value="<?= e($ed['t']) ?>">
-        <button class="btn btn-ghost" name="action" value="ed_toggle" type="submit"><?= empty($ed['on']) ? te('Įjungti') : te('Išjungti') ?></button>
-        <button class="btn btn-ghost" name="action" value="ed_del" type="submit" onclick="return confirm('<?= e(t('Ištrinti šią nuorodą?')) ?>')">🗑</button></form>
+  <?php foreach ($editors as $ed): /* C3: Kopijuoti · ↻ Nauja nuoroda · Išjungti */ ?>
+    <div class="ltkf-ed" style="margin:8px 0;">
+      <b><?= e((string) $ed['label']) ?></b>
+      <?= link_box('ltkf_editor', null, ['row' => $ed, 'back' => '/admin/ltkf-perziura.php#redaktoriai']) ?>
     </div>
   <?php endforeach; ?>
   <form method="post" class="row" style="gap:8px;flex-wrap:wrap;margin-top:10px;"><?= csrf_field() ?>

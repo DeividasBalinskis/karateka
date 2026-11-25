@@ -2,7 +2,7 @@
 // tatamių kortelės su vaizdu ir ± prie balų (pavyzdinė kova), žiūrovams „📹 Žiūrėti gyvai“, sekretoriatui kovoje „📹 Vaizdas“ su ± ant vaizdo;
 // #182 - rungtis užsirakina pati, kai baigiasi.
 const { test } = require('@playwright/test');
-const { sql, login, nav, check, noJsErrors } = require('./helpers');
+const { sql, linkToken, login, nav, check, noJsErrors } = require('./helpers');
 
 const blank = (r) => r.fulfill({ contentType: 'text/html', body: '<html><body style="background:#000"></body></html>' });
 
@@ -21,7 +21,7 @@ test('Budo streaming with phones only: one QR, assign to a tatami, ± on the vid
   // Transliacijos puslapis: vienas QR, tatamių kortelės su vaizdu ir juosta
   await a.goto(`admin/varzybu-transliacija.php?id=${tid}`);
   const join = await a.locator('input[aria-label="Telefono prisijungimo nuoroda"]').inputValue();
-  const key = (join.match(/varzybos-kamera\.php\?c=([a-f0-9]{16})/) || [])[1];
+  const key = (join.match(/varzybos-kamera\.php\?k=([a-f0-9]{16,64})/) || [])[1];
   check('one QR link for all phones', !!key, join);
   const cards = await a.locator('.tr-card').count();
   check('a card per tatami, no OBS text', cards >= 1 && cards === JSON.parse(sql(`SELECT state FROM tournaments WHERE id = ${tid}`)).areas.length && !/OBS/.test(await a.locator('main').innerText()));
@@ -63,7 +63,7 @@ test('Budo streaming with phones only: one QR, assign to a tatami, ± on the vid
   check('one split button per side: + on top, − below', await bar.locator('.ov-pmv').count() === 2 && (await bar.locator('.ov-pmv').first().locator('button').first().textContent()) === '+' && (await bar.locator('.ov-pmv').first().locator('button').last().textContent()) === '−');
 
   // Žiūrovai: prie tatamio „▶ Žiūrėti gyvai“ - vaizdas tik paspaudus, su juosta
-  const share = sql(`SELECT share_token FROM tournaments WHERE id = ${tid}`);
+  const share = linkToken('live', tid);
   const v = await login(browser, null, 390, 844);
   await v.route('https://vdo.ninja/**', blank);
   await v.goto(`varzybos-gyvai.php?k=${share}`);

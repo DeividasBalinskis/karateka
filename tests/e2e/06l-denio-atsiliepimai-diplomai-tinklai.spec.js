@@ -3,7 +3,7 @@
 const { test } = require('@playwright/test');
 const fs = require('fs');
 const path = require('path');
-const { sql, login, nav, check, noJsErrors } = require('./helpers');
+const { sql, linkToken, login, nav, check, noJsErrors } = require('./helpers');
 
 test('member quick view: admin can delete the member right there', async ({ browser }) => {
   sql("INSERT INTO members (first_name, last_name, birth_date, status) VALUES ('Trinamas', 'Testas', '2015-01-01', 'active')");
@@ -89,7 +89,7 @@ test('Taika: Draws tab and for spectators, diplomas printable and from an Excel 
   check('opens in live', await a.locator('#run').isVisible());
 
   // Žiūrovams atskiros „Tinklai“ skilties nebėra (#81), bet paspaudus grupę sąraše - matosi, kas su kuo kovoja
-  const share = sql(`SELECT share_token FROM tournaments WHERE id = ${tid}`);
+  const share = linkToken('live', tid);
   const v = await login(browser, null, 390, 844);
   await v.goto(`varzybos-gyvai.php?k=${share}`);
   await v.waitForSelector('.gv-glist button');

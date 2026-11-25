@@ -49,64 +49,53 @@ function tournaments_list(bool $withTest = true, bool $demoOnly = false): array
     return q_all('SELECT * FROM tournaments' . ($withTest ? '' : ' WHERE is_test = 0') . ' ORDER BY starts_on DESC, id DESC');
 }
 
-// ---------- Taikos bandymo nuoroda (be paskyros) ----------
-// Adminas sukuria nuorodą (Taikos pradžia → „👀 Duoti išbandyti“). Ją atidaręs žmogus įrašo vardą ir gali daryti viską, ką adminas,
+// ---------- Budo bandymo nuoroda (be paskyros) ----------
+// Adminas sukuria nuorodą (Budo pradžia → „👀 Duoti išbandyti“). Ją atidaręs žmogus įrašo vardą ir gali daryti viską, ką adminas,
 // bet tik bandymo varžybose (is_demo): be tikrų klubo narių, be bendrų nustatymų keitimo; gali palikti atsiliepimų (💡).
+// C3: nuoroda - app/links.php (rūšis 'demo'); sesijoje - tik nuorodos pirštų atspaudas ir vardas.
 
+/** Bandymo nuorodos raktas ('' - nėra) */
 function varz_demo_token(): string
 {
-    return (string) site_setting('taika_demo_token', '');
+    return (string) link_token(link_current('demo'));
 }
 
 /** Bandančiojo sesija: ['name' => ...] arba null (nuoroda išjungta ar pakeista - prieiga baigiasi) */
 function varz_demo(): ?array
 {
     $s = $_SESSION['taika_demo'] ?? null;
-    $tok = varz_demo_token();
-    if (!is_array($s) || $tok === '' || !hash_equals(hash('sha256', $tok), (string) ($s['tok'] ?? ''))) {
+    if (!is_array($s) || !link_alive('demo', (string) ($s['tok'] ?? ''))) {
         return null;
     }
     return $s;
 }
 
-function varz_demo_start(string $token, string $name): bool
+function varz_demo_start(array $link, string $name): void
 {
-    $tok = varz_demo_token();
-    if ($tok === '' || !hash_equals($tok, $token)) {
-        return false;
-    }
-    $_SESSION['taika_demo'] = ['tok' => hash('sha256', $tok), 'name' => mb_substr(trim($name), 0, 60)];
-    return true;
+    session_regenerate_id(true);
+    $_SESSION['taika_demo'] = ['tok' => (string) $link['token_hash'], 'name' => mb_substr(trim($name), 0, 60)];
 }
 
 // ---------- Sekretoriato nuoroda (be paskyros): tik vienoms varžyboms, be klubo narių duomenų ----------
+// C3: viena nuoroda varžyboms (Deividas 2026-11-25); tatamį galima nurodyti &t=N (tik užuomina - atsidaro to tatamio darbastalis).
 
-/** Sekretoriato nuoroda galioja iki 2 dienų po varžybų pabaigos (sprendimas 2026-11-20) */
+/** Sekretoriato nuoroda galioja iki LINK_SEKR_DAYS dienų po varžybų pabaigos (sprendimas 2026-11-20, v1.52) */
 function varz_sekr_valid_date(int $tid): bool
 {
     $end = (string) q_value('SELECT COALESCE(ends_on, starts_on) FROM tournaments WHERE id = ?', [$tid]);
-    return $end !== '' && $end >= date('Y-m-d', strtotime('-2 days'));
+    return $end !== '' && $end >= date('Y-m-d', strtotime('-' . LINK_SEKR_DAYS . ' days'));
 }
 
 function varz_sekr_token(int $tid): string
 {
-    return (string) site_setting('varz_sekr_' . $tid, '');
-}
-
-function varz_sekr_set(int $tid, bool $on): void
-{
-    set_site_setting('varz_sekr_' . $tid, $on ? bin2hex(random_bytes(12)) : '');
+    return (string) link_token(link_current('sekr', $tid));
 }
 
 /** Kurių varžybų nuoroda (0 - neveikia) */
 function varz_sekr_find(string $token): int
 {
-    if (!preg_match('/^[0-9a-f]{24}$/', $token)) {
-        return 0;
-    }
-    $n = q_value("SELECT name FROM site_settings WHERE name LIKE 'varz\\_sekr\\_%' AND value = ?", [$token]);
-    $tid = $n ? (int) substr((string) $n, 10) : 0;
-    return $tid && varz_sekr_valid_date($tid) ? $tid : 0;
+    $l = link_find('sekr', $token);
+    return $l ? (int) $l['owner_id'] : 0;
 }
 
 /** Galiojanti sekretoriato sesija (['tid', 'name']) - šioms varžyboms ar bet kurioms; nuorodą pakeitus ar išjungus - baigiasi */
@@ -116,17 +105,29 @@ function varz_sekr(?int $tid = null): ?array
         if ($tid !== null && (int) $id !== $tid) {
             continue;
         }
-        $tok = varz_sekr_token((int) $id);
-        if ($tok !== '' && is_array($s) && hash_equals(hash('sha256', $tok), (string) ($s['tok'] ?? '')) && varz_sekr_valid_date((int) $id)) {
+        if (is_array($s) && link_alive('sekr', (string) ($s['tok'] ?? ''), (int) $id)) {
             return ['tid' => (int) $id, 'name' => (string) ($s['name'] ?? '')];
         }
     }
     return null;
 }
 
-function varz_sekr_start(int $tid, string $name): void
+function varz_sekr_start(array $link, string $name): void
 {
-    $_SESSION['varz_sekr'][$tid] = ['tok' => hash('sha256', varz_sekr_token($tid)), 'name' => mb_substr(trim($name), 0, 80)];
+    session_regenerate_id(true);
+    $_SESSION['varz_sekr'][(int) $link['owner_id']] = ['tok' => (string) $link['token_hash'], 'name' => mb_substr(trim($name), 0, 80)];
+}
+
+/** „Baigti darbą“: šio įrenginio sekretoriato prieiga baigiasi (nuoroda veikia toliau) */
+function varz_sekr_end(int $tid): void
+{
+    unset($_SESSION['varz_sekr'][$tid]);
+}
+
+/** Kas saugo pakeitimus (Budo istorijai): paskyros vardas arba vardas, įrašytas atidarius nuorodą */
+function varz_who(array $me): string
+{
+    return mb_substr(trim(preg_replace('/\s+/u', ' ', str_replace(',', ' ', ($me['first_name'] ?? '') . ' ' . ($me['last_name'] ?? '')))), 0, 80);
 }
 
 /** Taikos puslapiams: treneris / adminas, bandantysis per nuorodą (['demo' => true, ...]) arba sekretoriatas (['sekr' => varžybų id, ...]) */
@@ -347,12 +348,20 @@ function varz_state_maps(array $state): array
  * Išsaugo naršyklės pakeitimus. $version - kokią versiją redaguotojas matė: jei kitas žmogus jau išsaugojo naujesnę,
  * grąžinama null (nieko neperrašoma), kitaip - nauja versija.
  */
-function tournament_save_state(int $id, array $state, array $results, int $version): ?int
+function tournament_save_state(int $id, array $state, array $results, int $version, string $by = ''): ?int
 {
     unset($state['history']);
     $state = varz_state_maps($state);
-    $st = q('UPDATE tournaments SET state = ?, results = ?, version = version + 1, updated_at = NOW() WHERE id = ? AND version = ?',
-        [json_encode($state, JSON_UNESCAPED_UNICODE), json_encode($results, JSON_UNESCAPED_UNICODE), $id, $version]);
+    $args = [json_encode($state, JSON_UNESCAPED_UNICODE), json_encode($results, JSON_UNESCAPED_UNICODE), $id, $version];
+    // C3: kas išsaugojo - vardai nuo ankstesnės istorijos kopijos (tournaments.saved_by → tournament_versions.saved_by, db/062)
+    $by = mb_substr(trim(str_replace(',', ' ', $by)), 0, 80);
+    try {
+        $st = q('UPDATE tournaments SET state = ?, results = ?, version = version + 1, updated_at = NOW(),
+                 saved_by = IF(? = "", saved_by, IF(saved_by IS NULL OR saved_by = "", ?, IF(FIND_IN_SET(?, REPLACE(saved_by, ", ", ",")), saved_by, LEFT(CONCAT(saved_by, ", ", ?), 255))))
+                 WHERE id = ? AND version = ?', array_merge(array_slice($args, 0, 2), [$by, $by, $by, $by], array_slice($args, 2)));
+    } catch (PDOException $ex) {
+        $st = q('UPDATE tournaments SET state = ?, results = ?, version = version + 1, updated_at = NOW() WHERE id = ? AND version = ?', $args);   // dar neimportuotas db/062
+    }
     if (!$st->rowCount()) {
         return null;
     }
@@ -368,12 +377,18 @@ function tournament_snapshot(int $id, string $note = ''): void
     try {
         if ($note === '') {
             $last = q_value('SELECT created_at FROM tournament_versions WHERE tournament_id = ? ORDER BY id DESC LIMIT 1', [$id]);
-            if ($last && strtotime((string) $last) > time() - 60) {
+            if ($last && strtotime((string) $last) > time() - 60) {   // C3: per tą minutę išsaugoję - visi kitos kopijos varduose
                 return;
             }
         }
-        q('INSERT INTO tournament_versions (tournament_id, version, state, results, note) SELECT id, version, COALESCE(state, "{}"), results, ? FROM tournaments WHERE id = ?',
-            [$note !== '' ? mb_substr($note, 0, 120) : null, $id]);
+        try {
+            q('INSERT INTO tournament_versions (tournament_id, version, state, results, note, saved_by) SELECT id, version, COALESCE(state, "{}"), results, ?, saved_by FROM tournaments WHERE id = ?',
+                [$note !== '' ? mb_substr($note, 0, 120) : null, $id]);
+            q('UPDATE tournaments SET saved_by = NULL WHERE id = ?', [$id]);   // C3: kitos kopijos vardai - nuo dabar
+        } catch (PDOException $ex) {
+            q('INSERT INTO tournament_versions (tournament_id, version, state, results, note) SELECT id, version, COALESCE(state, "{}"), results, ? FROM tournaments WHERE id = ?',
+                [$note !== '' ? mb_substr($note, 0, 120) : null, $id]);   // dar neimportuotas db/062
+        }
         $cut = q_value('SELECT id FROM tournament_versions WHERE tournament_id = ? ORDER BY id DESC LIMIT 1 OFFSET 400', [$id]);
         if ($cut) {
             q('DELETE FROM tournament_versions WHERE tournament_id = ? AND id <= ?', [$id, (int) $cut]);
@@ -387,14 +402,18 @@ function tournament_snapshot(int $id, string $note = ''): void
 function tournament_history(int $id, int $limit = 80): array
 {
     try {
-        $rows = q_all('SELECT id, version, note, created_at, results FROM tournament_versions WHERE tournament_id = ? ORDER BY id DESC LIMIT ' . max(1, $limit), [$id]);
+        try {
+            $rows = q_all('SELECT id, version, note, created_at, results, saved_by FROM tournament_versions WHERE tournament_id = ? ORDER BY id DESC LIMIT ' . max(1, $limit), [$id]);
+        } catch (PDOException $ex) {
+            $rows = q_all('SELECT id, version, note, created_at, results FROM tournament_versions WHERE tournament_id = ? ORDER BY id DESC LIMIT ' . max(1, $limit), [$id]);   // be db/062
+        }
     } catch (PDOException $ex) {
         return [];
     }
     return array_map(function ($r) {
         $res = json_decode((string) $r['results'], true);
         $cats = is_array($res['categories'] ?? null) ? $res['categories'] : [];
-        return ['id' => (int) $r['id'], 'at' => $r['created_at'], 'note' => (string) $r['note'], 'cats' => count($cats),
+        return ['id' => (int) $r['id'], 'at' => $r['created_at'], 'note' => (string) $r['note'], 'by' => (string) ($r['saved_by'] ?? ''), 'cats' => count($cats),
                 'done' => count(array_filter($cats, function ($c) { return !empty($c['finished']); }))];
     }, $rows);
 }
@@ -413,13 +432,18 @@ function tournament_restore(int $id, int $snapId): ?array
 
 function tournament_delete(int $id): void
 {
+    links_owner_gone(['sekr', 'awards', 'live', 'reg'], [$id]);   // C3: jų nuorodos išjungiamos (eilutės lieka)
     q('DELETE FROM tournaments WHERE id = ?', [$id]);
 }
 
 /** Ištrina visas test varžybas. Grąžina, kiek ištrinta. */
 function tournaments_delete_test(): int
 {
-    return tournaments_ready() ? q('DELETE FROM tournaments WHERE is_test = 1')->rowCount() : 0;
+    if (!tournaments_ready()) {
+        return 0;
+    }
+    links_owner_gone(['sekr', 'awards', 'live', 'reg'], array_map('intval', array_column(q_all('SELECT id FROM tournaments WHERE is_test = 1'), 'id')));
+    return q('DELETE FROM tournaments WHERE is_test = 1')->rowCount();
 }
 
 /** Lytis pagal vardą, jei nenurodyta (lietuviški vardai: -a, -ė - moteriški) */
@@ -619,15 +643,20 @@ function footer_links_html(): string
 
 // ---------- Transliacija ir registracija per nuorodą (db/026) ----------
 
-/** Nuorodos raktas: 'share' - žiūrovams ir ekranams, 'reg' - kitų klubų registracijai. Sukuriamas pirmą kartą prireikus. */
+/** Nuorodos raktas: 'share' - žiūrovams ir ekranams, 'reg' - kitų klubų registracijai, 'awards' - apdovanojimų planšetei.
+ *  Atsiranda kartu su varžybomis (pirmą kartą atidarius jas valdyme). C3: app/links.php (rūšys live / reg / awards). */
 function tournament_token(array $t, string $kind): string
 {
-    $col = ['reg' => 'reg_token', 'awards' => 'awards_token'][$kind] ?? 'share_token';
-    if (!empty($t[$col])) {
-        return (string) $t[$col];
+    $k = ['reg' => 'reg', 'awards' => 'awards'][$kind] ?? 'live';
+    if (!links_ready()) {
+        $col = ['reg' => 'reg_token', 'awards' => 'awards_token'][$kind] ?? 'share_token';   // db/062 dar neimportuotas - kaip anksčiau
+        if (!empty($t[$col])) {
+            return (string) $t[$col];
+        }
+        q("UPDATE tournaments SET $col = ? WHERE id = ? AND $col IS NULL", [bin2hex(random_bytes(12)), (int) $t['id']]);
+        return (string) q_value("SELECT $col FROM tournaments WHERE id = ?", [(int) $t['id']]);
     }
-    q("UPDATE tournaments SET $col = ? WHERE id = ? AND $col IS NULL", [bin2hex(random_bytes(12)), (int) $t['id']]);
-    return (string) q_value("SELECT $col FROM tournaments WHERE id = ?", [(int) $t['id']]);
+    return (string) link_token(link_ensure($k, (int) $t['id']));
 }
 
 /**
@@ -643,10 +672,20 @@ function varz_cam_key(bool $renew = false): string
     if (!$renew && $mem !== null) {
         return $mem;
     }
-    $k = $renew ? '' : (string) site_setting('varz_cam_key', '');
-    if (!preg_match('/^[a-f0-9]{16}$/', $k)) {
-        $k = bin2hex(random_bytes(8));
-        set_site_setting('varz_cam_key', $k);
+    if (!links_ready()) {
+        $k = $renew ? '' : (string) site_setting('varz_cam_key', '');   // db/062 dar neimportuotas - kaip anksčiau
+        if (!preg_match('/^[a-f0-9]{16}$/', $k)) {
+            $k = bin2hex(random_bytes(8));
+            set_site_setting('varz_cam_key', $k);
+        }
+        return $mem = $k;
+    }
+    // C3: rūšis 'cam'. Raktas nuolatinis (iš jo - tatamių srautų vardai); naujas - „↻ Nauja nuoroda“ Transliacijos puslapyje.
+    $l = link_current('cam');
+    $k = $renew || !$l ? null : link_token($l);
+    if ($k === null || $k === '') {
+        $l = $renew && $l ? link_renew((int) $l['id']) : link_create('cam');
+        $k = (string) link_token($l);
     }
     return $mem = $k;
 }
@@ -682,16 +721,14 @@ function varz_cams_live(): array
     return $out;
 }
 
+/** Varžybos pagal nuorodą ('share' / 'reg' / 'awards'); null - nuoroda neveikia (priežastis - link_reason()) */
 function tournament_by_token(string $token, string $kind): ?array
 {
-    if (!preg_match('/^[a-f0-9]{24}$/', $token) || !tournaments_ready()) {
+    if (!tournaments_ready()) {
         return null;
     }
-    try {
-        return q_one('SELECT * FROM tournaments WHERE ' . (['reg' => 'reg_token', 'awards' => 'awards_token'][$kind] ?? 'share_token') . ' = ?', [$token]);
-    } catch (PDOException $ex) {
-        return null;   // dar neimportuotas db/026
-    }
+    $l = link_find(['reg' => 'reg', 'awards' => 'awards'][$kind] ?? 'live', $token);
+    return $l ? tournament_get((int) $l['owner_id']) : null;
 }
 
 /** YouTube transliacija: iš nuorodos - įterpimo adresas (vaizdo įrašas arba kanalo tiesioginė transliacija) ir nuoroda žiūrėti. */
@@ -771,12 +808,19 @@ function tournament_awards_sync(int $id, array $results): void
 }
 
 /** Būsena: 'sent' - išsiųsta apdovanojimams, 'done' - apdovanota, '' - atšaukta (vėl tik baigta) */
-function tournament_award_set(int $id, string $catId, string $status): bool
+function tournament_award_set(int $id, string $catId, string $status, string $by = ''): bool
 {
     if (!preg_match('/^[\w-]{1,40}$/', $catId)) {
         return false;
     }
     try {
+        if ($status !== '' && $by !== '') {
+            try {   // C3: kas pažymėjo (apdovanojimų planšetės ar sekretoriato vardas, db/062)
+                q('INSERT INTO tournament_awards (tournament_id, cat_id, status, sent_at, by_name) VALUES (?, ?, ?, NOW(), ?)
+                   ON DUPLICATE KEY UPDATE by_name = VALUES(by_name)', [$id, $catId, $status === 'done' ? 'done' : 'sent', mb_substr($by, 0, 120)]);
+            } catch (PDOException $ex) {
+            }
+        }
         if ($status === 'sent') {
             q('INSERT INTO tournament_awards (tournament_id, cat_id, status, sent_at) VALUES (?, ?, "sent", NOW())
                ON DUPLICATE KEY UPDATE status = "sent", sent_at = COALESCE(sent_at, NOW()), done_at = NULL', [$id, $catId]);

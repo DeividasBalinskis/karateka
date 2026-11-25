@@ -3,9 +3,21 @@
 // gali daryti viską, ką adminas, bet tik bandymo varžybose (be tikrų klubo narių); atsiliepimus palieka per 💡.
 require __DIR__ . '/app/bootstrap.php';
 
+// C3: nuoroda - app/links.php (rūšis 'demo'). „Baigti darbą“ - action=end.
 $token = (string) (get('k') ?: post('k'));
-$valid = $token !== '' && varz_demo_token() !== '' && hash_equals(varz_demo_token(), $token);
-if ($valid && (can('budo') || varz_demo())) {
+if (is_post() && post('action') === 'end') {
+    csrf_check();
+    unset($_SESSION['taika_demo']);
+    varz_html_head('Išbandyti', 'vz-public vz-demo-start');
+    echo '<main class="vzh demo-start"><div class="panel demo-card"><h2>Darbas baigtas</h2><p class="muted">Ačiū! Norėdami tęsti, vėl atidarykite nuorodą.</p></div></main></body></html>';
+    exit;
+}
+$link = link_find('demo', $token);
+if (!$link) {
+    link_dead();
+}
+$valid = true;
+if (can('budo') || varz_demo()) {
     redirect('admin/varzybos.php');
 }
 $error = '';
@@ -14,7 +26,8 @@ if (is_post() && $valid) {
     $name = trim((string) post('name'));
     if (mb_strlen($name) < 2) {
         $error = 'Įrašykite savo vardą - kad žinotume, kieno atsiliepimai.';
-    } elseif (varz_demo_start($token, $name)) {
+    } else {
+        varz_demo_start($link, $name);
         redirect('admin/varzybos.php');
     }
 }
@@ -28,9 +41,7 @@ varz_html_head('Išbandyti', 'vz-public vz-demo-start');
   </div>
 </header>
 <main class="vzh demo-start">
-  <?php if (!$valid): ?>
-    <div class="panel demo-card"><h2>Nuoroda neveikia</h2><p class="muted">Ji išjungta arba pakeista. Paprašykite naujos nuorodos to, kas jums ją davė.</p></div>
-  <?php else: ?>
+  <?php if ($valid): ?>
     <form method="post" class="panel demo-card">
       <?= csrf_field() ?><input type="hidden" name="k" value="<?= e($token) ?>">
       <h2>Sveiki! 👋</h2>

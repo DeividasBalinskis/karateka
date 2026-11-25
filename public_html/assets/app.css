@@ -2191,3 +2191,16 @@ a.kid-mini:hover{border-color:var(--accent);}
 .just-link-row code{font-size:.9rem; padding:6px 10px; border-radius:8px; background:rgba(23,20,15,.06); user-select:all;}
 .just-edit-grid .span2{grid-column:1 / -1;}
 .just-edit[hidden]{display:none;}
+
+/* C3: slaptos nuorodos - bendras blokas (app/links.php link_box) ir „Visos nuorodos“ (admin/nuorodos.php) */
+.lk{display:grid; gap:4px; margin:6px 0;}
+.lk-row{display:flex; flex-wrap:wrap; gap:6px; align-items:center;}
+.lk-row .lk-url{flex:1 1 260px; min-width:0; font-size:.85rem;}
+.lk-form{display:inline; margin:0;}
+.lk-meta{margin:0;}
+.lk-item{padding:10px 0; border-bottom:1px dashed rgba(23,20,15,.1);}
+.lk-item:last-child{border-bottom:0;}
+.lk-head{display:flex; flex-wrap:wrap; gap:8px; align-items:center;}
+.lk-kind .kicker .badge{margin-left:6px;}
+.lk-more > summary{cursor:pointer; margin:6px 0; font-weight:600;}
+.link-dead{text-align:center;}

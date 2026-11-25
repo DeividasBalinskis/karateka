@@ -1,7 +1,7 @@
 // A3: egzamino nuorodos - svetimas negauna vaiko puslapio: vien vardo neužtenka, įrašytas treneriui žmogus - be nuorodos,
 // „Jau užsiregistravai?“ ribojama pagal IP, ↻ nauja nuoroda, atsiliepimuose nesaugomi slapti adreso parametrai.
 const { test } = require('@playwright/test');
-const { sql, login, nav, check, noJsErrors, openFeedback } = require('./helpers');
+const { sql, linkToken, login, nav, check, noJsErrors, openFeedback } = require('./helpers');
 
 test('A3: exam links - no name-only match, coach-added person gets no link, find is rate-limited, ↻ new link, feedback scrubs secrets', async ({ browser }) => {
   sql("DELETE FROM exam_protocol_rows WHERE number LIKE 'E2E-90%'");
@@ -48,11 +48,11 @@ test('A3: exam links - no name-only match, coach-added person gets no link, find
 
   // ↻ Nauja nuoroda: senoji nebeveikia
   const row = sql(`SELECT id FROM exam_protocol_rows WHERE event_id = ${eid} AND name = 'Be Datos' AND birth_date = '2013-01-01'`);
-  const oldTok = sql(`SELECT token FROM exam_protocol_rows WHERE id = ${row}`);
+  const oldTok = linkToken('exam_row', row);
   await a.goto(`admin/egzamino-protokolas.php?id=${eid}`);
   await nav(a, () => a.locator(`tr[data-row="${row}"] .pr-newlink`).click());
-  const newTok = sql(`SELECT token FROM exam_protocol_rows WHERE id = ${row}`);
-  check('↻ gives a new link', /^[a-f0-9]{20}$/.test(newTok) && newTok !== oldTok);
+  const newTok = linkToken('exam_row', row);
+  check('↻ gives a new link', /^[a-f0-9]{64}$/.test(newTok) && newTok !== oldTok, oldTok + ' → ' + newTok);
   const r = await v.request.get(`mano-egzaminas.php?t=${oldTok}`);
   check('old link stops working', r.status() !== 200 || !/Labas/.test(await r.text()), String(r.status()));
 

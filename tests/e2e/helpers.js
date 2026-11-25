@@ -14,6 +14,18 @@ function sql(query) {
   return execFileSync('mysql', args).toString().trim();
 }
 
+/**
+ * C3: slaptos nuorodos raktas (app/links.php saugo tik pirštų atspaudą ir užrakintą kopiją - raktą duoda tests/setup/link.php).
+ * linkToken('live', tid) - dabartinė nuoroda ('' - nėra); linkNew('demo') - nauja (ankstesnė - „pakeista“).
+ */
+function linkCli(cmd, kind, owner, label) {
+  const args = [require('path').join(__dirname, '..', 'setup', 'link.php'), cmd, kind, owner === undefined || owner === null ? '' : String(owner)];
+  if (label) args.push(label);
+  return execFileSync('php', args).toString().split(/\r?\n/).pop().trim();
+}
+function linkToken(kind, owner) { return linkCli('get', kind, owner); }
+function linkNew(kind, owner, label) { return linkCli('new', kind, owner, label); }
+
 /** Data po n dienų (YYYY-MM-DD, vietos laiku) */
 function day(n) {
   const d = new Date();
@@ -91,4 +103,4 @@ async function openFeedback(page) {
   if (await page.locator('#fbPanel').isHidden()) await page.click('#fbFab');
 }
 
-module.exports = { openFeedback, sql, day, ids, login, nav, check, noJsErrors, flashes, PASSWORD, DEMO_PASSWORD, BASE_URL };
+module.exports = { openFeedback, sql, linkToken, linkNew, day, ids, login, nav, check, noJsErrors, flashes, PASSWORD, DEMO_PASSWORD, BASE_URL };

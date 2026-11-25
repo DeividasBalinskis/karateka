@@ -62,7 +62,7 @@ Status: ☐ not started · ◐ partly done · ☑ done
 | **B9** | Valdymas: one shell, one start page, final names | Denis, coaches | M | reikia leidimo | ☑ v1.74 (one layout, variants removed, Renginiai list in Valdymas, editors with side menu, LTKF row, hints) |
 | **C1** | Permissions: one `can()` and one table | everyone | M | plan first, Fable | ☐ |
 | **C2** | Settings: one registry, one map, a change log | Denis, Deividas | M | plan first | ☑ v1.78 + v1.81 (language on the account; registry checked by checks.sh; „Visi nustatymai“ map; change log with „Atkurti“; LTKF draft is a setting; old names like `reg_off` kept - renaming needs your OK) |
-| **C3** | Secret links: one model, one "Visos nuorodos" page | Denis, secretariat | L | plan first, Fable | ☐ |
+| **C3** | Secret links: one model, one "Visos nuorodos" page | Denis, secretariat | L | plan first, Fable | ☑ branch `claude/c3-nuorodos-1bb636` (db/062 `access_links`, `app/links.php`, Valdymas → Visos nuorodos, 13 kinds, names in Budo history; not merged yet) |
 | **C4** | Design tokens + visual safety net (old step 4) | everyone | M | plan first | ☑ v1.82 (tokens.css, zero visual change proven on 55 shots; tests/visual.sh baseline/compare at 375/768/1440 + 1280/2560) |
 | **C5** | CSS cleanup, zero visual change (old step 5) | Deividas | L | plan first | ☐ |
 | **C6** | Tests: faster, independent, engine unit tests (old step 10) | Deividas | M | — | ◐ v1.60 (smoke set `tests/smoke.sh` ~2 min; flaky Budo specs pick groups robustly; tests clean their own IP limits); Budo engine tests `tests/engine` + CI step - branch `claude/d3-budo-moduliai-d818a1` |

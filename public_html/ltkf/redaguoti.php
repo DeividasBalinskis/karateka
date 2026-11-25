@@ -18,10 +18,10 @@ function ltkf_who(): ?string
     }
     $tok = (string) ($_SESSION['ltkf_editor'] ?? '');
     if ($tok !== '') {
-        foreach ((array) json_decode((string) site_setting('ltkf_editors', '[]'), true) as $ed) {
-            if (is_array($ed) && !empty($ed['on']) && hash_equals((string) $ed['t'], $tok)) {
-                return (string) ($_SESSION['ltkf_editor_name'] ?? $ed['n']);
-            }
+        // C3: sesijoje - nuorodos pirštų atspaudas (app/links.php); seni - raktas
+        $l = link_alive('ltkf_editor', preg_match('/^[a-f0-9]{64}$/', $tok) ? $tok : hash('sha256', $tok));
+        if ($l) {
+            return (string) ($_SESSION['ltkf_editor_name'] ?? $l['label']);
         }
     }
     return null;

@@ -58,6 +58,7 @@ $settings = [
         [t('Paskyros ir rolės'), 'admin/paskyros.php', t('Kas yra treneris, kas administratorius.'), can('accounts')],
         [t('Atsarginės kopijos ir sistema'), 'admin/kopijos.php', t('Duomenų bazės kopijos, nuotraukų kopija, versija, importuoti db failai.'), can('backups')],
         [t('Visi nustatymai'), 'admin/nustatymai-visi.php', t('Kiekvienas jungiklis su reikšme ir vieta, kur keisti; kas ir kada keitė, „Atkurti“.'), can('settings')],
+        [t('Visos nuorodos'), 'admin/nuorodos.php', t('Slaptos nuorodos: kam jos, kada naudotos; Kopijuoti, ↻ Nauja nuoroda, Išjungti.'), can('links')],
         [t('Duomenų priežiūra'), 'admin/duomenys.php', t('Kas ir kiek laiko saugoma; ką galima ištrinti (pirmiau parodoma sąrašu).'), can('backups')],
         [t('Kodas kitam įrenginiui'), 'admin/kitas-irenginys.php', t('Vienkartinis kodas planšetei ar kitam telefonui: dirbti jūsų teisėmis be slaptažodžio. Atjungti, žurnalas.'), can('device_codes')],
         [t('Testavimas'), 'admin/testavimas.php', t('Testiniai nariai (tėvai, vaikas) ir ką jiems sukurti; peržiūra kaip tėvai ar vaikas.'), can('testing')],

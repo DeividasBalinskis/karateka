@@ -21,6 +21,7 @@ test('database updates itself when an admin opens a page', async ({ browser }) =
 test('excuse system: link, request, admin preview with a Word template, approve and send', async ({ browser }) => {
   sql('DELETE FROM justifications');
   sql("DELETE FROM site_settings WHERE name IN ('just_token', 'just_open', 'just_text', 'just_template', 'just_notify')");
+  sql("UPDATE access_links SET revoked_at = NOW() WHERE kind = 'just' AND revoked_at IS NULL");   // C3: app/links.php
   sql("DELETE FROM accounts WHERE email = 'antras.adminas@example.test'");
   sql("INSERT INTO accounts (first_name, last_name, email, password_hash, role, status) VALUES ('Antras', 'Adminas', 'antras.adminas@example.test', 'x', 'admin', 'active')");
   const other = sql("SELECT id FROM accounts WHERE email = 'antras.adminas@example.test'");
@@ -28,7 +29,7 @@ test('excuse system: link, request, admin preview with a Word template, approve 
   const a = await login(browser, 'info@karateka.lt', 1440, 900);
   await a.goto('admin/pateisinimai.php');
   await nav(a, () => a.click('button:has-text("Sukurti nuorodą")'));
-  const url = await a.getAttribute('[data-copy]', 'data-copy');
+  const url = await a.getAttribute('[data-link-copy]', 'data-link-copy');
   check('short link', /\/p\/\?[a-z2-9]{6}$/.test(url), url);
 
   // Tėvai / mokinys pagal nuorodą - tik forma, be svetainės meniu

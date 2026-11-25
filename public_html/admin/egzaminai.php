@@ -196,16 +196,14 @@ if ($delEv): ?>
       <h2 style="margin:0;">⏳ <?= te('Laukiantieji') ?> <span class="badge<?= $waiting ? ' badge-warn' : '' ?>"><?= count($waiting) ?></span></h2>
       <div class="row" style="gap:6px; flex-wrap:wrap;">
         <?php if ($wlUrl): ?>
-          <code class="exam-wl-url"><?= e(preg_replace('~^https?://~', '', $wlUrl)) ?></code>
-          <button type="button" class="btn btn-ghost btn-sm" data-copy="<?= e($wlUrl) ?>" title="<?= te('Kopijuoti registracijos nuorodą') ?>"><?= te('🔗 Kopijuoti nuorodą') ?></button>
           <form method="post" class="inline-form"><?= csrf_field() ?><input type="hidden" name="action" value="wl_open"><input type="hidden" name="open" value="<?= exam_waitlist_is_open() ? '0' : '1' ?>">
             <button class="btn btn-ghost btn-sm" type="submit"><?= exam_waitlist_is_open() ? te('Uždaryti registraciją') : te('Atidaryti registraciją') ?></button></form>
-          <?php if (strlen(exam_waitlist_token()) > 6): ?><form method="post" class="inline-form"><?= csrf_field() ?><input type="hidden" name="action" value="wl_link">
-            <button class="btn btn-ghost btn-sm" type="submit" onclick="return confirm('<?= e(t('Sukurti trumpą nuorodą? Sena (ilga) nebeveiks.')) ?>')"><?= te('↻ Trumpa nuoroda') ?></button></form><?php endif; ?>
-        <?php else: ?>
-          <form method="post" class="inline-form"><?= csrf_field() ?><input type="hidden" name="action" value="wl_link"><button class="btn btn-primary btn-sm" type="submit"><?= te('Sukurti registracijos nuorodą') ?></button></form>
         <?php endif; ?>
       </div>
+    </div>
+    <div class="exam-wl-link">
+      <?php /* C3: Kopijuoti · ↻ Nauja nuoroda · Išjungti (app/links.php); ↻ visada duoda trumpą /e/?kodą */ ?>
+      <?= exam_waitlist_ready() ? link_box('exam_waitlist', null, ['create' => t('Sukurti registracijos nuorodą'), 'back' => '/admin/egzaminai.php#laukiantieji']) : '' ?>
     </div>
     <?php if ($wlUrl): ?><p class="small muted" style="margin:6px 0 0;"><?= exam_waitlist_is_open() ? te('Viena nuoroda visiems egzaminams. Užsiregistravę atsiranda čia; pažymėkite ir įtraukite į protokolą - žmogus gaus laišką su data, vieta ir kaina.') : te('Registracija uždaryta - nuoroda rodo „Registracija uždaryta“.') ?></p><?php endif; ?>
     <?php if ($waiting): ?>

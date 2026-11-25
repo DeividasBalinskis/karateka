@@ -40,6 +40,7 @@ const PERMISSIONS = [
     'testing'        => ['admin'],                               // testavimas, „Žiūrėti kaip“
     'feedback'       => ['admin'],                               // Atsiliepimai (puslapis), atsakymai
     'review'         => ['admin'],                               // 🔎 Peržiūra
+    'links'          => ['admin'],                               // „Visos nuorodos“ (visos slaptos nuorodos vienoje vietoje)
     'broadcast'      => ['admin'],                               // Pranešimai visiems (laiškai ir SMS)
     'sms'            => ['admin'],                               // SMS siuntimas
     'justifications' => ['admin'],                               // pateisinimai

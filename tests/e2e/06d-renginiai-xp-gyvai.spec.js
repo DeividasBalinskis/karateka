@@ -1,7 +1,7 @@
 // v1.19: renginio lankomumas Treniruotės puslapyje, XP keliems ir „+XP“, varžybų kovos skydelis (kumite balai, laikrodis),
 // transliacija (žiūrovų nuoroda, ekranas), kitų klubų registracija per nuorodą, DB atnaujinimas vienu mygtuku.
 const { test } = require('@playwright/test');
-const { sql, login, nav, check, noJsErrors, flashes, day } = require('./helpers');
+const { sql, linkToken, login, nav, check, noJsErrors, flashes, day } = require('./helpers');
 
 test('past event attendance on the training page, XP for several, +XP', async ({ browser }) => {
   sql(`INSERT INTO events (type, title, starts_on, start_time, registration) VALUES ('other', 'Rinktinės treniruotė (testas)', '${day(-1)}', '18:00', 1)`);
@@ -80,7 +80,7 @@ test('competition: kumite bout panel, live link and screen, club registration, D
   check('timer runs', (await a.textContent('#bt-timer')) !== '2:00');
   await a.waitForTimeout(500);
   check('live row stored', +sql(`SELECT COUNT(*) FROM tournament_live WHERE tournament_id = ${tid}`) >= 1);
-  const share = sql(`SELECT share_token FROM tournaments WHERE id = ${tid}`);
+  const share = linkToken('live', tid);
   const v = await login(browser, null, 390, 844);
   await v.goto(`varzybos-gyvai.php?k=${share}`);
   await v.waitForSelector('.gv-now .gv-board', { timeout: 10_000 });   // kovos švieslentė (be skydelio rodoma tik pora)
@@ -100,7 +100,7 @@ test('competition: kumite bout panel, live link and screen, club registration, D
   await a.click('#share-toggle');
   await a.check('#reg-open');
   await a.waitForTimeout(500);
-  const reg = sql(`SELECT reg_token FROM tournaments WHERE id = ${tid}`);
+  const reg = linkToken('reg', tid);
   const c = await login(browser, null, 390, 844);
   await c.goto(`varzybos-registracija.php?k=${reg}`);
   check('one club field', await c.locator('input[name=club]').count() === 1 && await c.locator('select[name=club]').count() === 0);

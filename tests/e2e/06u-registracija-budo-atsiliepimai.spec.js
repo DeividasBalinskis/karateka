@@ -1,7 +1,7 @@
 // v1.44: registracijos mygtukų jungikliai (Nustatymai → Registracija), Budo „🧪 +100 testinių“ dalyvių,
 // atsiliepimai: „Mano“ - tik savo (net bendroje paskyroje kitoje naršyklėje), „Visi“ - tik skaityti, kito teksto taisyti negalima.
 const { test } = require('@playwright/test');
-const { sql, day, login, nav, check, noJsErrors, openFeedback } = require('./helpers');
+const { sql, linkToken, day, login, nav, check, noJsErrors, openFeedback } = require('./helpers');
 
 test('registration toggles hide every registration button', async ({ browser }) => {
   sql("DELETE FROM site_settings WHERE name = 'reg_off'");
@@ -109,7 +109,7 @@ test('Budo: kata scores on the screen, Jiyu / Pratęsimas, timer resets itself, 
   const live = sql(`SELECT data FROM tournament_live WHERE tournament_id = ${tid} LIMIT 1`);
   check('score pushed live', /"mode":"score"/.test(live) && /7\.5/.test(live), live.slice(0, 200));
   const area = JSON.parse(live).area;
-  const share = sql(`SELECT share_token FROM tournaments WHERE id = ${tid}`);
+  const share = linkToken('live', tid);
   const scr = await login(browser, null, 1280, 720);
   await scr.goto(`varzybos-gyvai.php?k=${share}&ekranas=1&tatami=${area}`);
   await scr.waitForSelector('.scr-judges');

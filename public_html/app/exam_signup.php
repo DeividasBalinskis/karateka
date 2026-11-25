@@ -17,18 +17,36 @@ function exam_signup_ready(): bool
     return $ok;
 }
 
-/** Egzamino registracijos nuoroda (sukuriama, jei $create) */
+/**
+ * Egzamino registracijos nuoroda (sukuriama, jei $create): ['event_id', 'is_open', 'token', 'link' => access_links eilutė].
+ * C3: raktas - app/links.php (rūšis 'exam_signup'); exam_signup_links lieka registracijos jungikliui (is_open) ir seniems kodams.
+ */
 function exam_signup_link(int $eventId, bool $create = false): ?array
 {
     if (!exam_signup_ready()) {
         return null;
     }
-    $l = q_one('SELECT * FROM exam_signup_links WHERE event_id = ?', [$eventId]);
-    if (!$l && $create) {
-        q('INSERT IGNORE INTO exam_signup_links (event_id, token, is_open) VALUES (?, ?, 1)', [$eventId, exam_short_code()]);
-        $l = q_one('SELECT * FROM exam_signup_links WHERE event_id = ?', [$eventId]);
+    $flags = q_one('SELECT * FROM exam_signup_links WHERE event_id = ?', [$eventId]);
+    if (!links_ready()) {
+        if (!$flags && $create) {   // db/062 dar neimportuotas - kaip anksčiau
+            q('INSERT IGNORE INTO exam_signup_links (event_id, token, is_open) VALUES (?, ?, 1)', [$eventId, exam_short_code()]);
+            $flags = q_one('SELECT * FROM exam_signup_links WHERE event_id = ?', [$eventId]);
+        }
+        return $flags ? $flags + ['link' => null] : null;
     }
-    return $l ?: null;
+    $l = link_current('exam_signup', $eventId);
+    if (!$l && $create) {
+        $l = link_create('exam_signup', $eventId);
+    }
+    if (!$l) {
+        return null;
+    }
+    if (!$flags) {
+        // Jungiklio eilutė be rakto („#id“ - tokio kodo adrese būti negali)
+        q('INSERT IGNORE INTO exam_signup_links (event_id, token, is_open) VALUES (?, ?, 1)', [$eventId, '#' . $eventId]);
+        $flags = q_one('SELECT * FROM exam_signup_links WHERE event_id = ?', [$eventId]) ?: ['event_id' => $eventId, 'is_open' => 1];
+    }
+    return ['event_id' => $eventId, 'is_open' => (int) $flags['is_open'], 'token' => (string) link_token($l), 'link' => $l];
 }
 
 function exam_signup_url(array $link): string
@@ -36,21 +54,10 @@ function exam_signup_url(array $link): string
     return abs_url('e/?' . $link['token']);   // v1.92: trumpas adresas (e/index.php)
 }
 
-/** v1.92: trumpas registracijos kodas - 6 simboliai be painių (0/o, 1/l/i); nesikartoja su esamais */
+/** v1.92: trumpas registracijos kodas - 6 simboliai be painių (0/o, 1/l/i); nesikartoja su esamais. C3: app/links.php link_secret(). */
 function exam_short_code(): string
 {
-    $abc = 'abcdefghjkmnpqrstuvwxyz23456789';
-    for ($try = 0; $try < 20; $try++) {
-        $c = '';
-        for ($i = 0; $i < 6; $i++) {
-            $c .= $abc[random_int(0, strlen($abc) - 1)];
-        }
-        $used = (exam_signup_ready() && q_value('SELECT 1 FROM exam_signup_links WHERE token = ?', [$c])) || (string) site_setting('exam_waitlist_token', '') === $c;
-        if (!$used) {
-            return $c;
-        }
-    }
-    return bin2hex(random_bytes(12));
+    return link_secret('exam_signup');
 }
 
 /** Registracijos kodas iš adreso: trumpas (6) ar senas ilgas (24) */
@@ -148,31 +155,44 @@ function exam_signup_save(array $event, array $d): array
 
 // ---------- Asmeninis egzamino puslapis be paskyros (mano-egzaminas.php?t=) ----------
 
-/** Protokolo eilutės asmeninis raktas (sukuriamas pirmą kartą) */
+/** Protokolo eilutės asmeninis raktas (sukuriamas pirmą kartą). C3: app/links.php (rūšis 'exam_row'). */
 function exam_row_token(array $row): ?string
 {
     if (!exam_v40_ready()) {
         return null;
     }
-    if (!empty($row['token'])) {
-        return (string) $row['token'];
+    if (!links_ready()) {   // db/062 dar neimportuotas - kaip anksčiau
+        if (!empty($row['token'])) {
+            return (string) $row['token'];
+        }
+        q('UPDATE exam_protocol_rows SET token = ? WHERE id = ? AND token IS NULL', [bin2hex(random_bytes(10)), (int) $row['id']]);
+        return (string) q_value('SELECT token FROM exam_protocol_rows WHERE id = ?', [(int) $row['id']]);
     }
-    q('UPDATE exam_protocol_rows SET token = ? WHERE id = ? AND token IS NULL', [bin2hex(random_bytes(10)), (int) $row['id']]);
-    return (string) q_value('SELECT token FROM exam_protocol_rows WHERE id = ?', [(int) $row['id']]);
+    if (!empty($row['token']) && !link_current('exam_row', (int) $row['id'])) {
+        link_find('exam_row', (string) $row['token']);   // sena nuoroda - perkeliama, veikia toliau
+    }
+    $tok = link_token(link_ensure('exam_row', (int) $row['id']));
+    return $tok !== null && $tok !== '' ? $tok : null;
 }
 
 function exam_row_url(array $row): ?string
 {
     $t = exam_row_token($row);
-    return $t ? abs_url('mano-egzaminas.php?t=' . $t) : null;
+    return $t ? abs_url('mano-egzaminas.php?k=' . $t) : null;
 }
 
 /** ↻ Nauja nuoroda: senoji asmeninė nuoroda nebeveiks (A3) */
 function exam_row_new_token(int $rowId): void
 {
-    if (exam_v40_ready()) {
-        q('UPDATE exam_protocol_rows SET token = ? WHERE id = ?', [bin2hex(random_bytes(10)), $rowId]);
+    if (!exam_v40_ready()) {
+        return;
     }
+    if (!links_ready()) {
+        q('UPDATE exam_protocol_rows SET token = ? WHERE id = ?', [bin2hex(random_bytes(10)), $rowId]);
+        return;
+    }
+    $l = link_current('exam_row', $rowId);
+    $l ? link_renew((int) $l['id']) : link_create('exam_row', $rowId);
 }
 
 /** „Jau užsiregistravai?“ - ne daugiau 10 nesėkmių per valandą iš vieno IP (duomenų bazėje, ne tik sesijoje) */
@@ -192,12 +212,14 @@ function exam_find_open(array $event): bool
     return (string) ($event['ends_on'] ?: $event['starts_on']) >= date('Y-m-d');
 }
 
+/** Protokolo eilutė pagal asmeninę nuorodą (null - nuoroda neveikia, priežastis - link_reason()) */
 function exam_row_by_token(string $token): ?array
 {
-    if (!exam_v40_ready() || !preg_match('/^[a-f0-9]{20}$/', $token)) {
+    if (!exam_v40_ready() || $token === '') {
         return null;
     }
-    return q_one('SELECT * FROM exam_protocol_rows WHERE token = ? AND deleted_at IS NULL', [$token]);
+    $l = link_find('exam_row', $token);
+    return $l ? (q_one('SELECT * FROM exam_protocol_rows WHERE id = ? AND deleted_at IS NULL', [(int) $l['owner_id']]) ?: null) : null;
 }
 
 /** Rasti savo eilutę protokole: vardas pavardė + gimimo data (be paskyros) */
@@ -326,18 +348,22 @@ function exam_waitlist_ready(): bool
     return $ok;
 }
 
-/** Registracijos nuorodos raktas (24 simboliai, kaip egzamino nuorodų); $new - sukurti naują (sena nebeveiks) */
+/** Registracijos nuorodos raktas ('' - nėra); $new - sukurti naują (sena nebeveiks). C3: app/links.php (rūšis 'exam_waitlist'). */
 function exam_waitlist_token(bool $new = false): string
 {
-    $t = (string) site_setting('exam_waitlist_token', '');
-    if ($new || !exam_code_ok($t)) {
-        if (!$new && $t === '') {
-            return '';
+    if (!links_ready()) {   // db/062 dar neimportuotas - kaip anksčiau
+        $t = (string) site_setting('exam_waitlist_token', '');
+        if ($new) {
+            $t = exam_short_code();
+            set_site_setting('exam_waitlist_token', $t);
         }
-        $t = exam_short_code();
-        set_site_setting('exam_waitlist_token', $t);
+        return exam_code_ok($t) ? $t : '';
     }
-    return $t;
+    $l = link_current('exam_waitlist');
+    if ($new) {
+        $l = $l ? link_renew((int) $l['id']) : link_create('exam_waitlist');
+    }
+    return (string) link_token($l);
 }
 
 function exam_waitlist_url(): string

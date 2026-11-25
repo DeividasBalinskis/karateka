@@ -103,6 +103,7 @@ Where today's code differs from the table above (kept as it was, waiting for an 
 | `testing` | Testavimas, „Žiūrėti kaip“ | – | – | – | – | – | ✔ |
 | `feedback` | Valdymas → Atsiliepimai (read, answer, status) | – | – | – | – | – | ✔ |
 | `review` | 🔎 Peržiūra | – | – | – | – | – | ✔ |
+| `links` | „Visos nuorodos“: every secret link in one place (each link's own page uses that page's action) | – | – | – | – | – | ✔ |
 | `broadcast` | Pranešimai to all (e-mail and SMS) | – | – | – | – | – | ✔ |
 | `sms` | Send SMS (also the „SMS tėvams“ boxes) | – | – | – | – | – | ✔ |
 | `justifications` | Pateisinimai | – | – | – | – | – | ✔ |
@@ -188,24 +189,24 @@ Where today's code differs from the table above (kept as it was, waiting for an 
 
 ## 5. Secret links and keys
 
-**Target: step C3. New links follow these rules from now on.**
+**Today (step C3, db/062).** One table `access_links`, one file `app/links.php`, one page Valdymas → „🔗 Visos nuorodos“ (`admin/nuorodos.php`).
 
-1. Only `app/links.php` creates or checks a secret link.
-2. A link's secret is long and random (32 bytes). The database keeps only its fingerprint. A link that must be copied again later also keeps a locked copy.
-3. One address parameter for all link pages: `?k=`. Old `?t=` links keep working.
-4. Every link has: kind, what it belongs to, a label, read or write, who made it, when, when it ends, how often and when it was last used, when it was switched off.
-5. Every link shows three buttons in one shared block: **Kopijuoti · ↻ Nauja nuoroda · Išjungti**, and "sukurta …, paskutinį kartą naudota …".
-6. A link that can write asks for a name first, gets a "Baigti darbą" button, and every change it makes is saved with that name.
-7. No link is created just by opening a page. Creating is always a button.
+1. Only `app/links.php` creates or checks a secret link (`link_create`, `link_find`, `link_alive`, `link_box`).
+2. A link's secret is long and random (32 bytes); the short exam and excuse codes stay 6 signs (decision 2026-11-22). The database keeps only its fingerprint and a locked copy (so it can be copied again). Old keys in old places are read once and moved, never deleted.
+3. One address parameter for all link pages: `?k=`. Old `?t=` (personal exam page) and `?c=` (phone QR) links keep working.
+4. Every link has: kind, what it belongs to, a label, read or write, who made it, when, when it ends, how often and when it was last used, when it was switched off or replaced.
+5. Every link shows three buttons in one shared block (`link_box`): **Kopijuoti · ↻ Nauja nuoroda · Išjungti**, and "sukurta …, paskutinį kartą naudota …".
+6. A link that can write (secretariat, awards tablet, Budo trial, LTKF editor) asks for a name first, has a "Baigti darbą" button (LTKF editor: not yet), and its changes are saved with that name (Budo history, awarded groups, LTKF page versions).
+7. No link is created just by opening a page; creating is a button. Exception: links that come with their owner (Budo spectators, registration and awards, phone QR, personal exam page, quiz) are made on the first staff open; once „Išjungta“ they stay off until „Sukurti nuorodą“.
 8. A link never returns another person's existing link. Getting a lost link back needs a second proof or goes by e-mail or SMS.
 9. Wrong guesses are counted per IP in the database, not only in the visitor's session.
 10. On link pages minors are shown as "Vardas P.", phones are masked, birth dates show the year — unless Denis decides a role needs more.
 11. Secret parts of addresses are never stored in feedback, logs or sessions.
 12. One shared page for a link that does not work: "Nuoroda neveikia. Ji išjungta, pasibaigė arba pakeista. Paprašykite naujos nuorodos to, kas jums ją davė."
 13. One admin page "Visos nuorodos" lists every active link.
-14. Default lifetimes are proposed in the step and confirmed by Denis (questions 5, 21).
+14. Lifetimes: secretariat - until 2 days after the competition (`LINK_SEKR_DAYS`); personal exam page - 30 days after the exam (then the page explains, without personal data); the others have no end unless one is set (`expires_at`).
 
-Kinds: `sekr`, `demo`, `live`, `reg`, `awards`, `quiz`, `exam_signup`, `exam_row`, `ltkf_editor`, `ltkf_review`, `join`, plus the e-mail kinds that already follow these rules (`app/tokens.php`).
+Kinds (`LINK_KINDS`): `sekr`, `awards`, `live`, `reg`, `demo`, `cam`, `exam_signup`, `exam_waitlist`, `exam_row`, `quiz`, `just`, `ltkf_editor`, `ltkf_review`. Already safe and only listed on „Visos nuorodos“: e-mail links (`app/tokens.php`: verify, consent, reset, invite, change e-mail, join), codes for another device (`app/device_codes.php`), the API key.
 
 ## 6. Feedback loop
 

@@ -18,7 +18,7 @@ if (!empty($in['reset'])) {
 }
 
 // Leidžiami tik žinomi skyriai (ir tie, kurių šiuo metu nesimato - pvz. LTKF be nuorodos)
-$known = array_flip(['siandien', 'treniruote', 'egzaminai', 'renginiai', 'nariai', 'patvirtinimai', 'atsiliepimai', 'perziura', 'pateisinimai', 'pranesimai', 'xp', 'testai', 'federacija', 'ltkf', 'nustatymai']);
+$known = array_flip(['siandien', 'treniruote', 'egzaminai', 'renginiai', 'nariai', 'patvirtinimai', 'atsiliepimai', 'perziura', 'pateisinimai', 'pranesimai', 'xp', 'testai', 'federacija', 'ltkf', 'nuorodos', 'nustatymai']);
 $clean = function ($v): string {
     return mb_substr(trim((string) preg_replace('/\s+/u', ' ', strip_tags((string) $v))), 0, 30);
 };

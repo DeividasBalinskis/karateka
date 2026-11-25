@@ -185,6 +185,16 @@ Updated: 2026-11-25 · version v2.10 · main
 - 2026-11-25 v2.09: Deividas used Peržiūra on test (jobs #1, #2 „review“, all good, one comment on the side menu) - done by hand in the main session:
   side menu max-height calc(100vh - 108px) + padding-bottom 64px (widgets.css); admin/perziura.php action `close` („✓“ + reply) for queued/working jobs;
   app/review.json → rev 2.09-1. Test 07zj now writes its own manifest (beforeAll / afterAll restore), so review.json can change freely.
+- 2026-11-25 C3 (side session, branch `claude/c3-nuorodos-1bb636`, not merged, VERSION not bumped): secret links - one model. db/062 `access_links` (+ `tournaments.saved_by`,
+  `tournament_versions.saved_by`, `tournament_awards.by_name`), `app/links.php` (LINK_KINDS: sekr, awards, live, reg, demo, cam, exam_signup, exam_waitlist, exam_row, quiz, just,
+  ltkf_editor, ltkf_review; fingerprint + locked copy, `links_key` in config.example.php; `link_find` / `link_alive` / `link_box` / `link_dead`), `admin/nuorodos.php` „Visos nuorodos“
+  (menu key `nuorodos`, also Nustatymai → Sistema). Old tokens move on first use (`links_import` once, mark `links_imported`; `link_legacy_find` per key) - old columns/settings untouched.
+  Every link page shows one „Nuoroda neveikia …“ page. Secretariat: one link per competition (`&t=N` = tatami hint), 2 days after (LINK_SEKR_DAYS), no history restore /
+  registration / stream settings, „Baigti darbą“; awards tablet asks a name (saved as `by_name`); Budo history shows „👤 name“ per copy. Tests: new `tests/e2e/links.spec.js`;
+  `tests/setup/link.php` + helpers `linkToken` / `linkNew` (tests read keys through PHP now); 17 specs updated (06d/e/f/i/l/p/q/s/t/u, 07i/k/z/zb/zd/ze/zh/zk), 07-pages has the new page.
+  CI on the branch: run 45640461052 ✓ 38/38 (links, 06d, 06q, 06t, 07-pages, 07k); run 45638183610 73/75 (06e/f/i/l/p/s/u, 07z/zb/zg/zh/zk ✓; 07i fails on main the same way; links fixed after).
+  07v, 07zd, 07ze, 07zf (and flaky 06z:155) fail on main v2.10 with the same errors - not from C3. Screenshots not taken (no PHP on the PC) - after the release on test.
+  Merge notes: db file is 062 (C1 branch has 061_paskyru_zurnalas.sql - DB_REQUIRED takes the higher one). Touches `app/tournaments.php`, `admin/varzybu-sistema.php` (link panels), one line in `assets/varzybos.js` (history row), `app/layout.php` menu item, `app/bootstrap.php` require.
 - 2026-11-25 v2.10: Peržiūra off (`review_enabled()` = site setting `review_on` === '1'; off → no overlay, no menu item, admin/perziura.php shows a link
   to the switch, perziura-api.php answers {ok:false, off:true}). Switch on admin/testavimas.php (#perziura). app/review.json items emptied (all approved).
   PC task `karateka-perziuros-eile` disabled; cloud routine disabled. 07zj turns review on in beforeAll and has an „off“ test.

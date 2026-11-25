@@ -7,14 +7,16 @@ require __DIR__ . '/app/bootstrap.php';
 
 $k = (string) (get('k') ?: post('k'));
 // Iš asmeninio egzamino puslapio (mano-egzaminas.php, &e=): testas veikia ir neatidarius dalijimosi, rezultatas - į protokolą
-$examRow = exam_row_by_token((string) (get('e') ?: post('e')));
-$quiz = quiz_by_share_token($k) ?: ($examRow && preg_match('/^[a-f0-9]{24}$/', $k) ? q_one('SELECT * FROM quizzes WHERE share_token = ? AND is_published = 1', [$k]) : null);
+$eTok = (string) (get('e') ?: post('e'));
+$examRow = $eTok !== '' ? exam_row_by_token($eTok) : null;
+// C3: testo nuoroda - app/links.php (rūšis 'quiz'); iš asmeninio egzamino puslapio veikia ir neatidarius dalijimosi
+$quiz = quiz_by_share_token($k, (bool) $examRow);
 if (!$quiz) {
-    not_found();
+    link_dead();
 }
 $qzId = (int) $quiz['id'];
 $kid = (bool) $quiz['kids_mode'];
-$self = 'testas-svecias.php?k=' . $k . ($examRow ? '&e=' . $examRow['token'] : '');
+$self = 'testas-svecias.php?k=' . $k . ($examRow ? '&e=' . $eTok : '');
 $errors = [];
 $result = null;
 $state = $_SESSION['guest_quiz'][$qzId] ?? null;
@@ -148,7 +150,7 @@ elseif ($state):
   </div>
   <?php if ($left !== null): ?><div class="quiz-timer" id="quizTimer" data-left="<?= $left ?>" title="<?= te('Liko laiko') ?>">⏱ <?= sprintf('%d:%02d', intdiv($left, 60), $left % 60) ?></div><?php endif; ?>
   <form method="post" class="quiz-form <?= $kid ? 'kid' : '' ?>" id="quizForm">
-    <?= csrf_field() ?><input type="hidden" name="k" value="<?= e($k) ?>"><?= $examRow ? '<input type="hidden" name="e" value="' . e($examRow['token']) . '">' : '' ?><input type="hidden" name="action" value="finish">
+    <?= csrf_field() ?><input type="hidden" name="k" value="<?= e($k) ?>"><?= $examRow ? '<input type="hidden" name="e" value="' . e($eTok) . '">' : '' ?><input type="hidden" name="action" value="finish">
     <?php foreach ($ids as $n => $id): $q = $qs[$id]; $ans = $q['answers']; shuffle($ans); ?>
       <fieldset class="panel card quiz-q">
         <legend class="kicker"><?= $n + 1 ?> / <?= count($ids) ?></legend>
@@ -202,7 +204,7 @@ else:
   </div>
   <?= form_errors($errors) ?>
   <form method="post" class="panel card form" id="guestStart">
-    <?= csrf_field() ?><input type="hidden" name="k" value="<?= e($k) ?>"><?= $examRow ? '<input type="hidden" name="e" value="' . e($examRow['token']) . '">' : '' ?><input type="hidden" name="action" value="start">
+    <?= csrf_field() ?><input type="hidden" name="k" value="<?= e($k) ?>"><?= $examRow ? '<input type="hidden" name="e" value="' . e($eTok) . '">' : '' ?><input type="hidden" name="action" value="start">
     <div style="position:absolute; left:-9999px;" aria-hidden="true"><input type="text" name="website" tabindex="-1" autocomplete="off"></div>
     <div class="form-row">
       <label><?= te('Vardas ir pavardė') ?> <input type="text" name="name" maxlength="120" required autocomplete="name" value="<?= e(post('name') ?: ($examRow['name'] ?? '')) ?>"></label>

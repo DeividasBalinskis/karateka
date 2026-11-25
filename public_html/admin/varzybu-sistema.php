@@ -20,15 +20,23 @@ if (!$t) {
     redirect('admin/varzybos.php');
 }
 
-// Sekretoriato nuoroda: sukurti / pakeisti / išjungti (treneris ar adminas)
+// Sekretoriato nuoroda: sukurti / pakeisti / išjungti (treneris ar adminas). C3: mygtukai - bendras blokas (link_box → admin/nuorodos.php);
+// šie seni veiksmai palikti, jei kas nors dar spaudžia seną atidarytą puslapį.
 if (is_post() && in_array(post('action'), ['sekr_on', 'sekr_off'], true)) {
     csrf_check();
     if ($sekr || $demo) {
         forbidden();
     }
-    varz_sekr_set((int) $t['id'], post('action') === 'sekr_on');
+    post('action') === 'sekr_on' ? link_create('sekr', (int) $t['id']) : link_off_kind('sekr', (int) $t['id']);
     flash('ok', post('action') === 'sekr_on' ? t('Sekretoriato nuoroda sukurta - nukopijuokite ir nusiųskite.') : t('Sekretoriato nuoroda išjungta - su ja nebeprisijungs.'));
     redirect('admin/varzybu-sistema.php?id=' . (int) $t['id'] . '&sekr=1');
+}
+// C3 (sprendimas 2026-11-20, klausimas 4): sekretoriatas per nuorodą - tik rezultatai ir apdovanojimai: istorijos neatkuria,
+// registracijos ir transliacijos nustatymų nekeičia
+if ($sekr && is_post() && (get('restore') || get('reg'))) {
+    http_response_code(403);
+    header('Content-Type: application/json; charset=utf-8');
+    exit(json_encode(['ok' => false, 'error' => 'Sekretoriato nuoroda to keisti negali - paprašykite trenerio.'], JSON_UNESCAPED_UNICODE));
 }
 
 // Nauji užsiregistravę per nuorodą (JSON) - mygtukas „↻“ Dalyvių skirtuke
@@ -136,7 +144,7 @@ if (get('awards')) {
         $in = json_decode((string) file_get_contents('php://input'), true) ?: [];
         $st = in_array($in['status'] ?? '', ['sent', 'done'], true) ? $in['status'] : '';
         foreach (array_slice((array) ($in['cats'] ?? [$in['cat'] ?? '']), 0, 100) as $cid) {
-            tournament_award_set((int) $t['id'], (string) $cid, $st);
+            tournament_award_set((int) $t['id'], (string) $cid, $st, varz_who($me));
         }
     }
     exit(json_encode(['ok' => true, 'awards' => (object) tournament_awards((int) $t['id'])], JSON_UNESCAPED_UNICODE));
@@ -189,7 +197,7 @@ if (is_post()) {
         http_response_code(413);
         exit(json_encode(['ok' => false, 'error' => 'Per daug duomenų.']));
     }
-    $v = tournament_save_state((int) $t['id'], $in['state'], $in['results'], (int) ($in['version'] ?? -1));
+    $v = tournament_save_state((int) $t['id'], $in['state'], $in['results'], (int) ($in['version'] ?? -1), varz_who($me));   // C3: kas išsaugojo
     if ($v === null) {
         http_response_code(409);
         exit(json_encode(['ok' => false, 'error' => 'Kitas žmogus jau pakeitė varžybas.']));
@@ -203,23 +211,28 @@ foreach (BELTS as $lvl => $b) {
     $belts[$lvl] = [$b[0], $b[1], $b[2]];
 }
 // Nuorodos: žiūrovams ir ekranams, kitų klubų registracijai (kol neimportuotas db/026 - nerodomos)
+// C3: nuorodos - app/links.php; „Išjungta“ nuoroda nekuriama iš naujo, kol nepaspaudžiama „Sukurti nuorodą“
+$linkUrl = function (string $kind, string $page) use ($t): string {
+    try {
+        $tok = tournament_token($t, $kind);
+        return $tok !== '' ? abs_url($page . '?k=' . $tok) : '';
+    } catch (PDOException $ex) {
+        return '';   // dar neimportuotas db/026 / db/033
+    }
+};
+$shareUrl = $linkUrl('share', 'varzybos-gyvai.php');
+$regUrl = $linkUrl('reg', 'varzybos-registracija.php');
+$awardsUrl = $linkUrl('awards', 'varzybos-apdovanojimai.php');
 try {
-    $shareUrl = abs_url('varzybos-gyvai.php?k=' . tournament_token($t, 'share'));
-    $regUrl = abs_url('varzybos-registracija.php?k=' . tournament_token($t, 'reg'));
     $regOpen = (bool) q_value('SELECT reg_open FROM tournaments WHERE id = ?', [(int) $t['id']]);
+    $linksOk = true;
 } catch (PDOException $ex) {
-    $shareUrl = $regUrl = '';
-    $regOpen = false;
-}
-try {
-    $awardsUrl = abs_url('varzybos-apdovanojimai.php?k=' . tournament_token($t, 'awards'));
-} catch (PDOException $ex) {
-    $awardsUrl = '';   // dar neimportuotas db/033
+    $regOpen = $linksOk = false;
 }
 // v1.97: telefono kamera transliacijai (vdo.ninja) - raktas srauto vardui; puslapis su paaiškinimu - admin/varzybu-transliacija.php
 // v1.99: transliacija telefonais - kiekvieno tatamio telefono vaizdas (vdo.ninja) kovos skydeliui; telefonai jungiami Transliacijos puslapyje
 $cams = [];
-if ($shareUrl) {
+if ($linksOk) {
     $camKey = varz_cam_key();
     $camIds = array_map('intval', array_column((array) (tournament_state($t)['areas'] ?? []), 'id'));
     foreach (array_unique(array_merge($camIds, range(1, 8))) as $aid) {
@@ -229,7 +242,7 @@ if ($shareUrl) {
 $streamUrl = url('admin/varzybu-transliacija.php?id=' . (int) $t['id']);
 $cfg = [
     'id' => (int) $t['id'], 'title' => $t['title'], 'version' => (int) $t['version'], 'isTest' => (bool) $t['is_test'],
-    'liveApi' => $shareUrl ? url('admin/varzybu-sistema.php?id=' . (int) $t['id'] . '&live=1') : '',
+    'liveApi' => $linksOk ? url('admin/varzybu-sistema.php?id=' . (int) $t['id'] . '&live=1') : '',
     'entriesApi' => url('admin/varzybu-sistema.php?id=' . (int) $t['id'] . '&entries=1'),
     'historyApi' => url('admin/varzybu-sistema.php?id=' . (int) $t['id'] . '&history=1'),
     'uiApi' => url('admin/varzybu-sistema.php?id=' . (int) $t['id'] . '&ui=1'), 'ui' => varz_ui(),
@@ -283,12 +296,13 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
       <?= render_lang_switch(tl_lang()) ?>
       <span class="save-state ok" id="save-state" role="status">Išsaugota ✓</span>
       <?= theme_picker_html($asSekr ? 'device' : 'taika', varz_ui()['theme'], 'vz-link') ?>
-      <?php if ($sekr): ?><span class="vz-link vz-sekr-who" title="Prisijungta per sekretoriato nuorodą">🧑‍💼 <?= e($me['first_name']) ?></span>
+      <?php if ($sekr): ?><span class="vz-link vz-sekr-who" title="Prisijungta per sekretoriato nuorodą - šis vardas įrašomas prie kiekvieno pakeitimo">🧑‍💼 <?= e($me['first_name']) ?></span>
+        <form method="post" action="<?= url('varzybos-sekretoriatas.php') ?>" class="inline-form" onsubmit="return confirm('Baigti darbą šiame įrenginyje?')"><?= csrf_field() ?><input type="hidden" name="action" value="end"><input type="hidden" name="id" value="<?= (int) $t['id'] ?>"><button class="vz-link" type="submit" id="sekr-end">Baigti darbą</button></form>
         <a class="vz-link" href="<?= url('irenginys.php?r=' . rawurlencode($_SERVER['REQUEST_URI'] ?? '')) ?>" title="Administratoriaus kodas: šiame įrenginyje įjungti visą valdymą">🔑<span class="hide-sm"> Admin kodas</span></a><?php endif; ?>
       <?php if (!$sekr && ($dc = device_code_current())): ?><span class="vz-link" title="Šis įrenginys prisijungęs su administratoriaus kodu (Nustatymai → Kodas kitam įrenginiui)">🔑<span class="hide-sm"> iki <?= e(date('H:i', strtotime((string) $dc['session_until']))) ?></span></span><?php endif; ?>
       <?php if (!$asSekr && !$demo): ?><button type="button" class="vz-link" id="sekr-toggle" aria-expanded="false" title="Nuoroda sekretoriatui be paskyros">🧑‍💼<span class="hide-sm"> Sekretoriatas</span></button><?php endif; ?>
-      <button type="button" class="vz-link" id="hist-toggle" aria-expanded="false" title="Atkurti, kaip buvo anksčiau">⟲<span class="hide-sm"> Istorija</span></button>
-      <?php if ($shareUrl): ?><button type="button" class="vz-link" id="share-toggle" aria-expanded="false" title="Transliacija, ekranai, apdovanojimai, registracija">📡<span class="hide-sm"> Transliacija ir registracija</span></button><?php endif; ?>
+      <?php if (!$sekr): /* C3: sekretoriatas istorijos neatkuria (sprendimas 2026-11-20) */ ?><button type="button" class="vz-link" id="hist-toggle" aria-expanded="false" title="Atkurti, kaip buvo anksčiau">⟲<span class="hide-sm"> Istorija</span></button><?php endif; ?>
+      <?php if ($linksOk): ?><button type="button" class="vz-link" id="share-toggle" aria-expanded="false" title="Transliacija, ekranai, apdovanojimai, registracija">📡<span class="hide-sm"> Transliacija ir registracija</span></button><?php endif; ?>
       <a class="vz-link" href="<?= url('varzybu-rezultatai.php?id=' . (int) $t['id']) ?>" target="_blank" rel="noopener" title="Viešas rezultatų puslapis"><span class="hide-sm">Viešas puslapis </span>↗</a>
     </div>
   </div>
@@ -330,19 +344,13 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
 <div class="sekr-preview"><b>👁 Peržiūra: taip šias varžybas mato sekretoriatas</b> <span>be paskyros, tik šios varžybos, be klubo narių duomenų ir bendrų nustatymų</span>
   <a class="btn btn-sm" href="<?= url('admin/varzybu-sistema.php?id=' . (int) $t['id']) ?>">✕ Baigti peržiūrą</a></div>
 <?php endif; ?>
-<?php if (!$asSekr && !$demo): $sekrTok = varz_sekr_token((int) $t['id']); $sekrUrl = $sekrTok !== '' ? abs_url('varzybos-sekretoriatas.php?k=' . $sekrTok) : ''; ?>
+<?php if (!$asSekr && !$demo): $sekrLink = link_current('sekr', (int) $t['id']); $sekrUrl = link_url($sekrLink); ?>
 <div class="share-panel" id="sekr-panel"<?= get('sekr') ? '' : ' hidden' ?>>
   <div class="sp-block">
     <?php /* #169: aprašymas - tik užvedus pelę ant pavadinimo */ ?>
     <b title="Atidaręs nuorodą žmogus įrašo savo vardą ir gali vesti šias varžybas: dalyviai, kategorijos, kovos, balai, apdovanojimai. Kitų varžybų, klubo narių duomenų ir karateka.lt valdymo nemato. Išjungus ar pakeitus nuorodą - prieiga baigiasi.">🧑‍💼 Sekretoriato nuoroda (be paskyros)</b>
-    <?php if ($sekrUrl): ?>
-      <div class="sp-row"><input class="sel sp-url" readonly value="<?= e($sekrUrl) ?>" id="sekr-url" aria-label="Sekretoriato nuoroda" onclick="this.select()"><button type="button" class="btn" data-copy="<?= e($sekrUrl) ?>">Kopijuoti</button></div>
-      <form method="post" class="sp-row"><?= csrf_field() ?>
-        <button class="btn" name="action" value="sekr_on" type="submit" onclick="return confirm('Sukurti naują nuorodą? Sena nebeveiks.')">↻ Nauja nuoroda</button>
-        <button class="btn btn-danger" name="action" value="sekr_off" type="submit">Išjungti</button></form>
-    <?php else: ?>
-      <form method="post" class="sp-row"><?= csrf_field() ?><button class="btn btn-primary" name="action" value="sekr_on" type="submit">Sukurti sekretoriato nuorodą</button></form>
-    <?php endif; ?>
+    <?php /* C3: viena nuoroda visoms varžyboms (ne tatamiui); veikia iki 2 d. po varžybų; atidaręs įrašo vardą - jis matomas istorijoje */ ?>
+    <?= link_box('sekr', (int) $t['id'], ['row' => $sekrLink, 'id' => 'sekr-url', 'create' => 'Sukurti sekretoriato nuorodą', 'back' => '/admin/varzybu-sistema.php?id=' . (int) $t['id'] . '&sekr=1']) ?>
     <div class="sp-row"><a class="btn" href="<?= url('admin/varzybu-sistema.php?id=' . (int) $t['id'] . '&kaip=sekretoriatas') ?>" id="sekr-preview">👁 Peržiūrėti kaip sekretoriatas</a></div>
   </div>
   <?php /* v2.01: sekretoriato darbastalis vienam tatamiui - atidaryti čia arba nuoroda tatamiui (mygtukus įdeda assets/varzybos/views/desk.js) */ ?>
@@ -366,7 +374,7 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
 })();
 </script>
 <?php endif; ?>
-<div class="share-panel" id="share-panel" hidden>
+<div class="share-panel" id="share-panel"<?= get('share') ? '' : ' hidden' ?>>
   <div class="sp-block">
     <b>📺 Ekranai salėje</b>
     <p class="muted small">Atidarykite tatamio ekraną antrame monitoriuje ar televizoriuje (naršyklėje, F11 - visas ekranas). Rodoma kova, balai, laikrodis ir kas eina toliau.</p>
@@ -377,12 +385,12 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
     <p class="muted small">Telefonai prisijungia per QR kodą ir filmuoja tatamius. Vaizdą su balais mato žiūrovai („📹 Žiūrėti gyvai“) ir sekretoriatas kovoje („📹 Vaizdas“).</p>
     <?php if ($cams): ?><div class="sp-row"><a class="btn btn-primary" href="<?= e($streamUrl) ?>">🎥 Prijungti telefonus →</a></div><?php endif; ?>
   </div>
-  <?php if ($awardsUrl): ?>
+  <?php if ($linksOk): ?>
   <div class="sp-block">
     <b>🏅 Apdovanojimų planšetė</b>
     <p class="muted small">Atidarykite planšetėje prie apdovanojimų. Amžiaus grupė užsidega žaliai, kai visos jos rungtys (ir kata, ir kumite) baigtos ir išsiųstos.
       Apdovanojęs žmogus paspaudžia „Užbaigti“. Nuoroda slapta - duokite tik apdovanojimus vedančiam.</p>
-    <div class="sp-row"><input class="sel sp-url" readonly value="<?= e($awardsUrl) ?>" aria-label="Apdovanojimų nuoroda"><button type="button" class="btn" data-copy="<?= e($awardsUrl) ?>">Kopijuoti</button><a class="btn" href="<?= e($awardsUrl) ?>" target="_blank" rel="noopener">Atidaryti ↗</a></div>
+    <?= link_box('awards', (int) $t['id'], ['open' => true, 'id' => 'awards-url', 'back' => '/admin/varzybu-sistema.php?id=' . (int) $t['id'] . '&share=1']) ?>
   </div>
   <?php endif; ?>
   <div class="sp-block">
@@ -395,13 +403,13 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
   <div class="sp-block">
     <b>🔗 Nuoroda žiūrovams</b>
     <p class="muted small">Tėvai ir kiti klubai telefone mato, kas vyksta ant kiekvieno tatamio, kas eina toliau ir rezultatus.</p>
-    <div class="sp-row"><input class="sel sp-url" readonly value="<?= e($shareUrl) ?>" aria-label="Nuoroda žiūrovams"><button type="button" class="btn" data-copy="<?= e($shareUrl) ?>">Kopijuoti</button><a class="btn" href="<?= e($shareUrl) ?>" target="_blank" rel="noopener">Atidaryti ↗</a></div>
+    <?= link_box('live', (int) $t['id'], ['open' => true, 'id' => 'share-url', 'back' => '/admin/varzybu-sistema.php?id=' . (int) $t['id'] . '&share=1']) ?>
   </div>
   <div class="sp-block">
     <b>📝 Registracija klubams</b>
     <p class="muted small">Kitų klubų treneriai ir Karatekos tėvai užpildo: klubas, vardas, pavardė, gimimo metai, lytis, diržas, telefonas. Jūs matote juos skirtuke „Dalyviai“ ir pridedate vienu mygtuku.</p>
     <div class="sp-row"><label class="small"><input type="checkbox" id="reg-open"<?= $regOpen ? ' checked' : '' ?>> Registracija atidaryta</label></div>
-    <div class="sp-row"><input class="sel sp-url" readonly value="<?= e($regUrl) ?>" aria-label="Registracijos nuoroda"><button type="button" class="btn" data-copy="<?= e($regUrl) ?>">Kopijuoti</button><a class="btn" href="<?= e($regUrl) ?>" target="_blank" rel="noopener">Atidaryti ↗</a></div>
+    <?= link_box('reg', (int) $t['id'], ['open' => true, 'id' => 'reg-url', 'back' => '/admin/varzybu-sistema.php?id=' . (int) $t['id'] . '&share=1']) ?>
   </div>
 </div>
 <div class="notice" id="conflict" hidden><p>Kitas žmogus ką tik pakeitė šias varžybas. Kad neperrašytumėte jo pakeitimų, <a href="">perkraukite puslapį</a>.</p></div>

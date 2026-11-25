@@ -4,9 +4,21 @@
 // v2.01: nuoroda tatamiui (&t=N) - po vardo iškart atsidaro to tatamio sekretoriato darbastalis.
 require __DIR__ . '/app/bootstrap.php';
 
+// C3: viena nuoroda varžyboms (app/links.php, rūšis 'sekr'); veikia iki LINK_SEKR_DAYS dienų po varžybų. „Baigti darbą“ - action=end.
 $token = (string) (get('k') ?: post('k'));
-$tid = varz_sekr_find($token);
+if (is_post() && post('action') === 'end') {
+    csrf_check();
+    varz_sekr_end((int) post('id'));
+    varz_html_head('Sekretoriatas', 'vz-public vz-demo-start');
+    echo '<main class="vzh demo-start"><div class="panel demo-card"><h2>Darbas baigtas</h2><p class="muted">Šiame įrenginyje sekretoriato prieiga baigta. Norėdami tęsti, vėl atidarykite nuorodą.</p></div></main></body></html>';
+    exit;
+}
+$link = link_find('sekr', $token);
+$tid = $link ? (int) $link['owner_id'] : 0;
 $t = $tid ? tournament_get($tid) : null;
+if (!$t) {
+    link_dead();
+}
 $areaId = max(0, (int) (get('t') ?: post('t')));
 $areaName = '';
 if ($t && $areaId) {
@@ -28,9 +40,9 @@ if (is_post() && $t) {
     csrf_check();
     $name = trim((string) post('name'));
     if (mb_strlen($name) < 2) {
-        $error = 'Įrašykite savo vardą - kad būtų aišku, kas vedė varžybas.';
+        $error = 'Įrašykite savo vardą - kad būtų aišku, kas vedė varžybas.';   // vardas išsaugomas su kiekvienu pakeitimu (Budo istorija)
     } else {
-        varz_sekr_start($tid, $name);
+        varz_sekr_start($link, $name);
         redirect($dest);
     }
 }
@@ -44,9 +56,7 @@ varz_html_head('Sekretoriatas', 'vz-public vz-demo-start');
   </div>
 </header>
 <main class="vzh demo-start">
-  <?php if (!$t): ?>
-    <div class="panel demo-card"><h2>Nuoroda neveikia</h2><p class="muted">Ji išjungta arba pakeista. Paprašykite naujos nuorodos varžybų organizatoriaus.</p></div>
-  <?php else: ?>
+  <?php if ($t): ?>
     <form method="post" class="panel demo-card">
       <?= csrf_field() ?><input type="hidden" name="k" value="<?= e($token) ?>"><?php if ($areaId): ?><input type="hidden" name="t" value="<?= $areaId ?>"><?php endif; ?>
       <h2>🧑‍💼 Sekretoriatas</h2>

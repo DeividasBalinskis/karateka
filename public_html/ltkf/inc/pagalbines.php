@@ -476,8 +476,13 @@ function ltkf_can_view(string $mode): bool
     if ((karateka_config()['env'] ?? 'live') !== 'live' || $insider) {
         return true;
     }
+    $h = (string) (karateka_sesija()['ltkf_review'] ?? '');
+    $ok = ltkf_link_ok('ltkf_review', $h);   // C3: nuorodų lentelė (app/links.php)
+    if ($ok !== null) {
+        return is_array($ok);
+    }
     $tok = ltkf_setting('ltkf_review_token', '');
-    return $tok !== '' && hash_equals(hash('sha256', $tok), (string) (karateka_sesija()['ltkf_review'] ?? ''));
+    return $tok !== '' && hash_equals(hash('sha256', $tok), $h);
 }
 
 /** Ar prisijungęs karateka.lt administratorius (tik jis mato nuorodą atgal į karateka.lt) */

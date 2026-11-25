@@ -7,8 +7,7 @@ require __DIR__ . '/app/bootstrap.php';
 
 $t = tournament_by_token((string) get('k'), 'share');
 if (!$t) {
-    http_response_code(404);
-    exit('<!doctype html><meta charset="utf-8"><title>Nuoroda netinkama</title><p style="font-family:system-ui;padding:40px;">Nuoroda netinkama arba varžybos ištrintos.</p>');
+    link_dead((bool) get('json') || is_post());   // C3: viena „Nuoroda neveikia“ žinutė
 }
 
 // v1.98-v1.99: bandomoji kova (transliacijos peržiūrai ir žiūrovų vaizdui) - balus ± keičia treneris ar šių varžybų sekretoriatas.
@@ -171,7 +170,7 @@ $screen = (bool) get('ekranas');
 // Juosta (?juosta=1&tatami=N): permatomas fonas, apačioje - kova, balai ir laikas. v1.99: naudojama Transliacijos puslapio peržiūroje ant telefono
 // vaizdo; &valdymas=1 - treneriui ir sekretoriatui ± prie balų (bandomoji kova).
 $bar = !$screen && (bool) get('juosta');
-$shareTok = tournament_token($t, 'share');
+$shareTok = (string) get('k');   // ta pati nuoroda, kuria atidaryta (C3)
 $cfg = ['json' => url('varzybos-gyvai.php?k=' . $shareTok . '&json=1'), 'id' => (int) $t['id'], 'screen' => $screen, 'bar' => $bar, 'area' => (int) get('tatami'),
         'title' => $t['title']]
      + ($bar && $canTest && get('valdymas') ? ['test' => url('varzybos-gyvai.php?k=' . $shareTok . '&bandymas=1'), 'csrf' => csrf_token()] : []);

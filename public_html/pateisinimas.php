@@ -4,8 +4,8 @@
 require __DIR__ . '/app/bootstrap.php';
 
 $k = (string) get('k');
-if (!just_ready() || !exam_code_ok($k) || just_token() === '' || !hash_equals(just_token(), $k)) {
-    not_found();
+if (!just_ready() || !exam_code_ok($k) || !link_find('just', $k)) {   // C3: app/links.php (rūšis 'just')
+    link_dead();
 }
 $open = just_is_open();
 $errors = [];
