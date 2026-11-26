@@ -8,6 +8,7 @@ import { autoLock, catFinished, prune } from './engine/category.js';
 import { cat, S, save, snapshot } from './store.js';
 import { render } from './chrome.js';
 import { goNext, kataOf, prepLater } from './views/draw.js';
+import { stamp, unstamp } from './video.js';
 import './schedule.js';   // v2.12: vardų nebereikia, modulių eilė - kaip anksčiau
 import './views/desk.js';
 import './views/live.js';
@@ -66,7 +67,7 @@ export function toggleResult(catId, mid, pid) {
   if (B && B.cat === catId && B.mid === mid) { toast('Ši kova atidaryta kovos skydelyje - baikite ją ten.'); return; }
   snapshot();
   var wasDone = catFinished(pc);
-  if (pc.draw.results[mid] === pid) delete pc.draw.results[mid]; else pc.draw.results[mid] = pid;
+  if (pc.draw.results[mid] === pid) { delete pc.draw.results[mid]; unstamp(pc, mid); } else { if (!pc.draw.results[mid]) stamp(pc, mid); pc.draw.results[mid] = pid; }
   prune(pc); autoLock(pc, wasDone); save(); render();
 }
 export function openBout(catId, mid) {
@@ -78,7 +79,7 @@ export function openBout(catId, mid) {
     sa: saved.sa || 0, sb: saved.sb || 0, log: saved.log || [], i: saved.i || 0,
     ma: saved.ma || teamMembers(m.a), mb: saved.mb || teamMembers(m.b),
     parts: saved.parts || { a: { k: [], p: [] }, b: { k: [], p: [] } },
-    timer: null, winner: null };
+    timer: null, winner: null, t0: saved.t0 || Date.now(), go: saved.go || 0 };   // v2.13: t0 - skydelis atidarytas, go - pirmą kartą paleistas laikas (🎬 kovos pradžia)
   var kum = mode === 'kumite' || mode === 'team', t0 = saved.tTotal !== undefined ? saved.tTotal : kum ? 10000 : f.time * 1000;
   B.timer = { total: t0, remaining: saved.remaining !== undefined ? saved.remaining : t0, running: false, at: Date.now(), up: !!saved.tUp, preset: saved.tPreset || (kum ? 'Jiyu ippon' : '') };
   liveMatch = { cat: c.id, mid: mid };
@@ -91,7 +92,7 @@ export function setBoutHist(v) { boutHist = v; }
 export function keepBout() {
   // Nebaigtos kovos balai išsaugomi (perkrovus puslapį - tęsiama)
   var c = cat(B.cat); c.draw.bouts = c.draw.bouts || {};
-  c.draw.bouts[B.mid] = { sa: B.sa, sb: B.sb, log: B.log, i: B.i, ma: B.ma, mb: B.mb, parts: B.parts, remaining: timeLeft(), tTotal: B.timer.total, tUp: B.timer.up || undefined, tPreset: B.timer.preset || undefined };
+  c.draw.bouts[B.mid] = { sa: B.sa, sb: B.sb, log: B.log, i: B.i, ma: B.ma, mb: B.mb, parts: B.parts, remaining: timeLeft(), tTotal: B.timer.total, tUp: B.timer.up || undefined, tPreset: B.timer.preset || undefined, t0: B.t0, go: B.go || undefined };
   save();
 }
 export function closeBout() {
@@ -111,7 +112,7 @@ var tickTimer = null, beeped = false;
 function toggleTimer() {
   var t = B.timer;
   if (t.running) { t.remaining = timeLeft(); t.running = false; clearInterval(tickTimer); }
-  else { if (!t.up && timeLeft() <= 0) return; audio(); t.at = Date.now(); t.running = true; beeped = false; warned30 = timeLeft() <= 30000; tickTimer = setInterval(tick, 200); }
+  else { if (!t.up && timeLeft() <= 0) return; audio(); t.at = Date.now(); t.running = true; if (!B.go) B.go = t.at; beeped = false; warned30 = timeLeft() <= 30000; tickTimer = setInterval(tick, 200); }
   t.at = Date.now(); renderTimer(); pushLive();
 }
 function setTime(ms) { var t = B.timer; t.remaining = Math.max(0, Math.min(ms, 30 * 60000)); t.at = Date.now(); if (t.running) { clearInterval(tickTimer); tickTimer = setInterval(tick, 200); } renderTimer(); pushLive(); }
@@ -280,6 +281,8 @@ function finishBout(forced) {
   snapshot();
   keepBout();
   var wasDone = catFinished(c);
+  // v2.13: kova prasidėjo ~5 s prieš pirmą „Hajime“ (laikas nepaleistas - kai atidarytas skydelis); taisant baigtą kovą laikas lieka
+  if (!c.draw.results[B.mid] || !(c.draw.times || {})[B.mid]) stamp(c, B.mid, B.go ? B.go - 5000 : B.t0);
   c.draw.results[B.mid] = winner === 'a' ? B.a : B.b;
   c.draw.scores[B.mid] = txt;
   B.winner = winner;

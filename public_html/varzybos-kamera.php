@@ -3,6 +3,8 @@
 // Kompiuteryje priskyrus tatamį, telefone atsiranda didelis „📹 Pradėti filmuoti“ - jis atidaro vdo.ninja kamerą (visame ekrane, patikimiausia
 // telefonuose) ir siunčia vaizdą to tatamio srautu per Meshcast serverį, todėl jį mato sekretoriatas, Transliacijos puslapis ir žiūrovai.
 // Prieiga - tik su klubo raktu (?c=), paskyros nereikia. Telefonas praneša apie save kas 3 s (stream_phones, db/059).
+// v2.13: „⏺ Įrašyti ir šiame telefone“ - vdo.ninja &autorecordlocal įrašo vaizdą į telefono atsisiuntimus (WebM, 1500 kbps ≈ 0,7 GB/val.);
+// po varžybų Budo → Lentelė → 🎬 prie kovos → „📂 Įrašas iš telefono“ atidaro failą nuo tos kovos pradžios.
 require __DIR__ . '/app/bootstrap.php';
 
 // C3: raktas - app/links.php (rūšis 'cam'), adrese ?k= (senas ?c= veikia toliau)
@@ -55,9 +57,12 @@ $cfg = ['ping' => url('varzybos-kamera.php?k=' . $key . '&ping=1'), 'csrf' => cs
   <h1>📱 Budo kamera</h1>
   <p class="cam-state" id="cam-state">Jungiamasi…</p>
   <a class="cam-start" id="cam-start" hidden>📹 Pradėti filmuoti</a>
+  <label class="cam-rec"><input type="checkbox" id="cam-rec"> <span>⏺ Įrašyti vaizdą ir šiame telefone</span></label>
+  <p class="cam-rec-note" id="cam-rec-note" hidden>Įrašas išsaugomas telefono atsisiuntimuose (apie 0,7 GB per valandą - patikrinkite, ar užtenka vietos). Baigę pirmiausia uždarykite kameros skirtuką, tik tada naršyklę. Po varžybų: Budo → Lentelė → 🎬 prie kovos → „📂 Įrašas iš telefono“. iPhone gali neįrašyti.</p>
   <label class="cam-name">Šio telefono pavadinimas <input type="text" id="cam-name" maxlength="40" autocomplete="off"></label>
   <ol class="cam-tips">
     <li>Kompiuteryje: Budo → „🎥 Transliacija“ → prie tatamio paspauskite šio telefono pavadinimą.</li>
+    <li>Norint turėti įrašą telefone - pažymėkite „⏺ Įrašyti vaizdą ir šiame telefone“.</li>
     <li>Čia paspauskite „📹 Pradėti filmuoti“ ir leiskite naudoti kamerą.</li>
     <li>Telefoną laikykite gulsčią, ant stovo, prijunkite kroviklį. Ekranas turi likti įjungtas.</li>
   </ol>
@@ -67,10 +72,10 @@ $cfg = ['ping' => url('varzybos-kamera.php?k=' . $key . '&ping=1'), 'csrf' => cs
 <script>
 (function () {
   'use strict';
-  var C = window.CAM || {}, id = '', name = '', fails = 0;
+  var C = window.CAM || {}, id = '', name = '', fails = 0, rec = false, push = '';
   var $ = function (s) { return document.getElementById(s); };
   // Telefono raktas ir pavadinimas lieka šiame telefone (kitą kartą - tas pats telefonas sąraše, tas pats tatamis)
-  try { id = localStorage.getItem('vz-cam-id') || ''; name = localStorage.getItem('vz-cam-name') || ''; } catch (e) {}
+  try { id = localStorage.getItem('vz-cam-id') || ''; name = localStorage.getItem('vz-cam-name') || ''; rec = localStorage.getItem('vz-cam-rec') === '1'; } catch (e) {}
   if (!/^[a-z0-9]{6,12}$/.test(id)) {
     id = Math.random().toString(36).slice(2, 10).replace(/[^a-z0-9]/g, 'x');
     while (id.length < 8) id += 'x';
@@ -83,6 +88,11 @@ $cfg = ['ping' => url('varzybos-kamera.php?k=' . $key . '&ping=1'), 'csrf' => cs
     try { localStorage.setItem('vz-cam-name', name); } catch (e) {}
     ping();
   });
+  // ⏺ įrašas telefone: vdo.ninja pats pradeda įrašinėti, kai atsidaro kamera
+  function startHref() { var b = $('cam-start'); if (push) b.href = push + (rec ? '&autorecordlocal=1500' : ''); $('cam-rec-note').hidden = !rec; }
+  $('cam-rec').checked = rec;
+  $('cam-rec').addEventListener('change', function () { rec = this.checked; try { localStorage.setItem('vz-cam-rec', rec ? '1' : '0'); } catch (e) {} startHref(); });
+  startHref();
   function state(text, cls) { var s = $('cam-state'); s.textContent = text; s.className = 'cam-state' + (cls ? ' ' + cls : ''); }
   function ping() {
     fetch(C.ping, { method: 'POST', cache: 'no-store', headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': C.csrf || '' }, body: JSON.stringify({ id: id, name: name }) })
@@ -92,7 +102,7 @@ $cfg = ['ping' => url('varzybos-kamera.php?k=' . $key . '&ping=1'), 'csrf' => cs
         var b = $('cam-start');
         if (d.area && d.push) {
           state('✅ Priskirta: ' + d.areaName + '. Paspauskite „Pradėti filmuoti“.', 'live');
-          b.href = d.push; b.hidden = false;
+          push = d.push; startHref(); b.hidden = false;
         } else {
           state('✅ Prisijungta. Kompiuteryje prie tatamio paspauskite šio telefono pavadinimą.', 'ok');
           b.hidden = true;

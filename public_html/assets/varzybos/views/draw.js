@@ -13,6 +13,7 @@ import { boutEl, droppedIdx, findMatch, liveMatch, matchTitle, openBout, pushSco
 import { goRun, nextGroup } from '../schedule.js';
 import { runNeighbours } from './live.js';
 import { upcoming } from './results.js';
+import { openVideo, stamp, unstamp, vidBtn } from '../video.js';
 
 // ---------- Lentelės ----------
 var swapMode = false, picked = null;
@@ -49,6 +50,7 @@ function matchHtml(m, c, title, firstRound) {
   var mode = boutMode(c, m), ready = !m.bye && m.a && m.b && !swapMode, flags = ready && mode === 'flags';
   var right = m.bye ? '<span>Laisvas ratas</span>' : !(m.a && m.b) ? '' : flags ? '<span class="m-flags-score">' + esc((c.draw.scores || {})[m.id] || 'vėliavėlės') + '</span>'
     : scoreInput(c, m) + '<button type="button" class="bout-open" data-bout="' + m.id + '" title="Kova: balai ir laikrodis' + (CFG.readOnly ? '' : ', ekranas') + '">▶</button>';
+  if (m.winner && !m.bye && !swapMode) right = vidBtn(c, m.id) + right;   // v2.13: 🎬 - kovos vaizdas nuo jos pradžios
   var live = liveMatch && liveMatch.cat === c.id && liveMatch.mid === m.id, isNext = !live && !swapMode && !m.winner && nextMid === m.id;
   return '<div class="match' + (m.bye ? ' is-bye' : '') + (m.winner && !m.bye ? ' is-done' : '') + (live ? ' is-live' : '') + (isNext ? ' is-next' : '') + '"><div class="match-label"><span>' + (isNext ? '<b class="m-next">Kita kova</b> · ' : '') + (m.no ? m.no + ' · ' : '') + esc(title) + (mode === 'flags' && c.discipline === 'fukugo' ? ' · Kitei' : mode === 'kumite' && c.discipline === 'fukugo' ? ' · Kumite' : '') + '</span>' + right + '</div>' +
     slotHtml(m, 'a', c, canWin || canSwap, firstRound, flags ? flagChips(c, m, 'a') : '') + slotHtml(m, 'b', c, canWin || canSwap, firstRound, flags ? flagChips(c, m, 'b') : '') + '</div>';
@@ -130,7 +132,7 @@ function scoreTable(c, ids, which, title) {
       var p = person(c, id), arr = src[id] || [], t = scoreTotal(c, arr), drop = droppedIdx(c, arr), x = sumOf[id] || {};
       var canOrd = which === 'scores' && (swapMode || !scoreDone(c));
       // Klasės sc-*: telefone eilutė tampa kortele (vardas, balas ir vieta viršuje, kata, teisėjų langeliai eilute)
-      var row = '<tr' + (t !== null ? ' class="scored"' : '') + (canOrd ? ' data-drop-ord="' + id + '"' : '') + '><td class="num sc-eil">' + (canOrd ? '<span class="ord-grip" data-drag-ord="' + id + '" title="Tempkite - keisti eilę">⠿</span>' : '') + (i + 1) + '</td><td class="sc-name"><b>' + esc(p.name) + '</b> <span class="muted small">' + esc(p.club) + '</span></td>' + (kata ? '<td class="sc-kata">' + kataInput(c, which, id) + '</td>' : '');
+      var row = '<tr' + (t !== null ? ' class="scored"' : '') + (canOrd ? ' data-drop-ord="' + id + '"' : '') + '><td class="num sc-eil">' + (canOrd ? '<span class="ord-grip" data-drag-ord="' + id + '" title="Tempkite - keisti eilę">⠿</span>' : '') + (i + 1) + '</td><td class="sc-name"><b>' + esc(p.name) + '</b> <span class="muted small">' + esc(p.club) + '</span>' + (t !== null ? vidBtn(c, (fin ? 'f:' : '') + id) : '') + '</td>' + (kata ? '<td class="sc-kata">' + kataInput(c, which, id) + '</td>' : '');
       for (var j = 0; j < f.judges; j++) row += '<td class="num sc-j"><input class="j-in' + (drop.indexOf(j) >= 0 ? ' dropped' : '') + '" type="number" step="0.1" min="0" max="10" inputmode="decimal" placeholder="T' + (j + 1) + '" data-j="' + j + '" data-sp="' + id + '" data-which="' + which + '" value="' + (arr[j] !== undefined && arr[j] !== null ? esc(arr[j]) : '') + '" aria-label="Teisėjas ' + (j + 1) + '"></td>';
       row += fin ? '<td class="num sc-sub" data-l="Finalas">' + fmtScore(c, t) + '</td><td class="num sc-sub" data-l="Pusfinalis">' + fmtScore(c, x.r1) + '</td><td class="num sc-sum" data-l="Iš viso"><b>' + fmtScore(c, x.sum) + '</b></td>' : '<td class="num sc-sum" data-l="' + lbl + '"><b>' + fmtScore(c, t) + '</b></td>';
       return row + '<td class="num sc-place">' + (placeOf[id] ? '<span class="rank r' + Math.min(placeOf[id], 4) + '">' + placeOf[id] + '</span>' : '') + '</td></tr>';
@@ -309,12 +311,14 @@ document.getElementById('draw-view').addEventListener('click', function (e) {
     var J = cfg(c0).judges, n = +parts[2], wid = parts[1] === 'a' ? m0.a : m0.b, txt = parts[1] === 'a' ? n + ':' + (J - n) : (J - n) + ':' + n;
     snapshot();
     var wasDone0 = catFinished(c0);
-    if (c0.draw.results[m0.id] === wid && c0.draw.scores[m0.id] === txt) { delete c0.draw.results[m0.id]; delete c0.draw.scores[m0.id]; }
-    else { c0.draw.results[m0.id] = wid; c0.draw.scores[m0.id] = txt; }
+    if (c0.draw.results[m0.id] === wid && c0.draw.scores[m0.id] === txt) { delete c0.draw.results[m0.id]; delete c0.draw.scores[m0.id]; unstamp(c0, m0.id); }
+    else { if (!c0.draw.results[m0.id]) stamp(c0, m0.id); c0.draw.results[m0.id] = wid; c0.draw.scores[m0.id] = txt; }
     prune(c0); autoLock(c0, wasDone0); save(); render();
     if (c0.draw.results[m0.id] === wid) goNext();
     return;
   }
+  var vb = e.target.closest('[data-vid]');
+  if (vb) { videoOf(cat(S.selected), vb.dataset.vid); return; }
   var bo = e.target.closest('[data-bout]');
   if (bo) { openBout(S.selected, bo.dataset.bout); return; }
   var btn = e.target.closest('button[data-m]'); if (!btn || btn.disabled) return;
@@ -329,10 +333,17 @@ document.getElementById('draw-view').addEventListener('click', function (e) {
   snapshot();
   var wasDone = catFinished(c);
   var won = c.draw.results[mid] !== pid;
-  if (won) c.draw.results[mid] = pid; else delete c.draw.results[mid];
+  if (won) { if (!c.draw.results[mid]) stamp(c, mid); c.draw.results[mid] = pid; } else { delete c.draw.results[mid]; unstamp(c, mid); }
   prune(c); autoLock(c, wasDone); save(); render();
   if (won) goNext();
 });
+// v2.13: 🎬 - kovos (ar balais vertinto pasirodymo) pavadinimas ir vaizdas
+function videoOf(c, key) {
+  if (!c) return;
+  var fin = key.indexOf('f:') === 0, pid = fin ? key.slice(2) : key, m = findMatch(c, key), nm = function (id) { return (person(c, id) || {}).name || '…'; };
+  openVideo(c, key, m ? (m.no ? m.no + ' · ' : '') + matchTitle(c, m) + ': ' + nm(m.a) + ' – ' + nm(m.b) + ((c.draw.scores || {})[key] ? ' (' + c.draw.scores[key] + ')' : '')
+    : (person(c, pid) ? nm(pid) + ' · ' + c.name + (fin ? ' · finalas' : '') : c.name));
+}
 // #185: kita kova - į matomą vietą (lentelė gali būti plati ir ilga) ir trumpai sumirksi
 export function goNext() {
   var n = document.querySelector('#draw-view .match.is-next');
@@ -360,6 +371,8 @@ document.getElementById('draw-view').addEventListener('change', function (e) {
     var src = t.dataset.which === 'final' ? (c.draw.final = c.draw.final || {}) : (c.draw.scores = c.draw.scores || {});
     var arr = src[t.dataset.sp] = src[t.dataset.sp] || [], v = t.value.replace(',', '.');
     arr[+t.dataset.j] = v === '' ? null : Math.max(0, Math.min(10, parseFloat(v)));
+    var skey = (t.dataset.which === 'final' ? 'f:' : '') + t.dataset.sp;   // v2.13: pasirodymo laikas (🎬), kai įrašyti visų teisėjų balai
+    if (scoreTotal(c, arr) === null) unstamp(c, skey); else if (!(c.draw.times || {})[skey]) stamp(c, skey);
     save(); pushScoreLive(c, t.dataset.sp, t.dataset.which);
     // Perpiešiama, kai fokusas jau persikėlė (Tab ar paspaustas kitas langelis) - jis grąžinamas į tą patį langelį
     // Planšetėje vaizdas lieka toje pačioje vietoje (nebeperšoka į viršų)

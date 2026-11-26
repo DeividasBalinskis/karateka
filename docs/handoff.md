@@ -1,10 +1,10 @@
 # Handoff
-Updated: 2026-11-26 · version v2.12 · main
+Updated: 2026-11-26 · version v2.13 · main
 
 ## Pending asks (answer these first)
 | Asked | By | What | Status |
 |---|---|---|---|
-| 2026-11-26 | Dev → Denis | Recording the Budo camera: (A) YouTube - already works: the phone streams with the YouTube app („Transliuoti“), the link goes into Budo → Tvarkaraštis → 📹 at the tatami; YouTube keeps the video (the score bar is only on our page). (B) a „⏺ Įrašyti“ button on our phone camera page (vdo.ninja `&record`): the file stays in the phone's downloads. Which? | waiting |
+| 2026-11-26 | Dev → Denis | Recording the Budo camera: (A) YouTube - already works: the phone streams with the YouTube app („Transliuoti“), the link goes into Budo → Tvarkaraštis → 📹 at the tatami; YouTube keeps the video (the score bar is only on our page). (B) a „⏺ Įrašyti“ button on our phone camera page (vdo.ninja `&record`): the file stays in the phone's downloads. Which? | answered 2026-11-26 („select the battle … timestamp … if this does not answer, do both“): both - v2.13 🎬 |
 | 2026-11-25 | Dev | Delete the unused setting `xp_per_level` (db/021, replaced in v1.96)? Only it makes 07v fail („Nežinomi nustatymai“) | answered 2026-11-26 („can delete“): db/063, v2.12 |
 | 2026-11-25 | Dev (C1) | Testers: give them the Atsiliepimai page and „Žiūrėti kaip“ (the standartai table says ✔, today they do not have them)? | waiting |
 | 2026-11-25 | Dev (C1) | Excuse letters: while `just_notify` is unset, recipients = admins named Denis (a choice by name). Keep, or one chosen account? | waiting |
@@ -305,6 +305,16 @@ Updated: 2026-11-26 · version v2.12 · main
     Main = c1895fd („į main“ given 2026-11-26: „kai pabaigsi į main“). Deployed (run 45806844015): test shows v2.12, db 063 imported with a backup.
     Checked on test: viewers page 💡 present, video bar = the current pair, ⛶ fills 375×812 and 1440; Budo bracket „KITA KOVA“ red frame. #185 answered (Pataisyta).
     The live viewer page had no phone connected, so the camera card was shown with a browser-only mock for the screenshots (no server change).
+- 2026-11-26 v2.13 (Deividas: „after battle is done, i can select the battle … timestamp of its filmed battle on phone … if this does not answer, do both“):
+  - Bout times: `c.draw.times[id] = {s, e, a}` saved when a result is marked (name / flags / bout panel „Laimėjo“ / all judges' scores, key `f:<id>` for finals).
+    Start: bout panel = first „Hajime“ − 5 s (B.go, kept in draw.bouts); otherwise end of the previous bout on that tatami (20 s..4 min before), else 3 min.
+    Pure math in `assets/varzybos/engine/video.js` (tests/engine/video.test.mjs); UI in `assets/varzybos/video.js` (🎬 window).
+  - Recordings: `S.videos[] = {a, yt | file, from, ok}`. Pasting a tatami YouTube link calls `varzybu-sistema.php?yt=1` → `yt_live_info()` reads the public
+    YouTube page (cookie SOCS=CAI, no API key) for the video id and `startDate`; failing that, the paste time (shown as „apytiksliai“).
+    Phone: camera page „⏺ Įrašyti vaizdą ir šiame telefone“ adds vdo.ninja `&autorecordlocal=1500` (WebM in the phone's downloads); 🎬 → „📂 Įrašas iš telefono“
+    opens the file locally (never uploaded): start = file lastModified − duration (WebM without duration: seek to the end). „📍 Ši kova prasideda čia“ fixes `from`.
+  - Viewers: results payload match/score rows get `v` (youtu.be link with ?t=) → 🎬 on the viewer page (list and tree). Transliacija page: „🎬 Kovų įrašai“ help.
+  - Not checked with a real phone or a real YouTube stream (tests use a mocked YouTube answer and a browser-made WebM). vdo.ninja documents no file name format.
 ## Open
 - C5 CSS cleanup: header.css done (v2.11), next app.css (one file per session). D4 same group on two tablets, D5 Budo live polish, D7 arena left hand UI, D8 pixel characters (PC + LibreSprite).
 - Parent payments for Budo registration need a payment provider (later).

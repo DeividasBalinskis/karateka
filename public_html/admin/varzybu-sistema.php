@@ -75,6 +75,18 @@ if (get('diplomai')) {
     exit;
 }
 
+// v2.13: 📹 įklijuota tatamio YouTube nuoroda - vaizdo id ir kada transliacija tikrai prasidėjo (🎬 baigtos kovos atsidaro nuo savo pradžios)
+if (is_post() && get('yt')) {
+    csrf_check();
+    header('Content-Type: application/json; charset=utf-8');
+    $in = json_decode((string) file_get_contents('php://input'), true) ?: [];
+    if (session_status() === PHP_SESSION_ACTIVE) {
+        session_write_close();   // YouTube gali atsakyti per kelias sekundes - kiti šios sesijos užklausimai (išsaugojimas) nelaukia
+    }
+    $info = yt_live_info(mb_substr(trim((string) ($in['url'] ?? '')), 0, 300));
+    exit(json_encode($info ? ['ok' => true] + $info : ['ok' => false], JSON_UNESCAPED_UNICODE));
+}
+
 // Kovos skydelis: kas vyksta ant tatamio (ekranams ir žiūrovams); užsiregistravusių žymėjimas; registracijos atidarymas
 if (is_post() && (get('live') || get('entries') || get('reg'))) {
     csrf_check();

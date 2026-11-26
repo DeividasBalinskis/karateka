@@ -10,6 +10,7 @@ import { crit } from './views/categories.js';
 import { kataOf } from './views/draw.js';
 import { areaOf, B, matchTitle, pubNameShort } from './bout.js';
 import { areasSummary, medalTable } from './views/results.js';
+import { vidLink } from './video.js';
 
 // Tatamio planas: rungtys su laikais ir būsena (done - baigta, now - vyksta dabar, next - toliau, later); vėlavimas min. (tik varžybų dieną)
 // ---------- Grupių būsenos ir apdovanojimai (db/033) ----------
@@ -78,6 +79,7 @@ export function catBracket(c, full) {
   var mm = function (m, t) {
     var o = { no: m.no || '', t: t, a: m.a ? pubName(m.a) : '', ac: club(m.a), b: m.b ? pubName(m.b) : '', bc: club(m.b),
       w: m.winner && !m.bye ? (m.winner === m.a ? 'a' : 'b') : '', s: (c.draw.scores || {})[m.id] || '' };
+    if (o.w) { var vl = vidLink(c, m.id); if (vl) o.v = vl; }   // v2.13: žiūrovams - YouTube įrašas nuo kovos pradžios
     if (full) { o.id = m.id; o.ai = m.a || ''; o.bi = m.b || ''; }   // valdymui (prisegtame langelyje) - kovos ir dalyvių id
     return o;
   };
@@ -90,8 +92,8 @@ export function catBracket(c, full) {
   if (sys === 'score') {
     var ids = (c.draw.order || []).filter(function (id) { return person(c, id); });
     var finIds = cfg(c).rounds === 2 ? scoreFinalists(c) : [];
-    if (finIds.length) out.groups.push({ t: 'Finalas (pusfinalis + finalas)', score: true, rows: scoreRank(c, 'final', finIds).map(function (x) { return { n: pubName(x.id), c: club(x.id), k: kataOf(c, 'final', x.id), s: x.sum === null ? '' : fmtScore(c, x.sum) }; }) });
-    out.groups.push({ t: finIds.length || cfg(c).rounds === 2 ? 'Pusfinalis' : 'Balai', score: true, rows: scoreRank(c, 'scores', ids).map(function (x) { return { n: pubName(x.id), c: club(x.id), k: kataOf(c, 'scores', x.id), s: x.total === null ? '' : fmtScore(c, x.total) }; }) });
+    if (finIds.length) out.groups.push({ t: 'Finalas (pusfinalis + finalas)', score: true, rows: scoreRank(c, 'final', finIds).map(function (x) { return { n: pubName(x.id), c: club(x.id), k: kataOf(c, 'final', x.id), s: x.sum === null ? '' : fmtScore(c, x.sum), v: vidLink(c, 'f:' + x.id) || undefined }; }) });
+    out.groups.push({ t: finIds.length || cfg(c).rounds === 2 ? 'Pusfinalis' : 'Balai', score: true, rows: scoreRank(c, 'scores', ids).map(function (x) { return { n: pubName(x.id), c: club(x.id), k: kataOf(c, 'scores', x.id), s: x.total === null ? '' : fmtScore(c, x.total), v: vidLink(c, x.id) || undefined }; }) });
   } else if (sys === 'rr') {
     out.groups.push({ t: 'Ratų sistema', matches: rrMatches(c).map(function (m) { return mm(m, m.round + ' ratas'); }) });
   } else {

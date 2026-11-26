@@ -330,7 +330,7 @@ function varz_state_maps(array $state): array
             $map($c, 'crit');
             $map($c, 'cfg');
             if (isset($c['draw']) && is_array($c['draw'])) {
-                foreach (['results', 'scores', 'final', 'bouts', 'kata'] as $k) {
+                foreach (['results', 'scores', 'final', 'bouts', 'kata', 'times'] as $k) {   // times - kovų laikai (🎬, v2.13)
                     $map($c['draw'], $k);
                 }
                 if (isset($c['draw']['kata']) && is_array($c['draw']['kata'])) {
@@ -746,6 +746,48 @@ function tournament_stream(array $t): ?array
     }
     $at = !empty($t['stream_at']) ? strtotime((string) $t['stream_at']) : null;
     return ['url' => $url, 'embed' => $embed, 'at' => $at ?: null, 'soon' => $at && $at > time()];
+}
+
+/**
+ * YouTube transliacija (v2.13): vaizdo id ir kada ji prasidėjo (ms) - iš viešo vaizdo puslapio, be API rakto.
+ * Kanalo nuoroda (/channel/UC…, /@vardas) - tuo metu einanti transliacija. Nepavyko - null (tada naudojamas nuorodos įklijavimo laikas).
+ * SOCS=CAI - slapukų sutikimo langas atmestas (ES serveriams YouTube kitaip rodo sutikimo puslapį).
+ */
+function yt_live_info(string $url): ?array
+{
+    if (preg_match('~(?:youtu\.be/|youtube\.com/(?:watch\?(?:.*&)?v=|live/|embed/|shorts/))([A-Za-z0-9_-]{11})~', $url, $m)) {
+        $page = 'https://www.youtube.com/watch?v=' . $m[1];
+        $id = $m[1];
+    } elseif (preg_match('~youtube\.com/(channel/UC[A-Za-z0-9_-]{22}|@[A-Za-z0-9._-]{1,60})~', $url, $m)) {
+        $page = 'https://www.youtube.com/' . $m[1] . '/live';
+        $id = '';
+    } else {
+        return null;
+    }
+    if (!function_exists('curl_init')) {
+        return $id !== '' ? ['id' => $id, 'start' => null] : null;
+    }
+    $ch = curl_init($page);
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true, CURLOPT_FOLLOWLOCATION => true, CURLOPT_MAXREDIRS => 3,
+        CURLOPT_CONNECTTIMEOUT => 4, CURLOPT_TIMEOUT => 8,
+        CURLOPT_HTTPHEADER => ['Accept-Language: en-US,en;q=0.8', 'Cookie: SOCS=CAI'],
+        CURLOPT_USERAGENT => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36',
+    ]);
+    $html = (string) curl_exec($ch);
+    curl_close($ch);
+    if ($id === '' && preg_match('~<link rel="canonical" href="https://www\.youtube\.com/watch\?v=([A-Za-z0-9_-]{11})"~', $html, $m)) {
+        $id = $m[1];
+    }
+    if ($id === '') {
+        return null;
+    }
+    $start = null;
+    if (preg_match('~itemprop="startDate" content="([^"]+)"~', $html, $m) || preg_match('~"startTimestamp":"([^"]+)"~', $html, $m)) {
+        $ts = strtotime($m[1]);
+        $start = $ts ? $ts * 1000 : null;
+    }
+    return ['id' => $id, 'start' => $start];
 }
 
 /** Kas vyksta ant tatamio dabar (iš kovos skydelio): išsaugoma su serverio laiku (ms) - laikrodžiui ekranuose */

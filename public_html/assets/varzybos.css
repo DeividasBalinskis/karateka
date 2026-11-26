@@ -387,6 +387,28 @@ body.is-dragging-name { cursor: grabbing; user-select: none; }
 .m-flags-score { font-weight: 700; color: var(--muted); }
 .bout-open { border: 0; background: var(--accent); color: #fff; border-radius: 6px; width: 24px; height: 20px; font-size: .7rem; line-height: 1; margin-left: 4px; }
 .bout-open:hover { background: var(--accent-2); }
+.m-vid { border: 0; background: transparent; font-size: .85rem; line-height: 1; padding: 0 3px; cursor: pointer; vertical-align: middle; }
+.m-vid:hover, .m-vid:focus-visible { transform: scale(1.15); }
+/* v2.13: 🎬 kovos vaizdas - YouTube įrašas ar telefono failas nuo kovos pradžios */
+.vd-back { position: fixed; inset: 0; z-index: 1200; background: rgba(10, 12, 18, .72); display: flex; align-items: center; justify-content: center; padding: 16px; }
+.vd-back[hidden] { display: none; }
+.vd-box { width: min(960px, 100%); max-height: calc(100vh - 32px); overflow: auto; background: var(--surface, #fff); color: var(--ink); border-radius: 14px; padding: 14px 16px 16px; box-shadow: 0 20px 60px rgba(0, 0, 0, .35); }
+.vd-head { display: flex; align-items: flex-start; gap: 10px; }
+.vd-head b { flex: 1; font-size: 1.02rem; line-height: 1.3; }
+.vd-x { border: 0; background: transparent; font-size: 1.2rem; line-height: 1; cursor: pointer; color: var(--muted); padding: 2px 4px; }
+.vd-meta { margin: 4px 0 10px; color: var(--muted); font-size: .86rem; }
+.vd-player { position: relative; width: 100%; aspect-ratio: 16 / 9; background: #000; border-radius: 10px; overflow: hidden; }
+.vd-player iframe, .vd-player video { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: #000; }
+.vd-none { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; gap: 6px; padding: 18px; color: #E6E9EF; font-size: .9rem; line-height: 1.45; background: #1B1F29; }
+.vd-tools { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.vd-tools .btn { text-decoration: none; cursor: pointer; display: inline-flex; align-items: center; }
+.vd-tools [hidden] { display: none; }
+.vd-file { position: relative; overflow: hidden; cursor: pointer; }
+.vd-file input { position: absolute; inset: 0; opacity: 0; cursor: pointer; font-size: 0; }
+.vd-help { margin: 8px 0 0; color: var(--muted); font-size: .82rem; line-height: 1.4; }
+.vd-help:empty { display: none; }
+body.vd-open-body { overflow: hidden; }
+@media (max-width: 600px) { .vd-back { padding: 0; align-items: stretch; } .vd-box { border-radius: 0; max-height: 100vh; } }
 .match-label > span:last-child { display: inline-flex; align-items: center; }
 .match.is-live { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(215, 38, 61, .18); }
 /* #185 (Denis): kita kova - raudonas rėmelis ir „Kita kova“; pažymėjus nugalėtoją - nuslenkama ir sumirksi */
@@ -594,7 +616,9 @@ button.card-name:focus-visible { outline: 3px solid #F2B705; outline-offset: 2px
 .gv-mp:last-child { text-align: right; }
 .gv-mp small { color: var(--muted); }
 .gv-mp.won b::after { content: " ✓"; color: var(--green); }
-.gv-ms { font-weight: 700; font-variant-numeric: tabular-nums; color: var(--muted); }
+.gv-ms { font-weight: 700; font-variant-numeric: tabular-nums; color: var(--muted); text-align: center; }
+.gv-mv { display: block; text-decoration: none; font-size: 1rem; line-height: 1.2; }
+.gv-score .gv-mv, .tk-no .gv-mv { display: inline; margin-left: 6px; }
 .gv-score { margin: 0; padding-left: 22px; display: grid; gap: 4px; }
 .gv-score li { display: flex; justify-content: space-between; gap: 10px; }
 .gv-people { margin: 0; padding-left: 18px; }
@@ -1633,6 +1657,10 @@ body.cam-body { margin: 0; min-height: 100vh; background: #12151C; color: #fff; 
 .cam-name input { font: 600 1rem 'Inter', system-ui, sans-serif; padding: 10px 12px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, .2); background: rgba(255, 255, 255, .06); color: #fff; }
 .cam-tips { margin: 0; padding-left: 20px; display: grid; gap: 6px; color: #C9CED8; font-size: .92rem; line-height: 1.4; }
 .cam-alt { margin: 0; font-size: .85rem; color: #9AA3B2; }
+.cam-rec { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, .2); background: rgba(255, 255, 255, .06); color: #fff; font-weight: 600; font-size: .95rem; cursor: pointer; }
+.cam-rec input { width: 22px; height: 22px; accent-color: #D7263D; flex: none; }
+.cam-rec-note { margin: -6px 0 0; font-size: .82rem; line-height: 1.4; color: #C9CED8; }
+.cam-rec-note[hidden] { display: none; }
 /* v1.99 (peržiūra): siaurame stulpelyje (4 tatamiai 1440 px) rungties pavadinimas nebesuspaudžiamas - būsena nukeliama žemiau */
 .card-top { flex-wrap: wrap; }
 .card-top > .card-name { flex: 1 1 9em; }

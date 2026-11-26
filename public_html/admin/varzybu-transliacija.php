@@ -160,6 +160,16 @@ $phonesApi = url('admin/varzybu-transliacija.php?id=' . (int) $t['id'] . '&telef
     </div>
   </section>
 
+  <section class="panel tr-sec">
+    <h2>🎬 Kovų įrašai - pažiūrėti baigtą kovą</h2>
+    <ul class="tr-when">
+      <li><b>YouTube</b> <span>- telefone YouTube programėlėje „Transliuoti“, nuorodą įklijuokite Budo → Tvarkaraštis → 📹 prie tatamio. YouTube įrašą pasilieka pats.</span></li>
+      <li><b>Telefone</b> <span>- prieš „📹 Pradėti filmuoti“ pažymėkite „⏺ Įrašyti vaizdą ir šiame telefone“. Failas lieka telefono atsisiuntimuose (apie 0,7 GB per valandą).</span></li>
+      <li><b>Peržiūra</b> <span>- Budo → Lentelė → 🎬 prie baigtos kovos: vaizdas atsidaro nuo tos kovos pradžios (YouTube arba „📂 Įrašas iš telefono“). Žiūrovai YouTube įrašą mato prie kovos rezultato.</span></li>
+      <li><b>Laikas netikslus</b> <span>- nuslinkite iki kovos pradžios ir paspauskite „📍 Ši kova prasideda čia“ - kitos to įrašo kovos atsidarys tiksliai.</span></li>
+    </ul>
+  </section>
+
   <?php if (can('budo_admin') && !$demo): ?>
   <form method="post" class="tr-renew" onsubmit="return confirm('Sukurti naują QR kodą? Senas nebeveiks, telefonus reikės prijungti iš naujo.')">
     <?= csrf_field() ?><input type="hidden" name="action" value="renew">

@@ -19,7 +19,7 @@ function fixMaps(c) {
   var d = c.draw;
   if (!d || typeof d !== 'object') return;
   d.results = asMap(d.results); d.scores = asMap(d.scores);
-  ['final', 'bouts', 'kata'].forEach(function (k) { if (Array.isArray(d[k])) d[k] = asMap(d[k]); });
+  ['final', 'bouts', 'kata', 'times'].forEach(function (k) { if (Array.isArray(d[k])) d[k] = asMap(d[k]); });   // times - kovų laikai (🎬, v2.13)
   if (d.kata) ['scores', 'final'].forEach(function (k) { if (Array.isArray(d.kata[k])) d.kata[k] = asMap(d.kata[k]); });
 }
 export function load() {
@@ -31,7 +31,8 @@ export function load() {
   S.categories.forEach(function (c) { c.competitors.forEach(function (p) { if (!p.team && !S.people[p.id]) S.people[p.id] = { id: p.id, name: p.name, club: p.club }; }); });
   S.clubs = Array.isArray(S.clubs) && S.clubs.length ? S.clubs : [HOME];
   S.areas = Array.isArray(S.areas) && S.areas.length ? S.areas : [{ id: 1, name: '1 TATAMIS', start: '09:30' }];
-  S.clubInfo = S.clubInfo && !Array.isArray(S.clubInfo) ? S.clubInfo : {};   // klubų kontaktai: { klubas: { person, phone, email, note } }
+  S.clubInfo = S.clubInfo && !Array.isArray(S.clubInfo) ? S.clubInfo : {};
+  S.videos = Array.isArray(S.videos) ? S.videos : [];   // v2.13: tatamių vaizdo įrašai (YouTube, telefono failai) ir kada jie prasidėjo - 🎬 prie baigtų kovų   // klubų kontaktai: { klubas: { person, phone, email, note } }
   S.minutes = S.minutes || { kata: 2, kumite: 3, fukugo: 4, kihon: 1.5 };
   if (!S.minutes.enbu) S.minutes.enbu = 3;
   if (!S.minutes.sumo) S.minutes.sumo = 2;

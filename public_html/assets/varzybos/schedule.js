@@ -1,6 +1,7 @@
 // Tvarkaraštis: tatamių planas ir laikai, kita grupė, paieška, grupių perkėlimas ir laikas
 import { CFG, esc, hhmm, pad2, POPUP, toast, toMin } from './util.js';
 import { DISC, person } from './rules.js';
+import { addStream } from './video.js';
 import { catPlaces, doneCount, matchCount } from './engine/category.js';
 import { cat, S, save, setAward, snapshot } from './store.js';
 import { openRun, render } from './chrome.js';
@@ -251,7 +252,8 @@ sched.addEventListener('change', function (e) {
   else if (t.dataset.stream) {   // 📹 tatamio vaizdas (YouTube Live) - žiūrovų puslapyje su kovos rezultatu ant vaizdo
     var v = t.value.trim();
     if (v && !ytEmbed(v)) { toast('Įklijuokite YouTube nuorodą (pvz. https://youtube.com/live/…)'); return; }
-    S.areas.find(function (a) { return a.id === +t.dataset.stream; }).stream = v;
+    var sa = S.areas.find(function (a) { return a.id === +t.dataset.stream; });
+    sa.stream = v; addStream(sa, v);   // v2.13: įrašas ir jo pradžia - kad baigtos kovos (🎬) atsidarytų YouTube įraše nuo savo pradžios
   }
   else return;
   save(); render();

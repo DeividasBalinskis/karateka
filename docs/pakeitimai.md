@@ -4,6 +4,16 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v2.13 - 2026-11-26 (🎬 baigtos kovos vaizdas: YouTube įrašas ir įrašas telefone)
+- **🎬 prie baigtos kovos** (Budo → Lentelė; balų lentelėje - prie dalyvio): atidaro vaizdą nuo tos kovos pradžios. Kovos laikas įrašomas pats,
+  kai pažymimas rezultatas (vardas, vėliavėlės, kovos skydelio „Laimėjo“, visų teisėjų balai). Kovos skydelyje pradžia - pirmas „Hajime“ (Deividas, Denis).
+- **YouTube**: įklijavus transliacijos nuorodą (Tvarkaraštis → 📹 prie tatamio), serveris sužino, kada transliacija prasidėjo, todėl 🎬 atidaro
+  YouTube įrašą tiksliai nuo kovos. **Žiūrovai** žiūrovų puslapyje prie kovos rezultato mato 🎬 - YouTube nuo tos kovos pradžios.
+- **Įrašas telefone**: telefono kameros puslapyje „⏺ Įrašyti vaizdą ir šiame telefone“ - vaizdas išsaugomas telefono atsisiuntimuose (~0,7 GB/val.).
+  Po to 🎬 → „📂 Įrašas iš telefono“ atidaro failą nuo kovos pradžios (failas niekur nekeliamas - lieka telefone ar kompiuteryje).
+- **📍 Ši kova prasideda čia**: jei vaizdas ne nuo kovos pradžios - nuslinkus iki jos ir paspaudus, pataisomas viso įrašo laikas (kitos kovos atsidaro tiksliai).
+- Transliacijos puslapyje (Budo → 📡 → „🎥 Prijungti telefonus →“) - trumpas aprašas „🎬 Kovų įrašai“.
+
 ## v2.12 - 2026-11-26 (Budo kamera žiūrovams, kita kova paryškinta, 💡 Budo puslapiuose)
 - **Kamera ant žiūrovų puslapio rodo tikrą kovą.** Jei kovos skydelis neatidarytas (pvz. kata vėliavėlėmis), ant vaizdo rodoma, kas kovoja dabar pagal tvarkaraštį;
   kai kova vyksta skydelyje - vardai, balai ir laikas. Sena „Bandomoji kova“ (Jonas ir Petras) nebesirodo (Denis).

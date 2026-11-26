@@ -175,17 +175,19 @@
   var sheet = document.createElement('div'), openCat = null, sheetTimer = null;
   sheet.className = 'gv-sheet'; sheet.hidden = true; sheet.setAttribute('role', 'dialog'); sheet.setAttribute('aria-modal', 'true');
   document.body.appendChild(sheet);
+  // v2.13: 🎬 - baigtos kovos YouTube įrašas nuo jos pradžios (tik youtu.be nuorodos)
+  function vidA(v) { return /^https:\/\/youtu\.be\/[A-Za-z0-9_-]{11}\?t=\d+$/.test(v || '') ? '<a class="gv-mv" href="' + esc(v) + '" target="_blank" rel="noopener" title="Kovos įrašas YouTube" aria-label="Kovos įrašas YouTube">🎬</a>' : ''; }
   function bracketHtml(b) {
       var html = '';
       if (b.places && b.places.length) html += '<div class="gv-places">' + b.places.map(function (p) { return '<div class="rp"><span class="medal ' + ['', 'g', 's', 'b'][p.p] + '">' + p.p + '</span><span>' + esc(p.n) + ' <span class="club">' + esc(p.c) + '</span></span></div>'; }).join('') + '</div>';
       if (b.people) html += '<p class="muted small">Lentelė dar nesudaryta. Dalyviai:</p><ul class="gv-people">' + b.people.map(function (p) { return '<li>' + esc(p.n) + ' <span class="muted">' + esc(p.c) + '</span></li>'; }).join('') + '</ul>';
       (b.groups || []).forEach(function (g) {
         html += '<h3>' + esc(g.t) + '</h3>';
-        if (g.score) html += '<ol class="gv-score">' + g.rows.map(function (r) { return '<li><span>' + esc(r.n) + ' <span class="muted">' + esc(r.c) + (r.k ? ' · ' + esc(r.k) : '') + '</span></span><b>' + esc(r.s || '–') + '</b></li>'; }).join('') + '</ol>';
+        if (g.score) html += '<ol class="gv-score">' + g.rows.map(function (r) { return '<li><span>' + esc(r.n) + ' <span class="muted">' + esc(r.c) + (r.k ? ' · ' + esc(r.k) : '') + '</span></span><b>' + esc(r.s || '–') + vidA(r.v) + '</b></li>'; }).join('') + '</ol>';
         else html += '<div class="gv-matches">' + g.matches.map(function (m) {
           return '<div class="gv-m' + (m.w ? ' done' : '') + '"><span class="gv-mno">' + esc(m.no) + '</span>' +
             '<span class="gv-mp' + (m.w === 'a' ? ' won' : '') + '"><b class="aka-t">' + esc(m.a || '…') + '</b> <small>' + esc(m.ac) + '</small></span>' +
-            '<span class="gv-ms">' + esc(m.s || (m.w ? '–' : 'vs')) + '</span>' +
+            '<span class="gv-ms">' + esc(m.s || (m.w ? '–' : 'vs')) + vidA(m.v) + '</span>' +
             '<span class="gv-mp' + (m.w === 'b' ? ' won' : '') + '"><b>' + esc(m.b || '…') + '</b> <small>' + esc(m.bc) + '</small></span></div>';
         }).join('') + '</div>';
       });
@@ -198,7 +200,7 @@
     var side = function (m, k) { var won = m.w === k; return '<div class="tk-p ' + (k === 'a' ? 'aka' : 'shiro') + (won ? ' won' : m.w ? ' lost' : '') + '"><b>' + esc(m[k] || '…') + '</b><small>' + esc(m[k + 'c']) + '</small>' + (won ? '<i>✓</i>' : '') + '</div>'; };
     return (b.places && b.places.length ? bracketHtml({ places: b.places }) : '') + '<div class="tk-tree">' + rounds.map(function (g, i) {
       return '<div class="tk-col' + (i === rounds.length - 1 ? ' last' : '') + '"><h4>' + esc(g.t) + '</h4><div class="tk-col-body">' + g.matches.map(function (m) {
-        return '<div class="tk-m' + (m.w ? ' done' : '') + '"><span class="tk-no">' + esc(m.no) + (m.s ? ' · ' + esc(m.s) : '') + '</span>' + side(m, 'a') + side(m, 'b') + '</div>';
+        return '<div class="tk-m' + (m.w ? ' done' : '') + '"><span class="tk-no">' + esc(m.no) + (m.s ? ' · ' + esc(m.s) : '') + vidA(m.v) + '</span>' + side(m, 'a') + side(m, 'b') + '</div>';
       }).join('') + '</div></div>';
     }).join('') + '</div>' + bracketHtml({ groups: (b.groups || []).filter(function (g) { return g.round === undefined; }) });
   }
