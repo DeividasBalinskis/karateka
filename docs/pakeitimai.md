@@ -13,7 +13,10 @@ Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar
 - **Kita kova paryškinta raudonai** („Kita kova“) Budo lentelėje; pažymėjus nugalėtoją (vardas, vėliavėlės ar kovos skydelio „Laimėjo“) - nuslenkama prie jos (#185, Denis).
 - **💡 Atsiliepimas** dabar yra ir Budo puslapiuose be paskyros: žiūrovų (gyvai), sekretoriato pradžios, apdovanojimų planšetės, išbandymo (Denis).
 - Senas nustatymas `xp_per_level` (nenaudojamas nuo v1.96) ištrintas. Duomenų bazė: **063_seno_nustatymo_trynimas.sql** (įsidiegia pati, atidarius Valdymą).
-- Testai: naujas „visos nuorodos“ - kiekvienai rolei apeina visus meniu ir puslapių mygtukus-nuorodas ir ieško neveikiančių, PHP ir JS klaidų.
+- **Ištrintas egzaminas**: sena pranešimo nuoroda nebeveda į „Puslapis nerastas“ - rodoma „Šio egzamino protokolo nebėra - jis ištrintas.“ (Valdymas → Egzaminai);
+  ištrynus egzaminą, jo registracijų pranešimai treneriams pažymimi atliktais (nebelieka neatliekamų darbų).
+- Testai: naujas „visos nuorodos“ - kiekvienai rolei (adminas, treneris, tėvai, narys, svečias) apeina visus meniu ir puslapių mygtukus-nuorodas
+  (~1000 puslapių) ir ieško neveikiančių, PHP ir JS klaidų. Rado vieną klaidą - ištrinto egzamino nuorodą (pataisyta).
 
 ## v2.11 - 2026-11-25 (teisės, slaptos nuorodos, Budo moduliai, header.css)
 - **Teisės - viena lentelė** (C1): kas ką gali, aprašyta vienoje vietoje; visų teisės tos pačios kaip buvo.

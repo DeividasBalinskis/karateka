@@ -297,7 +297,10 @@ Updated: 2026-11-26 · version v2.12 · main
     in the Budo config, bout.js „📹 Vaizdas“/„📹 Live“ + Live window, desk „📹 Live kova“, #live-cam, CSS. Phones are still connected on the Transliacija page.
   - #185: Budo bracket/round robin - first unfinished bout = `.match.is-next` (red frame, „Kita kova“); after a winner (name, flags, bout panel) it scrolls there.
   - 💡 on Budo pages without an account (viewers, secretariat start, awards tablet, demo); feedback_site_now() counts them as Budo.
-  - db/063 deletes `xp_per_level`. New test 07zn: every role walks all links 2 levels deep (HTTP < 400, no PHP/JS errors, no empty links).
+  - db/063 deletes `xp_per_level`. New test 07zn: every role walks all links 2 levels deep (HTTP < 400, no PHP/JS errors, no empty links);
+    skips links that change things (delete, download, ?k=, kalba.php - account language, testas.php - opening starts an attempt).
+    Found one real bug: a staff notification link to a deleted exam → 404. Fix: egzamino-protokolas.php shows „Šio egzamino protokolo nebėra“ and goes to
+    Egzaminai; deleting an exam (egzaminai.php, renginiai.php) closes its notifications (exam_notifications_close in app/exam_signup.php).
 ## Open
 - C5 CSS cleanup: header.css done (v2.11), next app.css (one file per session). D4 same group on two tablets, D5 Budo live polish, D7 arena left hand UI, D8 pixel characters (PC + LibreSprite).
 - Parent payments for Budo registration need a payment provider (later).
