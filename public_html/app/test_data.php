@@ -13,7 +13,7 @@
 // pavadinimus ir vietas (old_seed_scan), bet tik ten, kur yra tų pavyzdžių vaikai (tikslūs vardai ir gimimo datos), t.y. tik kompiuteryje.
 
 const DEMO_SENTINEL = '2000-01-01 00:00:00';
-const DEMO_VIDEO = 'dQw4w9WgXcQ';
+const DEMO_VIDEO = 'dQw4w9WgXcQ';   // senų demo įrašų juokelio video (ne apie karate) - tik atpažinti ir ištrinti; niekur nenaudoti kaip pavyzdžio
 const DEMO_TEXT = '[Pavyzdys - pakeiskite]';   // senas pavyzdinis instruktoriaus aprašymas pagrindiniame puslapyje
 const DEMO_ACCOUNT_SQL = "((a.email LIKE '%@demo.karateka.lt' OR a.email LIKE '%@karateka.test') AND a.role <> 'admin')";
 const DEMO_LESSON_SQL = "l.created_at = '2000-01-01 00:00:00' OR l.title LIKE 'TEST:%' OR l.videos LIKE '%dQw4w9WgXcQ%'

@@ -178,16 +178,16 @@ test('Budo spectators: find yourself in the schedule, YouTube stream with start 
 
   // Transliacija: YouTube nuoroda ir data
   await a.click('#share-toggle');
-  await a.fill('#stream-url', 'https://www.youtube.com/watch?v=dQw4w9WgXcQ');
+  await a.fill('#stream-url', 'https://www.youtube.com/watch?v=abcDEF12345');
   await a.fill('#stream-at', '2027-02-06T10:00');
   await a.click('#stream-save');
   await a.waitForFunction(() => /Transliacija išsaugota/.test(document.getElementById('save-state').textContent));
-  check('stream saved', sql(`SELECT CONCAT(stream_url, '|', stream_at) FROM tournaments WHERE id = ${tid}`) === 'https://www.youtube.com/watch?v=dQw4w9WgXcQ|2027-02-06 10:00:00');
+  check('stream saved', sql(`SELECT CONCAT(stream_url, '|', stream_at) FROM tournaments WHERE id = ${tid}`) === 'https://www.youtube.com/watch?v=abcDEF12345|2027-02-06 10:00:00');
 
   const share = linkToken('live', tid);
   const v = await login(browser, null, 390, 844);
   await v.goto(`varzybos-gyvai.php?k=${share}`);
-  check('stream block with start date', /prasidės/.test(await v.textContent('#gv-stream')) && await v.locator('#gv-stream iframe[src*="youtube-nocookie.com/embed/dQw4w9WgXcQ"]').count() === 1);
+  check('stream block with start date', /prasidės/.test(await v.textContent('#gv-stream')) && await v.locator('#gv-stream iframe[src*="youtube-nocookie.com/embed/abcDEF12345"]').count() === 1);
   await v.waitForSelector('.gv-area');
   // Vardas iš tinklų: pirmas dalyvis bet kurioje grupėje
   const person = JSON.parse(sql(`SELECT results FROM tournaments WHERE id = ${tid}`));
