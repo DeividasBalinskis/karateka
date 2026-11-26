@@ -4285,4 +4285,5 @@ From 2013 he trained with the team of the traditional karate-do club "Sanrei", a
     'Peržiūra įjungta.' => 'Review switched on.',
     'Peržiūra išjungta.' => 'Review switched off.',
     'auksinės žymos test svetainėje, darbų eilė ir taisymo agentas' => 'gold marks on the test site, job queue and the fixing agent',
+    'Šio egzamino protokolo nebėra - jis ištrintas.' => 'This exam protocol no longer exists - it was deleted.',
 ];

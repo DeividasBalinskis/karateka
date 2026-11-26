@@ -28,6 +28,7 @@ if (is_post()) {
         event_file_save($id, null, true);   // priedas ir nuotrauka ištrinami kartu
         event_cover_save($id, null, true);
         q('DELETE FROM events WHERE id = ?', [$id]);
+        exam_notifications_close($id);   // v2.12: pranešimai apie šį egzaminą nebeveda į ištrintą protokolą
         flash('ok', t('Renginys ištrintas.'));
         back_after_save($back, $backPages);
     }

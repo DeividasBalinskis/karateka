@@ -447,3 +447,13 @@ function exam_waitlist_assign(int $id, array $event, string $from): array
     return ['ok' => true, 'mailed' => $mailed];
 }
 
+/** v2.12: ištrynus egzaminą - personalo pranešimai apie jo registracijas pažymimi atliktais (nuoroda vestų į ištrintą protokolą) */
+function exam_notifications_close(int $eventId): void
+{
+    $rel = 'admin/egzamino-protokolas.php?id=' . $eventId;
+    try {
+        q('UPDATE notifications SET read_at = COALESCE(read_at, NOW()), done_at = NOW() WHERE link IN (?, ?) AND done_at IS NULL', [$rel, url($rel)]);
+    } catch (PDOException $ex) {
+        // pranešimų lentelės dar nėra (db/021)
+    }
+}

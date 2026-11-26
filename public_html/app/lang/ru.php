@@ -4285,4 +4285,5 @@ Nuo 2013 m. treniravosi Tradicinio karate-do klubo „Sanrei“ komandoje, o 201
     'Peržiūra įjungta.' => 'Обзор включён.',
     'Peržiūra išjungta.' => 'Обзор выключен.',
     'auksinės žymos test svetainėje, darbų eilė ir taisymo agentas' => 'золотые отметки на тестовом сайте, очередь задач и агент исправлений',
+    'Šio egzamino protokolo nebėra - jis ištrintas.' => 'Этого протокола экзамена больше нет - он удалён.',
 ];

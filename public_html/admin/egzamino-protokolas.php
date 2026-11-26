@@ -9,6 +9,10 @@ $me = require_can('exam_protocols');
 $id = (int) (get('id') ?: post('id'));
 $event = q_one('SELECT * FROM events WHERE id = ?', [$id]);
 if (!$event || $event['type'] !== 'exam' || !exam_protocol_ready()) {
+    if (!$event && $id && !is_post()) {   // v2.12: ištrintas egzaminas (sena nuoroda pranešime) - aiški žinutė, ne „Puslapis nerastas“
+        flash('err', t('Šio egzamino protokolo nebėra - jis ištrintas.'));
+        redirect('admin/egzaminai.php');
+    }
     not_found();
 }
 $p = exam_protocol($event);

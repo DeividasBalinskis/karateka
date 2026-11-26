@@ -44,6 +44,7 @@ if (is_post() && post('action') === 'delete_protocol' && can('exams', $me)) {
         event_file_save($id, null, true);
         event_cover_save($id, null, true);
         q('DELETE FROM events WHERE id = ?', [$id]);   // protokolo eilutės, registracijos ir nuorodos ištrinamos kartu (ON DELETE CASCADE)
+        exam_notifications_close($id);   // v2.12: pranešimai apie šį egzaminą nebeveda į ištrintą protokolą
         flash('ok', t('Protokolas ištrintas: {t}', ['t' => $ev['title']]));
     }
     redirect('admin/egzaminai.php');

@@ -37,7 +37,8 @@ test('legacy demo purge keeps real people; test people, view switch, delete', as
     && sql(`SELECT GROUP_CONCAT(emoji) FROM reactions WHERE news_id = ${realNews}`) === '👍');
   // Diržų aplankai (9 kyu ... 1 kyu) lieka; dan aplankai sukuriami atidarius pamokas
   check('kata lessons and belt folders stay', +sql("SELECT COUNT(*) FROM lesson_folders WHERE parent_id IS NULL AND belt_level BETWEEN 1 AND 9") === 9);
-  check('referee test stays', +sql("SELECT COUNT(*) FROM quizzes WHERE audience = 'teisejas'") === 1);
+  check('referee test stays', +sql("SELECT COUNT(*) FROM quizzes WHERE audience = 'teisejas'") === 1,
+    sql("SELECT GROUP_CONCAT(CONCAT(id, ':', title, ':', created_at) SEPARATOR ' | ') FROM quizzes WHERE audience = 'teisejas'"));
   check('program used by real members kept', +sql("SELECT COUNT(*) FROM belt_requirements WHERE created_at = '2000-01-01 00:00:00'") >= 0);
   await a.goto('admin/');
   check('only once', !/Išvalyti seni/.test(await flashes(a)));
