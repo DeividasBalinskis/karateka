@@ -7,7 +7,7 @@ const { login } = require('./helpers');
 
 const PHP_ERROR = /Fatal error|Warning:|Notice:|Deprecated:|Uncaught|Įvyko klaida|Duomenų bazė neatnaujinta/;
 const IGNORED_CONSOLE = /favicon|ERR_|youtube|google|vdo\.ninja|Failed to load resource|Permissions policy violation/i;
-const SKIP = /atsijungti|logout|trinti|istrinti|delete|download|atsisiusti|eksport|export|\.zip|\.xlsx|\.csv|\.pdf|\.docx|\.ics|\.png|\.jpe?g|\.webp|\.svg|\.mp4|\.json|uploads\/|[?&](k|c|token|key|raktas|lang|kalba|tema|theme|action|veiksmas|zymeti|as)=|-api\.php|pulsas\.php|arena\.php|kodas\.php\?/i;
+const SKIP = /atsijungti|logout|trinti|istrinti|delete|download|atsisiusti|eksport|export|\.zip|\.xlsx|\.csv|\.pdf|\.docx|\.ics|\.png|\.jpe?g|\.webp|\.svg|\.mp4|\.json|uploads\/|[?&](k|c|token|key|raktas|lang|kalba|tema|theme|action|veiksmas|zymeti|as)=|-api\.php|pulsas\.php|arena\.php|kodas\.php\?|varzybos-sso\.php/i;   // varzybos-sso - perėjimas į išorinę Varžybų programą (testuose jos nėra)
 
 const roles = [
   ['info@karateka.lt', 'admin', ['index.php', 'admin/', 'admin/nustatymai.php', 'admin/varzybos.php', 'paskyra.php', 'ltkf/'], 700],
