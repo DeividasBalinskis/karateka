@@ -301,6 +301,10 @@ Updated: 2026-11-26 · version v2.12 · main
     skips links that change things (delete, download, ?k=, kalba.php - account language, testas.php - opening starts an attempt).
     Found one real bug: a staff notification link to a deleted exam → 404. Fix: egzamino-protokolas.php shows „Šio egzamino protokolo nebėra“ and goes to
     Egzaminai; deleting an exam (egzaminai.php, renginiai.php) closes its notifications (exam_notifications_close in app/exam_signup.php).
+  - CI on the branch (run 45803387084): 193 passed, 0 failed, engine 41/41. Visual compare: Budo shots identical; 4 differences on Paskyra/LTKF = data noise.
+    Main = c1895fd („į main“ given 2026-11-26: „kai pabaigsi į main“). Deployed (run 45806844015): test shows v2.12, db 063 imported with a backup.
+    Checked on test: viewers page 💡 present, video bar = the current pair, ⛶ fills 375×812 and 1440; Budo bracket „KITA KOVA“ red frame. #185 answered (Pataisyta).
+    The live viewer page had no phone connected, so the camera card was shown with a browser-only mock for the screenshots (no server change).
 ## Open
 - C5 CSS cleanup: header.css done (v2.11), next app.css (one file per session). D4 same group on two tablets, D5 Budo live polish, D7 arena left hand UI, D8 pixel characters (PC + LibreSprite).
 - Parent payments for Budo registration need a payment provider (later).
