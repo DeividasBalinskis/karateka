@@ -98,7 +98,7 @@ test('Budo: a finished bout opens at its moment in the YouTube video, in the pho
   for (let i = 0; i < 20 && !/youtu\.be\\?\/dQw4w9WgXcQ\?t=1190/.test(sql(`SELECT results FROM tournaments WHERE id = ${tid}`)); i++) await a.waitForTimeout(500);
   const br = JSON.parse(sql(`SELECT results FROM tournaments WHERE id = ${tid}`)).brackets[kata.id];
   const pm = br.groups.flatMap((g) => g.matches || []).filter((m) => m.v);
-  check('viewers get the bout link', pm.length === 1 && pm[0].v === 'https://youtu.be/dQw4w9WgXcQ?t=1190', JSON.stringify(pm));
+  check('viewers get the bout link', pm.length === 1 && pm[0].v.replace(/\\\//g, '/') === 'https://youtu.be/dQw4w9WgXcQ?t=1190', JSON.stringify(pm));   // sql() išvestyje „/“ - „\/“
 
   // Telefono įrašas: pradžia = failo laikas − trukmė; atidaroma kovos vieta; kitas failas - „ne šiame įraše“
   const size = await phoneFile(a, 'budo-tatamis.webm', t.s + 2000);
