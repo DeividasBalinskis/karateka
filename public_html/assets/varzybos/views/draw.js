@@ -16,6 +16,8 @@ import { upcoming } from './results.js';
 
 // ---------- Lentelės ----------
 var swapMode = false, picked = null;
+// #185 (Denis): kita kova (pirma nebaigta) - raudonas rėmelis; pažymėjus nugalėtoją - nuslenkama prie jos
+var nextMid = null;
 export function resetSwap() { swapMode = false; picked = null; }
 function slotHtml(m, side, c, clickable, firstRound, extra) {
   var id = side === 'a' ? m.a : m.b, p = id ? person(c, id) : null;
@@ -47,8 +49,8 @@ function matchHtml(m, c, title, firstRound) {
   var mode = boutMode(c, m), ready = !m.bye && m.a && m.b && !swapMode, flags = ready && mode === 'flags';
   var right = m.bye ? '<span>Laisvas ratas</span>' : !(m.a && m.b) ? '' : flags ? '<span class="m-flags-score">' + esc((c.draw.scores || {})[m.id] || 'vėliavėlės') + '</span>'
     : scoreInput(c, m) + '<button type="button" class="bout-open" data-bout="' + m.id + '" title="Kova: balai ir laikrodis' + (CFG.readOnly ? '' : ', ekranas') + '">▶</button>';
-  var live = liveMatch && liveMatch.cat === c.id && liveMatch.mid === m.id;
-  return '<div class="match' + (m.bye ? ' is-bye' : '') + (m.winner && !m.bye ? ' is-done' : '') + (live ? ' is-live' : '') + '"><div class="match-label"><span>' + (m.no ? m.no + ' · ' : '') + esc(title) + (mode === 'flags' && c.discipline === 'fukugo' ? ' · Kitei' : mode === 'kumite' && c.discipline === 'fukugo' ? ' · Kumite' : '') + '</span>' + right + '</div>' +
+  var live = liveMatch && liveMatch.cat === c.id && liveMatch.mid === m.id, isNext = !live && !swapMode && !m.winner && nextMid === m.id;
+  return '<div class="match' + (m.bye ? ' is-bye' : '') + (m.winner && !m.bye ? ' is-done' : '') + (live ? ' is-live' : '') + (isNext ? ' is-next' : '') + '"><div class="match-label"><span>' + (isNext ? '<b class="m-next">Kita kova</b> · ' : '') + (m.no ? m.no + ' · ' : '') + esc(title) + (mode === 'flags' && c.discipline === 'fukugo' ? ' · Kitei' : mode === 'kumite' && c.discipline === 'fukugo' ? ' · Kumite' : '') + '</span>' + right + '</div>' +
     slotHtml(m, 'a', c, canWin || canSwap, firstRound, flags ? flagChips(c, m, 'a') : '') + slotHtml(m, 'b', c, canWin || canSwap, firstRound, flags ? flagChips(c, m, 'b') : '') + '</div>';
 }
 export function diplomaUrl(catId, html) { return CFG.diplomaApi + (catId ? '&cat=' + encodeURIComponent(catId) : '') + (html ? '&html=1' : ''); }
@@ -65,6 +67,7 @@ function drawHead(c, done, all) {
 }
 function renderElim(c, view) {
   var b = bracket(c), all = allMatches(b), done = all.filter(function (m) { return m.winner && m.loser; }).length;
+  nextMid = (upcoming(c)[0] || {}).id || null;
   var html = drawHead(c, done, all.length);
   html += '<div class="bracket-wrap"><div class="bracket">' + b.rounds.map(function (rd, r) {
     var title = roundName(r, b.R);
@@ -81,6 +84,7 @@ function renderElim(c, view) {
 }
 function renderRR(c, view) {
   var ms = rrMatches(c), st = rrStandings(c), done = ms.filter(function (m) { return m.winner; }).length;
+  nextMid = (upcoming(c)[0] || {}).id || null;
   var html = drawHead(c, done, ms.length) + '<div class="rr-layout"><div class="rr-matches">';
   var round = 0;
   ms.forEach(function (m) {
@@ -307,7 +311,9 @@ document.getElementById('draw-view').addEventListener('click', function (e) {
     var wasDone0 = catFinished(c0);
     if (c0.draw.results[m0.id] === wid && c0.draw.scores[m0.id] === txt) { delete c0.draw.results[m0.id]; delete c0.draw.scores[m0.id]; }
     else { c0.draw.results[m0.id] = wid; c0.draw.scores[m0.id] = txt; }
-    prune(c0); autoLock(c0, wasDone0); save(); render(); return;
+    prune(c0); autoLock(c0, wasDone0); save(); render();
+    if (c0.draw.results[m0.id] === wid) goNext();
+    return;
   }
   var bo = e.target.closest('[data-bout]');
   if (bo) { openBout(S.selected, bo.dataset.bout); return; }
@@ -322,9 +328,20 @@ document.getElementById('draw-view').addEventListener('click', function (e) {
   }
   snapshot();
   var wasDone = catFinished(c);
-  if (c.draw.results[mid] === pid) delete c.draw.results[mid]; else c.draw.results[mid] = pid;
+  var won = c.draw.results[mid] !== pid;
+  if (won) c.draw.results[mid] = pid; else delete c.draw.results[mid];
   prune(c); autoLock(c, wasDone); save(); render();
+  if (won) goNext();
 });
+// #185: kita kova - į matomą vietą (lentelė gali būti plati ir ilga) ir trumpai sumirksi
+export function goNext() {
+  var n = document.querySelector('#draw-view .match.is-next');
+  if (!n || !n.offsetParent) return;
+  var r = n.getBoundingClientRect(), wrap = n.closest('.bracket-wrap'), wr = wrap ? wrap.getBoundingClientRect() : null;
+  var outY = r.top < 60 || r.bottom > window.innerHeight - 20, outX = wr ? (r.left < wr.left || r.right > wr.right) : (r.left < 0 || r.right > window.innerWidth);
+  if (outY || outX) n.scrollIntoView({ block: outY ? 'center' : 'nearest', inline: outX ? 'center' : 'nearest', behavior: 'smooth' });
+  n.classList.add('next-pulse');
+}
 document.getElementById('draw-view').addEventListener('change', function (e) {
   var t = e.target, c = cat(S.selected); if (!c) return;
   if (t.dataset.score) { c.draw.scores = c.draw.scores || {}; if (t.value.trim()) c.draw.scores[t.dataset.score] = t.value.trim(); else delete c.draw.scores[t.dataset.score]; save(); if (c.draw.system === 'rr') render(); return; }

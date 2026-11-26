@@ -389,6 +389,12 @@ body.is-dragging-name { cursor: grabbing; user-select: none; }
 .bout-open:hover { background: var(--accent-2); }
 .match-label > span:last-child { display: inline-flex; align-items: center; }
 .match.is-live { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(215, 38, 61, .18); }
+/* #185 (Denis): kita kova - raudonas rėmelis ir „Kita kova“; pažymėjus nugalėtoją - nuslenkama ir sumirksi */
+.match.is-next { border: 2px solid var(--accent); box-shadow: 0 0 0 3px rgba(215, 38, 61, .22); }
+.match-label .m-next { color: var(--accent); font-weight: 800; text-transform: uppercase; letter-spacing: .03em; }
+.match.next-pulse { animation: nextPulse 1.3s ease-out 2; }
+@keyframes nextPulse { 0% { box-shadow: 0 0 0 0 rgba(215, 38, 61, .6); } 100% { box-shadow: 0 0 0 16px rgba(215, 38, 61, 0); } }
+@media (prefers-reduced-motion: reduce) { .match.next-pulse { animation: none; } }
 .j-in.dropped { text-decoration: line-through; color: #9AA3B2; background: #F4F5F8; border-style: dashed; }
 body.bout-open-body { overflow: hidden; }
 .bout { position: fixed; inset: 0; z-index: 200; background: rgba(10, 12, 20, .72); display: grid; place-items: center; padding: 16px; }
@@ -1528,27 +1534,9 @@ body.gv-bar-body { margin: 0; background: transparent !important; font-family: '
 .gv-ovl.gv-bar .ov-n { min-width: 3em; }
 .gv-ovl.gv-bar.idle { justify-content: center; }
 .gv-ovl.gv-bar.idle .ov-cat { font-size: 1.6vw; opacity: .85; }
-/* v1.99: ± kairėje ir dešinėje balų (treneriui ir sekretoriatui) - pavyzdinė kova */
-.gv-ovl .ov-pm { width: 4.4vw; height: 4.4vw; min-width: 30px; min-height: 30px; padding: 0; border: 0; border-radius: 1vw; background: rgba(255, 255, 255, .18); color: #fff;
-  font: 800 3vw/1 'Inter', system-ui, sans-serif; cursor: pointer; display: inline-grid; place-items: center; }
-.gv-ovl .ov-pm:hover { background: rgba(255, 255, 255, .32); }
-/* v2.07: juosta virš vaizdo paspaudimų nepriima (pointer-events: none), bet ± ir ✕ - spaudžiami */
-.gv-ovl .ov-pm, .gv-ovl .ov-end { pointer-events: auto; }
-/* ± - vienas mygtukas, perpjautas per pusę: viršuje +, apačioje − */
-.gv-ovl .ov-pmv { display: inline-flex; flex-direction: column; flex: none; border-radius: 1vw; overflow: hidden; }
-.gv-ovl .ov-pmv .ov-pm { width: 4.8vw; height: 2.7vw; min-width: 38px; min-height: 22px; border-radius: 0; font-size: 2.4vw; }
-.gv-ovl .ov-pmv .ov-pm + .ov-pm { border-top: 1px solid rgba(255, 255, 255, .28); background: rgba(255, 255, 255, .1); }
-/* ± juostoje: dvi eilutės - vardai, po jais [+/−] balai laikas balai [+/−] (✕ - baigti pavyzdinę kovą) */
-.gv-ovl.gv-bar.has-ctl .ov-row { flex: 1 1 100%; display: flex; align-items: center; justify-content: space-between; gap: .6vw 1vw; min-width: 0; }
-.gv-ovl.gv-bar.has-ctl .ov-sc { justify-content: center; }
-.gv-ovl.gv-bar.has-ctl .ov-sc .ov-t { margin: 0 1.2vw; }
-.gv-ovl.gv-bar.has-ctl .ov-n { flex: 1 1 0; }
-.gv-ovl .ov-end { margin-left: 1vw; border: 0; background: rgba(255, 255, 255, .12); color: #fff; border-radius: 8px; padding: 4px 8px; font: 700 .8em/1 'Inter', system-ui, sans-serif; cursor: pointer; }
 @media (max-width: 600px) {
   .gv-ovl.gv-bar { font-size: 15px; gap: 4px 8px; padding: 8px 10px; border-radius: 10px; }
   .gv-ovl.gv-bar .ov-s { font-size: 22px; } .gv-ovl.gv-bar .ov-t { font-size: 14px; } .gv-ovl.gv-bar .ov-cat { font-size: 11px; }
-  .gv-ovl .ov-pm { font-size: 18px; border-radius: 8px; }
-  .gv-ovl .ov-pmv { border-radius: 8px; } .gv-ovl .ov-pmv .ov-pm { font-size: 16px; border-radius: 0; }
 }
 /* v1.99: žiūrovams - telefono vaizdas įjungiamas paspaudus „▶ Žiūrėti gyvai“ */
 .gv-vid-frame.gv-cam { background: #0B0D12; }
@@ -1556,6 +1544,21 @@ body.gv-bar-body { margin: 0; background: transparent !important; font-family: '
   background: #D7263D; color: #fff; font: 800 1rem 'Inter', system-ui, sans-serif; cursor: pointer; box-shadow: 0 8px 24px rgba(0, 0, 0, .35); }
 .gv-watch[hidden], .gv-unwatch[hidden] { display: none; }
 .gv-unwatch { position: absolute; top: 8px; right: 8px; z-index: 3; width: 34px; height: 34px; border: 0; border-radius: 50%; background: rgba(0, 0, 0, .55); color: #fff; cursor: pointer; }
+/* v2.12: ⛶ - vaizdas su juosta per visą ekraną (Denis). Su Fullscreen API - tikras visas ekranas, be jo (iPhone) - per visą langą */
+.gv-full-btn { position: absolute; top: 8px; right: 50px; z-index: 3; min-width: 34px; height: 34px; padding: 0 8px; border: 0; border-radius: 999px; background: rgba(0, 0, 0, .55); color: #fff;
+  font: 700 18px/1 'Inter', system-ui, sans-serif; cursor: pointer; }
+.gv-vid-frame:not(.gv-cam) .gv-full-btn { right: 8px; }
+.gv-full-btn[hidden] { display: none; }
+.gv-vid-frame.gv-full { position: fixed; inset: 0; z-index: 1000; width: 100vw; height: 100vh; height: 100dvh; aspect-ratio: auto; border-radius: 0; }
+body.gv-full-on { overflow: hidden; }
+body.gv-full-on .fb { display: none; }
+.gv-vid-frame.gv-full .gv-ovl { left: 3vw; right: 3vw; bottom: 4vh; gap: 6px 14px; padding: 10px 16px; font-size: clamp(16px, 2.4vw, 30px); }
+.gv-vid-frame.gv-full .gv-ovl .ov-s { font-size: clamp(26px, 4vw, 52px); }
+.gv-vid-frame.gv-full .gv-ovl .ov-cat { font-size: clamp(12px, 1.4vw, 18px); }
+.gv-vid-frame.gv-full .gv-full-btn, .gv-vid-frame.gv-full .gv-unwatch { top: max(10px, env(safe-area-inset-top)); width: auto; min-width: 44px; height: 44px; }
+.gv-vid-frame.gv-full .gv-full-btn { right: 64px; }
+.gv-vid-frame.gv-full:not(.gv-cam) .gv-full-btn { right: 10px; }
+.gv-vid-frame.gv-full .gv-unwatch { right: 10px; }
 
 /* v1.99: Transliacija telefonais (admin/varzybu-transliacija.php) - QR, laukiantys telefonai, tatamių kortelės su vaizdu, ± ir priskyrimu */
 .tr-main { max-width: 1280px; margin: 0 auto; padding: 16px 20px 40px; display: grid; gap: 16px; }
@@ -1597,37 +1600,6 @@ body.gv-bar-body { margin: 0; background: transparent !important; font-family: '
   .tr-pq p { font-size: 12pt; margin: 5mm 0 0; }
 }
 
-/* v1.97-v1.99: telefono vaizdas kovos skydelyje - atskiras langas (balai jo nepersikrauna); kompiuteryje dešinėje, telefone viršuje; ± ant vaizdo */
-:root { --bv-w: min(36vw, 520px); }
-body.bout-vid-big { --bv-w: min(55vw, 900px); }
-body.bout-vid-on .bout { padding-right: calc(var(--bv-w) + 32px); }
-.bout-vid { position: fixed; z-index: 210; right: 16px; top: 50%; transform: translateY(-50%); width: var(--bv-w); background: #0B0D12; color: #fff; border-radius: 14px; overflow: hidden; box-shadow: 0 20px 60px rgba(0, 0, 0, .45); }
-.bout-vid .bv-head { display: flex; align-items: center; gap: 6px; padding: 6px 8px 6px 12px; font-size: .9rem; }
-.bout-vid .bv-head .spacer { flex: 1; }
-.bout-vid .bv-head .btn { background: rgba(255, 255, 255, .12); border-color: transparent; color: #fff; padding: 4px 10px; }
-.bout-vid .bv-frame { position: relative; aspect-ratio: 16 / 9; background: #000; }
-.bout-vid iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
-.bout-vid .bv-score { position: absolute; left: 8px; right: 8px; bottom: 8px; z-index: 2; display: flex; align-items: center; gap: 6px; padding: 6px 8px; border-radius: 10px; background: rgba(10, 12, 20, .82); }
-.bout-vid .bv-score[hidden] { display: none; }
-.bv-n { flex: 1 1 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 700; font-size: .85rem; }
-.bv-n.aka { color: #FF8A8A; } .bv-n.shiro { text-align: right; }
-.bv-s { font-size: 1.5rem; min-width: 1.3em; text-align: center; font-variant-numeric: tabular-nums; }
-.bv-s.aka { color: #FF8A8A; }
-.bv-pm { width: 34px; height: 34px; padding: 0; border: 0; border-radius: 8px; background: rgba(255, 255, 255, .18); color: #fff; font: 800 1.2rem/1 'Inter', system-ui, sans-serif; cursor: pointer; }
-.bv-pm:hover { background: rgba(255, 255, 255, .32); }
-.bv-pmv { display: inline-flex; flex-direction: column; flex: none; border-radius: 8px; overflow: hidden; }
-.bv-pmv .bv-pm { width: 40px; height: 22px; border-radius: 0; font-size: 1rem; }
-.bv-pmv .bv-pm + .bv-pm { border-top: 1px solid rgba(255, 255, 255, .28); background: rgba(255, 255, 255, .1); }
-.bout-vid .bv-hint { margin: 0; padding: 6px 12px 8px; font-size: .75rem; color: #9AA3B2; }
-.bout-vid .bv-hint a { color: #fff; }
-.bout-top .btn.on { background: #fff; color: #12151C; }
-@media (max-width: 999px) {
-  .bout-vid { top: 8px; left: 8px; right: 8px; width: auto; transform: none; }
-  .bout-vid .bv-frame { aspect-ratio: auto; height: 26vh; }
-  .bout-vid .bv-hint { display: none; }
-  body.bout-vid-on .bout { padding-right: 16px; padding-top: calc(26vh + 56px); align-items: start; }
-  body.bout-vid-on .bout-card { max-height: calc(100dvh - 26vh - 72px); }
-}
 .area-vid { display: flex; align-items: center; gap: 4px; font-size: 12px; flex: 1 1 100%; min-width: 0; }
 .area-vid input { flex: 1; min-width: 0; width: auto; font-size: 12px; padding: 4px 6px; }
 
@@ -1672,40 +1644,8 @@ body.cam-body { margin: 0; min-height: 100vh; background: #12151C; color: #fff; 
 }
 /* #184 (v1.99): viršus visada švelnios mėlynai pilkos spalvos - ir su temomis (temų viršai būdavo per tamsūs) */
 [data-theme] .vz-top { background: linear-gradient(135deg, #4F5E73 0%, #67788F 100%); }
-/* v2.00: 📹 Live kova - sekretoriato langas: tatamio telefono vaizdas per visą ekraną; kova, balai [+/−], laikas ir „Baigti“ ant vaizdo */
-.live-win { position: fixed; inset: 0; z-index: 220; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; background: #0B0D12; color: #fff; }
-.live-win[hidden] { display: none; }
-.lv-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 10px 14px; }
-.lv-head .lv-title { font-size: 1.05rem; }
-.lv-head .btn, .lv-foot .btn { background: rgba(255, 255, 255, .12); border-color: transparent; color: #fff; }
-.lv-foot .btn.btn-primary { background: var(--accent); }
-.lv-areas { display: inline-flex; flex-wrap: wrap; gap: 4px; }
-.lv-areas .seg-btn { border: 0; border-radius: 8px; padding: 6px 10px; background: rgba(255, 255, 255, .08); color: #DDE1E8; font-weight: 600; cursor: pointer; }
-.lv-areas .seg-btn.on { background: #fff; color: #12151C; }
-.lv-stage { position: relative; min-height: 0; background: #000; }
-.lv-stage iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
-.lv-bar { position: absolute; left: 12px; right: 12px; bottom: 12px; z-index: 2; display: grid; gap: 6px; padding: 10px 14px; border-radius: 14px; background: rgba(10, 12, 20, .86); }
-.lv-bar:empty { display: none; }
-.lv-cat { font-size: .85rem; font-weight: 600; opacity: .85; }
-.lv-row { display: flex; align-items: center; gap: 10px 14px; }
-.lv-n { flex: 1 1 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 800; font-size: clamp(1rem, 2.2vw, 1.6rem); }
-.lv-n.aka { color: #FF8A8A; } .lv-n.shiro { text-align: right; }
-.lv-s { min-width: 1.2em; text-align: center; font-size: clamp(2rem, 5vw, 3.6rem); line-height: 1; font-variant-numeric: tabular-nums; }
-.lv-s.aka { color: #FF8A8A; }
-.lv-t { padding: 0 .4em; font-size: clamp(1.2rem, 3vw, 2.2rem); font-weight: 800; font-variant-numeric: tabular-nums; }
-.lv-t.last { color: #FFD27A; } .lv-t.over { color: #FF6B6B; }
-.lv-vs { font-weight: 700; opacity: .7; }
-.lv-pmv { display: inline-flex; flex-direction: column; flex: none; border-radius: 12px; overflow: hidden; }
-.lv-pm { width: clamp(48px, 6vw, 72px); height: clamp(32px, 4vw, 46px); padding: 0; border: 0; background: rgba(255, 255, 255, .2); color: #fff; font: 800 clamp(1.3rem, 2.6vw, 2rem)/1 'Inter', system-ui, sans-serif; cursor: pointer; }
-.lv-pm + .lv-pm { border-top: 1px solid rgba(255, 255, 255, .3); background: rgba(255, 255, 255, .1); }
-.lv-pm:hover { background: rgba(255, 255, 255, .34); }
-.lv-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; padding: 10px 14px calc(10px + env(safe-area-inset-bottom)); }
-.lv-foot .lv-big { min-height: 48px; padding: 12px 18px; font-size: 1.05rem; }
-@media (max-width: 600px) { .lv-bar { left: 6px; right: 6px; bottom: 6px; padding: 8px 10px; } .lv-row { gap: 6px; } }
-/* v2.00: Live lange 💡 neuždengia „▶ Pradėti kovą“ */
-body.live-on .fb-fab { display: none !important; }
 /* ---------- v2.01: sekretoriato darbastalis vienam tatamiui (Tvarkaraštis, pasirinktas vienas tatamis) ----------
-   Kairėje meniu kaip Valdyme („📋 Mano tatamis“, „📹 Live kova“, „🏟 Visi tatamiai“) ir kas dabar / toliau; dešinėje - visos tatamio
+   Kairėje meniu kaip Valdyme („📋 Mano tatamis“, „🏟 Visi tatamiai“) ir kas dabar / toliau; dešinėje - visos tatamio
    grupės; paspausta grupė išsiskleidžia po savo eilute (#run perkeliamas į #dk-run). --vz-head - prilipusio viršaus aukštis (assets/varzybos.js) */
 .desk { display: grid; grid-template-columns: 236px minmax(0, 1fr); gap: 16px; align-items: start; }
 .desk-side { position: sticky; top: calc(var(--vz-head, 0px) + 12px); max-height: calc(100vh - var(--vz-head, 0px) - 24px); overflow: auto; display: grid; gap: 12px; align-content: start;
@@ -1823,27 +1763,6 @@ body.live-on .fb-fab { display: none !important; }
   .vz-title { min-width: 280px; }
   .vz-title .sub { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .vz-top-right { margin-left: auto; }
-}
-/* Live kova: „🏅 Rezultatai“ - šios grupės kovos ir vietos šalia vaizdo (paspaudus vardą - laimėjo) */
-.lv-side { position: absolute; top: 0; right: 0; bottom: 0; z-index: 3; width: min(380px, 42vw); overflow: auto; padding: 12px 14px 20px; background: rgba(12, 15, 22, .95); border-left: 1px solid rgba(255, 255, 255, .12); color: #E8EBF0; }
-.live-win.side-on .lv-stage iframe { right: min(380px, 42vw); width: auto; }
-.live-win.side-on .lv-bar { right: calc(min(380px, 42vw) + 12px); }
-.lv-head .btn[aria-pressed="true"] { background: #fff; color: #12151C; }
-.lv-side h3 { display: flex; align-items: center; margin: 0 0 8px; font-size: 1rem; }
-.lv-side h4 { margin: 12px 0 6px; font-size: .72rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: #9AA3B2; }
-.lv-side .pin-m { border-color: rgba(255, 255, 255, .14); font-size: .86rem; }
-.lv-side .pin-m.done { border-color: rgba(124, 214, 155, .45); }
-.lv-side .pin-p { color: #fff; min-height: 32px; }
-.lv-side button.pin-p:hover { background: rgba(255, 255, 255, .12); }
-.lv-side .pin-p.won { background: rgba(31, 146, 84, .35); color: #C9F7D8; }
-.lv-side .aka-t { color: #FF8A8A; }
-.lv-side .gv-score li { border-bottom: 1px solid rgba(255, 255, 255, .08); padding: 2px 0; }
-.lv-side .pin-places { margin-bottom: 8px; }
-.lv-side .rd-p .muted, .lv-side .muted { color: #9AA3B2; }
-@media (max-width: 600px) {
-  .lv-side { width: 100%; }
-  .live-win.side-on .lv-stage iframe { right: 0; width: 100%; }
-  .live-win.side-on .lv-bar { display: none; }
 }
 
 /* C3: slaptos nuorodos - bendras blokas (app/links.php link_box) Budo puslapiuose */

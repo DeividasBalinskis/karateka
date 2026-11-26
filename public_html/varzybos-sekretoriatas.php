@@ -61,7 +61,7 @@ varz_html_head('Sekretoriatas', 'vz-public vz-demo-start');
       <?= csrf_field() ?><input type="hidden" name="k" value="<?= e($token) ?>"><?php if ($areaId): ?><input type="hidden" name="t" value="<?= $areaId ?>"><?php endif; ?>
       <h2>🧑‍💼 Sekretoriatas</h2>
       <p>Su šia nuoroda vedate varžybas <b><?= e($t['title']) ?></b>: dalyviai, kategorijos, kovos, balai, apdovanojimai. Paskyros nereikia.</p>
-      <?php if ($areaName !== ''): ?><p class="sekr-area"><b>📋 <?= e($areaName) ?></b> - atsidarys šio tatamio darbastalis: visos jo grupės, kovos ir Live kova.</p><?php endif; ?>
+      <?php if ($areaName !== ''): ?><p class="sekr-area"><b>📋 <?= e($areaName) ?></b> - atsidarys šio tatamio darbastalis: visos jo grupės ir kovos.</p><?php endif; ?>
       <p class="muted small">Pastebėjimus rašykite per 💡 (apačioje kairėje).</p>
       <?php if ($error): ?><div class="flash flash-err"><?= e($error) ?></div><?php endif; ?>
       <label>Jūsų vardas <span class="muted small">(pavardė - nebūtina)</span> <input class="sel" type="text" name="name" maxlength="80" required autofocus value="<?= e((string) post('name')) ?>" placeholder="pvz. Tomas"></label>
@@ -69,5 +69,6 @@ varz_html_head('Sekretoriatas', 'vz-public vz-demo-start');
     </form>
   <?php endif; ?>
 </main>
+<?= feedback_widget_html() /* v2.12: 💡 ir Budo puslapiuose be paskyros (Denis) */ ?><script src="<?= e(asset_url('assets/site.js')) ?>" defer></script>
 </body>
 </html>

@@ -1,9 +1,9 @@
 <?php
-// Transliacija be OBS (v1.99): vienas puslapis treneriui ir sekretoriatui.
+// Transliacija be OBS (v1.99): telefonų prijungimas (treneriui ir adminui).
 //  - 📱 Telefonai: vienas klubo QR kodas visiems telefonams (varzybos-kamera.php). Prisijungęs telefonas laukia, kol prie tatamio
 //    paspausite jo pavadinimą (stream_phones, db/059); tada telefone „📹 Pradėti filmuoti“ - vaizdas eina to tatamio srautu.
-//  - Tatamių kortelės: telefono vaizdas su juosta, ± prie balų (bandomoji kova - kai tikros kovos nėra), priskirtas telefonas, „Atjungti“.
-//  - Vaizdą mato žiūrovai (nuoroda žiūrovams → „📹 Žiūrėti gyvai“, per Meshcast - daug žiūrovų), sekretoriatas (kovoje „📹 Vaizdas“) ir šis puslapis.
+//  - Tatamių kortelės: telefono vaizdas su juosta (kova ir balai), priskirtas telefonas, „Atjungti“. v2.12: ± (pavyzdinė kova) ištrinti.
+//  - Vaizdą mato žiūrovai (nuoroda žiūrovams → „📹 Žiūrėti gyvai“, per Meshcast - daug žiūrovų) ir šis puslapis. Sekretoriatui vaizdo nebėra (v2.12).
 // QR ir srautai nuolatiniai (klubo raktas varz_cam_key) - tinka visoms varžyboms. Veikia bet kada - varžybų ir kovų nereikia.
 require dirname(__DIR__) . '/app/bootstrap.php';
 $me = varz_require_access();
@@ -132,7 +132,7 @@ $phonesApi = url('admin/varzybu-transliacija.php?id=' . (int) $t['id'] . '&telef
       <header class="tr-card-h"><h2><?= e($a['name']) ?></h2><span class="tr-card-phone" data-phone>Telefono nėra</span></header>
       <div class="tr-preview">
         <iframe class="tr-cam" src="<?= e(varz_cam_view_url(varz_cam_id($key, $aid)) . '&noaudio') ?>" title="<?= e($a['name']) ?>" allow="autoplay; fullscreen" allowfullscreen loading="lazy"></iframe>
-        <iframe class="tr-bar" src="<?= e(url('varzybos-gyvai.php?k=' . $share . '&juosta=1&valdymas=1&tatami=' . $aid)) ?>" title="Juosta"></iframe>
+        <iframe class="tr-bar" src="<?= e(url('varzybos-gyvai.php?k=' . $share . '&juosta=1&tatami=' . $aid)) ?>" title="Juosta"></iframe>
       </div>
       <div class="tr-card-f" data-assign>
         <span class="muted small">Nuskenuokite QR kodą telefonu - jo pavadinimas atsiras čia.</span>
@@ -146,8 +146,7 @@ $phonesApi = url('admin/varzybu-transliacija.php?id=' . (int) $t['id'] . '&telef
       <h2>👀 Kur matosi vaizdas</h2>
       <ul class="tr-when">
         <li><b>Žiūrovai</b> <span>- žiūrovų puslapyje prie tatamio „📹 Žiūrėti gyvai“: vaizdas su balais ir laiku.</span> <a href="<?= e($viewers) ?>" target="_blank" rel="noopener">Atidaryti ↗</a></li>
-        <li><b>Sekretoriatas</b> <span>- atidaręs kovą spaudžia „📹 Vaizdas“: vaizdas šalia balų, ± prie balų ir vaizde.</span></li>
-        <li><b>Šis puslapis</b> <span>- visi tatamiai. ± prie balų - pavyzdinė kova (kai tikros kovos nėra), ją mato ir žiūrovai.</span></li>
+        <li><b>Šis puslapis</b> <span>- visi tatamiai su juosta: kas kovoja ir balai (kai kova vyksta sekretoriato kovos skydelyje).</span></li>
       </ul>
     </div>
     <div>

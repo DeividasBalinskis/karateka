@@ -1,12 +1,13 @@
 // v1.97-v1.99: Transliacija be OBS - telefonai jungiasi per vieną QR, kompiuteryje priskiriami tatamiui, telefone „Pradėti filmuoti“ (vdo.ninja + Meshcast);
-// tatamių kortelės su vaizdu ir ± prie balų (pavyzdinė kova), žiūrovams „📹 Žiūrėti gyvai“, sekretoriatui kovoje „📹 Vaizdas“ su ± ant vaizdo;
-// #182 - rungtis užsirakina pati, kai baigiasi.
+// tatamių kortelės su vaizdu ir juosta, žiūrovams „📹 Žiūrėti gyvai“ su ⛶ per visą ekraną ir 💡.
+// v2.12: ± (pavyzdinė kova) ir sekretoriato vaizdas („📹 Vaizdas“, „📹 Live kova“) ištrinti; juosta be kovos skydelio - kas kovoja dabar.
+// #182 - rungtis užsirakina pati, kai baigiasi; #185 - kita kova paryškinta raudonai.
 const { test } = require('@playwright/test');
 const { sql, linkToken, login, nav, check, noJsErrors } = require('./helpers');
 
 const blank = (r) => r.fulfill({ contentType: 'text/html', body: '<html><body style="background:#000"></body></html>' });
 
-test('Budo streaming with phones only: one QR, assign to a tatami, ± on the video, viewers watch live', async ({ browser }) => {
+test('Budo streaming with phones only: one QR, assign to a tatami, viewers watch live full screen', async ({ browser }) => {
   const a = await login(browser, 'info@karateka.lt', 1440, 900);
   await a.route('https://vdo.ninja/**', blank);
   await a.goto('admin/varzybos.php');
@@ -53,14 +54,12 @@ test('Budo streaming with phones only: one QR, assign to a tatami, ± on the vid
   await m.waitForSelector('#cam-start:not([hidden])', { timeout: 8000 });
   check('phone page: start filming link for the tatami', (await m.getAttribute('#cam-start', 'href')).includes('push=' + camId) && /Priskirta/.test(await m.textContent('#cam-state')));
 
-  // ± kairėje ir dešinėje balų ant vaizdo: pavyzdinė kova (ją mato ir žiūrovai)
+  // v2.12: ± ant juostos nebėra
   const bar = a.frameLocator(`.tr-card[data-area="${area1}"] .tr-bar`);
-  await bar.locator('.ov-pm[data-d="a|1"]').click(); await a.waitForTimeout(500);
-  await bar.locator('.ov-pm[data-d="a|1"]').click(); await a.waitForTimeout(500);
-  await bar.locator('.ov-pm[data-d="b|1"]').click(); await a.waitForTimeout(500);
-  const live = JSON.parse(sql(`SELECT data FROM tournament_live WHERE tournament_id = ${tid} AND area_id = ${area1}`) || '{}');
-  check('sample bout saved', live.test === true && live.sa === 2 && live.sb === 1, JSON.stringify(live));
-  check('one split button per side: + on top, − below', await bar.locator('.ov-pmv').count() === 2 && (await bar.locator('.ov-pmv').first().locator('button').first().textContent()) === '+' && (await bar.locator('.ov-pmv').first().locator('button').last().textContent()) === '−');
+  await bar.locator('.gv-bar').waitFor();
+  check('no ± on the streaming page bar', await bar.locator('.ov-pm, [data-end]').count() === 0);
+  const sample = await a.request.post(`varzybos-gyvai.php?k=${linkToken('live', tid)}&bandymas=1`, { data: { area: +area1, sa: 1 }, headers: { 'X-CSRF-Token': csrf } });
+  check('sample bout endpoint is gone', !(await sample.text()).includes('"ok":true') && !sql(`SELECT data FROM tournament_live WHERE tournament_id = ${tid}`).includes('Bandomoji'));
 
   // Žiūrovai: prie tatamio „▶ Žiūrėti gyvai“ - vaizdas tik paspaudus, su juosta
   const share = linkToken('live', tid);
@@ -71,8 +70,17 @@ test('Budo streaming with phones only: one QR, assign to a tatami, ± on the vid
   check('no video before tapping', await v.locator(`[data-vid="${area1}"] iframe`).count() === 0);
   await v.click(`[data-vid="${area1}"] [data-watch]`);
   check('video after tapping watch', /view=kt[a-f0-9]{20}/.test(await v.locator(`[data-vid="${area1}"] iframe`).getAttribute('src')));
-  await bar.locator('[data-end]').click(); await a.waitForTimeout(500);
-  check('sample bout ended', JSON.parse(sql(`SELECT data FROM tournament_live WHERE tournament_id = ${tid} AND area_id = ${area1}`)).idle === true);
+  // ⛶ per visą ekraną (Denis): visas kadras su juosta; dar kartą - atgal
+  const full = v.locator(`[data-vid="${area1}"] [data-full]`);
+  check('full screen button after tapping watch', await full.isVisible());
+  await full.click(); await v.waitForTimeout(400);
+  const box = await v.locator(`[data-vid="${area1}"] .gv-vid-frame`).boundingBox();
+  check('video fills the screen', await v.locator(`[data-vid="${area1}"] .gv-vid-frame.gv-full`).count() === 1 && box && box.width >= 380 && box.height >= 800, JSON.stringify(box));
+  await v.locator(`[data-vid="${area1}"] [data-full]`).click(); await v.waitForTimeout(400);
+  check('back from full screen', await v.locator('.gv-vid-frame.gv-full').count() === 0);
+  // 💡 žiūrovų puslapyje (Denis: „Budo cup nėra kaip palikt atsiliepimą“) - personalui visada
+  await a.goto(`varzybos-gyvai.php?k=${share}`);
+  check('feedback button on the viewers page', await a.locator('#fbFab').isVisible());
 
   // Kovos skydelis: „📹 Vaizdas“ - vaizdas šalia balų, ± ant vaizdo keičia balus, vaizdas nepersikrauna
   await a.goto(`admin/varzybu-sistema.php?id=${tid}`);
@@ -83,19 +91,18 @@ test('Budo streaming with phones only: one QR, assign to a tatami, ± on the vid
   await a.click('#cat-draw');
   await a.click('#draw-reset-menu summary');
   await a.click('#draw-reset [data-reset="all"]');
+  // v2.12: sekretoriatui telefono vaizdo nebėra
+  check('no camera in the secretariat', await a.locator('#live-cam').count() === 0);
+  // #185 (Denis): kita kova - raudonas rėmelis; pažymėjus nugalėtoją - kita kova paryškinama
+  const firstNext = a.locator('#draw-view .match.is-next');
+  check('next bout highlighted', await firstNext.count() === 1 && /Kita kova/.test(await firstNext.textContent()));
+  const mid0 = await firstNext.locator('[data-bout]').getAttribute('data-bout');
+  await firstNext.locator('.slot.aka button').click(); await a.waitForTimeout(300);
+  const mid1 = await a.locator('#draw-view .match.is-next [data-bout]').first().getAttribute('data-bout').catch(() => null);
+  check('after a winner the highlight moves on', mid1 && mid1 !== mid0, mid0 + ' → ' + mid1);
+  await a.click('#draw-undo'); await a.waitForTimeout(300);
   await a.locator('.bout-open').first().click();
-  await a.click('#bt-vid');
-  check('video window next to the bout', await a.locator('#bout-vid').isVisible() && /view=kt[a-f0-9]{20}/.test(await a.getAttribute('#bout-vid iframe', 'src')));
-  await a.evaluate(() => { document.querySelector('#bout-vid iframe').dataset.mark = '1'; });
-  await a.click('#bout-vid [data-vpt="a|1"]');
-  await a.click('#bout-vid [data-vpt="a|1"]');
-  await a.click('#bout-vid [data-vpt="b|1"]');
-  check('± on the video change the bout scores', (await a.inputValue('[data-sc="a"]')) === '2' && (await a.inputValue('[data-sc="b"]')) === '1');
-  await a.click('#bout-vid [data-vpt="a|-1"]');
-  check('− on the video takes a point off', (await a.inputValue('[data-sc="a"]')) === '1');
-  check('video not reloaded by score clicks', await a.evaluate(() => document.querySelector('#bout-vid iframe').dataset.mark === '1'));
-  await a.click('#bt-vid');
-  check('video can be turned off', await a.locator('#bout-vid').isHidden());
+  check('no video buttons in the bout panel', await a.locator('#bt-vid, #bt-live').count() === 0);
 
   // #182: rungtis užsirakina pati, kai baigiama paskutinė kova; atrakinti - paspaudus „🔒 Užrakinta“
   check('unlocked while bouts are left', (await a.textContent('#draw-lock')).includes('Užrakinti'));
@@ -115,35 +122,15 @@ test('Budo streaming with phones only: one QR, assign to a tatami, ± on the vid
   noJsErrors(a, m, v);
 });
 
-test('Live kova: the secretariat watches the tatami video full screen and scores on it', async ({ browser }) => {
+test('v2.12: the secretariat has no camera window', async ({ browser }) => {
   const a = await login(browser, 'info@karateka.lt', 1440, 900);
-  await a.route('https://vdo.ninja/**', blank);
   await a.goto('admin/varzybos.php');
   await nav(a, () => a.click('text=🎲 Sukurti test varžybas'));
   const tid = +sql('SELECT MAX(id) FROM tournaments');
   await a.goto(`admin/varzybu-sistema.php?id=${tid}`);
-  await a.waitForSelector('#live-cam:not([hidden])');
-  await a.click('#live-cam');
-  await a.waitForSelector('#live-win:not([hidden])');
-  check('Live window with the tatami video', /view=kt[a-f0-9]{20}/.test(await a.getAttribute('#live-win iframe', 'src')) && /Live kova/.test(await a.textContent('#live-win .lv-title')));
-  // Kova pradedama iš Live lango, balai - ant vaizdo (viršuje +, apačioje −)
-  const start = a.locator('#live-win [data-lv="open"]');
-  if (await start.count()) {
-    await start.click();
-    await a.waitForSelector('#live-win .lv-pmv');
-    await a.click('#live-win [data-vpt="a|1"]');
-    await a.click('#live-win [data-vpt="a|1"]');
-    await a.click('#live-win [data-vpt="b|1"]');
-    check('scores on the video change the bout', (await a.inputValue('#bout [data-sc="a"]')) === '2' && (await a.inputValue('#bout [data-sc="b"]')) === '1');
-    check('scores shown on the video', (await a.textContent('#live-win .lv-s.aka')) === '2' && (await a.textContent('#live-win .lv-s.shiro')) === '1');
-    await a.click('#live-win [data-lv="start"]'); await a.waitForTimeout(1200);
-    check('timer runs from the video', /Sustabdyti/.test(await a.textContent('#live-win [data-lv="start"]')));
-    await a.click('#live-win [data-lv="start"]');
-  } else {
-    check('next bout or group button shown', await a.locator('#live-win [data-lv="run"]').count() === 1);
-  }
-  await a.click('#live-win [data-lv="close"]');
-  check('back to the schedule', await a.locator('#live-win').isHidden());
+  await a.waitForSelector('#tab-live');
+  check('no Live kova button or window', await a.locator('#live-cam, #live-win, [data-dk="live"]').count() === 0);
+  check('no camera addresses sent to the secretariat', await a.evaluate(() => !('cams' in (window.VARZ || window.TAIKA || {}))));
   sql(`DELETE FROM tournaments WHERE id = ${tid}`);
   noJsErrors(a);
 });

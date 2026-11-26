@@ -4,7 +4,7 @@ import { boutMode, person } from '../rules.js';
 import { cat, S, save, setAward } from '../store.js';
 import { openRun, render, runOpen, setRun, showTab } from '../chrome.js';
 import { resetSwap } from './draw.js';
-import { CAMS, openBout, setLive } from '../bout.js';
+import { openBout } from '../bout.js';
 import { areaPlan, delayChip, fold, moveCat, nowMin, renderFound, schedHits, setCatAt, setDragId, ST_BADGE } from '../schedule.js';
 import { catStatus, stChip } from '../results.js';
 import { isDetached } from './live.js';
@@ -26,7 +26,7 @@ export function renderAreaPick() {
   var ask = S.areas.length > 1 && !myArea;
   box.hidden = !ask;
   box.classList.toggle('ask', ask);
-  if (ask) box.innerHTML = '<div class="ap-q"><b>▶ Start: prie kurio tatamio dirbate?</b><span class="muted small">Šiame kompiuteryje atsidarys to tatamio darbastalis: visos jo grupės, kovos ir Live kova. Visus tatamius - vienu paspaudimu.</span></div><div class="ap-btns">' +
+  if (ask) box.innerHTML = '<div class="ap-q"><b>▶ Start: prie kurio tatamio dirbate?</b><span class="muted small">Šiame kompiuteryje atsidarys to tatamio darbastalis: visos jo grupės ir kovos. Visus tatamius - vienu paspaudimu.</span></div><div class="ap-btns">' +
     opts.map(function (o) { return '<button type="button" class="btn' + (o[0] === 'all' ? '' : ' btn-primary') + '" data-my-area="' + o[0] + '">' + (o[0] === 'all' ? 'Visi tatamiai (vyr. sekretoriatas)' : esc(o[1])) + '</button>'; }).join('') + '</div>';
   var db = document.getElementById('desk-back'), mine = areaById(myArea);
   if (db) { db.hidden = !(deskAll && mine && deskEl && !POPUP); if (mine) db.title = 'Grįžti į savo tatamio darbastalį: ' + mine.name; }
@@ -36,16 +36,9 @@ export function renderAreaPick() {
 });
 var deskBack = document.getElementById('desk-back');
 if (deskBack) deskBack.addEventListener('click', function () { setDeskAll(false); setRun(false); render(); window.scrollTo(0, 0); });
-// 📹 Live kova (v2.00): pasirinkto tatamio (arba pirmo su telefonu) vaizdas per visą ekraną
-var liveCamBtn = document.getElementById('live-cam');
-if (liveCamBtn) liveCamBtn.addEventListener('click', function () {
-  var a = areaById(myArea);
-  if (!a || !CAMS[a.id]) a = S.areas.find(function (x) { return CAMS[x.id]; });
-  if (a) setLive(a.id);
-});
 
 // ---------- v2.01: Sekretoriato darbastalis - vienas tatamis šiame įrenginyje ----------
-// Pasirinkus tatamį („1 TATAMIS … Visi“, „▶ Start“ ar sekretoriato nuoroda tatamiui): kairėje meniu („📋 Mano tatamis“, „📹 Live kova“,
+// Pasirinkus tatamį („1 TATAMIS … Visi“, „▶ Start“ ar sekretoriato nuoroda tatamiui): kairėje meniu („📋 Mano tatamis“,
 // „🏟 Visi tatamiai“) ir kas dabar / kas toliau; dešinėje - visos to tatamio grupės su laikais, būsenomis ir vėlavimu.
 // Paspaudus grupę - ji išsiskleidžia čia pat: tas pats rungties valdymas (#run) perkeliamas po jos eilute (lentelė, vardas - laimėjo,
 // „✎ Keisti“ - sukeisti tempiant). Grupių eilė - tempiant už ⠿ (pele ir pirštu). „🏟 Visi tatamiai“ - bendras tvarkaraštis (šio
@@ -120,7 +113,6 @@ export function renderDesk(a, open) {
   var opts = S.areas.map(function (x) { return '<option value="' + x.id + '">' + esc(x.name) + '</option>'; }).join('');
   if (sel.dataset.h !== opts) { sel.dataset.h = opts; sel.innerHTML = opts; }
   sel.value = String(a.id);
-  var lb = deskEl.querySelector('[data-dk="live"]'); if (lb) lb.hidden = !CAMS[a.id];
   var left = plan.items.filter(function (x) { return x.st !== 'done'; }).length;
   document.getElementById('dk-title').innerHTML = '<h2>📋 ' + esc(a.name) + '</h2><span class="dk-meta"><span>' + plan.items.length + ' grup.</span><span>liko ' + left + '</span><span>Pabaiga apie ' + hhmm(plan.end) + '</span></span>' + delayChip(plan.delay);
   var st = document.getElementById('dk-start'); if (document.activeElement !== st) st.value = a.start || '09:30';
@@ -143,8 +135,7 @@ if (deskEl) {
     var nav = t.closest('[data-dk]');
     if (nav) {
       var v = nav.dataset.dk, a = deskArea();
-      if (v === 'live') { if (a) setLive(a.id); }
-      else if (v === 'all') { setDeskAll(true); setRun(false); render(); window.scrollTo(0, 0); }
+      if (v === 'all') { setDeskAll(true); setRun(false); render(); window.scrollTo(0, 0); }
       else window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }

@@ -10,41 +10,6 @@ if (!$t) {
     link_dead((bool) get('json') || is_post());   // C3: viena „Nuoroda neveikia“ žinutė
 }
 
-// v1.98-v1.99: bandomoji kova (transliacijos peržiūrai ir žiūrovų vaizdui) - balus ± keičia treneris ar šių varžybų sekretoriatas.
-// Įrašoma kaip tatamio „gyva“ būsena su žyma test (žiūrovų puslapis ir salės ekranas jos nerodo). Kai vyksta tikra kova - neliečiama.
-$canTest = can('budo') || varz_sekr((int) $t['id']) !== null;
-if (is_post() && get('bandymas')) {
-    header('Content-Type: application/json; charset=utf-8');
-    if (!$canTest) {
-        http_response_code(403);
-        exit(json_encode(['ok' => false]));
-    }
-    csrf_check();
-    $in = json_decode((string) file_get_contents('php://input'), true) ?: [];
-    $area = (int) ($in['area'] ?? 0);
-    $name = '';
-    foreach ((array) (tournament_state($t)['areas'] ?? []) as $a) {
-        if ((int) ($a['id'] ?? 0) === $area) {
-            $name = (string) ($a['name'] ?? '');
-        }
-    }
-    if ($name === '') {
-        http_response_code(400);
-        exit(json_encode(['ok' => false]));
-    }
-    $cur = tournament_live_get((int) $t['id'])[$area] ?? null;
-    $now = (int) round(microtime(true) * 1000);
-    if ($cur && empty($cur['data']['idle']) && empty($cur['data']['test']) && $now - $cur['ms'] < 30 * 60000) {
-        exit(json_encode(['ok' => false, 'busy' => true, 'error' => 'Vyksta tikra kova - balai rašomi kovos skydelyje.'], JSON_UNESCAPED_UNICODE));
-    }
-    $data = !empty($in['end']) ? ['area' => $area, 'areaName' => $name, 'idle' => true, 'at' => $now]
-        : ['area' => $area, 'areaName' => $name, 'test' => true, 'mode' => 'kumite', 'cat' => 'Bandomoji kova', 'round' => '', 'aka' => ['name' => 'Jonas Jonaitis', 'club' => ''],
-           'shiro' => ['name' => 'Petras Petraitis', 'club' => ''], 'sa' => max(0, min(99, (int) ($in['sa'] ?? 0))), 'sb' => max(0, min(99, (int) ($in['sb'] ?? 0))), 'at' => $now,
-           'timer' => ['total' => 90000, 'remaining' => 90000, 'running' => false]];
-    tournament_live_set((int) $t['id'], $area, $data);
-    exit(json_encode(['ok' => true, 'data' => $data, 'ms' => $now], JSON_UNESCAPED_UNICODE));
-}
-
 if (get('json')) {
     header('Content-Type: application/json; charset=utf-8');
     header('Cache-Control: no-store');
@@ -168,12 +133,11 @@ if (get('json')) {
 
 $screen = (bool) get('ekranas');
 // Juosta (?juosta=1&tatami=N): permatomas fonas, apačioje - kova, balai ir laikas. v1.99: naudojama Transliacijos puslapio peržiūroje ant telefono
-// vaizdo; &valdymas=1 - treneriui ir sekretoriatui ± prie balų (bandomoji kova).
+// vaizdo. v2.12: ± (pavyzdinė kova) ištrinti - juosta rodo tikrą kovą arba kas kovoja dabar.
 $bar = !$screen && (bool) get('juosta');
 $shareTok = (string) get('k');   // ta pati nuoroda, kuria atidaryta (C3)
 $cfg = ['json' => url('varzybos-gyvai.php?k=' . $shareTok . '&json=1'), 'id' => (int) $t['id'], 'screen' => $screen, 'bar' => $bar, 'area' => (int) get('tatami'),
-        'title' => $t['title']]
-     + ($bar && $canTest && get('valdymas') ? ['test' => url('varzybos-gyvai.php?k=' . $shareTok . '&bandymas=1'), 'csrf' => csrf_token()] : []);
+        'title' => $t['title']];
 if ($bar): ?><!doctype html>
 <html lang="lt">
 <head>
@@ -204,6 +168,7 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="<?= e(asset_url('assets/varzybos.css')) ?>">
+<?php if (!$screen): ?><link rel="stylesheet" href="<?= e(asset_url('assets/widgets.css')) ?>"><?php endif; ?>
 <?= $screen ? '' : tl_script() ?>
 </head>
 <body<?= $screen ? ' class="vz scr"' : theme_body_attrs(varz_ui()['theme'], 'vz vz-public gyvai') ?>>
@@ -241,5 +206,6 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
 <main id="gyvai" aria-live="polite"><p class="muted">Kraunama…</p></main>
 <script>window.GYVAI = <?= json_encode($cfg, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP) ?>;</script>
 <script src="<?= e(asset_url('assets/varzybos-gyvai.js')) ?>"></script>
+<?php if (!$screen): /* v2.12: 💡 ir žiūrovų puslapyje (Denis) */ ?><?= feedback_widget_html() ?><script src="<?= e(asset_url('assets/site.js')) ?>" defer></script><?php endif; ?>
 </body>
 </html>

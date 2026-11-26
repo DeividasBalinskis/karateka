@@ -54,5 +54,6 @@ varz_html_head('Išbandyti', 'vz-public vz-demo-start');
     </form>
   <?php endif; ?>
 </main>
+<?= feedback_widget_html() /* v2.12: 💡 ir Budo puslapiuose be paskyros (Denis) */ ?><script src="<?= e(asset_url('assets/site.js')) ?>" defer></script>
 </body>
 </html>

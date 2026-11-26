@@ -88,6 +88,7 @@ if ($who === '') {   // vardas - pirmiausia (taisyklė 6)
     <button class="btn btn-primary" type="submit" name="action" value="name">Pradėti →</button>
   </form>
 </main>
+<?= feedback_widget_html() /* v2.12: 💡 ir Budo puslapiuose be paskyros (Denis) */ ?><script src="<?= e(asset_url('assets/site.js')) ?>" defer></script>
 </body>
 </html>
 <?php
@@ -110,5 +111,6 @@ varz_html_head('Apdovanojimai · ' . $t['title'], 'vz-public apd');
 <main id="apd" aria-live="polite"><p class="muted">Kraunama…</p></main>
 <script>window.APD = <?= json_encode($cfg, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP) ?>;</script>
 <script src="<?= e(asset_url('assets/varzybos-apdovanojimai.js')) ?>"></script>
+<?= feedback_widget_html() /* v2.12: 💡 ir Budo puslapiuose be paskyros (Denis) */ ?><script src="<?= e(asset_url('assets/site.js')) ?>" defer></script>
 </body>
 </html>

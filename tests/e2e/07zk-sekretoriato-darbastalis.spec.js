@@ -1,6 +1,6 @@
-// v2.01: sekretoriato darbastalis vienam tatamiui - kairėje meniu („📋 Mano tatamis“, „📹 Live kova“, „🏟 Visi tatamiai“) ir kas dabar / toliau,
+// v2.01: sekretoriato darbastalis vienam tatamiui - kairėje meniu („📋 Mano tatamis“, „🏟 Visi tatamiai“) ir kas dabar / toliau,
 // dešinėje visos to tatamio grupės su laikais; paspausta grupė išsiskleidžia čia pat (vardas - laimėjo, „✎ Keisti“ - sukeisti tempiant),
-// grupių eilė - tempiant už ⠿; Live kovoje „🏅 Rezultatai“; sekretoriato nuoroda tatamiui (&t=N) atidaro jo darbastalį; telefone - be slinkimo į šoną.
+// grupių eilė - tempiant už ⠿; sekretoriato nuoroda tatamiui (&t=N) atidaro jo darbastalį; telefone - be slinkimo į šoną.
 const { test } = require('@playwright/test');
 const { sql, login, nav, check, noJsErrors, BASE_URL } = require('./helpers');
 
@@ -95,17 +95,8 @@ test('secretariat desk: my tatami, groups open in place, winner by name, swap an
   await a.click('#desk-back');
   check('back to my desk', await a.locator('#desk').isVisible() && /1 TATAMIS/.test(await a.textContent('#dk-title')));
 
-  // 📹 Live kova iš meniu: uždarius - atgal į darbastalį; „🏅 Rezultatai“ - grupės kovos šalia vaizdo
-  if (await a.locator('.desk-side [data-dk="live"]').isVisible()) {
-    await a.click('.desk-side [data-dk="live"]');
-    await a.waitForSelector('#live-win:not([hidden])');
-    check('Live close goes back to my tatami', /Mano tatamis/.test(await a.textContent('#live-win [data-lv="close"]')));
-    await a.click('#live-win [data-lv="side"]');
-    check('results next to the video', await a.locator('#live-win .lv-side').isVisible());
-    await a.click('#live-win [data-lv="side"]');
-    await a.click('#live-win [data-lv="close"]');
-    check('desk again after Live', await a.locator('#live-win').isHidden() && await a.locator('#desk').isVisible());
-  }
+  // v2.12: sekretoriatui telefono vaizdo nebėra (jį mato žiūrovai)
+  check('no camera in the secretariat menu', await a.locator('.desk-side [data-dk="live"], #live-cam, #live-win').count() === 0);
 
   // Adminas: „🧑‍💼 Sekretoriatas“ → darbastalis kitam tatamiui ir nuorodos tatamiams
   await a.click('#sekr-toggle');

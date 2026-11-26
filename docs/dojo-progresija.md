@@ -7,7 +7,7 @@ Deividas patvirtino 2026-11-25 („Taip, daryk“), sprendimas - `docs/decisions
 ## Kaip yra dabar (kodas, 2026-11-24)
 - XP = aktyvumo taškai (`point_categories`): treniruotė 1, egzaminas 10, varžybos LT 5 (+ vieta 15/10/7), užsienyje 10 (+30/20/15),
   seminaras 5, renginys 3, testas 2 + išlaikytas 5, pagalba treneriui 5, teisėjavimas 5/10, kita 5.
-- Lygis kas 100 XP (`xp_per_level`, nustatymas). Vaikas, kuris treniruojasi 2 kartus per savaitę, po metų yra 2 lygio.
+- Lygio kaina: `xp_level_base` + `xp_level_step` × floor((n−1)/5) XP (nuo v1.96; senas `xp_per_level` ištrintas db/063). Vaikas, kuris treniruojasi 2 kartus per savaitę, po metų yra 2 lygio.
 - Dovanų dėžė: už kiekvieną lygį (2-60), už renginį su „Buvo“, už 3 pergales per dieną (`game_daily_win_box`, gali būti kasdien).
 - Dėžės svoriai: paprastas 50, retas 32, epinis 14, legendinis 4; neturimas ×3; tik iš dėžių ×2 (`game_box_open`).
 - Apranga ir ginklai: 81 (kimono 19, ginklai 15, galva 8, kairė ranka 6, kaklas 6, diržas 6, nugara 6, aura 6, rankos 5, veidas 4).

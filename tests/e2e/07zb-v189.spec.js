@@ -110,9 +110,21 @@ test('Budo: no long descriptions, group name opens control, other systems menu, 
   check('no buttons for viewers', await v.locator('.ov-pm').count() === 0);
   sql(`DELETE FROM tournament_live WHERE tournament_id = ${tid}`);
   await v.reload();
-  await v.waitForSelector('.gv-bar.idle');
-  const areaName = JSON.parse(sql(`SELECT state FROM tournaments WHERE id = ${tid}`)).areas[0].name;
-  check('idle bar shows the tatami', (await v.locator('.gv-bar').innerText()).includes(areaName), areaName);
+  await v.waitForSelector('.gv-bar');
+  await v.waitForFunction(() => !/Jonas J\./.test(document.querySelector('.gv-bar').innerText));
+  // v2.12 (Denis): kovos skydelis neatidarytas - juostoje kas kovoja dabar pagal tvarkaraštį; kovų nėra - tatamio pavadinimas
+  const js = await (await v.request.get(`varzybos-gyvai.php?k=abcdefabcdefabcdefab0789&json=1`)).json();
+  const ar0 = (js.areas || []).find(x => String(x.id) === String(areaId)) || {}, nx = (ar0.next || [])[0];
+  const barTxt = await v.locator('.gv-bar').innerText();
+  if (nx) check('bar without a bout panel shows the current pair', barTxt.includes(nx.a) && (!nx.b || barTxt.includes(nx.b)), barTxt + ' | ' + JSON.stringify(nx));
+  else check('idle bar shows the tatami', await v.locator('.gv-bar.idle').count() === 1 && barTxt.includes(ar0.name || ''), barTxt);
+  // Sena pavyzdinė kova (± ištrinti v2.12) nerodoma
+  const old = JSON.stringify({ test: true, mode: 'kumite', cat: 'Bandomoji kova', round: '', aka: { name: 'Jonas Jonaitis' }, shiro: { name: 'Petras Petraitis' }, sa: 1, sb: 0, at: Date.now(), timer: { running: false, remaining: 90000, total: 90000 } });
+  sql(`REPLACE INTO tournament_live (tournament_id, area_id, data, updated_ms) VALUES (${tid}, ${areaId}, '${old}', ${Date.now()})`);
+  await v.reload();
+  await v.waitForSelector('.gv-bar');
+  await v.waitForTimeout(1500);
+  check('old sample bout is not shown', !/Bandomoji|Jonas Jonaitis/.test(await v.locator('.gv-bar').innerText()));
   sql(`DELETE FROM tournaments WHERE id = ${tid}`);
   noJsErrors(a, v);
 });

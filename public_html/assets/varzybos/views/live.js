@@ -5,7 +5,7 @@ import { drawStale, matchCount } from '../engine/category.js';
 import { cat, dirty, flush, S, save, saving, setAward } from '../store.js';
 import { curTab, openRun, render, runOpen, setRun, showTab } from '../chrome.js';
 import { renderDraw, runView, setRunView } from './draw.js';
-import { CAMS, syncLive, toggleResult } from '../bout.js';
+import { toggleResult } from '../bout.js';
 import { areaPlan, delayChip, dragId, goRun, moveCat, placesShort, renderRunDone, renderRunList, renderSched, setDragId } from '../schedule.js';
 import { catBracket, catStatus, stChip } from '../results.js';
 import { areaById, deskAll, deskArea, deskEl, deskOpenCat, deskScrollTo, myArea, renderDesk, runEl, runHome, setDeskAll, setHeadVar } from './desk.js';
@@ -160,9 +160,6 @@ document.addEventListener('drop', function (e) {
 });
 
 export function renderLive() {
-  var lc = document.getElementById('live-cam');
-  if (lc) lc.hidden = !Object.keys(CAMS).length;
-  syncLive();
   var c = runOpen ? cat(S.selected) : null, da = deskArea();
   if (runOpen && !c) setRun(false);
   // v2.01: darbastalis (vienas tatamis) - rungties valdymas perkeliamas po išskleista grupe; kitur - į savo vietą

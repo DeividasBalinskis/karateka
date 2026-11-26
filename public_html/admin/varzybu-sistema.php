@@ -230,15 +230,7 @@ try {
     $regOpen = $linksOk = false;
 }
 // v1.97: telefono kamera transliacijai (vdo.ninja) - raktas srauto vardui; puslapis su paaiškinimu - admin/varzybu-transliacija.php
-// v1.99: transliacija telefonais - kiekvieno tatamio telefono vaizdas (vdo.ninja) kovos skydeliui; telefonai jungiami Transliacijos puslapyje
-$cams = [];
-if ($linksOk) {
-    $camKey = varz_cam_key();
-    $camIds = array_map('intval', array_column((array) (tournament_state($t)['areas'] ?? []), 'id'));
-    foreach (array_unique(array_merge($camIds, range(1, 8))) as $aid) {
-        $cams[(string) $aid] = varz_cam_view_url(varz_cam_id($camKey, $aid));
-    }
-}
+// v2.12: sekretoriatui telefono vaizdo nebėra (Deividas) - jį mato žiūrovai (varzybos-gyvai.php) ir Transliacijos puslapis
 $streamUrl = url('admin/varzybu-transliacija.php?id=' . (int) $t['id']);
 $cfg = [
     'id' => (int) $t['id'], 'title' => $t['title'], 'version' => (int) $t['version'], 'isTest' => (bool) $t['is_test'],
@@ -251,7 +243,7 @@ $cfg = [
     'awardsApi' => $awardsUrl ? url('admin/varzybu-sistema.php?id=' . (int) $t['id'] . '&awards=1') : '', 'awardsUrl' => $awardsUrl,
     'awards' => (object) tournament_awards((int) $t['id']),
     'shareUrl' => $shareUrl, 'screenUrl' => $shareUrl ? $shareUrl . '&ekranas=1' : '', 'regUrl' => $regUrl, 'regOpen' => $regOpen,
-    'cams' => (object) $cams, 'streamUrl' => $streamUrl,
+    'streamUrl' => $streamUrl,
     'entries' => tournament_new_entries((int) $t['id']),
     'api' => url('admin/varzybu-sistema.php?id=' . (int) $t['id']), 'csrf' => csrf_token(), 'year' => (int) substr($t['starts_on'], 0, 4),
     'date' => $t['starts_on'], 'dateEnd' => $t['ends_on'] ?: $t['starts_on'],
@@ -355,7 +347,7 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
   </div>
   <?php /* v2.01: sekretoriato darbastalis vienam tatamiui - atidaryti čia arba nuoroda tatamiui (mygtukus įdeda assets/varzybos/views/desk.js) */ ?>
   <div class="sp-block">
-    <b title="Vienas tatamis: visos jo grupės su laikais, lentelės, kovos ir Live kova. Kitus tatamius galima pažiūrėti „🏟 Visi tatamiai“.">📋 Sekretoriato darbastalis</b>
+    <b title="Vienas tatamis: visos jo grupės su laikais, lentelės ir kovos. Kitus tatamius galima pažiūrėti „🏟 Visi tatamiai“.">📋 Sekretoriato darbastalis</b>
     <div class="sp-row"><span class="small muted">Atidaryti šiame kompiuteryje:</span><span class="sekr-desk" id="sekr-desk"></span></div>
     <?php if ($sekrUrl): ?><div class="sp-row"><span class="small muted">Kopijuoti nuorodą tatamiui (atsidarys iškart jo darbastalis):</span><span class="sekr-desk" id="sekr-links" data-url="<?= e($sekrUrl) ?>"></span></div><?php endif; ?>
   </div>
@@ -382,8 +374,8 @@ $dates = fmt_date($t['starts_on'], true) . ($t['ends_on'] ? ' – ' . fmt_date($
   </div>
   <div class="sp-block">
     <b>🎥 Transliacija telefonais</b>
-    <p class="muted small">Telefonai prisijungia per QR kodą ir filmuoja tatamius. Vaizdą su balais mato žiūrovai („📹 Žiūrėti gyvai“) ir sekretoriatas kovoje („📹 Vaizdas“).</p>
-    <?php if ($cams): ?><div class="sp-row"><a class="btn btn-primary" href="<?= e($streamUrl) ?>">🎥 Prijungti telefonus →</a></div><?php endif; ?>
+    <p class="muted small">Telefonai prisijungia per QR kodą ir filmuoja tatamius. Vaizdą su kova ir balais mato žiūrovai („📹 Žiūrėti gyvai“).</p>
+    <?php if ($linksOk): ?><div class="sp-row"><a class="btn btn-primary" href="<?= e($streamUrl) ?>">🎥 Prijungti telefonus →</a></div><?php endif; ?>
   </div>
   <?php if ($linksOk): ?>
   <div class="sp-block">
@@ -531,7 +523,6 @@ foreach (take_flashes() as $f): ?>
         <label class="dk-who"><span class="dk-kicker">Mano tatamis</span><select class="sel dk-area" id="dk-area" title="Prie kurio tatamio dirbate (šiame įrenginyje)"></select></label>
         <div class="dk-navs">
           <button type="button" class="dk-nav on" data-dk="list" aria-current="page">📋 Mano tatamis</button>
-          <button type="button" class="dk-nav" data-dk="live" hidden title="Tatamio telefono vaizdas per visą ekraną: kova, balai ir laikas ant vaizdo">📹 Live kova</button>
           <button type="button" class="dk-nav" data-dk="all" title="Visų tatamių tvarkaraštis - grįšite „📋 Mano tatamis“">🏟 Visi tatamiai</button>
         </div>
         <div class="dk-now" id="dk-now"></div>
@@ -556,7 +547,6 @@ foreach (take_flashes() as $f): ?>
         <b class="live-clock" id="live-clock" title="Dabar"></b>
         <input type="search" class="sel sched-q" id="sched-q" placeholder="🔍 Rask dalyvį, klubą ar kategoriją" aria-label="Paieška tvarkaraštyje" autocomplete="off">
         <span class="seg area-seg" id="area-seg" role="group" aria-label="Rodomas tatamis" title="Pasirinkus tatamį - jo darbastalis šiame kompiuteryje (planšetėje); „Visi“ - visų tatamių tvarkaraštis"></span>
-        <button type="button" class="btn btn-primary" id="live-cam" hidden title="Tatamio telefono vaizdas per visą ekraną: kova, balai ir laikas ant vaizdo">📹 Live kova</button>
         <span class="muted small" id="live-legend">Paspauskite rungtį - atsidarys jos valdymas. Tempkite rungtis tarp tatamių.</span>
         <span class="spacer"></span>
         <button class="btn" id="auto-balance" type="button">Paskirstyti tolygiai</button>

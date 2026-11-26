@@ -4,6 +4,17 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v2.12 - 2026-11-26 (Budo kamera žiūrovams, kita kova paryškinta, 💡 Budo puslapiuose)
+- **Kamera ant žiūrovų puslapio rodo tikrą kovą.** Jei kovos skydelis neatidarytas (pvz. kata vėliavėlėmis), ant vaizdo rodoma, kas kovoja dabar pagal tvarkaraštį;
+  kai kova vyksta skydelyje - vardai, balai ir laikas. Sena „Bandomoji kova“ (Jonas ir Petras) nebesirodo (Denis).
+- **⛶ Per visą ekraną**: žiūrovų puslapyje, paspaudus „▶ Žiūrėti gyvai“, viršuje dešinėje ⛶ - vaizdas su juosta per visą ekraną (telefone - gulsčiai); ⤡ - atgal (Denis).
+- **± (pavyzdinė kova) ištrinti**, o **sekretoriatui kameros nebėra** („📹 Vaizdas“, „📹 Live kova“) - vaizdą mato žiūrovai. Telefonai jungiami kaip anksčiau:
+  Budo → 📡 → „🎥 Prijungti telefonus →“ (Deividas).
+- **Kita kova paryškinta raudonai** („Kita kova“) Budo lentelėje; pažymėjus nugalėtoją (vardas, vėliavėlės ar kovos skydelio „Laimėjo“) - nuslenkama prie jos (#185, Denis).
+- **💡 Atsiliepimas** dabar yra ir Budo puslapiuose be paskyros: žiūrovų (gyvai), sekretoriato pradžios, apdovanojimų planšetės, išbandymo (Denis).
+- Senas nustatymas `xp_per_level` (nenaudojamas nuo v1.96) ištrintas. Duomenų bazė: **063_seno_nustatymo_trynimas.sql** (įsidiegia pati, atidarius Valdymą).
+- Testai: naujas „visos nuorodos“ - kiekvienai rolei apeina visus meniu ir puslapių mygtukus-nuorodas ir ieško neveikiančių, PHP ir JS klaidų.
+
 ## v2.11 - 2026-11-25 (teisės, slaptos nuorodos, Budo moduliai, header.css)
 - **Teisės - viena lentelė** (C1): kas ką gali, aprašyta vienoje vietoje; visų teisės tos pačios kaip buvo.
   Išimtis - **pagrindinio puslapio redaktoriai**: tai dabar paskyros, kurias adminas pažymi **Valdymas → Nustatymai → Paskyros ir rolės → „🏠 Redaguoja pradžią“**

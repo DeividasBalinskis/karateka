@@ -14,12 +14,12 @@
   } catch (e) {}
 
   // Kas vyksta ant tatamio: naujesnis iš dviejų šaltinių (serveris arba tas pats kompiuteris)
-  function liveFor(area, allowTest) {
+  function liveFor(area) {
     var srv = data && data.live && data.live[area], loc = local[area], pick = null;
     if (srv) pick = { d: srv.data, src: 'srv', ms: srv.ms };
     if (loc && (!pick || (loc.data.at || 0) >= (pick.d.at || 0))) pick = { d: loc.data, src: 'loc', got: loc.got };
     if (!pick || pick.d.idle) return null;
-    if (pick.d.test && !CFG.bar && !allowTest) return null;   // bandomoji kova (v1.98-v1.99) - tik juostoje ir telefono vaizde, ne sąraše ir ne salės ekrane
+    if (pick.d.test) return null;   // sena pavyzdinė kova (± ištrinti v2.12) - nerodoma niekur
     var age = pick.src === 'srv' ? (Date.now() + offset) - pick.ms : Date.now() - pick.got;
     if (age > 30 * 60000) return null;   // senesnė nei 30 min. - nebeaktuali
     return pick;
@@ -260,12 +260,12 @@
     fbox.addEventListener('click', function (e) { var b = e.target.closest('[data-cat]'); if (b) openSheet(b.dataset.cat, b.dataset.title); });
   }
 
-  // 📹 Tatamių vaizdas (YouTube Live) su kovos rezultatu ant vaizdo. Vaizdas kuriamas vieną kartą (kitaip persikrautų kas kelias sekundes),
+  // 📹 Tatamių vaizdas (telefonas ar YouTube Live) su kovos rezultatu ant vaizdo. Vaizdas kuriamas vieną kartą (kitaip persikrautų kas kelias sekundes),
   // atnaujinama tik juosta su vardais, balais ir laiku.
   var vidBox = null;
   // Kovos juosta ant vaizdo: kategorija, vardai, balai, laikas, laimėtojas (žiūrovų vaizde ir OBS juostoje)
-  function ovlHtml(areaId, allowTest) {
-    var pick = liveFor(areaId, allowTest), d = pick && pick.d;
+  function ovlHtml(areaId) {
+    var pick = liveFor(areaId), d = pick && pick.d;
     if (d && d.mode === 'score') return '<span class="ov-cat">' + esc(d.cat) + '</span><span class="ov-n aka">' + esc(d.aka.name) + '</span><b class="ov-s">' + esc(d.perf && d.perf.total != null ? d.perf.total : '–') + '</b>';
     if (!d) return '';
     var left = timeLeft(pick), sa = d.mode === 'score2' ? (d.parts.a.tk != null && d.parts.a.tp != null ? (d.parts.a.tk + d.parts.a.tp).toFixed(1) : '–') : d.sa,
@@ -274,54 +274,55 @@
       (left !== null && d.mode !== 'score2' ? '<span class="ov-t" data-timer="' + areaId + '">' + fmt(left, d.timer && d.timer.up) + '</span>' : '<span class="ov-t">:</span>') +
       '<b class="ov-s shiro">' + esc(sb) + '</b><span class="ov-n shiro">' + esc(d.shiro.name) + '</span>' + (d.winner ? '<span class="ov-win">🏆 ' + esc(d.winner === 'a' ? d.aka.name : d.shiro.name) + '</span>' : '');
   }
+  // v2.12 (Denis): kovos skydelis neatidarytas (pvz. kata vėliavėlėmis) - ant vaizdo rodoma, kas kovoja dabar pagal tvarkaraštį
+  function nowOvl(a) {
+    var m = a && nowPair(a);
+    if (!m) return '';
+    return '<span class="ov-cat">' + esc(m.cat) + ' · ' + (m.no ? m.no + ' · ' : '') + esc(m.title) + '</span><span class="ov-n aka">' + esc(m.a) + '</span>' +
+      (m.b ? '<span class="ov-t">prieš</span><span class="ov-n shiro">' + esc(m.b) + '</span>' : '');
+  }
   // Juosta (?juosta=1&tatami=N, v1.99): Transliacijos puslapio peržiūroje ant telefono vaizdo, fonas permatomas.
-  // Vyksta kova - vardai, balai, laikas; kovos nėra - varžybų ir tatamio pavadinimas.
-  // Treneriui ir sekretoriatui (CFG.test, &valdymas=1) - ± kairėje ir dešinėje balų: pavyzdinė kova serveryje (ją mato ir žiūrovai vaizde).
-  // Kai vyksta tikra kova - mygtukų nėra: balai rašomi kovos skydelyje.
+  // Vyksta kova - vardai, balai, laikas; kovos skydelis neatidarytas - kas kovoja dabar; kovų nėra - varžybų ir tatamio pavadinimas.
   function barName() {
     var a = ((data && data.areas) || []).filter(function (x) { return String(x.id) === String(CFG.area); })[0];
     return a ? a.name : 'Tatamis ' + CFG.area;
   }
-  function rawLive() { var s = data && data.live && data.live[CFG.area]; return s ? s.data : null; }
-  // ± - vienas mygtukas, perpjautas per pusę: viršuje +, apačioje − (Deividas)
-  function pm(side) { return '<span class="ov-pmv"><button type="button" class="ov-pm" data-d="' + side + '|1" aria-label="+1">+</button><button type="button" class="ov-pm" data-d="' + side + '|-1" aria-label="−1">−</button></span>'; }
   function renderBar() {
-    var raw = rawLive(), live = ovlHtml(CFG.area, true), test = !!live && !!(raw && raw.test), real = !!live && !test, html;
-    if (CFG.test && !real) {
-      var sa = test ? (+raw.sa || 0) : 0, sb = test ? (+raw.sb || 0) : 0;
-      html = '<div class="gv-ovl gv-bar has-ctl">' +
-        (test ? '<span class="ov-cat">🧪 Pavyzdinė kova</span>' : '<span class="ov-cat"><span>' + esc(barName()) + '</span> · <span>paspauskite ± - pavyzdinė kova</span></span>') +
-        // vardai - vienoje eilutėje, žemiau: [+/−] balai   laikas   balai [+/−] (kortelės siauros)
-        '<span class="ov-row"><span class="ov-n aka">' + esc(test ? raw.aka.name : 'AKA') + '</span><span class="ov-n shiro">' + esc(test ? raw.shiro.name : 'SHIRO') + '</span></span>' +
-        '<span class="ov-row ov-sc">' + pm('a') + '<b class="ov-s aka">' + sa + '</b><span class="ov-t">1:30</span>' +
-        '<b class="ov-s shiro">' + sb + '</b>' + pm('b') +
-        (test ? '<button type="button" class="ov-end" data-end="1" title="Baigti pavyzdinę kovą" aria-label="Baigti pavyzdinę kovą">✕</button>' : '') + '</span></div>';
-    } else {
-      html = live || ('<span class="ov-cat">' + esc((data && data.title) || CFG.title) + '</span><span class="ov-n">' + esc(barName()) + '</span>');
-      html = '<div class="gv-ovl gv-bar' + (live ? '' : ' idle') + '">' + html + '</div>';
-    }
+    var live = ovlHtml(CFG.area) || nowOvl(area(CFG.area)), html;
+    html = live || ('<span class="ov-cat">' + esc((data && data.title) || CFG.title) + '</span><span class="ov-n">' + esc(barName()) + '</span>');
+    html = '<div class="gv-ovl gv-bar' + (live ? '' : ' idle') + '">' + html + '</div>';
     if (root.dataset.h !== html) { root.dataset.h = html; root.innerHTML = html; }
   }
-  function sendTest(body) {
-    body.area = CFG.area;
-    fetch(CFG.test, { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': CFG.csrf }, body: JSON.stringify(body) })
-      .then(function (r) { return r.json(); }).then(function (d) {
-        if (d.ok && data) { if (!data.live || Array.isArray(data.live)) data.live = {}; data.live[CFG.area] = { data: d.data, ms: d.ms }; delete local[CFG.area]; render(); }
-        else if (d.error) window.alert(d.error);
-      }).catch(function () {});
+  // ⛶ Per visą ekraną (Denis, v2.12): visas kadras su juosta; telefone - gulsčiai, jei naršyklė leidžia.
+  // Be Fullscreen API (iPhone) - per visą naršyklės langą (klasė gv-full).
+  function fsEl() { return document.fullscreenElement || document.webkitFullscreenElement || null; }
+  function setFull(fr, on) {
+    fr.classList.toggle('gv-full', on);
+    document.body.classList.toggle('gv-full-on', !!document.querySelector('.gv-vid-frame.gv-full'));
+    var b = fr.querySelector('[data-full]');
+    if (b) { b.textContent = on ? '⤡' : '⛶'; b.title = on ? 'Mažesnis vaizdas' : 'Per visą ekraną'; b.setAttribute('aria-label', b.title); }
   }
-  if (CFG.bar && CFG.test) {
-    root.addEventListener('click', function (e) {
-      var p = e.target.closest('[data-d]');
-      if (p) {
-        var q = p.dataset.d.split('|'), k = q[0] === 'a' ? 'sa' : 'sb', raw = rawLive(), cur = raw && raw.test ? { sa: +raw.sa || 0, sb: +raw.sb || 0 } : { sa: 0, sb: 0 };
-        cur[k] = Math.max(0, cur[k] + (+q[1]));
-        sendTest(cur);
-        return;
-      }
-      if (e.target.closest('[data-end]')) sendTest({ end: true });
+  function toggleFull(fr) {
+    if (fr.classList.contains('gv-full')) {
+      if (fsEl()) try { (document.exitFullscreen || document.webkitExitFullscreen).call(document); } catch (x) {}
+      setFull(fr, false);
+      return;
+    }
+    setFull(fr, true);
+    var req = fr.requestFullscreen || fr.webkitRequestFullscreen;
+    if (!req) return;
+    var lock = function () { try { if (screen.orientation && screen.orientation.lock) screen.orientation.lock('landscape').catch(function () {}); } catch (x) {} };
+    try { var pr = req.call(fr); if (pr && pr.then) pr.then(lock, function () {}); else lock(); } catch (x) {}
+  }
+  ['fullscreenchange', 'webkitfullscreenchange'].forEach(function (ev) {
+    document.addEventListener(ev, function () {
+      if (fsEl()) return;   // išėjus iš viso ekrano (atgal, Esc) - ir iš viso lango
+      document.querySelectorAll('.gv-vid-frame.gv-full').forEach(function (f) { setFull(f, false); });
     });
-  }
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && !fsEl()) document.querySelectorAll('.gv-vid-frame.gv-full').forEach(function (f) { setFull(f, false); });
+  });
   function renderVideos() {
     var areas = ((data && data.areas) || []).filter(function (a) { return a.cam || a.video; });
     // v2.07: tatamiai su telefonu, kurių dar nėra santraukoje (naujos varžybos)
@@ -332,15 +333,18 @@
       root.parentNode.insertBefore(vidBox, root);
       // v1.99: telefono vaizdas įjungiamas paspaudus - kad žiūrovų telefonai be reikalo nenaudotų interneto
       vidBox.addEventListener('click', function (e) {
+        var fb = e.target.closest('[data-full]');
+        if (fb) { toggleFull(fb.closest('.gv-vid-frame')); return; }
         var w = e.target.closest('[data-watch]'), x = e.target.closest('[data-unwatch]'), card = (w || x) && (w || x).closest('[data-vid]');
         if (!card) return;
         var fr = card.querySelector('.gv-vid-frame');
         if (w) {
           var f = document.createElement('iframe'); f.src = card.dataset.src; f.title = card.dataset.name || ''; f.setAttribute('allow', 'autoplay; fullscreen'); f.setAttribute('allowfullscreen', '');
-          fr.insertBefore(f, fr.firstChild); w.hidden = true; fr.querySelector('[data-unwatch]').hidden = false;
+          fr.insertBefore(f, fr.firstChild); w.hidden = true; fr.querySelector('[data-unwatch]').hidden = false; fr.querySelector('[data-full]').hidden = false;
         } else {
+          if (fr.classList.contains('gv-full')) toggleFull(fr);
           var old = fr.querySelector('iframe'); if (old) old.remove();
-          fr.querySelector('[data-watch]').hidden = false; x.hidden = true;
+          fr.querySelector('[data-watch]').hidden = false; x.hidden = true; fr.querySelector('[data-full]').hidden = true;
         }
       });
     }
@@ -353,12 +357,12 @@
         card = document.createElement('div'); card.className = 'gv-vid'; card.dataset.vid = a.id; card.dataset.src = src; card.dataset.name = a.name;
         card.innerHTML = a.cam
           ? '<div class="gv-vid-h">📹 ' + esc(a.name) + '</div><div class="gv-vid-frame gv-cam"><button type="button" class="gv-watch" data-watch="1">▶ Žiūrėti gyvai</button>' +
-            '<button type="button" class="gv-unwatch" data-unwatch="1" hidden aria-label="Uždaryti vaizdą">✕</button><div class="gv-ovl" hidden></div></div>'
+            '<button type="button" class="gv-full-btn" data-full="1" hidden title="Per visą ekraną" aria-label="Per visą ekraną">⛶</button><button type="button" class="gv-unwatch" data-unwatch="1" hidden aria-label="Uždaryti vaizdą">✕</button><div class="gv-ovl" hidden></div></div>'
           : '<div class="gv-vid-h">📹 ' + esc(a.name) + '</div><div class="gv-vid-frame"><iframe src="' + esc(a.video) + '" title="' + esc(a.name) + '" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>' +
-            '<div class="gv-ovl" hidden></div></div>';
+            '<button type="button" class="gv-full-btn" data-full="1" title="Per visą ekraną" aria-label="Per visą ekraną">⛶</button><div class="gv-ovl" hidden></div></div>';
         vidBox.appendChild(card);
       }
-      var ov = card.querySelector('.gv-ovl'), html = ovlHtml(a.id, true);
+      var ov = card.querySelector('.gv-ovl'), html = ovlHtml(a.id) || nowOvl(area(a.id));
       if (ov.dataset.h !== html) { ov.dataset.h = html; ov.innerHTML = html; ov.hidden = !html; }
     });
     vidBox.querySelectorAll('[data-vid]').forEach(function (c) { if (!keep[c.dataset.vid]) c.remove(); });

@@ -447,7 +447,8 @@ function feedback_site_now(): string
     if (strpos($script, '/ltkf/') !== false) {
         return 'ltkf';
     }
-    $taika = ['varzybu-sistema.php', 'varzybu-rezultatai.php', 'varzybos-gyvai.php', 'varzybos-registracija.php'];
+    $taika = ['varzybu-sistema.php', 'varzybu-rezultatai.php', 'varzybos-gyvai.php', 'varzybos-registracija.php',
+              'varzybos-sekretoriatas.php', 'varzybos-apdovanojimai.php', 'varzybos-bandymas.php', 'varzybos-kamera.php', 'varzybu-transliacija.php'];
     return in_array(basename($script), $taika, true) || substr($script, -strlen('/admin/varzybos.php')) === '/admin/varzybos.php' ? 'taika' : 'karateka';
 }
 
