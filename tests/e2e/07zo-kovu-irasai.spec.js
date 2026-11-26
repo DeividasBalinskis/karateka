@@ -49,6 +49,10 @@ test('Budo: a finished bout opens at its moment in the YouTube video, in the pho
   const ui = st.categories.findIndex((c) => c.discipline === 'kumite' && !c.team && c.competitors.length >= 4 && c.draw && c.draw.slots);
   check('test categories exist', ki >= 0 && ui >= 0);
   const kata = st.categories[ki], area = kata.tatami || st.areas[0].id;
+  // Test varžybose dalis kovų jau įvykusi - šių dviejų rungčių rezultatai išvalomi (puslapis perkraunamas, kad neužrašytų senų)
+  for (const i of [ki, ui]) sql(`UPDATE tournaments SET state = JSON_SET(state, '$.categories[${i}].draw.results', JSON_OBJECT(), '$.categories[${i}].draw.scores', JSON_OBJECT(), '$.categories[${i}].draw.locked', JSON_EXTRACT('false', '$')) WHERE id = ${tid}`);
+  check('results cleared', Object.keys(stateOf(tid).categories[ki].draw.results).length === 0);
+  await a.goto(`admin/varzybu-sistema.php?id=${tid}`);
 
   // 📹 YouTube nuoroda prie tatamio → įrašas su tikra transliacijos pradžia
   await a.click('#tab-live');
