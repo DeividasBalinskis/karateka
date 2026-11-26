@@ -1,5 +1,5 @@
 # Handoff
-Updated: 2026-11-26 · version v2.13 · main
+Updated: 2026-11-26 · version v2.14 · main
 
 ## Pending asks (answer these first)
 | Asked | By | What | Status |
@@ -315,6 +315,10 @@ Updated: 2026-11-26 · version v2.13 · main
     opens the file locally (never uploaded): start = file lastModified − duration (WebM without duration: seek to the end). „📍 Ši kova prasideda čia“ fixes `from`.
   - Viewers: results payload match/score rows get `v` (youtu.be link with ?t=) → 🎬 on the viewer page (list and tree). Transliacija page: „🎬 Kovų įrašai“ help.
   - Not checked with a real phone or a real YouTube stream (tests use a mocked YouTube answer and a browser-made WebM). vdo.ninja documents no file name format.
+  - Deployed (main ac798bd, CI 194/194). On test: the server read real YouTube start times (live stream → its start; plain video → none; channel link → the current live).
+    🎬 opened the video, „📍“ took the player's time without asking, viewers' page showed 🎬. v2.14: help text after „📍“ fixed; tests use a made-up video id.
+    Deividas: never use the rickroll or joke videos as test links (it played in his Chrome). Old demo-lesson placeholder `DEMO_VIDEO` in app/test_data.php is still that id
+    (cleanup finds demo lessons by it) - change only with his OK.
 ## Open
 - C5 CSS cleanup: header.css done (v2.11), next app.css (one file per session). D4 same group on two tablets, D5 Budo live polish, D7 arena left hand UI, D8 pixel characters (PC + LibreSprite).
 - Parent payments for Budo registration need a payment provider (later).

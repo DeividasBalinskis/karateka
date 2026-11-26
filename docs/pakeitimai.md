@@ -4,6 +4,9 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v2.14 - 2026-11-26 (🎬 smulkmena)
+- 🎬 lange po „📍 Ši kova prasideda čia“ nebelieka užrašo „Laikas apytikslis“. Testuose - išgalvotas vaizdo id vietoj tikro YouTube vaizdo.
+
 ## v2.13 - 2026-11-26 (🎬 baigtos kovos vaizdas: YouTube įrašas ir įrašas telefone)
 - **🎬 prie baigtos kovos** (Budo → Lentelė; balų lentelėje - prie dalyvio): atidaro vaizdą nuo tos kovos pradžios. Kovos laikas įrašomas pats,
   kai pažymimas rezultatas (vardas, vėliavėlės, kovos skydelio „Laimėjo“, visų teisėjų balai). Kovos skydelyje pradžia - pirmas „Hajime“ (Deividas, Denis).

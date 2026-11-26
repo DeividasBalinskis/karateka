@@ -38,7 +38,7 @@ test('Budo: a finished bout opens at its moment in the YouTube video, in the pho
   // Serveris YouTube puslapyje randa, kada transliacija prasidėjo - teste atsakymas paruoštas (be interneto)
   const ytStart = Date.now() - 30 * 60000;
   let asked = '';
-  await a.route(/varzybu-sistema\.php\?.*yt=1/, async (r) => { asked = (r.request().postDataJSON() || {}).url || ''; await r.fulfill({ contentType: 'application/json', body: JSON.stringify({ ok: true, id: 'dQw4w9WgXcQ', start: ytStart }) }); });
+  await a.route(/varzybu-sistema\.php\?.*yt=1/, async (r) => { asked = (r.request().postDataJSON() || {}).url || ''; await r.fulfill({ contentType: 'application/json', body: JSON.stringify({ ok: true, id: 'abcDEF12345', start: ytStart }) }); });
   await a.goto('admin/varzybos.php');
   await nav(a, () => a.click('text=🎲 Sukurti test varžybas'));
   const tid = +sql('SELECT MAX(id) FROM tournaments');
@@ -59,12 +59,12 @@ test('Budo: a finished bout opens at its moment in the YouTube video, in the pho
   if (await a.locator('#run').isVisible()) await a.click('#run-back');
   if (await a.locator('#area-pick.ask [data-my-area="all"]').count()) await a.click('#area-pick.ask [data-my-area="all"]');
   const inp = a.locator(`input[data-stream="${area}"]`);
-  await inp.fill('https://www.youtube.com/live/dQw4w9WgXcQ?si=e2e');
+  await inp.fill('https://www.youtube.com/live/abcDEF12345?si=e2e');
   await inp.dispatchEvent('change');
   await a.waitForTimeout(1500); await saved(a); await a.waitForTimeout(900);
   st = stateOf(tid);
-  const yv = (st.videos || []).find((v) => v.yt === 'dQw4w9WgXcQ');
-  check('stream start asked from the server', asked.includes('dQw4w9WgXcQ'), asked);
+  const yv = (st.videos || []).find((v) => v.yt === 'abcDEF12345');
+  check('stream start asked from the server', asked.includes('abcDEF12345'), asked);
   check('recording kept with its real start', !!yv && yv.a === area && yv.from === ytStart && yv.ok === true, JSON.stringify(st.videos));
 
   // Kata vėliavėlėmis: pažymėjus nugalėtoją - kovos laikas ir 🎬
@@ -82,8 +82,8 @@ test('Budo: a finished bout opens at its moment in the YouTube video, in the pho
   await a.waitForSelector('.vd-back:not([hidden]) #vd-frame');
   const off = Math.max(0, Math.round((t.s - ytStart) / 1000) - 10);
   const src = await a.getAttribute('#vd-frame', 'src');
-  check('YouTube opens at the bout', src.includes('youtube-nocookie.com/embed/dQw4w9WgXcQ?start=' + off + '&'), src + ' / ' + off);
-  check('link to YouTube at the bout', await a.getAttribute('#vd-yt', 'href') === 'https://youtu.be/dQw4w9WgXcQ?t=' + off);
+  check('YouTube opens at the bout', src.includes('youtube-nocookie.com/embed/abcDEF12345?start=' + off + '&'), src + ' / ' + off);
+  check('link to YouTube at the bout', await a.getAttribute('#vd-yt', 'href') === 'https://youtu.be/abcDEF12345?t=' + off);
   check('title and time shown', /Kova \d\d:\d\d–\d\d:\d\d/.test(await a.textContent('#vd-meta')) && (await a.textContent('#vd-title')).length > 5);
 
   // 📍 Ši kova prasideda čia (grotuvas laiko nepraneša - klausiama): visas įrašas pataisomas
@@ -91,14 +91,14 @@ test('Budo: a finished bout opens at its moment in the YouTube video, in the pho
   await a.click('#vd-here');
   await saved(a); await a.waitForTimeout(900); await saved(a);
   st = stateOf(tid);
-  check('"starts here" fixes the recording start', st.videos.find((v) => v.yt === 'dQw4w9WgXcQ').from === t.s - 20 * 60000);
-  check('YouTube link follows the fix', await a.getAttribute('#vd-yt', 'href') === 'https://youtu.be/dQw4w9WgXcQ?t=1190');
+  check('"starts here" fixes the recording start', st.videos.find((v) => v.yt === 'abcDEF12345').from === t.s - 20 * 60000);
+  check('YouTube link follows the fix', await a.getAttribute('#vd-yt', 'href') === 'https://youtu.be/abcDEF12345?t=1190');
 
   // Žiūrovams: 🎬 prie kovos rezultato (YouTube nuo kovos pradžios)
-  for (let i = 0; i < 20 && !/youtu\.be\\?\/dQw4w9WgXcQ\?t=1190/.test(sql(`SELECT results FROM tournaments WHERE id = ${tid}`)); i++) await a.waitForTimeout(500);
+  for (let i = 0; i < 20 && !/youtu\.be\\?\/abcDEF12345\?t=1190/.test(sql(`SELECT results FROM tournaments WHERE id = ${tid}`)); i++) await a.waitForTimeout(500);
   const br = JSON.parse(sql(`SELECT results FROM tournaments WHERE id = ${tid}`)).brackets[kata.id];
   const pm = br.groups.flatMap((g) => g.matches || []).filter((m) => m.v);
-  check('viewers get the bout link', pm.length === 1 && pm[0].v.replace(/\\\//g, '/') === 'https://youtu.be/dQw4w9WgXcQ?t=1190', JSON.stringify(pm));   // sql() išvestyje „/“ - „\/“
+  check('viewers get the bout link', pm.length === 1 && pm[0].v.replace(/\\\//g, '/') === 'https://youtu.be/abcDEF12345?t=1190', JSON.stringify(pm));   // sql() išvestyje „/“ - „\/“
 
   // Telefono įrašas: pradžia = failo laikas − trukmė; atidaroma kovos vieta; kitas failas - „ne šiame įraše“
   const size = await phoneFile(a, 'budo-tatamis.webm', t.s + 2000);
@@ -134,7 +134,7 @@ test('Budo: a finished bout opens at its moment in the YouTube video, in the pho
   await v.goto(`varzybos-gyvai.php?k=${linkToken('live', tid)}`);
   await v.locator(`[data-cat="${kata.id}"]`).first().evaluate((b) => b.click());
   await v.waitForSelector('.gv-sheet:not([hidden]) .gv-mv', { timeout: 12000 });
-  check('viewer sees 🎬 at the bout', await v.getAttribute('.gv-sheet .gv-mv', 'href') === 'https://youtu.be/dQw4w9WgXcQ?t=1190' && await v.locator('.gv-sheet .gv-mv').count() === 1);
+  check('viewer sees 🎬 at the bout', await v.getAttribute('.gv-sheet .gv-mv', 'href') === 'https://youtu.be/abcDEF12345?t=1190' && await v.locator('.gv-sheet .gv-mv').count() === 1);
   check('no sideways scroll on a phone', await v.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
 
   // Telefonas: „⏺ Įrašyti vaizdą ir šiame telefone“ → kamera įrašo ir telefone (lieka pažymėta)

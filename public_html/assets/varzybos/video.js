@@ -159,6 +159,7 @@ function here() {
   cur.v.from = calibrate(cur.t, sec); cur.v.ok = true;
   save();
   meta((cur.src === 'yt' ? 'YouTube' : 'telefono') + ' įraše nuo ' + clock(sec));
+  $('vd-help').textContent = 'Jei vaizdas ne nuo kovos pradžios - nuslinkite iki jos ir paspauskite „📍 Ši kova prasideda čia“.';
   if (cur.src === 'yt') { var a = $('vd-yt'); a.href = ytLink(cur.t, cur.v); }
   toast('📍 Laikas pataisytas - kitos šio įrašo kovos atsidarys nuo jų pradžios.');
 }

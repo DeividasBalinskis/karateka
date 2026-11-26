@@ -30,10 +30,10 @@ test('which video shows the bout: the latest of that tatami that started before 
 });
 
 test('offset in the video: from the bout start, a little earlier', () => {
-  const v = { a: 1, yt: 'dQw4w9WgXcQ', from: T };
+  const v = { a: 1, yt: 'abcDEF12345', from: T };
   const t = { s: T + 12 * min + 30000, e: T + 15 * min, a: 1 };
   assert.equal(offsetSec(t, v), 12 * 60 + 30 - LEAD);
-  assert.equal(ytLink(t, v), 'https://youtu.be/dQw4w9WgXcQ?t=' + (12 * 60 + 30 - LEAD));
+  assert.equal(ytLink(t, v), 'https://youtu.be/abcDEF12345?t=' + (12 * 60 + 30 - LEAD));
   assert.equal(offsetSec({ s: T + 3000, e: T + min, a: 1 }, v), 0);   // ne mažiau nei 0
   assert.ok(inVideo(t, v, 20 * 60));
   assert.ok(!inVideo(t, v, 10 * 60));
@@ -60,8 +60,8 @@ test('clock text and YouTube ids', () => {
   assert.equal(parseClock('95'), 95);
   assert.equal(parseClock('1:x'), null);
   assert.equal(parseClock(''), null);
-  assert.equal(ytId('https://youtube.com/live/dQw4w9WgXcQ?feature=share'), 'dQw4w9WgXcQ');
-  assert.equal(ytId('https://youtu.be/dQw4w9WgXcQ'), 'dQw4w9WgXcQ');
-  assert.equal(ytId('https://www.youtube.com/watch?v=dQw4w9WgXcQ&t=5'), 'dQw4w9WgXcQ');
+  assert.equal(ytId('https://youtube.com/live/abcDEF12345?feature=share'), 'abcDEF12345');
+  assert.equal(ytId('https://youtu.be/abcDEF12345'), 'abcDEF12345');
+  assert.equal(ytId('https://www.youtube.com/watch?v=abcDEF12345&t=5'), 'abcDEF12345');
   assert.equal(ytId('https://www.youtube.com/channel/UC1234567890123456789012'), '');
 });
