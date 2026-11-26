@@ -1,10 +1,11 @@
 # Handoff
-Updated: 2026-11-25 · version v2.11 · main
+Updated: 2026-11-26 · version v2.12 · main
 
 ## Pending asks (answer these first)
 | Asked | By | What | Status |
 |---|---|---|---|
-| 2026-11-25 | Dev | Delete the unused setting `xp_per_level` (db/021, replaced in v1.96)? Only it makes 07v fail („Nežinomi nustatymai“) | waiting |
+| 2026-11-26 | Dev → Denis | Recording the Budo camera: (A) YouTube - already works: the phone streams with the YouTube app („Transliuoti“), the link goes into Budo → Tvarkaraštis → 📹 at the tatami; YouTube keeps the video (the score bar is only on our page). (B) a „⏺ Įrašyti“ button on our phone camera page (vdo.ninja `&record`): the file stays in the phone's downloads. Which? | waiting |
+| 2026-11-25 | Dev | Delete the unused setting `xp_per_level` (db/021, replaced in v1.96)? Only it makes 07v fail („Nežinomi nustatymai“) | answered 2026-11-26 („can delete“): db/063, v2.12 |
 | 2026-11-25 | Dev (C1) | Testers: give them the Atsiliepimai page and „Žiūrėti kaip“ (the standartai table says ✔, today they do not have them)? | waiting |
 | 2026-11-25 | Dev (C1) | Excuse letters: while `just_notify` is unset, recipients = admins named Denis (a choice by name). Keep, or one chosen account? | waiting |
 | 2026-11-25 | Dev (C5) | Extra CSS widths 1099, 860, 900, 1400, 520, 400, 1101-1280 → the standard four? (visible change at those widths) | waiting |
@@ -287,6 +288,16 @@ Updated: 2026-11-25 · version v2.11 · main
   (`xpLevel()` in helpers.js; 06n sets test_level 1 for the HP check); 01 member exam celebration may come after a level-up celebration.
   (4) 06f: the „Grupė baigta“ float card (#99) covered „↺ Atstatyti“ - the test folds it first. Flaky: 06z waits for the restored save; 06h closes the 💡 panel.
   Open: 07v fails only on `xp_per_level` (db/021 row, replaced in v1.96, unused) - delete needs Deividas's OK (pending ask).
+- 2026-11-26 v2.12 (Deividas: „can delete“, „sekretoriatas nemato ką telefonas filmuoja … galim trinti ± ir išimti iš sekretoriato vaizdo“, Denis's 3 notes,
+  „peržiūrėk atsiliepimus … visi mygtukai, viskas veiktų, nėra bugų“):
+  - Viewer camera (varzybos-gyvai.js): the overlay shows the real bout (bout panel) or, without it, the current pair from the schedule (nowOvl);
+    old `test` live rows are ignored everywhere. Cause of Denis's „rodo Jonas ir Petras“: a ± sample bout stayed for 30 min while the real kata bout
+    (flags, no bout panel) had no live state. ⛶ full screen (Fullscreen API + landscape lock; iPhone falls back to a fixed full-window class `gv-full`).
+  - ± sample bout removed (varzybos-gyvai.php `bandymas` endpoint, bar controls, Transliacija `&valdymas=1`). Secretariat camera removed: no `cams`
+    in the Budo config, bout.js „📹 Vaizdas“/„📹 Live“ + Live window, desk „📹 Live kova“, #live-cam, CSS. Phones are still connected on the Transliacija page.
+  - #185: Budo bracket/round robin - first unfinished bout = `.match.is-next` (red frame, „Kita kova“); after a winner (name, flags, bout panel) it scrolls there.
+  - 💡 on Budo pages without an account (viewers, secretariat start, awards tablet, demo); feedback_site_now() counts them as Budo.
+  - db/063 deletes `xp_per_level`. New test 07zn: every role walks all links 2 levels deep (HTTP < 400, no PHP/JS errors, no empty links).
 ## Open
 - C5 CSS cleanup: header.css done (v2.11), next app.css (one file per session). D4 same group on two tablets, D5 Budo live polish, D7 arena left hand UI, D8 pixel characters (PC + LibreSprite).
 - Parent payments for Budo registration need a payment provider (later).

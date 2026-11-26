@@ -7,7 +7,7 @@ require __DIR__ . '/app/bootstrap.php';
 
 $t = tournament_by_token((string) get('k'), 'share');
 if (!$t) {
-    link_dead((bool) get('json') || is_post());   // C3: viena „Nuoroda neveikia“ žinutė
+    link_dead((bool) get('json'));   // C3: viena „Nuoroda neveikia“ žinutė (v2.12: POST šis puslapis nebepriima)
 }
 
 if (get('json')) {
