@@ -10,11 +10,11 @@ const IGNORED_CONSOLE = /favicon|ERR_|youtube|google|vdo\.ninja|Failed to load r
 const SKIP = /atsijungti|logout|trinti|istrinti|delete|download|atsisiusti|eksport|export|\.zip|\.xlsx|\.csv|\.pdf|\.docx|\.ics|\.png|\.jpe?g|\.webp|\.svg|\.mp4|\.json|uploads\/|[?&](k|c|token|key|raktas|lang|kalba|tema|theme|action|veiksmas|zymeti|as)=|-api\.php|pulsas\.php|arena\.php|kodas\.php\?/i;
 
 const roles = [
-  ['info@karateka.lt', 'admin', ['index.php', 'admin/', 'admin/nustatymai.php', 'admin/varzybos.php', 'paskyra.php', 'ltkf/'], 260],
-  ['treneris@karateka.test', 'coach', ['index.php', 'admin/', 'admin/nustatymai.php', 'paskyra.php'], 140],
-  ['tevai@karateka.test', 'parent', ['index.php', 'paskyra.php'], 100],
-  ['narys@karateka.test', 'member', ['index.php', 'paskyra.php'], 100],
-  [null, 'guest', ['index.php', 'varzybos.php', 'renginiai.php'], 80],
+  ['info@karateka.lt', 'admin', ['index.php', 'admin/', 'admin/nustatymai.php', 'admin/varzybos.php', 'paskyra.php', 'ltkf/'], 700],
+  ['treneris@karateka.test', 'coach', ['index.php', 'admin/', 'admin/nustatymai.php', 'paskyra.php'], 350],
+  ['tevai@karateka.test', 'parent', ['index.php', 'paskyra.php'], 250],
+  ['narys@karateka.test', 'member', ['index.php', 'paskyra.php'], 250],
+  [null, 'guest', ['index.php', 'varzybos.php', 'renginiai.php', 'ltkf/'], 200],
 ];
 
 // Tas pats puslapis su kitu numeriu (?id=2, ?id=3 ...) - aplankomas vieną kartą
@@ -26,14 +26,14 @@ function shape(u) {
 
 for (const [email, role, start, max] of roles) {
   test(`all links work for ${role}`, async ({ browser }) => {
-    test.setTimeout(12 * 60 * 1000);
+    test.setTimeout(15 * 60 * 1000);
     const page = await login(browser, email, 1280, 900);
-    const base = new URL(page.url()).origin + new URL(process.env.BASE_URL || 'http://127.0.0.1:8088/').pathname;
+    const base = new URL(process.env.BASE_URL || 'http://127.0.0.1:8088/').href;
     const consoleErrors = [];
     page.on('console', m => { if (m.type() === 'error' && !IGNORED_CONSOLE.test(m.text())) consoleErrors.push(m.text()); });
     page.on('dialog', d => d.dismiss().catch(() => {}));   // patvirtinimo langai - atšaukiami (niekas nekeičiama)
     const seen = new Set(), queue = start.map(p => ({ url: new URL(p, base).href, depth: 0, from: '(pradžia)' })), problems = [];
-    let visited = 0;
+    let visited = 0, downloads = 0;
     while (queue.length && visited < max) {
       const { url, depth, from } = queue.shift();
       const key = shape(url);
@@ -43,7 +43,11 @@ for (const [email, role, start, max] of roles) {
       page.jsErrors.length = 0;
       consoleErrors.length = 0;
       let res = null;
-      try { res = await page.goto(url, { waitUntil: 'load', timeout: 20000 }); } catch (e) { problems.push(`${key} (iš ${from}): neatsidaro - ${e.message.split('\n')[0]}`); continue; }
+      try { res = await page.goto(url, { waitUntil: 'load', timeout: 20000 }); } catch (e) {
+        if (/Download is starting/.test(e.message)) { downloads++; continue; }   // Excel, kalendorius, pavyzdžiai - failas atsisiunčia, tai gerai
+        problems.push(`${key} (iš ${from}): neatsidaro - ${e.message.split('\n')[0]}`);
+        continue;
+      }
       const status = res ? res.status() : 0;
       if (new URL(page.url()).origin !== new URL(base).origin) continue;   // nukreipė į kitą svetainę (pvz. YouTube)
       const text = await page.locator('body').innerText().catch(() => '');
@@ -64,7 +68,7 @@ for (const [email, role, start, max] of roles) {
         queue.push({ url: u.href, depth: depth + 1, from: key });
       }
     }
-    console.log(`${role}: aplankyta ${visited} puslapių, problemų ${problems.length}`);
+    console.log(`${role}: aplankyta ${visited} puslapių (failų atsisiuntimų ${downloads}), liko eilėje ${queue.length}, problemų ${problems.length}`);
     expect(problems, problems.join('\n')).toEqual([]);
   });
 }
