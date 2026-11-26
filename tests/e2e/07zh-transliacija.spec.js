@@ -87,7 +87,9 @@ test('Budo streaming with phones only: one QR, assign to a tatami, viewers watch
   await a.click('#tab-admin'); await a.click('#tab-kategorijos');
   await a.click('[data-catview="edit"]');
   await a.waitForSelector('#cat-list button');
-  await a.locator('#cat-list button', { hasText: 'Kumite' }).first().click();
+  // Test varžybų dalyviai atsitiktiniai: imama kumite grupė su bent 4 dalyviais (2 dalyvių grupėje - viena kova, „kitos“ nėra)
+  const kc = JSON.parse(sql(`SELECT state FROM tournaments WHERE id = ${tid}`)).categories.find((c) => c.discipline === 'kumite' && !c.team && c.competitors.length >= 4);
+  await a.locator(`#cat-list button[data-cat="${kc.id}"]`).click();
   await a.click('#cat-draw');
   await a.click('#draw-reset-menu summary');
   await a.click('#draw-reset [data-reset="all"]');
