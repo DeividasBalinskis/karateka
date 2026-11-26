@@ -87,7 +87,7 @@ test('Budo: a finished bout opens at its moment in the YouTube video, in the pho
   check('title and time shown', /Kova \d\d:\d\d–\d\d:\d\d/.test(await a.textContent('#vd-meta')) && (await a.textContent('#vd-title')).length > 5);
 
   // 📍 Ši kova prasideda čia (grotuvas laiko nepraneša - klausiama): visas įrašas pataisomas
-  a.once('dialog', (d) => d.accept('20:00'));
+  await a.evaluate(() => { window.prompt = () => '20:00'; });   // login() pats uždaro langus - atsakymas įrašomas čia
   await a.click('#vd-here');
   await saved(a); await a.waitForTimeout(900); await saved(a);
   st = stateOf(tid);
