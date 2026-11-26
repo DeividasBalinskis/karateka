@@ -120,6 +120,7 @@ Answers given by Deividas on 2026-11-20 (questions from `docs/darbo-planas.md`, 
 | 2026-11-20 | Points | Keep the quick award categories as they are (+ „Kita (su komentaru)“). (41) | Deividas | chat |
 | 2026-11-20 | Tests | WTKU judges' test: one question set for everyone. (43) | Deividas | chat |
 | 2026-11-20 | Feedback | Old items #109, #30, #147: the developer decides; ask Deividas only if something is truly needed. | Deividas | chat |
+| 2026-11-26 | Videos | No demo or random videos anywhere on the website (test data, placeholders, test links). Only real kata videos. Tests use made-up ids. | Deividas | chat |
 
 Groups: Workflow · Names · Accounts · Navigation · Budo rules · Exams and tests · Dojo · LTKF · Other
 (Older decisions are in section 14 of `docs/standartai.md`.)
