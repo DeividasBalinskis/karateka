@@ -222,7 +222,7 @@ export function renderDraw() {
   var ru = document.getElementById('run-undo'), rm = document.getElementById('run-more'), open = toolsOpen || swapMode;
   if (ru) ru.disabled = !S.history.length;
   document.getElementById('run').classList.toggle('tools-open', open);
-  if (rm) { rm.setAttribute('aria-expanded', open ? 'true' : 'false'); rm.textContent = open ? '⚙ Mažiau' : '⚙ Daugiau'; }
+  if (rm) { rm.setAttribute('aria-expanded', open ? 'true' : 'false'); rm.innerHTML = open ? '⚙<span class="rh-lbl"> Mažiau</span>' : '⚙<span class="rh-lbl"> Daugiau</span>'; }
   fillReset(c);
   if (runView === 'simple' && runOpen && !document.getElementById('run').hidden) renderSimple(c, view);
   else if (c.draw.system === 'rr') renderRR(c, view);
