@@ -330,6 +330,9 @@ Updated: 2026-11-27 · version v2.15 · main
   - util.js hhmm rounds the total minutes first (no „10:60“); clocks show the current minute (floor).
   - New CI workflow „Ekrano nuotraukos“ (`.github/workflows/ekranai.yml`, tests/ekranai/*.spec.js → artifact „ekranai“): screenshots at 375/1280/1440/2560
     without Deividas's browser. Tests: new 07zp (work mode), 07zh (#185 → Dabar/Ruošiasi), 07zk (folded groups, ⚙ Daugiau).
+  - CI on the branch: 195 passed, engine 46/46. Visual compare: Budo identical; LTKF/Paskyra differences = font rendering noise (all text 1 px).
+    Main = 7556325, deployed (test shows v2.15). The 💡 item („tik varžybinis langas…“) still needs the reply „Padaryta (v2.15)“ + click path
+    (Budo → Tvarkaraštis → 📋 Mano tatamis → ⛶ Darbo režimas) - not posted (asked Deividas). iPhone has no browser full screen: the page fills the window only.
 ## Open
 - C5 CSS cleanup: header.css done (v2.11), next app.css (one file per session). D4 same group on two tablets, D5 Budo live polish, D7 arena left hand UI, D8 pixel characters (PC + LibreSprite).
 - Parent payments for Budo registration need a payment provider (later).
