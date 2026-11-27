@@ -31,6 +31,11 @@ test('secretariat desk: my tatami, groups open in place, winner by name, swap an
   await a.click('#area-pick [data-my-area="1"]');
   await a.waitForSelector('#desk:not([hidden])');
   await saved(a);
+  // v2.15: baigtos grupės sąrašo pradžioje suskleistos į vieną eilutę - atskleidžiamos
+  if (await a.locator('#desk [data-dk-showdone][aria-expanded="false"]').count()) {
+    check('finished groups folded into one line', await a.locator('#desk .dk-row.folded').count() >= 2 && /Baigtos grupės/.test(await a.textContent('#desk .dk-donesum')));
+    await a.click('#desk [data-dk-showdone]');
+  }
   const mine = state(tid).categories.filter(c => c.tatami === 1).map(c => c.id);
   check('desk instead of the board', await a.locator('#live-board').isHidden() && await a.locator('.desk-side [data-dk="list"]').isVisible() && await a.locator('.desk-side [data-dk="all"]').isVisible());
   check('only my tatami groups, in schedule order', JSON.stringify(await rowIds(a)) === JSON.stringify(mine), JSON.stringify([await rowIds(a), mine]));
@@ -57,6 +62,9 @@ test('secretariat desk: my tatami, groups open in place, winner by name, swap an
     await later.last().click();
     await a.waitForSelector('#dk-run #run:not([hidden])');
     await a.click('[data-runview="lines"]');
+    // v2.15: grupės nustatymai suskleisti - „⚙ Daugiau“
+    check('group settings folded in the desk', await a.locator('#run-tools').isHidden() && await a.locator('#run-undo').isVisible());
+    await a.click('#run-more');
     if (await a.locator('#draw-swap').isVisible()) {
       await a.click('#draw-swap');
       check('edit button', /Baigti keitimą/.test(await a.textContent('#draw-swap')));
@@ -119,7 +127,7 @@ test('secretariat desk: my tatami, groups open in place, winner by name, swap an
   await g.waitForSelector('#desk:not([hidden])');
   check('secretariat lands on the tatami 2 desk', (await g.inputValue('#dk-area')) === '2' && !/tatamis=/.test(g.url()), g.url());
   check('phone: no sideways scroll', await g.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth));
-  check('phone: groups start on the first screen', (await g.locator('#desk .dk-row').first().boundingBox()).y < 812);
+  check('phone: groups start on the first screen', (await g.locator('#desk .dk-donesum, #desk .dk-row:not(.folded)').first().boundingBox()).y < 812);
   await ctx.close();
 
   sql(`DELETE FROM tournaments WHERE id = ${tid}`);

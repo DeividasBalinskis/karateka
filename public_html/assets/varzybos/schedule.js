@@ -124,7 +124,7 @@ export function renderSched() {
   Object.keys(DISC).forEach(function (k) { document.getElementById('m-' + k).value = S.minutes[k]; });
   var q = fold(schedQ.trim());
   renderFound(q);
-  var clock = document.getElementById('live-clock'); if (clock) clock.textContent = hhmm(nowMin());
+  var clock = document.getElementById('live-clock'); if (clock) clock.textContent = hhmm(Math.floor(nowMin()));   // v2.15: laikrodis - einama minutė (ne „10:60“)
   var wrap = document.getElementById('sched');
   renderAreaPick();
   var areas = shownAreas();

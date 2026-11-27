@@ -18,7 +18,11 @@ test('Budo secretariat screens', async ({ browser }) => {
   const tid = +sql('SELECT MAX(id) FROM tournaments');
   await a.goto(`admin/varzybu-sistema.php?id=${tid}`);
   await saved(a); await a.waitForTimeout(1500);
-  const area1 = JSON.parse(sql(`SELECT state FROM tournaments WHERE id = ${tid}`)).areas[0].id;
+  const st = JSON.parse(sql(`SELECT state FROM tournaments WHERE id = ${tid}`)), area1 = st.areas[0].id;
+  // Kumite grupė (4+ dalyviai) - į 1 tatamį ir be rezultatų: matosi dabartinė (mėlyna) ir ruošiama (geltona) kova
+  const bi = st.categories.findIndex((c) => c.discipline === 'kumite' && !c.team && c.competitors.length >= 4 && c.draw && c.draw.slots);
+  const big = bi >= 0 ? st.categories[bi] : null;
+  if (big) sql(`UPDATE tournaments SET state = JSON_SET(state, '$.categories[${bi}].tatami', ${area1}, '$.categories[${bi}].draw.results', JSON_OBJECT(), '$.categories[${bi}].draw.scores', JSON_OBJECT(), '$.categories[${bi}].draw.locked', JSON_EXTRACT('false', '$')) WHERE id = ${tid}`);
 
   for (const [w, h] of SIZES) {
     const p = await login(browser, 'info@karateka.lt', w, h);
@@ -31,8 +35,8 @@ test('Budo secretariat screens', async ({ browser }) => {
     await p.waitForSelector('#desk:not([hidden])', { timeout: 8000 }).catch(() => {});
     await shot(p, 'desk', w);
     // Išskleista grupė (ta, kuri vyksta dabar)
-    const row = p.locator('.dk-row.st-now [data-dk-open]').first();
-    await (await row.count() ? row : p.locator('.dk-row [data-dk-open]').first()).click();
+    const row = big ? p.locator(`.dk-row[data-dk-row="${big.id}"] [data-dk-open]`) : p.locator('.dk-row.st-now [data-dk-open]').first();
+    await (await row.count() ? row : p.locator('.dk-row:not(.folded) [data-dk-open]').first()).click();
     await p.waitForSelector('#draw-view .draw-head', { state: 'attached', timeout: 8000 }).catch(() => {});
     await shot(p, 'desk-open', w);
     await shot(p, 'desk-open-full', w, true);

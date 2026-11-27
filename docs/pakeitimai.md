@@ -4,6 +4,17 @@ Versija rodoma šalia logotipo (tik test svetainėje ir kompiuteryje, oficialioj
 Numeris saugomas faile `public_html/app/VERSION`. Kiekvienas įkėlimas į test = nauja versija.
 Jei svetainėje matai senesnį numerį nei čia viršuje - naujausia versija dar neįkelta.
 
+## v2.15 - 2026-11-27 (sekretoriato „Mano tatamis“: darbo režimas, dabartinė ir ruošiama kova)
+- **⛶ Darbo režimas** (Budo → Tvarkaraštis → „📋 Mano tatamis“ → „⛶ Darbo režimas“): tik šio tatamio grupės per visą ekraną. Viršuje - tamsi juosta
+  su tatamiu, „Išsaugota“, laiku ir visų tatamio grupių juostele (paspaudus - atsidaro), apačioje - atidaryta grupė. Lentelė sumažinama, kad tilptų
+  ekrane, ir yra centre; lenta neslenka kartu su puslapiu. Telefone - „Paprastas“ vaizdas su dideliais „Laimėjo“. Išeiti - ✕ arba Esc (atsiliepimas, Deividas).
+- **Dabartinė kova - mėlyna „DABAR“, kita - geltona „RUOŠIASI“** (lentelėje ir ratų sistemoje); pažymėjus nugalėtoją abi pasislenka.
+  Raudona lieka AKA spalva. Tos pačios spalvos - grupių būsenose („DABAR“, „TOLIAU“).
+- **„📋 Mano tatamis“ tvarkingiau**: baigtos grupės sąrašo pradžioje - viena eilutė „✓ Baigtos grupės: N“ (Rodyti ▾); atidarius grupę matosi tik
+  „Lentelė | Paprastas“, „↶ Atšaukti“ ir „⚙ Daugiau“ (sistema, medaliai, burtai, užrakinimas, spausdinimas - po „⚙ Daugiau“).
+- „🏟 Visi tatamiai“ juosta: tatamiai, paieška, veiksmai ir laikas vienoje eilutėje, paaiškinimas - smulkiai.
+- Pataisyta: laikrodis kartais rodė „10:60“.
+
 ## v2.14 - 2026-11-26 (🎬 smulkmena)
 - 🎬 lange po „📍 Ši kova prasideda čia“ nebelieka užrašo „Laikas apytikslis“. Testuose - išgalvotas vaizdo id vietoj tikro YouTube vaizdo.
 

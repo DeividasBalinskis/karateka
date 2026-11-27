@@ -95,13 +95,16 @@ test('Budo streaming with phones only: one QR, assign to a tatami, viewers watch
   await a.click('#draw-reset [data-reset="all"]');
   // v2.12: sekretoriatui telefono vaizdo nebėra
   check('no camera in the secretariat', await a.locator('#live-cam').count() === 0);
-  // #185 (Denis): kita kova - raudonas rėmelis; pažymėjus nugalėtoją - kita kova paryškinama
-  const firstNext = a.locator('#draw-view .match.is-next');
-  check('next bout highlighted', await firstNext.count() === 1 && /Kita kova/.test(await firstNext.textContent()));
+  // #185 (Denis), v2.15: dabartinė kova - mėlyna „Dabar“, kita - geltona „Ruošiasi“; pažymėjus nugalėtoją abi pasislenka
+  const firstNext = a.locator('#draw-view .match.is-cur');
+  check('current bout highlighted', await firstNext.count() === 1 && /Dabar/.test(await firstNext.textContent()));
+  check('preparing bout highlighted', await a.locator('#draw-view .match.is-prep').count() === 1 && /Ruošiasi/.test(await a.locator('#draw-view .match.is-prep').textContent()));
+  const prep0 = await a.locator('#draw-view .match.is-prep [data-bout]').first().getAttribute('data-bout').catch(() => null);
   const mid0 = await firstNext.locator('[data-bout]').getAttribute('data-bout');
   await firstNext.locator('.slot.aka button').click(); await a.waitForTimeout(300);
-  const mid1 = await a.locator('#draw-view .match.is-next [data-bout]').first().getAttribute('data-bout').catch(() => null);
+  const mid1 = await a.locator('#draw-view .match.is-cur [data-bout]').first().getAttribute('data-bout').catch(() => null);
   check('after a winner the highlight moves on', mid1 && mid1 !== mid0, mid0 + ' → ' + mid1);
+  check('one current and at most one preparing bout', await a.locator('#draw-view .match.is-cur').count() === 1 && await a.locator('#draw-view .match.is-prep').count() <= 1, String(prep0));   // kova eina numerių tvarka
   await a.click('#draw-undo'); await a.waitForTimeout(300);
   await a.locator('.bout-open').first().click();
   check('no video buttons in the bout panel', await a.locator('#bt-vid, #bt-live').count() === 0);

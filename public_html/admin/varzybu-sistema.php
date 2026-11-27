@@ -531,6 +531,8 @@ foreach (take_flashes() as $f): ?>
     <!-- v2.01: sekretoriato darbastalis vienam tatamiui (pasirinktas šiame įrenginyje): kairėje meniu ir kas dabar / toliau,
          dešinėje - visos to tatamio grupės; paspaudus grupę ji išsiskleidžia čia pat (rungties valdymas #run perkeliamas į #dk-run) -->
     <div class="desk" id="desk" hidden>
+      <!-- v2.15: „⛶ Darbo režimas“ - viršuje tatamis, laikas ir šio tatamio grupės (juostelė), apačioje - atidaryta grupė per visą ekraną -->
+      <div class="fx-bar" id="fx-bar" hidden></div>
       <nav class="desk-side" aria-label="Sekretoriatas">
         <label class="dk-who"><span class="dk-kicker">Mano tatamis</span><select class="sel dk-area" id="dk-area" title="Prie kurio tatamio dirbate (šiame įrenginyje)"></select></label>
         <div class="dk-navs">
@@ -545,6 +547,7 @@ foreach (take_flashes() as $f): ?>
           <label class="dk-start small">Pradžia <input type="time" id="dk-start"></label>
           <input type="search" class="sel dk-q" id="dk-q" placeholder="🔍 Rask dalyvį, klubą ar kategoriją" aria-label="Paieška tvarkaraštyje" autocomplete="off">
           <b class="live-clock" id="dk-clock" title="Dabar"></b>
+          <button type="button" class="btn btn-primary dk-focus-btn" id="dk-focus" data-focus-toggle title="Tik šio tatamio grupės per visą ekraną: lentelė telpa, nieko nereikalingo (išeiti - ✕ arba Esc)">⛶ Darbo režimas</button>
         </div>
         <div class="sched-found" id="dk-found" hidden></div>
         <ol class="dk-list" id="dk-list"></ol>
@@ -589,11 +592,12 @@ foreach (take_flashes() as $f): ?>
         <span class="run-move" id="run-move"></span>
         <span class="spacer"></span>
         <div class="seg run-views" role="group" aria-label="Vaizdas"><button type="button" class="seg-btn" data-runview="lines" title="Lentelė su linijomis">Lentelė</button><button type="button" class="seg-btn" data-runview="simple" title="Kas kovoja dabar ir kas ruošiasi">Paprastas</button></div>
+        <button class="btn run-undo" type="button" id="run-undo" title="Atšaukti paskutinį veiksmą">↶ Atšaukti</button><button class="btn run-more" type="button" id="run-more" aria-expanded="false" aria-controls="run-tools" title="Sistema, medaliai, burtai, užrakinimas, spausdinimas, prisegimas">⚙ Daugiau</button>
         <?php if (!get('langas')): ?><button class="btn" type="button" id="run-pin" title="Prisegti mažą langelį ekrane - matysite ir kituose skirtukuose">📌 Prisegti</button><button class="btn" type="button" id="run-detach" title="Atidaryti atskirame lange (pvz. kitame ekrane); tvarkaraštyje ši rungtis bus pilka">Naujame lange ↗</button><?php else: ?><span id="run-detach" hidden></span><span id="run-pin" hidden></span><?php endif; ?>
         <span class="seg run-nav" role="group" aria-label="Kitos šio tatamio grupės"><button class="seg-btn" type="button" id="run-prev" title="Ankstesnė šio tatamio grupė">← Ankstesnė</button><button class="seg-btn" type="button" id="run-next" title="Kita šio tatamio grupė">Kita →</button></span>
       </div>
       <div class="run-done" id="run-done" hidden></div>
-    <div class="toolbar run-tools">
+    <div class="toolbar run-tools" id="run-tools">
       <label>Kategorija <select class="sel" id="draw-cat"></select></label>
       <label>Sistema <select class="sel" id="draw-system" title="Pagal rungtį: vėliavėlėmis, balais, ratų sistema"></select></label>
       <label>Medaliai <select class="sel" id="draw-medals" title="Kiek trečių vietų ir kaip">

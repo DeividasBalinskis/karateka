@@ -3,6 +3,7 @@
   --bg: #F3F4F7; --surface: #fff; --surface-2: #F6F7F9; --line: #E3E6EC; --line-2: #D3D8E0; --ink: #12151C; --muted: #5E6675;
   --accent: #D7263D; --accent-2: #B71C31; --accent-soft: #FDECEE; --green: #1F9254; --green-soft: #E3F5EA; --amber: #A86A0C; --amber-soft: #FDF2DC;
   --kata: #2563EB; --kumite: #DC2626; --fukugo: #7C3AED; --kihon: #059669; --enbu: #D97706; --sumo: #0E7490;
+  --now: #2563EB; --now-soft: #E8F0FE; --prep: #F2B705; --prep-soft: #FFF4CC; --prep-ink: #5C4500;   /* v2.15: dabar - mėlyna, ruošiasi - geltona */
   --radius: 14px; --shadow: 0 1px 2px rgba(16, 24, 40, .05), 0 1px 3px rgba(16, 24, 40, .06);
 }
 * { box-sizing: border-box; }
@@ -410,12 +411,18 @@ body.is-dragging-name { cursor: grabbing; user-select: none; }
 body.vd-open-body { overflow: hidden; }
 @media (max-width: 600px) { .vd-back { padding: 0; align-items: stretch; } .vd-box { border-radius: 0; max-height: 100vh; } }
 .match-label > span:last-child { display: inline-flex; align-items: center; }
-.match.is-live { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(215, 38, 61, .18); }
-/* #185 (Denis): kita kova - raudonas rėmelis ir „Kita kova“; pažymėjus nugalėtoją - nuslenkama ir sumirksi */
-.match.is-next { border: 2px solid var(--accent); box-shadow: 0 0 0 3px rgba(215, 38, 61, .22); }
-.match-label .m-next { color: var(--accent); font-weight: 800; text-transform: uppercase; letter-spacing: .03em; }
+.match.is-live { border-color: var(--now); box-shadow: 0 0 0 3px rgba(37, 99, 235, .2); }
+/* #185 (Denis), v2.15 (Deividas): dabartinė kova - mėlyna „DABAR“, po jos - geltona „RUOŠIASI“ (raudona - AKA spalva);
+   pažymėjus nugalėtoją abi pasislenka, lentelė nuslenka prie dabartinės ir ji sumirksi */
+.match.is-cur { border: 2px solid var(--now); box-shadow: 0 0 0 4px rgba(37, 99, 235, .2); }
+.match.is-prep { border: 2px solid var(--prep); box-shadow: 0 0 0 4px rgba(242, 183, 5, .24); }
+.match.is-cur .match-label { background: var(--now-soft); }
+.match.is-prep .match-label { background: var(--prep-soft); }
+.match-label .m-tag { display: inline-block; margin-right: 5px; padding: 0 6px; border-radius: 5px; font-size: .64rem; font-weight: 800; letter-spacing: .06em; line-height: 1.6; text-transform: uppercase; vertical-align: 1px; }
+.m-tag.cur { background: var(--now); color: #fff; }
+.m-tag.prep { background: var(--prep); color: #2B2100; }
 .match.next-pulse { animation: nextPulse 1.3s ease-out 2; }
-@keyframes nextPulse { 0% { box-shadow: 0 0 0 0 rgba(215, 38, 61, .6); } 100% { box-shadow: 0 0 0 16px rgba(215, 38, 61, 0); } }
+@keyframes nextPulse { 0% { box-shadow: 0 0 0 0 rgba(37, 99, 235, .6); } 100% { box-shadow: 0 0 0 16px rgba(37, 99, 235, 0); } }
 @media (prefers-reduced-motion: reduce) { .match.next-pulse { animation: none; } }
 .j-in.dropped { text-decoration: line-through; color: #9AA3B2; background: #F4F5F8; border-style: dashed; }
 body.bout-open-body { overflow: hidden; }
@@ -725,6 +732,15 @@ tr.club-contacts > td { background: var(--surface-2); padding: 12px 14px; }
 
 /* ---------- Live tvarkaraštis ---------- */
 .live-bar { gap: 10px; }
+/* v2.15: „Visi tatamiai“ juosta: „📋 Mano tatamis“ · tatamiai · paieška · veiksmai · laikas; paaiškinimas - smulkiai eilutės apačioje */
+.live-bar #desk-back { order: 0; }
+.live-bar .area-seg { order: 1; }
+.live-bar .sched-q { order: 2; flex: 1 1 240px; min-width: 200px; }
+.live-bar #auto-balance { order: 3; }
+.live-bar .live-settings { order: 4; }
+.live-bar #live-clock { order: 5; margin-left: auto; }
+.live-bar > .spacer { display: none; }
+.live-bar #live-legend { order: 6; flex-basis: 100%; font-size: .8rem; }
 .live-clock { font-size: 1.25rem; font-variant-numeric: tabular-nums; letter-spacing: .02em; padding: 2px 10px; border-radius: 8px; background: var(--ink); color: var(--bg); }
 .live-settings { position: relative; }
 .live-settings > summary { list-style: none; }
@@ -748,8 +764,9 @@ tr.club-contacts > td { background: var(--surface-2); padding: 12px 14px; }
 .card-name { background: none; border: 0; padding: 0; text-align: left; cursor: pointer; display: inline-flex; gap: 6px; align-items: center; }
 .card-name:hover { color: var(--accent); text-decoration: underline; }
 .st-badge { margin-left: auto; flex-shrink: 0; font-size: .66rem; font-weight: 800; letter-spacing: .06em; border-radius: 6px; padding: 2px 6px; }
-.st-badge.now { background: var(--accent); color: #fff; animation: vzpulse 1.6s infinite; }
-.st-badge.next { background: var(--accent-soft); color: var(--accent); text-transform: uppercase; }
+.st-badge.now { background: var(--now); color: #fff; animation: nowpulse 1.6s infinite; }
+@keyframes nowpulse { 0% { box-shadow: 0 0 0 0 rgba(37, 99, 235, .45); } 70%, 100% { box-shadow: 0 0 0 6px rgba(37, 99, 235, 0); } }
+.st-badge.next { background: var(--prep-soft); color: var(--prep-ink); text-transform: uppercase; }
 .st-badge.done { color: var(--green); background: var(--green-soft); }
 /* Atidarytos rungties valdymas */
 .run-strip { display: flex; align-items: center; gap: 10px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 8px 10px; margin-bottom: 10px; }
@@ -1687,7 +1704,7 @@ body.cam-body { margin: 0; min-height: 100vh; background: #12151C; color: #fff; 
 .dk-nav.on { background: var(--accent-soft); color: var(--accent); }
 .dk-now { display: grid; gap: 10px; border-top: 1px solid var(--line); padding-top: 12px; }
 .dk-card { display: grid; gap: 5px; justify-items: start; min-width: 0; }
-.dk-cur .dk-k { color: var(--accent); }
+.dk-cur .dk-k { color: var(--now); }
 .dk-link { all: unset; box-sizing: border-box; max-width: 100%; cursor: pointer; font-weight: 700; line-height: 1.3; overflow-wrap: anywhere; }
 .dk-link:hover { color: var(--accent); text-decoration: underline; }
 .dk-link:focus-visible { outline: 3px solid #F2B705; outline-offset: 2px; border-radius: 4px; }
@@ -1714,8 +1731,16 @@ body.cam-body { margin: 0; min-height: 100vh; background: #12151C; color: #fff; 
 .dk-row { display: grid; grid-template-columns: 18px 58px minmax(0, 1fr) 96px auto 16px; align-items: center; gap: 4px 10px; min-height: 54px; padding: 5px 12px 5px 4px;
   background: var(--surface); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow); cursor: pointer; scroll-margin-top: calc(var(--vz-head, 0px) + 10px); }
 .dk-row:hover { border-color: var(--line-2); }
-.dk-row.st-now { border: 2px solid var(--accent); box-shadow: 0 6px 18px rgba(215, 38, 61, .14); }
-.dk-row.st-next { border-color: #F7C6CD; }
+.dk-row.st-now { border: 2px solid var(--now); box-shadow: 0 6px 18px rgba(37, 99, 235, .16); }
+.dk-row.st-next { border-color: var(--prep); }
+.dk-row.folded { display: none; }
+/* v2.15: baigtos grupės sąrašo pradžioje - viena eilutė */
+.dk-donesum { list-style: none; }
+.dk-donebtn { all: unset; box-sizing: border-box; display: flex; align-items: center; gap: 10px; width: 100%; min-height: 44px; padding: 8px 14px; border-radius: 12px; background: var(--green-soft); color: var(--ink); font-size: .92rem; font-weight: 600; cursor: pointer; }
+.dk-donebtn:hover { box-shadow: inset 0 0 0 1px var(--green); }
+.dk-donebtn:focus-visible { outline: 3px solid #F2B705; outline-offset: 2px; }
+.dk-donek { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: var(--green); color: #fff; font-size: .78rem; font-weight: 800; }
+.dk-donehint { margin-left: auto; color: var(--green); font-size: .84rem; font-weight: 700; }
 .dk-row.st-done { background: var(--surface-2); box-shadow: none; }
 .dk-row.st-done .dk-name { color: var(--muted); }
 .dk-row.needs-send { border-color: #F2B705; }
@@ -1751,6 +1776,50 @@ body.cam-body { margin: 0; min-height: 100vh; background: #12151C; color: #fff; 
 #run.in-desk .run-tools { background: var(--surface-2); box-shadow: none; margin-bottom: 10px; }
 #run.in-desk #draw-swap { order: -1; }
 #run.in-desk .bracket-wrap { box-shadow: none; }
+#run.in-desk .bracket { width: max-content; margin-inline: auto; }   /* v2.15: lentelė centre; per plati - sumažinama (desk.js fitBracket) */
+/* v2.15: darbastalyje grupės nustatymai suskleisti - matosi tik „Lentelė | Paprastas“, „↶ Atšaukti“ ir „⚙ Daugiau“ */
+#run:not(.in-desk) #run-undo, #run:not(.in-desk) #run-more { display: none; }
+#run.in-desk:not(.tools-open) .run-tools, #run.in-desk:not(.tools-open) #run-pin, #run.in-desk:not(.tools-open) #run-detach { display: none; }
+#run.in-desk .run-more[aria-expanded="true"] { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+.dk-focus-btn { white-space: nowrap; }
+/* v2.15: „⛶ Darbo režimas“ - viršuje tamsi juosta (tatamis, išsaugota, laikas, ✕) ir šio tatamio grupės; apačioje atidaryta grupė per visą ekraną.
+   Lenta neslenka kartu su puslapiu (užrakinta), slenkama tik jos viduje. */
+.fx-bar { position: fixed; top: 0; left: 0; right: 0; z-index: 80; display: grid; gap: 8px; padding: max(8px, env(safe-area-inset-top)) 14px 10px; background: #12151C; color: #fff; box-shadow: 0 8px 24px rgba(0, 0, 0, .28); }
+.fx-bar[hidden] { display: none; }
+.fx-top { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.fx-area { font-weight: 800; font-size: 1.05rem; letter-spacing: .02em; white-space: nowrap; }
+.fx-meta { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #AEB6C4; font-size: .85rem; }
+.fx-save { flex: none; padding: 2px 9px; border-radius: 999px; background: rgba(255, 255, 255, .08); color: #AEB6C4; font-size: .74rem; font-weight: 700; white-space: nowrap; }
+.fx-save:empty { display: none; }
+.fx-save.ok { color: #7EE2A8; }
+.fx-save.busy { color: #FFD66B; }
+.fx-save.err { background: var(--accent); color: #fff; }
+.fx-clock { flex: none; padding: 2px 10px; border-radius: 8px; background: rgba(255, 255, 255, .1); font-size: 1.15rem; font-variant-numeric: tabular-nums; }
+.fx-exit { flex: none; min-width: 44px; min-height: 40px; background: transparent; border-color: rgba(255, 255, 255, .3); color: #fff; font-size: 1.05rem; }
+.fx-exit:hover { border-color: #fff; }
+.fx-groups { position: relative; display: flex; gap: 6px; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: thin; padding-bottom: 2px; }
+.fx-chip { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 6px; max-width: 280px; min-height: 40px; padding: 6px 10px; border: 1px solid rgba(255, 255, 255, .16); border-radius: 10px; background: rgba(255, 255, 255, .06); color: #E6E9EF; font: inherit; font-size: .84rem; cursor: pointer; }
+.fx-chip:hover { border-color: rgba(255, 255, 255, .45); }
+.fx-chip:focus-visible { outline: 3px solid #F2B705; outline-offset: 1px; }
+.fx-chip .fx-t { font-weight: 800; font-variant-numeric: tabular-nums; }
+.fx-chip .fx-n { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 700; }
+.fx-chip .fx-c { color: #AEB6C4; font-size: .76rem; font-variant-numeric: tabular-nums; }
+.fx-chip.st-done { opacity: .55; }
+.fx-chip.st-now { border-color: var(--now); box-shadow: inset 0 0 0 1px var(--now); }
+.fx-chip.st-next { border-color: var(--prep); }
+.fx-chip.on { background: #fff; border-color: #fff; color: #12151C; opacity: 1; }
+.fx-chip.on .fx-c { color: #5E6675; }
+body.vz-focus { overflow: hidden; }
+body.vz-focus .vz-top, body.vz-focus .desk-side, body.vz-focus .dk-head, body.vz-focus #dk-found, body.vz-focus .dk-list, body.vz-focus .dk-hint,
+body.vz-focus .fb, body.vz-focus .chat-fab, body.vz-focus .ntf-pop { display: none !important; }
+body.vz-focus .desk { display: block; }
+body.vz-focus #dk-run { position: fixed; top: var(--fx-h, 100px); left: 0; right: 0; bottom: 0; z-index: 70; overflow: auto; overscroll-behavior: contain; padding: 14px 16px calc(16px + env(safe-area-inset-bottom)); background: var(--bg); }
+body.vz-focus #run.in-desk { max-width: 1480px; margin: 0 auto; padding: 0; border: 0; border-radius: 0; box-shadow: none; background: transparent; }
+body.vz-focus #run.in-desk .run-head { padding: 8px 12px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+body.vz-focus #run.in-desk .run-title { display: grid; flex: 1 1 260px; }
+body.vz-focus #run.in-desk .run-title b { font-size: 1.1rem; }
+body.vz-focus #run.in-desk .draw-foot .hint, body.vz-focus #run.in-desk .run-move { display: none; }
+body.vz-focus #draw-view .sv-meta, body.vz-focus #draw-view .sv, body.vz-focus #draw-view .sv-prep, body.vz-focus #draw-view .sv-done { max-width: 1100px; margin-left: auto; margin-right: auto; }
 /* „✎ Keisti“ balų sistemoje: tempiama ant kito dalyvio - jie susikeičia (pažymima visa eilutė, ne įterpimo linija) */
 .swap-mode tr.drop td { box-shadow: none; background: var(--accent-soft); }
 .sekr-desk { display: inline-flex; flex-wrap: wrap; gap: 6px; }
@@ -1785,6 +1854,13 @@ body.cam-body { margin: 0; min-height: 100vh; background: #12151C; color: #fff; 
   .dk-st { grid-row: 2; grid-column: 3 / 5; justify-self: end; }
   .dk-name { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
   #run.in-desk { padding: 8px 6px 12px; }
+  .dk-focus-btn { flex: 1 1 100%; min-height: 44px; }
+  .fx-bar { gap: 6px; padding: max(6px, env(safe-area-inset-top)) 8px 8px; }
+  .fx-meta { display: none; }
+  .fx-area { font-size: .95rem; }
+  .fx-chip { max-width: 220px; min-height: 40px; }
+  body.vz-focus #dk-run { padding: 8px 8px calc(12px + env(safe-area-inset-bottom)); }
+  body.vz-focus #run.in-desk .run-head { padding: 6px 8px; gap: 6px; }
 }
 /* v2.01: planšetėje (768-1279 px) varžybų pavadinimas nebesuspaudžiamas iki „Test...“ su data 5 eilutėmis - mygtukai dešinėje pereina į kitą eilutę */
 @media (min-width: 768px) and (max-width: 1279px) {

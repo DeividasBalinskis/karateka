@@ -17,6 +17,6 @@ export function toast(msg) {
   toastEl.innerHTML = msg; toastEl.hidden = false;
   clearTimeout(toastTimer); toastTimer = setTimeout(function () { toastEl.hidden = true; }, 6000);
 }
-export function hhmm(min) { var h = Math.floor(min / 60) % 24, m = Math.round(min % 60); return (h < 10 ? '0' : '') + h + ':' + (m < 10 ? '0' : '') + m; }
+export function hhmm(min) { min = Math.round(min); var h = Math.floor(min / 60) % 24, m = min % 60; return (h < 10 ? '0' : '') + h + ':' + (m < 10 ? '0' : '') + m; }
 export function toMin(t) { var p = String(t || '09:00').split(':'); return (+p[0]) * 60 + (+p[1] || 0); }
 export function pad2(n) { return (n < 10 ? '0' : '') + n; }

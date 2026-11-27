@@ -8,7 +8,7 @@ import { renderDraw, runView, setRunView } from './draw.js';
 import { toggleResult } from '../bout.js';
 import { areaPlan, delayChip, dragId, goRun, moveCat, placesShort, renderRunDone, renderRunList, renderSched, setDragId } from '../schedule.js';
 import { catBracket, catStatus, stChip } from '../results.js';
-import { areaById, deskAll, deskArea, deskEl, deskOpenCat, deskScrollTo, myArea, renderDesk, runEl, runHome, setDeskAll, setHeadVar } from './desk.js';
+import { applyFocus, areaById, deskAll, deskArea, deskEl, deskOpenCat, deskScrollTo, fitBracket, myArea, renderDesk, runEl, runHome, setDeskAll, setHeadVar } from './desk.js';
 import { upcoming } from './results.js';
 
 // ---------- Atkabinta rungtis (atskiras naršyklės langas): tvarkaraštyje ji pilka, kol langas atidarytas ----------
@@ -177,8 +177,11 @@ export function renderLive() {
     setHeadVar();
     renderDesk(da, c);
     if (c) { renderRunHead(c); renderDraw(); }
+    applyFocus(da);
+    if (c) fitBracket();   // v2.15: lentelė telpa į plotį (darbo režime - ir į aukštį)
     return;
   }
+  applyFocus(null);
   document.getElementById('live-board').hidden = !!c;
   runEl.hidden = !c;
   if (!c) { renderSched(); return; }

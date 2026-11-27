@@ -1,5 +1,5 @@
 # Handoff
-Updated: 2026-11-26 · version v2.14 · main
+Updated: 2026-11-27 · version v2.15 · main
 
 ## Pending asks (answer these first)
 | Asked | By | What | Status |
@@ -319,6 +319,17 @@ Updated: 2026-11-26 · version v2.14 · main
     🎬 opened the video, „📍“ took the player's time without asking, viewers' page showed 🎬. v2.14: help text after „📍“ fixed; tests use a made-up video id.
     Deividas: never use the rickroll or joke videos as test links (it played in his Chrome). Old demo-lesson placeholder `DEMO_VIDEO` in app/test_data.php is still that id
     (cleanup finds demo lessons by it) - change only with his OK.
+- 2026-11-27 v2.15 (feedback „tik varžybinis langas be kitų pasirinkimų“ + Deividas: „Mano tatamis - vieta sekretoriatui, gražesnė juosta,
+  [] full screen tik mano tatamio lentelės, lentelė telpa, centravimas, soft locking, telefone paprasta žymėti; dabartinė mėlyna, sekanti geltona“):
+  - views/desk.js: `focusOn` (sessionStorage `-focus`), `renderFx` (fixed #fx-bar: tatamis, išsaugota - kopija iš #save-state per MutationObserver, laikas, ✕,
+    group chips `data-fx-open`), #dk-run fixed below it (body overflow hidden, overscroll contain), `fitBracket()` (zoom, min 0.72 phone / 0.5 desktop;
+    in work mode also to height), Esc (capture; not while a bout panel / video / tool menu is open), requestFullscreen where allowed; phone → „Paprastas“.
+    Leading finished groups fold into „✓ Baigtos grupės: N“ (sessionStorage `-showdone`).
+  - views/draw.js: `curMid`/`prepMid` (upcoming[0]/[1]) → `.match.is-cur` (blue, „Dabar“) / `.is-prep` (yellow, „Ruošiasi“); goNext → `.is-cur`.
+    In the desk run head: `#run-undo` and `#run-more` („⚙ Daugiau“ toggles `.tools-open`; swap mode keeps it open).
+  - util.js hhmm rounds the total minutes first (no „10:60“); clocks show the current minute (floor).
+  - New CI workflow „Ekrano nuotraukos“ (`.github/workflows/ekranai.yml`, tests/ekranai/*.spec.js → artifact „ekranai“): screenshots at 375/1280/1440/2560
+    without Deividas's browser. Tests: new 07zp (work mode), 07zh (#185 → Dabar/Ruošiasi), 07zk (folded groups, ⚙ Daugiau).
 ## Open
 - C5 CSS cleanup: header.css done (v2.11), next app.css (one file per session). D4 same group on two tablets, D5 Budo live polish, D7 arena left hand UI, D8 pixel characters (PC + LibreSprite).
 - Parent payments for Budo registration need a payment provider (later).

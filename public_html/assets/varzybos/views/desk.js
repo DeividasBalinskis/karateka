@@ -3,7 +3,7 @@ import { CFG, esc, hhmm, KEY, POPUP, toast } from '../util.js';
 import { boutMode, person } from '../rules.js';
 import { cat, S, save, setAward } from '../store.js';
 import { openRun, render, runOpen, setRun, showTab } from '../chrome.js';
-import { resetSwap } from './draw.js';
+import { resetSwap, runView, setRunView } from './draw.js';
 import { openBout } from '../bout.js';
 import { areaPlan, delayChip, fold, moveCat, nowMin, renderFound, schedHits, setCatAt, setDragId, ST_BADGE } from '../schedule.js';
 import { catStatus, stChip } from '../results.js';
@@ -68,7 +68,7 @@ export function setHeadVar() {
   var h = document.querySelector('.vz-top'), v = h && getComputedStyle(h).position === 'sticky' ? h.offsetHeight : 0;
   if (document.documentElement.style.getPropertyValue('--vz-head') !== v + 'px') document.documentElement.style.setProperty('--vz-head', v + 'px');
 }
-window.addEventListener('resize', function () { if (deskArea()) setHeadVar(); });
+window.addEventListener('resize', function () { if (deskArea()) { setHeadVar(); fitBracket(); fxHeight(); } });
 // Kas dabar / kas toliau / laikas (kairėje, telefone - virš grupių)
 function deskNowHtml(a, plan) {
   var cur = plan.cur, h = '';
@@ -90,7 +90,7 @@ function deskNowHtml(a, plan) {
   }
   return h;
 }
-function deskRow(x, open, q) {
+function deskRow(x, open, q, folded) {
   var c = x.c, st = catStatus(c, x.st === 'now'), isOpen = open === c, det = isDetached(c.id);
   var hits = schedHits(c, q), hit = q && (hits.length || fold(c.name).indexOf(q) >= 0);
   var chip = st === 'wait' ? '' : st === 'fin' ? '<button type="button" class="btn btn-award btn-xs" data-award-send="' + esc(c.id) + '" title="Siųsti apdovanojimams">🏅 Siųsti</button>' : stChip(st);
@@ -100,7 +100,7 @@ function deskRow(x, open, q) {
     if (m) sub += '<span class="dk-sub dk-nowb"><b>' + esc(m.no ? 'Kova ' + m.no : m.title || '') + ':</b> <span class="dk-p aka">' + deskName(c, m.a) + '</span>' + (m.b ? ' <span class="dk-vs">vs</span> <span class="dk-p shiro">' + deskName(c, m.b) + '</span>' : '') + '</span>';
   }
   if (hits.length) sub += '<span class="dk-sub dk-hits">' + hits.map(function (p) { return '<span class="sq-me">' + esc(p.name) + '</span>'; }).join(' ') + '</span>';
-  return '<li class="dk-row st-' + x.st + (isOpen ? ' open' : '') + (det ? ' detached' : '') + (x.st === 'done' && st === 'fin' ? ' needs-send' : '') + (q ? (hit ? ' sq-hit' : ' sq-dim') : '') + '" data-dk-row="' + esc(c.id) + '">' +
+  return '<li class="dk-row st-' + x.st + (folded ? ' folded' : '') + (isOpen ? ' open' : '') + (det ? ' detached' : '') + (x.st === 'done' && st === 'fin' ? ' needs-send' : '') + (q ? (hit ? ' sq-hit' : ' sq-dim') : '') + '" data-dk-row="' + esc(c.id) + '">' +
     '<span class="dk-grip" data-dk-grip title="Tempkite - pakeisti eilę">⠿</span>' +
     '<input class="card-time-in dk-time" type="text" inputmode="numeric" maxlength="5" value="' + hhmm(x.start) + '" data-cat-at="' + esc(c.id) + '" aria-label="Pradžios laikas" title="' + (c.at ? 'Nustatytas laikas (ištrinkite - vėl skaičiuosis pats)' : 'Pakeiskite - rungtis prasidės ne anksčiau') + '"' + (c.at ? ' data-fixed="1"' : '') + '>' +
     '<button type="button" class="dk-open" data-dk-open="' + esc(c.id) + '" aria-expanded="' + isOpen + '" title="' + (isOpen ? 'Suskleisti' : 'Atidaryti: lentelė, kovos, balai') + '"><span class="dk-name"><span class="disc d-' + c.discipline + '"></span>' + esc(c.name) + '</span>' + sub + '</button>' +
@@ -116,14 +116,89 @@ export function renderDesk(a, open) {
   var left = plan.items.filter(function (x) { return x.st !== 'done'; }).length;
   document.getElementById('dk-title').innerHTML = '<h2>📋 ' + esc(a.name) + '</h2><span class="dk-meta"><span>' + plan.items.length + ' grup.</span><span>liko ' + left + '</span><span>Pabaiga apie ' + hhmm(plan.end) + '</span></span>' + delayChip(plan.delay);
   var st = document.getElementById('dk-start'); if (document.activeElement !== st) st.value = a.start || '09:30';
-  document.getElementById('dk-clock').textContent = hhmm(nowMin());
+  document.getElementById('dk-clock').textContent = hhmm(Math.floor(nowMin()));
   document.getElementById('dk-now').innerHTML = deskNowHtml(a, plan);
   renderFound(q, 'dk-found');
-  var idx = open ? plan.items.findIndex(function (x) { return x.c === open; }) : -1, rows = plan.items.map(function (x) { return deskRow(x, open, q); });
-  document.getElementById('dk-list').innerHTML = (idx >= 0 ? rows.slice(0, idx + 1) : rows).join('') || '<li class="dk-empty muted">Šiam tatamiui grupių dar nėra. Jas paskirstysite „🏟 Visi tatamiai“ (tempkite kortelę į tatamį).</li>';
+  // v2.15: baigtos grupės sąrašo pradžioje - viena eilutė „✓ Baigtos grupės: N“ (telefone dabartinė grupė matosi iškart)
+  var lead = plan.items.findIndex(function (x) { return x.st !== 'done'; }); if (lead < 0) lead = plan.items.length;
+  var canFold = lead >= 2 && !q, inLead = !!open && plan.items.slice(0, lead).some(function (x) { return x.c === open; }), folded = canFold && !showDone && !inLead;
+  var sum = canFold ? '<li class="dk-donesum"><button type="button" class="dk-donebtn" data-dk-showdone aria-expanded="' + !folded + '"><span class="dk-donek" aria-hidden="true">✓</span><span>Baigtos grupės: <b>' + lead + '</b></span><span class="dk-donehint">' + (folded ? 'Rodyti ▾' : 'Slėpti ▴') + '</span></button></li>' : '';
+  var idx = open ? plan.items.findIndex(function (x) { return x.c === open; }) : -1, rows = plan.items.map(function (x, i) { return deskRow(x, open, q, folded && i < lead); });
+  document.getElementById('dk-list').innerHTML = sum + (idx >= 0 ? rows.slice(0, idx + 1) : rows).join('') || '<li class="dk-empty muted">Šiam tatamiui grupių dar nėra. Jas paskirstysite „🏟 Visi tatamiai“ (tempkite kortelę į tatamį).</li>';
   document.getElementById('dk-after').innerHTML = idx >= 0 ? rows.slice(idx + 1).join('') : '';
   deskEl.classList.toggle('has-open', idx >= 0);
+  renderFx(a, plan, open);
 }
+// ---------- v2.15: „⛶ Darbo režimas“ - tik šio tatamio grupės per visą ekraną ----------
+// Viršuje juosta: tatamis, išsaugojimas, laikas, ✕; po ja - visos tatamio grupės juostele (paspaudus - atsidaro); apačioje - atidaryta grupė
+// (lentelė sumažinama, kad tilptų; telefone - „Paprastas“ vaizdas su dideliais „Laimėjo“). Lenta neslenka kartu su puslapiu (užrakinta),
+// pažymėjus nugalėtoją ji nuslenka prie dabartinės kovos. Naršyklė - per visą ekraną (kur leidžia; iPhone - tik puslapio dalis).
+var showDone = false, fxLastOpen = null;
+try { showDone = sessionStorage.getItem(KEY + '-showdone') === '1'; } catch (e) {}
+export var focusOn = false;
+try { focusOn = sessionStorage.getItem(KEY + '-focus') === '1'; } catch (e) {}
+export function applyFocus(da) { document.body.classList.toggle('vz-focus', !!(focusOn && da)); }
+function fxHeight() { var fx = document.getElementById('fx-bar'); if (fx && !fx.hidden) document.documentElement.style.setProperty('--fx-h', fx.offsetHeight + 'px'); }
+function setFocus(on) {
+  focusOn = !!on;
+  try { sessionStorage.setItem(KEY + '-focus', focusOn ? '1' : ''); } catch (e) {}
+  var d = document.documentElement;
+  if (focusOn) {
+    if (d.requestFullscreen && !document.fullscreenElement) { try { var fp = d.requestFullscreen(); if (fp && fp.catch) fp.catch(function () {}); } catch (e) {} }
+    if (window.innerWidth < 768 && runView !== 'simple') { setRunView('simple'); try { sessionStorage.setItem(KEY + '-runview', 'simple'); } catch (e) {} }
+    fxLastOpen = null;
+    var a = deskArea(), plan = a && areaPlan(a), go = plan && (plan.cur || plan.items.find(function (x) { return x.st !== 'done'; }) || plan.items[plan.items.length - 1]);
+    if (go && !deskOpenCat()) { openRun(go.c.id); return; }
+  } else if (document.fullscreenElement && document.exitFullscreen) { try { var xp = document.exitFullscreen(); if (xp && xp.catch) xp.catch(function () {}); } catch (e) {} }
+  render();
+  if (!focusOn) { var oc = deskOpenCat(); if (oc) deskScrollTo(oc.id); }
+}
+function renderFx(a, plan, open) {
+  var fx = document.getElementById('fx-bar'); if (!fx) return;
+  fx.hidden = !focusOn;
+  if (!focusOn) return;
+  var gs = document.getElementById('fx-groups'), sl = gs ? gs.scrollLeft : 0, left = plan.items.filter(function (x) { return x.st !== 'done'; }).length;
+  fx.innerHTML = '<div class="fx-top"><span class="fx-area">📋 ' + esc(a.name) + '</span><span class="fx-meta">liko ' + left + ' iš ' + plan.items.length + ' · pabaiga ~' + hhmm(plan.end) + '</span>' +
+    '<span class="fx-save" id="fx-save" role="status"></span><span class="spacer"></span><b class="fx-clock" title="Dabar">' + hhmm(Math.floor(nowMin())) + '</b>' +
+    '<button type="button" class="btn fx-exit" data-focus-toggle title="Išeiti iš darbo režimo (Esc)" aria-label="Išeiti iš darbo režimo">✕</button></div>' +
+    '<div class="fx-groups" id="fx-groups" role="group" aria-label="Šio tatamio grupės">' + plan.items.map(function (x) {
+      var c = x.c, on = open === c;
+      return '<button type="button" class="fx-chip st-' + x.st + (on ? ' on' : '') + '" data-fx-open="' + esc(c.id) + '" aria-pressed="' + on + '" title="' + esc(c.name) + ' · kovos ' + x.done + ' / ' + x.total + '">' +
+        '<span class="fx-t">' + (x.st === 'done' ? '✓' : hhmm(x.start)) + '</span><span class="disc d-' + c.discipline + '"></span><span class="fx-n">' + esc(c.name) + '</span><span class="fx-c">' + x.done + '/' + x.total + '</span></button>';
+    }).join('') + '</div>';
+  syncSave();
+  gs = document.getElementById('fx-groups');
+  var chip = gs.querySelector('.fx-chip.on');
+  if (fxLastOpen !== (open && open.id)) { var bd = document.getElementById('dk-run'); if (bd) bd.scrollTop = 0; }   // kita grupė - lenta nuo viršaus
+  if (chip && fxLastOpen !== (open && open.id)) gs.scrollLeft = chip.offsetLeft - (gs.clientWidth - chip.offsetWidth) / 2; else gs.scrollLeft = sl;
+  fxLastOpen = open ? open.id : null;
+  fxHeight();
+}
+// Išsaugojimo būsena (viršutinė juosta darbo režime paslėpta) - ir darbo režimo juostoje
+var saveEl = document.getElementById('save-state');
+function syncSave() { var f = document.getElementById('fx-save'); if (f && saveEl) { f.textContent = saveEl.textContent; f.className = 'fx-save ' + saveEl.className.replace('save-state', '').trim(); } }
+if (saveEl && window.MutationObserver) new MutationObserver(syncSave).observe(saveEl, { childList: true, characterData: true, subtree: true, attributes: true, attributeFilter: ['class'] });
+// Lentelė telpa į plotį (darbo režime - ir į aukštį): sumažinama (zoom), bet ne mažiau nei skaitoma; kitaip - slenkama lentos viduje
+export function fitBracket() {
+  var run = document.getElementById('run'); if (!run || run.hidden || !run.classList.contains('in-desk')) return;
+  var wrap = run.querySelector('.bracket-wrap'), br = wrap && wrap.querySelector('.bracket'); if (!br) return;
+  br.style.zoom = '';
+  var cs = getComputedStyle(wrap), w = br.scrollWidth, h = br.scrollHeight, availW = wrap.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+  if (!w || availW <= 0) return;
+  var s = Math.min(1, availW / w), board = document.getElementById('dk-run');
+  if (document.body.classList.contains('vz-focus') && board) {
+    var top = wrap.getBoundingClientRect().top - board.getBoundingClientRect().top + board.scrollTop;
+    var availH = board.clientHeight - top - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom) - 16;
+    if (availH > 160) s = Math.min(s, availH / h);
+  }
+  s = Math.max(window.innerWidth < 768 ? 0.72 : 0.5, s);
+  if (s < 0.98) br.style.zoom = String(Math.floor(s * 100) / 100);
+}
+document.addEventListener('keydown', function (e) {
+  if (e.key !== 'Escape' || !document.body.classList.contains('vz-focus')) return;
+  if (document.body.classList.contains('bout-open-body') || document.body.classList.contains('vd-open-body') || document.querySelector('.tool-menu[open]')) return;
+  setFocus(false);
+}, true);
 function toggleDeskGroup(id) {
   if (deskOpenCat() && S.selected === id) { setRun(false); resetSwap(); render(); deskScrollTo(id); return; }
   openRun(id);
@@ -132,6 +207,15 @@ if (deskEl) {
   deskEl.addEventListener('click', function (e) {
     var t = e.target;
     if (skipDeskClick || t.closest('#dk-run')) return;
+    if (t.closest('[data-focus-toggle]')) { setFocus(!focusOn); return; }
+    var fo = t.closest('[data-fx-open]'); if (fo) { var oc = deskOpenCat(); if (!oc || oc.id !== fo.dataset.fxOpen) openRun(fo.dataset.fxOpen); return; }
+    if (t.closest('[data-dk-showdone]')) {
+      var shown = t.closest('[data-dk-showdone]').getAttribute('aria-expanded') === 'true';
+      showDone = !shown; try { sessionStorage.setItem(KEY + '-showdone', showDone ? '1' : ''); } catch (x) {}
+      var od = deskOpenCat(), da0 = deskArea();
+      if (!showDone && od && da0 && areaPlan(da0).items.some(function (x) { return x.c === od && x.st === 'done'; })) { setRun(false); render(); } else renderDesk(da0, od);
+      return;
+    }
     var nav = t.closest('[data-dk]');
     if (nav) {
       var v = nav.dataset.dk, a = deskArea();

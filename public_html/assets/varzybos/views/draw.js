@@ -17,8 +17,10 @@ import { openVideo, stamp, unstamp, vidBtn } from '../video.js';
 
 // ---------- Lentelės ----------
 var swapMode = false, picked = null;
-// #185 (Denis): kita kova (pirma nebaigta) - raudonas rėmelis; pažymėjus nugalėtoją - nuslenkama prie jos
-var nextMid = null;
+// #185 (Denis), v2.15 (Deividas): dabartinė kova (pirma nebaigta) - mėlyna „DABAR“, po jos - geltona „RUOŠIASI“; pažymėjus nugalėtoją
+// abi pasislenka ir lentelė nuslenka prie dabartinės (raudona - AKA spalva, todėl dabartinei - mėlyna)
+var curMid = null, prepMid = null;
+function markUp(c) { var up = upcoming(c); curMid = (up[0] || {}).id || null; prepMid = (up[1] || {}).id || null; }
 export function resetSwap() { swapMode = false; picked = null; }
 function slotHtml(m, side, c, clickable, firstRound, extra) {
   var id = side === 'a' ? m.a : m.b, p = id ? person(c, id) : null;
@@ -51,8 +53,8 @@ function matchHtml(m, c, title, firstRound) {
   var right = m.bye ? '<span>Laisvas ratas</span>' : !(m.a && m.b) ? '' : flags ? '<span class="m-flags-score">' + esc((c.draw.scores || {})[m.id] || 'vėliavėlės') + '</span>'
     : scoreInput(c, m) + '<button type="button" class="bout-open" data-bout="' + m.id + '" title="Kova: balai ir laikrodis' + (CFG.readOnly ? '' : ', ekranas') + '">▶</button>';
   if (m.winner && !m.bye && !swapMode) right = vidBtn(c, m.id) + right;   // v2.13: 🎬 - kovos vaizdas nuo jos pradžios
-  var live = liveMatch && liveMatch.cat === c.id && liveMatch.mid === m.id, isNext = !live && !swapMode && !m.winner && nextMid === m.id;
-  return '<div class="match' + (m.bye ? ' is-bye' : '') + (m.winner && !m.bye ? ' is-done' : '') + (live ? ' is-live' : '') + (isNext ? ' is-next' : '') + '"><div class="match-label"><span>' + (isNext ? '<b class="m-next">Kita kova</b> · ' : '') + (m.no ? m.no + ' · ' : '') + esc(title) + (mode === 'flags' && c.discipline === 'fukugo' ? ' · Kitei' : mode === 'kumite' && c.discipline === 'fukugo' ? ' · Kumite' : '') + '</span>' + right + '</div>' +
+  var live = liveMatch && liveMatch.cat === c.id && liveMatch.mid === m.id, free = !swapMode && !m.winner && !m.bye, isCur = free && curMid === m.id, isPrep = free && !isCur && prepMid === m.id;
+  return '<div class="match' + (m.bye ? ' is-bye' : '') + (m.winner && !m.bye ? ' is-done' : '') + (live ? ' is-live' : '') + (isCur ? ' is-cur' : '') + (isPrep ? ' is-prep' : '') + '"><div class="match-label"><span>' + (isCur ? '<b class="m-tag cur">Dabar</b> ' : isPrep ? '<b class="m-tag prep">Ruošiasi</b> ' : '') + (m.no ? m.no + ' · ' : '') + esc(title) + (mode === 'flags' && c.discipline === 'fukugo' ? ' · Kitei' : mode === 'kumite' && c.discipline === 'fukugo' ? ' · Kumite' : '') + '</span>' + right + '</div>' +
     slotHtml(m, 'a', c, canWin || canSwap, firstRound, flags ? flagChips(c, m, 'a') : '') + slotHtml(m, 'b', c, canWin || canSwap, firstRound, flags ? flagChips(c, m, 'b') : '') + '</div>';
 }
 export function diplomaUrl(catId, html) { return CFG.diplomaApi + (catId ? '&cat=' + encodeURIComponent(catId) : '') + (html ? '&html=1' : ''); }
@@ -69,7 +71,7 @@ function drawHead(c, done, all) {
 }
 function renderElim(c, view) {
   var b = bracket(c), all = allMatches(b), done = all.filter(function (m) { return m.winner && m.loser; }).length;
-  nextMid = (upcoming(c)[0] || {}).id || null;
+  markUp(c);
   var html = drawHead(c, done, all.length);
   html += '<div class="bracket-wrap"><div class="bracket">' + b.rounds.map(function (rd, r) {
     var title = roundName(r, b.R);
@@ -86,7 +88,7 @@ function renderElim(c, view) {
 }
 function renderRR(c, view) {
   var ms = rrMatches(c), st = rrStandings(c), done = ms.filter(function (m) { return m.winner; }).length;
-  nextMid = (upcoming(c)[0] || {}).id || null;
+  markUp(c);
   var html = drawHead(c, done, ms.length) + '<div class="rr-layout"><div class="rr-matches">';
   var round = 0;
   ms.forEach(function (m) {
@@ -216,6 +218,11 @@ export function renderDraw() {
   document.getElementById('draw-new').disabled = c.draw.locked;
   document.getElementById('draw-swap').disabled = c.draw.locked;
   document.getElementById('draw-undo').disabled = !S.history.length;
+  // v2.15: darbastalyje grupės nustatymai suskleisti („⚙ Daugiau“); keičiant vietas - atskleisti (ten „✓ Baigti keitimą“)
+  var ru = document.getElementById('run-undo'), rm = document.getElementById('run-more'), open = toolsOpen || swapMode;
+  if (ru) ru.disabled = !S.history.length;
+  document.getElementById('run').classList.toggle('tools-open', open);
+  if (rm) { rm.setAttribute('aria-expanded', open ? 'true' : 'false'); rm.textContent = open ? '⚙ Mažiau' : '⚙ Daugiau'; }
   fillReset(c);
   if (runView === 'simple' && runOpen && !document.getElementById('run').hidden) renderSimple(c, view);
   else if (c.draw.system === 'rr') renderRR(c, view);
@@ -304,6 +311,12 @@ document.getElementById('draw-new').addEventListener('click', function () { var 
 document.getElementById('draw-swap').addEventListener('click', function () { swapMode = !swapMode; picked = null; render(); });
 document.getElementById('draw-lock').addEventListener('click', function () { var c = cat(S.selected); c.draw.locked = !c.draw.locked; swapMode = false; save(); render(); });
 document.getElementById('draw-undo').addEventListener('click', function () { undo(); save(); render(); });
+// v2.15: darbastalyje - „↶ Atšaukti“ ir „⚙ Daugiau“ šalia „Lentelė | Paprastas“ (kiti grupės nustatymai suskleisti)
+export var toolsOpen = false;
+export function setToolsOpen(v) { toolsOpen = !!v; }
+var runUndo = document.getElementById('run-undo'), runMore = document.getElementById('run-more');
+if (runUndo) runUndo.addEventListener('click', function () { undo(); save(); render(); });
+if (runMore) runMore.addEventListener('click', function () { toolsOpen = !(toolsOpen || swapMode); if (!toolsOpen && swapMode) { swapMode = false; picked = null; } render(); });
 document.getElementById('draw-view').addEventListener('click', function (e) {
   var fl = e.target.closest('[data-flag]');
   if (fl) {
@@ -344,9 +357,9 @@ function videoOf(c, key) {
   openVideo(c, key, m ? (m.no ? m.no + ' · ' : '') + matchTitle(c, m) + ': ' + nm(m.a) + ' – ' + nm(m.b) + ((c.draw.scores || {})[key] ? ' (' + c.draw.scores[key] + ')' : '')
     : (person(c, pid) ? nm(pid) + ' · ' + c.name + (fin ? ' · finalas' : '') : c.name));
 }
-// #185: kita kova - į matomą vietą (lentelė gali būti plati ir ilga) ir trumpai sumirksi
+// #185: dabartinė kova - į matomą vietą (lentelė gali būti plati ir ilga) ir trumpai sumirksi
 export function goNext() {
-  var n = document.querySelector('#draw-view .match.is-next');
+  var n = document.querySelector('#draw-view .match.is-cur');
   if (!n || !n.offsetParent) return;
   var r = n.getBoundingClientRect(), wrap = n.closest('.bracket-wrap'), wr = wrap ? wrap.getBoundingClientRect() : null;
   var outY = r.top < 60 || r.bottom > window.innerHeight - 20, outX = wr ? (r.left < wr.left || r.right > wr.right) : (r.left < 0 || r.right > window.innerWidth);
